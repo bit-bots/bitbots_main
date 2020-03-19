@@ -466,52 +466,62 @@ void Localization::publish_particle_markers() {
 
 void Localization::publish_ratings() {
   if (config_.lines_factor) {
-    publish_line_ratings();
+    // Publish line ratings
+    publish_debug_rating(robot_pose_observation_model_->get_measurement_lines(), 0.1, "line_ratings", lines_, line_ratings_publisher_);
   }
   if (config_.goals_factor) {
-    publish_goal_ratings();
+    // Publish goal ratings
+    publish_debug_rating(robot_pose_observation_model_->get_measurement_goals(), 0.2, "goal_ratings", goals_, goal_ratings_publisher_);
   }
   if (config_.field_boundary_factor) {
-    publish_field_boundary_ratings();
+    // Publish field boundary ratings
+    publish_debug_rating(robot_pose_observation_model_->get_measurement_field_boundary(), 0.2, "field_boundary_ratings", field_boundary_, fieldboundary_ratings_publisher_);
   }
   if (config_.corners_factor) {
-    publish_corner_ratings();
+    // Publish corner ratings
+    publish_debug_rating(robot_pose_observation_model_->get_measurement_corners(), 0.1, "corner_ratings", corner_, corner_ratings_publisher_);
   }
   if (config_.t_crossings_factor) {
-    publish_t_crossings_ratings();
+    // Publish t-crossing ratings
+    publish_debug_rating(robot_pose_observation_model_->get_measurement_t_crossings(), 0.2, "t_crossing_ratings", t_crossings_map_, t_crossings_ratings_publisher_);
   }
   if (config_.crosses_factor) {
-    publish_crosses_ratings();
+    // Publish cross ratings
+    publish_debug_rating(robot_pose_observation_model_->get_measurement_crosses(), 0.2, "cross_ratings", crosses_map_, crosses_ratings_publisher_);
   }
 }
 
-// todo refactor all publish ratings functions and move to debug class
-void Localization::publish_line_ratings() {
-  std::vector<std::pair<double, double>> lines = robot_pose_observation_model_->get_measurement_lines();
+void Localization::publish_debug_rating(
+    std::vector<std::pair<double, double>> measurements, 
+    double scale, 
+    const char name[], 
+    std::shared_ptr<Map> map, 
+    ros::Publisher &publisher) {
+
   RobotState best_estimate = robot_pf_->getBestState();
   double rating = 0;
 
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
   marker.header.stamp = ros::Time::now();
-  marker.ns = "line_ratings";
+  marker.ns = name;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.orientation.w = 1.0;
   marker.type = visualization_msgs::Marker::POINTS;
-  marker.scale.x = 0.1;
-  marker.scale.y = 0.1;
+  marker.scale.x = scale;
+  marker.scale.y = scale;
 
-  for (std::pair<double, double> &line : lines) {
+  for (std::pair<double, double> &measurement : measurements) {
     //lines are in polar form!
-    std::pair<double, double> lineRelative;
+    std::pair<double, double> observationRelative;
 
-    lineRelative = lines_->observationRelative(line, best_estimate.getXPos(), best_estimate.getYPos(),
-                                                best_estimate.getTheta());
-    double occupancy = lines_->get_occupancy(lineRelative.first, lineRelative.second);
+    observationRelative = map->observationRelative(
+      measurement, best_estimate.getXPos(), best_estimate.getYPos(), best_estimate.getTheta());
+    double occupancy = map->get_occupancy(observationRelative.first, observationRelative.second);
 
     geometry_msgs::Point point;
-    point.x = lineRelative.first;
-    point.y = lineRelative.second;
+    point.x = observationRelative.first;
+    point.y = observationRelative.second;
     point.z = 0;
 
     std_msgs::ColorRGBA color;
@@ -525,220 +535,5 @@ void Localization::publish_line_ratings() {
     marker.points.push_back(point);
     marker.colors.push_back(color);
   }
-  line_ratings_publisher_.publish(marker);
+  publisher.publish(marker);
 }
-
-void Localization::publish_goal_ratings() {
-  std::vector<std::pair<double, double>> goals = robot_pose_observation_model_->get_measurement_goals();
-  RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  double rating = 0;
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
-  marker.ns = "goal_ratings";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.w = 1.0;
-  marker.type = visualization_msgs::Marker::POINTS;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.lifetime = ros::Duration(1.0);
-
-  for (std::pair<double, double> &goal : goals) {
-    //lines are in polar form!
-    std::pair<double, double> goalRelative;
-
-    goalRelative = goals_->observationRelative(goal, best_estimate.getXPos(), best_estimate.getYPos(),
-                                                best_estimate.getTheta());
-    double occupancy = goals_->get_occupancy(goalRelative.first, goalRelative.second);
-
-    geometry_msgs::Point point;
-    point.x = goalRelative.first;
-    point.y = goalRelative.second;
-    point.z = 0;
-
-    std_msgs::ColorRGBA color;
-    color.b = 1;
-    if (occupancy >= 0) {
-      color.r = occupancy / 100;
-    } else {
-      color.g = 1;
-    }
-    color.a = 1;
-    marker.points.push_back(point);
-    marker.colors.push_back(color);
-  }
-  goal_ratings_publisher_.publish(marker);
-}
-
-void Localization::publish_field_boundary_ratings() {
-  std::vector<std::pair<double, double>> fb_points = robot_pose_observation_model_->get_measurement_field_boundary();
-  RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  double rating = 0;
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
-  marker.ns = "fb_ratings";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.w = 1.0;
-  marker.type = visualization_msgs::Marker::POINTS;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.lifetime = ros::Duration(1.0);
-
-  for (std::pair<double, double> &fb : fb_points) {
-    //lines are in polar form!
-    std::pair<double, double> fbRelative;
-
-    fbRelative = field_boundary_->observationRelative(fb, best_estimate.getXPos(), best_estimate.getYPos(),
-                                                      best_estimate.getTheta());
-    double occupancy = field_boundary_->get_occupancy(fbRelative.first, fbRelative.second);
-    geometry_msgs::Point point;
-    point.x = fbRelative.first;
-    point.y = fbRelative.second;
-    point.z = 0;
-
-    std_msgs::ColorRGBA color;
-    color.b = 1;
-    if (occupancy >= 0) {
-      color.r = occupancy / 100;
-    } else {
-      color.g = 1;
-    }
-    color.a = 1;
-    marker.points.push_back(point);
-    marker.colors.push_back(color);
-  }
-  fieldboundary_ratings_publisher_.publish(marker);
-}
-
-void Localization::publish_corner_ratings() {
-  std::vector<std::pair<double, double>> corners = robot_pose_observation_model_->get_measurement_corners();
-  RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  double rating = 0;
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
-  marker.ns = "corner_ratings";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.w = 1.0;
-  marker.type = visualization_msgs::Marker::POINTS;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.lifetime = ros::Duration(1.0);
-
-  for (std::pair<double, double> &corner : corners) {
-    //lines are in polar form!
-    std::pair<double, double> cornerRelative;
-
-    cornerRelative = corner_->observationRelative(corner, best_estimate.getXPos(), best_estimate.getYPos(),
-                                                  best_estimate.getTheta());
-    double occupancy = corner_->get_occupancy(cornerRelative.first, cornerRelative.second);
-    geometry_msgs::Point point;
-    point.x = cornerRelative.first;
-    point.y = cornerRelative.second;
-    point.z = 0;
-
-    std_msgs::ColorRGBA color;
-    color.b = 1;
-    if (occupancy >= 0) {
-      color.r = occupancy / 100;
-    } else {
-      color.g = 1;
-    }
-    color.a = 1;
-    marker.points.push_back(point);
-    marker.colors.push_back(color);
-  }
-  corner_ratings_publisher_.publish(marker);
-}
-
-void Localization::publish_t_crossings_ratings() {
-  std::vector<std::pair<double, double>> tcrossings = robot_pose_observation_model_->get_measurement_t_crossings();
-  RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  double rating = 0;
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
-  marker.ns = "tcrossings_ratings";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.w = 1.0;
-  marker.type = visualization_msgs::Marker::POINTS;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.lifetime = ros::Duration(1.0);
-
-  for (std::pair<double, double> &tcrossing : tcrossings) {
-    //lines are in polar form!
-    std::pair<double, double> tcrossingRelative;
-
-    tcrossingRelative = t_crossings_map_->observationRelative(tcrossing, best_estimate.getXPos(),
-                                                              best_estimate.getYPos(),
-                                                              best_estimate.getTheta());
-    double occupancy = t_crossings_map_->get_occupancy(tcrossingRelative.first, tcrossingRelative.second);
-    geometry_msgs::Point point;
-    point.x = tcrossingRelative.first;
-    point.y = tcrossingRelative.second;
-    point.z = 0;
-
-    std_msgs::ColorRGBA color;
-    color.b = 1;
-    if (occupancy >= 0) {
-      color.r = occupancy / 100;
-    } else {
-      color.g = 1;
-    }
-    color.a = 1;
-    marker.points.push_back(point);
-    marker.colors.push_back(color);
-  }
-  t_crossings_ratings_publisher_.publish(marker);
-}
-
-void Localization::publish_crosses_ratings() {
-  std::vector<std::pair<double, double>> corners = robot_pose_observation_model_->get_measurement_crosses();
-  RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  double rating = 0;
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
-  marker.ns = "crosses_ratings";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.w = 1.0;
-  marker.type = visualization_msgs::Marker::POINTS;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.lifetime = ros::Duration(1.0);
-
-  for (std::pair<double, double> &corner : corners) {
-    //lines are in polar form!
-    std::pair<double, double> cornerRelative;
-
-    cornerRelative = crosses_map_->observationRelative(corner, best_estimate.getXPos(),
-                                                        best_estimate.getYPos(),
-                                                        best_estimate.getTheta());
-    double occupancy = crosses_map_->get_occupancy(cornerRelative.first, cornerRelative.second);
-
-    geometry_msgs::Point point;
-    point.x = cornerRelative.first;
-    point.y = cornerRelative.second;
-    point.z = 0;
-
-    std_msgs::ColorRGBA color;
-    color.b = 1;
-    if (occupancy >= 0) {
-      color.r = occupancy / 100;
-    } else {
-      color.g = 1;
-    }
-    color.a = 1;
-    marker.points.push_back(point);
-    marker.colors.push_back(color);
-  }
-  crosses_ratings_publisher_.publish(marker);
-}
-
