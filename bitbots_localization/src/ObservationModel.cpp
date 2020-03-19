@@ -65,15 +65,16 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
         particle_weight_t_crossings * config_.t_crossings_factor + 
         particle_weight_crosses * config_.crosses_factor) /
           number_of_effective_measurements_); // TODO evaluate this devision
+
   if (weight < min_weight_) {
     weight = min_weight_;   
   }
+
   return weight; //exponential?
 }
 
 void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelative measurement) {
   // convert to polar
-  last_measurement_lines_.clear();
   for (hlm::LineSegmentRelative &segment : measurement.segments) {
     std::pair<double, double> linePolar = cartesianToPolar(segment.start.x, segment.start.y);
     last_measurement_lines_.push_back(linePolar);
@@ -82,7 +83,6 @@ void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelati
 
 void RobotPoseObservationModel::set_measurement_goal(hlm::GoalRelative measurement) {
   // convert to polar
-  last_measurement_goal_.clear();
   if (measurement.left_post.x != 0 && measurement.left_post.y != 0) {
     std::pair<double, double> postOnePolar = cartesianToPolar(measurement.left_post.x, measurement.left_post.y);
     last_measurement_goal_.push_back(postOnePolar);
@@ -95,7 +95,6 @@ void RobotPoseObservationModel::set_measurement_goal(hlm::GoalRelative measureme
 
 void RobotPoseObservationModel::set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement) {
   // convert to polar
-  last_measurement_field_boundary_.clear();
   for (gm::Point &point : measurement.field_boundary_points) {
     std::pair<double, double> fieldBoundaryPointPolar = cartesianToPolar(point.x,
                                                                          point.y); // z is 0
@@ -105,7 +104,6 @@ void RobotPoseObservationModel::set_measurement_field_boundary(hlm::FieldBoundar
 
 void RobotPoseObservationModel::set_measurement_corners(hlm::PixelsRelative measurement) {
   // convert to polar
-  last_measurement_corners_.clear();
   for (hlm::PixelRelative &pixel : measurement.pixels) {
     std::pair<double, double> cornerPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
     last_measurement_corners_.push_back(cornerPolar);
@@ -114,7 +112,6 @@ void RobotPoseObservationModel::set_measurement_corners(hlm::PixelsRelative meas
 
 void RobotPoseObservationModel::set_measurement_t_crossings(hlm::PixelsRelative measurement) {
   // convert to polar
-  last_measurement_t_crossings_.clear();
   for (hlm::PixelRelative &pixel : measurement.pixels) {
     std::pair<double, double> tcrossingsPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
     last_measurement_t_crossings_.push_back(tcrossingsPolar);
@@ -123,7 +120,6 @@ void RobotPoseObservationModel::set_measurement_t_crossings(hlm::PixelsRelative 
 
 void RobotPoseObservationModel::set_measurement_crosses(hlm::PixelsRelative measurement) {
   // convert to polar
-  last_measurement_crosses_.clear();
   for (hlm::PixelRelative &pixel : measurement.pixels) {
     std::pair<double, double> cornerPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
     last_measurement_crosses_.push_back(cornerPolar);
