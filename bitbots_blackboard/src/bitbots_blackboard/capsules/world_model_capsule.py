@@ -66,7 +66,7 @@ class WorldModelCapsule:
         return ball_position.point.x, ball_position.point.y
 
     def get_ball_distance(self):
-        u, v = self.get_ball_position_uv()
+        u, v = self.get_ball_position_uv_approach_frame()
         return math.sqrt(u ** 2 + v ** 2)
 
     def get_ball_speed(self):
