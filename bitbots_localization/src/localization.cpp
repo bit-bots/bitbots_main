@@ -498,7 +498,7 @@ void Localization::publish_debug_rating(
     std::shared_ptr<Map> map, 
     ros::Publisher &publisher) {
 
-  RobotState best_estimate = robot_pf_->getBestState();
+  RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
   double rating = 0;
 
   visualization_msgs::Marker marker;
