@@ -2738,7 +2738,7 @@
 <parent link="upper_leg_left_1" />
 <child link="lower_leg_left_1" />
 <axis xyz="0 -1 0"/>
-<limit effort="10" velocity="10" lower="0" upper="2.96706"/>
+<limit effort="10" velocity="10" lower="-2.96706" upper="0"/>
 <joint_properties friction="0.0"/>
 </joint>
 
