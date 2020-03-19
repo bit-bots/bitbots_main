@@ -6,10 +6,10 @@ from tf.transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
+
 class CircleBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(CircleBall, self).__init__(blackboard, dsd, parameters)
-
 
     def perform(self, reevaluate=False):
         """
@@ -40,4 +40,3 @@ class CircleBall(AbstractActionElement):
         pose_msg.pose.position.y -= 0.2  # 20 cm to the right of the ball
 
         self.blackboard.pathfinding.publish(pose_msg)
-

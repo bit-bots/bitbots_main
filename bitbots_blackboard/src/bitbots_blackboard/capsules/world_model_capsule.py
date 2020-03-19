@@ -152,7 +152,7 @@ class WorldModelCapsule:
         try:
             left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
             right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
-        except (tf2.ExtrapolationException) as e:
+        except tf2.ExtrapolationException as e:
             rospy.logwarn(e)
             try:
                 # retrying with latest time stamp available because the time stamp of the goal_odom.header
@@ -161,7 +161,7 @@ class WorldModelCapsule:
                 right.header.stamp = rospy.Time(0)
                 left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
                 right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
-            except (tf2.ExtrapolationException) as e:
+            except tf2.ExtrapolationException as e:
                 rospy.logwarn(e)
                 rospy.logerr('Severe transformation problem concerning the goal!')
                 return None
@@ -190,15 +190,13 @@ class WorldModelCapsule:
                 right.header.stamp = rospy.Time(0)
                 left_bfp = self.tf_buffer.transform(left, 'approach_frame', timeout=rospy.Duration(0.2)).point
                 right_bfp = self.tf_buffer.transform(right, 'approach_frame', timeout=rospy.Duration(0.2)).point
-            except (tf2.ExtrapolationException) as e:
+            except tf2.ExtrapolationException as e:
                 rospy.logwarn(e)
                 rospy.logerr('Severe transformation problem concerning the goal!')
                 return None
 
         return (left_bfp.x + right_bfp.x / 2.0), \
                (left_bfp.y + right_bfp.y / 2.0)
-
-
 
     def goal_parts_callback(self, msg):
         # type: (GoalPartsRelative) -> None
@@ -208,13 +206,14 @@ class WorldModelCapsule:
         goal_parts.header.stamp = goal_parts.header.stamp + rospy.Duration.from_sec(0.01)
 
         # Tuple(First Post, Second Post, Distance)
-        goal_combination = (-1,-1,-1)
+        goal_combination = (-1, -1, -1)
         # Enumerate all goalpost combinations, this also combines each post with itself,
         # to get the special case that only one post was detected and the maximum distance is 0.
         for first_post_id, first_post in enumerate(goal_parts.posts):
             for second_post_id, second_post in enumerate(goal_parts.posts):
                 # Get the minimal angular difference between the two posts
-                angular_distance = abs((math.atan2(first_post.foot_point.x, first_post.foot_point.y) - math.atan2(second_post.foot_point.x, second_post.foot_point.y) + math.pi) % (2*math.pi) - math.pi)
+                angular_distance = abs((math.atan2(first_post.foot_point.x, first_post.foot_point.y) - math.atan2(
+                    second_post.foot_point.x, second_post.foot_point.y) + math.pi) % (2*math.pi) - math.pi)
                 # Set a new pair of posts if the distance is bigger than the previous ones
                 if angular_distance > goal_combination[2]:
                     goal_combination = (first_post_id, second_post_id, angular_distance)
@@ -242,8 +241,10 @@ class WorldModelCapsule:
         self.goal_odom.header = goal_parts.header
         if goal_left_buffer.header.frame_id != 'odom':
             try:
-                self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2)).point
-                self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom', timeout=rospy.Duration(0.2)).point
+                self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom',
+                                                                    timeout=rospy.Duration(0.2)).point
+                self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom',
+                                                                     timeout=rospy.Duration(0.2)).point
                 self.goal_odom.header.frame_id = 'odom'
                 self.goal_seen_time = rospy.Time.now()
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:

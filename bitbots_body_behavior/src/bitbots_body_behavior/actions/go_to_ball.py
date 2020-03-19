@@ -14,7 +14,8 @@ class GoToBall(AbstractActionElement):
         super(GoToBall, self).__init__(blackboard, dsd, parameters)
 
         if 'target' not in parameters.keys():
-            rospy.logerr('The parameter \'{}\' could not be used to decide whether map information is accesible'.format(parameters['target']))
+            rospy.logerr('The parameter \'{}\' could not be used to decide whether map information is accesible'.format(
+                parameters['target']))
         else:
             self.target = parameters['target']
 
