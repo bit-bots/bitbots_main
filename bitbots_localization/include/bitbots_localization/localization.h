@@ -186,17 +186,12 @@ class Localization {
 
   void publish_ratings();
 
-  void publish_line_ratings();
-
-  void publish_goal_ratings();
-
-  void publish_field_boundary_ratings();
-
-  void publish_corner_ratings();
-
-  void publish_t_crossings_ratings();
-
-  void publish_crosses_ratings();
+  void publish_debug_rating(
+    std::vector<std::pair<double, double>>    measurements, 
+    double scale, 
+    const char name[24], 
+    std::shared_ptr<Map> map, 
+    ros::Publisher &publisher);
 
   void updateMeasurements();
 
