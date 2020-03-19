@@ -3,19 +3,13 @@
     This is a format for representing semantic information about the robot structure.
     A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
 -->
-<robot name="wolfgang">
+<robot name="onshape">
     <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
     <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
     <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     <group name="LeftLeg">
-        <link name="l_hip_1" />
-        <link name="l_hip_2" />
-        <link name="l_lower_leg" />
-        <link name="l_upper_leg" />
-        <link name="l_ankle" />
-        <link name="l_foot" />
         <link name="l_sole" />
         <joint name="LHipYaw" />
         <joint name="LHipRoll" />
@@ -25,12 +19,6 @@
         <joint name="LAnkleRoll" />
     </group>
     <group name="RightLeg">
-        <link name="r_hip_1" />
-        <link name="r_hip_2" />
-        <link name="r_upper_leg" />
-        <link name="r_lower_leg" />
-        <link name="r_ankle" />
-        <link name="r_foot" />
         <link name="r_sole" />
         <joint name="RHipYaw" />
         <joint name="RHipRoll" />
@@ -53,29 +41,27 @@
         <joint name="RAnklePitch" />
         <joint name="RAnkleRoll" />
     </group>
-    <group name = "RightArm">
-        <joint name="RShoulderPitch"/>
-	<joint name="RShoulderRoll"/>
-        <joint name="RElbow"/>
+    <group name="RightArm">
+        <joint name="RShoulderPitch" />
+        <joint name="RShoulderRoll" />
+        <joint name="RElbow" />
     </group>
-    <group name = "LeftArm">
-        <joint name="LShoulderPitch"/>
-	<joint name="LShoulderRoll"/>
-        <joint name="LElbow"/>
+    <group name="LeftArm">
+        <joint name="LShoulderPitch" />
+        <joint name="LShoulderRoll" />
+        <joint name="LElbow" />
     </group>
-    <group name = "Arms">
-        <joint name="RShoulderPitch"/>
-	<joint name="RShoulderRoll"/>
-        <joint name="RElbow"/>
-        <joint name="LShoulderPitch"/>
-	<joint name="LShoulderRoll"/>
-        <joint name="LElbow"/>
+    <group name="Arms">
+        <joint name="RShoulderPitch" />
+        <joint name="RShoulderRoll" />
+        <joint name="RElbow" />
+        <joint name="LShoulderPitch" />
+        <joint name="LShoulderRoll" />
+        <joint name="LElbow" />
     </group>
     <group name="Head">
         <joint name="HeadPan" />
         <joint name="HeadTilt" />
-        <joint name="head_to_camera" />
-        <joint name="camera__optical_joint" />
     </group>
     <group name="All">
         <joint name="HeadPan" />
@@ -100,118 +86,110 @@
         <joint name="RElbow" />
     </group>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
-    <disable_collisions link1="head" link2="l_ankle" reason="Never" />
-    <disable_collisions link1="head" link2="l_foot" reason="Never" />
-    <disable_collisions link1="head" link2="l_hip_1" reason="Never" />
-    <disable_collisions link1="head" link2="l_hip_2" reason="Never" />
-    <disable_collisions link1="head" link2="l_lower_leg" reason="Never" />
-    <disable_collisions link1="head" link2="l_upper_leg" reason="Never" />
-    <disable_collisions link1="head" link2="neck" reason="Adjacent" />
-    <disable_collisions link1="head" link2="r_ankle" reason="Never" />
-    <disable_collisions link1="head" link2="r_foot" reason="Never" />
-    <disable_collisions link1="head" link2="r_hip_1" reason="Never" />
-    <disable_collisions link1="head" link2="r_hip_2" reason="Never" />
-    <disable_collisions link1="head" link2="r_lower_leg" reason="Never" />
-    <disable_collisions link1="head" link2="r_upper_leg" reason="Never" />
-    <disable_collisions link1="head" link2="torso" reason="Default" />
-    <disable_collisions link1="l_ankle" link2="l_foot" reason="Adjacent" />
-    <disable_collisions link1="l_ankle" link2="l_lower_leg" reason="Adjacent" />
-    <disable_collisions link1="l_ankle" link2="l_shoulder" reason="Never" />
-    <disable_collisions link1="l_ankle" link2="l_upper_arm" reason="Never" />
-    <disable_collisions link1="l_ankle" link2="neck" reason="Never" />
-    <disable_collisions link1="l_ankle" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_ankle" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="l_foot" link2="l_shoulder" reason="Never" />
-    <disable_collisions link1="l_foot" link2="l_lower_leg" reason="Adjacent" />
-    <disable_collisions link1="l_foot" link2="neck" reason="Never" />
-    <disable_collisions link1="l_foot" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_foot" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="l_hip_2" reason="Adjacent" />
-    <disable_collisions link1="l_hip_1" link2="l_lower_leg" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="l_shoulder" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="l_upper_arm" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="l_upper_leg" reason="Default" />
-    <disable_collisions link1="l_hip_1" link2="neck" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="r_hip_1" reason="Adjacent" />
-    <disable_collisions link1="l_hip_1" link2="r_hip_2" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="l_hip_1" link2="torso" reason="Adjacent" />
-    <disable_collisions link1="l_hip_2" link2="l_lower_leg" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="l_shoulder" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="l_upper_arm" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="l_upper_leg" reason="Adjacent" />
-    <disable_collisions link1="l_hip_2" link2="neck" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="r_hip_1" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="l_hip_2" link2="torso" reason="Never" />
-    <disable_collisions link1="l_lower_arm" link2="l_upper_arm" reason="Adjacent" />
-    <disable_collisions link1="l_lower_arm" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_lower_leg" link2="l_shoulder" reason="Never" />
-    <disable_collisions link1="l_lower_leg" link2="l_upper_arm" reason="Never" />
-    <disable_collisions link1="l_lower_leg" link2="l_upper_leg" reason="Adjacent" />
-    <disable_collisions link1="l_lower_leg" link2="neck" reason="Never" />
-    <disable_collisions link1="l_lower_leg" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_lower_leg" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="l_lower_leg" link2="torso" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="l_upper_arm" reason="Adjacent" />
-    <disable_collisions link1="l_shoulder" link2="l_upper_leg" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="neck" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_ankle" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_foot" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_hip_1" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_hip_2" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_lower_arm" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_lower_leg" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="r_upper_leg" reason="Never" />
-    <disable_collisions link1="l_shoulder" link2="torso" reason="Adjacent" />
-    <disable_collisions link1="l_upper_arm" link2="l_upper_leg" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_ankle" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_foot" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_hip_1" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_hip_2" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_lower_leg" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_upper_arm" link2="r_upper_leg" reason="Never" />
-    <disable_collisions link1="l_upper_leg" link2="neck" reason="Never" />
-    <disable_collisions link1="l_upper_leg" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="l_upper_leg" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="neck" link2="r_ankle" reason="Never" />
-    <disable_collisions link1="neck" link2="r_foot" reason="Never" />
-    <disable_collisions link1="neck" link2="r_hip_1" reason="Never" />
-    <disable_collisions link1="neck" link2="r_hip_2" reason="Never" />
-    <disable_collisions link1="neck" link2="r_lower_leg" reason="Never" />
-    <disable_collisions link1="neck" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="neck" link2="r_upper_leg" reason="Never" />
-    <disable_collisions link1="neck" link2="torso" reason="Adjacent" />
-    <disable_collisions link1="r_ankle" link2="r_foot" reason="Adjacent" />
-    <disable_collisions link1="r_ankle" link2="r_lower_leg" reason="Adjacent" />
-    <disable_collisions link1="r_ankle" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="r_ankle" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="r_foot" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="r_foot" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="r_foot" link2="r_lower_leg" reason="Adjacent" />
-    <disable_collisions link1="r_hip_1" link2="r_hip_2" reason="Adjacent" />
-    <disable_collisions link1="r_hip_1" link2="r_lower_leg" reason="Never" />
-    <disable_collisions link1="r_hip_1" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="r_hip_1" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="r_hip_1" link2="r_upper_leg" reason="Default" />
-    <disable_collisions link1="r_hip_1" link2="torso" reason="Adjacent" />
-    <disable_collisions link1="r_hip_2" link2="r_lower_leg" reason="Never" />
-    <disable_collisions link1="r_hip_2" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="r_hip_2" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="r_hip_2" link2="r_upper_leg" reason="Adjacent" />
-    <disable_collisions link1="r_hip_2" link2="torso" reason="Never" />
-    <disable_collisions link1="r_lower_arm" link2="r_upper_arm" reason="Adjacent" />
-    <disable_collisions link1="r_lower_leg" link2="r_shoulder" reason="Never" />
-    <disable_collisions link1="r_lower_leg" link2="r_upper_arm" reason="Never" />
-    <disable_collisions link1="r_lower_leg" link2="r_upper_leg" reason="Adjacent" />
-    <disable_collisions link1="r_lower_leg" link2="torso" reason="Never" />
-    <disable_collisions link1="r_shoulder" link2="r_upper_arm" reason="Adjacent" />
-    <disable_collisions link1="r_shoulder" link2="r_upper_leg" reason="Never" />
-    <disable_collisions link1="r_shoulder" link2="torso" reason="Adjacent" />
-    <disable_collisions link1="r_upper_arm" link2="r_upper_leg" reason="Never" />
+    <disable_collisions link1="body_1" link2="hip_u_connector_1" reason="Adjacent" />
+    <disable_collisions link1="body_1" link2="hip_u_connector_2" reason="Adjacent" />
+    <disable_collisions link1="body_1" link2="left_hip_right_ankle_2" reason="Never" />
+    <disable_collisions link1="body_1" link2="neck_1" reason="Adjacent" />
+    <disable_collisions link1="body_1" link2="right_hip_left_ankle_1" reason="Never" />
+    <disable_collisions link1="body_1" link2="shoulder_left_1" reason="Adjacent" />
+    <disable_collisions link1="body_1" link2="shoulder_right_1" reason="Adjacent" />
+    <disable_collisions link1="body_1" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="body_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="foot_left_1" link2="head_1" reason="Never" />
+    <disable_collisions link1="foot_left_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="foot_left_1" link2="right_hip_left_ankle_2" reason="Adjacent" />
+    <disable_collisions link1="foot_right_1" link2="head_1" reason="Never" />
+    <disable_collisions link1="foot_right_1" link2="left_hip_right_ankle_1" reason="Adjacent" />
+    <disable_collisions link1="foot_right_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="hip_u_connector_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="hip_u_connector_2" reason="Never" />
+    <disable_collisions link1="head_1" link2="left_hip_right_ankle_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="left_hip_right_ankle_2" reason="Never" />
+    <disable_collisions link1="head_1" link2="lower_leg_left_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="lower_leg_right_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="neck_1" reason="Adjacent" />
+    <disable_collisions link1="head_1" link2="right_hip_left_ankle_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="right_hip_left_ankle_2" reason="Never" />
+    <disable_collisions link1="head_1" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="head_1" link2="upper_leg_right_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="hip_u_connector_2" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="lower_arm_left_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="right_hip_left_ankle_1" reason="Adjacent" />
+    <disable_collisions link1="hip_u_connector_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="hip_u_connector_2" link2="left_hip_right_ankle_2" reason="Adjacent" />
+    <disable_collisions link1="hip_u_connector_2" link2="lower_arm_right_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_2" link2="neck_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_2" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_2" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_2" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="hip_u_connector_2" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_1" link2="lower_leg_right_1" reason="Adjacent" />
+    <disable_collisions link1="left_hip_right_ankle_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_1" link2="upper_leg_right_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="lower_arm_right_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="neck_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="upper_leg_left_1" reason="Adjacent" />
+    <disable_collisions link1="lower_arm_left_1" link2="lower_arm_right_1" reason="Never" />
+    <disable_collisions link1="lower_arm_left_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="lower_arm_left_1" link2="right_hip_left_ankle_1" reason="Never" />
+    <disable_collisions link1="lower_arm_left_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="lower_arm_left_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="lower_arm_left_1" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="lower_arm_left_1" link2="upper_arm_2" reason="Adjacent" />
+    <disable_collisions link1="lower_arm_right_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="lower_arm_right_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="lower_arm_right_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="lower_arm_right_1" link2="upper_arm_1" reason="Adjacent" />
+    <disable_collisions link1="lower_arm_right_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="lower_leg_left_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="lower_leg_left_1" link2="right_hip_left_ankle_2" reason="Adjacent" />
+    <disable_collisions link1="lower_leg_left_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="lower_leg_left_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="lower_leg_left_1" link2="upper_leg_left_1" reason="Adjacent" />
+    <disable_collisions link1="lower_leg_right_1" link2="neck_1" reason="Never" />
+    <disable_collisions link1="lower_leg_right_1" link2="right_hip_left_ankle_1" reason="Never" />
+    <disable_collisions link1="lower_leg_right_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="lower_leg_right_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="lower_leg_right_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="lower_leg_right_1" link2="upper_leg_right_1" reason="Adjacent" />
+    <disable_collisions link1="neck_1" link2="right_hip_left_ankle_1" reason="Never" />
+    <disable_collisions link1="neck_1" link2="right_hip_left_ankle_2" reason="Never" />
+    <disable_collisions link1="neck_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="neck_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="neck_1" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="neck_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="neck_1" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="neck_1" link2="upper_leg_right_1" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_1" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_1" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_1" link2="upper_leg_right_1" reason="Adjacent" />
+    <disable_collisions link1="right_hip_left_ankle_2" link2="shoulder_left_1" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_2" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="right_hip_left_ankle_2" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="shoulder_left_1" link2="shoulder_right_1" reason="Never" />
+    <disable_collisions link1="shoulder_left_1" link2="upper_arm_1" reason="Never" />
+    <disable_collisions link1="shoulder_left_1" link2="upper_arm_2" reason="Adjacent" />
+    <disable_collisions link1="shoulder_left_1" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="shoulder_left_1" link2="upper_leg_right_1" reason="Never" />
+    <disable_collisions link1="shoulder_right_1" link2="upper_arm_1" reason="Adjacent" />
+    <disable_collisions link1="shoulder_right_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="shoulder_right_1" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="shoulder_right_1" link2="upper_leg_right_1" reason="Never" />
+    <disable_collisions link1="upper_arm_1" link2="upper_arm_2" reason="Never" />
+    <disable_collisions link1="upper_arm_1" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="upper_arm_1" link2="upper_leg_right_1" reason="Never" />
+    <disable_collisions link1="upper_arm_2" link2="upper_leg_left_1" reason="Never" />
+    <disable_collisions link1="upper_arm_2" link2="upper_leg_right_1" reason="Never" />
 </robot>
