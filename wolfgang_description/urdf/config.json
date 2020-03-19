@@ -10,6 +10,7 @@
     "addDummyBaseLink": true,
     "packageName": "wolfgang_description/urdf/",
     "robotName": "wolfgang",
+    "additionalUrdfFile": "additionalURDF.txt",
 
     "jointMaxEffort": {
         "default": 0.0,
@@ -70,5 +71,6 @@
         "nuc_usb",
         "nuc_top",
         "torsion_spring_assembly_helper"
-]
+    ],
+    "additionalURDF": "additionalURDF.txt"
 }
