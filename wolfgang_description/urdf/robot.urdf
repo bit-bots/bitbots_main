@@ -1,4 +1,4 @@
-<robot name="onshape">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wolfgang">
 <link name="base_link"></link>
 <joint name="base_link_to_base" type="fixed">
 <parent link="base_link"/>
@@ -452,7 +452,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="imu_frame_frame" type="floating">
+<joint name="imu_frame_frame" type="fixed">
 <origin xyz="0.0478024 -0.0367504 0.224" rpy="-2.37905e-17 9.04859e-17 1.5708" />
 <parent link="body_1" />
 <child link="imu_frame" />
@@ -706,7 +706,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="r_wrist_frame" type="floating">
+<joint name="r_wrist_frame" type="fixed">
 <origin xyz="1.249e-16 -0.226182 -0.0235" rpy="1.5708 1.43787e-15 -1.5708" />
 <parent link="lower_arm_right_1" />
 <child link="r_wrist" />
@@ -987,7 +987,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="l_wrist_frame" type="floating">
+<joint name="l_wrist_frame" type="fixed">
 <origin xyz="8.32667e-17 -0.225182 -0.0235" rpy="-1.5708 1.45366e-16 -1.5708" />
 <parent link="lower_arm_left_1" />
 <child link="l_wrist" />
@@ -1778,7 +1778,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="r_sole_frame" type="floating">
+<joint name="r_sole_frame" type="fixed">
 <origin xyz="0.0152261 0.0907683 -0.0529" rpy="5.35395e-16 1.07005e-14 1.5708" />
 <parent link="foot_right_1" />
 <child link="r_sole" />
@@ -1792,7 +1792,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="r_cleat_r_front_frame" type="floating">
+<joint name="r_cleat_r_front_frame" type="fixed">
 <origin xyz="0.0595 0.177 -0.05025" rpy="2.69391e-16 -5.00011e-15 1.5708" />
 <parent link="foot_right_1" />
 <child link="r_cleat_r_front" />
@@ -1806,7 +1806,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="r_cleat_l_front_frame" type="floating">
+<joint name="r_cleat_l_front_frame" type="fixed">
 <origin xyz="-0.0305 0.177 -0.05025" rpy="4.65062e-17 1.10045e-14 1.5708" />
 <parent link="foot_right_1" />
 <child link="r_cleat_l_front" />
@@ -1820,7 +1820,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="r_cleat_r_back_frame" type="floating">
+<joint name="r_cleat_r_back_frame" type="fixed">
 <origin xyz="0.0595 -0.007 -0.05025" rpy="7.70805e-16 -3.07597e-15 1.5708" />
 <parent link="foot_right_1" />
 <child link="r_cleat_r_back" />
@@ -1834,7 +1834,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="r_cleat_l_back_frame" type="floating">
+<joint name="r_cleat_l_back_frame" type="fixed">
 <origin xyz="-0.030496 -0.00745064 -0.05025" rpy="9.51939e-16 -4.37921e-15 1.5708" />
 <parent link="foot_right_1" />
 <child link="r_cleat_l_back" />
@@ -2652,7 +2652,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="l_sole_frame" type="floating">
+<joint name="l_sole_frame" type="fixed">
 <origin xyz="-0.0152261 0.0907683 -0.0529" rpy="-2.97297e-17 -2.35463e-15 1.5708" />
 <parent link="foot_left_1" />
 <child link="l_sole" />
@@ -2666,7 +2666,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="l_cleat_l_front_frame" type="floating">
+<joint name="l_cleat_l_front_frame" type="fixed">
 <origin xyz="-0.0605 0.177 -0.04975" rpy="-2.40691e-16 1.48781e-15 1.5708" />
 <parent link="foot_left_1" />
 <child link="l_cleat_l_front" />
@@ -2680,7 +2680,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="l_cleat_r_front_frame" type="floating">
+<joint name="l_cleat_r_front_frame" type="fixed">
 <origin xyz="0.0295 0.177 -0.04975" rpy="-2.40691e-16 1.48781e-15 1.5708" />
 <parent link="foot_left_1" />
 <child link="l_cleat_r_front" />
@@ -2694,7 +2694,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="l_cleat_r_back_frame" type="floating">
+<joint name="l_cleat_r_back_frame" type="fixed">
 <origin xyz="0.0295 -0.007 -0.04975" rpy="-1.27389e-15 6.99799e-16 1.5708" />
 <parent link="foot_left_1" />
 <child link="l_cleat_r_back" />
@@ -2708,7 +2708,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="l_cleat_l_back_frame" type="floating">
+<joint name="l_cleat_l_back_frame" type="fixed">
 <origin xyz="-0.0605 -0.007 -0.04975" rpy="-4.85867e-15 -8.48619e-15 1.5708" />
 <parent link="foot_left_1" />
 <child link="l_cleat_l_back" />
@@ -2954,7 +2954,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="camera_frame" type="floating">
+<joint name="camera_frame" type="fixed">
 <origin xyz="0.0437 0.0795 -0.0235" rpy="-1.5708 -8.59213e-16 1.88738e-15" />
 <parent link="head_1" />
 <child link="camera" />
@@ -2968,7 +2968,7 @@
 <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
 </inertial>
 </link>
-<joint name="camera_optical_frame_frame" type="floating">
+<joint name="camera_optical_frame_frame" type="fixed">
 <origin xyz="0.0432 0.08 -0.0235" rpy="3.14159 -1.5708 0" />
 <parent link="head_1" />
 <child link="camera_optical_frame" />
