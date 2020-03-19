@@ -169,6 +169,35 @@ class WorldModelCapsule:
         return (left_bfp.x + right_bfp.x / 2.0), \
                (left_bfp.y + right_bfp.y / 2.0)
 
+    def get_detection_based_goal_position_uv_approach_frame(self):
+        """
+        returns the position of the goal relative to the robot.
+        if only a single post is detected, the position of the post is returned.
+        else, it is the point between the posts
+        :return:
+        """
+        left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
+        right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
+        try:
+            left_bfp = self.tf_buffer.transform(left, 'approach_frame', timeout=rospy.Duration(0.2)).point
+            right_bfp = self.tf_buffer.transform(right, 'approach_frame', timeout=rospy.Duration(0.2)).point
+        except (tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            try:
+                # retrying with latest time stamp available because the time stamp of the goal_odom.header
+                # seems to be to young and an extrapolation would be required.
+                left.header.stamp = rospy.Time(0)
+                right.header.stamp = rospy.Time(0)
+                left_bfp = self.tf_buffer.transform(left, 'approach_frame', timeout=rospy.Duration(0.2)).point
+                right_bfp = self.tf_buffer.transform(right, 'approach_frame', timeout=rospy.Duration(0.2)).point
+            except (tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+                rospy.logerr('Severe transformation problem concerning the goal!')
+                return None
+
+        return (left_bfp.x + right_bfp.x / 2.0), \
+               (left_bfp.y + right_bfp.y / 2.0)
+
 
 
     def goal_parts_callback(self, msg):
