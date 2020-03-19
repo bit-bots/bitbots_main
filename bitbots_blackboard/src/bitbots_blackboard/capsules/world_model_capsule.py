@@ -15,7 +15,7 @@ from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative
 
 
 class WorldModelCapsule:
-    def __init__(self, field_length, field_width):
+    def __init__(self, field_length, field_width, goal_width):
         self.position = Position2D()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -32,6 +32,7 @@ class WorldModelCapsule:
         self.ball_seen = False
         self.field_length = field_length
         self.field_width = field_width
+        self.goal_width = goal_width
 
         # Publisher for Visualisation in RViZ
         self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
