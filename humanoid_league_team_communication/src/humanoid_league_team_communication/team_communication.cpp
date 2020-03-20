@@ -193,13 +193,14 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   //std::vector<uint8_t> own_position_beliefs;   unnecessary because of TeamData.msg
   std::vector<geometry_msgs::PoseWithCovariance> ball_relative;
   //std::vector<humanoid_league_msgs::Position2D> oppgoal_relative;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_a;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_b;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_c;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_d;
-  std::vector<humanoid_league_msgs::Position2D> team_robot_a;
-  std::vector<humanoid_league_msgs::Position2D> team_robot_b;
-  std::vector<humanoid_league_msgs::Position2D> team_robot_c;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_a;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_b;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_c;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_d;
+  std::vector<humanoid_league_msgs::ObstacleRelative> team_robot_a;
+  std::vector<humanoid_league_msgs::ObstacleRelative> team_robot_b;
+  std::vector<humanoid_league_msgs::ObstacleRelative> team_robot_c;
+  std::vector<std::vector<humanoid_league_msgs::ObstacleRelative>> obstacles;
   std::vector<float> avg_walking_speeds;
   std::vector<float> time_to_position_at_balls;
   std::vector<float> max_kicking_distances;
@@ -239,52 +240,52 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
     oppgoal_relative.push_back(oppgoal_msg);*/
 
     //opponent_robot_a
-    humanoid_league_msgs::Position2D opponent_robot_a_msg;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_a_msg;
     opponent_robot_a_msg.pose.x = rob_data.get_opponent_robot_a_x() / 1000.0;
     opponent_robot_a_msg.pose.y = rob_data.get_opponent_robot_a_y() / 1000.0;
-    opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255.0;
+    //opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255.0;
     opponent_robot_a.push_back(opponent_robot_a_msg);
 
     //opponent_robot_b
-    humanoid_league_msgs::Position2D opponent_robot_b_msg;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_b_msg;
     opponent_robot_b_msg.pose.x = rob_data.get_opponent_robot_b_x() / 1000.0;
     opponent_robot_b_msg.pose.y = rob_data.get_opponent_robot_b_y() / 1000.0;
-    opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255.0;
+    //opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255.0;
     opponent_robot_b.push_back(opponent_robot_b_msg);
 
     //opponent_robot_c
-    humanoid_league_msgs::Position2D opponent_robot_c_msg;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_c_msg;
     opponent_robot_c_msg.pose.x = rob_data.get_opponent_robot_c_x() / 1000.0;
     opponent_robot_c_msg.pose.y = rob_data.get_opponent_robot_c_y() / 1000.0;
-    opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255.0;
+    //opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255.0;
     opponent_robot_c.push_back(opponent_robot_c_msg);
 
     //opponent_robot_d
-    humanoid_league_msgs::Position2D opponent_robot_d_msg;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_d_msg;
     opponent_robot_d_msg.pose.x = rob_data.get_opponent_robot_d_x() / 1000.0;
     opponent_robot_d_msg.pose.y = rob_data.get_opponent_robot_d_y() / 1000.0;
-    opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255.0;
+    //opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255.0;
     opponent_robot_d.push_back(opponent_robot_d_msg);
 
     //team_robot_a
-    humanoid_league_msgs::Position2D team_robot_a_msg;
+    humanoid_league_msgs::ObstacleRelative team_robot_a_msg;
     team_robot_a_msg.pose.x = rob_data.get_team_robot_a_x() / 1000.0;
     team_robot_a_msg.pose.y = rob_data.get_team_robot_a_y() / 1000.0;
-    team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
+    //team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
     team_robot_a.push_back(team_robot_a_msg);
 
     //team_robot_b
-    humanoid_league_msgs::Position2D team_robot_b_msg;
+    humanoid_league_msgs::ObstacleRelative team_robot_b_msg;
     team_robot_b_msg.pose.x = rob_data.get_team_robot_b_x() / 1000.0;
     team_robot_b_msg.pose.y = rob_data.get_team_robot_b_y() / 1000.0;
-    team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255.0;
+    //team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255.0;
     team_robot_b.push_back(team_robot_b_msg);
 
     //team_robot_c
-    humanoid_league_msgs::Position2D team_robot_c_msg;
+    humanoid_league_msgs::ObstacleRelative team_robot_c_msg;
     team_robot_c_msg.pose.x = rob_data.get_team_robot_c_x() / 1000.0;
     team_robot_c_msg.pose.y = rob_data.get_team_robot_c_y() / 1000.0;
-    team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
+    //team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
     team_robot_c.push_back(team_robot_c_msg);
 
     avg_walking_speeds.push_back(rob_data.get_avg_walking_speed() / 1000.0);
@@ -304,21 +305,21 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   message.action = actions;
   message.state = states;
 
-  message.robot_positions = own_position;
+  message.robot_position = own_position;
   //own_position.confidence = own_position_beliefs;   unnecessary because of TeamData.msg
 
   message.ball_relative = ball_relative;
 
   //message.oppgoal_relative = oppgoal_relative;
 
-  message.opponent_robot_a = opponent_robot_a;
-  message.opponent_robot_b = opponent_robot_b;
-  message.opponent_robot_c = opponent_robot_c;
-  message.opponent_robot_d = opponent_robot_d;
-
-  message.team_robot_a = team_robot_a;
-  message.team_robot_b = team_robot_b;
-  message.team_robot_c = team_robot_c;
+  obstacles.push_back(opponent_robot_a);
+  obstacles.push_back(opponent_robot_b);
+  obstacles.push_back(opponent_robot_c);
+  obstacles.push_back(opponent_robot_d);
+  obstacles.push_back(team_robot_a);
+  obstacles.push_back(team_robot_b);
+  obstacles.push_back(team_robot_c);
+  message.obstacles = obstacles
 
   message.avg_walking_speed = avg_walking_speeds;
   message.time_to_position_at_ball = time_to_position_at_balls;
@@ -393,7 +394,7 @@ void TeamCommunication::goalCallback(const geometry_msgs::PoseWithCovarianceStam
 
 }
 
-void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg){
+void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg){
   // clear team_robots_ and obstacle:robots because of new data from vision
   team_robots_.clear();
   opponent_robots_.clear();
@@ -414,21 +415,21 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstaclesR
   }
   uint64_t x;
   uint64_t y;
-  uint64_t belief;
+  uint64_t belief = 0;
 
   for (auto const& obstacle : msg.obstacles){
     //only take obstacles that are team mates or opponents
-    if( obstacle.color == team_color_)
+    if( obstacle.type == team_color_)
     {
-      x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
-      belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+      x = static_cast<uint64_t>(obstacle.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.position.y * 1000.0);
+      //belief = static_cast<uint64_t>(obstacle.confidence * 255.0); TODO confidence
       team_robots_.push_back({x, y, belief});
     }
-    else if (obstacle.color == opponent_color){
-      x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
-      belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+    else if (obstacle.type == opponent_color){
+      x = static_cast<uint64_t>(obstacle.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.position.y * 1000.0);
+      //belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
       opponent_robots_.push_back({x, y, belief});
     }
   }

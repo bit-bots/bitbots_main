@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <vector>
 #include "humanoid_league_msgs/TeamData.h"
-#include "humanoid_league_msgs/ObstaclesRelative.h"
+#include "humanoid_league_msgs/ObstacleRelativeArray.h"
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
@@ -38,7 +38,7 @@ class TeamCommunication{
   void positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void goalCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
-  void obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg);
+  void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg);
   void worldCallback(const humanoid_league_msgs::Model& msg);
 
   int avg_walking_speed_ = 0;
