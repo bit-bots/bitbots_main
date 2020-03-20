@@ -31,7 +31,7 @@ team_communication:
   team_data: '/team_data'
   strategy: '/strategy'
   robot_state: '/robot_state'
-  goal: '/goal_relative'
+  goal: '/goal_post_relative'
   world_model_node: '/local_world_model'
   position: '/position'
   ball: '/ball_relative'

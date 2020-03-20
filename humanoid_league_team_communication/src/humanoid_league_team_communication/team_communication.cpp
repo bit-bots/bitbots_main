@@ -375,7 +375,7 @@ void TeamCommunication::ballCallback(const geometry_msgs::PoseWithCovarianceStam
   ball_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::goalCallback(const humanoid_league_msgs::GoalRelative& msg) {
+void TeamCommunication::goalCallback(const geometry_msgs::PoseWithCovarianceStamped& msg) {
   /* todo von python nach c++ (es gibt keine positions in der msg)
    * todo improve computation of position
    * if msg.positions is None or msg.positions == []:
