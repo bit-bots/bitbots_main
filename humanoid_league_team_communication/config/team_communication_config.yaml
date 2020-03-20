@@ -18,7 +18,7 @@ team_communication:
   # other values are invalid
   team_color: 2
 
-  #use world model
+  #use world model, not implemented right now
   world_model: False
 
   #lifetime of data [s]

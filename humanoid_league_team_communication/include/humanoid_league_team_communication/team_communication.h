@@ -8,7 +8,6 @@
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
-#include "humanoid_league_msgs/Model.h"
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
@@ -39,7 +38,7 @@ class TeamCommunication{
   void ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void goalCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg);
-  void worldCallback(const humanoid_league_msgs::Model& msg);
+  //void worldCallback(const humanoid_league_msgs::Model& msg);
 
   int avg_walking_speed_ = 0;
   int max_kicking_distance_ = 0;
@@ -74,7 +73,7 @@ class TeamCommunication{
   MiTeCom::mitecom mitecom_;
   double frequency_ = 0.0;
   ros::Publisher publisher_;
-  bool world_model_ = false;
+  //bool world_model_ = false;
 
   ros::NodeHandle nh_;
   ros::Timer timer_;
@@ -82,7 +81,7 @@ class TeamCommunication{
   ros::Subscriber sub_role_;
   ros::Subscriber sub_robot_state_;
   ros::Subscriber sub_goal_;
-  ros::Subscriber sub_world_;
+  //ros::Subscriber sub_world_;
   ros::Subscriber sub_position_;
   ros::Subscriber sub_ball_;
   ros::Subscriber sub_obstacles_;
@@ -97,7 +96,7 @@ class TeamCommunication{
   std::string strategy_topic_;
   std::string robot_state_topic_;
   std::string goal_topic_;
-  std::string world_model_topic_;
+  //std::string world_model_topic_;
   std::string position_topic_;
   std::string ball_topic_;
   std::string obstacles_topic_;

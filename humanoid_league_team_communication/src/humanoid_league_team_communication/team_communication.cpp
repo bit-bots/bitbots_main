@@ -15,7 +15,7 @@ TeamCommunication::TeamCommunication() : nh_() {
   int teamcolor;
   nh_.getParam("team_communication/team_color", teamcolor);
   team_color_ = teamcolor;
-  nh_.getParam("team_communication/world_model", world_model_);
+  //nh_.getParam("team_communication/world_model", world_model_);
   nh_.getParam("team_communication/lifetime", lifetime_);
   nh_.getParam("team_communication/belief_threshold", belief_threshold_);
 
@@ -43,18 +43,18 @@ TeamCommunication::TeamCommunication() : nh_() {
   sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
                             ros::TransportHints().tcpNoDelay());
 
-  if(world_model_){
-    sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
-                               ros::TransportHints().tcpNoDelay());
-  }
-  else{
-    sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
+  //if(world_model_){
+  //  sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
+  //                            ros::TransportHints().tcpNoDelay());
+  //}
+  //else{
+  sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
                                   ros::TransportHints().tcpNoDelay());
-    sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballCallback, this,
+  sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballCallback, this,
                               ros::TransportHints().tcpNoDelay());
-    sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
+  sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
                                    this, ros::TransportHints().tcpNoDelay());
-  }
+  //}
 }
 
 void TeamCommunication::run() {
@@ -436,6 +436,7 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
   obstacles_exists_ = ros::Time::now().sec;
 }
 
+/**
 void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
   //ball
   ballCallback(msg.ball);
@@ -467,6 +468,7 @@ void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
   //obstacles
   obstaclesCallback(msg.obstacles);
 }
+**/
 
 
 int main(int argc, char **argv){
