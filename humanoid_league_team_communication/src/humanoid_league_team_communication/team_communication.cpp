@@ -299,34 +299,37 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   humanoid_league_msgs::TeamData message;
   message.header.stamp = ros::Time::now();
 
-  message.robot_ids = ids;
+    //Due to the message refactoring, the team data msg only includes information of one robot. This counteracts the
+    // Mitecom concept. Therefore, no received information will be published.
+    /**
+    message.robot_ids = ids;
 
-  message.role = roles;
-  message.action = actions;
-  message.state = states;
+    message.role = roles;
+    message.action = actions;
+    message.state = states;
 
-  message.robot_position = own_position;
-  //own_position.confidence = own_position_beliefs;   unnecessary because of TeamData.msg
+    message.robot_position = own_position;
+    //own_position.confidence = own_position_beliefs;   unnecessary because of TeamData.msg
 
-  message.ball_relative = ball_relative;
+    message.ball_relative = ball_relative;
 
-  //message.oppgoal_relative = oppgoal_relative;
+    //message.oppgoal_relative = oppgoal_relative;
 
-  obstacles.push_back(opponent_robot_a);
-  obstacles.push_back(opponent_robot_b);
-  obstacles.push_back(opponent_robot_c);
-  obstacles.push_back(opponent_robot_d);
-  obstacles.push_back(team_robot_a);
-  obstacles.push_back(team_robot_b);
-  obstacles.push_back(team_robot_c);
-  message.obstacles = obstacles
+    obstacles.push_back(opponent_robot_a);
+    obstacles.push_back(opponent_robot_b);
+    obstacles.push_back(opponent_robot_c);
+    obstacles.push_back(opponent_robot_d);
+    obstacles.push_back(team_robot_a);
+    obstacles.push_back(team_robot_b);
+    obstacles.push_back(team_robot_c);
+    message.obstacles = obstacles
 
-  message.avg_walking_speed = avg_walking_speeds;
-  message.time_to_position_at_ball = time_to_position_at_balls;
-  message.max_kicking_distance = max_kicking_distances;
+    message.avg_walking_speed = avg_walking_speeds;
+    message.time_to_position_at_ball = time_to_position_at_balls;
+    message.max_kicking_distance = max_kicking_distances;
 
-  message.offensive_side = offensive_side;
-
+    message.strategy = offensive_side;
+    **/
   publisher_.publish(message);
 }
 
