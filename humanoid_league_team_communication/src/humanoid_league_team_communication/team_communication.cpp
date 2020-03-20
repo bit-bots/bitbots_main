@@ -189,7 +189,7 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   std::vector<uint8_t> roles;
   std::vector<uint8_t> actions;
   std::vector<uint8_t> states;
-  std::vector<geometry_msgs::Pose2D> own_position;
+  std::vector<geometry_msgs::Pose> own_position;
   //std::vector<uint8_t> own_position_beliefs;   unnecessary because of TeamData.msg
   std::vector<geometry_msgs::PoseWithCovariance> ball_relative;
   //std::vector<humanoid_league_msgs::Position2D> oppgoal_relative;
@@ -217,10 +217,10 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
 
     //own position
     //TODO position confidence -> msg definitions
-    geometry_msgs::Pose2D pos_msg;
-    pos_msg.x = rob_data.get_absolute_x() / 1000.0;
-    pos_msg.y = rob_data.get_absolute_y() / 1000.0;
-    pos_msg.theta = rob_data.get_absolute_orientation() / 1000.0;
+    geometry_msgs::Pose pos_msg;
+    pos_msg.position.x = rob_data.get_absolute_x() / 1000.0;
+    pos_msg.position.y = rob_data.get_absolute_y() / 1000.0;
+    //pos_msg.theta = rob_data.get_absolute_orientation() / 1000.0; TODO this is a quaternion now
     own_position.push_back(pos_msg);
     //own_position_beliefs.push_back(rob_data.get_absolute_belief() / 255.0);   unnecessary because of TeamData.msg
 
@@ -353,13 +353,13 @@ void TeamCommunication::robotStateCallback(humanoid_league_msgs::RobotControlSta
   }
 }
 
-void TeamCommunication::positionCallback(const humanoid_league_msgs::Position2D& msg) {
+void TeamCommunication::positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg) {
   //conversion from m (ROS message) to mm (self.mitecom)
-  position_x_ = static_cast<uint64_t>(msg.pose.x * 1000.0);
-  position_y_ = static_cast<uint64_t>(msg.pose.y * 1000.0);
-  position_orientation_ = static_cast<uint64_t>(msg.pose.theta * 1000.0);
+  position_x_ = static_cast<uint64_t>(msg.pose.position.x * 1000.0);
+  position_y_ = static_cast<uint64_t>(msg.pose.position.y * 1000.0);
+  // position_orientation_ = static_cast<uint64_t>(msg.pose.theta * 1000.0);  TODO sent Quaternion
   //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  position_belief_ = static_cast<uint64_t>(msg.confidence * 255.0);
+  // position_belief_ = static_cast<uint64_t>(msg.confidence * 255.0); TODO transformation
   position_exists_ = msg.header.stamp.sec;
 }
 

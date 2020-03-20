@@ -6,12 +6,11 @@
 #include "humanoid_league_msgs/TeamData.h"
 #include "humanoid_league_msgs/ObstaclesRelative.h"
 #include "humanoid_league_msgs/ObstacleRelative.h"
-#include "humanoid_league_msgs/Position2D.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
 #include "humanoid_league_msgs/Model.h"
 #include <ros/ros.h>
-#include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -36,7 +35,7 @@ class TeamCommunication{
   void publishData(const MiTeCom::TeamRobotData& team_data);
   void strategyCallback(humanoid_league_msgs::Strategy msg);
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
-  void positionCallback(const humanoid_league_msgs::Position2D& msg);
+  void positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void goalCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
   void obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg);
