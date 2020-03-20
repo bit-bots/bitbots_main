@@ -65,7 +65,9 @@ if __name__ == "__main__":
     gameState.header.stamp = rospy.Time.now()
 
     # init secondary state team to our teamID
-    gameState.secondaryStateTeam = 8  # this is the default TeamID in the behavior
+    gameState.secondaryStateTeam = rospy.get_param("team_id", 8)  # 8 is the default TeamID in the behavior
+    ourTeamID = gameState.secondaryStateTeam
+
     try:
         print(msg)
         while True:
@@ -82,10 +84,10 @@ if __name__ == "__main__":
             elif key in [chr(ord('a')+x) for x in range(10)]:
                 gameState.secondaryState = ord(key) - ord('a')
             elif key == 't':
-                if gameState.secondaryStateTeam == 8:
-                    gameState.secondaryStateTeam = 9
+                if gameState.secondaryStateTeam == ourTeamID:
+                    gameState.secondaryStateTeam = ourTeamID + 1
                 else:
-                    gameState.secondaryStateTeam = 8
+                    gameState.secondaryStateTeam = ourTeamID
 
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
