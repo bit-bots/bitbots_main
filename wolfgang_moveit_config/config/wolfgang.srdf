@@ -3,7 +3,7 @@
     This is a format for representing semantic information about the robot structure.
     A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
 -->
-<robot name="onshape">
+<robot name="wolfgang">
     <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
     <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
     <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
@@ -95,7 +95,6 @@
     <disable_collisions link1="body_1" link2="shoulder_right_1" reason="Adjacent" />
     <disable_collisions link1="body_1" link2="upper_arm_1" reason="Never" />
     <disable_collisions link1="body_1" link2="upper_arm_2" reason="Never" />
-    <disable_collisions link1="foot_left_1" link2="head_1" reason="Never" />
     <disable_collisions link1="foot_left_1" link2="neck_1" reason="Never" />
     <disable_collisions link1="foot_left_1" link2="right_hip_left_ankle_2" reason="Adjacent" />
     <disable_collisions link1="foot_right_1" link2="head_1" reason="Never" />
@@ -133,6 +132,7 @@
     <disable_collisions link1="left_hip_right_ankle_1" link2="shoulder_right_1" reason="Never" />
     <disable_collisions link1="left_hip_right_ankle_1" link2="upper_leg_right_1" reason="Never" />
     <disable_collisions link1="left_hip_right_ankle_2" link2="lower_arm_right_1" reason="Never" />
+    <disable_collisions link1="left_hip_right_ankle_2" link2="lower_leg_left_1" reason="Never" />
     <disable_collisions link1="left_hip_right_ankle_2" link2="neck_1" reason="Never" />
     <disable_collisions link1="left_hip_right_ankle_2" link2="shoulder_left_1" reason="Never" />
     <disable_collisions link1="left_hip_right_ankle_2" link2="shoulder_right_1" reason="Never" />
