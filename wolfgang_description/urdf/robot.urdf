@@ -1389,7 +1389,7 @@
 </material>
 </collision>
 <visual>
-<origin xyz="5.36376e-15 -0.0035 -0.17" rpy="-9.87144e-16 -9.7141e-16 5.82931e-16" />
+<origin xyz="4.89192e-15 -0.0035 -0.17" rpy="-4.32032e-16 1.82249e-15 9.4894e-16" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
 </geometry>
@@ -1398,7 +1398,7 @@
 </material>
 </visual>
 <collision>
-<origin xyz="5.36376e-15 -0.0035 -0.17" rpy="-9.87144e-16 -9.7141e-16 5.82931e-16" />
+<origin xyz="4.89192e-15 -0.0035 -0.17" rpy="-4.32032e-16 1.82249e-15 9.4894e-16" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
 </geometry>
@@ -1425,7 +1425,7 @@
 </material>
 </collision>
 <visual>
-<origin xyz="1.94289e-16 -0.0035 -5.27356e-16" rpy="-9.88676e-16 -7.56931e-16 6.60262e-16" />
+<origin xyz="1.8735e-16 -0.0035 -8.04912e-16" rpy="-4.33564e-16 1.82249e-15 9.4894e-16" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
 </geometry>
@@ -1434,7 +1434,7 @@
 </material>
 </visual>
 <collision>
-<origin xyz="1.94289e-16 -0.0035 -5.27356e-16" rpy="-9.88676e-16 -7.56931e-16 6.60262e-16" />
+<origin xyz="1.8735e-16 -0.0035 -8.04912e-16" rpy="-4.33564e-16 1.82249e-15 9.4894e-16" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
 </geometry>
@@ -1854,7 +1854,7 @@
 <origin xyz="2.69229e-15 0.0505 -0.17" rpy="-1.5708 -1.93533e-15 -2.52888e-15" />
 <parent link="lower_leg_right_1" />
 <child link="left_hip_right_ankle_1" />
-<axis xyz="0 0 1"/>
+<axis xyz="-0 -0 -1"/>
 <limit effort="9" velocity="9" lower="-1.22173" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -1872,7 +1872,7 @@
 <origin xyz="-0.0265 -2.77556e-17 -0.0691" rpy="-1.5708 1.5708 0" />
 <parent link="right_hip_left_ankle_1" />
 <child link="upper_leg_right_1" />
-<axis xyz="0 -1 0"/>
+<axis xyz="-0 1 -0"/>
 <limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -1881,7 +1881,7 @@
 <origin xyz="-0.046 0.0414 5.34295e-16" rpy="-3.14159 1.5708 0" />
 <parent link="hip_u_connector_1" />
 <child link="right_hip_left_ankle_1" />
-<axis xyz="0 0 1"/>
+<axis xyz="-0 -0 -1"/>
 <limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2227,7 +2227,7 @@
 </material>
 </collision>
 <visual>
-<origin xyz="2.15106e-16 0.0062 -3.60822e-16" rpy="-1.5708 0.0872665 -8.40501e-16" />
+<origin xyz="2.28983e-16 0.0062 -3.60822e-16" rpy="-1.5708 0.0872665 -2.54457e-15" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/torson_spring_sodemann_t105-180-813l.stl"/>
 </geometry>
@@ -2236,7 +2236,7 @@
 </material>
 </visual>
 <collision>
-<origin xyz="2.15106e-16 0.0062 -3.60822e-16" rpy="-1.5708 0.0872665 -8.40501e-16" />
+<origin xyz="2.28983e-16 0.0062 -3.60822e-16" rpy="-1.5708 0.0872665 -2.54457e-15" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/torson_spring_sodemann_t105-180-813l.stl"/>
 </geometry>
@@ -2719,7 +2719,7 @@
 <origin xyz="0.0691 2.22045e-16 -0.026" rpy="1.5708 -1.5708 0" />
 <parent link="right_hip_left_ankle_2" />
 <child link="foot_left_1" />
-<axis xyz="0 1 0"/>
+<axis xyz="-0 -1 -0"/>
 <limit effort="9" velocity="9" lower="-1.0472" upper="1.0472"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2728,7 +2728,7 @@
 <origin xyz="3.5319e-15 -0.0505 -0.17" rpy="-1.5708 -8.72457e-16 3.14159" />
 <parent link="lower_leg_left_1" />
 <child link="right_hip_left_ankle_2" />
-<axis xyz="0 0 1"/>
+<axis xyz="-0 -0 -1"/>
 <limit effort="9" velocity="9" lower="-1.22173" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2746,7 +2746,7 @@
 <origin xyz="0.026 6.93889e-18 -0.0691" rpy="2.67116e-16 -1.5708 0" />
 <parent link="left_hip_right_ankle_2" />
 <child link="upper_leg_left_1" />
-<axis xyz="-7.95491e-17 3.00167e-16 1"/>
+<axis xyz="7.95491e-17 -3.00167e-16 -1"/>
 <limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2755,7 +2755,7 @@
 <origin xyz="-0.046 0.0414 -7.97973e-16" rpy="3.14159 1.5708 0" />
 <parent link="hip_u_connector_2" />
 <child link="left_hip_right_ankle_2" />
-<axis xyz="0 0 1"/>
+<axis xyz="-0 -0 -1"/>
 <limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>

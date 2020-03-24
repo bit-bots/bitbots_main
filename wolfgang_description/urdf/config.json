@@ -10,7 +10,7 @@
     "addDummyBaseLink": true,
     "packageName": "wolfgang_description/urdf/",
     "robotName": "wolfgang",
-    "additionalUrdfFile": "additionalURDF.txt",
+    "additionalUrdfFile": "/additionalURDF.txt",
 
     "jointMaxEffort": {
         "default": 0.0,
