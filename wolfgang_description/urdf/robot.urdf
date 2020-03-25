@@ -2,10 +2,10 @@
 <link name="base_link"></link>
 <joint name="base_link_to_base" type="fixed">
 <parent link="base_link"/>
-<child link="body_1" />
+<child link="torso" />
 <origin rpy="0.0 0 0" xyz="0 0 0"/>
 </joint>
-<link name="body_1">
+<link name="torso">
 <visual>
 <origin xyz="-0.0015 0.053 0.2035" rpy="-3.14159 1.5708 0" />
 <geometry>
@@ -454,7 +454,7 @@
 </link>
 <joint name="imu_frame_frame" type="fixed">
 <origin xyz="-0.0367504 -0.0478024 0.224" rpy="5.31321e-16 -3.12873e-17 4.65401e-17" />
-<parent link="body_1" />
+<parent link="torso" />
 <child link="imu_frame" />
 <axis xyz="0 0 0"/>
 </joint>
@@ -718,7 +718,7 @@
 <parent link="upper_arm_1" />
 <child link="lower_arm_right_1" />
 <axis xyz="0 0 1"/>
-<limit effort="6" velocity="6" lower="-1.0472" upper="1.5708"/>
+<limit effort="5.43" velocity="10.33" lower="-1.0472" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -727,16 +727,16 @@
 <parent link="shoulder_right_1" />
 <child link="upper_arm_1" />
 <axis xyz="0 0 1"/>
-<limit effort="6" velocity="6" lower="-3.14159" upper="0"/>
+<limit effort="5.43" velocity="10.33" lower="-3.14159" upper="0"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="RShoulderPitch" type="revolute">
 <origin xyz="-0.0015 -0.0765 0.2035" rpy="-4.34612e-17 1.66533e-15 -3.14159" />
-<parent link="body_1" />
+<parent link="torso" />
 <child link="shoulder_right_1" />
 <axis xyz="0 -1 0"/>
-<limit effort="6" velocity="6" lower="-3.14159" upper="3.14159"/>
+<limit effort="5.43" velocity="10.33" lower="-3.14159" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -999,7 +999,7 @@
 <parent link="upper_arm_2" />
 <child link="lower_arm_left_1" />
 <axis xyz="0 0 1"/>
-<limit effort="6" velocity="6" lower="-1.5708" upper="1.0472"/>
+<limit effort="5.43" velocity="10.33" lower="-1.5708" upper="1.0472"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1008,16 +1008,16 @@
 <parent link="shoulder_left_1" />
 <child link="upper_arm_2" />
 <axis xyz="0 0 1"/>
-<limit effort="6" velocity="6" lower="0" upper="3.14159"/>
+<limit effort="5.43" velocity="10.33" lower="0" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="LShoulderPitch" type="revolute">
 <origin xyz="-0.0015 0.0765 0.2035" rpy="3.14159 7.77156e-16 3.14159" />
-<parent link="body_1" />
+<parent link="torso" />
 <child link="shoulder_left_1" />
 <axis xyz="0 -1 0"/>
-<limit effort="6" velocity="6" lower="-3.14159" upper="3.14159"/>
+<limit effort="5.43" velocity="10.33" lower="-3.14159" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1145,7 +1145,7 @@
 </inertial>
 </link>
 
-<link name="upper_leg_right_1">
+<link name="r_knee">
 <visual>
 <origin xyz="0.0182355 -0.0226528 -0.130164" rpy="-1.5708 -0.523599 3.14159" />
 <geometry>
@@ -1547,7 +1547,7 @@
 </inertial>
 </link>
 
-<link name="foot_right_1">
+<link name="r_foot">
 <visual>
 <origin xyz="-0.029996 0.00604936 -0.03425" rpy="-1.63098e-15 2.20568e-16 3.73798e-18" />
 <geometry>
@@ -1639,24 +1639,6 @@
 </material>
 </collision>
 <visual>
-<origin xyz="0.06 -0.007 -0.04425" rpy="1.36337e-17 2.2372e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="0.06 -0.007 -0.04425" rpy="1.36337e-17 2.2372e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<visual>
 <origin xyz="-0.145 0.085 -0.0395" rpy="-3.33669e-15 -3.23e-14 -1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/foot_printed_right.stl"/>
@@ -1690,60 +1672,6 @@
 </geometry>
 <material name="load_cell_material">
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</collision>
-<visual>
-<origin xyz="-0.03 0.177 -0.04425" rpy="1.40088e-15 -3.40328e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="-0.03 0.177 -0.04425" rpy="1.40088e-15 -3.40328e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<visual>
-<origin xyz="-0.029996 -0.00745064 -0.04425" rpy="-9.77723e-17 -1.1503e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="-0.029996 -0.00745064 -0.04425" rpy="-9.77723e-17 -1.1503e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<visual>
-<origin xyz="0.06 0.177 -0.04425" rpy="3.06655e-16 4.65859e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="0.06 0.177 -0.04425" rpy="3.06655e-16 4.65859e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
 <visual>
@@ -1765,9 +1693,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="0.0121001 0.0914942 -0.029994" rpy="0 0 0"/>
-<mass value="0.281772" />
-<inertia ixx="0.000952692" ixy="-3.29806e-05"  ixz="5.20707e-06" iyy="0.000344273" iyz="-1.94309e-05" izz="0.00124519" />
+<origin xyz="0.0120263 0.0916536 -0.0297041" rpy="0 0 0"/>
+<mass value="0.275133" />
+<inertia ixx="0.000894905" ixy="-3.30848e-05"  ixz="4.95298e-06" iyy="0.000329611" iyz="-1.88912e-05" izz="0.00117493" />
 </inertial>
 </link>
 
@@ -1780,52 +1708,36 @@
 </link>
 <joint name="r_sole_frame" type="fixed">
 <origin xyz="0.0152261 0.0907683 -0.0529" rpy="3.33669e-15 3.2321e-14 1.5708" />
-<parent link="foot_right_1" />
+<parent link="r_foot" />
 <child link="r_sole" />
 <axis xyz="0 0 0"/>
 </joint>
 
-<link name="r_cleat_r_front">
+<link name="rlb">
+<visual>
+<origin xyz="-1.38778e-17 0 -0.01" rpy="6.16298e-32 -2.48753e-17 -1.2462e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-1.38778e-17 0 -0.01" rpy="6.16298e-32 -2.48753e-17 -1.2462e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
 <inertial>
-<origin xyz="0 0 0" rpy="0 0 0" />
-<mass value="1e-9" />
-<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+<origin xyz="-1.383e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="-2.73454e-26"  ixz="-2.2557e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
-<joint name="r_cleat_r_front_frame" type="fixed">
-<origin xyz="0.0595 0.177 -0.05025" rpy="-1.69008e-16 -4.62076e-16 1.5708" />
-<parent link="foot_right_1" />
-<child link="r_cleat_r_front" />
-<axis xyz="0 0 0"/>
-</joint>
-
-<link name="r_cleat_l_front">
-<inertial>
-<origin xyz="0 0 0" rpy="0 0 0" />
-<mass value="1e-9" />
-<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
-</inertial>
-</link>
-<joint name="r_cleat_l_front_frame" type="fixed">
-<origin xyz="-0.0305 0.177 -0.05025" rpy="-1.09592e-15 3.40328e-16 1.5708" />
-<parent link="foot_right_1" />
-<child link="r_cleat_l_front" />
-<axis xyz="0 0 0"/>
-</joint>
-
-<link name="r_cleat_r_back">
-<inertial>
-<origin xyz="0 0 0" rpy="0 0 0" />
-<mass value="1e-9" />
-<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
-</inertial>
-</link>
-<joint name="r_cleat_r_back_frame" type="fixed">
-<origin xyz="0.0595 -0.007 -0.05025" rpy="7.71897e-16 -3.20424e-15 1.5708" />
-<parent link="foot_right_1" />
-<child link="r_cleat_r_back" />
-<axis xyz="0 0 0"/>
-</joint>
 
 <link name="r_cleat_l_back">
 <inertial>
@@ -1835,18 +1747,174 @@
 </inertial>
 </link>
 <joint name="r_cleat_l_back_frame" type="fixed">
-<origin xyz="-0.030496 -0.00745064 -0.05025" rpy="3.02062e-16 1.14651e-15 1.5708" />
-<parent link="foot_right_1" />
+<origin xyz="-1.38778e-17 -0.0005 -0.016" rpy="8.14947e-17 -2.98734e-16 -3.14159" />
+<parent link="rlb" />
 <child link="r_cleat_l_back" />
 <axis xyz="0 0 0"/>
+</joint>
+
+<joint name="RLB" type="fixed">
+<origin xyz="-0.029996 -0.00745064 -0.03425" rpy="-2.20568e-16 -1.47012e-15 -1.5708" />
+<parent link="r_foot" />
+<child link="rlb" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="rlf">
+<visual>
+<origin xyz="1.38778e-17 -6.93889e-18 -0.01" rpy="1.60237e-31 3.53157e-17 -4.15867e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="1.38778e-17 -6.93889e-18 -0.01" rpy="1.60237e-31 3.53157e-17 -4.15867e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="1.39501e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="3.88226e-26"  ixz="-1.58226e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+</inertial>
+</link>
+
+<link name="r_cleat_l_front">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="r_cleat_l_front_frame" type="fixed">
+<origin xyz="-4.16334e-17 -0.0005 -0.016" rpy="2.82194e-16 1.83866e-15 3.14159" />
+<parent link="rlf" />
+<child link="r_cleat_l_front" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="RLF" type="fixed">
+<origin xyz="-0.03 0.177 -0.03425" rpy="-1.06437e-15 1.53365e-15 -1.5708" />
+<parent link="r_foot" />
+<child link="rlf" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="rrf">
+<visual>
+<origin xyz="4.16334e-17 -1.38778e-17 -0.01" rpy="-2.40356e-31 -5.62395e-17 1.96661e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="4.16334e-17 -1.38778e-17 -0.01" rpy="-2.40356e-31 -5.62395e-17 1.96661e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="4.17487e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="-6.18242e-26"  ixz="2.03578e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+</inertial>
+</link>
+
+<link name="r_cleat_r_front">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="r_cleat_r_front_frame" type="fixed">
+<origin xyz="-2.80331e-15 -0.0005 -0.016" rpy="2.75421e-16 9.25503e-16 3.14159" />
+<parent link="rrf" />
+<child link="r_cleat_r_front" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="RRF" type="fixed">
+<origin xyz="0.06 0.177 -0.03425" rpy="-8.29268e-17 1.38118e-15 -1.5708" />
+<parent link="r_foot" />
+<child link="rrf" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="rrb">
+<visual>
+<origin xyz="0 0 -0.01" rpy="1.2326e-32 -1.6116e-17 3.54715e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 -0.01" rpy="1.2326e-32 -1.6116e-17 3.54715e-31" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="1.51669e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="-1.77163e-26"  ixz="1.5177e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+</inertial>
+</link>
+
+<link name="r_cleat_r_back">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="r_cleat_r_back_frame" type="fixed">
+<origin xyz="-6.93889e-17 -0.0005 -0.016" rpy="2.94118e-16 4.11997e-17 -3.14159" />
+<parent link="rrb" />
+<child link="r_cleat_r_back" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="RRB" type="fixed">
+<origin xyz="0.06 -0.007 -0.03425" rpy="-1.81005e-15 5.43887e-14 -1.5708" />
+<parent link="r_foot" />
+<child link="rrb" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
 </joint>
 
 <joint name="RAnkleRoll" type="revolute">
 <origin xyz="-0.0691 5.55112e-17 -0.026" rpy="1.5708 1.5708 0" />
 <parent link="left_hip_right_ankle_1" />
-<child link="foot_right_1" />
+<child link="r_foot" />
 <axis xyz="0 -1 0"/>
-<limit effort="9" velocity="9" lower="-1.0472" upper="1.0472"/>
+<limit effort="7.57" velocity="8.22" lower="-1.0472" upper="1.0472"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1855,13 +1923,13 @@
 <parent link="lower_leg_right_1" />
 <child link="left_hip_right_ankle_1" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="9" velocity="9" lower="-1.22173" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.22173" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="RKnee" type="revolute">
 <origin xyz="-0.00392295 -0.051 -0.169043" rpy="1.50246e-15 -0.261799 -1.61204e-15" />
-<parent link="upper_leg_right_1" />
+<parent link="r_knee" />
 <child link="lower_leg_right_1" />
 <axis xyz="0 1 0"/>
 <limit effort="10" velocity="10" lower="0" upper="2.96706"/>
@@ -1871,9 +1939,9 @@
 <joint name="RHipPitch" type="revolute">
 <origin xyz="-0.0265 -2.77556e-17 -0.0691" rpy="-1.5708 1.5708 0" />
 <parent link="right_hip_left_ankle_1" />
-<child link="upper_leg_right_1" />
+<child link="r_knee" />
 <axis xyz="-0 1 -0"/>
-<limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1882,16 +1950,16 @@
 <parent link="hip_u_connector_1" />
 <child link="right_hip_left_ankle_1" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="RHipYaw" type="revolute">
 <origin xyz="-1.38778e-17 -0.055 -9.75782e-19" rpy="-1.5708 -0 0" />
-<parent link="body_1" />
+<parent link="torso" />
 <child link="hip_u_connector_1" />
 <axis xyz="0 -1 0"/>
-<limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -2019,7 +2087,7 @@
 </inertial>
 </link>
 
-<link name="upper_leg_left_1">
+<link name="l_knee">
 <visual>
 <origin xyz="-0.0182355 -0.130164 0.0283472" rpy="3.14159 6.1423e-17 0.523599" />
 <geometry>
@@ -2421,43 +2489,7 @@
 </inertial>
 </link>
 
-<link name="foot_left_1">
-<visual>
-<origin xyz="0.03 -0.007 -0.04375" rpy="6.79277e-16 -1.97403e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="0.03 -0.007 -0.04375" rpy="6.79277e-16 -1.97403e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<visual>
-<origin xyz="-0.06 0.177 -0.04375" rpy="6.80641e-15 -4.22482e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="-0.06 0.177 -0.04375" rpy="6.80641e-15 -4.22482e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
+<link name="l_foot">
 <visual>
 <origin xyz="-0.06 0.1635 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
 <geometry>
@@ -2546,42 +2578,6 @@
 </geometry>
 <material name="foot_cover_material">
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</collision>
-<visual>
-<origin xyz="0.03 0.177 -0.04375" rpy="6.80641e-15 -4.22482e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="0.03 0.177 -0.04375" rpy="6.80641e-15 -4.22482e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<visual>
-<origin xyz="-0.06 -0.007 -0.04375" rpy="2.06603e-14 2.57162e-14 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
-<collision>
-<origin xyz="-0.06 -0.007 -0.04375" rpy="2.06603e-14 2.57162e-14 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
 <visual>
@@ -2639,9 +2635,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="-0.0121848 0.0915098 -0.029925" rpy="0 0 0"/>
-<mass value="0.281772" />
-<inertia ixx="0.000951773" ixy="3.22561e-05"  ixz="-5.21736e-06" iyy="0.000343589" iyz="-1.92863e-05" izz="0.00124389" />
+<origin xyz="-0.0121206 0.0916668 -0.0296455" rpy="0 0 0"/>
+<mass value="0.275133" />
+<inertia ixx="0.000894202" ixy="3.23738e-05"  ixz="-5.01227e-06" iyy="0.000329011" iyz="-1.87736e-05" izz="0.00117379" />
 </inertial>
 </link>
 
@@ -2654,52 +2650,36 @@
 </link>
 <joint name="l_sole_frame" type="fixed">
 <origin xyz="-0.0152261 0.0907683 -0.0529" rpy="-5.77818e-15 -7.01261e-15 1.5708" />
-<parent link="foot_left_1" />
+<parent link="l_foot" />
 <child link="l_sole" />
 <axis xyz="0 0 0"/>
 </joint>
 
-<link name="l_cleat_l_front">
+<link name="llb">
+<visual>
+<origin xyz="-1.38778e-17 -1.38778e-17 -0.01" rpy="1.72563e-31 1.33455e-17 2.12215e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-1.38778e-17 -1.38778e-17 -0.01" rpy="1.72563e-31 1.33455e-17 2.12215e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
 <inertial>
-<origin xyz="0 0 0" rpy="0 0 0" />
-<mass value="1e-9" />
-<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+<origin xyz="-1.3771e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="1.46707e-26"  ixz="-2.46785e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
-<joint name="l_cleat_l_front_frame" type="fixed">
-<origin xyz="-0.0605 0.177 -0.04975" rpy="-6.55214e-15 4.2513e-15 1.5708" />
-<parent link="foot_left_1" />
-<child link="l_cleat_l_front" />
-<axis xyz="0 0 0"/>
-</joint>
-
-<link name="l_cleat_r_front">
-<inertial>
-<origin xyz="0 0 0" rpy="0 0 0" />
-<mass value="1e-9" />
-<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
-</inertial>
-</link>
-<joint name="l_cleat_r_front_frame" type="fixed">
-<origin xyz="0.0295 0.177 -0.04975" rpy="-6.55214e-15 4.2513e-15 1.5708" />
-<parent link="foot_left_1" />
-<child link="l_cleat_r_front" />
-<axis xyz="0 0 0"/>
-</joint>
-
-<link name="l_cleat_r_back">
-<inertial>
-<origin xyz="0 0 0" rpy="0 0 0" />
-<mass value="1e-9" />
-<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
-</inertial>
-</link>
-<joint name="l_cleat_r_back_frame" type="fixed">
-<origin xyz="0.0295 -0.007 -0.04975" rpy="-3.99384e-16 1.98982e-15 1.5708" />
-<parent link="foot_left_1" />
-<child link="l_cleat_r_back" />
-<axis xyz="0 0 0"/>
-</joint>
 
 <link name="l_cleat_l_back">
 <inertial>
@@ -2709,18 +2689,174 @@
 </inertial>
 </link>
 <joint name="l_cleat_l_back_frame" type="fixed">
-<origin xyz="-0.0605 -0.007 -0.04975" rpy="-2.04856e-14 -2.56773e-14 1.5708" />
-<parent link="foot_left_1" />
+<origin xyz="5.55112e-17 -0.0005 -0.016" rpy="1.97551e-16 -1.05004e-19 3.14159" />
+<parent link="llb" />
 <child link="l_cleat_l_back" />
 <axis xyz="0 0 0"/>
+</joint>
+
+<joint name="LLB" type="fixed">
+<origin xyz="-0.06 -0.007 -0.03375" rpy="5.84053e-15 -4.62286e-15 -1.5708" />
+<parent link="l_foot" />
+<child link="llb" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="llf">
+<visual>
+<origin xyz="0 0 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="3.94632e-20 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="-4.36401e-26"  ixz="6.51171e-26" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+</inertial>
+</link>
+
+<link name="l_cleat_l_front">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="l_cleat_l_front_frame" type="fixed">
+<origin xyz="8.32667e-17 -0.0005 -0.016" rpy="3.01686e-16 1.58286e-16 -3.14159" />
+<parent link="llf" />
+<child link="l_cleat_l_front" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="LLF" type="fixed">
+<origin xyz="-0.06 0.177 -0.03375" rpy="6.38353e-15 -4.80263e-15 -1.5708" />
+<parent link="l_foot" />
+<child link="llf" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="lrf">
+<visual>
+<origin xyz="-2.77556e-17 3.46945e-18 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-2.77556e-17 3.46945e-18 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-2.77161e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="-4.36401e-26"  ixz="6.51171e-26" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+</inertial>
+</link>
+
+<link name="l_cleat_r_front">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="l_cleat_r_front_frame" type="fixed">
+<origin xyz="2.77556e-17 -0.0005 -0.016" rpy="3.30992e-16 -5.1163e-16 3.14159" />
+<parent link="lrf" />
+<child link="l_cleat_r_front" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="LRF" type="fixed">
+<origin xyz="0.03 0.177 -0.03375" rpy="6.38353e-15 -4.80263e-15 -1.5708" />
+<parent link="l_foot" />
+<child link="lrf" />
+<axis xyz="0 -1.22465e-16 -1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="lrb">
+<visual>
+<origin xyz="0 -3.46945e-18 -0.01" rpy="1.76139e-30 4.43302e-17 -6.01319e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 -3.46945e-18 -0.01" rpy="1.76139e-30 4.43302e-17 -6.01319e-30" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+</geometry>
+<material name="flex_stollen_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="1.08836e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
+<mass value="0.00165976" />
+<inertia ixx="4.3352e-08" ixy="4.87322e-26"  ixz="-1.15079e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+</inertial>
+</link>
+
+<link name="l_cleat_r_back">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="l_cleat_r_back_frame" type="fixed">
+<origin xyz="4.16334e-17 -0.0005 -0.016" rpy="2.92719e-16 -1.39845e-17 -3.14159" />
+<parent link="lrb" />
+<child link="l_cleat_r_back" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="LRB" type="fixed">
+<origin xyz="0.03 -0.007 -0.03375" rpy="-1.44208e-14 -1.69534e-14 -1.5708" />
+<parent link="l_foot" />
+<child link="lrb" />
+<axis xyz="0 1.22465e-16 1"/>
+<limit effort="0" velocity="0" />
+<joint_properties friction="0.0"/>
 </joint>
 
 <joint name="LAnkleRoll" type="revolute">
 <origin xyz="0.0691 2.22045e-16 -0.026" rpy="1.5708 -1.5708 0" />
 <parent link="right_hip_left_ankle_2" />
-<child link="foot_left_1" />
+<child link="l_foot" />
 <axis xyz="-0 -1 -0"/>
-<limit effort="9" velocity="9" lower="-1.0472" upper="1.0472"/>
+<limit effort="7.57" velocity="8.22" lower="-1.0472" upper="1.0472"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -2729,13 +2865,13 @@
 <parent link="lower_leg_left_1" />
 <child link="right_hip_left_ankle_2" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="9" velocity="9" lower="-1.22173" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.22173" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="LKnee" type="revolute">
 <origin xyz="0.00435596 -0.168793 0.049" rpy="1.5708 -1.75248e-15 2.87979" />
-<parent link="upper_leg_left_1" />
+<parent link="l_knee" />
 <child link="lower_leg_left_1" />
 <axis xyz="0 -1 0"/>
 <limit effort="10" velocity="10" lower="-2.96706" upper="0"/>
@@ -2745,9 +2881,9 @@
 <joint name="LHipPitch" type="revolute">
 <origin xyz="0.026 6.93889e-18 -0.0691" rpy="2.67116e-16 -1.5708 0" />
 <parent link="left_hip_right_ankle_2" />
-<child link="upper_leg_left_1" />
+<child link="l_knee" />
 <axis xyz="7.95491e-17 -3.00167e-16 -1"/>
-<limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -2756,16 +2892,16 @@
 <parent link="hip_u_connector_2" />
 <child link="left_hip_right_ankle_2" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="LHipYaw" type="revolute">
 <origin xyz="-2.28983e-16 0.055 2.71051e-18" rpy="-1.5708 -0 0" />
-<parent link="body_1" />
+<parent link="torso" />
 <child link="hip_u_connector_2" />
 <axis xyz="0 -1 0"/>
-<limit effort="9" velocity="9" lower="-1.5708" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -2813,7 +2949,7 @@
 </inertial>
 </link>
 
-<link name="head_1">
+<link name="head">
 <visual>
 <origin xyz="0.0432 0.0795 -0.0235" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -2956,7 +3092,7 @@
 </link>
 <joint name="camera_frame" type="fixed">
 <origin xyz="0.0437 0.0795 -0.0235" rpy="-1.5708 -1.45465e-14 -3.33067e-16" />
-<parent link="head_1" />
+<parent link="head" />
 <child link="camera" />
 <axis xyz="0 0 0"/>
 </joint>
@@ -2970,7 +3106,7 @@
 </link>
 <joint name="camera_optical_frame_frame" type="fixed">
 <origin xyz="0.0432 0.08 -0.0235" rpy="3.14159 -1.5708 0" />
-<parent link="head_1" />
+<parent link="head" />
 <child link="camera_optical_frame" />
 <axis xyz="0 0 0"/>
 </joint>
@@ -2978,23 +3114,24 @@
 <joint name="HeadTilt" type="revolute">
 <origin xyz="0.036 0.0235 -0.024" rpy="-1.5708 3.17216e-15 -5.33479e-15" />
 <parent link="neck_1" />
-<child link="head_1" />
+<child link="head" />
 <axis xyz="0 0 -1"/>
-<limit effort="6" velocity="6" lower="0" upper="1.5708"/>
+<limit effort="5.43" velocity="10.33" lower="0" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="HeadPan" type="revolute">
 <origin xyz="-0.0095 2.82644e-16 0.2345" rpy="-3.14159 3.41087e-16 -4.44089e-16" />
-<parent link="body_1" />
+<parent link="torso" />
 <child link="neck_1" />
 <axis xyz="0 0 1"/>
-<limit effort="6" velocity="6" lower="-2.0944" upper="2.0944"/>
+<limit effort="5.43" velocity="10.33" lower="-2.0944" upper="2.0944"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <xacro:arg name="use_fake_walk" default="False"/>
 <xacro:property name="fake_walk" value="$(arg use_fake_walk)" />
+<xacro:arg name="sim_ns" default="/" />
 
 <transmission name="HeadPanTransmission">
 <type>transmission_interface/SimpleTransmission</type>
@@ -3226,59 +3363,126 @@
 
 <!-- camera sensor -->
 <gazebo reference="camera">
-<sensor name='camera' type='camera'>
-  <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
-  <camera name='__default__'>
-    <horizontal_fov>0.57</horizontal_fov>
-    <image>
-      <width>620</width>
-      <height>480</height>
-    </image>
-    <clip>
-      <near>0.001000</near>
-      <far>100.000000</far>
-    </clip>
-  </camera>
-  <always_on>1</always_on>
-  <update_rate>30.000000</update_rate>
-  <visualize>1</visualize>
-  <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-    <alwaysOn>true</alwaysOn>
-    <updateRate>30</updateRate>
-    <cameraName>camera</cameraName>
-    <imageTopicName>image_raw</imageTopicName>
-    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-    <frameName>camera_optical_frame</frameName>
-    <hackBaseline>0.07</hackBaseline>
-    <distortionK1>0.0</distortionK1>
-    <distortionK2>0.0</distortionK2>
-    <distortionK3>0.0</distortionK3>
-    <distortionT1>0.0</distortionT1>
-    <distortionT2>0.0</distortionT2>
-  </plugin>
-</sensor>
+    <sensor name='camera' type='camera'>
+      <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
+      <camera name='__default__'>
+        <horizontal_fov>0.57</horizontal_fov>
+        <image>
+          <width>620</width>
+          <height>480</height>
+        </image>
+        <clip>
+          <near>0.001000</near>
+          <far>100.000000</far>
+        </clip>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>30.000000</update_rate>
+      <visualize>1</visualize>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30</updateRate>
+        <cameraName>camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_optical_frame</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
 </gazebo>
 
 
 <!-- IMU sensor -->
 <gazebo reference="imu_frame">
-<gravity>true</gravity>
-<sensor name="imu_sensor" type="imu">
-<always_on>true</always_on>
-<update_rate>100</update_rate>
-<visualize>true</visualize>
-<topic>__default_topic__</topic>
-<plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-<topicName>imu</topicName>
-<bodyName>imu_frame</bodyName>
-<updateRateHZ>100.0</updateRateHZ>
-<gaussianNoise>0.0</gaussianNoise>
-<xyzOffset>0 0 0</xyzOffset>
-<rpyOffset>0 0 0</rpyOffset>
-<frameName>imu_frame</frameName>
-</plugin>
-<pose>0 0 0 0 0 0</pose>
-</sensor>
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <visualize>true</visualize>
+        <topic>__default_topic__</topic>
+        <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+            <topicName>imu</topicName>
+            <bodyName>imu_frame</bodyName>
+            <updateRateHZ>100.0</updateRateHZ>
+            <gaussianNoise>0.0</gaussianNoise>
+            <xyzOffset>0 0 0</xyzOffset>
+            <rpyOffset>0 0 0</rpyOffset>
+            <frameName>imu_frame</frameName>
+        </plugin>
+        <pose>0 0 0 0 0 0</pose>
+    </sensor>
+</gazebo>
+
+<!-- force plugins for foot strain gauges -->
+<gazebo>
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>llb</bodyName>
+        <topicName>sim_strain_gauges/llb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>llf</bodyName>
+        <topicName>sim_strain_gauges/llf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>lrf</bodyName>
+        <topicName>sim_strain_gauges/lrf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>lrb</bodyName>
+        <topicName>sim_strain_gauges/lrb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rlb</bodyName>
+        <topicName>sim_strain_gauges/rlb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rlf</bodyName>
+        <topicName>sim_strain_gauges/rlf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rrf</bodyName>
+        <topicName>sim_strain_gauges/rrf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rrb</bodyName>
+        <topicName>sim_strain_gauges/rrb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
 </gazebo>
 
 <!-- fake controller that allows us to move the robot and to get its oposition -->
@@ -3286,15 +3490,14 @@
 <xacro:if value="${fake_walk == True}">
 <!-- only active when fake_walk param is set to True -->
 <gazebo>
-<plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
-<robotNamespace>/</robotNamespace>
-
-<commandTopic>cmd_vel</commandTopic>
-<odometryTopic>odom</odometryTopic>
-<odometryFrame>odom</odometryFrame>
-<odometryRate>100.0</odometryRate>
-<robotBaseFrame>base_link</robotBaseFrame>
-</plugin>
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+        <robotNamespace>/</robotNamespace>
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <odometryRate>100.0</odometryRate>
+        <robotBaseFrame>base_link</robotBaseFrame>
+    </plugin>
 </gazebo>
 </xacro:if>
 
