@@ -56,7 +56,7 @@ Make sure that you tested the hardware and lowlevel software first.
         rosrun bitbots_dynup dummy_client.py
 
 #. Test Walk on Robot
-	roslaunch bitbots_quintic_walk quintic_walk_test.launch
+	roslaunch bitbots_quintic_walk test.launch
 		rosrun bitbots_teleop teleop_keyboard.py
 		Let the robot move around in all directions and also combination
 
