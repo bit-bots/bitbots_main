@@ -1,5 +1,5 @@
 <launch>
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
-    <include file="$(find bitbots_quintic_walk)/launch/quintic_walk_test.launch" />
+    <include file="$(find bitbots_quintic_walk)/launch/test.launch" />
 
 </launch>
