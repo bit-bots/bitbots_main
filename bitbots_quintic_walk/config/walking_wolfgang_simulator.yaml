@@ -2,16 +2,16 @@ walking:
   engine:
     # Full walk cycle frequency
     # (in Hz, > 0)
-    freq: 0.588
+    freq: 1.3
     # Length of double support phase in half cycle
     # (ratio, [0:1])
-    double_support_ratio: 0.2
+    double_support_ratio: 0.05
     # Lateral distance between the feet center
     # (in m, >= 0)
-    foot_distance: 0.14
+    foot_distance: 0.2
     # Maximum flying foot height
     # (in m, >= 0)
-    foot_rise: 0.07
+    foot_rise: 0.06
     # Pause of Z movement on highest point
     # (single support cycle ratio, [0,1])
     foot_z_pause: 0.0
@@ -33,13 +33,13 @@ walking:
     foot_overshoot_phase: 0.85
     # Height of the trunk from ground
     # (in m, > 0)
-    trunk_height: 0.43
+    trunk_height: 0.40
     # Trunk pitch orientation
     # (in rad)
-    trunk_pitch: 0.36
+    trunk_pitch: 0.18
     # Phase offset of trunk oscillation
     # (half cycle phase, [-1:1])
-    trunk_phase: 0.0
+    trunk_phase: -0.1
     # Trunk forward offset
     # (in m)
     trunk_x_offset: 0.0
@@ -48,7 +48,7 @@ walking:
     trunk_y_offset: 0.0
     # Trunk lateral oscillation amplitude ratio
     # (ratio, >= 0)
-    trunk_swing: 0.8
+    trunk_swing: 0.2
     # Trunk swing pause length in phase at apex
     # (half cycle ratio, [0:1])
     trunk_pause: 0.0
@@ -60,36 +60,53 @@ walking:
     trunk_x_offset_p_coef_turn: 0.0
     # Trunk pitch orientation proportional to forward step
     # (in rad/m)
-    trunk_pitch_p_coef_forward: 0.0
+    trunk_pitch_p_coef_forward: 1.2
     # Trunk pitch orientation proportional to rotation step
     # (in 1)
-    trunk_pitch_p_coef_turn: 0.0
+    trunk_pitch_p_coef_turn: -0.05
+
+    kick_length: 0.09
+    kick_vel: 0.2
+    kick_phase: 0.75
 
     first_step_swing_factor: 1.0
     first_step_trunk_phase: 0.0
 
   node:
     # update frequency of the engine
-    engine_freq: 100.0
+    engine_freq: 1000.0
 
     # parameters for bioIK
     ik_timeout: 0.01
 
-    debug_active: False
-    pubModelJointStates: False
+    debug_active: True
 
     trunkYOnlyInDoubleSupport: False
 
-    max_step_x: 1.0
-    max_step_y: 1.0
-    max_step_z: 1.5
+    max_step_x: 0.06
+    max_step_y: 0.05
+    max_step_xy: 0.09
+    max_step_z: 0.45
 
     vel: -1
     acc: -1
     pwm: -1
 
     imu_active: False
-    imu_pitch_threshold: 1
-    imu_roll_threshold: 1
+    imu_pitch_threshold: 0.19
+    imu_roll_threshold: 0.4
+    imu_pitch_vel_threshold: 1.3
+    imu_roll_vel_threshold: 5.7
+    pause_duration: 3.0
 
     publish_odom_tf: False
+
+  pid_trunk:
+    p: 1
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
