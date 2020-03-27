@@ -6,15 +6,6 @@
 <origin rpy="0.0 0 0" xyz="0 0 0"/>
 </joint>
 <link name="torso">
-<visual>
-<origin xyz="-0.0015 0.053 0.2035" rpy="-3.14159 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0015 0.053 0.2035" rpy="-3.14159 1.5708 0" />
 <geometry>
@@ -24,15 +15,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.058 0.07 0.1455" rpy="1.5708 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/nuc_holdingrail_left.stl"/>
-</geometry>
-<material name="nuc_holdingrail_left_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.058 0.07 0.1455" rpy="1.5708 1.5708 0" />
 <geometry>
@@ -42,15 +24,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.02625 0.0025 0.0275" rpy="1.5708 -0 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/battery_dummy.stl"/>
-</geometry>
-<material name="battery_dummy_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.02625 0.0025 0.0275" rpy="1.5708 -0 -1.5708" />
 <geometry>
@@ -60,15 +33,6 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0015 -0.053 0.2035" rpy="-1.2326e-32 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0015 -0.053 0.2035" rpy="-1.2326e-32 -1.5708 0" />
 <geometry>
@@ -78,15 +42,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-2.17271e-16 0.055 0.043" rpy="-1.5708 -0 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/router_left.stl"/>
-</geometry>
-<material name="router_left_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-2.17271e-16 0.055 0.043" rpy="-1.5708 -0 1.5708" />
 <geometry>
@@ -96,15 +51,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.057 0.077 0.213915" rpy="-1.5708 6.08341e-17 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
-</geometry>
-<material name="torso_bumper_right_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.057 0.077 0.213915" rpy="-1.5708 6.08341e-17 1.5708" />
 <geometry>
@@ -114,15 +60,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.01 0.001 0.118" rpy="-5.55112e-17 8.2173e-33 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/core.stl"/>
-</geometry>
-<material name="core_material">
-<color rgba="0.282353 0.54902 0.160784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.01 0.001 0.118" rpy="-5.55112e-17 8.2173e-33 -1.5708" />
 <geometry>
@@ -132,15 +69,6 @@
 <color rgba="0.282353 0.54902 0.160784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 -0.055 0.026" rpy="1.5708 -0 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 -0.055 0.026" rpy="1.5708 -0 -1.5708" />
 <geometry>
@@ -150,15 +78,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.053 0.077 0.213915" rpy="-1.5708 -6.08341e-17 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
-</geometry>
-<material name="torso_bumper_left_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.053 0.077 0.213915" rpy="-1.5708 -6.08341e-17 -1.5708" />
 <geometry>
@@ -168,15 +87,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-2.2754e-16 0.055 0.026" rpy="1.5708 -0 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-2.2754e-16 0.055 0.026" rpy="1.5708 -0 -1.5708" />
 <geometry>
@@ -186,15 +96,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.00265 -0.0001 0.1455" rpy="1.11022e-16 1.0261e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/nuc_bottom.stl"/>
-</geometry>
-<material name="nuc_bottom_material">
-<color rgba="0.301961 0.301961 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.00265 -0.0001 0.1455" rpy="1.11022e-16 1.0261e-16 1.5708" />
 <geometry>
@@ -204,15 +105,6 @@
 <color rgba="0.301961 0.301961 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0015 -0.036 0.2035" rpy="-3.14159 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/imu_holder.stl"/>
-</geometry>
-<material name="imu_holder_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0015 -0.036 0.2035" rpy="-3.14159 1.5708 0" />
 <geometry>
@@ -222,15 +114,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.00265 -0.0001 0.1455" rpy="1.66533e-16 -1.9123e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/nuc_front.stl"/>
-</geometry>
-<material name="nuc_front_material">
-<color rgba="0.4 0.4 0.4 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.00265 -0.0001 0.1455" rpy="1.66533e-16 -1.9123e-16 1.5708" />
 <geometry>
@@ -240,15 +123,6 @@
 <color rgba="0.4 0.4 0.4 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.062 0.075 0.003" rpy="0 -0 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torso_bottom.stl"/>
-</geometry>
-<material name="torso_bottom_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.062 0.075 0.003" rpy="0 -0 0" />
 <geometry>
@@ -258,15 +132,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.037 -0.0478 0.2141" rpy="3.14159 5.34761e-17 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/imu_bottom_cover.stl"/>
-</geometry>
-<material name="imu_bottom_cover_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.037 -0.0478 0.2141" rpy="3.14159 5.34761e-17 -1.5708" />
 <geometry>
@@ -276,15 +141,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0095 2.94903e-16 0.211" rpy="-1.5708 -0 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0095 2.94903e-16 0.211" rpy="-1.5708 -0 1.5708" />
 <geometry>
@@ -294,15 +150,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="1.35075e-15 -0.055 0.043" rpy="-1.5708 1.0261e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/router_right.stl"/>
-</geometry>
-<material name="router_right_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.35075e-15 -0.055 0.043" rpy="-1.5708 1.0261e-16 1.5708" />
 <geometry>
@@ -312,15 +159,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.057 -0.077 0.213915" rpy="-1.5708 -6.08341e-17 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
-</geometry>
-<material name="torso_bumper_left_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.057 -0.077 0.213915" rpy="-1.5708 -6.08341e-17 1.5708" />
 <geometry>
@@ -330,15 +168,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.002 -3.19189e-16 0.088" rpy="-5.55112e-17 -1.64346e-32 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/baseplate_odroid_xu4_core.stl"/>
-</geometry>
-<material name="baseplate_odroid_xu4_core_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.002 -3.19189e-16 0.088" rpy="-5.55112e-17 -1.64346e-32 -1.5708" />
 <geometry>
@@ -348,15 +177,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.051 0.0367 0.057" rpy="-1.5708 6.91935e-17 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/router.stl"/>
-</geometry>
-<material name="router_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.051 0.0367 0.057" rpy="-1.5708 6.91935e-17 -1.5708" />
 <geometry>
@@ -366,15 +186,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.00265 -0.0001 0.1455" rpy="1.11022e-16 2.83582e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/nuc_main.stl"/>
-</geometry>
-<material name="nuc_main_material">
-<color rgba="0.603922 0.647059 0.686275 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.00265 -0.0001 0.1455" rpy="1.11022e-16 2.83582e-16 1.5708" />
 <geometry>
@@ -384,15 +195,6 @@
 <color rgba="0.603922 0.647059 0.686275 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.053 -0.077 0.213915" rpy="-1.5708 6.08341e-17 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
-</geometry>
-<material name="torso_bumper_right_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.053 -0.077 0.213915" rpy="-1.5708 6.08341e-17 -1.5708" />
 <geometry>
@@ -402,15 +204,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.058 -0.07 0.1455" rpy="1.5708 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/nuc_holdingrail_right.stl"/>
-</geometry>
-<material name="nuc_holdingrail_right_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.058 -0.07 0.1455" rpy="1.5708 1.5708 0" />
 <geometry>
@@ -420,15 +213,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.077 -0.075 0.083" rpy="0 -0 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torso_top.stl"/>
-</geometry>
-<material name="torso_top_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.077 -0.075 0.083" rpy="0 -0 1.5708" />
 <geometry>
@@ -438,10 +222,19 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/torso.stl"/>
+</geometry>
+<material name="torso_material">
+<color rgba="0.521601 0.564034 0.586586 1.0"/>
+</material>
+</visual>
 <inertial>
-<origin xyz="-0.00177581 -9.7212e-05 0.107062" rpy="0 0 0"/>
-<mass value="1.79116" />
-<inertia ixx="0.0165883" ixy="5.67507e-06"  ixz="-0.000843992" iyy="0.0143606" iyz="0.000156333" izz="0.00676935" />
+<origin xyz="-0.00126989 -7.56268e-05 0.113636" rpy="0 0 0"/>
+<mass value="2.03749" />
+<inertia ixx="0.0175162" ixy="5.55269e-06"  ixz="-0.000893081" iyy="0.0152672" iyz="0.000154131" izz="0.00729066" />
 </inertial>
 </link>
 
@@ -460,15 +253,6 @@
 </joint>
 
 <link name="shoulder_right_1">
-<visual>
-<origin xyz="-0.02595 0.042 2.77556e-17" rpy="-1.5708 2.89513e-24 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
-</geometry>
-<material name="sea_connector_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.02595 0.042 2.77556e-17" rpy="-1.5708 2.89513e-24 1.5708" />
 <geometry>
@@ -478,15 +262,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.01695 0.042 8.32667e-17" rpy="-1.5708 2.89513e-24 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
-</geometry>
-<material name="sea_ninjaflex_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.01695 0.042 8.32667e-17" rpy="-1.5708 2.89513e-24 1.5708" />
 <geometry>
@@ -496,15 +271,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 0 2.77556e-17" rpy="2.4048e-34 -1.72563e-31 -1.5783e-33" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
-</geometry>
-<material name="shoulder_connector_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 2.77556e-17" rpy="2.4048e-34 -1.72563e-31 -1.5783e-33" />
 <geometry>
@@ -514,6 +280,15 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/shoulder_right_1.stl"/>
+</geometry>
+<material name="shoulder_right_1_material">
+<color rgba="0.609281 0.613952 0.618623 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.0135397 0.0284022 -1.54699e-06" rpy="0 0 0"/>
 <mass value="0.041445" />
@@ -522,15 +297,6 @@
 </link>
 
 <link name="upper_arm_1">
-<visual>
-<origin xyz="1.38778e-17 1.11022e-16 -0.0235" rpy="-1.5708 4.16334e-16 -2.10942e-15" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.38778e-17 1.11022e-16 -0.0235" rpy="-1.5708 4.16334e-16 -2.10942e-15" />
 <geometry>
@@ -540,15 +306,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0265 -0.144 -0.0235" rpy="-1.5708 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
-</geometry>
-<material name="upper_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0265 -0.144 -0.0235" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -558,15 +315,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0147 -0.0105 -0.0235" rpy="-1.5708 -8.88178e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
-</geometry>
-<material name="connector_shoulder_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0147 -0.0105 -0.0235" rpy="-1.5708 -8.88178e-16 1.5708" />
 <geometry>
@@ -576,15 +324,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0265 -0.144 -0.0235" rpy="-1.5708 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
-</geometry>
-<material name="upper_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0265 -0.144 -0.0235" rpy="-1.5708 1.5708 0" />
 <geometry>
@@ -594,15 +333,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0147 -0.0105 -0.0235" rpy="1.5708 -8.88178e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
-</geometry>
-<material name="connector_shoulder_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0147 -0.0105 -0.0235" rpy="1.5708 -8.88178e-16 1.5708" />
 <geometry>
@@ -612,6 +342,15 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/upper_arm_1.stl"/>
+</geometry>
+<material name="upper_arm_1_material">
+<color rgba="0.462929 0.462929 0.462929 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="6.71448e-10 -0.0286557 -0.0235557" rpy="0 0 0"/>
 <mass value="0.206164" />
@@ -620,15 +359,6 @@
 </link>
 
 <link name="lower_arm_right_1">
-<visual>
-<origin xyz="3.19189e-16 -0.163682 -0.0065" rpy="-1.5708 -1.02349e-15 -3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
-</geometry>
-<material name="lower_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="3.19189e-16 -0.163682 -0.0065" rpy="-1.5708 -1.02349e-15 -3.14159" />
 <geometry>
@@ -638,15 +368,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 -3.46945e-18 -0.0235" rpy="-1.5708 5.6205e-16 -5.30016e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 -3.46945e-18 -0.0235" rpy="-1.5708 5.6205e-16 -5.30016e-31" />
 <geometry>
@@ -656,15 +377,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.70617e-16 -0.163682 -0.0065" rpy="1.5708 1.84661e-15 9.4369e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/hand.stl"/>
-</geometry>
-<material name="hand_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.70617e-16 -0.163682 -0.0065" rpy="1.5708 1.84661e-15 9.4369e-16" />
 <geometry>
@@ -674,15 +386,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.84495e-16 -0.163682 -0.0425" rpy="-1.5708 -7.02563e-16 -3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
-</geometry>
-<material name="lower_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.84495e-16 -0.163682 -0.0425" rpy="-1.5708 -7.02563e-16 -3.14159" />
 <geometry>
@@ -692,6 +395,15 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/lower_arm_right_1.stl"/>
+</geometry>
+<material name="lower_arm_right_1_material">
+<color rgba="0.457801 0.457801 0.457801 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.000436307 -0.0605126 -0.0235553" rpy="0 0 0"/>
 <mass value="0.207774" />
@@ -741,15 +453,6 @@
 </joint>
 
 <link name="shoulder_left_1">
-<visual>
-<origin xyz="-0.02595 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
-</geometry>
-<material name="sea_connector_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.02595 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
 <geometry>
@@ -759,15 +462,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 0 0" rpy="-1.07025e-32 -0 1.2024e-34" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
-</geometry>
-<material name="shoulder_connector_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 0" rpy="-1.07025e-32 -0 1.2024e-34" />
 <geometry>
@@ -777,15 +471,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.01695 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
-</geometry>
-<material name="sea_ninjaflex_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.01695 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
 <geometry>
@@ -795,6 +480,15 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/shoulder_left_1.stl"/>
+</geometry>
+<material name="shoulder_left_1_material">
+<color rgba="0.609281 0.613952 0.618623 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.0135397 0.0284022 1.54699e-06" rpy="0 0 0"/>
 <mass value="0.041445" />
@@ -803,15 +497,6 @@
 </link>
 
 <link name="upper_arm_2">
-<visual>
-<origin xyz="1.38778e-17 5.55112e-17 -0.0235" rpy="-1.5708 4.4964e-15 1.1855e-29" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.38778e-17 5.55112e-17 -0.0235" rpy="-1.5708 4.4964e-15 1.1855e-29" />
 <geometry>
@@ -821,15 +506,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0147 -0.0105 -0.0235" rpy="-1.5708 9.99201e-15 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
-</geometry>
-<material name="connector_shoulder_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0147 -0.0105 -0.0235" rpy="-1.5708 9.99201e-15 1.5708" />
 <geometry>
@@ -839,15 +515,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0147 -0.0105 -0.0235" rpy="1.5708 1.02696e-14 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
-</geometry>
-<material name="connector_shoulder_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0147 -0.0105 -0.0235" rpy="1.5708 1.02696e-14 1.5708" />
 <geometry>
@@ -857,15 +524,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0265 -0.144 -0.0235" rpy="-1.5708 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
-</geometry>
-<material name="upper_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0265 -0.144 -0.0235" rpy="-1.5708 1.5708 0" />
 <geometry>
@@ -875,15 +533,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0265 -0.144 -0.0235" rpy="-1.5708 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
-</geometry>
-<material name="upper_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0265 -0.144 -0.0235" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -893,6 +542,15 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/upper_arm_2.stl"/>
+</geometry>
+<material name="upper_arm_2_material">
+<color rgba="0.462929 0.462929 0.462929 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="6.71449e-10 -0.0286557 -0.0235557" rpy="0 0 0"/>
 <mass value="0.206164" />
@@ -901,15 +559,6 @@
 </link>
 
 <link name="lower_arm_left_1">
-<visual>
-<origin xyz="0 -1.73472e-18 -0.0235" rpy="-1.5708 -8.30884e-31 -1.04771e-30" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 -1.73472e-18 -0.0235" rpy="-1.5708 -8.30884e-31 -1.04771e-30" />
 <geometry>
@@ -919,15 +568,6 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="1.84575e-15 -0.163682 -0.0405" rpy="1.5708 -5.48692e-31 -8.50491e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
-</geometry>
-<material name="lower_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.84575e-15 -0.163682 -0.0405" rpy="1.5708 -5.48692e-31 -8.50491e-31" />
 <geometry>
@@ -937,15 +577,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-5.13478e-16 -0.163682 -0.0405" rpy="-1.5708 5.10009e-16 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/hand.stl"/>
-</geometry>
-<material name="hand_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-5.13478e-16 -0.163682 -0.0405" rpy="-1.5708 5.10009e-16 3.14159" />
 <geometry>
@@ -955,15 +586,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="9.02056e-17 -0.163682 -0.0045" rpy="1.5708 -5.10009e-16 -1.72085e-15" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
-</geometry>
-<material name="lower_arm_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="9.02056e-17 -0.163682 -0.0045" rpy="1.5708 -5.10009e-16 -1.72085e-15" />
 <geometry>
@@ -973,6 +595,15 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/lower_arm_left_1.stl"/>
+</geometry>
+<material name="lower_arm_left_1_material">
+<color rgba="0.457801 0.457801 0.457801 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.000436306 -0.0605126 -0.0235553" rpy="0 0 0"/>
 <mass value="0.207774" />
@@ -1022,15 +653,6 @@
 </joint>
 
 <link name="hip_u_connector_1">
-<visual>
-<origin xyz="0 -0.0006 -0.018" rpy="-5.5278e-33 -0 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/hip_u_connector.stl"/>
-</geometry>
-<material name="hip_u_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 -0.0006 -0.018" rpy="-5.5278e-33 -0 0" />
 <geometry>
@@ -1040,6 +662,15 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/hip_u_connector_1.stl"/>
+</geometry>
+<material name="hip_u_connector_1_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="1.20984e-11 0.010315 -1.06799e-07" rpy="0 0 0"/>
 <mass value="0.0689735" />
@@ -1048,15 +679,6 @@
 </link>
 
 <link name="right_hip_left_ankle_1">
-<visual>
-<origin xyz="0 0 -0.026" rpy="-1.5708 4.34181e-16 -6.8556e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 -0.026" rpy="-1.5708 4.34181e-16 -6.8556e-16" />
 <geometry>
@@ -1066,15 +688,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0145 -0.021 -0.043" rpy="-3.14159 -3.01408e-17 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0145 -0.021 -0.043" rpy="-3.14159 -3.01408e-17 1.5708" />
 <geometry>
@@ -1084,15 +697,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.014 0.0105 -0.0892" rpy="2.03474e-16 7.21579e-17 -3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
-</geometry>
-<material name="thrustbearingholder_material">
-<color rgba="0.792157 0.819608 0.933333 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.014 0.0105 -0.0892" rpy="2.03474e-16 7.21579e-17 -3.14159" />
 <geometry>
@@ -1102,15 +706,6 @@
 <color rgba="0.792157 0.819608 0.933333 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0145 0.007 -0.043" rpy="-3.14159 -2.1475e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0145 0.007 -0.043" rpy="-3.14159 -2.1475e-16 -1.5708" />
 <geometry>
@@ -1120,15 +715,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-4.22579e-15 -4.16334e-17 -0.0691" rpy="-1.5708 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-4.22579e-15 -4.16334e-17 -0.0691" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -1138,6 +724,15 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/right_hip_left_ankle_1.stl"/>
+</geometry>
+<material name="right_hip_left_ankle_1_material">
+<color rgba="0.283325 0.302819 0.324631 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="1.38724e-05 -0.0155281 -0.0486407" rpy="0 0 0"/>
 <mass value="0.319807" />
@@ -1146,15 +741,6 @@
 </link>
 
 <link name="r_knee">
-<visual>
-<origin xyz="0.0182355 -0.0226528 -0.130164" rpy="-1.5708 -0.523599 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
-</geometry>
-<material name="knee_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0182355 -0.0226528 -0.130164" rpy="-1.5708 -0.523599 3.14159" />
 <geometry>
@@ -1164,15 +750,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-3.46945e-18 0.002 0" rpy="2.67816e-33 1.87111e-31 -7.84766e-32" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
-</geometry>
-<material name="upper_leg_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-3.46945e-18 0.002 0" rpy="2.67816e-33 1.87111e-31 -7.84766e-32" />
 <geometry>
@@ -1182,15 +759,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.00392295 -0.053 -0.169043" rpy="-1.5708 -0.523599 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-</geometry>
-<material name="part_1_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.00392295 -0.053 -0.169043" rpy="-1.5708 -0.523599 3.14159" />
 <geometry>
@@ -1200,15 +768,6 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.00392295 -0.0265 -0.169043" rpy="-1.5708 -0.523599 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/xh-540.stl"/>
-</geometry>
-<material name="xh-540_material">
-<color rgba="0.498039 0.498039 0.498039 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.00392295 -0.0265 -0.169043" rpy="-1.5708 -0.523599 3.14159" />
 <geometry>
@@ -1218,15 +777,6 @@
 <color rgba="0.498039 0.498039 0.498039 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.014 -0.055 -0.138" rpy="1.5708 -1.25941e-15 -6.88035e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/spring_holder_upper.stl"/>
-</geometry>
-<material name="spring_holder_upper_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.014 -0.055 -0.138" rpy="1.5708 -1.25941e-15 -6.88035e-16" />
 <geometry>
@@ -1236,15 +786,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.00392295 -0.002 -0.169043" rpy="-1.5708 -0.523599 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-</geometry>
-<material name="part_1_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.00392295 -0.002 -0.169043" rpy="-1.5708 -0.523599 3.14159" />
 <geometry>
@@ -1254,15 +795,6 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="3.46945e-17 -0.053 6.93889e-18" rpy="8.32667e-17 -8.32667e-17 -7.99057e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
-</geometry>
-<material name="upper_leg_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="3.46945e-17 -0.053 6.93889e-18" rpy="8.32667e-17 -8.32667e-17 -7.99057e-16" />
 <geometry>
@@ -1272,15 +804,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0186686 -0.0303472 -0.130414" rpy="-1.5708 0.523599 -8.15765e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
-</geometry>
-<material name="knee_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0186686 -0.0303472 -0.130414" rpy="-1.5708 0.523599 -8.15765e-16" />
 <geometry>
@@ -1290,6 +813,15 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/r_knee.stl"/>
+</geometry>
+<material name="r_knee_material">
+<color rgba="0.544296 0.544296 0.544296 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.00466615 -0.0284999 -0.137529" rpy="0 0 0"/>
 <mass value="0.220799" />
@@ -1298,15 +830,6 @@
 </link>
 
 <link name="lower_leg_right_1">
-<visual>
-<origin xyz="-1.86656e-15 -0.0062 -3.60934e-05" rpy="1.5708 0.0872665 3.72354e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torsion_spring_sodemann_t105-180-813r.stl"/>
-</geometry>
-<material name="torsion_spring_sodemann_t105-180-813r_material">
-<color rgba="0.490196 0.490196 0.501961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-1.86656e-15 -0.0062 -3.60934e-05" rpy="1.5708 0.0872665 3.72354e-16" />
 <geometry>
@@ -1316,15 +839,6 @@
 <color rgba="0.490196 0.490196 0.501961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.02797 0.017519 -0.15413" rpy="-5.54324e-33 2.09645e-17 6.20766e-32" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
-</geometry>
-<material name="knee_spacer_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.02797 0.017519 -0.15413" rpy="-5.54324e-33 2.09645e-17 6.20766e-32" />
 <geometry>
@@ -1334,15 +848,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.02797 0.068019 -0.15413" rpy="-2.73358e-17 -4.30156e-17 4.5122e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
-</geometry>
-<material name="knee_spacer_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.02797 0.068019 -0.15413" rpy="-2.73358e-17 -4.30156e-17 4.5122e-31" />
 <geometry>
@@ -1352,15 +857,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.57433e-15 0.0525 -0.17" rpy="-9.91134e-16 -6.88388e-17 -9.66473e-32" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
-</geometry>
-<material name="lower_leg_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.57433e-15 0.0525 -0.17" rpy="-9.91134e-16 -6.88388e-17 -9.66473e-32" />
 <geometry>
@@ -1370,15 +866,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.67147e-15 -0.0015 -0.17" rpy="-4.58562e-16 1.74099e-15 9.4894e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
-</geometry>
-<material name="lower_leg_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.67147e-15 -0.0015 -0.17" rpy="-4.58562e-16 1.74099e-15 9.4894e-16" />
 <geometry>
@@ -1388,15 +875,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="4.89192e-15 -0.0035 -0.17" rpy="-4.32032e-16 1.82249e-15 9.4894e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
-</geometry>
-<material name="springholder_new_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="4.89192e-15 -0.0035 -0.17" rpy="-4.32032e-16 1.82249e-15 9.4894e-16" />
 <geometry>
@@ -1406,15 +884,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0202407 0.0033 0.0613528" rpy="-3.14159 -0.174533 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/spring_holder_lower.stl"/>
-</geometry>
-<material name="spring_holder_lower_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0202407 0.0033 0.0613528" rpy="-3.14159 -0.174533 3.14159" />
 <geometry>
@@ -1424,15 +893,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="1.8735e-16 -0.0035 -8.04912e-16" rpy="-4.33564e-16 1.82249e-15 9.4894e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
-</geometry>
-<material name="springholder_bottom_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.8735e-16 -0.0035 -8.04912e-16" rpy="-4.33564e-16 1.82249e-15 9.4894e-16" />
 <geometry>
@@ -1442,6 +902,15 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/lower_leg_right_1.stl"/>
+</geometry>
+<material name="lower_leg_right_1_material">
+<color rgba="0.773215 0.773215 0.776644 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.00131527 0.00765262 -0.0457782" rpy="0 0 0"/>
 <mass value="0.0842452" />
@@ -1450,15 +919,6 @@
 </link>
 
 <link name="left_hip_right_ankle_1">
-<visual>
-<origin xyz="-0.0261 -0.021 -0.0405" rpy="1.5708 6.96724e-15 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0261 -0.021 -0.0405" rpy="1.5708 6.96724e-15 1.5708" />
 <geometry>
@@ -1468,15 +928,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0431 1.11022e-16 -0.026" rpy="-1.5708 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0431 1.11022e-16 -0.026" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -1486,15 +937,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0261 0.007 -0.0115" rpy="-1.5708 -6.16753e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0261 0.007 -0.0115" rpy="-1.5708 -6.16753e-15 -1.5708" />
 <geometry>
@@ -1504,15 +946,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0201 0.0105 -0.0109" rpy="-3.14159 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
-</geometry>
-<material name="thrustbearingholder_material">
-<color rgba="0.792157 0.819608 0.933333 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0201 0.0105 -0.0109" rpy="-3.14159 1.5708 0" />
 <geometry>
@@ -1522,15 +955,6 @@
 <color rgba="0.792157 0.819608 0.933333 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-9.71445e-17 5.55112e-17 -0.026" rpy="-1.5708 5.31362e-31 -2.86392e-18" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-9.71445e-17 5.55112e-17 -0.026" rpy="-1.5708 5.31362e-31 -2.86392e-18" />
 <geometry>
@@ -1540,6 +964,15 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/left_hip_right_ankle_1.stl"/>
+</geometry>
+<material name="left_hip_right_ankle_1_material">
+<color rgba="0.283325 0.302819 0.324631 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.0204557 -0.0155281 -0.0260036" rpy="0 0 0"/>
 <mass value="0.319807" />
@@ -1548,15 +981,6 @@
 </link>
 
 <link name="r_foot">
-<visual>
-<origin xyz="-0.029996 0.00604936 -0.03425" rpy="-1.63098e-15 2.20568e-16 3.73798e-18" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.029996 0.00604936 -0.03425" rpy="-1.63098e-15 2.20568e-16 3.73798e-18" />
 <geometry>
@@ -1566,15 +990,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 0.046 -0.036" rpy="-1.10438e-17 1.37914e-31 1.20468e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/ankle.stl"/>
-</geometry>
-<material name="ankle_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0.046 -0.036" rpy="-1.10438e-17 1.37914e-31 1.20468e-31" />
 <geometry>
@@ -1584,15 +999,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.06 0.1635 -0.03425" rpy="7.87577e-16 -8.55971e-17 1.39379e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.06 0.1635 -0.03425" rpy="7.87577e-16 -8.55971e-17 1.39379e-17" />
 <geometry>
@@ -1602,15 +1008,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.037 0.16 -0.0324" rpy="-3.14159 1.29252e-15 -5.35434e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
-</geometry>
-<material name="forcefoot_pcb_material">
-<color rgba="0.141176 0.52549 0.141176 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.037 0.16 -0.0324" rpy="-3.14159 1.29252e-15 -5.35434e-17" />
 <geometry>
@@ -1620,15 +1017,6 @@
 <color rgba="0.141176 0.52549 0.141176 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.03 0.1635 -0.03425" rpy="1.53365e-15 1.29252e-15 -5.35434e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.03 0.1635 -0.03425" rpy="1.53365e-15 1.29252e-15 -5.35434e-17" />
 <geometry>
@@ -1638,15 +1026,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.145 0.085 -0.0395" rpy="-3.33669e-15 -3.23e-14 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/foot_printed_right.stl"/>
-</geometry>
-<material name="foot_printed_right_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.145 0.085 -0.0395" rpy="-3.33669e-15 -3.23e-14 -1.5708" />
 <geometry>
@@ -1656,15 +1035,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.06 0.0065 -0.03425" rpy="-5.44998e-14 -2.30577e-15 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.06 0.0065 -0.03425" rpy="-5.44998e-14 -2.30577e-15 3.14159" />
 <geometry>
@@ -1674,15 +1044,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0234568 0.0618337 -0.0463905" rpy="-1.05977e-17 2.47597e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
-</geometry>
-<material name="foot_cover_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0234568 0.0618337 -0.0463905" rpy="-1.05977e-17 2.47597e-16 -1.5708" />
 <geometry>
@@ -1692,6 +1053,15 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/r_foot.stl"/>
+</geometry>
+<material name="r_foot_material">
+<color rgba="0.686672 0.69665 0.686672 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.0120263 0.0916536 -0.0297041" rpy="0 0 0"/>
 <mass value="0.275133" />
@@ -1714,15 +1084,6 @@
 </joint>
 
 <link name="rlb">
-<visual>
-<origin xyz="-1.38778e-17 0 -0.01" rpy="6.16298e-32 -2.48753e-17 -1.2462e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-1.38778e-17 0 -0.01" rpy="6.16298e-32 -2.48753e-17 -1.2462e-31" />
 <geometry>
@@ -1732,6 +1093,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/rlb.stl"/>
+</geometry>
+<material name="rlb_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-1.383e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -1763,15 +1133,6 @@
 </joint>
 
 <link name="rlf">
-<visual>
-<origin xyz="1.38778e-17 -6.93889e-18 -0.01" rpy="1.60237e-31 3.53157e-17 -4.15867e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.38778e-17 -6.93889e-18 -0.01" rpy="1.60237e-31 3.53157e-17 -4.15867e-31" />
 <geometry>
@@ -1781,6 +1142,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/rlf.stl"/>
+</geometry>
+<material name="rlf_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="1.39501e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -1812,15 +1182,6 @@
 </joint>
 
 <link name="rrf">
-<visual>
-<origin xyz="4.16334e-17 -1.38778e-17 -0.01" rpy="-2.40356e-31 -5.62395e-17 1.96661e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="4.16334e-17 -1.38778e-17 -0.01" rpy="-2.40356e-31 -5.62395e-17 1.96661e-31" />
 <geometry>
@@ -1830,6 +1191,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/rrf.stl"/>
+</geometry>
+<material name="rrf_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="4.17487e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -1861,15 +1231,6 @@
 </joint>
 
 <link name="rrb">
-<visual>
-<origin xyz="0 0 -0.01" rpy="1.2326e-32 -1.6116e-17 3.54715e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 -0.01" rpy="1.2326e-32 -1.6116e-17 3.54715e-31" />
 <geometry>
@@ -1879,6 +1240,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/rrb.stl"/>
+</geometry>
+<material name="rrb_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="1.51669e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -1964,15 +1334,6 @@
 </joint>
 
 <link name="hip_u_connector_2">
-<visual>
-<origin xyz="0 -0.0006 -0.018" rpy="0 -0 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/hip_u_connector.stl"/>
-</geometry>
-<material name="hip_u_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 -0.0006 -0.018" rpy="0 -0 0" />
 <geometry>
@@ -1982,6 +1343,15 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/hip_u_connector_2.stl"/>
+</geometry>
+<material name="hip_u_connector_2_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="1.20984e-11 0.010315 -1.06799e-07" rpy="0 0 0"/>
 <mass value="0.0689735" />
@@ -1990,15 +1360,6 @@
 </link>
 
 <link name="left_hip_right_ankle_2">
-<visual>
-<origin xyz="0.0145 0.007 -0.043" rpy="-3.14159 1.52095e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0145 0.007 -0.043" rpy="-3.14159 1.52095e-16 -1.5708" />
 <geometry>
@@ -2008,15 +1369,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="6.93889e-18 0 -0.026" rpy="-1.5708 -1.96517e-16 7.99616e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="6.93889e-18 0 -0.026" rpy="-1.5708 -1.96517e-16 7.99616e-16" />
 <geometry>
@@ -2026,15 +1378,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.08167e-17 -6.93889e-18 -0.0691" rpy="-1.5708 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.08167e-17 -6.93889e-18 -0.0691" rpy="-1.5708 1.5708 0" />
 <geometry>
@@ -2044,15 +1387,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0145 -0.021 -0.043" rpy="3.14159 -1.57669e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0145 -0.021 -0.043" rpy="3.14159 -1.57669e-16 1.5708" />
 <geometry>
@@ -2062,15 +1396,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0151 0.0105 -0.0892" rpy="-1.52095e-16 2.65906e-16 -3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
-</geometry>
-<material name="thrustbearingholder_material">
-<color rgba="0.792157 0.819608 0.933333 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0151 0.0105 -0.0892" rpy="-1.52095e-16 2.65906e-16 -3.14159" />
 <geometry>
@@ -2080,6 +1405,15 @@
 <color rgba="0.792157 0.819608 0.933333 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/left_hip_right_ankle_2.stl"/>
+</geometry>
+<material name="left_hip_right_ankle_2_material">
+<color rgba="0.283325 0.302819 0.324631 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-3.60783e-06 -0.0155281 -0.0486443" rpy="0 0 0"/>
 <mass value="0.319807" />
@@ -2088,15 +1422,6 @@
 </link>
 
 <link name="l_knee">
-<visual>
-<origin xyz="-0.0182355 -0.130164 0.0283472" rpy="3.14159 6.1423e-17 0.523599" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
-</geometry>
-<material name="knee_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0182355 -0.130164 0.0283472" rpy="3.14159 6.1423e-17 0.523599" />
 <geometry>
@@ -2106,15 +1431,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0811244 -0.148357 0.049" rpy="-3.14159 -5.23638e-16 -9.5356e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-</geometry>
-<material name="part_1_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0811244 -0.148357 0.049" rpy="-3.14159 -5.23638e-16 -9.5356e-16" />
 <geometry>
@@ -2124,15 +1440,6 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0178025 -0.129914 0.0206528" rpy="1.28647e-15 9.85727e-17 -2.61799" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
-</geometry>
-<material name="knee_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0178025 -0.129914 0.0206528" rpy="1.28647e-15 9.85727e-17 -2.61799" />
 <geometry>
@@ -2142,15 +1449,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.00435596 -0.168793 0.0245" rpy="5.2714e-16 -4.13578e-16 -2.61799" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/xh-540.stl"/>
-</geometry>
-<material name="xh-540_material">
-<color rgba="0.498039 0.498039 0.498039 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.00435596 -0.168793 0.0245" rpy="5.2714e-16 -4.13578e-16 -2.61799" />
 <geometry>
@@ -2160,15 +1458,6 @@
 <color rgba="0.498039 0.498039 0.498039 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.014 -0.138 0.053" rpy="-9.82513e-16 6.31125e-16 2.61799" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/spring_holder_upper.stl"/>
-</geometry>
-<material name="spring_holder_upper_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.014 -0.138 0.053" rpy="-9.82513e-16 6.31125e-16 2.61799" />
 <geometry>
@@ -2178,15 +1467,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0811244 0.148357 -2.00465e-14" rpy="0 -9.66999e-33 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-</geometry>
-<material name="part_1_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0811244 0.148357 -2.00465e-14" rpy="0 -9.66999e-33 0" />
 <geometry>
@@ -2196,15 +1476,6 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 0 -0.002" rpy="1.5708 -2.22045e-16 -3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
-</geometry>
-<material name="upper_leg_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 -0.002" rpy="1.5708 -2.22045e-16 -3.14159" />
 <geometry>
@@ -2214,15 +1485,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="1.73472e-17 6.93889e-18 0.053" rpy="1.5708 3.88578e-16 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
-</geometry>
-<material name="upper_leg_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.73472e-17 6.93889e-18 0.053" rpy="1.5708 3.88578e-16 3.14159" />
 <geometry>
@@ -2232,6 +1494,15 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/l_knee.stl"/>
+</geometry>
+<material name="l_knee_material">
+<color rgba="0.544296 0.544296 0.544296 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.00432766 -0.137334 0.0264999" rpy="0 0 0"/>
 <mass value="0.220799" />
@@ -2240,15 +1511,6 @@
 </link>
 
 <link name="lower_leg_left_1">
-<visual>
-<origin xyz="2.04003e-15 0.0035 0.17" rpy="3.14159 -2.52611e-17 -2.06283e-15" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
-</geometry>
-<material name="springholder_new_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.04003e-15 0.0035 0.17" rpy="3.14159 -2.52611e-17 -2.06283e-15" />
 <geometry>
@@ -2258,15 +1520,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.00217889 -0.0033 -0.145095" rpy="3.39734e-17 8.69256e-14 -3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/spring_holder_lower.stl"/>
-</geometry>
-<material name="spring_holder_lower_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.00217889 -0.0033 -0.145095" rpy="3.39734e-17 8.69256e-14 -3.14159" />
 <geometry>
@@ -2276,15 +1529,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.22045e-16 0.0035 -3.60822e-16" rpy="3.14159 -8.64467e-17 -4.26392e-30" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
-</geometry>
-<material name="springholder_bottom_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.22045e-16 0.0035 -3.60822e-16" rpy="3.14159 -8.64467e-17 -4.26392e-30" />
 <geometry>
@@ -2294,15 +1538,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="2.28983e-16 0.0062 -3.60822e-16" rpy="-1.5708 0.0872665 -2.54457e-15" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/torson_spring_sodemann_t105-180-813l.stl"/>
-</geometry>
-<material name="torson_spring_sodemann_t105-180-813l_material">
-<color rgba="0.490196 0.490196 0.501961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="2.28983e-16 0.0062 -3.60822e-16" rpy="-1.5708 0.0872665 -2.54457e-15" />
 <geometry>
@@ -2312,15 +1547,6 @@
 <color rgba="0.490196 0.490196 0.501961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.02797 0.019019 -0.15413" rpy="-8.11627e-32 -5.23998e-17 1.25521e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
-</geometry>
-<material name="knee_spacer_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.02797 0.019019 -0.15413" rpy="-8.11627e-32 -5.23998e-17 1.25521e-31" />
 <geometry>
@@ -2330,15 +1556,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.02797 -0.031481 -0.15413" rpy="-4.78814e-17 -1.0347e-16 6.41104e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
-</geometry>
-<material name="knee_spacer_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.02797 -0.031481 -0.15413" rpy="-4.78814e-17 -1.0347e-16 6.41104e-31" />
 <geometry>
@@ -2348,15 +1565,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="3.747e-15 -0.0505 -0.17" rpy="-4.76965e-17 -1.58036e-17 -2.53255e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
-</geometry>
-<material name="lower_leg_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="3.747e-15 -0.0505 -0.17" rpy="-4.76965e-17 -1.58036e-17 -2.53255e-31" />
 <geometry>
@@ -2366,15 +1574,6 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="3.51802e-15 0.0035 -0.17" rpy="-4.78063e-16 -3.09356e-17 -2.15511e-15" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
-</geometry>
-<material name="lower_leg_material">
-<color rgba="0.960784 0.960784 0.960784 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="3.51802e-15 0.0035 -0.17" rpy="-4.78063e-16 -3.09356e-17 -2.15511e-15" />
 <geometry>
@@ -2384,6 +1583,15 @@
 <color rgba="0.960784 0.960784 0.960784 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/lower_leg_left_1.stl"/>
+</geometry>
+<material name="lower_leg_left_1_material">
+<color rgba="0.773195 0.773195 0.776625 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.00131514 -0.00765101 -0.0457625" rpy="0 0 0"/>
 <mass value="0.0842512" />
@@ -2392,15 +1600,6 @@
 </link>
 
 <link name="right_hip_left_ankle_2">
-<visual>
-<origin xyz="0.0261 0.007 -0.0405" rpy="1.5708 1.52434e-16 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0261 0.007 -0.0405" rpy="1.5708 1.52434e-16 -1.5708" />
 <geometry>
@@ -2410,15 +1609,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.0201 0.0105 -0.04" rpy="-3.14159 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
-</geometry>
-<material name="thrustbearingholder_material">
-<color rgba="0.792157 0.819608 0.933333 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.0201 0.0105 -0.04" rpy="-3.14159 -1.5708 0" />
 <geometry>
@@ -2428,15 +1618,6 @@
 <color rgba="0.792157 0.819608 0.933333 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0261 -0.021 -0.0115" rpy="-1.5708 1.17853e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
-</geometry>
-<material name="motor_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0261 -0.021 -0.0115" rpy="-1.5708 1.17853e-16 1.5708" />
 <geometry>
@@ -2446,15 +1627,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="1.38778e-17 0 -0.026" rpy="-1.5708 -5.16101e-15 -5.5874e-18" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="1.38778e-17 0 -0.026" rpy="-1.5708 -5.16101e-15 -5.5874e-18" />
 <geometry>
@@ -2464,15 +1636,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.0431 1.11022e-16 -0.026" rpy="-1.5708 1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
-</geometry>
-<material name="mx-106_body_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0431 1.11022e-16 -0.026" rpy="-1.5708 1.5708 0" />
 <geometry>
@@ -2482,6 +1645,15 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/right_hip_left_ankle_2.stl"/>
+</geometry>
+<material name="right_hip_left_ankle_2_material">
+<color rgba="0.283325 0.302819 0.324631 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.0204593 -0.0155281 -0.0260139" rpy="0 0 0"/>
 <mass value="0.319807" />
@@ -2490,15 +1662,6 @@
 </link>
 
 <link name="l_foot">
-<visual>
-<origin xyz="-0.06 0.1635 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.06 0.1635 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
 <geometry>
@@ -2508,15 +1671,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.03 0.0065 -0.03375" rpy="4.02671e-15 5.77818e-15 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.03 0.0065 -0.03375" rpy="4.02671e-15 5.77818e-15 3.14159" />
 <geometry>
@@ -2526,15 +1680,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.015 0.085 -0.0395" rpy="5.77818e-15 6.8631e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/foot_printed_left.stl"/>
-</geometry>
-<material name="foot_printed_left_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.015 0.085 -0.0395" rpy="5.77818e-15 6.8631e-15 -1.5708" />
 <geometry>
@@ -2544,15 +1689,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.022 0.16 -0.0324" rpy="3.14159 -5.03639e-15 -5.39852e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
-</geometry>
-<material name="forcefoot_pcb_material">
-<color rgba="0.141176 0.52549 0.141176 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.022 0.16 -0.0324" rpy="3.14159 -5.03639e-15 -5.39852e-17" />
 <geometry>
@@ -2562,15 +1698,6 @@
 <color rgba="0.141176 0.52549 0.141176 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.00654316 0.0618337 -0.0463905" rpy="1.29452e-15 -3.55046e-15 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
-</geometry>
-<material name="foot_cover_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.00654316 0.0618337 -0.0463905" rpy="1.29452e-15 -3.55046e-15 -1.5708" />
 <geometry>
@@ -2580,15 +1707,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 0.046 -0.036" rpy="-5.89229e-18 -6.62422e-31 4.13862e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/ankle.stl"/>
-</geometry>
-<material name="ankle_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0.046 -0.036" rpy="-5.89229e-18 -6.62422e-31 4.13862e-31" />
 <geometry>
@@ -2598,15 +1716,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.03 0.1635 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.03 0.1635 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
 <geometry>
@@ -2616,15 +1725,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-0.06 0.0065 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
-</geometry>
-<material name="load_cell_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-0.06 0.0065 -0.03375" rpy="-4.35665e-15 -5.77818e-15 -2.20171e-17" />
 <geometry>
@@ -2634,6 +1734,15 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/l_foot.stl"/>
+</geometry>
+<material name="l_foot_material">
+<color rgba="0.686672 0.69665 0.686672 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.0121206 0.0916668 -0.0296455" rpy="0 0 0"/>
 <mass value="0.275133" />
@@ -2656,15 +1765,6 @@
 </joint>
 
 <link name="llb">
-<visual>
-<origin xyz="-1.38778e-17 -1.38778e-17 -0.01" rpy="1.72563e-31 1.33455e-17 2.12215e-30" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-1.38778e-17 -1.38778e-17 -0.01" rpy="1.72563e-31 1.33455e-17 2.12215e-30" />
 <geometry>
@@ -2674,6 +1774,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/llb.stl"/>
+</geometry>
+<material name="llb_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-1.3771e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -2705,15 +1814,6 @@
 </joint>
 
 <link name="llf">
-<visual>
-<origin xyz="0 0 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
 <geometry>
@@ -2723,6 +1823,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/llf.stl"/>
+</geometry>
+<material name="llf_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="3.94632e-20 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -2754,15 +1863,6 @@
 </joint>
 
 <link name="lrf">
-<visual>
-<origin xyz="-2.77556e-17 3.46945e-18 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-2.77556e-17 3.46945e-18 -0.01" rpy="2.00297e-31 -3.96981e-17 1.61033e-30" />
 <geometry>
@@ -2772,6 +1872,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/lrf.stl"/>
+</geometry>
+<material name="lrf_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-2.77161e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -2803,15 +1912,6 @@
 </joint>
 
 <link name="lrb">
-<visual>
-<origin xyz="0 -3.46945e-18 -0.01" rpy="1.76139e-30 4.43302e-17 -6.01319e-30" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
-</geometry>
-<material name="flex_stollen_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 -3.46945e-18 -0.01" rpy="1.76139e-30 4.43302e-17 -6.01319e-30" />
 <geometry>
@@ -2821,6 +1921,15 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/lrb.stl"/>
+</geometry>
+<material name="lrb_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="1.08836e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
@@ -2906,15 +2015,6 @@
 </joint>
 
 <link name="neck_1">
-<visual>
-<origin xyz="0.0035 0 -0.0093" rpy="-7.1415e-32 2.28711e-32 -3.97109e-33" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
-</geometry>
-<material name="connector_shoulder_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0035 0 -0.0093" rpy="-7.1415e-32 2.28711e-32 -3.97109e-33" />
 <geometry>
@@ -2924,15 +2024,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.036 3.10152e-17 -0.024" rpy="3.14159 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
-</geometry>
-<material name="mx-64-body_material">
-<color rgba="0.247059 0.247059 0.247059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.036 3.10152e-17 -0.024" rpy="3.14159 -1.5708 0" />
 <geometry>
@@ -2942,6 +2033,15 @@
 <color rgba="0.247059 0.247059 0.247059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/neck_1.stl"/>
+</geometry>
+<material name="neck_1_material">
+<color rgba="0.291135 0.291135 0.291135 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="0.0186912 -7.75177e-05 -0.0220143" rpy="0 0 0"/>
 <mass value="0.148233" />
@@ -2950,15 +2050,6 @@
 </link>
 
 <link name="head">
-<visual>
-<origin xyz="0.0432 0.0795 -0.0235" rpy="-1.5708 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/lense.stl"/>
-</geometry>
-<material name="lense_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.0432 0.0795 -0.0235" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -2968,15 +2059,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0 0 3.46945e-18" rpy="3.88389e-31 -1.5433e-31 1.35585e-31" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
-</geometry>
-<material name="sea_ninjaflex_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0 0 3.46945e-18" rpy="3.88389e-31 -1.5433e-31 1.35585e-31" />
 <geometry>
@@ -2986,15 +2068,6 @@
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="-2.08167e-17 -5.55112e-17 0.009" rpy="-8.16317e-16 -2.22045e-16 3.14159" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
-</geometry>
-<material name="sea_connector_material">
-<color rgba="0.262745 0.282353 0.301961 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="-2.08167e-17 -5.55112e-17 0.009" rpy="-8.16317e-16 -2.22045e-16 3.14159" />
 <geometry>
@@ -3004,15 +2077,6 @@
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.01 0.065 0.024" rpy="-1.74915e-15 -1.11022e-15 -1.38778e-15" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/camera_side_basler_wolfgang_v2.2_right.stl"/>
-</geometry>
-<material name="camera_side_basler_wolfgang_v2.2_right_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.01 0.065 0.024" rpy="-1.74915e-15 -1.11022e-15 -1.38778e-15" />
 <geometry>
@@ -3022,15 +2086,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.01 0.065 -0.051" rpy="-1.14124e-18 -9.99201e-16 -7.21645e-16" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/camera_side_basler_wolfgang_v2.2_left.stl"/>
-</geometry>
-<material name="camera_side_basler_wolfgang_v2.2_left_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.01 0.065 -0.051" rpy="-1.14124e-18 -9.99201e-16 -7.21645e-16" />
 <geometry>
@@ -3040,15 +2095,6 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.015 0.0795 -0.0235" rpy="-1.5708 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/basler_ace_gige_c-mount_v01.stl"/>
-</geometry>
-<material name="basler_ace_gige_c-mount_v01_material">
-<color rgba="0.917647 0.917647 0.917647 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.015 0.0795 -0.0235" rpy="-1.5708 -1.5708 0" />
 <geometry>
@@ -3058,15 +2104,6 @@
 <color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </collision>
-<visual>
-<origin xyz="0.003 0.065 -0.037945" rpy="3.33067e-16 -1.5708 0" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/camera_lower_basler_wolfgang_imu_v2.2.stl"/>
-</geometry>
-<material name="camera_lower_basler_wolfgang_imu_v2.2_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
-</material>
-</visual>
 <collision>
 <origin xyz="0.003 0.065 -0.037945" rpy="3.33067e-16 -1.5708 0" />
 <geometry>
@@ -3076,6 +2113,15 @@
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/head.stl"/>
+</geometry>
+<material name="head_material">
+<color rgba="0.708913 0.709521 0.710128 1.0"/>
+</material>
+</visual>
 <inertial>
 <origin xyz="-0.0034709 0.0682828 -0.020251" rpy="0 0 0"/>
 <mass value="0.318645" />
@@ -3488,17 +2534,17 @@
 <!-- fake controller that allows us to move the robot and to get its oposition -->
 <!-- rostopic pub /cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
 <xacro:if value="${fake_walk == True}">
-<!-- only active when fake_walk param is set to True -->
-<gazebo>
-    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
-        <robotNamespace>/</robotNamespace>
-        <commandTopic>cmd_vel</commandTopic>
-        <odometryTopic>odom</odometryTopic>
-        <odometryFrame>odom</odometryFrame>
-        <odometryRate>100.0</odometryRate>
-        <robotBaseFrame>base_link</robotBaseFrame>
-    </plugin>
-</gazebo>
+    <!-- only active when fake_walk param is set to True -->
+    <gazebo>
+        <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+            <robotNamespace>/</robotNamespace>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <odometryRate>100.0</odometryRate>
+            <robotBaseFrame>base_link</robotBaseFrame>
+        </plugin>
+    </gazebo>
 </xacro:if>
 
 </robot>
