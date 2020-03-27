@@ -1,8 +1,7 @@
 image_publish_topic: 'image_raw'
-resend_timer_duration: 2  # seconds
 
-balls_topic: 'ball_in_image'
+balls_topic: 'balls_in_image'
 obstacles_topic: 'obstacles_in_image'
 lines_topic: 'line_in_image'
-goalposts_topic: 'goalpost_in_image'
-horizon_topic: 'horizon_in_image'
+goalposts_topic: 'goal_parts_in_image'
+field_boundary_topic: 'field_boundary_in_image'
