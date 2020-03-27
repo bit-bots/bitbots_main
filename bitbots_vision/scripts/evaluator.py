@@ -1,10 +1,11 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import rospy
-from humanoid_league_msgs.msg import LineInformationInImage, ObstaclesInImage, BallsInImage, HorizonInImage
+from humanoid_league_msgs.msg import LineInformationInImage, ObstaclesInImage, BallsInImage, FieldBoundaryInImage, GoalPartsInImage
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import Image
-import numpy as np
 from cv_bridge import CvBridge
+import numpy as np
+import math
 import cv2
 import yaml
 import os
@@ -15,7 +16,6 @@ import pickle
 
 
 class Evaluation(object):
-
     def __init__(self):
         self.received_message = False  # boolean signaling whether a message of the type was received
         self.pixel_mask_rates = None
@@ -48,7 +48,7 @@ class ImageMeasurement(object):
 class Evaluator(object):
     def __init__(self):
         self._set_sim_time_param()
-        rospy.init_node("vision_evaluator")
+        rospy.init_node("bitbots_vision_evaluator")
 
         self._set_sim_time_param()
         self._evaluated_classes = list()
@@ -89,33 +89,30 @@ class Evaluator(object):
         if rospy.get_param("bitbots_vision_evaluator/listen_goalposts", False):
             rospy.loginfo('listening for goalposts in image...')
             self._evaluated_classes.append('goalpost')
-            self._goalpost_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/goalpost_topic", "goalpost_in_image"),
-                 ObstaclesInImage,
+            self._goalpost_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/goalpost_topic", "goal_parts_in_image"),
+                 GoalPartsInImage,
                  self._goalpost_callback,
                  queue_size=1,
                  tcp_nodelay=True)
 
-        self._horizon_sub = None
-        if rospy.get_param("bitbots_vision_evaluator/listen_horizon", False):
-            rospy.loginfo('listening for horizon in image...')
+        self._field_boundary_sub = None
+        if rospy.get_param("bitbots_vision_evaluator/listen_field_boundary", False):
+            rospy.loginfo('listening for field_boundary in image...')
             self._evaluated_classes.append('field edge')
-            self._horizon_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/horizon_topic", "horizon_in_image"),
-                 HorizonInImage,
-                 self._horizon_callback,
+            self._field_boundary_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/field_boundary_topic", "field_boundary_in_image"),
+                 FieldBoundaryInImage,
+                 self._field_boundary_callback,
                  queue_size=1,
                  tcp_nodelay=True)
 
         self._image_pub = rospy.Publisher('image_raw', Image, queue_size=1, latch=True)
-        
+
         self._loop_images = rospy.get_param("bitbots_vision_evaluator/loop_images", False)
 
         self._image_path = rospy.get_param("bitbots_vision_evaluator/folder_path")
 
         self._line_thickness = 3
         self._set_sim_time_param()
-
-        # initialize resend timer
-        # self._resend_timer = rospy.Timer(rospy.Duration.from_sec(.3), self._resend_callback, oneshot=True)  # 2 second timer TODO: make this a variable
 
         self.bridge = CvBridge()
         self._measurements = dict()
@@ -135,13 +132,13 @@ class Evaluator(object):
         rospy.loginfo('Validating labels of {} images...'.format(len(self._images)))
         self._images = self._analyze_labels(self._images)
         rospy.loginfo('Labels of {} images are valid'.format(len(self._images)))
-        rospy.loginfo('Filling horizon vectors...')
+        rospy.loginfo('Filling field_boundary vectors...')
         for image in self._images:
             for label in image['annotations']:
-                if label['type'] == 'horizon':
-                    label['vector'] = self._fill_horizon_vector(label['vector'])
+                if label['type'] == 'field_boundary':
+                    label['vector'] = self._fill_field_boundary_vector(label['vector'])
         print(self._images)
-        rospy.loginfo('Done filling horizon vectors.')
+        rospy.loginfo('Done filling field_boundary vectors.')
         self._set_sim_time_param()
 
 
@@ -152,16 +149,12 @@ class Evaluator(object):
 
         self._lock = 0
         self._send_image()
-        self._set_sim_time_param()
-        self._react_timer = rospy.Timer(rospy.Duration.from_sec(.2), self._react_callback)  # 2 second timer TODO: make this a variable
+        self._react_timer = rospy.Timer(rospy.Duration(0.2), self._react_callback)  # 2 second timer TODO: make this a variable
         rospy.spin()
 
     def _kill_callback(self, a, b):
         # the rest of the process is handled in the send_image method
         self._stop = True
-
-    def _resend_callback(self, event):
-        self._send_image()
 
     def _react_callback(self, event):
         print(self._lock)
@@ -209,6 +202,8 @@ class Evaluator(object):
         if name is None:
             name = self._get_send_image_name()
 
+        print("Process image " + name)
+
         # reading image file
         imgpath = os.path.join(self._image_path, name)
         image = cv2.imread(imgpath)
@@ -230,7 +225,6 @@ class Evaluator(object):
 
         # set up evaluation element in measurements list
         self._measurements[self._send_image_counter] = ImageMeasurement(self._images[self._send_image_counter], self._evaluated_classes)
-        # self._resend_timer = rospy.Timer(rospy.Duration.from_sec(.3), self._resend_callback, oneshot=True)
 
     def _read_labels(self, filename):
         # reads the labels YAML file and returns a list of image names with their labels
@@ -314,6 +308,7 @@ class Evaluator(object):
             self._measured_classes.add(class_color[0])
 
     def _goalpost_callback(self, msg):
+        print("Get gp")
         if 'goalpost' not in self._evaluated_classes:
             return
         self._lock += 1
@@ -330,11 +325,12 @@ class Evaluator(object):
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='goalpost'
                 )),
-            self._generate_obstacle_mask_from_msg(msg))
+            self._generate_goal_post_mask_from_msg(msg))
 
         self._update_image_counter(int(msg.header.frame_id))
         self._lock -= 1
         self._measured_classes.add('goalpost')
+        print("Finished gp")
 
     def _lines_callback(self, msg):
         if 'line' not in self._evaluated_classes:
@@ -359,7 +355,7 @@ class Evaluator(object):
         self._lock -= 1
         self._measured_classes.add('line')
 
-    def _horizon_callback(self, msg):
+    def _field_boundary_callback(self, msg):
         if 'field edge' not in self._evaluated_classes:
             return
         self._lock += 1
@@ -371,16 +367,16 @@ class Evaluator(object):
         measurement.duration = self._measure_timing(msg.header)
         # generating and matching masks
         measurement.pixel_mask_rates = self._match_masks(
-            self._generate_horizon_mask_from_vector(
+            self._generate_field_boundary_mask_from_vector(
                 Evaluator._extract_vectors_from_annotations(
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='field edge'
                 )),
-            self._generate_horizon_mask_from_msg(msg))
+            self._generate_field_boundary_mask_from_msg(msg))
 
         self._update_image_counter(int(msg.header.frame_id))
         self._lock -= 1
-        self._measured_classes.add('horizon')
+        self._measured_classes.add('field_boundary')
 
     def _measure_timing(self, header):
         # calculating the time the processing took
@@ -395,12 +391,12 @@ class Evaluator(object):
             cv2.fillConvexPoly(mask, np.array(vector), 1.0)
         return mask
 
-    def _generate_horizon_mask_from_vector(self, vector):
+    def _generate_field_boundary_mask_from_vector(self, vector):
         mask = np.zeros(self._image_size, dtype=np.uint8)
         vector = [list(pts) for pts in vector][0] #TODO wtf
 
         vector.append([self._image_size[1] - 1, self._image_size[0] - 0])
-        vector.append([0, self._image_size[0] - 1])  # extending the points to fill the space below the horizon
+        vector.append([0, self._image_size[0] - 1])  # extending the points to fill the space below the field_boundary
         points = np.array(vector, dtype=np.int32)
         points = points.reshape((1, -1, 2))
         cv2.fillPoly(mask, points, 1.0)
@@ -421,8 +417,10 @@ class Evaluator(object):
         for vector in vectors:
             if not vector:
                 continue
-            center = (vector[0][0] + (vector[1][0] - vector[0][0]) / 2, vector[0][1] + (vector[1][1] - vector[0][1]) / 2)
-            radius = ((vector[1][0] - vector[0][0]) / 2 + (vector[1][1] - vector[0][1]) / 2) / 2
+            center = (
+                int(math.floor(vector[0][0] + (vector[1][0] - vector[0][0]) // 2)),
+                int(math.floor(vector[0][1] + (vector[1][1] - vector[0][1]) // 2)))
+            radius = int(math.floor((vector[1][0] - vector[0][0]) / 2 + (vector[1][1] - vector[0][1]) / 2) / 2)
             cv2.circle(mask, center, radius, 1.0, thickness=-1)
         return mask
 
@@ -440,10 +438,10 @@ class Evaluator(object):
             cv2.circle(mask, (int(round(ball.center.x)), int(round(ball.center.y))), int(round(ball.diameter/2)), 1.0, thickness=-1)
         return mask
 
-    def _generate_horizon_mask_from_msg(self, msg):
+    def _generate_field_boundary_mask_from_msg(self, msg):
         mask = np.zeros(self._image_size, dtype=np.uint8)
-        points = [[int(point.x), int(point.y)] for point in msg.points]
-        points = points + [(self._image_size[1] - 1, self._image_size[0] - 0), (0, self._image_size[0] - 1)]  # extending the points to fill the space below the horizon
+        points = [[int(point.x), int(point.y)] for point in msg.field_boundary_points]
+        points = points + [(self._image_size[1] - 1, self._image_size[0] - 0), (0, self._image_size[0] - 1)]  # extending the points to fill the space below the field_boundary
         points = np.array(points, dtype=np.int32)
         points = points.reshape((1, -1, 2))
         cv2.fillPoly(mask, points, 1.0)
@@ -454,6 +452,13 @@ class Evaluator(object):
         for obstacle in msg.obstacles:
             if color == -1 or obstacle.color == color:
                 vector = ((int(obstacle.top_left.x), int(obstacle.top_left.y)), (int(obstacle.top_left.x) + obstacle.width, int(obstacle.top_left.y) + obstacle.height))
+                vectors.append(vector)
+        return self._generate_rectangle_mask_from_vectors(vectors)
+
+    def _generate_goal_post_mask_from_msg(self, msg):
+        vectors = list()
+        for post in msg.posts:
+                vector = ((int(post.foot_point.x - post.width // 2), int(post.top_point.y)), (int(post.foot_point.x + post.width // 2), int(post.foot_point.y)))
                 vectors.append(vector)
         return self._generate_rectangle_mask_from_vectors(vectors)
 
@@ -554,10 +559,10 @@ class Evaluator(object):
                 filtered_images.append(image)
         return filtered_images
 
-    def _fill_horizon_vector(self, vector):
-        # extend the borders of the horizon to the borders of the image
+    def _fill_field_boundary_vector(self, vector):
+        # extend the borders of the field_boundary to the borders of the image
         if len(vector) < 2:
-            rospy.logwarn('found horizon label shorter than 2 elements')
+            rospy.logwarn('found field_boundary label shorter than 2 elements')
             return
         begin = vector[0]
         new_begin = vector[0]
@@ -599,9 +604,11 @@ class Evaluator(object):
                         annotation['type'] = 'obstacle'
 
     def _set_sim_time_param(self):
+        return
         if rospy.get_param('/use_sim_time'):
             print('setting /use_sim_time to false...')
             rospy.set_param('/use_sim_time', False)
 
 if __name__ == "__main__":
     Evaluator()
+    rospy.spin()
