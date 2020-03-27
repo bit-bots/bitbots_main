@@ -16,8 +16,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf</depend>
   <depend>urdf</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rosgraph_msgs</depend>
+  <depend>std_msgs</depend>
 
   <export>
       <bitbots_documentation>

@@ -4,9 +4,14 @@ project(wolfgang_pybullet_sim)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
-  tf
   urdf
+  bitbots_msgs
+  nav_msgs
+  rosgraph_msgs
+  std_msgs
 )
+
+catkin_python_setup()
 
 catkin_package()
 
