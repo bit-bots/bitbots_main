@@ -44,6 +44,8 @@ class ROSInterface:
         self.joint_goal_subscriber = rospy.Subscriber("DynamixelController/command", JointCommand, self.joint_goal_cb,
                                                       queue_size=1, tcp_nodelay=True)
 
+        self.reset_subscriber = rospy.Subscriber("reset", Bool, self.reset_cb, queue_size=1, tcp_nodelay=True)
+
     def step(self):
         self.simulation.step()
         self.publish_joints()
@@ -121,3 +123,6 @@ class ROSInterface:
         for name in msg.joint_names:
             self.simulation.joints[name].set_position(msg.positions[i])
             i += 1
+
+    def reset_cb(self, msg):
+        self.simulation.reset()
