@@ -11,17 +11,19 @@ import rospkg
 
 class Simulation:
     def __init__(self, gui):
+        self.gui = gui
         # config values
         self.start_position = [0, 0, 0.43]
-        self.start_orientation = p.getQuaternionFromEuler([0, 0.25, 0])
+        self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
         self.initial_joints_positions = {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
                                          "LHipYaw": 0, "LKnee": -60, "RAnklePitch": 30, "RAnkleRoll": 0,
                                          "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": 60,
                                          "LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
                                          "RShoulderRoll": 0, "RElbow": -45, "HeadPan": 0, "HeadTilt": 0}
 
+
         # Instantiating Bullet
-        if gui:
+        if self.gui:
             self.client_id = p.connect(p.GUI)
         else:
             self.client_id = p.connect(p.DIRECT)
@@ -37,37 +39,43 @@ class Simulation:
         # Loading robot
         rospack = rospkg.RosPack()
         path = rospack.get_path("wolfgang_description")
+        flags = p.URDF_USE_INERTIA_FROM_FILE
         self.robot_index = p.loadURDF(path + "/urdf/robot.urdf",
-                                      self.start_position, self.start_orientation)
+                                      self.start_position, self.start_orientation, flags=flags)
 
         # Engine parameters
         # time step should be at 240Hz (due to pyBullet documentation)
-        self.timestep = 0.0042
-        p.setPhysicsEngineParameter(fixedTimeStep=self.timestep, numSolverIterations=1, numSubSteps=1)
+        self.timestep = 1/240
+        # standard parameters seem to be best. leave them like they are
+        # p.setPhysicsEngineParameter(fixedTimeStep=self.timestep, numSubSteps=1)
         # no real time, as we will publish own clock
         p.setRealTimeSimulation(0)
 
         # Retrieving joints and foot pressure sensors
         self.joints = {}
         self.pressure_sensors = {}
+        self.links = {}
 
         # Collecting the available joints
         for i in range(p.getNumJoints(self.robot_index)):
             joint_info = p.getJointInfo(self.robot_index, i)
             name = joint_info[1].decode('utf-8')
+            # we can get the links by seeing where the joint is attached
+            self.links[joint_info[12].decode('utf-8')] = joint_info[16]
             if name in self.initial_joints_positions.keys():
                 # remember joint
                 self.joints[name] = Joint(i, self.robot_index)
-            elif name in {"LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"}:
+            elif name in ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]:
                 self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index)
 
-        # todo delete
-        # get bodies
-        # self.bodies = {}
-        # for i in range(p.getNumBodies(self.robot_index)):
-        # body_info = p.getBodyInfo(self.robot_index)
-        #    self.bodies[body_info] = i
-        # self.base_body = self.bodies["base_link"]
+        # set friction for feet
+        for link_name in self.links.keys():
+            if link_name in ["l_foot", "r_foot", "llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
+                # print(self.parts[part].body_name)
+                p.changeDynamics(self.robot_index, self.links[link_name],
+                                 lateralFriction=10000000000000000,
+                                 spinningFriction=1000000000000000,
+                                 rollingFriction=0.1)
 
         # reset robot to initial position
         self.reset()
@@ -86,6 +94,14 @@ class Simulation:
 
     def step(self):
         self.time += self.timestep
+        # get keyboard events if gui is active
+        if self.gui:
+            # rest if R-key was pressed
+            rKey = ord('r')
+            keys = p.getKeyboardEvents()
+            if rKey in keys and keys[rKey] & p.KEY_WAS_TRIGGERED:
+                self.reset()
+
         p.stepSimulation()
 
     def get_robot_pose(self):
@@ -110,8 +126,7 @@ class Joint:
         self.upperLimit = joint_info[9]
 
     def reset_position(self, position, velocity):
-        p.resetJointState(self.body_index, self.joint_index, targetValue=position,
-                          targetVelocity=velocity)
+        p.resetJointState(self.body_index, self.joint_index, targetValue=position, targetVelocity=velocity)
         self.disable_motor()
 
     def disable_motor(self):
