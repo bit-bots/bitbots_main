@@ -162,6 +162,7 @@ class PressureSensor:
         self.joint_index = joint_index
         self.name = name
         self.body_index = body_index
+        p.enableJointForceTorqueSensor(self.body_index, self.joint_index)
 
     def get_force(self):
         return p.getJointState(self.body_index, self.joint_index)[2][2] * -1
