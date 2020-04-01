@@ -8,11 +8,11 @@ class GameStateDecider(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GameStateDecider, self).__init__(blackboard, dsd)
         self.game_states = {
-            0: 'Initial',
-            1: 'Ready',
-            2: 'Set',
-            3: 'Playing',
-            4: 'Finished',
+            0: 'INITIAL',
+            1: 'READY',
+            2: 'SET',
+            3: 'PLAYING',
+            4: 'FINISHED',
         }
 
     def perform(self, reevaluate=False):

@@ -10,16 +10,16 @@ class SecondaryStateDecider(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateDecider, self).__init__(blackboard, dsd)
         self.secondary_game_states = {
-            0: 'Normal',
-            1: 'Penaltyshoot',  # should not happen during halftime or extra time
-            2: 'Overtime',
-            3: 'Timeout',
-            4: 'Direct_Freekick',
-            5: 'Indirect_Freekick',
-            6: 'Penaltykick',
-            7: 'Corner_Kick',
-            8: 'Goal_Kick',
-            9: 'Throw_In',
+            0: 'NORMAL',
+            1: 'PENALTYSHOOT',  # should not happen during halftime or extra time
+            2: 'OVERTIME',
+            3: 'TIMEOUT',
+            4: 'DIRECT_FREEKICK',
+            5: 'INDIRECT_FREEKICK',
+            6: 'PENALTYKICK',
+            7: 'CORNER_KICK',
+            8: 'GOAL_KICK',
+            9: 'THROW_IN',
         }
 
     def perform(self, reevaluate=False):

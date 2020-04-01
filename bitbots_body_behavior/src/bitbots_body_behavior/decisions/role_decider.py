@@ -12,7 +12,7 @@ class RoleDecider(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         assert self.role in self.blackboard.config['roles'], "No valid role specified"
-        return self.role
+        return self.role.upper()
 
     def get_reevaluate(self):
         """The role does not change during the game"""
