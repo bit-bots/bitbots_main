@@ -1,0 +1,36 @@
+obstacle_layer:
+  enabled:                  true
+  voxel_decay:              1.0   # seconds if linear, e^n if exponential
+  decay_model:              0     # 0=linear, 1=exponential, -1=persistent
+  voxel_size:               0.05  # meters
+  track_unknown_space:      true  # default space is known
+  max_obstacle_height:      1.0   # meters
+  unknown_threshold:        15    # voxel height
+  mark_threshold:           0     # voxel height
+  update_footprint_enabled: true
+  combination_method:       1     # 1=max, 0=override
+  obstacle_range:           8.0   # meters
+  origin_z:                 0.0   # meters
+  publish_voxel_map:        false # default off
+  transform_tolerance:      0.2   # seconds
+  mapping_mode:             false # default off, saves map not for navigation
+  map_save_duration:        60.0  # default 60s, how often to autosave
+  observation_sources:      obstacles
+  obstacles:
+    data_type: PointCloud2
+    topic: "/obstacles"
+    marking: true
+    clearing: false
+    min_obstacle_height: 0.0     # default 0, meters
+    max_obstacle_height: 1.0     # default 3, meters
+    expected_update_rate: 0.0    # default 0, if not updating at this rate at least, remove from buffer
+    observation_persistence: 0.5 # default 0, use all measurements taken during now-value, 0=latest
+    inf_is_valid: false          # default false, for laser scans
+    voxel_filter: false          # default off, apply voxel filter to sensor, recommend on
+    voxel_min_points: 0          # default 0, minimum points per voxel for voxel filter
+    clear_after_reading: true    # default false, clear the buffer after the layer gets readings from it
+  
+inflation_layer:
+  enabled:              true
+  cost_scaling_factor:  10.0  # exponential rate at which the obstacle cost drops off (default: 10)
+  inflation_radius:     0.2  # max. distance from an obstacle at which costs are incurred for planning paths.

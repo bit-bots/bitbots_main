@@ -15,13 +15,12 @@
   </group>
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="global_costmap" />-->
-    <!--<rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="local_costmap" /> -->
+    <rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find bitbots_move_base)/config/local_costmap_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/global_costmap_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/move_base_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/dwa_local_planner_config.yaml" command="load" />
-    <!-- <rosparam file="$(find bitbots_move_base)/config/teb_local_planner_params.yaml" command="load" />-->
     <rosparam file="$(find bitbots_move_base)/config/global_planner_config.yaml" command="load" />
 
     
@@ -40,5 +39,5 @@
     <rosparam file="$(find bitbots_bringup)/config/game_settings.yaml"  command="load"/>
   </group>
 
-  <!--<include file="$(find bitbots_move_base)/launch/obstacle_publisher.launch" />-->
+  <include file="$(find bitbots_move_base)/launch/obstacle_publisher.launch" />
 </launch>

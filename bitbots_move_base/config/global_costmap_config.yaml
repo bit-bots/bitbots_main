@@ -1,23 +1,17 @@
 global_costmap:
+  plugins:
+    - {name: obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
-  origin_x: -5.0
-  origin_y: -5.0
+  origin_x: -7.5
+  origin_y: -7.5
+  robot_base_frame: /base_footprint
+  global_frame: /map
 
   update_frequency: 5.0
-  publish_frequency: 2.0
-  static_map: false
-  rolling_window: true
+  publish_frequency: 5.0
+  transform_tolerance: 1.0
+  rolling_window: false
   width: 15.0
   height: 15.0
   robot_radius: 0.2
-
-  obstacle_layer:
-    enable: true
-    observation_sources: obstacles
-    obstacles:
-        data_type: PointCloud2
-        topic: obstacles
-        marking: true
-        clearing: true
-        min_obstacle_height: 0.0
-        max_obstacle_height: 0.2

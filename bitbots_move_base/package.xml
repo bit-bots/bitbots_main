@@ -22,7 +22,7 @@
   <depend>rospy</depend>
   <depend>move_base</depend>
   <depend>base_local_planner</depend>
-
+  <depend>spatio_temporal_voxel_layer</depend>
   <export>
     <bitbots_documentation>
       <language>-</language>

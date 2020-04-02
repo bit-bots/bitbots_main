@@ -1,5 +1,0 @@
-observation_sources: ball_obstacle
-ball_obstacle: {data_type: PointCloud2, topic: "/ball_obstacle", clearing: true, observation_persistence: 0.2, raytrace_range: 10.0}
-origin_x: -5.0
-origin_y: -5.0
-publish_frequency: 5.0
