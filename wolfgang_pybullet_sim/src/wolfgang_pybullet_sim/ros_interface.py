@@ -69,7 +69,8 @@ class ROSInterface:
         positions = []
         velocities = []
         efforts = []
-        for joint in self.simulation.joints.values():
+        for name in self.joint_state_msg.name:
+            joint = self.simulation.joints[name]
             positions.append(joint.get_position())
             velocities.append(joint.get_velocity())
             efforts.append(joint.get_torque())
