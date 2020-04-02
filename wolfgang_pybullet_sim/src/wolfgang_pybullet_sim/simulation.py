@@ -13,6 +13,8 @@ class Simulation:
     def __init__(self, gui):
         self.gui = gui
         self.paused = False
+        self.gravity = True
+
         # config values
         self.start_position = [0, 0, 0.43]
         self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
@@ -101,6 +103,7 @@ class Simulation:
         if self.gui:
             # rest if R-key was pressed
             rKey = ord('r')
+            nKey = ord('n')
             sKey = ord('s')
             spaceKey = p.B3G_SPACE
             keys = p.getKeyboardEvents()
@@ -110,6 +113,12 @@ class Simulation:
                 self.paused = not self.paused
             if sKey in keys and keys[sKey] & p.KEY_IS_DOWN:
                 single_step = True
+            if nKey in keys and keys[nKey] & p.KEY_WAS_TRIGGERED:
+                if self.gravity:
+                    p.setGravity(0, 0, 0)
+                else:
+                    p.setGravity(0, 0, -9.81)
+                self.gravity = not self.gravity
 
         # check if simulation should continue currently
         if not self.paused or single_step:
