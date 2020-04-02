@@ -135,6 +135,10 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   point.y = 0;
   point.z = 0;
   pose.position = point;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
+  pose.orientation.w = 1;
   publishArrowMarker("trunk_result", "base_link", pose, r, g, b, a);
 
   pub_engine_debug_.publish(msg);
@@ -172,13 +176,19 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   // IK results
   robot_state::RobotStatePtr goal_state;
   goal_state.reset(new robot_state::RobotState(kinematic_model_));
-  std::string *names = joint_goals.first.data();
-  goal_state->setJointPositions(*names, joint_goals.second.data());
+  std::vector<std::string> names = joint_goals.first;
+  std::vector<double> goals = joint_goals.second;
+  for (int i = 0; i < names.size(); i++) {
+    // besides its name, this method only changes a single joint position...
+    goal_state->setJointPositions(names[i], &goals[i]);
+  }
+
+  goal_state->updateLinkTransforms();
   geometry_msgs::Pose pose_left_result;
-  tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose_left_result);
+  tf2::convert(goal_state->getFrameTransform("l_sole"), pose_left_result);
   msg.left_foot_ik_result = pose_left_result;
   geometry_msgs::Pose pose_right_result;
-  tf2::convert(goal_state->getGlobalLinkTransform("r_sole"), pose_right_result);
+  tf2::convert(goal_state->getFrameTransform("r_sole"), pose_right_result);
   msg.right_foot_ik_result = pose_right_result;
   if (response.is_left_support_foot) {
     msg.support_foot_ik_result = pose_left_result;

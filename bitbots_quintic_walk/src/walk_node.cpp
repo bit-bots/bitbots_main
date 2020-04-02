@@ -9,7 +9,9 @@ WalkNode::WalkNode() :
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
   current_request_.orders = {0, 0, 0};
-  current_trunk_pitch_ = 0;
+  current_trunk_fused_pitch_ = 0;
+  current_trunk_fused_roll_ = 0;
+  current_fly_pressure_ = 0;
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
@@ -32,9 +34,6 @@ WalkNode::WalkNode() :
                                      ros::TransportHints().tcpNoDelay());
   pressure_sub_right_ = nh_.subscribe("foot_pressure_right/filtered", 1, &WalkNode::pressureRightCb, this,
                                       ros::TransportHints().tcpNoDelay());
-  cop_l_sub_ = nh_.subscribe("cop_l", 1, &WalkNode::copLeftCb, this, ros::TransportHints().tcpNoDelay());
-  cop_r_sub_ = nh_.subscribe("cop_r", 1, &WalkNode::copRightCb, this, ros::TransportHints().tcpNoDelay());
-
 
   //load MoveIt! model
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
@@ -60,11 +59,14 @@ WalkNode::WalkNode() :
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
+  // this has to be done to prevent strange initilization bugs
+  walk_engine_ = WalkEngine();
 }
 
 void WalkNode::run() {
   int odom_counter = 0;
   WalkResponse response;
+  walk_engine_.reset();
 
   while (ros::ok()) {
     ros::Rate loop_rate(engine_frequency_);
@@ -73,6 +75,7 @@ void WalkNode::run() {
     if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
+      stabilizer_.reset();
     } else {
       // we don't want to walk, even if we have orders, if we are not in the right state
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
@@ -83,13 +86,15 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
       walk_engine_.setGoals(current_request_);
+      checkPhaseReset();
       response = walk_engine_.update(dt);
       visualizer_.publishEngineDebug(response);
 
       // only calculate joint goals from this if the engine is not idle
       if (walk_engine_.getState() != WalkState::IDLE) {
-        // add IMU pitch information
-        response.current_pitch = current_trunk_pitch_;
+        response.current_fused_roll = current_trunk_fused_roll_;
+        response.current_fused_pitch = current_trunk_fused_pitch_;
+
         calculateAndPublishJointGoals(response, dt);
       }
     }
@@ -127,7 +132,7 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   }
 
   // publish if foot changed
-  if(current_support_foot_ != support_state.data){
+  if (current_support_foot_ != support_state.data) {
     pub_support_.publish(support_state);
     current_support_foot_ = support_state.data;
   }
@@ -135,8 +140,8 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
 
   // publish debug information
   if (debug_active_) {
-    visualizer_.publishIKDebug(response, current_state_, motor_goals);
-    visualizer_.publishWalkMarkers(response);
+    visualizer_.publishIKDebug(stabilized_response, current_state_, motor_goals);
+    visualizer_.publishWalkMarkers(stabilized_response);
   }
 }
 
@@ -198,25 +203,31 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
   // the tf2::Quaternion has a method to access roll pitch and yaw
   double roll, pitch, yaw;
   tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-  current_trunk_pitch_ = pitch;
+
+  Eigen::Quaterniond imu_orientation_eigen;
+  tf2::convert(quat, imu_orientation_eigen);
+  rot_conv::FusedAngles imu_fused = rot_conv::FusedFromQuat(imu_orientation_eigen);
+
+  current_trunk_fused_pitch_ = imu_fused.fusedPitch;
+  current_trunk_fused_roll_ = imu_fused.fusedRoll;
+
+  // get angular velocities
+  roll_vel_ = msg.angular_velocity.x;
+  pitch_vel_ = msg.angular_velocity.y;
 
   if (imu_active_) {
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
 
     double pitch_delta = pitch - wanted_pitch;
-
-    // get angular velocities
-    double roll_vel = msg.angular_velocity.x;
-    double pitch_vel = msg.angular_velocity.y;
     if (abs(roll) > imu_roll_threshold_ || abs(pitch_delta) > imu_pitch_threshold_ ||
-        abs(pitch_vel) > imu_pitch_vel_threshold_ || abs(roll_vel) > imu_roll_vel_threshold_) {
+        abs(pitch_vel_) > imu_pitch_vel_threshold_ || abs(roll_vel_) > imu_roll_vel_threshold_) {
       walk_engine_.requestPause();
       if (abs(roll) > imu_roll_threshold_) {
         ROS_WARN("imu roll angle stop");
       } else if (abs(pitch_delta) > imu_pitch_threshold_) {
         ROS_WARN("imu pitch angle stop");
-      } else if (abs(pitch_vel) > imu_pitch_vel_threshold_) {
+      } else if (abs(pitch_vel_) > imu_pitch_vel_threshold_) {
         ROS_WARN("imu roll vel stop");
       } else {
         ROS_WARN("imu pitch vel stop");
@@ -228,49 +239,27 @@ void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
 void WalkNode::pressureLeftCb(const bitbots_msgs::FootPressure msg) {
   // only check if this foot is not the current support foot
   if (!walk_engine_.isLeftSupport()) {
-    checkPhaseReset(msg);
+    current_fly_pressure_ = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
   }
 }
 
 void WalkNode::pressureRightCb(const bitbots_msgs::FootPressure msg) {
   // only check if this foot is not the current support foot
   if (walk_engine_.isLeftSupport()) {
-    checkPhaseReset(msg);
+    current_fly_pressure_ = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
   }
 }
 
-void WalkNode::checkPhaseReset(bitbots_msgs::FootPressure msg) {
+void WalkNode::checkPhaseReset() {
   /**
    * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase.
    */
-  double pressure_sum = msg.left_back + msg.left_front + msg.right_back + msg.right_front;
-
   // phase has to be far enough (almost at end of step) to have right foot lifted foot has to have ground contact
   double phase = walk_engine_.getPhase();
   if (phase_reset_active_ && ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) &&
-      pressure_sum > ground_min_pressure_) {
+      current_fly_pressure_ > ground_min_pressure_) {
     ROS_WARN("Phase resetted!");
     walk_engine_.endStep();
-  }
-}
-
-void WalkNode::copLeftCb(geometry_msgs::PointStamped msg) {
-  // Since CoP is only published as something else than 0 if the foot is on the ground, we don't have to check
-  // if this is the current support foot, or if it is double support.
-  // The CoP should not go to the outside edge of the foot. This is the left side for the left foot (y is positive).
-  // The inside edge is okay, since it is necessary to shift the CoM dynamically between feet.
-  // To prevent falling to the front and back, the x position of the CoP is also taken into account.
-  if (cop_stop_active_ &&
-      (msg.point.y > cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
-    walk_engine_.requestPause();
-  }
-}
-
-void WalkNode::copRightCb(geometry_msgs::PointStamped msg) {
-  // The CoP should not go to the outside edge of the foot. This is the right side for the right foot (y is negative).
-  if (cop_stop_active_ &&
-      (msg.point.y < -1 * cop_y_threshold_ || abs(msg.point.x) > cop_x_threshold_)) {
-    walk_engine_.requestPause();
   }
 }
 
@@ -279,10 +268,12 @@ void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
 }
 
 void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
-  std::vector<std::string> names_vec = msg.name;
-  std::string *names = names_vec.data();
-
-  current_state_->setJointPositions(*names, msg.position.data());
+  std::vector<std::string> names = msg.name;
+  std::vector<double> goals = msg.position;
+  for (int i = 0; i < names.size(); i++) {
+    // besides its name, this method only changes a single joint position...
+    current_state_->setJointPositions(names[i], &goals[i]);
+  }
 }
 
 void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
@@ -312,9 +303,6 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   phase_reset_active_ = config.phase_reset_active;
   phase_reset_phase_ = config.phase_reset_phase;
   ground_min_pressure_ = config.ground_min_pressure;
-  cop_stop_active_ = config.cop_stop_active;
-  cop_x_threshold_ = config.cop_x_threshold;
-  cop_y_threshold_ = config.cop_y_threshold;
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
 }
@@ -403,7 +391,7 @@ void WalkNode::initializeEngine() {
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "quintic_walking");
+  ros::init(argc, argv, "walking");
   // init node
   bitbots_quintic_walk::WalkNode node;
 

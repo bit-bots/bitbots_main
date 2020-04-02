@@ -84,7 +84,7 @@ class WalkNode {
 
   void imuCb(const sensor_msgs::Imu &msg);
 
-  void checkPhaseReset(bitbots_msgs::FootPressure msg);
+  void checkPhaseReset();
   void pressureRightCb(bitbots_msgs::FootPressure msg);
   void pressureLeftCb(bitbots_msgs::FootPressure msg);
 
@@ -170,13 +170,8 @@ class WalkNode {
   ros::Subscriber imu_sub_;
   ros::Subscriber pressure_sub_left_;
   ros::Subscriber pressure_sub_right_;
-  ros::Subscriber cop_l_sub_;
-  ros::Subscriber cop_r_sub_;
 
   dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> *dyn_reconf_server_;
-
-  geometry_msgs::PointStamped cop_l_;
-  geometry_msgs::PointStamped cop_r_;
 
   // MoveIt!
   robot_model_loader::RobotModelLoader robot_model_loader_;
@@ -187,8 +182,13 @@ class WalkNode {
   WalkIK ik_;
   WalkVisualizer visualizer_;
 
-  double current_trunk_pitch_;
+  double current_trunk_fused_pitch_;
+  double current_trunk_fused_roll_;
 
+  double current_fly_pressure_;
+
+  double roll_vel_;
+  double pitch_vel_;
 };
 
 } // namespace bitbots_quintic_walk

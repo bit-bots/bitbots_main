@@ -14,6 +14,7 @@ When tuning parameters following things should be kept in mind:
 2. Use slow motion videos from smart phones to debug the walking. This way it is much easier to see what is happening.
 3. Test different walking directions and speeds. Parameters may work perfectly when moving forward but will fail catastrophically when walking sidewards.
 4. When tuning completly new, first do it in rviz. This lets you tune at least to the point where it looks like it works and prevents damage to the robot by colliding legs.
+5. First tune open loop (without any PID control or phase reset). Otherwise problems from these parameters are maybe hidden by the stabilization approaches.
 
 Tune the parameters in the following order:
 
@@ -84,6 +85,12 @@ Furthermore, the node computes the walking odometry by adding up the changes to 
 The node also publishes a debug topic where it provides information on the splines, as well as RViz marker messages.
 
 To be able to change the parameters of the walking, the node provides a dynamic reconfigure interface. Each time a parameter is changed, the new parameters are handed to the walking engine.
+
+
+The Stabilizer
+==============
+
+The stabilizer uses a PID controller with feedback from the IMU to control the tilting of the upper body. This helps the robot to not aggregate errors over time and falling after several steps.
 
 
 .. toctree::

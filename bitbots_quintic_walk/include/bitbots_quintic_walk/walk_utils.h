@@ -23,28 +23,37 @@ enum WalkState {
 };
 
 struct WalkRequest {
-  tf2::Vector3 orders;
-  bool walkable_state;
+  tf2::Vector3 orders = {0,0,0};
+  bool walkable_state = false;
 };
 
 struct WalkResponse {
-  tf2::Transform support_foot_to_flying_foot;
-  tf2::Transform support_foot_to_trunk;
+  tf2::Transform support_foot_to_flying_foot = tf2::Transform(tf2::Quaternion(0,0,0,1), tf2::Vector3(0,0,0));
+  tf2::Transform support_foot_to_trunk = tf2::Transform(tf2::Quaternion(0,0,0,1), tf2::Vector3(0,0,0));
 
   // additional information for visualization
-  bool is_double_support;
-  bool is_left_support_foot;
+  bool is_double_support = false;
+  bool is_left_support_foot = false;
 
-  double phase;
-  double traj_time;
-  double foot_distance;
+  double phase = 0.0;
+  double traj_time = 0.0;
+  double foot_distance = 0.0;
 
-  WalkState state;
+  WalkState state = WalkState::IDLE;
 
-  tf2::Transform support_to_last;
-  tf2::Transform support_to_next;
+  tf2::Transform support_to_last = tf2::Transform(tf2::Quaternion(0,0,0,1), tf2::Vector3(0,0,0));
+  tf2::Transform support_to_next = tf2::Transform(tf2::Quaternion(0,0,0,1), tf2::Vector3(0,0,0));
 
-  double current_pitch;
+  double current_pitch = 0.0;
+  double current_fused_pitch = 0.0;
+  double current_roll = 0.0;
+  double current_fused_roll = 0.0;
+
+  double roll_vel = 0.0;
+  double pitch_vel = 0.0;
+
+  double sup_cop_x = 0.0;
+  double sup_cop_y = 0.0;
 };
 
 /**
