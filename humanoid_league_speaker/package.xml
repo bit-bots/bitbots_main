@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>humanoid_league_speaker</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>The humanoid_league_speaker package provides an easy way to do audio speech output via espeak.
   Messages send to the /speak topic are queued and spoken in another thread depending on their priority.
   This can be used for debug but also for inter robot communication with natural language.</description>
