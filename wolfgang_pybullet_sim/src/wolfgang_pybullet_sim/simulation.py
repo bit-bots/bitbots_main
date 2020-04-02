@@ -12,6 +12,7 @@ import rospkg
 class Simulation:
     def __init__(self, gui):
         self.gui = gui
+        self.paused = False
         # config values
         self.start_position = [0, 0, 0.43]
         self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
@@ -26,9 +27,11 @@ class Simulation:
         if self.gui:
             self.client_id = p.connect(p.GUI)
         else:
-            self.client_id = p.connect(p.DIRECT)
+            self.client_id = p.connect(p.SHARED_MEMORY_SERVER)
         p.setGravity(0, 0, -9.81)
         self.time = 0
+        # disable debug interface, only show robot
+        p.configureDebugVisualizer(p.COV_ENABLE_GUI, False)
 
         # Loading floor
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
@@ -93,16 +96,25 @@ class Simulation:
         p.resetBaseVelocity(self.robot_index, [0, 0, 0], [0, 0, 0])
 
     def step(self):
-        self.time += self.timestep
         # get keyboard events if gui is active
+        single_step = False
         if self.gui:
             # rest if R-key was pressed
             rKey = ord('r')
+            sKey = ord('s')
+            spaceKey = p.B3G_SPACE
             keys = p.getKeyboardEvents()
             if rKey in keys and keys[rKey] & p.KEY_WAS_TRIGGERED:
                 self.reset()
+            if spaceKey in keys and keys[spaceKey] & p.KEY_WAS_TRIGGERED:
+                self.paused = not self.paused
+            if sKey in keys and keys[sKey] & p.KEY_IS_DOWN:
+                single_step = True
 
-        p.stepSimulation()
+        # check if simulation should continue currently
+        if not self.paused or single_step:
+            self.time += self.timestep
+            p.stepSimulation()
 
     def get_robot_pose(self):
         (x, y, z), (qx, qy, qz, qw) = p.getBasePositionAndOrientation(self.robot_index)
@@ -127,7 +139,7 @@ class Joint:
 
     def reset_position(self, position, velocity):
         p.resetJointState(self.body_index, self.joint_index, targetValue=position, targetVelocity=velocity)
-        self.disable_motor()
+        #self.disable_motor()
 
     def disable_motor(self):
         p.setJointMotorControl2(self.body_index, self.joint_index,
