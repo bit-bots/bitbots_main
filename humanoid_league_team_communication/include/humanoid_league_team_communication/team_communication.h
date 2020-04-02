@@ -51,11 +51,11 @@ class TeamCommunication{
   uint64_t position_x_ = 0;
   uint64_t position_y_ = 0;
   uint64_t position_orientation_ = 0;
-  uint64_t position_belief_ = 0;
+  uint64_t position_belief_ = 1;
 
   uint64_t ball_relative_x_ = 0;
   uint64_t ball_relative_y_ = 0;
-  uint64_t ball_belief_ = 0;
+  uint64_t ball_belief_ = 1;
 
   /*uint64_t oppgoal_relative_x_;
   uint64_t oppgoal_relative_y_;
