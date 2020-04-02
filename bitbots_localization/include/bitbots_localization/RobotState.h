@@ -10,6 +10,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <tf2/LinearMath/Quaternion.h>
+#include <bitbots_localization/tools.h>
 
 /**
 * @class CarState
