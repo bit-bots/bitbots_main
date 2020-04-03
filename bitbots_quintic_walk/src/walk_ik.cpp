@@ -78,4 +78,12 @@ void WalkIK::setIKTimeout(double timeout) {
   ik_timeout_ = timeout;
 }
 
+const std::vector<std::string>& WalkIK::getLeftLegJointNames(){
+  return left_leg_joints_group_->getJointModelNames();
+}
+
+const std::vector<std::string>& WalkIK::getRightLegJointNames(){
+  return right_leg_joints_group_->getJointModelNames();
+}
+
 } // namespace bitbots_quintic_walk

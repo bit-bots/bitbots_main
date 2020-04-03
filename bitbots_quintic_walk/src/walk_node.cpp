@@ -254,12 +254,19 @@ void WalkNode::checkPhaseReset() {
   /**
    * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase.
    */
-  // phase has to be far enough (almost at end of step) to have right foot lifted foot has to have ground contact
+  // phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
+  // otherwise we will always do phase reset in the beginning of the step
   double phase = walk_engine_.getPhase();
-  if (phase_reset_active_ && ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) &&
-      current_fly_pressure_ > ground_min_pressure_) {
-    ROS_WARN("Phase resetted!");
-    walk_engine_.endStep();
+  if ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) {
+    if(pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_){
+      // reset phase by using pressure sensors
+      ROS_WARN("Phase resetted by pressure!");
+      walk_engine_.endStep();
+    }else if(joint_phase_reset_active_ && current_fly_effort_ > joint_min_effort_){
+      // reset phase by using joint efforts
+      ROS_WARN("Phase resetted by effort!");
+      walk_engine_.endStep();
+    }
   }
 }
 
@@ -274,6 +281,16 @@ void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
     // besides its name, this method only changes a single joint position...
     current_state_->setJointPositions(names[i], &goals[i]);
   }
+  // compute the effort that is currently on the flying leg to check if it has ground contact
+  double effort_sum = 0;
+  const std::vector<std::string>& fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
+  for (int i = 0; i < names.size(); i++) {
+    // add effort on this joint to sum, if it is part of the flying leg
+    if(std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()){
+        effort_sum = effort_sum + msg.effort[i];
+    }
+  }
+  current_fly_effort_ = effort_sum;
 }
 
 void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
@@ -300,9 +317,11 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   imu_pitch_vel_threshold_ = config.imu_pitch_vel_threshold;
   imu_roll_vel_threshold_ = config.imu_roll_vel_threshold;
 
-  phase_reset_active_ = config.phase_reset_active;
+  pressure_phase_reset_active_ = config.pressure_phase_reset_active;
+  joint_phase_reset_active_ = config.joint_phase_reset_active;
   phase_reset_phase_ = config.phase_reset_phase;
   ground_min_pressure_ = config.ground_min_pressure;
+  joint_min_effort_ = config.joint_min_effort;
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
 }
