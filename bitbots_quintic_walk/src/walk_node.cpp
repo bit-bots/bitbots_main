@@ -291,7 +291,7 @@ void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
     for (int i = 0; i < names.size(); i++) {
       // add effort on this joint to sum, if it is part of the flying leg
       if(std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()){
-          effort_sum = effort_sum + msg.effort[i];
+          effort_sum = effort_sum + abs(msg.effort[i]);
       }
     }
     current_fly_effort_ = effort_sum;
