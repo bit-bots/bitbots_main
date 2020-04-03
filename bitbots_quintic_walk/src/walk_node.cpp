@@ -12,6 +12,7 @@ WalkNode::WalkNode() :
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
   current_fly_pressure_ = 0;
+  current_fly_effort_ = 0;
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
@@ -281,16 +282,22 @@ void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
     // besides its name, this method only changes a single joint position...
     current_state_->setJointPositions(names[i], &goals[i]);
   }
+
   // compute the effort that is currently on the flying leg to check if it has ground contact
-  double effort_sum = 0;
-  const std::vector<std::string>& fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
-  for (int i = 0; i < names.size(); i++) {
-    // add effort on this joint to sum, if it is part of the flying leg
-    if(std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()){
-        effort_sum = effort_sum + msg.effort[i];
+  // only if we have the necessary data
+  if(msg.effort.size() == msg.name.size()){
+    double effort_sum = 0;
+    const std::vector<std::string>& fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
+    for (int i = 0; i < names.size(); i++) {
+      // add effort on this joint to sum, if it is part of the flying leg
+      if(std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()){
+          effort_sum = effort_sum + msg.effort[i];
+      }
     }
+    current_fly_effort_ = effort_sum;
+  }else{
+    ROS_WARN_ONCE("Joint states have no effort information. Phase reset based on this will not work.");
   }
-  current_fly_effort_ = effort_sum;
 }
 
 void WalkNode::kickCb(const std_msgs::BoolConstPtr &msg) {
