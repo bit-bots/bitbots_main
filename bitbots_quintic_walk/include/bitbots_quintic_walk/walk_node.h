@@ -114,9 +114,11 @@ class WalkNode {
 
   double engine_frequency_;
 
-  bool phase_reset_active_;
+  bool pressure_phase_reset_active_;
+  bool effort_phase_reset_active_;
   double phase_reset_phase_;
   double ground_min_pressure_;
+  double joint_min_effort_;
   bool cop_stop_active_;
   double cop_x_threshold_;
   double cop_y_threshold_;
@@ -186,6 +188,7 @@ class WalkNode {
   double current_trunk_fused_roll_;
 
   double current_fly_pressure_;
+  double current_fly_effort_;
 
   double roll_vel_;
   double pitch_vel_;
