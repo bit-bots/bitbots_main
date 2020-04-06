@@ -263,7 +263,7 @@ void WalkNode::checkPhaseReset() {
       // reset phase by using pressure sensors
       ROS_WARN("Phase resetted by pressure!");
       walk_engine_.endStep();
-    }else if(joint_phase_reset_active_ && current_fly_effort_ > joint_min_effort_){
+    }else if(effort_phase_reset_active_ && current_fly_effort_ > joint_min_effort_){
       // reset phase by using joint efforts
       ROS_WARN("Phase resetted by effort!");
       walk_engine_.endStep();
@@ -325,7 +325,7 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   imu_roll_vel_threshold_ = config.imu_roll_vel_threshold;
 
   pressure_phase_reset_active_ = config.pressure_phase_reset_active;
-  joint_phase_reset_active_ = config.joint_phase_reset_active;
+  effort_phase_reset_active_ = config.effort_phase_reset_active;
   phase_reset_phase_ = config.phase_reset_phase;
   ground_min_pressure_ = config.ground_min_pressure;
   joint_min_effort_ = config.joint_min_effort;

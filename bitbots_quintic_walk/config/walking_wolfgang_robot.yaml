@@ -103,7 +103,7 @@ walking:
     ground_min_pressure: 1.5
     phase_reset_phase: 0.25
     joint_min_effort: 35
-    joint_phase_reset_active: False
+    effort_phase_reset_active: False
 
     publish_odom_tf: False
 

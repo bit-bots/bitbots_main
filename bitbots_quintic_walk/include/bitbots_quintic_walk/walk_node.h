@@ -115,7 +115,7 @@ class WalkNode {
   double engine_frequency_;
 
   bool pressure_phase_reset_active_;
-  bool joint_phase_reset_active_;
+  bool effort_phase_reset_active_;
   double phase_reset_phase_;
   double ground_min_pressure_;
   double joint_min_effort_;
