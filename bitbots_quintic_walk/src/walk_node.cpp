@@ -87,7 +87,7 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
       walk_engine_.setGoals(current_request_);
-      checkPhaseReset();
+      checkPhaseRestAndReset();
       response = walk_engine_.update(dt);
       visualizer_.publishEngineDebug(response);
 
@@ -251,14 +251,18 @@ void WalkNode::pressureRightCb(const bitbots_msgs::FootPressure msg) {
   }
 }
 
-void WalkNode::checkPhaseReset() {
+void WalkNode::checkPhaseRestAndReset() {
   /**
-   * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase.
+   * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase,
+     or let the robot rest until it makes contact.
    */
   // phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
   // otherwise we will always do phase reset in the beginning of the step
   double phase = walk_engine_.getPhase();
-  if ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) {
+  double phase_reset_phase = walk_engine_.getPhaseResetPhase();
+
+  if ((phase > phase_reset_phase && phase < 0.5) || (phase > 0.5 + phase_reset_phase)) {
+    // check if we want to perform a phase reset
     if(pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_){
       // reset phase by using pressure sensors
       ROS_WARN("Phase resetted by pressure!");
@@ -329,6 +333,13 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   phase_reset_phase_ = config.phase_reset_phase;
   ground_min_pressure_ = config.ground_min_pressure;
   joint_min_effort_ = config.joint_min_effort;
+  // phase rest can only work if one phase resetting method is active
+  if(joint_phase_reset_active_ || pressure_phase_reset_active_){
+    walk_engine_.setPhaseRest(config.phase_rest_active);
+  }else{
+    walk_engine_.setPhaseRest(false);
+  }
+
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
 }
