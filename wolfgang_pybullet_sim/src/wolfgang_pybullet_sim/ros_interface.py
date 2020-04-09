@@ -6,10 +6,14 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Float32, Bool
 
+from wolfgang_pybullet_sim.cfg import simConfig
+from dynamic_reconfigure.server import Server
+
 
 class ROSInterface:
     def __init__(self, simulation):
         rospy.init_node("pybullet_sim")
+
 
         self.simulation = simulation
         self.last_time = time.time()
@@ -31,9 +35,14 @@ class ROSInterface:
         self.odom_msg.header.frame_id = "odom"
         self.odom_msg.child_frame_id = "base_link"
 
+
+        srv = Server(simConfig, self._dynamic_reconfigure_callback)
+
         # publisher
         self.left_foot_pressure_publisher = rospy.Publisher("foot_pressure_raw/left", FootPressure, queue_size=1)
         self.right_foot_pressure_publisher = rospy.Publisher("foot_pressure_raw/right", FootPressure, queue_size=1)
+        self.left_foot_pressure_publisher_filtered = rospy.Publisher("foot_pressure_filtered/left", FootPressure, queue_size=1)
+        self.right_foot_pressure_publisher_filtered = rospy.Publisher("foot_pressure_filtered/right", FootPressure, queue_size=1)
         self.joint_publisher = rospy.Publisher("joint_states", JointState, queue_size=1)
         self.imu_publisher = rospy.Publisher("imu/data", Imu, queue_size=1)
         self.clock_publisher = rospy.Publisher("clock", Clock, queue_size=1)
@@ -100,17 +109,30 @@ class ROSInterface:
         self.imu_publisher.publish(self.imu_msg)
 
     def publish_foot_pressure(self):
-        self.foot_msg_left.left_back = self.simulation.pressure_sensors["LLB"].get_force()
-        self.foot_msg_left.left_front = self.simulation.pressure_sensors["LLF"].get_force()
-        self.foot_msg_left.right_front = self.simulation.pressure_sensors["LRF"].get_force()
-        self.foot_msg_left.right_back = self.simulation.pressure_sensors["LRB"].get_force()
+        self.foot_msg_left.left_back = self.simulation.pressure_sensors["LLB"].get_force()[0]
+        self.foot_msg_left.left_front = self.simulation.pressure_sensors["LLF"].get_force()[0]
+        self.foot_msg_left.right_front = self.simulation.pressure_sensors["LRF"].get_force()[0]
+        self.foot_msg_left.right_back = self.simulation.pressure_sensors["LRB"].get_force()[0]
         self.left_foot_pressure_publisher.publish(self.foot_msg_left)
 
-        self.foot_msg_right.left_back = self.simulation.pressure_sensors["RLB"].get_force()
-        self.foot_msg_right.left_front = self.simulation.pressure_sensors["RLF"].get_force()
-        self.foot_msg_right.right_front = self.simulation.pressure_sensors["RRF"].get_force()
-        self.foot_msg_right.right_back = self.simulation.pressure_sensors["RRB"].get_force()
+        self.foot_msg_right.left_back = self.simulation.pressure_sensors["RLB"].get_force()[0]
+        self.foot_msg_right.left_front = self.simulation.pressure_sensors["RLF"].get_force()[0]
+        self.foot_msg_right.right_front = self.simulation.pressure_sensors["RRF"].get_force()[0]
+        self.foot_msg_right.right_back = self.simulation.pressure_sensors["RRB"].get_force()[0]
         self.right_foot_pressure_publisher.publish(self.foot_msg_right)
+
+
+        self.foot_msg_left.left_back = self.simulation.pressure_sensors["LLB"].get_force()[1]
+        self.foot_msg_left.left_front = self.simulation.pressure_sensors["LLF"].get_force()[1]
+        self.foot_msg_left.right_front = self.simulation.pressure_sensors["LRF"].get_force()[1]
+        self.foot_msg_left.right_back = self.simulation.pressure_sensors["LRB"].get_force()[1]
+        self.left_foot_pressure_publisher_filtered.publish(self.foot_msg_left)
+
+        self.foot_msg_right.left_back = self.simulation.pressure_sensors["RLB"].get_force()[1]
+        self.foot_msg_right.left_front = self.simulation.pressure_sensors["RLF"].get_force()[1]
+        self.foot_msg_right.right_front = self.simulation.pressure_sensors["RRF"].get_force()[1]
+        self.foot_msg_right.right_back = self.simulation.pressure_sensors["RRB"].get_force()[1]
+        self.right_foot_pressure_publisher_filtered.publish(self.foot_msg_right)
 
     def publish_true_odom(self):
         position, orientation = self.simulation.get_robot_pose()
@@ -127,3 +149,7 @@ class ROSInterface:
 
     def reset_cb(self, msg):
         self.simulation.reset()
+
+    def _dynamic_reconfigure_callback(self, config, level):
+        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"])
+        return config

@@ -4,7 +4,7 @@ import sys
 import time
 import pybullet as p
 from time import sleep
-
+from scipy import signal
 import pybullet_data
 import rospkg
 
@@ -74,16 +74,23 @@ class Simulation:
                 self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index)
 
         # set friction for feet
+        self.set_foot_dynamics(0.5,0.5)
+
+        # reset robot to initial position
+        self.reset()
+
+    def set_foot_dynamics(self, contact_damping, contact_stiffness):
         for link_name in self.links.keys():
             if link_name in ["l_foot", "r_foot", "llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
                 # print(self.parts[part].body_name)
                 p.changeDynamics(self.robot_index, self.links[link_name],
                                  lateralFriction=10000000000000000,
                                  spinningFriction=1000000000000000,
-                                 rollingFriction=0.1)
-
-        # reset robot to initial position
-        self.reset()
+                                 rollingFriction=0.1,
+                                 contactDamping=contact_damping,
+                                 contactStiffness=contact_stiffness)
+        print("contact_stiffness: " + str(contact_stiffness))
+        print("contact_damping: " + str(contact_damping))
 
     def reset(self):
         # set joints to initial position
@@ -184,6 +191,13 @@ class PressureSensor:
         self.name = name
         self.body_index = body_index
         p.enableJointForceTorqueSensor(self.body_index, self.joint_index)
+        order = 5
+        nyq = 240 * 0.5 # nyquist frequency from simulation frequency
+        normalized_cutoff = 10 / nyq # cutoff freq in hz
+        self.filter_b, self.filter_a = signal.butter(order, normalized_cutoff, btype='low')
+        self.filter_state = signal.lfilter_zi(self.filter_b, 1)
 
     def get_force(self):
-        return p.getJointState(self.body_index, self.joint_index)[2][2] * -1
+        unfiltered = p.getJointState(self.body_index, self.joint_index)[2][2] * -1
+        filtered, self.filter_state = signal.lfilter(self.filter_b, self.filter_a, [unfiltered], zi=self.filter_state)
+        return unfiltered, filtered
