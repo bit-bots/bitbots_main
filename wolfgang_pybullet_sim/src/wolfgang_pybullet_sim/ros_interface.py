@@ -151,5 +151,6 @@ class ROSInterface:
         self.simulation.reset()
 
     def _dynamic_reconfigure_callback(self, config, level):
-        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"])
+        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"], config["joint_damping"])
+        self.simulation.set_filter_params(config["cutoff"], config["order"])
         return config

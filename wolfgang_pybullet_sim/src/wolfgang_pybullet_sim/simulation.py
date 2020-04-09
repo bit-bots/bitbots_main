@@ -71,15 +71,16 @@ class Simulation:
                 # remember joint
                 self.joints[name] = Joint(i, self.robot_index)
             elif name in ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]:
-                self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index)
+                p.enableJointForceTorqueSensor(self.robot_index, i)
+                self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index, 10, 5)
 
         # set friction for feet
-        self.set_foot_dynamics(0.5,0.5)
+        self.set_foot_dynamics(0.0, 0.0, 0.0)
 
         # reset robot to initial position
         self.reset()
 
-    def set_foot_dynamics(self, contact_damping, contact_stiffness):
+    def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping):
         for link_name in self.links.keys():
             if link_name in ["l_foot", "r_foot", "llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
                 # print(self.parts[part].body_name)
@@ -88,9 +89,15 @@ class Simulation:
                                  spinningFriction=1000000000000000,
                                  rollingFriction=0.1,
                                  contactDamping=contact_damping,
-                                 contactStiffness=contact_stiffness)
-        print("contact_stiffness: " + str(contact_stiffness))
-        print("contact_damping: " + str(contact_damping))
+                                 contactStiffness=contact_stiffness,
+                                 jointDamping=joint_damping)
+
+    def set_filter_params(self, cutoff, order):
+        for i in range(p.getNumJoints(self.robot_index)):
+            joint_info = p.getJointInfo(self.robot_index, i)
+            name = joint_info[1].decode('utf-8')
+            if name in ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]:
+                self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index, cutoff, order)
 
     def reset(self):
         # set joints to initial position
@@ -186,14 +193,12 @@ class Joint:
 
 
 class PressureSensor:
-    def __init__(self, name, joint_index, body_index):
+    def __init__(self, name, joint_index, body_index, cutoff, order):
         self.joint_index = joint_index
         self.name = name
         self.body_index = body_index
-        p.enableJointForceTorqueSensor(self.body_index, self.joint_index)
-        order = 5
         nyq = 240 * 0.5 # nyquist frequency from simulation frequency
-        normalized_cutoff = 10 / nyq # cutoff freq in hz
+        normalized_cutoff = cutoff / nyq # cutoff freq in hz
         self.filter_b, self.filter_a = signal.butter(order, normalized_cutoff, btype='low')
         self.filter_state = signal.lfilter_zi(self.filter_b, 1)
 
