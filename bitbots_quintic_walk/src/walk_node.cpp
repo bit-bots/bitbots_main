@@ -253,8 +253,8 @@ void WalkNode::pressureRightCb(const bitbots_msgs::FootPressure msg) {
 
 void WalkNode::checkPhaseRestAndReset() {
   /**
-   * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase,
-     or let the robot rest until it makes contact.
+   * This method checks if the foot made contact to the ground and ends the step earlier by resetting the phase ("phase reset")
+     or lets the robot rest until it makes ground contact ("phase rest").
    */
   // phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
   // otherwise we will always do phase reset in the beginning of the step
