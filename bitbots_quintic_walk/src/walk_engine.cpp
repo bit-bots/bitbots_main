@@ -67,7 +67,7 @@ WalkResponse WalkEngine::update(double dt) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return createResponse();
     }
-  }else if(engine_state_ == WalkState::WALKING){
+  }else if (engine_state_ == WalkState::WALKING) {
     // check if the step would finish with this update of the phase
     bool step_will_finish = (phase_ < 0.5 && phase_ + dt * params_.freq > 0.5 ) || phase_ + dt * params_.freq > 1.0;
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
