@@ -334,7 +334,7 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   ground_min_pressure_ = config.ground_min_pressure;
   joint_min_effort_ = config.joint_min_effort;
   // phase rest can only work if one phase resetting method is active
-  if(joint_phase_reset_active_ || pressure_phase_reset_active_){
+  if(effort_phase_reset_active_ || pressure_phase_reset_active_){
     walk_engine_.setPhaseRest(config.phase_rest_active);
   }else{
     walk_engine_.setPhaseRest(false);
