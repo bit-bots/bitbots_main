@@ -130,9 +130,9 @@ class PlayAnimationFallingBack(AbstractPlayAnimation):
         return self.blackboard.falling_animation_back
 
 
-class PlayAnimationPenalty(AbstractPlayAnimation):
+class PlayAnimationStopped(AbstractPlayAnimation):
     def chose_animation(self):
-        return self.blackboard.penalty_animation
+        return self.blackboard.stop_animation
 
 
 class PlayAnimationWalkready(AbstractPlayAnimation):

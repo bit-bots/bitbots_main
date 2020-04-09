@@ -4,7 +4,7 @@
 Welcome to |project|'s documentation!
 ========================================
 
-The HCM is the part of our software stack which handles all reflexlike behaviour of the robot, e.g. falling.
+The HCM is the part of our software stack which handles all reflex like behaviour of the robot, e.g. falling.
 It helps abstracting from the fact that the robot has legs and can fall.
 This allows the high level behavior to focus on tactics and the robot can be controlled as if it has wheels.
 

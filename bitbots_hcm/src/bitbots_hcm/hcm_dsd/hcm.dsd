@@ -1,48 +1,41 @@
-#Falling
-$Falling
-    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
-    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
-    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
-    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
-    NOT_FALLING --> $Fallen
-        FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
-        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
-        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup
-        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup
-        NOT_FALLEN --> $ExternalAnimation
-            ANIMATION_RUNNING --> @StayAnimationRunning
-            FREE --> $Walking
-                STOP_WALKING --> @StopWalking
-                STAY_WALKING --> @StayWalking
-                NOT_WALKING --> $Kicking
-                    NOT_KICKING --> $Controlable
-                        NOT_WALKREADY --> @PlayAnimationWalkready
-                        WALKREADY --> @StayControlable
-                    KICKING --> @StayKicking
-
-#Penalty
-$Penalty
-    PENALIZED --> @PenaltyStopWalking, @PlayAnimationPenalty, @StayInPenalty
-    FREE --> $MotorOffTimer
-        SIMULATION --> #Falling
-        TURN_MOTORS_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
-        TURN_MOTORS_ON --> @TurnMotorsOn
-        MOTORS_ARE_ON --> $CheckMotors
-            PROBLEM --> @WaitForMotors
-            CONNECTION --> $Record
-                RECORD_ACTIVE --> @StayRecord
-                FREE --> $PickedUp
-                    PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
-                    ON_GROUND --> #Falling
-
-
 -->HCM
 $StartHCM
-    SHUTDOWN --> @PlayAnimationSitDown, @StayShutDown
-    ROBOT --> $CheckIMU
-        IMU_NOT_STARTED --> @WaitForIMU
-        PROBLEM --> @WaitForIMU
-        CONNECTION --> $CheckPressureSensor
-            PRESSURE_NOT_STARTED --> @WaitForPressure
-            PROBLEM --> @WaitForPressure
-            CONNECTION --> #Penalty
+    SHUTDOWN_REQUESTED --> @PlayAnimationSitDown, @TurnMotorsOff, @StayShutDown
+    RUNNING --> $Stop
+        STOPPED -->  @ForceStopWalking, @PlayAnimationStopped, @StayStopped
+        FREE -->$Record
+            RECORD_ACTIVE --> @StayRecord
+            FREE --> $CheckIMU
+                IMU_NOT_STARTED --> @WaitForIMU
+                PROBLEM --> @WaitForIMU
+                CONNECTION --> $CheckPressureSensor
+                    PRESSURE_NOT_STARTED --> @WaitForPressure
+                    PROBLEM --> @WaitForPressure
+                    CONNECTION --> $CheckMotors
+                        PROBLEM --> @WaitForMotors
+                        TURN_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
+                        TURN_ON --> @TurnMotorsOn
+                        OKAY --> $PickedUp
+                            PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
+                            ON_GROUND --> $Falling
+                                FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
+                                FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
+                                FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
+                                FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
+                                NOT_FALLING --> $Sitting
+                                    YES --> @PlayAnimationDynup
+                                    NO --> $Fallen
+                                        FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
+                                        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
+                                        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup
+                                        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup
+                                        NOT_FALLEN --> $ExternalAnimation
+                                            ANIMATION_RUNNING --> @StayAnimationRunning
+                                            FREE --> $Walking
+                                                STOP_WALKING --> @StopWalking
+                                                STAY_WALKING --> @StayWalking
+                                                NOT_WALKING --> $Kicking
+                                                    KICKING --> @StayKicking
+                                                    NOT_KICKING --> $Controlable
+                                                        NOT_WALKREADY --> @PlayAnimationWalkready
+                                                        WALKREADY --> @StayControlable

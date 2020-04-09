@@ -35,7 +35,7 @@ STATE_KICKING = 15
 class HcmBlackboard():
     def __init__(self):
         self.current_state = STATE_STARTUP 
-        self.penalized = False
+        self.stopped = False
         self.shut_down_request = False
         self.simulation_active = rospy.get_param("/simulation_active", False)
         self.visualization_active = rospy.get_param("/visualization_active", False)
@@ -77,7 +77,7 @@ class HcmBlackboard():
         self.falling_animation_back = rospy.get_param("hcm/animations/falling_back")
         self.falling_animation_left = rospy.get_param("hcm/animations/falling_left")
         self.falling_animation_right = rospy.get_param("hcm/animations/falling_right")
-        self.penalty_animation = rospy.get_param("hcm/animations/penalty")
+        self.stop_animation = rospy.get_param("hcm/animations/penalty")
         self.sit_down_animation = rospy.get_param("hcm/animations/sit_down")
         self.motor_off_animation = rospy.get_param("hcm/animations/motor_off")
         self.stand_up_front_animation = rospy.get_param("hcm/animations/stand_up_front")
@@ -87,7 +87,7 @@ class HcmBlackboard():
 
         # motors
         self.last_motor_goal_time = rospy.Time.now() # initilize with current time, or motors will be turned off on start
-        self.last_motor_update_time = rospy.Time()
+        self.last_motor_update_time = rospy.Time.from_sec(0)
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
         self.current_joint_positions = None
@@ -109,8 +109,8 @@ class HcmBlackboard():
 
         # falling
         self.fall_checker = FallChecker()
-        self.is_stand_up_active = True  #not self.simulation_active and rospy.get_param("hcm/stand_up_active", False)
-        self.falling_detection_active = not self.simulation_active and rospy.get_param("hcm/falling_active", False)
+        self.is_stand_up_active = rospy.get_param("hcm/stand_up_active", True)
+        self.falling_detection_active = rospy.get_param("hcm/falling_active", True)
         self.hacky_sequence_dynup_running = False
 
         # kicking

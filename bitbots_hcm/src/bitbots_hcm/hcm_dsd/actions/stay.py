@@ -39,7 +39,7 @@ class StayMotorsOff(AbstractStay):
     pass
 
 
-class StayInPenalty(AbstractStay):
+class StayStopped(AbstractStay):
     def perform(self):
         self.blackboard.current_state = STATE_PENALTY
 
