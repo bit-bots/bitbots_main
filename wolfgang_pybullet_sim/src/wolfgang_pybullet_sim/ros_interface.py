@@ -109,29 +109,40 @@ class ROSInterface:
         self.imu_publisher.publish(self.imu_msg)
 
     def publish_foot_pressure(self):
-        self.foot_msg_left.left_back = self.simulation.pressure_sensors["LLB"].get_force()[0]
-        self.foot_msg_left.left_front = self.simulation.pressure_sensors["LLF"].get_force()[0]
-        self.foot_msg_left.right_front = self.simulation.pressure_sensors["LRF"].get_force()[0]
-        self.foot_msg_left.right_back = self.simulation.pressure_sensors["LRB"].get_force()[0]
+
+        f_llb = self.simulation.pressure_sensors["LLB"].get_force()
+        f_llf = self.simulation.pressure_sensors["LLF"].get_force()
+        f_lrf = self.simulation.pressure_sensors["LRF"].get_force()
+        f_lrb = self.simulation.pressure_sensors["LRB"].get_force()
+
+        f_rlb = self.simulation.pressure_sensors["RLB"].get_force()
+        f_rlf = self.simulation.pressure_sensors["RLF"].get_force()
+        f_rrf = self.simulation.pressure_sensors["RRF"].get_force()
+        f_rrb = self.simulation.pressure_sensors["RRB"].get_force()[0]
+
+        self.foot_msg_left.left_back = f_llb[0]
+        self.foot_msg_left.left_front = f_llf[0]
+        self.foot_msg_left.right_front = f_lrf[0]
+        self.foot_msg_left.right_back = f_lrb[0]
         self.left_foot_pressure_publisher.publish(self.foot_msg_left)
 
-        self.foot_msg_right.left_back = self.simulation.pressure_sensors["RLB"].get_force()[0]
-        self.foot_msg_right.left_front = self.simulation.pressure_sensors["RLF"].get_force()[0]
-        self.foot_msg_right.right_front = self.simulation.pressure_sensors["RRF"].get_force()[0]
-        self.foot_msg_right.right_back = self.simulation.pressure_sensors["RRB"].get_force()[0]
+        self.foot_msg_right.left_back = f_rlb[0]
+        self.foot_msg_right.left_front = f_rlf[0]
+        self.foot_msg_right.right_front = f_rrf[0]
+        self.foot_msg_right.right_back = f_rrb[0]
         self.right_foot_pressure_publisher.publish(self.foot_msg_right)
 
 
-        self.foot_msg_left.left_back = self.simulation.pressure_sensors["LLB"].get_force()[1]
-        self.foot_msg_left.left_front = self.simulation.pressure_sensors["LLF"].get_force()[1]
-        self.foot_msg_left.right_front = self.simulation.pressure_sensors["LRF"].get_force()[1]
-        self.foot_msg_left.right_back = self.simulation.pressure_sensors["LRB"].get_force()[1]
+        self.foot_msg_left.left_back = f_llb[1]
+        self.foot_msg_left.left_front = f_llf[1]
+        self.foot_msg_left.right_front = f_lrf[1]
+        self.foot_msg_left.right_back = f_lrb[1]
         self.left_foot_pressure_publisher_filtered.publish(self.foot_msg_left)
 
-        self.foot_msg_right.left_back = self.simulation.pressure_sensors["RLB"].get_force()[1]
-        self.foot_msg_right.left_front = self.simulation.pressure_sensors["RLF"].get_force()[1]
-        self.foot_msg_right.right_front = self.simulation.pressure_sensors["RRF"].get_force()[1]
-        self.foot_msg_right.right_back = self.simulation.pressure_sensors["RRB"].get_force()[1]
+        self.foot_msg_right.left_back = f_rlb[1]
+        self.foot_msg_right.left_front = f_rlf[1]
+        self.foot_msg_right.right_front = f_rrf[1]
+        self.foot_msg_right.right_back = f_rrb[1]
         self.right_foot_pressure_publisher_filtered.publish(self.foot_msg_right)
 
     def publish_true_odom(self):

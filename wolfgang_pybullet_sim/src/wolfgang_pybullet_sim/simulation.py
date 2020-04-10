@@ -205,4 +205,4 @@ class PressureSensor:
     def get_force(self):
         unfiltered = p.getJointState(self.body_index, self.joint_index)[2][2] * -1
         filtered, self.filter_state = signal.lfilter(self.filter_b, self.filter_a, [unfiltered], zi=self.filter_state)
-        return unfiltered, filtered
+        return unfiltered, filtered[0]
