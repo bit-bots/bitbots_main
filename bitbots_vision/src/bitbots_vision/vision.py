@@ -12,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
-    GoalPartsInImage, FieldBoundaryInImage, Audio
+    GoalPostInImageArray, FieldBoundaryInImage, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
@@ -52,7 +52,7 @@ class Vision:
         self._pub_lines = None
         self._pub_line_mask = None
         self._pub_obstacle = None
-        self._pub_goal_parts = None
+        self._pub_goal_posts = None
         self._pub_ball_fcnn = None
         self._pub_debug_image = None
         self._pub_debug_fcnn_image = None
@@ -395,7 +395,7 @@ class Vision:
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
         self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-        self._pub_goal_parts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_parts, 'ROS_goal_parts_msg_topic', GoalPartsInImage, queue_size=3)
+        self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
         self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
@@ -550,14 +550,14 @@ class Vision:
             self._goalpost_detector.get_candidates(),
             self._goal_post_field_boundary_y_offset)
 
-        # Get goalpost msgs and add them to the detected goal parts list
-        goal_posts_msg = ros_utils.build_goalpost_msgs(goal_posts)
-        # Create goalparts msg
-        goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_posts_msg)
+        # Get goalpost msgs and add them to the detected goal posts list
+        goal_post_msgs = ros_utils.build_goal_post_msgs(goal_posts)
+        # Create goalposts msg
+        goal_posts_msg = ros_utils.build_goal_posts_msg(image_msg.header, goal_post_msgs)
         # Check if there is a goal
-        if goal_parts_msg:
+        if goal_posts_msg:
             # If we have a goal, lets publish it
-            self._pub_goal_parts.publish(goal_parts_msg)
+            self._pub_goal_posts.publish(goal_posts_msg)
 
         #########
         # Lines #

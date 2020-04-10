@@ -8,7 +8,7 @@ ROS_img_msg_queue_size: 1  # ROS queue size for the image message
 ROS_fcnn_img_msg_topic: 'fcnn_image'  # ROS topic of the fcnn output message
 ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message
 ROS_ball_msg_topic: 'balls_in_image'  # ROS topic of the ball message
-ROS_goal_parts_msg_topic: 'goal_parts_in_image'  # ROS topic of the goal parts message
+ROS_goal_posts_msg_topic: 'goal_parts_in_image'  # ROS topic of the goal parts message
 ROS_obstacle_msg_topic: 'obstacles_in_image'  # ROS topic of the obstacles message
 ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
 ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message

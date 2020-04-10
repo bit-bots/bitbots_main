@@ -6,7 +6,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Audio, ImageWithRegionOfInterest
+    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Audio, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
 """
@@ -255,24 +255,24 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
         rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return subscriber_object
 
-def build_goal_parts_msg(header, goal_parts):
+def build_goal_posts_msg(header, goal_post_msgs):
     """
-    Builds a GoalPartsInImage message out of a list of GoalPostInImage messages
+    Builds a GoalPostInImageArray message out of a list of GoalPostInImage messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param goal_parts: a list of goal part messages, e.g. GoalPostInImage
-    :return: GoalPartsInImage message
+    :param goal_post_msgs: List of goal post messages
+    :return: GoalPostInImageArray message
     """
-    # Create goalparts msg
-    goal_parts_msg = GoalPartsInImage()
+    # Create goalposts msg
+    goal_posts_msg = GoalPostInImageArray()
     # Add header
-    goal_parts_msg.header.frame_id = header.frame_id
-    goal_parts_msg.header.stamp = header.stamp
-    # Add detected goal parts to the message
-    goal_parts_msg.posts = goal_parts
-    return goal_parts_msg
+    goal_posts_msg.header.frame_id = header.frame_id
+    goal_posts_msg.header.stamp = header.stamp
+    # Add detected goal posts to the message
+    goal_posts_msg.posts = goal_post_msgs
+    return goal_posts_msg
 
-def build_goalpost_msgs(goalposts):
+def build_goal_post_msgs(goalposts):
     """
     Builds a list of goalpost messages
 
