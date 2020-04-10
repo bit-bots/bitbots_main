@@ -5,7 +5,7 @@ import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
+from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
     ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
@@ -342,7 +342,7 @@ def build_balls_msg(header, balls):
     :return: balls msg
     """
     # create ball msg
-    balls_msg = BallsInImage()
+    balls_msg = BallInImageArray()
     # Set header
     balls_msg.header.frame_id = header.frame_id
     balls_msg.header.stamp = header.stamp
