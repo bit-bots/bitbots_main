@@ -118,7 +118,7 @@ class ROSInterface:
         f_rlb = self.simulation.pressure_sensors["RLB"].get_force()
         f_rlf = self.simulation.pressure_sensors["RLF"].get_force()
         f_rrf = self.simulation.pressure_sensors["RRF"].get_force()
-        f_rrb = self.simulation.pressure_sensors["RRB"].get_force()[0]
+        f_rrb = self.simulation.pressure_sensors["RRB"].get_force()
 
         self.foot_msg_left.left_back = f_llb[0]
         self.foot_msg_left.left_front = f_llf[0]
