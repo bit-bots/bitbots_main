@@ -12,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
     ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
-    GoalPartsInImage, FieldBoundaryInImage, Speak
+    GoalPartsInImage, FieldBoundaryInImage, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
@@ -79,7 +79,7 @@ class Vision:
             latch=True)
 
         # Speak publisher
-        self._speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        self._speak_publisher = rospy.Publisher('/speak', Audio, queue_size=10)
 
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True

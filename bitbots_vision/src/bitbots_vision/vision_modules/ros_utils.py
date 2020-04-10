@@ -6,7 +6,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
+    ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Audio, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
 """
@@ -476,7 +476,7 @@ def speak(string, speech_publisher):
     :param string: Text the robot should say
     :param speech_publisher: ROS publisher for the speech message
     """
-    speak_message = Speak()
+    speak_message = Audio()
     speak_message.text = string
     speech_publisher.publish(speak_message)
 
