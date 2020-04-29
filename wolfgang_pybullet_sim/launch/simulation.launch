@@ -1,0 +1,14 @@
+<launch>
+    <arg name="gui" default="true"/>
+
+    <group if="$(arg gui)">
+        <node pkg="wolfgang_pybullet_sim" type="simulation_with_gui.py" name="pybullet_sim" output="screen">
+            <rosparam file="$(find wolfgang_pybullet_sim)/config/config.yaml"/>
+        </node>
+    </group>
+    <group unless="$(arg gui)">
+        <node pkg="wolfgang_pybullet_sim" type="simulation_headless.py" name="pybullet_sim" output="screen">
+            <rosparam file="$(find wolfgang_pybullet_sim)/config/config.yaml"/>
+        </node>
+    </group>
+</launch>
