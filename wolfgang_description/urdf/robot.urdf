@@ -1,5 +1,5 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wolfgang">
-<link name="base_link"></link>
+<link name="base_link"><inertial><origin xyz="0 0 0" rpy="0 0 0"/><mass value="0.0001" /><inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" /></inertial></link>
 <joint name="base_link_to_base" type="fixed">
 <parent link="base_link"/>
 <child link="torso" />
@@ -252,7 +252,7 @@
 <axis xyz="0 0 0"/>
 </joint>
 
-<link name="shoulder_right_1">
+<link name="r_shoulder">
 <collision>
 <origin xyz="-0.02595 0.042 2.77556e-17" rpy="-1.5708 2.89513e-24 1.5708" />
 <geometry>
@@ -283,9 +283,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/shoulder_right_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_shoulder.stl"/>
 </geometry>
-<material name="shoulder_right_1_material">
+<material name="r_shoulder_material">
 <color rgba="0.609281 0.613952 0.618623 1.0"/>
 </material>
 </visual>
@@ -296,7 +296,7 @@
 </inertial>
 </link>
 
-<link name="upper_arm_1">
+<link name="r_upper_arm">
 <collision>
 <origin xyz="1.38778e-17 1.11022e-16 -0.0235" rpy="-1.5708 4.16334e-16 -2.10942e-15" />
 <geometry>
@@ -345,9 +345,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_arm_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_upper_arm.stl"/>
 </geometry>
-<material name="upper_arm_1_material">
+<material name="r_upper_arm_material">
 <color rgba="0.462929 0.462929 0.462929 1.0"/>
 </material>
 </visual>
@@ -358,7 +358,7 @@
 </inertial>
 </link>
 
-<link name="lower_arm_right_1">
+<link name="r_lower_arm">
 <collision>
 <origin xyz="3.19189e-16 -0.163682 -0.0065" rpy="-1.5708 -1.02349e-15 -3.14159" />
 <geometry>
@@ -398,9 +398,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_arm_right_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_lower_arm.stl"/>
 </geometry>
-<material name="lower_arm_right_1_material">
+<material name="r_lower_arm_material">
 <color rgba="0.457801 0.457801 0.457801 1.0"/>
 </material>
 </visual>
@@ -420,15 +420,15 @@
 </link>
 <joint name="r_wrist_frame" type="fixed">
 <origin xyz="3.1225e-16 -0.226182 -0.0235" rpy="1.5708 7.31053e-15 -1.5708" />
-<parent link="lower_arm_right_1" />
+<parent link="r_lower_arm" />
 <child link="r_wrist" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="RElbow" type="revolute">
 <origin xyz="0.024 -0.144 -0.0235" rpy="-1.5708 1.27676e-15 -1.5708" />
-<parent link="upper_arm_1" />
-<child link="lower_arm_right_1" />
+<parent link="r_upper_arm" />
+<child link="r_lower_arm" />
 <axis xyz="0 0 1"/>
 <limit effort="5.43" velocity="10.33" lower="-1.0472" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -436,8 +436,8 @@
 
 <joint name="RShoulderRoll" type="revolute">
 <origin xyz="-0.01695 0.042 0" rpy="1.5708 8.32338e-16 -1.5708" />
-<parent link="shoulder_right_1" />
-<child link="upper_arm_1" />
+<parent link="r_shoulder" />
+<child link="r_upper_arm" />
 <axis xyz="0 0 1"/>
 <limit effort="5.43" velocity="10.33" lower="-3.14159" upper="0"/>
 <joint_properties friction="0.0"/>
@@ -446,13 +446,13 @@
 <joint name="RShoulderPitch" type="revolute">
 <origin xyz="-0.0015 -0.0765 0.2035" rpy="-4.34612e-17 1.66533e-15 -3.14159" />
 <parent link="torso" />
-<child link="shoulder_right_1" />
+<child link="r_shoulder" />
 <axis xyz="0 -1 0"/>
 <limit effort="5.43" velocity="10.33" lower="-3.14159" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
-<link name="shoulder_left_1">
+<link name="l_shoulder">
 <collision>
 <origin xyz="-0.02595 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
 <geometry>
@@ -483,9 +483,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/shoulder_left_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_shoulder.stl"/>
 </geometry>
-<material name="shoulder_left_1_material">
+<material name="l_shoulder_material">
 <color rgba="0.609281 0.613952 0.618623 1.0"/>
 </material>
 </visual>
@@ -496,7 +496,7 @@
 </inertial>
 </link>
 
-<link name="upper_arm_2">
+<link name="l_upper_arm">
 <collision>
 <origin xyz="1.38778e-17 5.55112e-17 -0.0235" rpy="-1.5708 4.4964e-15 1.1855e-29" />
 <geometry>
@@ -545,9 +545,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/upper_arm_2.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_upper_arm.stl"/>
 </geometry>
-<material name="upper_arm_2_material">
+<material name="l_upper_arm_material">
 <color rgba="0.462929 0.462929 0.462929 1.0"/>
 </material>
 </visual>
@@ -558,7 +558,7 @@
 </inertial>
 </link>
 
-<link name="lower_arm_left_1">
+<link name="l_lower_arm">
 <collision>
 <origin xyz="0 -1.73472e-18 -0.0235" rpy="-1.5708 -8.30884e-31 -1.04771e-30" />
 <geometry>
@@ -598,9 +598,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_arm_left_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_lower_arm.stl"/>
 </geometry>
-<material name="lower_arm_left_1_material">
+<material name="l_lower_arm_material">
 <color rgba="0.457801 0.457801 0.457801 1.0"/>
 </material>
 </visual>
@@ -620,15 +620,15 @@
 </link>
 <joint name="l_wrist_frame" type="fixed">
 <origin xyz="2.91434e-16 -0.225182 -0.0235" rpy="-1.5708 6.97876e-16 -1.5708" />
-<parent link="lower_arm_left_1" />
+<parent link="l_lower_arm" />
 <child link="l_wrist" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="LElbow" type="revolute">
 <origin xyz="-0.024 -0.144 -0.0235" rpy="-1.5708 1.11022e-14 1.5708" />
-<parent link="upper_arm_2" />
-<child link="lower_arm_left_1" />
+<parent link="l_upper_arm" />
+<child link="l_lower_arm" />
 <axis xyz="0 0 1"/>
 <limit effort="5.43" velocity="10.33" lower="-1.5708" upper="1.0472"/>
 <joint_properties friction="0.0"/>
@@ -636,8 +636,8 @@
 
 <joint name="LShoulderRoll" type="revolute">
 <origin xyz="-0.01695 0.042 8.32667e-17" rpy="-1.5708 8.42077e-17 1.5708" />
-<parent link="shoulder_left_1" />
-<child link="upper_arm_2" />
+<parent link="l_shoulder" />
+<child link="l_upper_arm" />
 <axis xyz="0 0 1"/>
 <limit effort="5.43" velocity="10.33" lower="0" upper="3.14159"/>
 <joint_properties friction="0.0"/>
@@ -646,13 +646,13 @@
 <joint name="LShoulderPitch" type="revolute">
 <origin xyz="-0.0015 0.0765 0.2035" rpy="3.14159 7.77156e-16 3.14159" />
 <parent link="torso" />
-<child link="shoulder_left_1" />
+<child link="l_shoulder" />
 <axis xyz="0 -1 0"/>
 <limit effort="5.43" velocity="10.33" lower="-3.14159" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
-<link name="hip_u_connector_1">
+<link name="r_hip_1">
 <collision>
 <origin xyz="0 -0.0006 -0.018" rpy="-5.5278e-33 -0 0" />
 <geometry>
@@ -665,9 +665,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/hip_u_connector_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_hip_1.stl"/>
 </geometry>
-<material name="hip_u_connector_1_material">
+<material name="r_hip_1_material">
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </visual>
@@ -678,7 +678,7 @@
 </inertial>
 </link>
 
-<link name="right_hip_left_ankle_1">
+<link name="r_hip_2">
 <collision>
 <origin xyz="0 0 -0.026" rpy="-1.5708 4.34181e-16 -6.8556e-16" />
 <geometry>
@@ -727,9 +727,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/right_hip_left_ankle_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_hip_2.stl"/>
 </geometry>
-<material name="right_hip_left_ankle_1_material">
+<material name="r_hip_2_material">
 <color rgba="0.283325 0.302819 0.324631 1.0"/>
 </material>
 </visual>
@@ -740,7 +740,7 @@
 </inertial>
 </link>
 
-<link name="r_knee">
+<link name="r_upper_leg">
 <collision>
 <origin xyz="0.0182355 -0.0226528 -0.130164" rpy="-1.5708 -0.523599 3.14159" />
 <geometry>
@@ -816,9 +816,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/r_knee.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_upper_leg.stl"/>
 </geometry>
-<material name="r_knee_material">
+<material name="r_upper_leg_material">
 <color rgba="0.544296 0.544296 0.544296 1.0"/>
 </material>
 </visual>
@@ -829,7 +829,7 @@
 </inertial>
 </link>
 
-<link name="lower_leg_right_1">
+<link name="r_lower_leg">
 <collision>
 <origin xyz="-1.86656e-15 -0.0062 -3.60934e-05" rpy="1.5708 0.0872665 3.72354e-16" />
 <geometry>
@@ -905,9 +905,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_leg_right_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_lower_leg.stl"/>
 </geometry>
-<material name="lower_leg_right_1_material">
+<material name="r_lower_leg_material">
 <color rgba="0.773215 0.773215 0.776644 1.0"/>
 </material>
 </visual>
@@ -918,7 +918,7 @@
 </inertial>
 </link>
 
-<link name="left_hip_right_ankle_1">
+<link name="r_ankle">
 <collision>
 <origin xyz="-0.0261 -0.021 -0.0405" rpy="1.5708 6.96724e-15 1.5708" />
 <geometry>
@@ -967,9 +967,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/left_hip_right_ankle_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/r_ankle.stl"/>
 </geometry>
-<material name="left_hip_right_ankle_1_material">
+<material name="r_ankle_material">
 <color rgba="0.283325 0.302819 0.324631 1.0"/>
 </material>
 </visual>
@@ -1281,7 +1281,7 @@
 
 <joint name="RAnkleRoll" type="revolute">
 <origin xyz="-0.0691 5.55112e-17 -0.026" rpy="1.5708 1.5708 0" />
-<parent link="left_hip_right_ankle_1" />
+<parent link="r_ankle" />
 <child link="r_foot" />
 <axis xyz="0 -1 0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.0472" upper="1.0472"/>
@@ -1290,8 +1290,8 @@
 
 <joint name="RAnklePitch" type="revolute">
 <origin xyz="2.69229e-15 0.0505 -0.17" rpy="-1.5708 -1.93533e-15 -2.52888e-15" />
-<parent link="lower_leg_right_1" />
-<child link="left_hip_right_ankle_1" />
+<parent link="r_lower_leg" />
+<child link="r_ankle" />
 <axis xyz="-0 -0 -1"/>
 <limit effort="7.57" velocity="8.22" lower="-1.22173" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -1299,8 +1299,8 @@
 
 <joint name="RKnee" type="revolute">
 <origin xyz="-0.00392295 -0.051 -0.169043" rpy="1.50246e-15 -0.261799 -1.61204e-15" />
-<parent link="r_knee" />
-<child link="lower_leg_right_1" />
+<parent link="r_upper_leg" />
+<child link="r_lower_leg" />
 <axis xyz="0 1 0"/>
 <limit effort="10" velocity="10" lower="0" upper="2.96706"/>
 <joint_properties friction="0.0"/>
@@ -1308,8 +1308,8 @@
 
 <joint name="RHipPitch" type="revolute">
 <origin xyz="-0.0265 -2.77556e-17 -0.0691" rpy="-1.5708 1.5708 0" />
-<parent link="right_hip_left_ankle_1" />
-<child link="r_knee" />
+<parent link="r_hip_2" />
+<child link="r_upper_leg" />
 <axis xyz="-0 1 -0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -1317,8 +1317,8 @@
 
 <joint name="RHipRoll" type="revolute">
 <origin xyz="-0.046 0.0414 5.34295e-16" rpy="-3.14159 1.5708 0" />
-<parent link="hip_u_connector_1" />
-<child link="right_hip_left_ankle_1" />
+<parent link="r_hip_1" />
+<child link="r_hip_2" />
 <axis xyz="-0 -0 -1"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -1327,13 +1327,13 @@
 <joint name="RHipYaw" type="revolute">
 <origin xyz="-1.38778e-17 -0.055 -9.75782e-19" rpy="-1.5708 -0 0" />
 <parent link="torso" />
-<child link="hip_u_connector_1" />
+<child link="r_hip_1" />
 <axis xyz="0 -1 0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
-<link name="hip_u_connector_2">
+<link name="l_hip_1">
 <collision>
 <origin xyz="0 -0.0006 -0.018" rpy="0 -0 0" />
 <geometry>
@@ -1346,9 +1346,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/hip_u_connector_2.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_hip_1.stl"/>
 </geometry>
-<material name="hip_u_connector_2_material">
+<material name="l_hip_1_material">
 <color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </visual>
@@ -1359,7 +1359,7 @@
 </inertial>
 </link>
 
-<link name="left_hip_right_ankle_2">
+<link name="l_hip_2">
 <collision>
 <origin xyz="0.0145 0.007 -0.043" rpy="-3.14159 1.52095e-16 -1.5708" />
 <geometry>
@@ -1408,9 +1408,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/left_hip_right_ankle_2.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_hip_2.stl"/>
 </geometry>
-<material name="left_hip_right_ankle_2_material">
+<material name="l_hip_2_material">
 <color rgba="0.283325 0.302819 0.324631 1.0"/>
 </material>
 </visual>
@@ -1421,7 +1421,7 @@
 </inertial>
 </link>
 
-<link name="l_knee">
+<link name="l_upper_leg">
 <collision>
 <origin xyz="-0.0182355 -0.130164 0.0283472" rpy="3.14159 6.1423e-17 0.523599" />
 <geometry>
@@ -1497,9 +1497,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/l_knee.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_upper_leg.stl"/>
 </geometry>
-<material name="l_knee_material">
+<material name="l_upper_leg_material">
 <color rgba="0.544296 0.544296 0.544296 1.0"/>
 </material>
 </visual>
@@ -1510,7 +1510,7 @@
 </inertial>
 </link>
 
-<link name="lower_leg_left_1">
+<link name="l_lower_leg">
 <collision>
 <origin xyz="2.04003e-15 0.0035 0.17" rpy="3.14159 -2.52611e-17 -2.06283e-15" />
 <geometry>
@@ -1586,9 +1586,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/lower_leg_left_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_lower_leg.stl"/>
 </geometry>
-<material name="lower_leg_left_1_material">
+<material name="l_lower_leg_material">
 <color rgba="0.773195 0.773195 0.776625 1.0"/>
 </material>
 </visual>
@@ -1599,7 +1599,7 @@
 </inertial>
 </link>
 
-<link name="right_hip_left_ankle_2">
+<link name="l_ankle">
 <collision>
 <origin xyz="0.0261 0.007 -0.0405" rpy="1.5708 1.52434e-16 -1.5708" />
 <geometry>
@@ -1648,9 +1648,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/right_hip_left_ankle_2.stl"/>
+<mesh filename="package://wolfgang_description/urdf/l_ankle.stl"/>
 </geometry>
-<material name="right_hip_left_ankle_2_material">
+<material name="l_ankle_material">
 <color rgba="0.283325 0.302819 0.324631 1.0"/>
 </material>
 </visual>
@@ -1962,7 +1962,7 @@
 
 <joint name="LAnkleRoll" type="revolute">
 <origin xyz="0.0691 2.22045e-16 -0.026" rpy="1.5708 -1.5708 0" />
-<parent link="right_hip_left_ankle_2" />
+<parent link="l_ankle" />
 <child link="l_foot" />
 <axis xyz="-0 -1 -0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.0472" upper="1.0472"/>
@@ -1971,8 +1971,8 @@
 
 <joint name="LAnklePitch" type="revolute">
 <origin xyz="3.5319e-15 -0.0505 -0.17" rpy="-1.5708 -8.72457e-16 3.14159" />
-<parent link="lower_leg_left_1" />
-<child link="right_hip_left_ankle_2" />
+<parent link="l_lower_leg" />
+<child link="l_ankle" />
 <axis xyz="-0 -0 -1"/>
 <limit effort="7.57" velocity="8.22" lower="-1.22173" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -1980,8 +1980,8 @@
 
 <joint name="LKnee" type="revolute">
 <origin xyz="0.00435596 -0.168793 0.049" rpy="1.5708 -1.75248e-15 2.87979" />
-<parent link="l_knee" />
-<child link="lower_leg_left_1" />
+<parent link="l_upper_leg" />
+<child link="l_lower_leg" />
 <axis xyz="0 -1 0"/>
 <limit effort="10" velocity="10" lower="-2.96706" upper="0"/>
 <joint_properties friction="0.0"/>
@@ -1989,8 +1989,8 @@
 
 <joint name="LHipPitch" type="revolute">
 <origin xyz="0.026 6.93889e-18 -0.0691" rpy="2.67116e-16 -1.5708 0" />
-<parent link="left_hip_right_ankle_2" />
-<child link="l_knee" />
+<parent link="l_hip_2" />
+<child link="l_upper_leg" />
 <axis xyz="7.95491e-17 -3.00167e-16 -1"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -1998,8 +1998,8 @@
 
 <joint name="LHipRoll" type="revolute">
 <origin xyz="-0.046 0.0414 -7.97973e-16" rpy="3.14159 1.5708 0" />
-<parent link="hip_u_connector_2" />
-<child link="left_hip_right_ankle_2" />
+<parent link="l_hip_1" />
+<child link="l_hip_2" />
 <axis xyz="-0 -0 -1"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
@@ -2008,13 +2008,13 @@
 <joint name="LHipYaw" type="revolute">
 <origin xyz="-2.28983e-16 0.055 2.71051e-18" rpy="-1.5708 -0 0" />
 <parent link="torso" />
-<child link="hip_u_connector_2" />
+<child link="l_hip_1" />
 <axis xyz="0 -1 0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
-<link name="neck_1">
+<link name="neck">
 <collision>
 <origin xyz="0.0035 0 -0.0093" rpy="-7.1415e-32 2.28711e-32 -3.97109e-33" />
 <geometry>
@@ -2036,9 +2036,9 @@
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/neck_1.stl"/>
+<mesh filename="package://wolfgang_description/urdf/neck.stl"/>
 </geometry>
-<material name="neck_1_material">
+<material name="neck_material">
 <color rgba="0.291135 0.291135 0.291135 1.0"/>
 </material>
 </visual>
@@ -2159,7 +2159,7 @@
 
 <joint name="HeadTilt" type="revolute">
 <origin xyz="0.036 0.0235 -0.024" rpy="-1.5708 3.17216e-15 -5.33479e-15" />
-<parent link="neck_1" />
+<parent link="neck" />
 <child link="head" />
 <axis xyz="0 0 -1"/>
 <limit effort="5.43" velocity="10.33" lower="0" upper="1.5708"/>
@@ -2169,7 +2169,7 @@
 <joint name="HeadPan" type="revolute">
 <origin xyz="-0.0095 2.82644e-16 0.2345" rpy="-3.14159 3.41087e-16 -4.44089e-16" />
 <parent link="torso" />
-<child link="neck_1" />
+<child link="neck" />
 <axis xyz="0 0 1"/>
 <limit effort="5.43" velocity="10.33" lower="-2.0944" upper="2.0944"/>
 <joint_properties friction="0.0"/>
