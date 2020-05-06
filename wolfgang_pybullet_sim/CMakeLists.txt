@@ -9,9 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   rosgraph_msgs
   std_msgs
+  dynamic_reconfigure
 )
 
 catkin_python_setup()
+
+generate_dynamic_reconfigure_options(
+  cfg/sim.cfg
+)
 
 catkin_package()
 
