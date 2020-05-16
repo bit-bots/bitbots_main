@@ -3,18 +3,18 @@
 pipeline {
     agent any
 
-        triggers {
-            cron "H 6 * * * "
-        }
+    triggers {
+        cron "H 6 * * * "
+    }
 
     stages {
         stage("Build docker container") {
             when { branch "master" }
             steps {
                 sh "docker build -t registry.bit-bots.de/bitbots_builder --no-cache docker_builder"
-                    sh "docker push registry.bit-bots.de/bitbots_builder"
-                    sh "docker image prune -f"
-                    sh "docker container prune -f"
+                sh "docker push registry.bit-bots.de/bitbots_builder"
+                sh "docker image prune -f"
+                sh "docker container prune -f"
             }
         }
 
@@ -30,8 +30,8 @@ pipeline {
 
             steps {
                 linkCatkinWorkspace("bitbots_docs", "bitbots_docs")
-                    catkinBuild("bitbots_docs")
-                    cleanWs()
+                catkinBuild("bitbots_docs")
+                cleanWs()
             }
         }
 
@@ -47,13 +47,14 @@ pipeline {
 
             steps {
                 linkCatkinWorkspace("bitbots_docs", "bitbots_docs")
-                    installRosdeps("bitbots_docs")
-                    catkinBuild("bitbots_docs", "Documentation")
+                installRosdeps("bitbots_docs")
+                catkinBuild("bitbots_docs")
+                catkinBuild("bitbots_docs", "Documentation")
 
-                    stash name: "bitbots_docs_docs", includes: "bitbots_docs/docs/_out/**"
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "bitbots_docs/docs/_out/",
-                            reportFiles: "index.html", reportName: "Built Documentation", reportTitles: ""])
-                    cleanWs()
+                stash name: "bitbots_docs_docs", includes: "bitbots_docs/docs/_out/**"
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "bitbots_docs/docs/_out/",
+                        reportFiles: "index.html", reportName: "Built Documentation", reportTitles: ""])
+                cleanWs()
             }
         }
 
@@ -70,10 +71,10 @@ pipeline {
 
             steps {
                 linkCatkinWorkspace("bitbots_docs", "bitbots_docs")
-                    installRosdeps("bitbots_docs")
-                    catkinClean()
-                    catkinInstall("bitbots_docs")
-                    cleanWs()
+                installRosdeps("bitbots_docs")
+                catkinClean()
+                catkinInstall("bitbots_docs")
+                cleanWs()
             }
         }
 
@@ -83,7 +84,7 @@ pipeline {
             when { branch "master" }
             steps {
                 unstash "bitbots_docs_docs"
-                    deployDocs("bitbots_docs")
+                deployDocs("bitbots_docs")
             }
         }
     }

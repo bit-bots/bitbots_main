@@ -2,12 +2,11 @@
 FROM docker.io/ros:melodic-ros-base-bionic AS bitbots-builder
 
 # Install system dependencies
-RUN apt-get update && \
-    apt-get remove -y ros-melodic-rosdoc-lite python-sphinx && \
-    apt-get install -y sudo python3-pip python-pip python-coverage python-xmlrunner python-rospkg python-catkin-pkg \
-    python-catkin-lint python-rosdep dia \
-    python3-sphinx python3-sphinx-rtd-theme python3-breathe && \
-    python3 -m pip install rospkg catkin-pkg exhale
+RUN apt-get update
+RUN apt-get remove -y ros-melodic-rosdoc-lite python-sphinx
+RUN apt-get install -y sudo python3-pip python-pip python-coverage python-xmlrunner python-rospkg python-catkin-pkg \
+    python-catkin-lint python-rosdep dia python3-sphinx python3-sphinx-rtd-theme python3-breathe
+RUN python3 -m pip install rospkg catkin-pkg exhale
 
 # Install sudoers file
 ADD sudoers /etc/sudoers
@@ -40,6 +39,8 @@ RUN . /opt/ros/melodic/setup.sh && \
 RUN su -c "rosdep update" builder
 
 # Setup runtime
+ENV DEBIAN_FRONTEND=readline
+ENV ROS_PYTHON_VERSION=3
 VOLUME ["/srv/catkin_install"]
 USER builder:builder
 COPY entrypoint.sh /entrypoint.sh
