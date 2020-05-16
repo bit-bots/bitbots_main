@@ -168,9 +168,9 @@ void DynupEngine::calcFrontSplines() {
    * Foot under body
    */
   time += params_.time_foot_ground;
-  r_foot_spline_.x()->addPoint(time, sin(70) * params_.leg_min_length);
+  r_foot_spline_.x()->addPoint(time, sin(1.22173) * params_.leg_min_length);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -cos(70) * params_.leg_min_length);
+  r_foot_spline_.z()->addPoint(time, -cos(1.22173) * params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, -M_PI * 70 /180);//70 degrees
   r_foot_spline_.yaw()->addPoint(time, 0);
@@ -225,7 +225,7 @@ void DynupEngine::calcFrontSplines() {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time,0);
+  r_foot_spline_.pitch()->addPoint(time,-params_.trunk_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   /*
@@ -447,9 +447,10 @@ int DynupEngine::getPercentDone() const {
 bool DynupEngine::isStabilizingNeeded() const {
     return (front_ && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
                                params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat) ||
-           (!front_ && time_ >= params_.time_hands_down +
+           (!front_ && time_ >= params_.time_legs_close +
+                                params_.time_hands_down +
                                 params_.time_hands_back +
-                                params_.time_to_squat);
+                                params_.time_squat_push);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
