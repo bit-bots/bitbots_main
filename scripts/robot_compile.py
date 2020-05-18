@@ -278,12 +278,13 @@ def get_includes_from_file(file_path, package=''):
     return includes
 
 
-def _execute_on_target(target, command):
+def _execute_on_target(target, command, catch_output = False):
     """
     Execute a command on the given target over ssh
 
     :type target: Target
     :type command: str
+    :type catch_output: bool
     :rtype: subprocess.CompletedProcess
     """
     real_cmd = [
@@ -292,7 +293,11 @@ def _execute_on_target(target, command):
         command
     ]
     print_debug("Calling {}".format(" ".join(real_cmd)))
-    return subprocess.run(real_cmd)
+
+    if not catch_output:
+        return subprocess.run(real_cmd)
+    else:
+        return subprocess.run(real_cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def sync(target, package='', pre_clean=False):
@@ -418,6 +423,14 @@ def configure_wifi(target):
     connection_id = input("UUID of connection which should be enabled [leave unchanged]: ")
 
     if connection_id != "":
+        # disable all other connections
+        connection_ids = str(_execute_on_target(target, "nmcli --fields UUID connection show", catch_output=True).stdout) \
+                             .split("\n")[1:]
+        for i in connection_ids:
+            _execute_on_target(target, 'nmcli connection down {}'.format(i)).check_returncode()
+            _execute_on_target(target, 'nmcli connection modify {} connection.autoconnect FALSE'.format(i)).check_returncode()
+            _execute_on_target(target, 'nmcli connection modify {} connection.autoconnect-priority 0'.format(i)).check_returncode()
+
         _execute_on_target(target, "nmcli connection up {}".format(connection_id)).check_returncode()
         _execute_on_target(target, "nmcli connection modify {} connection.autoconnect TRUE".format(connection_id)).check_returncode()
         _execute_on_target(target, "nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
