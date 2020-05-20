@@ -450,7 +450,8 @@ bool DynupEngine::isStabilizingNeeded() const {
            (!front_ && time_ >= params_.time_legs_close +
                                 params_.time_hands_down +
                                 params_.time_hands_back +
-                                params_.time_squat_push);
+                                params_.time_squat_push +
+                                params_.wait_in_squat);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
