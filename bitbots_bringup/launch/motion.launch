@@ -40,6 +40,6 @@
         <arg name="sim" value="$(arg sim)"/>
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
-    <node if="$(arg dynamic_kick)" pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" />
+    <include if="$(arg dynamic_kick)" file="$(find bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
     <include file="$(find bitbots_dynup)/launch/dynup.launch"/>
 </launch>
