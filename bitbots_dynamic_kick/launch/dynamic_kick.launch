@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" output="screen" />
+</launch>
