@@ -1,7 +1,7 @@
 dynup:
     pid_trunk_roll:
         p: 0.76
-        i: 3.0
+        i: 1.0
         d: 0.02977
         i_clamp: 0
         i_clamp_min: 0
