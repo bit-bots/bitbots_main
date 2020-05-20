@@ -15,11 +15,45 @@ class StartHCM(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         if self.blackboard.shut_down_request:
             self.blackboard.current_state = STATE_SHUT_DOWN
-            return "SHUTDOWN"
+            return "SHUTDOWN_REQUESTED"
         else:
             if not reevaluate:
                 self.blackboard.current_state = STATE_STARTUP
-            return "ROBOT"
+            return "RUNNING"
+
+    def get_reevaluate(self):
+        return True
+
+
+class Stop(AbstractDecisionElement):
+    """
+    Handles manual stops
+    """
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.stopped:
+            # we do an action sequence to go into stop and to stay there
+            return "STOPPED"
+        else:
+            return "FREE"
+
+    def get_reevaluate(self):
+        return True
+
+
+class Record(AbstractDecisionElement):
+    """
+    Decides if the robot is currently recording animations
+    """
+
+    def perform(self, reevaluate=False):
+        # check if the robot is currently recording animations
+        if self.blackboard.record_active:
+            self.blackboard.current_state = STATE_RECORD
+            return "RECORD_ACTIVE"
+        else:
+            # robot is not recording
+            return "FREE"
 
     def get_reevaluate(self):
         return True
@@ -49,7 +83,7 @@ class CheckIMU(AbstractDecisionElement):
             return "PROBLEM"
         elif not reevaluate and self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
             # had IMU problem before, just tell that this is solved now
-            rospy.loginfo("IMU is now connected. Will resume.") #TODO this message is never send
+            rospy.loginfo("IMU is now connected. Will resume.")  # TODO this message is never send
         return "CONNECTION"
 
     def get_reevaluate(self):
@@ -81,53 +115,6 @@ class CheckPressureSensor(AbstractDecisionElement):
         return True
 
 
-class Penalty(AbstractDecisionElement):
-    """
-    Initializes HCM
-    """
-
-    def perform(self, reevaluate=False):
-        if self.blackboard.penalized:
-            # we do an action sequence to go into penalty and to stay there      
-            return "PENALIZED"
-        else:
-            return "FREE"
-
-    def get_reevaluate(self):
-        return True
-
-
-class MotorOffTimer(AbstractDecisionElement):
-    """
-    Decides on switching servo power
-    """
-
-    def perform(self, reevaluate=False):
-        self.clear_debug_data()
-
-        if self.blackboard.simulation_active:
-            return "SIMULATION"
-        return "MOTORS_ARE_ON"  # TODO check if motors are on when it is possible
-        # check if the time is reached
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() > self.blackboard.motor_off_time:
-            rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
-                self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
-            self.publish_debug_data("Time since last motor goals",
-                                    self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
-            self.blackboard.current_state = STATE_MOTOR_OFF
-            # we do an action sequence to turn off the motors and stay in motor off  
-            return "TURN_MOTORS_OFF"
-        elif not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
-            # we have to turn the motors on
-            return "TURN_MOTORS_ON"
-        else:
-            # motors are on and we can continue
-            return "MOTORS_ARE_ON"
-
-    def get_reevaluate(self):
-        return True
-
-
 class CheckMotors(AbstractDecisionElement):
     """
     Checks if we are getting information from the motors.
@@ -135,30 +122,32 @@ class CheckMotors(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+
         if not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
             # tell that we have a hardware problem                            
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
             # wait for motors to connect
             return "PROBLEM"
-        return "CONNECTION"
 
-    def get_reevaluate(self):
-        return True
+        if self.blackboard.simulation_active:
+            return "OKAY"
 
+        return "OKAY"  # TODO check if motors are on when it is possible from the hardware
 
-class Record(AbstractDecisionElement):
-    """
-    Decides if the robot is currently recording animations
-    """
-
-    def perform(self, reevaluate=False):
-        # check if the robot is currently recording animations
-        if self.blackboard.record_active:
-            self.blackboard.current_state = STATE_RECORD
-            return "RECORD_ACTIVE"
+        if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() > self.blackboard.motor_off_time:
+            rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
+                self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
+            self.publish_debug_data("Time since last motor goals",
+                                    self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
+            self.blackboard.current_state = STATE_MOTOR_OFF
+            # we do an action sequence to turn off the motors and stay in motor off
+            return "TURN_MOTORS_OFF"
+        elif not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
+            # we have to turn the motors on
+            return "TURN_MOTORS_ON"
         else:
-            # robot is not recording
-            return "FREE"
+            # motors are on and we can continue
+            return "OKAY"
 
     def get_reevaluate(self):
         return True
@@ -181,36 +170,6 @@ class PickedUp(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
-
-
-class Fallen(AbstractDecisionElement):
-    """
-    Decides if the robot is fallen and lying on the ground
-    """
-
-    def perform(self, reevaluate=False):
-        # check if the robot is currently laying on the ground
-        fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
-
-        if self.blackboard.is_stand_up_active and fallen_side is not None:
-            self.blackboard.current_state = STATE_FALLEN
-            #TODO
-            self.blackboard.hacky_sequence_dynup_running = True
-            # we play a stand up animation
-            if fallen_side == self.blackboard.fall_checker.FRONT:
-                return "FALLEN_FRONT"
-            if fallen_side == self.blackboard.fall_checker.BACK:
-                return "FALLEN_BACK"
-            if fallen_side == self.blackboard.fall_checker.RIGHT:
-                return "FALLEN_RIGHT"
-            if fallen_side == self.blackboard.fall_checker.LEFT:
-                return "FALLEN_LEFT"
-        else:
-            # robot is not fallen
-            return "NOT_FALLEN"
-
-    def get_reevaluate(self):
-        return not self.blackboard.hacky_sequence_dynup_running
 
 
 class Falling(AbstractDecisionElement):
@@ -238,6 +197,63 @@ class Falling(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+
+class Sitting(AbstractDecisionElement):
+    """
+    Decides if the robot is sitting (due to sitting down earlier).
+    """
+
+    def perform(self, reevaluate=False):
+        # simple check is looking at knee joint positions
+        # todo can be done more sophisticated
+        left_knee = 0
+        right_knee = 0
+        i = 0
+        for joint_name in self.blackboard.current_joint_positions.name:
+            if joint_name == "LKnee":
+                left_knee = self.blackboard.current_joint_positions.position[i]
+            elif joint_name == "RKnee":
+                right_knee = self.blackboard.current_joint_positions.position[i]
+            i += 1
+
+        if abs(left_knee) > 2.5 and abs(right_knee) > 2.5:
+            return "YES"
+        else:
+            return "NO"
+
+    def get_reevaluate(self):
+        # we never have to reevaluate since this state of this can only be changed by decisions above it
+        return False
+
+
+class Fallen(AbstractDecisionElement):
+    """
+    Decides if the robot is fallen and lying on the ground
+    """
+
+    def perform(self, reevaluate=False):
+        # check if the robot is currently laying on the ground
+        fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
+        if self.blackboard.is_stand_up_active and fallen_side is not None:
+            self.blackboard.current_state = STATE_FALLEN
+            # TODO
+            self.blackboard.hacky_sequence_dynup_running = True
+            # we play a stand up animation
+            if fallen_side == self.blackboard.fall_checker.FRONT:
+                return "FALLEN_FRONT"
+            if fallen_side == self.blackboard.fall_checker.BACK:
+                return "FALLEN_BACK"
+            if fallen_side == self.blackboard.fall_checker.RIGHT:
+                return "FALLEN_RIGHT"
+            if fallen_side == self.blackboard.fall_checker.LEFT:
+                return "FALLEN_LEFT"
+        else:
+            # robot is not fallen
+            return "NOT_FALLEN"
+
+    def get_reevaluate(self):
+        return not self.blackboard.hacky_sequence_dynup_running
 
 
 class ExternalAnimation(AbstractDecisionElement):

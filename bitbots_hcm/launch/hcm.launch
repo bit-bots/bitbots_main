@@ -2,7 +2,6 @@
 <launch>
 
     <arg name="sim" default="false" doc="Disables checks for hardware, since we are in simulation."/>
-    <arg name="minibot" default="false"/>
     <arg name="wolfgang" default="true"/>
     <arg name="use_game_settings" default="false"/>
 
@@ -13,7 +12,7 @@
             <group if="$(arg use_game_settings)">
                 <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
             </group>
-        <node name="hcm" pkg="bitbots_hcm" type="hardware_control_manager.py" args="" output="screen" >
+        <node name="hcm" pkg="bitbots_hcm" type="humanoid_control_module.py" args="" output="screen" >
         </node>
     </group>
 

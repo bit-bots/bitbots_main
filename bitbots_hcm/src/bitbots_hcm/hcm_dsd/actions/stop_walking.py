@@ -19,7 +19,7 @@ class StopWalking(AbstractActionElement):
             self.pop()
 
 
-class PenaltyStopWalking(AbstractActionElement):
+class ForceStopWalking(AbstractActionElement):
     """
     Stop the walking and set the state to penalty
     """

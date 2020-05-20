@@ -73,8 +73,8 @@ class HardwareControlManager:
         self.main_loop()
 
     def pause(self, msg):
-        """ Updates the pause/penalty state for the state machine"""
-        self.blackboard.penalized = msg.data
+        """ Updates the stop state for the state machine"""
+        self.blackboard.stopped = msg.data
 
     def update_imu(self, msg):
         """Gets new IMU values and computes the smoothed values of these"""
