@@ -536,22 +536,26 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                                 trunk_apex_next.y());
   }
 
+  // When walking downwards, the correct trunk height is the one relative to the flying
+  // foot goal position, this results in lowering the trunk correctly during the step
+  double trunk_height_including_foot_z_movement = params_.trunk_height + std::min(0.0, support_to_next_.getOrigin().z());
+
   trunk_spline_.z()->addPoint(0.0,
                               trunk_pos_at_foot_change_.z(),
                               trunk_pos_vel_at_foot_change_.z(),
                               trunk_pos_acc_at_foot_change_.z());
   trunk_spline_.z()->addPoint(double_support_length + time_shift,
-                              params_.trunk_height);
+                              trunk_height_including_foot_z_movement);
   trunk_spline_.z()->addPoint(double_support_length + time_shift + params_.trunk_z_apex,
-                              params_.trunk_height + params_.trunk_z_movement);
+                              trunk_height_including_foot_z_movement + params_.trunk_z_movement);
   trunk_spline_.z()->addPoint(half_period + time_shift,
-                              params_.trunk_height);
+                              trunk_height_including_foot_z_movement);
   trunk_spline_.z()->addPoint(half_period + double_support_length + time_shift,
-                              params_.trunk_height);
+                              trunk_height_including_foot_z_movement);
   trunk_spline_.z()->addPoint(half_period + double_support_length + time_shift + params_.trunk_z_apex,
-                              params_.trunk_height + params_.trunk_z_movement);
+                              trunk_height_including_foot_z_movement + params_.trunk_z_movement);
   trunk_spline_.z()->addPoint(period + time_shift,
-                              params_.trunk_height);
+                              trunk_height_including_foot_z_movement);
 
   //Define trunk rotation as rool pitch yaw
   tf2::Vector3 euler_at_support = tf2::Vector3(
