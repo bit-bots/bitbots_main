@@ -420,7 +420,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   foot_spline_.z()->addPoint(0.0, foot_pos_at_foot_change_.z(),
                              foot_pos_vel_at_foot_change_.z(),
                              foot_pos_acc_at_foot_change_.z());
-  foot_spline_.z()->addPoint(double_support_length, 0);
+  foot_spline_.z()->addPoint(double_support_length, foot_pos_at_foot_change_.z());
   foot_spline_.z()->addPoint(double_support_length + single_support_length * params_.foot_apex_phase
                                  - 0.5 * params_.foot_z_pause * single_support_length,
                              params_.foot_rise);
@@ -428,8 +428,8 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                                  + 0.5 * params_.foot_z_pause * single_support_length,
                              params_.foot_rise);
   foot_spline_.z()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
-                             params_.foot_put_down_z_offset);
-  foot_spline_.z()->addPoint(half_period, 0.0);
+                             params_.foot_put_down_z_offset + support_to_next_.getOrigin().z());
+  foot_spline_.z()->addPoint(half_period, support_to_next_.getOrigin().z());
 
   //Flying foot orientation
   foot_spline_.roll()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.x(),
@@ -854,8 +854,9 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
   //Compute step diff in next support foot frame
   tf2::Transform tmp_diff = tf2::Transform();
   tmp_diff.setIdentity();
-  //No change in forward step
+  //No change in forward step and upward step
   tmp_diff.getOrigin()[0] = linear_orders.x();
+  tmp_diff.getOrigin()[2] = linear_orders.z();
   //Add lateral foot offset
   if (is_left_support_foot_) {
     tmp_diff.getOrigin()[1] += params_.foot_distance;
