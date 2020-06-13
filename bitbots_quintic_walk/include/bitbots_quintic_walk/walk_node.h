@@ -146,7 +146,8 @@ class WalkNode {
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
    * Is used to limit _currentOrders to sane values
    */
-  Eigen::Vector3d max_step_;
+  Eigen::Vector3d max_step_linear_;
+  double max_step_angular_;
 
   /**
    * Measures how much distance we can traverse in X and Y direction combined

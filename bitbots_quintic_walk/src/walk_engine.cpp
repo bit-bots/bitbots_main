@@ -40,7 +40,8 @@ void WalkEngine::setGoals(const WalkRequest &goals) {
 
 WalkResponse WalkEngine::update(double dt) {
   // check if orders are zero, since we don't want to walk on the spot
-  bool orders_zero = request_.orders.x() == 0 && request_.orders.y() == 0 && request_.orders.z() == 0;
+  bool orders_zero = request_.linear_orders.x() == 0 && request_.linear_orders.y() == 0 &&
+      request_.linear_orders.z() == 0 && request_.angular_z == 0;
 
   // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
   if (engine_state_ == WalkState::PAUSED) {
@@ -207,7 +208,8 @@ void WalkEngine::endStep() {
 }
 
 void WalkEngine::reset() {
-  request_.orders = {0, 0, 0};
+  request_.linear_orders = {0, 0, 0};
+  request_.angular_z = 0;
   request_.walkable_state = false;
   engine_state_ = WalkState::IDLE;
   phase_ = 0.0;
@@ -329,14 +331,14 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // save the current trunk state to use it later and compute the next step position
   if (!start_movement) {
     saveCurrentRobotState();
-    stepFromOrders(request_.orders);
+    stepFromOrders(request_.linear_orders, request_.angular_z);
   } else {
     // when we do start step, only transform the y coordinate since we stand still and only move trunk sideward
     trunk_pos_at_foot_change_[1] = trunk_pos_at_foot_change_.y() - support_to_next_.getOrigin().y();
     foot_pos_at_foot_change_ = {0.0, support_to_next_.getOrigin().y() * -1, 0.0};
     foot_pos_vel_at_foot_change_ = {0.0, 0.0, 0.0};
     foot_pos_acc_at_foot_change_ = {0.0, 0.0, 0.0};
-    stepFromOrders({0, 0, 0});
+    stepFromOrders({0, 0, 0}, 0);
   }
 
   //Reset the trajectories
@@ -612,7 +614,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   // save the current trunk state to use it later
   saveCurrentRobotState();
   // update support foot and compute odometry
-  stepFromOrders(request_.orders);
+  stepFromOrders(request_.linear_orders, request_.angular_z);
 
   //Reset the trajectories
   is_double_support_spline_ = bitbots_splines::SmoothSpline();
@@ -848,12 +850,12 @@ void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
-void WalkEngine::stepFromOrders(const tf2::Vector3 &orders) {
+void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angular_z) {
   //Compute step diff in next support foot frame
   tf2::Transform tmp_diff = tf2::Transform();
   tmp_diff.setIdentity();
   //No change in forward step
-  tmp_diff.getOrigin()[0] = orders.x();
+  tmp_diff.getOrigin()[0] = linear_orders.x();
   //Add lateral foot offset
   if (is_left_support_foot_) {
     tmp_diff.getOrigin()[1] += params_.foot_distance;
@@ -863,15 +865,15 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &orders) {
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if (
-      (is_left_support_foot_ && orders.y() > 0.0) ||
-          (!is_left_support_foot_ && orders.y() < 0.0)
+      (is_left_support_foot_ && linear_orders.y() > 0.0) ||
+          (!is_left_support_foot_ && linear_orders.y() < 0.0)
       ) {
-    tmp_diff.getOrigin()[1] += orders.y();
+    tmp_diff.getOrigin()[1] += linear_orders.y();
   }
   //No change in turn (in order to
   //rotate around trunk center)
   tf2::Quaternion quat;
-  quat.setRPY(0, 0, orders.z());
+  quat.setRPY(0, 0, angular_z);
   tmp_diff.setRotation(quat);
 
   //Make the step
