@@ -13,6 +13,15 @@ set(SOURCES
         src/walk_node.cpp
         )
 
+
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
+find_package(Boost REQUIRED COMPONENTS python)
+
+
+find_package (PythonLibs COMPONENTS Interpreter Development)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         rosconsole
@@ -63,6 +72,8 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_DIRS}
 )
 
 
@@ -85,3 +96,15 @@ add_executable(WalkNode ${SOURCES})
 add_dependencies(WalkNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(WalkNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
+
+
+# create the lib
+add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${Sources})
+
+# link
+target_link_libraries(py_quintic_walk ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+set_target_properties(py_quintic_walk PROPERTIES
+  PREFIX ""
+  LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)
