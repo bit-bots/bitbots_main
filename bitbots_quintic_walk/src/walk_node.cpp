@@ -168,35 +168,64 @@ double WalkNode::getTimeDelta() {
   return dt;
 }
 
-int WalkNode::step(double dt, int val) {
+void WalkNode::reset() {
+  walk_engine_.reset();
+  stabilizer_.reset();
+}
+
+int WalkNode::step(double dt, const sensor_msgs::Imu imu_msg, const geometry_msgs::Twist cmdvel_msg) {
+
+  WalkResponse response;
   ros::Rate loop_rate(engine_frequency_);
-    double dt = getTimeDelta();
 
-    if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
-      // the robot fell, we have to reset everything and do nothing else
-      walk_engine_.reset();
-      stabilizer_.reset();
-    } else {
-      // we don't want to walk, even if we have orders, if we are not in the right state
-      /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
-       * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
-      // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-      current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
-          robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
-          robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
-      // update walk engine response
-      walk_engine_.setGoals(current_request_);
-      checkPhaseReset();
-      response = walk_engine_.update(dt);
-      visualizer_.publishEngineDebug(response);
+  if (robot_state_==humanoid_league_msgs::RobotControlState::FALLING) {
+    // the robot fell, we have to reset everything and do nothing else
+    walk_engine_.reset();
+    stabilizer_.reset();
+  } else {
+    // we don't want to walk, even if we have orders, if we are not in the right state
+    /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
+     * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
+    // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
+    current_request_.walkable_state = robot_state_==humanoid_league_msgs::RobotControlState::CONTROLABLE ||
+        robot_state_==humanoid_league_msgs::RobotControlState::WALKING ||
+        robot_state_==humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+    // update walk engine response
+    walk_engine_.setGoals(current_request_);
+    checkPhaseReset();
+    response = walk_engine_.update(dt);
+    visualizer_.publishEngineDebug(response);
 
-      // only calculate joint goals from this if the engine is not idle
-      if (walk_engine_.getState() != WalkState::IDLE) {
-        response.current_fused_roll = current_trunk_fused_roll_;
-        response.current_fused_pitch = current_trunk_fused_pitch_;
+    // only calculate joint goals from this if the engine is not idle
+    if (walk_engine_.getState()!=WalkState::IDLE) {
+      response.current_fused_roll = current_trunk_fused_roll_;
+      response.current_fused_pitch = current_trunk_fused_pitch_;
+      // get bioIk goals from stabilizer
+        WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
 
-        calculateAndPublishJointGoals(response, dt);
-      }
+        // compute motor goals from IK
+        bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+          /* Construct JointCommand message */
+      bitbots_msgs::JointCommand command;
+
+      /*
+       * Since our JointGoals type is a vector of strings
+       *  combined with a vector of numbers (motor name -> target position)
+       *  and bitbots_msgs::JointCommand needs both vectors as well,
+       *  we can just assign them
+       */
+      command.joint_names = goals.first;
+      command.positions = goals.second;
+
+      /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
+      std::vector<double> vels(goals.first.size(), -1.0);
+      std::vector<double> accs(goals.first.size(), -1.0);
+      std::vector<double> pwms(goals.first.size(), -1.0);
+      command.velocities = vels;
+      command.accelerations = accs;
+      command.max_currents = pwms;
+    }
+  }
 }
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {

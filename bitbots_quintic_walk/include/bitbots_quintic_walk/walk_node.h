@@ -54,7 +54,8 @@ namespace bitbots_quintic_walk {
 class WalkNode {
  public:
   WalkNode();
-  int step(int val);
+  int step(double dt, const sensor_msgs::Imu imu_msg, const geometry_msgs::Twist twist_msg);
+  void reset();
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.

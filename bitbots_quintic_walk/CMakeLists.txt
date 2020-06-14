@@ -19,9 +19,8 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(Boost REQUIRED COMPONENTS python)
-
-
 find_package (PythonLibs COMPONENTS Interpreter Development)
+
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         rosconsole

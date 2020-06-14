@@ -14,6 +14,7 @@ class PyWalk {
  public:
   PyWalk();
   int step(int);
+  void reset();
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
