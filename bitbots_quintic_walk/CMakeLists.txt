@@ -99,10 +99,10 @@ target_link_libraries(WalkNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
 
 
 # create the lib
-add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${Sources})
+add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
 
 # link
-target_link_libraries(py_quintic_walk ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(py_quintic_walk ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${CODE_LIBRARIES})
 
 set_target_properties(py_quintic_walk PROPERTIES
   PREFIX ""

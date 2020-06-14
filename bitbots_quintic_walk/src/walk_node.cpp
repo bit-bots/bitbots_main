@@ -1,8 +1,10 @@
 #include "bitbots_quintic_walk/walk_node.h"
 
 #include <memory>
+#include <iostream>
 
 namespace bitbots_quintic_walk {
+
 
 WalkNode::WalkNode() :
     robot_model_loader_("/robot_description", false) {
@@ -164,6 +166,37 @@ double WalkNode::getTimeDelta() {
     dt = 0.0001;
   }
   return dt;
+}
+
+int WalkNode::step(double dt, int val) {
+  ros::Rate loop_rate(engine_frequency_);
+    double dt = getTimeDelta();
+
+    if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
+      // the robot fell, we have to reset everything and do nothing else
+      walk_engine_.reset();
+      stabilizer_.reset();
+    } else {
+      // we don't want to walk, even if we have orders, if we are not in the right state
+      /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
+       * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
+      // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
+      current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
+          robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
+          robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+      // update walk engine response
+      walk_engine_.setGoals(current_request_);
+      checkPhaseReset();
+      response = walk_engine_.update(dt);
+      visualizer_.publishEngineDebug(response);
+
+      // only calculate joint goals from this if the engine is not idle
+      if (walk_engine_.getState() != WalkState::IDLE) {
+        response.current_fused_roll = current_trunk_fused_roll_;
+        response.current_fused_pitch = current_trunk_fused_pitch_;
+
+        calculateAndPublishJointGoals(response, dt);
+      }
 }
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {

@@ -54,6 +54,7 @@ namespace bitbots_quintic_walk {
 class WalkNode {
  public:
   WalkNode();
+  int step(int val);
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
