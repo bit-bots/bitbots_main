@@ -86,7 +86,8 @@ walking:
     max_step_x: 0.06
     max_step_y: 0.05
     max_step_xy: 0.05
-    max_step_z: 0.4
+    max_step_z: 0.05
+    max_step_angular: 0.4
 
     vel: -1
     acc: -1

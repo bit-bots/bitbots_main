@@ -8,7 +8,8 @@ WalkNode::WalkNode() :
     robot_model_loader_("/robot_description", false) {
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
-  current_request_.orders = {0, 0, 0};
+  current_request_.linear_orders = {0, 0, 0};
+  current_request_.angular_z = 0;
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
   current_fly_pressure_ = 0;
@@ -172,28 +173,31 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
-  current_request_.orders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
+  current_request_.linear_orders = {msg.linear.x * factor, msg.linear.y * factor, msg.linear.z * factor};
+  current_request_.angular_z = msg.angular.z * factor;
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    current_request_.orders[i] = std::max(std::min(current_request_.orders[i], max_step_[i]), max_step_[i] * -1);
+    current_request_.linear_orders[i] = std::max(std::min(current_request_.linear_orders[i], max_step_linear_[i]), max_step_linear_[i] * -1);
   }
+  current_request_.angular_z = std::max(std::min(current_request_.angular_z, max_step_angular_), max_step_angular_ * -1);
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_ != 0) {
-    double scaling_factor = (current_request_.orders[0] + current_request_.orders[1]) / max_step_xy_;
+    double scaling_factor = (current_request_.linear_orders[0] + current_request_.linear_orders[1]) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      current_request_.orders[i] = current_request_.orders[i] / std::max(scaling_factor, 1.0);
+      current_request_.linear_orders[i] = current_request_.linear_orders[i] / std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x * factor != current_request_.orders[0] ||
-      msg.linear.y * factor != current_request_.orders[1] ||
-      msg.angular.z * factor != current_request_.orders[2]) {
+  if (msg.linear.x * factor != current_request_.linear_orders[0] ||
+      msg.linear.y * factor != current_request_.linear_orders[1] ||
+      msg.linear.z * factor != current_request_.linear_orders[2] ||
+      msg.angular.z * factor != current_request_.angular_z) {
     ROS_WARN(
-        "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f",
-        msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0] / factor,
-        max_step_[1] / factor, max_step_[2] / factor, max_step_xy_ / factor);
+        "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
+        msg.linear.x, msg.linear.y, msg.linear.z, msg.angular.z, msg.linear.x + msg.linear.y, max_step_linear_[0] / factor,
+        max_step_linear_[1] / factor, max_step_linear_[2] / factor, max_step_angular_ / factor, max_step_xy_ / factor);
   }
 }
 
@@ -313,9 +317,10 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   engine_frequency_ = config.engine_freq;
   odom_pub_factor_ = config.odom_pub_factor;
 
-  max_step_[0] = config.max_step_x;
-  max_step_[1] = config.max_step_y;
-  max_step_[2] = config.max_step_z;
+  max_step_linear_[0] = config.max_step_x;
+  max_step_linear_[1] = config.max_step_y;
+  max_step_linear_[2] = config.max_step_z;
+  max_step_angular_ = config.max_step_angular;
   max_step_xy_ = config.max_step_xy;
 
   imu_active_ = config.imu_active;
@@ -387,9 +392,10 @@ void WalkNode::publishOdometry(WalkResponse response) {
   odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  twist.linear.x = current_request_.orders.x() * walk_engine_.getFreq() * 2;
-  twist.linear.y = current_request_.orders.y() * walk_engine_.getFreq() * 2;
-  twist.angular.z = current_request_.orders.z() * walk_engine_.getFreq() * 2;
+  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2;
+  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() * 2;
+  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2;
+  twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2;
 
   odom_msg_.twist.twist = twist;
   pub_odometry_.publish(odom_msg_);

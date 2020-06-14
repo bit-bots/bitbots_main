@@ -60,7 +60,7 @@ MotionOdometry::MotionOdometry() {
           current_to_next_support.setOrigin({
                                                 current_to_next_support.getOrigin().x(),
                                                 current_to_next_support.getOrigin().y(),
-                                                0});
+                                                current_to_next_support.getOrigin().z()});
           tf2::Quaternion q;
           q.setRPY(0, 0, tf2::getYaw(current_to_next_support.getRotation()));
           current_to_next_support.setRotation(q);
