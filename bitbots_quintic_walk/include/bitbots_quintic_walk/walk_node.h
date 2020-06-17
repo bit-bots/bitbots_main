@@ -54,7 +54,11 @@ namespace bitbots_quintic_walk {
 class WalkNode {
  public:
   WalkNode();
-  int step(double dt, const sensor_msgs::Imu imu_msg, const geometry_msgs::Twist twist_msg);
+  bitbots_msgs::JointCommand step(
+      double dt,
+      const geometry_msgs::Twist &cmdvel_msg,
+      const sensor_msgs::Imu &imu_msg,
+      const sensor_msgs::JointState &jointstate_msg);
   void reset();
 
   /**
@@ -77,6 +81,12 @@ class WalkNode {
    */
   void initializeEngine();
 
+  /**
+   * Sets the current state of the robot
+   * @param msg The current state
+   */
+  void robStateCb(humanoid_league_msgs::RobotControlState msg);
+
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
 
@@ -89,8 +99,6 @@ class WalkNode {
   void checkPhaseReset();
   void pressureRightCb(bitbots_msgs::FootPressure msg);
   void pressureLeftCb(bitbots_msgs::FootPressure msg);
-
-  void robStateCb(humanoid_league_msgs::RobotControlState msg);
 
   void jointStateCb(const sensor_msgs::JointState &msg);
 

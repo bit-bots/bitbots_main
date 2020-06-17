@@ -173,16 +173,14 @@ void WalkNode::reset() {
   stabilizer_.reset();
 }
 
-int WalkNode::step(double dt, const sensor_msgs::Imu imu_msg, const geometry_msgs::Twist cmdvel_msg) {
+bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist &cmdvel_msg, const sensor_msgs::Imu &imu_msg, const sensor_msgs::JointState &jointstate_msg) {
+  cmdVelCb(cmdvel_msg);
+  imuCb(imu_msg);
+  jointStateCb(jointstate_msg);
 
   WalkResponse response;
   ros::Rate loop_rate(engine_frequency_);
 
-  if (robot_state_==humanoid_league_msgs::RobotControlState::FALLING) {
-    // the robot fell, we have to reset everything and do nothing else
-    walk_engine_.reset();
-    stabilizer_.reset();
-  } else {
     // we don't want to walk, even if we have orders, if we are not in the right state
     /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
      * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
@@ -224,7 +222,7 @@ int WalkNode::step(double dt, const sensor_msgs::Imu imu_msg, const geometry_msg
       command.velocities = vels;
       command.accelerations = accs;
       command.max_currents = pwms;
-    }
+      return command;
   }
 }
 

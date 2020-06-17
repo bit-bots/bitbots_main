@@ -13,8 +13,9 @@
 class PyWalk {
  public:
   PyWalk();
-  int step(int);
+  std::string step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg);
   void reset();
+  void set_robot_state(int state);
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
