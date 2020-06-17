@@ -40,7 +40,7 @@ std::string to_python(const M& msg)
   return str_msg;
 }
 
-PyWalk::PyWalk() {
+PyWalkWrapper::PyWalkWrapper() {
   std::map<std::string, std::string> empty;
   ros::init(empty, "PyWalking");
   //
@@ -48,15 +48,15 @@ PyWalk::PyWalk() {
   set_robot_state(0);
 }
 
-std::string PyWalk::step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg){
+std::string PyWalkWrapper::step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg){
     return to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt, from_python<geometry_msgs::Twist>(cmdvel_msg), from_python<sensor_msgs::Imu>(imu_msg), from_python<sensor_msgs::JointState>(jointstate_msg)));
   }
 
-void PyWalk::reset() {
+void PyWalkWrapper::reset() {
   walk_node_->reset();
 }
 
-void PyWalk::set_robot_state(int state) {
+void PyWalkWrapper::set_robot_state(int state) {
   humanoid_league_msgs::RobotControlState state_msg;
   state_msg.state = state;
   walk_node_->robStateCb(state_msg);
@@ -67,8 +67,8 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
     using namespace boost::python;
     using namespace bitbots_quintic_walk;
 
-    class_<PyWalk>("PyWalkWrapper")
-        .def("step", &PyWalk::step)
-        .def("set_robot_state", &PyWalk::set_robot_state)
-        .def("reset", &PyWalk::reset);
+    class_<PyWalkWrapper>("PyWalkWrapper")
+        .def("step", &PyWalkWrapper::step)
+        .def("set_robot_state", &PyWalkWrapper::set_robot_state)
+        .def("reset", &PyWalkWrapper::reset);
 }
