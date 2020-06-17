@@ -5,6 +5,8 @@ from std_msgs.msg import Int64
 
 from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper
 from bitbots_msgs.msg import JointCommand
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import Imu, JointState
 
 
 
@@ -37,7 +39,7 @@ class PyWalk(object):
     def reset(self):
         self.py_walk_wrapper.reset()
 
-    def step(self, dt, cmdvel_msg, imu_msg, jointstate_msg):
+    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg):
         return self._from_cpp(
             self.py_walk_wrapper.step(
                 dt,

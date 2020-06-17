@@ -9,10 +9,11 @@
 #include <boost/python.hpp>
 #include <ros/ros.h>
 #include <map>
+#include <iostream>
 
-class PyWalk {
+class PyWalkWrapper {
  public:
-  PyWalk();
+  PyWalkWrapper();
   std::string step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg);
   void reset();
   void set_robot_state(int state);
