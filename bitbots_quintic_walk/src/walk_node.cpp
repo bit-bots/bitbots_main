@@ -179,15 +179,12 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
   jointStateCb(jointstate_msg);
 
   WalkResponse response;
-  ros::Rate loop_rate(engine_frequency_);
 
     // we don't want to walk, even if we have orders, if we are not in the right state
     /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
      * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
     // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-    current_request_.walkable_state = robot_state_==humanoid_league_msgs::RobotControlState::CONTROLABLE ||
-        robot_state_==humanoid_league_msgs::RobotControlState::WALKING ||
-        robot_state_==humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+    current_request_.walkable_state = true;
     // update walk engine response
     walk_engine_.setGoals(current_request_);
     checkPhaseReset();
@@ -195,7 +192,7 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
     visualizer_.publishEngineDebug(response);
 
     // only calculate joint goals from this if the engine is not idle
-    if (walk_engine_.getState()!=WalkState::IDLE) {
+    //if (walk_engine_.getState()!=WalkState::IDLE) {
       response.current_fused_roll = current_trunk_fused_roll_;
       response.current_fused_pitch = current_trunk_fused_pitch_;
       // get bioIk goals from stabilizer
@@ -223,7 +220,7 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
       command.accelerations = accs;
       command.max_currents = pwms;
       return command;
-  }
+  //}
 }
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {

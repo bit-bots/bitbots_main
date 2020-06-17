@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO
 
 import rospy
 from std_msgs.msg import Int64
@@ -21,7 +21,7 @@ class PyWalk(object):
         ----------
         - msg: a ROS message instance.
         """
-        buf = StringIO()
+        buf = BytesIO()
         msg.serialize(buf)
         return buf.getvalue()
 
