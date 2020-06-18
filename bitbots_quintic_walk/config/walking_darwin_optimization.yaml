@@ -1,24 +1,26 @@
 walking:
   engine:
-    double_support_ratio: 0.239364560778342
-    first_step_swing_factor: 0.531097446843835
-    first_step_trunk_phase: -0.206569358297317
-    foot_apex_phase: 0.657697582543936
-    foot_distance: 0.12355375436617
-    foot_overshoot_phase: 0.716463568802289
-    foot_overshoot_ratio: 0.641158906043661
-    foot_rise: 0.0479718154233863
-    freq: 1.49871649909293
-    trunk_height: 0.180281689417673
-    trunk_phase: -0.0433392346293177
-    trunk_pitch: 0.214977418300859
-    trunk_pitch_p_coef_forward: -1.97793361353095
-    trunk_pitch_p_coef_turn: 2.76832535855566
-    trunk_swing: 0.740042320046427
-    trunk_x_offset: 0.0164044987875086
-    trunk_x_offset_p_coef_forward: -0.288579304971023
-    trunk_x_offset_p_coef_turn: -0.6002777540633
-    trunk_y_offset: -0.000351105713414536
+    foot_apex_phase: 0.5
+    foot_rise: 0.04
+    trunk_pitch: 0.0
+    trunk_pitch_p_coef_forward: 0
+    trunk_pitch_p_coef_turn: 0
+    trunk_y_offset: 0
+
+    double_support_ratio: 0.345928602634722
+    first_step_swing_factor: 1.50183282644441
+    first_step_trunk_phase: 0.0956266389693722
+    foot_distance: 0.144654015025237
+    foot_overshoot_phase: 0.516479112813469
+    foot_overshoot_ratio: 0.158909302494029
+    freq: 1.096966937034
+    trunk_height: 0.161426562232199
+    trunk_phase: -0.236837313812517
+    trunk_swing: 0.381969244352829
+    trunk_x_offset: 0.0087111927810683
+    trunk_x_offset_p_coef_forward: 0.0615099205110844
+    trunk_x_offset_p_coef_turn: -0.207416253933396
+
 
     foot_z_pause: 0.0
     trunk_pause: 0.0
