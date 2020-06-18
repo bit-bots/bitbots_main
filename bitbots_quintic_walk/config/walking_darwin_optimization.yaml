@@ -45,6 +45,8 @@ walking:
     max_step_y: 1000
     max_step_xy: 1000
     max_step_z: 1000
+    max_step_angular: 1000
+
 
     vel: -1
     acc: -1
