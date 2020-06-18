@@ -42,14 +42,15 @@ std::string to_python(const M& msg)
 
 PyWalkWrapper::PyWalkWrapper() {
   std::map<std::string, std::string> empty;
-  ros::init(empty, "PyWalking");
+  ros::init(empty, "walking");
   //
   walk_node_.reset(new bitbots_quintic_walk::WalkNode());
   set_robot_state(0);
 }
 
-std::string PyWalkWrapper::step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg){
-    return to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt, from_python<geometry_msgs::Twist>(cmdvel_msg), from_python<sensor_msgs::Imu>(imu_msg), from_python<sensor_msgs::JointState>(jointstate_msg)));
+moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg){
+  std::string result = to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt, from_python<geometry_msgs::Twist>(cmdvel_msg), from_python<sensor_msgs::Imu>(imu_msg), from_python<sensor_msgs::JointState>(jointstate_msg)));
+  return  moveit::py_bindings_tools::serializeMsg(result);
   }
 
 void PyWalkWrapper::reset() {

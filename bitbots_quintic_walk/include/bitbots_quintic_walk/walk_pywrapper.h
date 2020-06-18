@@ -10,11 +10,12 @@
 #include <ros/ros.h>
 #include <map>
 #include <iostream>
+#include <moveit/py_bindings_tools/serialize_msg.h>
 
 class PyWalkWrapper {
  public:
   PyWalkWrapper();
-  std::string step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg);
+  moveit::py_bindings_tools::ByteString step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg);
   void reset();
   void set_robot_state(int state);
 

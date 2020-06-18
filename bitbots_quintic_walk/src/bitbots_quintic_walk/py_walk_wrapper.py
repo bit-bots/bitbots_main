@@ -9,7 +9,6 @@ from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Imu, JointState
 
 
-
 class PyWalk(object):
     def __init__(self):
         self.py_walk_wrapper = PyWalkWrapper()
@@ -23,7 +22,8 @@ class PyWalk(object):
         """
         buf = BytesIO()
         msg.serialize(buf)
-        return buf.getvalue()
+        value = buf.getvalue()
+        return value
 
     def _from_cpp(self, str_msg, cls):
         """Return a ROS message from a serialized string
@@ -34,17 +34,22 @@ class PyWalk(object):
         - cls: ROS message class, e.g. sensor_msgs.msg.LaserScan.
         """
         msg = cls()
-        return msg.deserialize(str_msg)
+        result = msg.deserialize(str_msg)
+        return result
 
     def reset(self):
         self.py_walk_wrapper.reset()
 
     def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg):
-        return self._from_cpp(
-            self.py_walk_wrapper.step(
-                dt,
-                self._to_cpp(cmdvel_msg),
-                self._to_cpp(imu_msg),
-                self._to_cpp(jointstate_msg)),
+        stepi = self.py_walk_wrapper.step(
+            dt,
+            self._to_cpp(cmdvel_msg),
+            self._to_cpp(imu_msg),
+            self._to_cpp(jointstate_msg))
+
+        result = self._from_cpp(
+            stepi,
             JointCommand
         )
+
+        return result
