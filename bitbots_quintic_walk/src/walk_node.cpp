@@ -5,9 +5,13 @@
 
 namespace bitbots_quintic_walk {
 
+WalkNode::WalkNode(const std::string ns):
+    robot_model_loader_(ns + "/robot_description", false),
+    stabilizer_(ns),
+    walk_engine_(ns)
+{
+  nh_ = ros::NodeHandle(ns);
 
-WalkNode::WalkNode() :
-    robot_model_loader_("/robot_description", false) {
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
   current_request_.linear_orders = {0, 0, 0};
@@ -19,12 +23,12 @@ WalkNode::WalkNode() :
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
-  nh_.param<bool>("/simulation_active", simulation_active_, false);
-  nh_.param<bool>("/walking/node/publish_odom_tf", publish_odom_tf_, false);
+  nh_.param<bool>("simulation_active", simulation_active_, false);
+  nh_.param<bool>("walking/node/publish_odom_tf", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("/walk_engine_odometry", 1);
+  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_engine_odometry", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1, true);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
@@ -57,14 +61,14 @@ WalkNode::WalkNode() :
 
   // initialize dynamic-reconfigure
   dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(
-          "~/node"));
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(ns+
+          "/walking/node"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
   // this has to be done to prevent strange initilization bugs
-  walk_engine_ = WalkEngine();
+  walk_engine_ = WalkEngine(ns);
 }
 
 void WalkNode::run() {
@@ -183,7 +187,6 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
     // we don't want to walk, even if we have orders, if we are not in the right state
     /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
      * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
-    // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
     current_request_.walkable_state = true;
     // update walk engine response
     walk_engine_.setGoals(current_request_);
@@ -191,36 +194,34 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
     response = walk_engine_.update(dt);
     visualizer_.publishEngineDebug(response);
 
-    // only calculate joint goals from this if the engine is not idle
-    //if (walk_engine_.getState()!=WalkState::IDLE) {
-      response.current_fused_roll = current_trunk_fused_roll_;
-      response.current_fused_pitch = current_trunk_fused_pitch_;
-      // get bioIk goals from stabilizer
-        WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+    response.current_fused_roll = current_trunk_fused_roll_;
+    response.current_fused_pitch = current_trunk_fused_pitch_;
+    // get bioIk goals from stabilizer
+    WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
 
-        // compute motor goals from IK
-        bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-          /* Construct JointCommand message */
-      bitbots_msgs::JointCommand command;
+    // compute motor goals from IK
+    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+      /* Construct JointCommand message */
+    bitbots_msgs::JointCommand command;
 
-      /*
-       * Since our JointGoals type is a vector of strings
-       *  combined with a vector of numbers (motor name -> target position)
-       *  and bitbots_msgs::JointCommand needs both vectors as well,
-       *  we can just assign them
-       */
-      command.joint_names = goals.first;
-      command.positions = goals.second;
+    /*
+    * Since our JointGoals type is a vector of strings
+    *  combined with a vector of numbers (motor name -> target position)
+    *  and bitbots_msgs::JointCommand needs both vectors as well,
+    *  we can just assign them
+    */
+    command.joint_names = goals.first;
+    command.positions = goals.second;
 
-      /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
-      std::vector<double> vels(goals.first.size(), -1.0);
-      std::vector<double> accs(goals.first.size(), -1.0);
-      std::vector<double> pwms(goals.first.size(), -1.0);
-      command.velocities = vels;
-      command.accelerations = accs;
-      command.max_currents = pwms;
-      return command;
-  //}
+    /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
+    std::vector<double> vels(goals.first.size(), -1.0);
+    std::vector<double> accs(goals.first.size(), -1.0);
+    std::vector<double> pwms(goals.first.size(), -1.0);
+    command.velocities = vels;
+    command.accelerations = accs;
+    command.max_currents = pwms;
+    return command;
+
 }
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
@@ -477,12 +478,16 @@ void WalkNode::initializeEngine() {
   walk_engine_.reset();
 }
 
+WalkEngine * WalkNode::getEngine() {
+  return &walk_engine_;
+}
+
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "walking");
   // init node
-  bitbots_quintic_walk::WalkNode node;
+  bitbots_quintic_walk::WalkNode node("");
 
   // run the node
   node.initializeEngine();

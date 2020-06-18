@@ -3,15 +3,16 @@ from io import BytesIO
 import rospy
 from std_msgs.msg import Int64
 
-from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper
+from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros
 from bitbots_msgs.msg import JointCommand
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Imu, JointState
-
+from std_msgs.msg import String
 
 class PyWalk(object):
-    def __init__(self):
-        self.py_walk_wrapper = PyWalkWrapper()
+    def __init__(self, namespace=""):
+        init_ros()
+        self.py_walk_wrapper = PyWalkWrapper(namespace)
 
     def _to_cpp(self, msg):
         """Return a serialized string from a ROS message
@@ -53,3 +54,6 @@ class PyWalk(object):
         )
 
         return result
+
+    def set_engine_dyn_reconf(self, param_dict):
+        self.py_walk_wrapper.set_engine_dyn_reconf(param_dict)

@@ -53,7 +53,7 @@ namespace bitbots_quintic_walk {
 
 class WalkNode {
  public:
-  WalkNode();
+  WalkNode(const std::string ns);
   bitbots_msgs::JointCommand step(
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
@@ -86,6 +86,8 @@ class WalkNode {
    * @param msg The current state
    */
   void robStateCb(humanoid_league_msgs::RobotControlState msg);
+
+  WalkEngine *getEngine();
 
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);

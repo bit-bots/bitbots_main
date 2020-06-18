@@ -18,7 +18,7 @@ namespace bitbots_quintic_walk {
 
 class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
-  WalkStabilizer();
+  WalkStabilizer(const std::string ns);
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const ros::Duration &dt) override;
 
