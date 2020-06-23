@@ -58,6 +58,7 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle& root_nh){
   if(only_imu_) {
     imu_.setParent(this);
     success &= imu_.init(root_nh);
+    success &= buttons_.init(root_nh);
   }else if(only_pressure_){
     success &= left_foot_.init(root_nh);
     success &= right_foot_.init(root_nh);
@@ -87,6 +88,7 @@ bool WolfgangHardwareInterface::read()
   bool success = true;
   if(only_imu_){
     success &= imu_.read();
+    success &= buttons_.read();
   }else if(only_pressure_){
     success &= left_foot_.read();
     success &= right_foot_.read();

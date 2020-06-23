@@ -14,6 +14,8 @@
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
+#include <bitbots_ros_control/utils.h>
+
 namespace bitbots_ros_control
 {
 
