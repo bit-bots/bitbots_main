@@ -94,7 +94,7 @@ void WalkNode::run() {
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
       walk_engine_.setGoals(current_request_);
-      checkPhaseReset();
+      checkPhaseRestAndReset();
       response = walk_engine_.update(dt);
       visualizer_.publishEngineDebug(response);
 
@@ -231,7 +231,8 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
-  current_request_.linear_orders = {msg.linear.x * factor, msg.linear.y * factor, msg.linear.z * factor};
+  // the sideward movement only does one step per double step, therefore we need to multiply it by 2
+  current_request_.linear_orders = {msg.linear.x * factor, msg.linear.y * factor * 2, msg.linear.z * factor};
   current_request_.angular_z = msg.angular.z * factor;
 
   // the orders should not extend beyond a maximal step size
@@ -249,13 +250,13 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
   // warn user that speed was limited
   if (msg.linear.x * factor != current_request_.linear_orders[0] ||
-      msg.linear.y * factor != current_request_.linear_orders[1] ||
+      msg.linear.y * factor != current_request_.linear_orders[1] / 2 ||
       msg.linear.z * factor != current_request_.linear_orders[2] ||
       msg.angular.z * factor != current_request_.angular_z) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
         msg.linear.x, msg.linear.y, msg.linear.z, msg.angular.z, msg.linear.x + msg.linear.y, max_step_linear_[0] / factor,
-        max_step_linear_[1] / factor, max_step_linear_[2] / factor, max_step_angular_ / factor, max_step_xy_ / factor);
+        max_step_linear_[1] / factor / 2, max_step_linear_[2] / factor, max_step_angular_ / factor, max_step_xy_ / factor);
   }
 }
 
@@ -313,14 +314,18 @@ void WalkNode::pressureRightCb(const bitbots_msgs::FootPressure msg) {
   }
 }
 
-void WalkNode::checkPhaseReset() {
+void WalkNode::checkPhaseRestAndReset() {
   /**
-   * This method checks, if the foot made contact to the ground and ends step earlier, by resetting the phase.
+   * This method checks if the foot made contact to the ground and ends the step earlier by resetting the phase ("phase reset")
+     or lets the robot rest until it makes ground contact ("phase rest").
    */
   // phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
   // otherwise we will always do phase reset in the beginning of the step
   double phase = walk_engine_.getPhase();
-  if ((phase > 0.5 - phase_reset_phase_ && phase < 0.5) || (phase > 1 - phase_reset_phase_)) {
+  double phase_reset_phase = walk_engine_.getPhaseResetPhase();
+
+  if ((phase > phase_reset_phase && phase < 0.5) || (phase > 0.5 + phase_reset_phase)) {
+    // check if we want to perform a phase reset
     if(pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_){
       // reset phase by using pressure sensors
       ROS_WARN("Phase resetted by pressure!");
@@ -392,6 +397,13 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   phase_reset_phase_ = config.phase_reset_phase;
   ground_min_pressure_ = config.ground_min_pressure;
   joint_min_effort_ = config.joint_min_effort;
+  // phase rest can only work if one phase resetting method is active
+  if(effort_phase_reset_active_ || pressure_phase_reset_active_){
+    walk_engine_.setPhaseRest(config.phase_rest_active);
+  }else{
+    walk_engine_.setPhaseRest(false);
+  }
+
   params_.pause_duration = config.pause_duration;
   walk_engine_.setPauseDuration(params_.pause_duration);
 }

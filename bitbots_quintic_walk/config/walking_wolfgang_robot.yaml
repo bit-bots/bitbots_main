@@ -53,7 +53,7 @@ walking:
     # (half cycle ratio, [0:1])
     trunk_pause: 0.0
     # Trunk forward offset proportional to forward step
-    # (in 1)
+    # (in m)
     trunk_x_offset_p_coef_forward: 0.0
     # Trunk forward offset proportional to rotation step
     # (in m/rad)

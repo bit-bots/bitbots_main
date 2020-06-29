@@ -15,6 +15,7 @@ WalkEngine::WalkEngine(const std::string ns) :
     right_kick_requested_(false),
     time_paused_(0.0),
     pause_duration_(0.0),
+    phase_rest_active_(false),
     is_left_support_foot_(false),
     engine_state_(WalkState::IDLE) {
   left_in_world_.setIdentity();
@@ -43,7 +44,7 @@ WalkResponse WalkEngine::update(double dt) {
   bool orders_zero = request_.linear_orders.x() == 0 && request_.linear_orders.y() == 0 &&
       request_.linear_orders.z() == 0 && request_.angular_z == 0;
 
-  // First check if we are currently in pause state or idle, since we don't want to update the phase in this case
+  // First check cases where we do not want to update the phase: pausing, idle and phase rest
   if (engine_state_ == WalkState::PAUSED) {
     if (time_paused_ > pause_duration_) {
       // our pause is finished, see if we can continue walking
@@ -65,6 +66,15 @@ WalkResponse WalkEngine::update(double dt) {
   } else if (engine_state_ == WalkState::IDLE) {
     if (orders_zero || !request_.walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
+      return createResponse();
+    }
+  }else if (engine_state_ == WalkState::WALKING) {
+    // check if the step would finish with this update of the phase
+    bool step_will_finish = (phase_ < 0.5 && phase_ + dt * params_.freq > 0.5 ) || phase_ + dt * params_.freq > 1.0;
+    // check if we should rest the phase because the flying foot didn't make contact to the ground during step
+    if(step_will_finish && phase_rest_active_){
+      // dont update the phase (do a phase rest) till it gets updated by a phase reset
+      ROS_WARN("PHASE REST");
       return createResponse();
     }
   }
@@ -198,13 +208,17 @@ void WalkEngine::updatePhase(double dt) {
 }
 
 void WalkEngine::endStep() {
-  // ends the step earlier, e.g. when foot has already contact to gro
+  // ends the step earlier, e.g. when foot has already contact to ground
   // last_phase will still held the information about the time point where the reset occurred
   if (phase_ < 0.5) {
     phase_ = 0.5;
   } else {
     phase_ = 0.0;
   }
+}
+
+void WalkEngine::setPhaseRest(bool active){
+  phase_rest_active_ = active;
 }
 
 void WalkEngine::reset() {
@@ -781,6 +795,12 @@ WalkResponse WalkEngine::createResponse() {
 double WalkEngine::getPhase() const {
   return phase_;
 }
+
+double WalkEngine::getPhaseResetPhase() const{
+  // returning the phase when the foot is on apex in step phase (between 0 and 0.5)
+  return (params_.double_support_ratio + params_.foot_apex_phase * (1 - params_.double_support_ratio)) / 2;
+}
+
 
 double WalkEngine::getTrajsTime() const {
   double t;
