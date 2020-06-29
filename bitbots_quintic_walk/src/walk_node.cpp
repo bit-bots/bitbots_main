@@ -5,7 +5,7 @@
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode() :
-    robot_model_loader_("/robot_description", false) {
+  robot_model_loader_("robot_description", false) {
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
   current_request_.orders = {0, 0, 0};
@@ -172,7 +172,8 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
-  current_request_.orders = {msg.linear.x * factor, msg.linear.y * factor, msg.angular.z * factor};
+  // the sideward movement only does one step per double step, therefore we need to multiply it by 2
+  current_request_.orders = {msg.linear.x * factor, msg.linear.y * factor * 2, msg.angular.z * factor};
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
@@ -188,12 +189,13 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
   // warn user that speed was limited
   if (msg.linear.x * factor != current_request_.orders[0] ||
-      msg.linear.y * factor != current_request_.orders[1] ||
+      msg.linear.y * factor != current_request_.orders[1] /2 ||
       msg.angular.z * factor != current_request_.orders[2]) {
     ROS_WARN(
-        "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f xy: %.2f",
+        "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f \n maximum is x: %.2f y: %.2f z: %.2f xy: %.2f \n using x: %.2f y: %.2f z: %.2f",
         msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0] / factor,
-        max_step_[1] / factor, max_step_[2] / factor, max_step_xy_ / factor);
+        max_step_[1] / factor, max_step_[2] / factor, max_step_xy_ / factor,
+        current_request_.orders[0] / factor, current_request_.orders[1] / factor / 2, current_request_.orders[2] / factor);
   }
 }
 
