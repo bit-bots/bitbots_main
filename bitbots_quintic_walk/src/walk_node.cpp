@@ -190,7 +190,7 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
     current_request_.walkable_state = true;
     // update walk engine response
     walk_engine_.setGoals(current_request_);
-    checkPhaseReset();
+    checkPhaseRestAndReset();
     response = walk_engine_.update(dt);
     visualizer_.publishEngineDebug(response);
 
@@ -328,11 +328,11 @@ void WalkNode::checkPhaseRestAndReset() {
     // check if we want to perform a phase reset
     if(pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_){
       // reset phase by using pressure sensors
-      ROS_WARN("Phase resetted by pressure!");
+      //ROS_WARN("Phase resetted by pressure!");
       walk_engine_.endStep();
     }else if(effort_phase_reset_active_ && current_fly_effort_ > joint_min_effort_){
       // reset phase by using joint efforts
-      ROS_WARN("Phase resetted by effort!");
+      //ROS_WARN("Phase resetted by effort!");
       walk_engine_.endStep();
     }
   }

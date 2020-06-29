@@ -7,19 +7,21 @@ walking:
     trunk_pitch_p_coef_turn: 0
     trunk_y_offset: 0
 
-    double_support_ratio: 0.345928602634722
-    first_step_swing_factor: 1.50183282644441
-    first_step_trunk_phase: 0.0956266389693722
-    foot_distance: 0.144654015025237
-    foot_overshoot_phase: 0.516479112813469
-    foot_overshoot_ratio: 0.158909302494029
-    freq: 1.096966937034
-    trunk_height: 0.161426562232199
-    trunk_phase: -0.236837313812517
-    trunk_swing: 0.381969244352829
-    trunk_x_offset: 0.0087111927810683
-    trunk_x_offset_p_coef_forward: 0.0615099205110844
-    trunk_x_offset_p_coef_turn: -0.207416253933396
+    double_support_ratio: 0.264879347470748
+    first_step_swing_factor: 0.886454298551084
+    first_step_trunk_phase: -0.323654810252584
+    foot_distance: 0.168289126503414
+    foot_overshoot_phase: 0.725077437667735
+    foot_overshoot_ratio: 0.649313647473396
+    freq: 0.797811377634641
+    trunk_height: 0.186476623577132
+    trunk_phase: -0.214341846260306
+    trunk_swing: 0.722216734386146
+    trunk_x_offset: 0.0203574368430814
+    trunk_x_offset_p_coef_forward: 0.0344524957112129
+    trunk_x_offset_p_coef_turn: 0.0322195714072112
+
+
 
 
     foot_z_pause: 0.0
@@ -34,7 +36,7 @@ walking:
 
   node:
     # update frequency of the engine
-    engine_freq: 30.0
+    engine_freq: 30
 
     # parameters for bioIK
     ik_timeout: 0.01
@@ -60,11 +62,11 @@ walking:
     imu_roll_vel_threshold: 5.7
     pause_duration: 3.0
 
-    phase_reset_active: False
+    phase_reset_active: True
     ground_min_pressure: 1.5
     phase_reset_phase: 0.25
-    joint_min_effort: 35
-    effort_phase_reset_active: False
+    joint_min_effort: 3
+    effort_phase_reset_active: True
 
     publish_odom_tf: False
 
