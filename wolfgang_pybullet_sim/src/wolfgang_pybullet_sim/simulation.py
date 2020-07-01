@@ -37,8 +37,8 @@ class Simulation:
         # Loading floor
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
         self.plane_index = p.loadURDF('plane.urdf')
-        p.changeDynamics(self.plane_index, -1, lateralFriction=100000000, spinningFriction=100000000,
-                         rollingFriction=0.1, restitution=0.9)
+        p.changeDynamics(self.plane_index, -1, lateralFriction=1, spinningFriction=-1,
+                         rollingFriction=-1, restitution=0.9)
 
         # Loading robot
         rospack = rospkg.RosPack()
@@ -49,7 +49,7 @@ class Simulation:
 
         # Engine parameters
         # time step should be at 240Hz (due to pyBullet documentation)
-        self.timestep = 1/240
+        self.timestep = 1 / 240
         # standard parameters seem to be best. leave them like they are
         # p.setPhysicsEngineParameter(fixedTimeStep=self.timestep, numSubSteps=1)
         # no real time, as we will publish own clock
@@ -62,11 +62,13 @@ class Simulation:
         self.links = {}
 
         # Collecting the available joints
+        link_index = 0
         for i in range(p.getNumJoints(self.robot_index)):
             joint_info = p.getJointInfo(self.robot_index, i)
             name = joint_info[1].decode('utf-8')
             # we can get the links by seeing where the joint is attached
-            self.links[joint_info[12].decode('utf-8')] = joint_info[16]
+            self.links[joint_info[12].decode('utf-8')] = link_index
+            link_index += 1
             if name in self.initial_joints_positions.keys():
                 # remember joint
                 self.joints[name] = Joint(i, self.robot_index)
@@ -80,17 +82,22 @@ class Simulation:
         # reset robot to initial position
         self.reset()
 
-    def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping):
+    def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
+                          spinning_friction=0, rolling_friction=0):
+        print(self.links)
         for link_name in self.links.keys():
-            if link_name in ["l_foot", "r_foot", "llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
-                # print(self.parts[part].body_name)
+            if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
+                # print(p.getLinkState(self.robot_index, self.links[link_name]))
                 p.changeDynamics(self.robot_index, self.links[link_name],
-                                 lateralFriction=100000000,
-                                 spinningFriction=100000000,
-                                 rollingFriction=0.1,
+                                 lateralFriction=lateral_friction,
+                                 spinningFriction=spinning_friction,
+                                 rollingFriction=rolling_friction,
                                  contactDamping=contact_damping,
                                  contactStiffness=contact_stiffness,
                                  jointDamping=joint_damping)
+                p.changeDynamics(self.plane_index, -1, lateralFriction=lateral_friction,
+                                 spinningFriction=spinning_friction,
+                                 rollingFriction=rolling_friction, resistution=0.9)
 
     def set_filter_params(self, cutoff, order):
         for i in range(p.getNumJoints(self.robot_index)):
