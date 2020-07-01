@@ -1,13 +1,14 @@
 {  
     "documentId": "8c6aa9a8917f764cb7039c2d",
     "assemblyName": "WolfgangV3",
+    "versionId": "33214c7fc218647eca2a449a",
     "outputFormat": "urdf",
     "drawFrames": false,
     "drawCollisions": false,
     "useScads": true,
     "simplifySTLs": true,
     "mergeSTLs": true,
-    "maxSTLSize": 3,
+    "maxSTLSize": 1,
     "addDummyBaseLink": true,
     "packageName": "wolfgang_description/urdf/",
     "robotName": "wolfgang",
@@ -59,6 +60,31 @@
         "HeadPan": 10.33,
         "HeadTilt": 10.33   
     },
+    "jointDamping": {
+        // max force is only achived at 0 speed. max speed is only achieved with zero load
+        // damping = maxTorue / maxSpeed
+        "default": 0.0,
+        "RShoulderRoll": 0.53,
+        "LShoulderRoll": 0.53,
+        "RShoulderPitch": 0.53,
+        "LShoulderPitch": 0.53,
+        "RElbow": 0.53,
+        "LElbow": 0.53,
+        "RHipYaw": 0.92,
+        "LHipYaw": 0.92,
+        "RHipRoll": 0.92,
+        "LHipRoll": 0.92,
+        "RHipPitch": 0.92,
+        "LHipPitch": 0.92,
+        "RKnee": 1,
+        "LKnee": 1,
+        "RAnklePitch": 0.92,
+        "LAnklePitch": 0.92,
+        "RAnkleRoll": 0.92,
+        "LAnkleRoll": 0.92,
+        "HeadPan": 0.53,
+        "HeadTilt": 0.53
+    },
     "ignore": [
         // ignore smaller standard parts
         "hex_socket_head_cap_screw_m3x0.50_x_8",
@@ -71,7 +97,8 @@
         "nuc_button",
         "nuc_usb",
         "nuc_top",
-        "torsion_spring_assembly_helper"
+        "torsion_spring_assembly_helper",
+        "hip_z_spacer"
     ],
     "additionalURDF": "additionalURDF.txt"
 }
