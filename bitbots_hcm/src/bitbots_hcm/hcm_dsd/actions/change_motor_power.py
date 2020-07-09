@@ -45,6 +45,8 @@ class TurnMotorsOn(AbstractChangeMotorPower):
 
 class TurnMotorsOff(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
+        # todo hardware does not support this yet
+        return
         if not self.blackboard.are_motors_on():
             return self.pop()
 

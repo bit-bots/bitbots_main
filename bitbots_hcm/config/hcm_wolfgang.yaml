@@ -46,7 +46,7 @@ hcm:
   falling_new_left: -18
   falling_new_right: 18
 
-  pick_up_accel_treshold: 3
+  pick_up_accel_treshold: 7
 
   falling:
 

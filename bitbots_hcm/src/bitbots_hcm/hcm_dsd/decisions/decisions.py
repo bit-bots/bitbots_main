@@ -161,7 +161,7 @@ class PickedUp(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         # check if the robot is currently being picked up. foot have no connection to the ground,
         # but robot is more or less upright (to differentiate from falling)
-        if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressure) < 1 and \
+        if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressures) < 10 and \
                 abs(self.blackboard.smooth_accel[0]) < self.blackboard.pickup_accel_threshold and \
                 abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
             self.blackboard.current_state = STATE_PICKED_UP
