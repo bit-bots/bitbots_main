@@ -121,10 +121,21 @@ class CheckMotors(AbstractDecisionElement):
     Since the HCM is not able to work without motor connection, we will stop if there are no values.
     """
 
-    def perform(self, reevaluate=False):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(CheckMotors, self).__init__(blackboard, dsd, parameters)
+        self.last_joint_msg = None
+        self.same_joint_state_msg_counter = 0
 
-        if not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
-            # tell that we have a hardware problem
+    def perform(self, reevaluate=False):
+        if self.last_joint_msg == self.blackboard.current_joint_positions:
+            self.same_joint_state_msg_counter += 1
+        else:
+            self.same_joint_state_msg_counter = 0
+
+        # see if we get no messages or always the exact same
+        if not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1 \
+                or self.same_joint_state_msg_counter > 10:
+            # tell that we have a hardware problem                            
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
             # wait for motors to connect
             return "PROBLEM"
