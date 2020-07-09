@@ -159,8 +159,11 @@ class PickedUp(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        # check if the robot is currently being picked up
-        if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressure) < 1:
+        # check if the robot is currently being picked up. foot have no connection to the ground,
+        # but robot is more or less upright (to differentiate from falling)
+        if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressure) < 1 and \
+                abs(self.blackboard.smooth_accel[0]) < self.blackboard.pickup_accel_threshold and \
+                abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
             self.blackboard.current_state = STATE_PICKED_UP
             # we do an action sequence to tgo to walkready and stay in picked up state
             return "PICKED_UP"
@@ -194,6 +197,26 @@ class Falling(AbstractDecisionElement):
         else:
             # robot is not fallen
             return "NOT_FALLING"
+
+    def get_reevaluate(self):
+        return True
+
+
+class FallingClassifier(AbstractDecisionElement):
+
+    def perform(self, reevaluate=False):
+        prediction = self.blackbord.classifier.predict(self.blackboard_imu_msg, self.blackboard.current_joint_positions,
+                                                       self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
+        if prediction == 0:
+            return "NOT_FALLING"
+        elif prediction == 1:
+            return "FALLING_FRONT"
+        elif prediction == 2:
+            return "FALLING_BACK"
+        elif prediction == 3:
+            return "FALLING_LEFT"
+        elif prediction == 4:
+            return "FALLING_RIGHT"
 
     def get_reevaluate(self):
         return True
