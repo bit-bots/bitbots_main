@@ -16,7 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   transmission_interface
   realtime_tools
   bitbots_msgs
+  tf2_ros
 )
+find_package(yaml-cpp REQUIRED)
 
 set(SOURCES
   src/dynamixel_servo_hardware_interface.cpp
@@ -44,7 +46,8 @@ include_directories(
 )
 
 add_executable(node ${SOURCES})
-
 add_dependencies(node ${PROJECT_NAME}_gencfg)
 target_link_libraries(node ${catkin_LIBRARIES})
 
+add_executable(pressure_converter src/pressure_converter.cpp)
+target_link_libraries(pressure_converter ${catkin_LIBRARIES} yaml-cpp)
