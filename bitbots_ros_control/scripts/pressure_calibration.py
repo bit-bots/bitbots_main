@@ -5,7 +5,7 @@ from bitbots_msgs.msg import FootPressure
 from bitbots_msgs.srv import FootScale, FootScaleRequest, FootScaleResponse
 from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
 
-CALIBRATION_WEIGHT = 1.3
+CALIBRATION_WEIGHT = 0.850 * 9.81
 
 rospy.init_node("pressure_calibration")
 

@@ -26,11 +26,15 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   sole_lr_ += "_sole";
 
   if (!pnh.getParam(zero_lr_, zero_))
+  {
     ROS_ERROR_STREAM(ros::this_node::getName() << ": " << zero_lr_ << " not specified");
-
+    zero_ = {0,0,0,0};
+  }
   if (!pnh.getParam(scale_lr_, scale_))
+  {
     ROS_ERROR_STREAM(ros::this_node::getName() << ": " << scale_lr_ << " not specified");
-
+    scale_ = {1,1,1,1};
+  }
   if (!pnh.getParam("cop_threshold", cop_threshold_))
     ROS_ERROR_STREAM(ros::this_node::getName() << ": cop_threshold not specified");
 
@@ -50,10 +54,6 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   save_zero_and_scale_values_ = false;
   resetZeroAndScaleValues();
 
-  sub_ = pnh_.subscribe(topic + "/raw",
-                        1,
-                        &PressureConverter::pressureCallback,
-                        this/*, ros::TransportHints().tcpNoDelay()*/);
   filtered_pub_ = pnh_.advertise<bitbots_msgs::FootPressure>(topic + "/filtered", 1);
   cop_pub_ = pnh_.advertise<geometry_msgs::PointStamped>("/" + cop_lr_, 1);
   std::string wrench_topics[] = {"l_front", "l_back", "r_front", "r_back", "cop"};
@@ -69,6 +69,11 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   }
   scale_service_ = pnh_.advertiseService(topic + "/set_foot_scale", &PressureConverter::scaleCallback, this);
   zero_service_ = pnh_.advertiseService(topic + "/set_foot_zero", &PressureConverter::zeroCallback, this);
+
+  sub_ = pnh_.subscribe(topic + "/raw",
+                        1,
+                        &PressureConverter::pressureCallback,
+                        this/*, ros::TransportHints().tcpNoDelay()*/);
 }
 
 void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPtr &pressure_raw) {
@@ -86,6 +91,12 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
   filtered_msg.right_front = std::accumulate(previous_values_[2].begin(), previous_values_[2].end(), 0.0) / average_;
   filtered_msg.right_back = std::accumulate(previous_values_[3].begin(), previous_values_[3].end(), 0.0) / average_;
   current_index_ = (current_index_ + 1) % average_;
+
+  filtered_msg.left_front = std::max(filtered_msg.left_front, 0.0);
+  filtered_msg.left_back = std::max(filtered_msg.left_front, 0.0);
+  filtered_msg.right_front = std::max(filtered_msg.right_front, 0.0);
+  filtered_msg.right_back = std::max(filtered_msg.right_back, 0.0);
+
   std::vector<double> forces_list =
       {filtered_msg.left_front, filtered_msg.left_back, filtered_msg.right_front, filtered_msg.right_back};
   for (int i = 0; i < 4; i++) {
@@ -96,7 +107,6 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
     wrench_pubs_[i].publish(w);
   }
   filtered_pub_.publish(filtered_msg);
-
   if (save_zero_and_scale_values_) {
     zero_and_scale_values_[0].push_back(pressure_raw->left_front);
     zero_and_scale_values_[1].push_back(pressure_raw->left_back);
