@@ -46,10 +46,13 @@ class WaitForMotors(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(WaitForMotors, self).__init__(blackboard, dsd, parameters)
+        self.last_positions = None
 
     def perform(self, reevaluate=False):
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
+        if self.last_positions is not None and self.blackboard.current_joint_positions.position == self.last_positions:
             rospy.logwarn("HCM has motor connection, will now resume.") #TODO this message is never displayed
             return self.pop()
         else:
             rospy.logwarn_throttle(1, "HCM gets no data from the motors (/joint_states). Waiting for the motors to connect.")
+
+        self.last_position = self.blackboard.current_joint_positions.position
