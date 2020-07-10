@@ -10,6 +10,9 @@ from geometry_msgs.msg import Twist
 from bitbots_msgs.msg import KickActionFeedback
 
 from humanoid_league_msgs.msg import RobotControlState
+from bitbots_hcm.fall_classifier import FallClassifier
+import rospkg
+
 
 # robot states that are published to the rest of the software
 # definition from humanoid_league_msgs/RobotControlState.msg
@@ -118,6 +121,11 @@ class HcmBlackboard():
 
         # direct messages for falling classfier
         # todo needs refactoring
+
+        rospack = rospkg.RosPack()
+        rospack.list()
+        path = rospack.get_path('bitbots_hcm')
+        self.classifier = FallClassifier(path + "/src/bitbots_hcm/classifier/")
         self.imu_msg = None
         self.cop_l_msg = None
         self.cop_r_msg = None

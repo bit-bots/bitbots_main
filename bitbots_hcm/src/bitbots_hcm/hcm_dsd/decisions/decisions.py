@@ -95,15 +95,36 @@ class CheckPressureSensor(AbstractDecisionElement):
     Checks connection to pressure sensors.
     """
 
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(CheckPressureSensor, self).__init__(blackboard, dsd, parameters)
+        self.last_pressure_values = None
+        self.same_pressure_msg_counter = 10
+
     def perform(self, reevaluate=False):
         self.clear_debug_data()
+        return "CONNECTION"
+
+        # check each strain gage independently, since sometimes connection is lost to just one of them
+        if self.last_pressure_values is not None:
+            found_same = False
+            for i in range(len(self.blackboard.pressures)):
+                if self.blackboard.pressures[i] == self.last_pressure_values[i]:
+                    found_same = True
+                    break
+            if found_same:
+                self.same_pressure_msg_counter += 1
+                self.same_pressure_msg_counter = min(self.same_pressure_msg_counter, 20)
+            else:
+                self.same_pressure_msg_counter -= 1
+                self.same_pressure_msg_counter = max(self.same_pressure_msg_counter, 0)
 
         if self.blackboard.pressure_sensors_installed and not self.blackboard.simulation_active:
             if not self.blackboard.last_pressure_update_time:
                 # wait for the pressure sensors to start
                 self.blackboard.current_state = STATE_STARTUP
                 return "PRESSURE_NOT_STARTED"
-            elif self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec() > self.blackboard.pressure_timeout_duration:
+            elif self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec() > self.blackboard.pressure_timeout_duration\
+                    or self.same_pressure_msg_counter >= 10:
                 # tell that we have a hardware problem
                 self.publish_debug_data("Time since last pressure-sensor update",
                                         self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec())
@@ -127,6 +148,9 @@ class CheckMotors(AbstractDecisionElement):
         self.same_joint_state_msg_counter = 10
 
     def perform(self, reevaluate=False):
+        #todo
+        return "OKAY"
+
         if self.last_joint_msg is not None and self.blackboard.current_joint_positions is not None:
             if self.last_joint_msg.position == self.blackboard.current_joint_positions.position:
                 self.same_joint_state_msg_counter += 1
@@ -195,6 +219,7 @@ class Falling(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        return "NOT_FALLING"
         # check if the robot is currently falling
         falling_direction = self.blackboard.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion)
         if self.blackboard.falling_detection_active and falling_direction is not None:
@@ -219,7 +244,7 @@ class Falling(AbstractDecisionElement):
 class FallingClassifier(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
-        prediction = self.blackbord.classifier.predict(self.blackboard_imu_msg, self.blackboard.current_joint_positions,
+        prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg, self.blackboard.current_joint_positions,
                                                        self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
         if prediction == 0:
             return "NOT_FALLING"
@@ -231,6 +256,8 @@ class FallingClassifier(AbstractDecisionElement):
             return "FALLING_LEFT"
         elif prediction == 4:
             return "FALLING_RIGHT"
+        else:
+            return "NOT_FALLING"
 
     def get_reevaluate(self):
         return True
@@ -270,6 +297,7 @@ class Fallen(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        return "NOT_FALLEN"
         # check if the robot is currently laying on the ground
         fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
         if self.blackboard.is_stand_up_active and fallen_side is not None:

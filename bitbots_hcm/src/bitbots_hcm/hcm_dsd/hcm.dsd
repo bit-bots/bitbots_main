@@ -17,7 +17,7 @@ $StartHCM
                         TURN_ON --> @TurnMotorsOn
                         OKAY --> $PickedUp
                             PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
-                            ON_GROUND --> $Falling
+                            ON_GROUND --> $FallingClassifier
                                 FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
                                 FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
                                 FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
