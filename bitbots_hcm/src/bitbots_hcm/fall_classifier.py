@@ -18,7 +18,7 @@ class FallClassifier:
         with open(path + "types.pkl", 'rb') as file:
             self.types = pickle.load(file)
 
-        print(F'{self.classifier}  {self.types}')
+        #print(F'{self.classifier}  {self.types}')
 
         self.counter = 0
         self.last_prediction = 0
@@ -37,16 +37,19 @@ class FallClassifier:
 
     def smooth_classify(self, imu, joint_state, cop_l, cop_r):
         # only predict a fall if we classified this 10 times straight
-        predition = self.classify(imu, joint_state, cop_l, cop_r)
-        if predition == self.last_prediction and predition != 0:
+        prediction = self.classify(imu, joint_state, cop_l, cop_r)
+        if prediction == self.last_prediction and prediction != 0:
             self.counter += 1
             if self.counter > self.smooth_threshold:
-                return predition
+                result = prediction
             else:
-                return 0
+                result = 0
         else:
             self.counter = 0
-            self.last_prediction = predition
+            result = 0
+        self.last_prediction = prediction
+        return result
+
 
 def get_data_from_msgs(imu_msg, joint_state_msg, cop_l_msg, cop_r_msg, imu_raw=True, imu_orient=True, joint_states=True,
                        imu_fused=True, cop=True):
