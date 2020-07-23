@@ -26,7 +26,7 @@ class DynamicColorSpace:
         DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g.
         changing lighting conditions or to compensate for not optimized base color space files.
 
-        This node subscribes to an Image-message (default: image_raw) and to the 'vision_config'-message.
+        This node subscribes to an Image-message (default: image_proc) and to the 'vision_config'-message.
         This node publishes ColorSpace-messages.
 
         Initiating 'bitbots_dynamic_color_space' node.
@@ -234,7 +234,7 @@ class DynamicColorSpace:
         """
         Publishes the current color space via ColorSpace-message.
 
-        :param Image image_msg: 'image_raw'-message
+        :param Image image_msg: 'image_proc'-message
         :return: None
         """
         # Get color space from queue
