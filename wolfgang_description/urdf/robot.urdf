@@ -12,7 +12,7 @@
 <mesh filename="package://wolfgang_description/urdf/torso.stl"/>
 </geometry>
 <material name="torso_material">
-<color rgba="0.521601 0.564034 0.586586 1.0"/>
+<color rgba="0.521597 0.56403 0.586584 1.0"/>
 </material>
 </visual>
 <collision>
@@ -21,13 +21,13 @@
 <mesh filename="package://wolfgang_description/urdf/torso.stl"/>
 </geometry>
 <material name="torso_material">
-<color rgba="0.521601 0.564034 0.586586 1.0"/>
+<color rgba="0.521597 0.56403 0.586584 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="-0.00126989 -7.56268e-05 0.113636" rpy="0 0 0"/>
-<mass value="2.03749" />
-<inertia ixx="0.0175162" ixy="5.55269e-06"  ixz="-0.000893081" iyy="0.0152672" iyz="0.000154131" izz="0.00729066" />
+<origin xyz="-0.00126934 -7.4367e-05 0.113634" rpy="0 0 0"/>
+<mass value="2.03744" />
+<inertia ixx="0.0175155" ixy="5.62027e-06"  ixz="-0.000893204" iyy="0.0152666" iyz="0.000153846" izz="0.00729047" />
 </inertial>
 </link>
 
@@ -39,7 +39,7 @@
 </inertial>
 </link>
 <joint name="imu_frame_frame" type="fixed">
-<origin xyz="-0.0367504 -0.0478024 0.224" rpy="5.31321e-16 -3.12873e-17 4.65401e-17" />
+<origin xyz="-0.0369597 -0.0475181 0.224" rpy="5.31321e-16 -3.12873e-17 4.65401e-17" />
 <parent link="torso" />
 <child link="imu_frame" />
 <axis xyz="0 0 0"/>
@@ -52,7 +52,7 @@
 <mesh filename="package://wolfgang_description/urdf/r_shoulder.stl"/>
 </geometry>
 <material name="r_shoulder_material">
-<color rgba="0.609281 0.613952 0.618623 1.0"/>
+<color rgba="0.557143 0.318926 0.636303 1.0"/>
 </material>
 </visual>
 <collision>
@@ -61,7 +61,7 @@
 <mesh filename="package://wolfgang_description/urdf/r_shoulder.stl"/>
 </geometry>
 <material name="r_shoulder_material">
-<color rgba="0.609281 0.613952 0.618623 1.0"/>
+<color rgba="0.557143 0.318926 0.636303 1.0"/>
 </material>
 </collision>
 <inertial>
@@ -78,7 +78,7 @@
 <mesh filename="package://wolfgang_description/urdf/r_upper_arm.stl"/>
 </geometry>
 <material name="r_upper_arm_material">
-<color rgba="0.462929 0.462929 0.462929 1.0"/>
+<color rgba="0.466361 0.466361 0.466361 1.0"/>
 </material>
 </visual>
 <collision>
@@ -87,13 +87,13 @@
 <mesh filename="package://wolfgang_description/urdf/r_upper_arm.stl"/>
 </geometry>
 <material name="r_upper_arm_material">
-<color rgba="0.462929 0.462929 0.462929 1.0"/>
+<color rgba="0.466361 0.466361 0.466361 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="6.71448e-10 -0.0286557 -0.0235557" rpy="0 0 0"/>
-<mass value="0.206164" />
-<inertia ixx="0.000204986" ixy="1.94871e-12"  ixz="3.40342e-12" iyy="0.000171949" iyz="-3.58687e-07" izz="0.000333232" />
+<origin xyz="9.77435e-05 -0.0325821 -0.0239229" rpy="0 0 0"/>
+<mass value="0.228498" />
+<inertia ixx="0.000241455" ixy="8.09479e-07"  ixz="7.57095e-08" iyy="0.000179491" iyz="-2.7985e-06" izz="0.000371127" />
 </inertial>
 </link>
 
@@ -159,7 +159,7 @@
 <origin xyz="-0.0015 -0.0765 0.2035" rpy="-4.34612e-17 1.66533e-15 -3.14159" />
 <parent link="torso" />
 <child link="r_shoulder" />
-<axis xyz="0 -1 0"/>
+<axis xyz="-0 1 -0"/>
 <limit effort="5.43" velocity="10.33" lower="-3.14159" upper="3.14159"/>
 <dynamics friction="0" damping="0.53"/>
 </joint>
@@ -171,7 +171,7 @@
 <mesh filename="package://wolfgang_description/urdf/l_shoulder.stl"/>
 </geometry>
 <material name="l_shoulder_material">
-<color rgba="0.609281 0.613952 0.618623 1.0"/>
+<color rgba="0.557143 0.318926 0.636303 1.0"/>
 </material>
 </visual>
 <collision>
@@ -180,7 +180,7 @@
 <mesh filename="package://wolfgang_description/urdf/l_shoulder.stl"/>
 </geometry>
 <material name="l_shoulder_material">
-<color rgba="0.609281 0.613952 0.618623 1.0"/>
+<color rgba="0.557143 0.318926 0.636303 1.0"/>
 </material>
 </collision>
 <inertial>
@@ -197,7 +197,7 @@
 <mesh filename="package://wolfgang_description/urdf/l_upper_arm.stl"/>
 </geometry>
 <material name="l_upper_arm_material">
-<color rgba="0.462929 0.462929 0.462929 1.0"/>
+<color rgba="0.466361 0.466361 0.466361 1.0"/>
 </material>
 </visual>
 <collision>
@@ -206,13 +206,13 @@
 <mesh filename="package://wolfgang_description/urdf/l_upper_arm.stl"/>
 </geometry>
 <material name="l_upper_arm_material">
-<color rgba="0.462929 0.462929 0.462929 1.0"/>
+<color rgba="0.466361 0.466361 0.466361 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="6.71449e-10 -0.0286557 -0.0235557" rpy="0 0 0"/>
-<mass value="0.206164" />
-<inertia ixx="0.000204986" ixy="1.94871e-12"  ixz="3.40342e-12" iyy="0.000171949" iyz="-3.58687e-07" izz="0.000333232" />
+<origin xyz="9.77435e-05 -0.0325821 -0.0239229" rpy="0 0 0"/>
+<mass value="0.228498" />
+<inertia ixx="0.000241455" ixy="8.09479e-07"  ixz="7.57095e-08" iyy="0.000179491" iyz="-2.7985e-06" izz="0.000371127" />
 </inertial>
 </link>
 
@@ -278,7 +278,7 @@
 <origin xyz="-0.0015 0.0765 0.2035" rpy="3.14159 7.77156e-16 3.14159" />
 <parent link="torso" />
 <child link="l_shoulder" />
-<axis xyz="0 -1 0"/>
+<axis xyz="-0 1 -0"/>
 <limit effort="5.43" velocity="10.33" lower="-3.14159" upper="3.14159"/>
 <dynamics friction="0" damping="0.53"/>
 </joint>
@@ -342,7 +342,7 @@
 <mesh filename="package://wolfgang_description/urdf/r_upper_leg.stl"/>
 </geometry>
 <material name="r_upper_leg_material">
-<color rgba="0.544296 0.544296 0.544296 1.0"/>
+<color rgba="0.51222 0.47486 0.47486 1.0"/>
 </material>
 </visual>
 <collision>
@@ -351,13 +351,13 @@
 <mesh filename="package://wolfgang_description/urdf/r_upper_leg.stl"/>
 </geometry>
 <material name="r_upper_leg_material">
-<color rgba="0.544296 0.544296 0.544296 1.0"/>
+<color rgba="0.51222 0.47486 0.47486 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="0.00466615 -0.0284999 -0.137529" rpy="0 0 0"/>
-<mass value="0.220799" />
-<inertia ixx="0.000445136" ixy="7.62336e-06"  ixz="2.06864e-05" iyy="0.000405122" iyz="-2.50431e-06" izz="0.000104011" />
+<origin xyz="0.00493985 -0.0283223 -0.133144" rpy="0 0 0"/>
+<mass value="0.242311" />
+<inertia ixx="0.000501721" ixy="8.33582e-06"  ixz="1.67743e-05" iyy="0.000458929" iyz="-4.68914e-06" izz="0.000113409" />
 </inertial>
 </link>
 
@@ -368,7 +368,7 @@
 <mesh filename="package://wolfgang_description/urdf/r_lower_leg.stl"/>
 </geometry>
 <material name="r_lower_leg_material">
-<color rgba="0.773215 0.773215 0.776644 1.0"/>
+<color rgba="0.504245 0.543744 0.48638 1.0"/>
 </material>
 </visual>
 <collision>
@@ -377,13 +377,13 @@
 <mesh filename="package://wolfgang_description/urdf/r_lower_leg.stl"/>
 </geometry>
 <material name="r_lower_leg_material">
-<color rgba="0.773215 0.773215 0.776644 1.0"/>
+<color rgba="0.504245 0.543744 0.48638 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="0.00131527 0.00765262 -0.0457782" rpy="0 0 0"/>
-<mass value="0.0842452" />
-<inertia ixx="0.000356238" ixy="1.78249e-06"  ixz="-1.06939e-05" iyy="0.00030159" iyz="5.93058e-05" izz="7.37898e-05" />
+<origin xyz="0.00162251 0.0115707 -0.048584" rpy="0 0 0"/>
+<mass value="0.112618" />
+<inertia ixx="0.000378482" ixy="1.20214e-06"  ixz="-1.03313e-05" iyy="0.000316715" iyz="6.38309e-05" izz="9.77108e-05" />
 </inertial>
 </link>
 
@@ -420,7 +420,7 @@
 <mesh filename="package://wolfgang_description/urdf/r_foot.stl"/>
 </geometry>
 <material name="r_foot_material">
-<color rgba="0.686672 0.69665 0.686672 1.0"/>
+<color rgba="0.687389 0.697641 0.687389 1.0"/>
 </material>
 </visual>
 <collision>
@@ -429,13 +429,13 @@
 <mesh filename="package://wolfgang_description/urdf/r_foot.stl"/>
 </geometry>
 <material name="r_foot_material">
-<color rgba="0.686672 0.69665 0.686672 1.0"/>
+<color rgba="0.687389 0.697641 0.687389 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="0.0120263 0.0916536 -0.0297041" rpy="0 0 0"/>
-<mass value="0.275133" />
-<inertia ixx="0.000894905" ixy="-3.30848e-05"  ixz="4.95298e-06" iyy="0.000329611" iyz="-1.88912e-05" izz="0.00117493" />
+<origin xyz="0.0119766 0.0911644 -0.0298577" rpy="0 0 0"/>
+<mass value="0.267778" />
+<inertia ixx="0.000883619" ixy="-3.28755e-05"  ixz="5.11659e-06" iyy="0.000317104" iyz="-1.76091e-05" izz="0.00115244" />
 </inertial>
 </link>
 
@@ -447,7 +447,7 @@
 </inertial>
 </link>
 <joint name="r_sole_frame" type="fixed">
-<origin xyz="0.0152261 0.0907683 -0.0529" rpy="3.33669e-15 3.2321e-14 1.5708" />
+<origin xyz="0.0152219 0.0907683 -0.0529" rpy="3.33669e-15 3.22983e-14 1.5708" />
 <parent link="r_foot" />
 <child link="r_sole" />
 <axis xyz="0 0 0"/>
@@ -473,9 +473,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="-1.383e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="1.17069e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="-2.73454e-26"  ixz="-2.2557e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="5.86271e-26"  ixz="-1.26553e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -487,14 +487,14 @@
 </inertial>
 </link>
 <joint name="r_cleat_l_back_frame" type="fixed">
-<origin xyz="-1.38778e-17 -0.0005 -0.016" rpy="8.14947e-17 -2.98734e-16 -3.14159" />
+<origin xyz="0 -0.0005 -0.016" rpy="8.14947e-17 -3.2143e-16 -3.14159" />
 <parent link="rlb" />
 <child link="r_cleat_l_back" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="RLB" type="fixed">
-<origin xyz="-0.029996 -0.00745064 -0.03425" rpy="-2.20568e-16 -1.47012e-15 -1.5708" />
+<origin xyz="-0.03 -0.007 -0.034" rpy="-2.20568e-16 -1.44743e-15 -1.5708" />
 <parent link="r_foot" />
 <child link="rlb" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -522,9 +522,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="1.39501e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="2.14788e-20 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="3.88226e-26"  ixz="-1.58226e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="2.74826e-27"  ixz="-1.56725e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -536,14 +536,14 @@
 </inertial>
 </link>
 <joint name="r_cleat_l_front_frame" type="fixed">
-<origin xyz="-4.16334e-17 -0.0005 -0.016" rpy="2.82194e-16 1.83866e-15 3.14159" />
+<origin xyz="-1.38778e-17 -0.0005 -0.016" rpy="3.37705e-16 1.87148e-15 3.14159" />
 <parent link="rlf" />
 <child link="r_cleat_l_front" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="RLF" type="fixed">
-<origin xyz="-0.03 0.177 -0.03425" rpy="-1.06437e-15 1.53365e-15 -1.5708" />
+<origin xyz="-0.03 0.177 -0.034" rpy="-1.06437e-15 1.50083e-15 -1.5708" />
 <parent link="r_foot" />
 <child link="rlf" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -571,9 +571,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="4.17487e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="1.40666e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="-6.18242e-26"  ixz="2.03578e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="-7.43969e-27"  ixz="1.95249e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -585,14 +585,14 @@
 </inertial>
 </link>
 <joint name="r_cleat_r_front_frame" type="fixed">
-<origin xyz="-2.80331e-15 -0.0005 -0.016" rpy="2.75421e-16 9.25503e-16 3.14159" />
+<origin xyz="-1.38778e-17 -0.0005 -0.016" rpy="2.75421e-16 9.31542e-16 3.14159" />
 <parent link="rrf" />
 <child link="r_cleat_r_front" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="RRF" type="fixed">
-<origin xyz="0.06 0.177 -0.03425" rpy="-8.29268e-17 1.38118e-15 -1.5708" />
+<origin xyz="0.06 0.177 -0.034" rpy="-8.29268e-17 1.40387e-15 -1.5708" />
 <parent link="r_foot" />
 <child link="rrf" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -620,9 +620,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="1.51669e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="1.39786e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="-1.77163e-26"  ixz="1.5177e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="7.23281e-27"  ixz="-1.5703e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -634,14 +634,14 @@
 </inertial>
 </link>
 <joint name="r_cleat_r_back_frame" type="fixed">
-<origin xyz="-6.93889e-17 -0.0005 -0.016" rpy="2.94118e-16 4.11997e-17 -3.14159" />
+<origin xyz="1.38778e-17 -0.0005 -0.016" rpy="2.94118e-16 7.40154e-17 3.14159" />
 <parent link="rrb" />
 <child link="r_cleat_r_back" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="RRB" type="fixed">
-<origin xyz="0.06 -0.007 -0.03425" rpy="-1.81005e-15 5.43887e-14 -1.5708" />
+<origin xyz="0.06 -0.007 -0.034" rpy="-1.81005e-15 5.43559e-14 -1.5708" />
 <parent link="r_foot" />
 <child link="rrb" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -650,7 +650,7 @@
 </joint>
 
 <joint name="RAnkleRoll" type="revolute">
-<origin xyz="-0.0691 5.55112e-17 -0.026" rpy="1.5708 1.5708 0" />
+<origin xyz="-0.0691 0 -0.026" rpy="1.5708 1.5708 0" />
 <parent link="r_ankle" />
 <child link="r_foot" />
 <axis xyz="0 -1 0"/>
@@ -659,16 +659,16 @@
 </joint>
 
 <joint name="RAnklePitch" type="revolute">
-<origin xyz="2.69229e-15 0.0505 -0.17" rpy="-1.5708 -1.93533e-15 -2.52888e-15" />
+<origin xyz="4.23273e-16 0.0505 -0.17" rpy="-1.5708 -7.47915e-15 1.91582e-15" />
 <parent link="r_lower_leg" />
 <child link="r_ankle" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="7.57" velocity="8.22" lower="-1.22173" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.22173"/>
 <dynamics friction="0" damping="0.92"/>
 </joint>
 
 <joint name="RKnee" type="revolute">
-<origin xyz="-0.00392295 -0.051 -0.169043" rpy="1.50246e-15 -0.261799 -1.61204e-15" />
+<origin xyz="-0.00392295 -0.051 -0.169043" rpy="1.05132e-15 -0.261799 -2.52921e-15" />
 <parent link="r_upper_leg" />
 <child link="r_lower_leg" />
 <axis xyz="0 1 0"/>
@@ -686,7 +686,7 @@
 </joint>
 
 <joint name="RHipRoll" type="revolute">
-<origin xyz="-0.046 0.0414 5.34295e-16" rpy="-3.14159 1.5708 0" />
+<origin xyz="-0.046 0.0414 6.93889e-18" rpy="-3.14159 1.5708 0" />
 <parent link="r_hip_1" />
 <child link="r_hip_2" />
 <axis xyz="-0 -0 -1"/>
@@ -695,7 +695,7 @@
 </joint>
 
 <joint name="RHipYaw" type="revolute">
-<origin xyz="-1.38778e-17 -0.055 -9.75782e-19" rpy="-1.5708 -0 0" />
+<origin xyz="-1.33227e-15 -0.055 -7.91468e-18" rpy="-1.5708 -0 0" />
 <parent link="torso" />
 <child link="r_hip_1" />
 <axis xyz="0 -1 0"/>
@@ -762,7 +762,7 @@
 <mesh filename="package://wolfgang_description/urdf/l_upper_leg.stl"/>
 </geometry>
 <material name="l_upper_leg_material">
-<color rgba="0.544296 0.544296 0.544296 1.0"/>
+<color rgba="0.51222 0.47486 0.47486 1.0"/>
 </material>
 </visual>
 <collision>
@@ -771,13 +771,13 @@
 <mesh filename="package://wolfgang_description/urdf/l_upper_leg.stl"/>
 </geometry>
 <material name="l_upper_leg_material">
-<color rgba="0.544296 0.544296 0.544296 1.0"/>
+<color rgba="0.51222 0.47486 0.47486 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="-0.00432766 -0.137334 0.0264999" rpy="0 0 0"/>
-<mass value="0.220799" />
-<inertia ixx="0.000439144" ixy="-3.21416e-05"  ixz="2.66786e-06" iyy="0.000110922" iyz="2.40516e-06" izz="0.000401348" />
+<origin xyz="-0.00463142 -0.132966 0.0263223" rpy="0 0 0"/>
+<mass value="0.242311" />
+<inertia ixx="0.000495112" ixy="-2.80704e-05"  ixz="2.53373e-06" iyy="0.000120828" iyz="4.33405e-06" izz="0.000454597" />
 </inertial>
 </link>
 
@@ -788,7 +788,7 @@
 <mesh filename="package://wolfgang_description/urdf/l_lower_leg.stl"/>
 </geometry>
 <material name="l_lower_leg_material">
-<color rgba="0.773195 0.773195 0.776625 1.0"/>
+<color rgba="0.43841 0.479617 0.424823 1.0"/>
 </material>
 </visual>
 <collision>
@@ -797,13 +797,13 @@
 <mesh filename="package://wolfgang_description/urdf/l_lower_leg.stl"/>
 </geometry>
 <material name="l_lower_leg_material">
-<color rgba="0.773195 0.773195 0.776625 1.0"/>
+<color rgba="0.43841 0.479617 0.424823 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="0.00131514 -0.00765101 -0.0457625" rpy="0 0 0"/>
-<mass value="0.0842512" />
-<inertia ixx="0.000356356" ixy="-1.78213e-06"  ixz="-1.07459e-05" iyy="0.000301696" iyz="-5.93333e-05" izz="7.37841e-05" />
+<origin xyz="0.0016224 -0.0119702 -0.0485721" rpy="0 0 0"/>
+<mass value="0.112624" />
+<inertia ixx="0.000379713" ixy="-1.51612e-06"  ixz="-1.03829e-05" iyy="0.000316829" iyz="-6.25424e-05" izz="9.88108e-05" />
 </inertial>
 </link>
 
@@ -840,7 +840,7 @@
 <mesh filename="package://wolfgang_description/urdf/l_foot.stl"/>
 </geometry>
 <material name="l_foot_material">
-<color rgba="0.686672 0.69665 0.686672 1.0"/>
+<color rgba="0.687389 0.697641 0.687389 1.0"/>
 </material>
 </visual>
 <collision>
@@ -849,13 +849,13 @@
 <mesh filename="package://wolfgang_description/urdf/l_foot.stl"/>
 </geometry>
 <material name="l_foot_material">
-<color rgba="0.686672 0.69665 0.686672 1.0"/>
+<color rgba="0.687389 0.697641 0.687389 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="-0.0121206 0.0916668 -0.0296455" rpy="0 0 0"/>
-<mass value="0.275133" />
-<inertia ixx="0.000894202" ixy="3.23738e-05"  ixz="-5.01227e-06" iyy="0.000329011" iyz="-1.87736e-05" izz="0.00117379" />
+<origin xyz="-0.0120469 0.0911644 -0.0298577" rpy="0 0 0"/>
+<mass value="0.267778" />
+<inertia ixx="0.000883619" ixy="3.20503e-05"  ixz="-5.19449e-06" iyy="0.000316651" iyz="-1.76091e-05" izz="0.00115199" />
 </inertial>
 </link>
 
@@ -867,7 +867,7 @@
 </inertial>
 </link>
 <joint name="l_sole_frame" type="fixed">
-<origin xyz="-0.0152261 0.0907683 -0.0529" rpy="-5.77818e-15 -7.01261e-15 1.5708" />
+<origin xyz="-0.0152219 0.0907683 -0.0529" rpy="-5.77818e-15 -6.98371e-15 1.5708" />
 <parent link="l_foot" />
 <child link="l_sole" />
 <axis xyz="0 0 0"/>
@@ -893,9 +893,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="-1.3771e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="1.39725e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="1.46707e-26"  ixz="-2.46785e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="-2.54026e-27"  ixz="-3.40123e-27" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -907,14 +907,14 @@
 </inertial>
 </link>
 <joint name="l_cleat_l_back_frame" type="fixed">
-<origin xyz="5.55112e-17 -0.0005 -0.016" rpy="1.97551e-16 -1.05004e-19 3.14159" />
+<origin xyz="1.38778e-17 -0.0005 -0.016" rpy="1.67348e-16 -4.15297e-16 3.14159" />
 <parent link="llb" />
 <child link="l_cleat_l_back" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="LLB" type="fixed">
-<origin xyz="-0.06 -0.007 -0.03375" rpy="5.84053e-15 -4.62286e-15 -1.5708" />
+<origin xyz="-0.06 -0.007 -0.034" rpy="1.75801e-15 -5.02709e-15 -1.5708" />
 <parent link="l_foot" />
 <child link="llb" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -942,9 +942,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="3.94632e-20 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="-1.37344e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="-4.36401e-26"  ixz="6.51171e-26" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="2.25172e-27"  ixz="8.03696e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -956,14 +956,14 @@
 </inertial>
 </link>
 <joint name="l_cleat_l_front_frame" type="fixed">
-<origin xyz="8.32667e-17 -0.0005 -0.016" rpy="3.01686e-16 1.58286e-16 -3.14159" />
+<origin xyz="0 -0.0005 -0.016" rpy="3.06162e-16 -4.4319e-17 -3.14159" />
 <parent link="llf" />
 <child link="l_cleat_l_front" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="LLF" type="fixed">
-<origin xyz="-0.06 0.177 -0.03375" rpy="6.38353e-15 -4.80263e-15 -1.5708" />
+<origin xyz="-0.06 0.177 -0.034" rpy="2.68959e-15 -5.26048e-15 -1.5708" />
 <parent link="l_foot" />
 <child link="llf" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -991,9 +991,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="-2.77161e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="2.78989e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="-4.36401e-26"  ixz="6.51171e-26" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="2.25172e-27"  ixz="8.03696e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -1005,14 +1005,14 @@
 </inertial>
 </link>
 <joint name="l_cleat_r_front_frame" type="fixed">
-<origin xyz="2.77556e-17 -0.0005 -0.016" rpy="3.30992e-16 -5.1163e-16 3.14159" />
+<origin xyz="0 -0.0005 -0.016" rpy="3.00788e-16 -1.03785e-15 -3.14159" />
 <parent link="lrf" />
 <child link="l_cleat_r_front" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="LRF" type="fixed">
-<origin xyz="0.03 0.177 -0.03375" rpy="6.38353e-15 -4.80263e-15 -1.5708" />
+<origin xyz="0.03 0.177 -0.034" rpy="2.68959e-15 -5.26048e-15 -1.5708" />
 <parent link="l_foot" />
 <child link="lrf" />
 <axis xyz="0 -1.22465e-16 -1"/>
@@ -1040,9 +1040,9 @@
 </material>
 </collision>
 <inertial>
-<origin xyz="1.08836e-19 0.000155519 -0.00775879" rpy="0 0 0"/>
+<origin xyz="-1.38113e-17 0.000155519 -0.00775879" rpy="0 0 0"/>
 <mass value="0.00165976" />
-<inertia ixx="4.3352e-08" ixy="4.87322e-26"  ixz="-1.15079e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
+<inertia ixx="4.3352e-08" ixy="1.6966e-26"  ixz="-1.09118e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08" />
 </inertial>
 </link>
 
@@ -1054,14 +1054,14 @@
 </inertial>
 </link>
 <joint name="l_cleat_r_back_frame" type="fixed">
-<origin xyz="4.16334e-17 -0.0005 -0.016" rpy="2.92719e-16 -1.39845e-17 -3.14159" />
+<origin xyz="0 -0.0005 -0.016" rpy="2.92719e-16 -4.05989e-17 -3.14159" />
 <parent link="lrb" />
 <child link="l_cleat_r_back" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="LRB" type="fixed">
-<origin xyz="0.03 -0.007 -0.03375" rpy="-1.44208e-14 -1.69534e-14 -1.5708" />
+<origin xyz="0.03 -0.007 -0.034" rpy="-1.44208e-14 -1.69268e-14 -1.5708" />
 <parent link="l_foot" />
 <child link="lrb" />
 <axis xyz="0 1.22465e-16 1"/>
@@ -1070,7 +1070,7 @@
 </joint>
 
 <joint name="LAnkleRoll" type="revolute">
-<origin xyz="0.0691 2.22045e-16 -0.026" rpy="1.5708 -1.5708 0" />
+<origin xyz="0.0691 1.66533e-16 -0.026" rpy="1.5708 -1.5708 0" />
 <parent link="l_ankle" />
 <child link="l_foot" />
 <axis xyz="-0 -1 -0"/>
@@ -1079,7 +1079,7 @@
 </joint>
 
 <joint name="LAnklePitch" type="revolute">
-<origin xyz="3.5319e-15 -0.0505 -0.17" rpy="-1.5708 -8.72457e-16 3.14159" />
+<origin xyz="1.11022e-16 -0.0505 -0.17" rpy="-1.5708 -1.45847e-15 3.14159" />
 <parent link="l_lower_leg" />
 <child link="l_ankle" />
 <axis xyz="-0 -0 -1"/>
@@ -1088,7 +1088,7 @@
 </joint>
 
 <joint name="LKnee" type="revolute">
-<origin xyz="0.00435596 -0.168793 0.049" rpy="1.5708 -1.75248e-15 2.87979" />
+<origin xyz="0.00435596 -0.168793 0.049" rpy="1.5708 -4.90478e-17 2.87979" />
 <parent link="l_upper_leg" />
 <child link="l_lower_leg" />
 <axis xyz="0 -1 0"/>
@@ -1106,7 +1106,7 @@
 </joint>
 
 <joint name="LHipRoll" type="revolute">
-<origin xyz="-0.046 0.0414 -7.97973e-16" rpy="3.14159 1.5708 0" />
+<origin xyz="-0.046 0.0414 6.93889e-18" rpy="3.14159 1.5708 0" />
 <parent link="l_hip_1" />
 <child link="l_hip_2" />
 <axis xyz="-0 -0 -1"/>
@@ -1115,7 +1115,7 @@
 </joint>
 
 <joint name="LHipYaw" type="revolute">
-<origin xyz="-2.28983e-16 0.055 2.71051e-18" rpy="-1.5708 -0 0" />
+<origin xyz="1.82493e-15 0.055 -4.22839e-18" rpy="-1.5708 -0 0" />
 <parent link="torso" />
 <child link="l_hip_1" />
 <axis xyz="0 -1 0"/>
@@ -1156,7 +1156,7 @@
 <mesh filename="package://wolfgang_description/urdf/head.stl"/>
 </geometry>
 <material name="head_material">
-<color rgba="0.708913 0.709521 0.710128 1.0"/>
+<color rgba="0.705291 0.67253 0.716178 1.0"/>
 </material>
 </visual>
 <collision>
@@ -1165,13 +1165,13 @@
 <mesh filename="package://wolfgang_description/urdf/head.stl"/>
 </geometry>
 <material name="head_material">
-<color rgba="0.708913 0.709521 0.710128 1.0"/>
+<color rgba="0.705291 0.67253 0.716178 1.0"/>
 </material>
 </collision>
 <inertial>
-<origin xyz="-0.0034709 0.0682828 -0.020251" rpy="0 0 0"/>
-<mass value="0.318645" />
-<inertia ixx="0.000360976" ixy="-3.54024e-06"  ixz="-2.96129e-06" iyy="0.00044172" iyz="5.19892e-05" izz="0.000524061" />
+<origin xyz="0.000411708 0.0674937 -0.0200647" rpy="0 0 0"/>
+<mass value="0.301358" />
+<inertia ixx="0.000344265" ixy="-2.07263e-05"  ixz="1.05826e-06" iyy="0.000333713" iyz="5.11722e-05" izz="0.000421898" />
 </inertial>
 </link>
 
@@ -1203,12 +1203,26 @@
 <axis xyz="0 0 0"/>
 </joint>
 
+<link name="imu_frame_2">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="imu_frame_2_frame" type="fixed">
+<origin xyz="-0.02545 0.0535 -0.0235" rpy="-1.5708 -3.88578e-16 3.33067e-16" />
+<parent link="head" />
+<child link="imu_frame_2" />
+<axis xyz="0 0 0"/>
+</joint>
+
 <joint name="HeadTilt" type="revolute">
 <origin xyz="0.036 0.0235 -0.024" rpy="-1.5708 3.17216e-15 -5.33479e-15" />
 <parent link="neck" />
 <child link="head" />
 <axis xyz="0 0 -1"/>
-<limit effort="5.43" velocity="10.33" lower="0" upper="1.5708"/>
+<limit effort="5.43" velocity="10.33" lower="-0.523599" upper="1.5708"/>
 <dynamics friction="0" damping="0.53"/>
 </joint>
 
