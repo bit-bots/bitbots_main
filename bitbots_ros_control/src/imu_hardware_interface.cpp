@@ -42,6 +42,13 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, orientation_, orientation_covariance_, angular_velocity_, angular_velocity_covariance_, linear_acceleration_, linear_acceleration_covariance_);
   imu_interface_.registerHandle(imu_handle);
   parent_->registerInterface(&imu_interface_);
+
+  // make services
+  imu_ranges_service_ = nh.advertiseService("/imu/set_imu_ranges", &ImuHardwareInterface::setIMURanges, this);
+  //calibrate_gyro_service_ = pnh.advertiseService(+ "/set_gyro_range", &ImuHardwareInterface::scaleCallback, this);
+  //reset_gyro_calibration_service_ = pnh.advertiseService("/set_gyro_range", &ImuHardwareInterface::scaleCallback, this);
+  //complementary_filter_params_service_ = pnh.advertiseService("/set_complementary_filter_params", &ImuHardwareInterface::scaleCallback, this);
+
   return true;
 }
 
@@ -70,9 +77,41 @@ bool ImuHardwareInterface::read(){
       return false;
     }
 }
+/*
+#define ADDR_CONTROL_ITEM_GYRO_RANGE 102
+#define ADDR_CONTROL_ITEM_ACCEL_RANGE 103
+#define ADDR_CONTROL_ITEM_CALIBRATE_GYRO 104
+#define ADDR_CONTROL_ITEM_RESET_GYRO_CALIBRATION 105
 
-// we dont write anything to the IMU
-void ImuHardwareInterface::write(){}
+#define ADDR_CONTROL_ITEM_DO_ADAPTIVE_GAIN 108
+#define ADDR_CONTROL_ITEM_DO_BIAS_ESTIMATION 109
+#define ADDR_CONTROL_ITEM_GAIN 110
+#define ADDR_CONTROL_ITEM_ALPHA 114
+*/
+bool ImuHardwareInterface::setIMURanges(bitbots_msgs::IMURangesRequest& req, bitbots_msgs::IMURangesResponse& resp) {
+  accel_range_ = req.accel_range;
+  gyro_range_ = req.gyro_range;
+  write_ranges_ = true;
+  return true;
+}
+bool ImuHardwareInterface::calibrateGyro(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp) {
+  write_calibrate_gyro_ = true;
+  return true;
+}
+
+void ImuHardwareInterface::write() {
+  if(write_ranges_) {
+    ROS_WARN("writing ranges");
+    write_ranges_ = false;
+  }
+  if(write_calibrate_gyro_){
+    ROS_WARN("Calibrating gyro");
+  }
+  if(write_reset_gyro_calibration_){
+    ROS_WARN("resetting gyro calib");
+  }
+
+}
 
 void ImuHardwareInterface::setParent(hardware_interface::RobotHW* parent) {
   parent_ = parent;

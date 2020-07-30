@@ -12,6 +12,9 @@
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
+#include <bitbots_msgs/IMURanges.h>
+#include <bitbots_msgs/ComplementaryFilterParams.h>
+
 namespace bitbots_ros_control
 {
 
@@ -41,7 +44,16 @@ private:
 
   diagnostic_msgs::DiagnosticStatus status_imu_;
 
+  bool write_ranges_ = false;
+  uint8_t gyro_range_, accel_range_;
 
+  bool write_complementary_filter_params_ = false;
+  bool do_adaptive_gain_, do_bias_estimation_;
+  float accel_gain_, bias_alpha_;
+  ros::ServiceServer imu_ranges_service_, calibrate_gyro_service_, reset_gyro_calibration_service_,
+                     complementary_filter_params_service_;
+
+  bool setIMURanges(bitbots_msgs::IMURangesRequest& req, bitbots_msgs::IMURangesResponse& resp);
 };
 }
 #endif

@@ -107,5 +107,8 @@ void WolfgangHardwareInterface::write()
   if(!only_imu_ && !only_pressure_) {
     servos_.write();
   }
+  if (!only_pressure_) {
+    imu_.write();
+  }
 }
 }
