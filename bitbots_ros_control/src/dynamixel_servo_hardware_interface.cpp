@@ -193,6 +193,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle& nh){
       success = false;
       array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::STALE, "No ping response", map));
     }
+    // todo check if model number matches
     array.push_back(createServoDiagMsg(motor_id, diagnostic_msgs::DiagnosticStatus::OK, "Ping sucessful", map));
     joint_ids_.push_back(uint8_t(motor_id));
   }
