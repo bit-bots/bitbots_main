@@ -2,9 +2,9 @@
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_SERVO_HARDWARE_INTERFACE_H_
 
 #include <ros/ros.h>
-#include <string> 
+#include <string>
 
-#include <std_msgs/Bool.h>  
+#include <std_msgs/Bool.h>
 #include <humanoid_league_msgs/Speak.h>
 #include <sensor_msgs/JointState.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
@@ -26,16 +26,14 @@
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <bitset>
 
-namespace bitbots_ros_control
-{
+namespace bitbots_ros_control {
 template<typename T>
-std::string vecToString(const std::vector<T>& vec)
-{
+std::string vecToString(const std::vector<T> &vec) {
   std::stringstream ss;
   ss << "[";
   for (unsigned int i = 0; i < vec.size(); ++i) {
     ss << vec[i];
-    if (i != vec.size() -1) {
+    if (i != vec.size() - 1) {
       ss << ", ";
     }
   }
@@ -43,16 +41,14 @@ std::string vecToString(const std::vector<T>& vec)
   return ss.str();
 }
 
-struct State
-{
+struct State {
   State() : position(0), velocity(0), effort(0) {}
   double position;
   double velocity;
   double effort;
 };
 
-struct Joint
-{
+struct Joint {
   std::string name;
   State current;
   State goal;
@@ -65,28 +61,31 @@ enum ControlMode {
   CURRENT_BASED_POSITION_CONTROL
 };
 
-class DynamixelServoHardwareInterface : public hardware_interface::RobotHW
-{
-public:
+class DynamixelServoHardwareInterface : public hardware_interface::RobotHW {
+ public:
   DynamixelServoHardwareInterface();
-  explicit DynamixelServoHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
+  explicit DynamixelServoHardwareInterface(std::shared_ptr<DynamixelDriver> &driver,
+                                           std::vector<std::tuple<int, std::string, float, float>> servos);
   void reconfCallback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 
-  bool init(ros::NodeHandle& nh);
+  bool init(ros::NodeHandle &nh);
   bool read();
   void write();
-  void setParent(hardware_interface::RobotHW* parent);
+  void setParent(hardware_interface::RobotHW *parent);
 
-private:
+ private:
   ros::NodeHandle nh_;
 
   void syncWritePWM();
 
-  bool loadDynamixels(ros::NodeHandle& nh);
-  bool writeROMRAM(ros::NodeHandle& nh);
+  bool loadDynamixels(ros::NodeHandle &nh);
+  bool writeROMRAM(ros::NodeHandle &nh);
   bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
   void switchDynamixelControlMode();
-  diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message, std::map<std::string, std::string> map);
+  diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id,
+                                                       char level,
+                                                       std::string message,
+                                                       std::map<std::string, std::string> map);
   void processVte(bool success);
 
   bool goal_torque_;
@@ -112,11 +111,13 @@ private:
 
   bool first_cycle_;
   bool lost_servo_connection_;
-  
+
   bool switch_individual_torque_;
   std::vector<int32_t> goal_torque_individual_;
 
   std::shared_ptr<DynamixelDriver> driver_;
+  // id, name, modelnumber
+  std::vector<std::tuple<int, std::string, float, float>> servos_;
 
   hardware_interface::JointStateInterface jnt_state_interface_;
   hardware_interface::PositionJointInterface jnt_pos_interface_;
@@ -124,7 +125,7 @@ private:
   hardware_interface::EffortJointInterface jnt_eff_interface_;
   hardware_interface::PosVelAccCurJointInterface jnt_posvelacccur_interface_;
 
-  hardware_interface::RobotHW* parent_;
+  hardware_interface::RobotHW *parent_;
 
   ControlMode control_mode_;
 

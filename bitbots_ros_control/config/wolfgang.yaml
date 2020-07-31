@@ -4,19 +4,19 @@ ros_control:
 
   port_info:
     port0:
-      device: /dev/ttyUSB0
+      device_file: /dev/ttyUSB0
       baudrate: 2000000
       protocol_version: 2
     port1:
-      device: /dev/ttyUSB1
+      device_file: /dev/ttyUSB1
       baudrate: 2000000
       protocol_version: 2
     port2:
-      device: /dev/ttyUSB2
+      device_file: /dev/ttyUSB2
       baudrate: 2000000
       protocol_version: 2
     port3:
-      device: /dev/ttyUSB3
+      device_file: /dev/ttyUSB3
       baudrate: 2000000
       protocol_version: 2
 

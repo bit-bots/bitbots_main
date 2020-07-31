@@ -8,15 +8,19 @@ namespace bitbots_ros_control
 ImuHardwareInterface::ImuHardwareInterface(){}
 
 
-ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver){
+explicit ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic, std::string frame, std::string name){
   driver_ = driver;
+  id_ = id;
+  topic_ = topic;
+  frame_ = frame;
+  name_ = name;
 }
 
 
 bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   nh_ = nh;
 
-  status_imu_.name = "IMU";
+  status_imu_.name = name_;
   status_imu_.hardware_id = std::to_string(1);
 
 
@@ -35,11 +39,7 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   std::fill(linear_acceleration_covariance_, linear_acceleration_covariance_+9, 0);
 
   // init IMU
-  std::string imu_name;
-  std::string imu_frame;
-  nh.getParam("IMU/name", imu_name);
-  nh.getParam("IMU/frame", imu_frame);
-  hardware_interface::ImuSensorHandle imu_handle(imu_name, imu_frame, orientation_, orientation_covariance_, angular_velocity_, angular_velocity_covariance_, linear_acceleration_, linear_acceleration_covariance_);
+  hardware_interface::ImuSensorHandle imu_handle(topic_, frame_, orientation_, orientation_covariance_, angular_velocity_, angular_velocity_covariance_, linear_acceleration_, linear_acceleration_covariance_);
   imu_interface_.registerHandle(imu_handle);
   parent_->registerInterface(&imu_interface_);
 

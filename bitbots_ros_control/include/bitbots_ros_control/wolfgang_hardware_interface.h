@@ -20,13 +20,8 @@ public:
     void write();
 
 private:
-    // in the future we will have servos on multiple buses, but currently just one
-    DynamixelServoHardwareInterface servos_;
-
-    ImuHardwareInterface imu_;
-    BitFootHardwareInterface left_foot_;
-    BitFootHardwareInterface right_foot_;
-    ButtonHardwareInterface buttons_;
+    // two dimensional list of all hardware interfaces, sorted by port
+    std::vector<std::vector<hardware_interface::RobotHW>> interfaces_;
 
     ros::Publisher speak_pub_;
 

@@ -21,7 +21,7 @@ class ButtonHardwareInterface : public hardware_interface::RobotHW
 {
 public:
   ButtonHardwareInterface();
-  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
+  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic);
 
   bool init(ros::NodeHandle& nh);
   bool read();
@@ -30,6 +30,8 @@ public:
 private:
   ros::NodeHandle nh_;
   std::shared_ptr<DynamixelDriver> driver_;
+  int id_;
+  std::string topic_;
   ros::Publisher button_pub_;
 };
 }
