@@ -13,9 +13,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 
   // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
-  nh.getParam("only_imu", only_imu_);
+  nh.param<bool>("only_imu", only_imu_, false);
   if (only_imu_) ROS_WARN("Starting in only IMU mode");
-  nh.getParam("only_pressure", only_pressure_);
+  nh.param<bool>("only_pressure", only_pressure_, false);
   if (only_pressure_) ROS_WARN("starting in only pressure sensor mode");
 
   if (only_pressure_ && only_imu_) {
@@ -66,51 +66,60 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
     for (std::pair<std::string, int> &device : dxl_devices) {
       std::string name = device.first;
       int id = device.second;
-      ros::NodeHandle dxl_nh(nh, "device_info/" + name);
-      int model_number_specified;
-      dxl_nh.getParam("model_number", model_number_specified);
-      uint16_t model_number_specified_16 = uint16_t(model_number_specified);
-      uint16_t *model_number_returned_16;
-      if (driver->ping(uint8_t(id), model_number_returned_16)) {
-        // check if the specified model number matches the actual model number of the device
-        if (model_number_specified_16 != *model_number_returned_16) {
-          ROS_WARN("Model number of id %d does not match", id);
+      if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
+        // we already found this and dont have to search again
+      } else {
+        ros::NodeHandle dxl_nh(nh, "device_info/" + name);
+        int model_number_specified;
+        dxl_nh.getParam("model_number", model_number_specified);
+        uint16_t model_number_specified_16 = uint16_t(model_number_specified);
+        uint16_t *model_number_returned_16 = new uint16_t;
+        if (driver->ping(uint8_t(id), model_number_returned_16)) {
+          // check if the specified model number matches the actual model number of the device
+          if (model_number_specified_16 != *model_number_returned_16) {
+            ROS_WARN("Model number of id %d does not match", id);
+          }
+          // ping was successful, add device correspondingly
+          // only add them if the mode is set correspondingly
+          if (model_number_specified == 0xAFFE && !only_imu_) {//todo correct number
+            // bitfoot
+            std::string topic;
+            dxl_nh.getParam("topic", topic);
+            interfaces_on_port.push_back(BitFootHardwareInterface(driver, id, topic));
+          } else if (model_number_specified == 0xBAFF && !only_pressure_) { //todo correct number
+            //IMU
+            std::string topic;
+            dxl_nh.getParam("topic", topic);
+            std::string frame;
+            dxl_nh.getParam("frame", frame);
+            ImuHardwareInterface interface = ImuHardwareInterface(driver, id, topic, frame, name);
+            /* Hardware interfaces must be registered at the main RobotHW class.
+             * Therefore, a pointer to this class is passed down to the RobotHW classes
+             * registering further interfaces */
+            interface.setParent(this);
+            interfaces_on_port.push_back(interface);
+          } else if (model_number_specified == 101 && !only_pressure_) { //todo correct number
+            // Buttons
+            std::string topic;
+            dxl_nh.getParam("topic", topic);
+            interfaces_on_port.push_back(ButtonHardwareInterface(driver, id, topic));
+          } else if ((model_number_specified == 311 || model_number_specified == 321 || model_number_specified == 1100)
+              && !only_pressure_
+              && !only_imu_) {
+            // Servos
+            float mounting_offset;
+            dxl_nh.getParam("mounting_offset", mounting_offset);
+            float joint_offset;
+            dxl_nh.getParam("joint_offset", joint_offset);
+            servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
+          } else if (model_number_specified == 0xABBA) {
+            //CORE board
+            //TODO
+          } else {
+            ROS_WARN("Could not identify device for ID %d", id);
+          }
+          pinged.push_back(name);
         }
-        // ping was successful, add device correspondingly
-        // only add them if the mode is set correspondingly
-        if (model_number_specified == 99 && !only_imu_) {//todo correct number
-          // bitfoot
-          std::string topic;
-          dxl_nh.getParam("topic", topic);
-          interfaces_on_port.push_back(BitFootHardwareInterface(driver, id, topic));
-        } else if (model_number_specified == 100 && !only_pressure_) { //todo correct number
-          //IMU
-          std::string topic;
-          dxl_nh.getParam("topic", topic);
-          std::string frame;
-          dxl_nh.getParam("frame", frame);
-          ImuHardwareInterface interface = ImuHardwareInterface(driver, id, topic, frame, name);
-          /* Hardware interfaces must be registered at the main RobotHW class.
-           * Therefore, a pointer to this class is passed down to the RobotHW classes
-           * registering further interfaces */
-          interface.setParent(this);
-          interfaces_on_port.push_back(interface);
-        } else if (model_number_specified == 101 && !only_pressure_) { //todo correct number
-          // Buttons
-          std::string topic;
-          dxl_nh.getParam("topic", topic);
-          interfaces_on_port.push_back(ButtonHardwareInterface(driver, id, topic));
-        } else if ((model_number_specified == 311 || model_number_specified == 321) && !only_pressure_ && !only_imu_) {
-          // Servos
-          float mounting_offset;
-          dxl_nh.getParam("mounting_offset", mounting_offset);
-          float joint_offset;
-          dxl_nh.getParam("joint_offset", joint_offset);
-          servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
-        } else {
-          ROS_WARN("Could not identify device for ID %d", id);
-        }
-        pinged.push_back(name);
       }
     }
     if (servos_on_port.size() > 0) {
@@ -118,7 +127,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
       interface.setParent(this);
       // set the dynamic reconfigure and load standard params for servo interface
       dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
-      dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType f;
+      dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType
+          f;
       f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, interface, _1, _2);
       server.setCallback(f);
       interfaces_on_port.push_back(interface);
@@ -128,11 +138,12 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   }
 
   if (pinged.size() != dxl_devices.size()) {
-    ROS_WARN("Could not ping all devices!");
+    ROS_ERROR("Could not ping all devices!");
     // check which devices were not pinged successful
     for (std::pair<std::string, int> &device : dxl_devices) {
-      if(std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()){
-        ROS_WARN("Device %s with id %d missing", device.first.c_str(), device.second);
+      if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
+      } else {
+        ROS_ERROR("Device %s with id %d missing", device.first.c_str(), device.second);
       }
     }
   }

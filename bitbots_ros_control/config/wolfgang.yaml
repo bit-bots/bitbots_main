@@ -63,18 +63,22 @@ ros_control:
       Feedforward_1st_Gain: 0 # [/4]
 
   device_info:
-    IMU_torso:
-      id: 103
-      topic: imu/data_raw
-      frame: imu_frame
+    #IMU_torso:
+    #  id: 241
+    #  topic: imu/data_raw
+    #  frame: imu_frame
+    #  model_number: 0xBAFF
     LeftFoot:
       id: 102
       topic: /foot_pressure_left/raw
+      model_number: 0xAFFE
     RightFoot:
-      id: 103
+      id: 101
       topic: /foot_pressure_right/raw
-    Buttons:
-      id: 103
+      model_number: 0xAFFE
+    #Buttons:
+    #  id: 241
+    #  model_number: 0xBAFF
     RShoulderPitch:
       id: 1
       model_number: 311
@@ -83,13 +87,13 @@ ros_control:
       model_number: 311
     RShoulderRoll:
       id: 3
-      model_number: 321
+      model_number: 311
     LShoulderRoll:
       id: 4
       model_number: 311
     RElbow:
       id: 5
-      model_number: 321
+      model_number: 311
     LElbow:
       id: 6
       model_number: 311
@@ -113,10 +117,10 @@ ros_control:
       model_number: 321
     RKnee:
       id: 13
-      model_number: 321
+      model_number: 1100
     LKnee:
       id: 14
-      model_number: 321
+      model_number: 1100
     RAnklePitch:
       id: 15
       model_number: 321

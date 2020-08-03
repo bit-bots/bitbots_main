@@ -4,7 +4,7 @@
 
 
 int main (int argc, char *argv[]){
-  ros::init(argc, argv, "dynamixel_controller_manager");
+  ros::init(argc, argv, "ros_control");
   ros::NodeHandle pnh("~");
 
   // create hardware interfaces
