@@ -150,23 +150,47 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   return success;
 }
 
+void threaded_read(std::vector<hardware_interface::RobotHW> &port_interfaces,
+                   const ros::Time &t,
+                   const ros::Duration &dt) {
+  for (hardware_interface::RobotHW &interface : port_interfaces) {
+    // giving 2 times same node handle to keep interface of base class, dirty
+    interface.read(t, dt);
+  }
+}
+
+void threaded_write(std::vector<hardware_interface::RobotHW> &port_interfaces,
+                    const ros::Time &t,
+                    const ros::Duration &dt) {
+  for (hardware_interface::RobotHW &interface : port_interfaces) {
+    // giving 2 times same node handle to keep interface of base class, dirty
+    interface.write(t, dt);
+  }
+}
+
 void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
+  std::vector<std::thread> threads;
+  // start all reads
   for (std::vector<hardware_interface::RobotHW> &port_interfaces : interfaces_) {
-    // iterate through all interfaces on this port
-    for (hardware_interface::RobotHW &interface : port_interfaces) {
-      // giving 2 times same node handle to keep interface of base class, dirty
-      interface.read(t, dt);
-    }
+    threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+  }
+
+  // wait for all reads to finish
+  for (std::thread &thread : threads) {
+    thread.join();
   }
 }
 
 void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
+  std::vector<std::thread> threads;
+  // start all reads
   for (std::vector<hardware_interface::RobotHW> &port_interfaces : interfaces_) {
-    // iterate through all interfaces on this port
-    for (hardware_interface::RobotHW &interface : port_interfaces) {
-      // giving 2 times same node handle to keep interface of base class, dirty
-      interface.write(t, dt);
-    }
+    threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+  }
+
+  // wait for all reads to finish
+  for (std::thread &thread : threads) {
+    thread.join();
   }
 }
 }
