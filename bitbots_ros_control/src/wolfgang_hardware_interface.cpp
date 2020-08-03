@@ -43,9 +43,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 
 
   // init bus drivers
+  std::vector<std::string> pinged;
   XmlRpc::XmlRpcValue port_xml;
   nh.getParam("port_info", port_xml);
-  int devices_found = 0;
   for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = port_xml.begin(); it != port_xml.end(); ++it) {
     // read bus driver specifications from config
     XmlRpc::XmlRpcValue port_data = it->second;
@@ -110,7 +110,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
         } else {
           ROS_WARN("Could not identify device for ID %d", id);
         }
-        devices_found++;
+        pinged.push_back(name);
       }
     }
     if (servos_on_port.size() > 0) {
@@ -127,8 +127,14 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
     interfaces_.push_back(interfaces_on_port);
   }
 
-  if (devices_found != dxl_devices.size()) {
+  if (pinged.size() != dxl_devices.size()) {
     ROS_WARN("Could not ping all devices!");
+    // check which devices were not pinged successful
+    for (std::pair<std::string, int> &device : dxl_devices) {
+      if(std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()){
+        ROS_WARN("Device %s with id %d missing", device.first.c_str(), device.second);
+      }
+    }
   }
 }
 

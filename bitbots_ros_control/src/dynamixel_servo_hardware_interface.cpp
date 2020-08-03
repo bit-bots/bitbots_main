@@ -1,6 +1,8 @@
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #include <bitbots_ros_control/utils.h>
 
+#include <utility>
+
 namespace bitbots_ros_control {
 
 DynamixelServoHardwareInterface::DynamixelServoHardwareInterface() {}
@@ -9,7 +11,7 @@ DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(std::shared_ptr
                                                                  std::vector<std::tuple<int, std::string, float, float>> servos)
     : first_cycle_(true), read_position_(true), read_velocity_(false), read_effort_(true) {
   driver_ = driver;
-  servos_ = servos;
+  servos_ = std::move(servos);
 }
 
 bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
