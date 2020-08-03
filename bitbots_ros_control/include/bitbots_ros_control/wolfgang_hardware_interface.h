@@ -15,9 +15,9 @@ public:
     explicit WolfgangHardwareInterface(ros::NodeHandle& nh);
     bool init(ros::NodeHandle &nh);
 
-    bool read();
+    void read(const ros::Time& t, const ros::Duration& dt);
 
-    void write();
+    void write(const ros::Time& t, const ros::Duration& dt);
 
 private:
     // two dimensional list of all hardware interfaces, sorted by port

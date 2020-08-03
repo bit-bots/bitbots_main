@@ -68,9 +68,9 @@ class DynamixelServoHardwareInterface : public hardware_interface::RobotHW {
                                            std::vector<std::tuple<int, std::string, float, float>> servos);
   void reconfCallback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 
-  bool init(ros::NodeHandle &nh);
-  bool read();
-  void write();
+  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh);
+  void read(const ros::Time& t, const ros::Duration& dt);
+  void write(const ros::Time& t, const ros::Duration& dt);
   void setParent(hardware_interface::RobotHW *parent);
 
  private:

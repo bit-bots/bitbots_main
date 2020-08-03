@@ -12,7 +12,7 @@ DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(std::shared_ptr
   servos_ = servos;
 }
 
-bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh) {
+bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   /*
   * This initializes the hardware interface based on the values set in the config.
   * The servos are pinged to verify that a connection is present and to know which type of servo it is.
@@ -166,7 +166,7 @@ bool DynamixelServoHardwareInterface::loadDynamixels(ros::NodeHandle &nh) {
 
   // iterate over all servos and save the information
   // the wolfgang hardware interface already loaded them into the driver by pinging
-  for (std::tuple<int, std::string, int> &servo : servos_) {
+  for (std::tuple<int, std::string, float, float> &servo : servos_) {
     int motor_id = std::get<0>(servo);
     joint_ids_.push_back(uint8_t(motor_id));
     std::string joint_name = std::get<1>(servo);
@@ -373,7 +373,7 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::BoolConstPtr enabled
   }
 }
 
-bool DynamixelServoHardwareInterface::read() {
+void DynamixelServoHardwareInterface::read(const ros::Time& t, const ros::Duration& dt) {
   /**
    * This is part of the main loop and handles reading of all connected devices
    */
@@ -478,12 +478,9 @@ bool DynamixelServoHardwareInterface::read() {
     reading_errors_ = 0;
     reading_successes_ = 0;
   }
-
-  return read_successful;
-
 }
 
-void DynamixelServoHardwareInterface::write() {
+void DynamixelServoHardwareInterface::write(const ros::Time& t, const ros::Duration& dt) {
   /**
    * This is part of the mainloop and handles all the writing to the connected devices
    */

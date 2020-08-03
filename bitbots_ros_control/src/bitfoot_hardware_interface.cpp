@@ -11,14 +11,14 @@ BitFootHardwareInterface::BitFootHardwareInterface(std::shared_ptr<DynamixelDriv
   topic_name_ = topic_name;
 }
 
-bool BitFootHardwareInterface::init(ros::NodeHandle &nh) {
+bool BitFootHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
   current_pressure_.resize(4, 0);
   pressure_pub_ = nh.advertise<bitbots_msgs::FootPressure>(topic_name_, 1);
   return true;
 }
 
-bool BitFootHardwareInterface::read() {
+void BitFootHardwareInterface::read(const ros::Time& t, const ros::Duration& dt) {
   /**
    * Reads the foot pressure sensors of the BitFoot
    */
@@ -44,10 +44,9 @@ bool BitFootHardwareInterface::read() {
   msg.left_back = current_pressure_[2];
   msg.right_back= current_pressure_[3];
   pressure_pub_.publish(msg);
-  return true;
 }
 
 // we dont write anything to the pressure sensors
-void BitFootHardwareInterface::write() {}
+void BitFootHardwareInterface::write(const ros::Time& t, const ros::Duration& dt) {}
 
 }

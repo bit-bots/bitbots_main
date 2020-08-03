@@ -23,9 +23,9 @@ public:
   ButtonHardwareInterface();
   explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic);
 
-  bool init(ros::NodeHandle& nh);
-  bool read();
-  void write();
+  bool init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh);
+  void read(const ros::Time& t, const ros::Duration& dt);
+  void write(const ros::Time& t, const ros::Duration& dt);
 
 private:
   ros::NodeHandle nh_;

@@ -10,13 +10,13 @@ ButtonHardwareInterface::ButtonHardwareInterface(std::shared_ptr<DynamixelDriver
   topic = topic;
 }
 
-bool ButtonHardwareInterface::init(ros::NodeHandle& nh){
+bool ButtonHardwareInterface::init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh){
   nh_ = nh;
   button_pub_ = nh.advertise<bitbots_buttons::Buttons>(topic_, 1);
   return true;
 }
 
-bool ButtonHardwareInterface::read(){
+void ButtonHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){
   /**
    * Reads the buttons
    */
@@ -26,13 +26,11 @@ bool ButtonHardwareInterface::read(){
     msg.button1 = !(*data & 64);
     msg.button2 = !(*data & 32);
     button_pub_.publish(msg);
-    return true;
   }
   ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
-  return false;
 }
 
 // we dont write anything to the buttons
-void ButtonHardwareInterface::write(){}
+void ButtonHardwareInterface::write(const ros::Time& t, const ros::Duration& dt){}
 
 }

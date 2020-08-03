@@ -25,12 +25,13 @@ int main (int argc, char *argv[]){
 
   // Start control loop
   ros::Time current_time = ros::Time::now();
+  ros::Duration period = ros::Time::now() - current_time;
   bool first_update = true;
   ros::Rate rate(pnh.param("control_loop_hz", 200));
 
   while (ros::ok()){
-    hw.read();
-    ros::Duration period = ros::Time::now() - current_time;
+    hw.read(current_time, period);
+    period = ros::Time::now() - current_time;
     current_time = ros::Time::now();
 
     // period only makes sense after the first update
@@ -40,7 +41,7 @@ int main (int argc, char *argv[]){
     } else {
       cm.update(current_time, period);
     }
-    hw.write();
+    hw.write(current_time, period);
 
     rate.sleep();
     ros::spinOnce();

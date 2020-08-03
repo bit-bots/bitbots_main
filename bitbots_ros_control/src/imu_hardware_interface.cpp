@@ -8,7 +8,7 @@ namespace bitbots_ros_control
 ImuHardwareInterface::ImuHardwareInterface(){}
 
 
-explicit ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic, std::string frame, std::string name){
+ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic, std::string frame, std::string name){
   driver_ = driver;
   id_ = id;
   topic_ = topic;
@@ -17,7 +17,7 @@ explicit ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDri
 }
 
 
-bool ImuHardwareInterface::init(ros::NodeHandle& nh){
+bool ImuHardwareInterface::init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh){
   nh_ = nh;
 
   status_imu_.name = name_;
@@ -46,7 +46,7 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   return true;
 }
 
-bool ImuHardwareInterface::read(){
+void ImuHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){
   /**
    * Reads the IMU
    */
@@ -74,15 +74,13 @@ bool ImuHardwareInterface::read(){
       angular_velocity_[0] = (((short) dxlMakeword(data[16*new_value_index + 6], data[16*new_value_index + 7])) / 14.375) * M_PI/180 * -1;
       angular_velocity_[1] = (((short) dxlMakeword(data[16*new_value_index + 8], data[16*new_value_index + 9])) / 14.375) * M_PI/180 * -1;
       angular_velocity_[2] = (((short) dxlMakeword(data[16*new_value_index + 10], data[16*new_value_index + 11])) / 14.375) * M_PI/180 * 1;
-      return true;
     }else {
       ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
-      return false;
     }
 }
 
 // we dont write anything to the IMU
-void ImuHardwareInterface::write(){}
+void ImuHardwareInterface::write(const ros::Time& t, const ros::Duration& dt){}
 
 void ImuHardwareInterface::setParent(hardware_interface::RobotHW* parent) {
   parent_ = parent;
