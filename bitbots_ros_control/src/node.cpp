@@ -14,11 +14,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  //ROS_WARN("%l", hw.getNames().size());
-  for (std::string &hw_name : hw.getNames()) {
-    ROS_WARN("%s", hw_name.c_str());
-  }
-
   // Create separate queue, because otherwise controller manager will freeze
   ros::NodeHandle nh;
   ros::CallbackQueue queue;

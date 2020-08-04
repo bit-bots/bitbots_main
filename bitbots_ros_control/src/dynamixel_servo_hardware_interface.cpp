@@ -36,6 +36,9 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle 
   // init merged vectors for controller
   for (ServoBusInterface *bus: bus_interfaces_) {
     joint_count_ = joint_count_ + bus->joint_count_;
+    for (int i = 0; i < bus->joint_count_; i++) {
+      joint_names_.push_back(bus->joint_names_[i]);
+    }
   }
   current_position_.resize(joint_count_, 0);
   current_velocity_.resize(joint_count_, 0);
@@ -175,7 +178,6 @@ void DynamixelServoHardwareInterface::read(const ros::Time &t, const ros::Durati
   int i = 0;
   for (ServoBusInterface *bus: bus_interfaces_) {
     for (int j = 0; j < bus->joint_count_; j++) {
-      joint_names_[i] = bus->joint_names_[j];
       current_position_[i] = bus->current_position_[j];
       current_velocity_[i] = bus->current_velocity_[j];
       current_effort_[i] = bus->current_effort_[j];
@@ -186,7 +188,7 @@ void DynamixelServoHardwareInterface::read(const ros::Time &t, const ros::Durati
   // PWM values are not part of joint state controller and have to be published independetly
   sensor_msgs::JointState pwm_state = sensor_msgs::JointState();
   pwm_state.header.stamp = ros::Time::now();
-  pwm_state.name = joint_names_;
+  pwm_state.name = joint_names_; //todo could be more performant if message object is reuse
   pwm_state.effort = current_pwm_;
   pwm_pub_.publish(pwm_state);
 }

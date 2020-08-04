@@ -88,7 +88,7 @@ bool ServoBusInterface::loadDynamixels(ros::NodeHandle &nh) {
   // get control mode
   std::string control_mode;
   nh.getParam("servos/control_mode", control_mode);
-  ROS_INFO("Control mode: %s", control_mode.c_str());
+  ROS_DEBUG("Control mode: %s", control_mode.c_str());
   if (!stringToControlMode(control_mode, control_mode_)) {
     return false;
   }
@@ -123,7 +123,7 @@ bool ServoBusInterface::writeROMRAM(ros::NodeHandle &nh) {
   /**
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
-  ROS_INFO("Writing ROM and RAM values");
+  ROS_DEBUG("Writing ROM and RAM values");
   XmlRpc::XmlRpcValue dxls;
   nh.getParam("servos/ROM_RAM", dxls);
   ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
@@ -151,7 +151,6 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
    * This is part of the main loop and handles reading of all connected devices
    */
   bool read_successful = true;
-
   // either read all values or a single one, depending on config
   if (read_position_ && read_velocity_ && read_effort_) {
     if (syncReadAll()) {

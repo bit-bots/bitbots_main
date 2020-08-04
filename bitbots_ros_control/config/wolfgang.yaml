@@ -1,6 +1,6 @@
 ros_control:
 
-  control_loop_hz: 1000
+  control_loop_hz: 10000
 
   port_info:
     port0:
@@ -27,7 +27,7 @@ ros_control:
     read_velocity: false
     read_effort: false
     read_pwm: false
-    read_volt_temp: true # this also corresponds for the error byte
+    read_volt_temp: false # this also corresponds for the error byte
 
     VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
     warn_temp: 60
@@ -68,14 +68,14 @@ ros_control:
     #  topic: imu/data_raw
     #  frame: imu_frame
     #  model_number: 0xBAFF
-    LeftFoot:
-      id: 102
-      topic: /foot_pressure_left/raw
-      model_number: 0xAFFE
-    RightFoot:
-      id: 101
-      topic: /foot_pressure_right/raw
-      model_number: 0xAFFE
+    #LeftFoot:
+    #  id: 102
+    #  topic: /foot_pressure_left/raw
+    #  model_number: 0xAFFE
+    #RightFoot:
+    #  id: 101
+    #  topic: /foot_pressure_right/raw
+    #  model_number: 0xAFFE
     #Buttons:
     #  id: 241
     #  model_number: 0xBAFF
