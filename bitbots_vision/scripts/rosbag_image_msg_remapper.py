@@ -2,45 +2,48 @@
 
 from rosbag import Bag
 import sys
+import os
+from os import listdir
 
 """
-A script that remaps the image_raw topic in rosbags to image_proc
+A script that remaps the /image_raw topic in rosbags to /camera/image_proc
 """
 
-# Organize arguments into array:
-arguments = []
-for argument in sys.argv:
-    # strip the .bag from the name:
-    if argument.endswith('.bag'):
-        argument = argument[:-4]
-    arguments.append(str(argument))
 
-# Check if enough arguments are given:
-if len(arguments) == 1:
-    # helping terminal output if two few arguments are given:
-    print('Usage: python '
-          + __file__ +
-          ' <input_bag_path> '
-          '[<output_bag_path>] ')
-    exit()
+def remap(input_bag_path, output_bag_path):
+    """
+    remaps the topics of a single bag
+    :param input_bag_path: the bag with the topic that should be renamed
+    :param output_bag_path: the path where the output bag should be created
+    """
+    with Bag(output_bag_path, 'w') as output_bag:  # create output bag
+        # write all topics into the output bag and rename the specified one:
+        for topic, msg, t in Bag(input_bag_path):
+            if topic == '/image_raw':
+                output_bag.write('/camera/image_proc', msg, t)
+            else:
+                output_bag.write(topic, msg, t)
 
-# Set input bag name:
-input_bag_path = arguments[1]
-
-# Set output bag name:
-if len(arguments) == 3:
-    # output bag name is specified
-    output_bag_path = arguments[2]
-else:
-    # output bag name is not specified
-    output_bag_path = input_bag_path + '_updated'
 
 # Remap topic:
 print('This may take a while...')
-with Bag(output_bag_path + '.bag', 'w') as output:  # create output bag
-    # write all topics into the output bag and rename them if necessary:
-    for topic, msg, t in Bag(input_bag_path + '.bag'):
-        if topic == '/image_raw':
-            output.write('/image_proc', msg, t)
-        else:
-            output.write(topic, msg, t)
+input_path = sys.argv[1]  # path of the input directory or rosbag
+if os.path.isdir(input_path):
+    # create output directory:
+    output_path = input_path + '_updated'
+    os.mkdir(output_path)
+    # remap topic in every rosbag in the input directory:
+    for input_bag in listdir(sys.argv[1]):
+        print("remapping " + input_bag)
+        remap(
+            input_path + '/' + input_bag,
+            output_path + '/' + input_bag[:-4] + '_updated.bag'
+        )
+else:
+    output_path = input_path[:-4] + '_updated.bag'  # path for the output rosbag
+    remap(
+        input_path,
+        output_path
+    )
+
+

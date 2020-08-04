@@ -3,7 +3,7 @@
 vision_parallelize: true  # Run the neural net and the conventional part in parallel
 vision_blind_threshold: 30  # Brightness threshold under which the vision thinks, that someone forgot the camera cap
 
-ROS_img_msg_topic: 'image_proc'  # ROS topic of the image message
+ROS_img_msg_topic: 'camera/image_proc'  # ROS topic of the image message
 ROS_img_msg_queue_size: 1  # ROS queue size for the image message
 ROS_fcnn_img_msg_topic: 'fcnn_image'  # ROS topic of the fcnn output message
 ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message

@@ -26,7 +26,7 @@ class Colorpicker(object):
 
         # Subscribe to Image-message
         self._sub_image_msg = rospy.Subscriber(
-            "image_proc",
+            "camera/image_proc",
             Image,
             self._image_callback,
             queue_size=1,
