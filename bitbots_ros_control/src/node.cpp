@@ -2,17 +2,21 @@
 #include <controller_manager/controller_manager.h>
 #include <bitbots_ros_control/wolfgang_hardware_interface.h>
 
-
-int main (int argc, char *argv[]){
+int main(int argc, char *argv[]) {
   ros::init(argc, argv, "ros_control");
   ros::NodeHandle pnh("~");
 
   // create hardware interfaces
   bitbots_ros_control::WolfgangHardwareInterface hw(pnh);
 
-  if (!hw.init(pnh)){
+  if (!hw.init(pnh)) {
     ROS_ERROR_STREAM("Failed to initialize hardware interface.");
     return 1;
+  }
+
+  ROS_WARN("%d", hw.getNames().size());
+  for (std::string &hw_name : hw.getNames()) {
+    ROS_WARN("%s", hw_name.c_str());
   }
 
   // Create separate queue, because otherwise controller manager will freeze
@@ -29,7 +33,7 @@ int main (int argc, char *argv[]){
   bool first_update = true;
   ros::Rate rate(pnh.param("control_loop_hz", 200));
 
-  while (ros::ok()){
+  while (ros::ok()) {
     hw.read(current_time, period);
     period = ros::Time::now() - current_time;
     current_time = ros::Time::now();

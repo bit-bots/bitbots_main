@@ -21,7 +21,7 @@ class BitFootHardwareInterface : public hardware_interface::RobotHW {
   BitFootHardwareInterface();
   BitFootHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, std::string topic_name);
 
-  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh);
+  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
 
   void read(const ros::Time& t, const ros::Duration& dt);
 

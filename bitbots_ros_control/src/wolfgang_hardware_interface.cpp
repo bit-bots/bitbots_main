@@ -60,7 +60,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
       exit(1);
     }
     driver->setPacketHandler(protocol_version);
-    std::vector<hardware_interface::RobotHW> interfaces_on_port;
+    std::vector<hardware_interface::RobotHW*> interfaces_on_port;
     // iterate over all devices and ping them to see what is connected to this bus
     std::vector<std::tuple<int, std::string, float, float>> servos_on_port;
     for (std::pair<std::string, int> &device : dxl_devices) {
@@ -85,24 +85,24 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             // bitfoot
             std::string topic;
             dxl_nh.getParam("topic", topic);
-            interfaces_on_port.push_back(BitFootHardwareInterface(driver, id, topic));
+            interfaces_on_port.push_back(new BitFootHardwareInterface(driver, id, topic));
           } else if (model_number_specified == 0xBAFF && !only_pressure_) { //todo correct number
             //IMU
             std::string topic;
             dxl_nh.getParam("topic", topic);
             std::string frame;
             dxl_nh.getParam("frame", frame);
-            ImuHardwareInterface interface = ImuHardwareInterface(driver, id, topic, frame, name);
+            ImuHardwareInterface* interface = new ImuHardwareInterface(driver, id, topic, frame, name);
             /* Hardware interfaces must be registered at the main RobotHW class.
              * Therefore, a pointer to this class is passed down to the RobotHW classes
              * registering further interfaces */
-            interface.setParent(this);
+            interface->setParent(this);
             interfaces_on_port.push_back(interface);
           } else if (model_number_specified == 101 && !only_pressure_) { //todo correct number
             // Buttons
             std::string topic;
             dxl_nh.getParam("topic", topic);
-            interfaces_on_port.push_back(ButtonHardwareInterface(driver, id, topic));
+            interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic));
           } else if ((model_number_specified == 311 || model_number_specified == 321 || model_number_specified == 1100)
               && !only_pressure_
               && !only_imu_) {
@@ -123,8 +123,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
       }
     }
     if (servos_on_port.size() > 0) {
-      DynamixelServoHardwareInterface interface = DynamixelServoHardwareInterface(driver, servos_on_port);
-      interface.setParent(this);
+      DynamixelServoHardwareInterface* interface = new DynamixelServoHardwareInterface(driver, servos_on_port);
+      interface->setParent(this);
       // set the dynamic reconfigure and load standard params for servo interface
       dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
       dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType
@@ -152,11 +152,11 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   bool success = true;
   // iterate through all ports
-  for (std::vector<hardware_interface::RobotHW> &port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW*> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
-    for (hardware_interface::RobotHW &interface : port_interfaces) {
+    for (hardware_interface::RobotHW* interface : port_interfaces) {
       // giving 2 times same node handle to keep interface of base class, dirty
-      success &= interface.init(root_nh, root_nh);
+      success &= interface->init(root_nh, root_nh);
     }
   }
   if (success) {
@@ -167,28 +167,28 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   return success;
 }
 
-void threaded_read(std::vector<hardware_interface::RobotHW> &port_interfaces,
+void threaded_read(std::vector<hardware_interface::RobotHW*> &port_interfaces,
                    const ros::Time &t,
                    const ros::Duration &dt) {
-  for (hardware_interface::RobotHW &interface : port_interfaces) {
+  for (hardware_interface::RobotHW* interface : port_interfaces) {
     // giving 2 times same node handle to keep interface of base class, dirty
-    interface.read(t, dt);
+    interface->read(t, dt);
   }
 }
 
-void threaded_write(std::vector<hardware_interface::RobotHW> &port_interfaces,
+void threaded_write(std::vector<hardware_interface::RobotHW*> &port_interfaces,
                     const ros::Time &t,
                     const ros::Duration &dt) {
-  for (hardware_interface::RobotHW &interface : port_interfaces) {
+  for (hardware_interface::RobotHW* interface : port_interfaces) {
     // giving 2 times same node handle to keep interface of base class, dirty
-    interface.write(t, dt);
+    interface->write(t, dt);
   }
 }
 
 void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW> &port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW*> port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 
@@ -201,7 +201,7 @@ void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt
 void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW> &port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW*> port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 

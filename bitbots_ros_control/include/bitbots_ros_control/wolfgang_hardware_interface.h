@@ -21,7 +21,7 @@ public:
 
 private:
   // two dimensional list of all hardware interfaces, sorted by port
-    std::vector<std::vector<hardware_interface::RobotHW>> interfaces_;
+    std::vector<std::vector<hardware_interface::RobotHW*>> interfaces_;
 
     ros::Publisher speak_pub_;
 

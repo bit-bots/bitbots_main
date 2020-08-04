@@ -200,7 +200,7 @@ bool DynamixelServoHardwareInterface::writeROMRAM(ros::NodeHandle &nh) {
     std::string register_name = (std::string) (it->first);
     int register_value;
     nh.getParam(("servos/ROM_RAM/" + register_name).c_str(), register_value);
-    ROS_INFO("Setting %s on all servos to %d", register_name.c_str(), register_value);
+    ROS_DEBUG("Setting %s on all servos to %d", register_name.c_str(), register_value);
 
     int *values = (int *) malloc(joint_names_.size() * sizeof(int));
     for (size_t num = 0; num < joint_names_.size(); num++) {
