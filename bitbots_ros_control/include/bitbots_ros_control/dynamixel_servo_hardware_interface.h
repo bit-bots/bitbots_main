@@ -20,9 +20,11 @@
 #include <transmission_interface/simple_transmission.h>
 #include <transmission_interface/transmission_interface.h>
 #include <dynamic_reconfigure/server.h>
+#include <bitbots_ros_control/utils.h>
 
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface_paramsConfig.h>
 
+#include <bitbots_ros_control/servo_bus_interface.h>
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <bitset>
 
@@ -41,6 +43,7 @@ std::string vecToString(const std::vector<T> &vec) {
   return ss.str();
 }
 
+
 struct State {
   State() : position(0), velocity(0), effort(0) {}
   double position;
@@ -54,70 +57,25 @@ struct Joint {
   State goal;
 };
 
-enum ControlMode {
-  POSITION_CONTROL,
-  VELOCITY_CONTROL,
-  EFFORT_CONTROL,
-  CURRENT_BASED_POSITION_CONTROL
-};
-
 class DynamixelServoHardwareInterface : public hardware_interface::RobotHW {
  public:
   DynamixelServoHardwareInterface();
-  explicit DynamixelServoHardwareInterface(std::shared_ptr<DynamixelDriver> &driver,
-                                           std::vector<std::tuple<int, std::string, float, float>> servos);
   void reconfCallback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config, uint32_t level);
 
   bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
-  void read(const ros::Time& t, const ros::Duration& dt);
-  void write(const ros::Time& t, const ros::Duration& dt);
+  void read(const ros::Time &t, const ros::Duration &dt);
+  void write(const ros::Time &t, const ros::Duration &dt);
+  void addBusInterface(ServoBusInterface *bus);
   void setParent(hardware_interface::RobotHW *parent);
 
  private:
   ros::NodeHandle nh_;
+  std::vector<ServoBusInterface *> bus_interfaces_;
 
-  void syncWritePWM();
-
-  bool loadDynamixels(ros::NodeHandle &nh);
-  bool writeROMRAM(ros::NodeHandle &nh);
-  bool stringToControlMode(std::string control_mode_str, ControlMode &control_mode);
-  void switchDynamixelControlMode();
-  diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id,
-                                                       char level,
-                                                       std::string message,
-                                                       std::map<std::string, std::string> map);
-  void processVte(bool success);
-
-  bool goal_torque_;
-  bool current_torque_;
-  void writeTorque(bool enabled);
   void setTorqueCb(std_msgs::BoolConstPtr enabled);
-  void writeTorqueForServos(std::vector<int32_t> torque);
   void individualTorqueCb(bitbots_msgs::JointTorque msg);
 
-  bool syncReadPositions();
-  bool syncReadVelocities();
-  bool syncReadEfforts();
-  bool syncReadPWMs();
-  bool syncReadAll();
-  bool syncReadVoltageAndTemp();
-  bool syncReadError();
-
-  void syncWritePosition();
-  void syncWriteVelocity();
-  void syncWriteProfileVelocity();
-  void syncWriteCurrent();
-  void syncWriteProfileAcceleration();
-
-  bool first_cycle_;
-  bool lost_servo_connection_;
-
-  bool switch_individual_torque_;
   std::vector<int32_t> goal_torque_individual_;
-
-  std::shared_ptr<DynamixelDriver> driver_;
-  // id, name, modelnumber
-  std::vector<std::tuple<int, std::string, float, float>> servos_;
 
   hardware_interface::JointStateInterface jnt_state_interface_;
   hardware_interface::PositionJointInterface jnt_pos_interface_;
@@ -132,25 +90,12 @@ class DynamixelServoHardwareInterface : public hardware_interface::RobotHW {
   int joint_count_;
 
   std::vector<std::string> joint_names_;
-  std::vector<uint8_t> joint_ids_;
-  std::vector<double> joint_mounting_offsets_;
-  std::vector<double> joint_offsets_;
 
   std::vector<double> goal_position_;
   std::vector<double> goal_effort_;
   std::vector<double> goal_velocity_;
   std::vector<double> goal_acceleration_;
 
-  std::vector<double> last_goal_position_;
-  std::vector<double> last_goal_effort_;
-  std::vector<double> last_goal_velocity_;
-  std::vector<double> last_goal_acceleration_;
-
-  bool read_position_;
-  bool read_velocity_;
-  bool read_effort_;
-  bool read_pwm_;
-  bool read_volt_temp_;
   std::vector<double> current_position_;
   std::vector<double> current_velocity_;
   std::vector<double> current_effort_;
@@ -159,21 +104,11 @@ class DynamixelServoHardwareInterface : public hardware_interface::RobotHW {
   std::vector<double> current_temperature_;
   std::vector<uint8_t> current_error_;
 
-  int read_vt_counter_;
-  int vt_update_rate_;
-  double warn_temp_;
-  double warn_volt_;
-
   bool torqueless_mode_;
-
-  int reading_errors_;
-  int reading_successes_;
 
   // subscriber / publisher
   ros::Subscriber set_torque_sub_;
   ros::Publisher pwm_pub_;
-  ros::Publisher diagnostic_pub_;
-  ros::Publisher speak_pub_;
   ros::Subscriber set_torque_indiv_sub_;
 
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> *dyn_reconf_server_;

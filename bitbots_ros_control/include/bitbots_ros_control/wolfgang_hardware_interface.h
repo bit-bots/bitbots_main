@@ -22,7 +22,7 @@ public:
 private:
   // two dimensional list of all hardware interfaces, sorted by port
     std::vector<std::vector<hardware_interface::RobotHW*>> interfaces_;
-
+    DynamixelServoHardwareInterface servo_interface_;
     ros::Publisher speak_pub_;
 
     bool only_imu_;

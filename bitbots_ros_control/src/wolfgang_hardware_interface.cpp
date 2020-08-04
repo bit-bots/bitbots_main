@@ -41,6 +41,16 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   std::sort(dxl_devices.begin(), dxl_devices.end(),
             [](std::pair<std::string, int> &a, std::pair<std::string, int> &b) { return a.second < b.second; });
 
+  // create overall servo interface since we need a single interface for the controllers
+  servo_interface_ = DynamixelServoHardwareInterface();
+  servo_interface_.setParent(this);
+   /* duplicate?
+   // set the dynamic reconfigure and load standard params for servo interface
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
+  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType
+      f;
+  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, servo_interface_, _1, _2);
+  server.setCallback(f);*/
 
   // init bus drivers
   std::vector<std::string> pinged;
@@ -60,7 +70,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
       exit(1);
     }
     driver->setPacketHandler(protocol_version);
-    std::vector<hardware_interface::RobotHW*> interfaces_on_port;
+    std::vector<hardware_interface::RobotHW *> interfaces_on_port;
     // iterate over all devices and ping them to see what is connected to this bus
     std::vector<std::tuple<int, std::string, float, float>> servos_on_port;
     for (std::pair<std::string, int> &device : dxl_devices) {
@@ -92,7 +102,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             dxl_nh.getParam("topic", topic);
             std::string frame;
             dxl_nh.getParam("frame", frame);
-            ImuHardwareInterface* interface = new ImuHardwareInterface(driver, id, topic, frame, name);
+            ImuHardwareInterface *interface = new ImuHardwareInterface(driver, id, topic, frame, name);
             /* Hardware interfaces must be registered at the main RobotHW class.
              * Therefore, a pointer to this class is passed down to the RobotHW classes
              * registering further interfaces */
@@ -122,16 +132,11 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
         }
       }
     }
+    // create a servo bus interface if there were servos found on this bus
     if (servos_on_port.size() > 0) {
-      DynamixelServoHardwareInterface* interface = new DynamixelServoHardwareInterface(driver, servos_on_port);
-      interface->setParent(this);
-      // set the dynamic reconfigure and load standard params for servo interface
-      dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
-      dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType
-          f;
-      f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, interface, _1, _2);
-      server.setCallback(f);
+      ServoBusInterface *interface = new ServoBusInterface(driver, servos_on_port);
       interfaces_on_port.push_back(interface);
+      servo_interface_.addBusInterface(interface);
     }
     // add vector of interfaces on this port to overall collection of interfaces
     interfaces_.push_back(interfaces_on_port);
@@ -143,7 +148,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
     for (std::pair<std::string, int> &device : dxl_devices) {
       if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
       } else {
-        ROS_ERROR("Device %s with id %d missing", device.first.c_str(), device.second);
+        ROS_ERROR("%s with id %d missing", device.first.c_str(), device.second);
       }
     }
   }
@@ -152,9 +157,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   bool success = true;
   // iterate through all ports
-  for (std::vector<hardware_interface::RobotHW*> &port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
-    for (hardware_interface::RobotHW* interface : port_interfaces) {
+    for (hardware_interface::RobotHW *interface : port_interfaces) {
       // giving 2 times same node handle to keep interface of base class, dirty
       success &= interface->init(root_nh, root_nh);
     }
@@ -164,22 +169,25 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   } else {
     speakError(speak_pub_, "error starting ros control");
   }
+  // init servo interface last after all servo busses are there
+  success &=servo_interface_.init(root_nh, root_nh);
+
   return success;
 }
 
-void threaded_read(std::vector<hardware_interface::RobotHW*> &port_interfaces,
+void threaded_read(std::vector<hardware_interface::RobotHW *> &port_interfaces,
                    const ros::Time &t,
                    const ros::Duration &dt) {
-  for (hardware_interface::RobotHW* interface : port_interfaces) {
+  for (hardware_interface::RobotHW *interface : port_interfaces) {
     // giving 2 times same node handle to keep interface of base class, dirty
     interface->read(t, dt);
   }
 }
 
-void threaded_write(std::vector<hardware_interface::RobotHW*> &port_interfaces,
+void threaded_write(std::vector<hardware_interface::RobotHW *> &port_interfaces,
                     const ros::Time &t,
                     const ros::Duration &dt) {
-  for (hardware_interface::RobotHW* interface : port_interfaces) {
+  for (hardware_interface::RobotHW *interface : port_interfaces) {
     // giving 2 times same node handle to keep interface of base class, dirty
     interface->write(t, dt);
   }
@@ -188,7 +196,7 @@ void threaded_write(std::vector<hardware_interface::RobotHW*> &port_interfaces,
 void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW*> port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW *> port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 
@@ -196,12 +204,17 @@ void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt
   for (std::thread &thread : threads) {
     thread.join();
   }
+  // aggrigate all servo values for controller
+  servo_interface_.read(t, dt);
 }
 
 void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
+  // write all controller values to interfaces
+  servo_interface_.write(t, dt);
+
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW*> port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW *> port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 
