@@ -164,16 +164,36 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   }
 }
 
+void threaded_init(std::vector<hardware_interface::RobotHW *> &port_interfaces,
+                   ros::NodeHandle &root_nh,
+                   int& success) {
+  success = true;
+  for (hardware_interface::RobotHW *interface : port_interfaces) {
+    // giving 2 times same node handle to keep interface of base class, dirty
+    success &= interface->init(root_nh, root_nh);
+  }
+}
+
 bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
-  bool success = true;
   // iterate through all ports
-  //todo could also be done in parallel to speed up start time
+  std::vector<std::thread> threads;
+  std::vector<int*> successes;
+  int i = 0;
   for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
-    for (hardware_interface::RobotHW *interface : port_interfaces) {
-      // giving 2 times same node handle to keep interface of base class, dirty
-      success &= interface->init(root_nh, root_nh);
-    }
+    int suc = 0;
+    successes.push_back(&suc);
+    threads.push_back(std::thread(threaded_init, std::ref(port_interfaces), std::ref(root_nh), std::ref(suc)));
+    i++;
+  }
+  // wait for all reads to finish
+  for (std::thread &thread : threads) {
+    thread.join();
+  }
+  // see if all inits were successfull
+  bool success = true;
+  for (bool s : successes) {
+    success &= s;
   }
   if (success) {
     speakError(speak_pub_, "ros control startup successful");
@@ -189,11 +209,23 @@ void threaded_read(std::vector<hardware_interface::RobotHW *> &port_interfaces,
                    const ros::Time &t,
                    const ros::Duration &dt) {
   for (hardware_interface::RobotHW *interface : port_interfaces) {
-    ROS_WARN("read thread");
     // giving 2 times same node handle to keep interface of base class, dirty
     interface->read(t, dt);
-    ROS_WARN("read thread2");
   }
+}
+
+void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
+  std::vector<std::thread> threads;
+  // start all reads
+  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
+    threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+  }
+  // wait for all reads to finish
+  for (std::thread &thread : threads) {
+    thread.join();
+  }
+  // aggrigate all servo values for controller
+  servo_interface_.read(t, dt);
 }
 
 void threaded_write(std::vector<hardware_interface::RobotHW *> &port_interfaces,
@@ -205,49 +237,13 @@ void threaded_write(std::vector<hardware_interface::RobotHW *> &port_interfaces,
   }
 }
 
-void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
-  //ROS_INFO("read");
-  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
-    for (hardware_interface::RobotHW *interface : port_interfaces) {
-      interface->read(t, dt);
-    }
-  }
-  //ROS_INFO("read servo");
-  servo_interface_.read(t, dt);
-  return;
-  std::thread th = std::thread(threaded_read, std::ref(interfaces_[0]), std::ref(t), std::ref(dt));
-  th.join();
-  servo_interface_.read(t, dt);
-  return;
-  std::vector<std::thread> threads;
-  // start all reads
-  for (std::vector<hardware_interface::RobotHW *> port_interfaces : interfaces_) {
-    threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
-  }
-  ROS_WARN("Read join");
-  // wait for all reads to finish
-  for (std::thread &thread : threads) {
-    thread.join();
-  }
-  ROS_WARN("servo read");
-  // aggrigate all servo values for controller
-  servo_interface_.read(t, dt);
-}
-
 void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
-  servo_interface_.write(t, dt);
-  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
-    for (hardware_interface::RobotHW *interface : port_interfaces) {
-      interface->write(t, dt);
-    }
-  }
-  return;
   // write all controller values to interfaces
   servo_interface_.write(t, dt);
 
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW *> port_interfaces : interfaces_) {
+  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 
