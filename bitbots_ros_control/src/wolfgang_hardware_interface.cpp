@@ -94,14 +94,20 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
           if (model_number_specified == 0xAFFE && !only_imu_) {//todo correct number
             // bitfoot
             std::string topic;
-            dxl_nh.getParam("topic", topic);
+            if (!dxl_nh.getParam("topic", topic)) {
+              ROS_WARN("Bitfoot topic not specified");
+            };
             interfaces_on_port.push_back(new BitFootHardwareInterface(driver, id, topic));
           } else if (model_number_specified == 0xBAFF && !only_pressure_) { //todo correct number
             //IMU
             std::string topic;
-            dxl_nh.getParam("topic", topic);
+            if (!dxl_nh.getParam("topic", topic)) {
+              ROS_WARN("IMU topic not specified");
+            };
             std::string frame;
-            dxl_nh.getParam("frame", frame);
+            if (!dxl_nh.getParam("frame", frame)) {
+              ROS_WARN("IMU frame not specified");
+            };
             ImuHardwareInterface *interface = new ImuHardwareInterface(driver, id, topic, frame, name);
             /* Hardware interfaces must be registered at the main RobotHW class.
              * Therefore, a pointer to this class is passed down to the RobotHW classes
@@ -111,16 +117,18 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
           } else if (model_number_specified == 101 && !only_pressure_) { //todo correct number
             // Buttons
             std::string topic;
-            dxl_nh.getParam("topic", topic);
+            if (!dxl_nh.getParam("topic", topic)) {
+              ROS_WARN("Button topic not specified");
+            };
             interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic));
           } else if ((model_number_specified == 311 || model_number_specified == 321 || model_number_specified == 1100)
               && !only_pressure_
               && !only_imu_) {
             // Servos
             float mounting_offset;
-            dxl_nh.getParam("mounting_offset", mounting_offset);
+            dxl_nh.param<float>("mounting_offset", mounting_offset, 0.0);
             float joint_offset;
-            dxl_nh.getParam("joint_offset", joint_offset);
+            dxl_nh.param<float>("joint_offset", joint_offset, 0.0);
             servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
           } else if (model_number_specified == 0xABBA) {
             //CORE board
@@ -157,6 +165,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   bool success = true;
   // iterate through all ports
+  ROS_INFO("init");
+  //todo could also be done in parallel to speed up start time
   for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
     for (hardware_interface::RobotHW *interface : port_interfaces) {
@@ -170,8 +180,9 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
     speakError(speak_pub_, "error starting ros control");
   }
   // init servo interface last after all servo busses are there
+  ROS_INFO("servo in");
   success &= servo_interface_.init(root_nh, root_nh);
-
+  ROS_INFO("init fin");
   return success;
 }
 
@@ -196,11 +207,17 @@ void threaded_write(std::vector<hardware_interface::RobotHW *> &port_interfaces,
 }
 
 void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
+  //ROS_INFO("read");
   for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     for (hardware_interface::RobotHW *interface : port_interfaces) {
       interface->read(t, dt);
     }
   }
+  //ROS_INFO("read servo");
+  servo_interface_.read(t, dt);
+  return;
+  std::thread th = std::thread(threaded_read, std::ref(interfaces_[0]), std::ref(t), std::ref(dt));
+  th.join();
   servo_interface_.read(t, dt);
   return;
   std::vector<std::thread> threads;

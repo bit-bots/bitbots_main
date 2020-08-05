@@ -9,6 +9,8 @@ DynamixelServoHardwareInterface::DynamixelServoHardwareInterface() {}
 
 void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
   bus_interfaces_.push_back(bus);
+  pwm_msg_ = sensor_msgs::JointState();
+  pwm_msg_.name = joint_names_;
 }
 
 bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
@@ -29,11 +31,11 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle 
                                                                   &DynamixelServoHardwareInterface::individualTorqueCb,
                                                                   this,
                                                                   ros::TransportHints().tcpNoDelay());
-  pwm_pub_ = nh.advertise<sensor_msgs::JointState>("/servo_PID_status", 10, true);
+  pwm_pub_ = nh.advertise<sensor_msgs::JointState>("/servo_PWM", 10, true);
 
   torqueless_mode_ = nh.param("torqueless_mode", false);
-
   // init merged vectors for controller
+  joint_count_ = 0;
   for (ServoBusInterface *bus: bus_interfaces_) {
     joint_count_ = joint_count_ + bus->joint_count_;
     for (int i = 0; i < bus->joint_count_; i++) {
@@ -186,11 +188,9 @@ void DynamixelServoHardwareInterface::read(const ros::Time &t, const ros::Durati
     }
   }
   // PWM values are not part of joint state controller and have to be published independetly
-  sensor_msgs::JointState pwm_state = sensor_msgs::JointState();
-  pwm_state.header.stamp = ros::Time::now();
-  pwm_state.name = joint_names_; //todo could be more performant if message object is reuse
-  pwm_state.effort = current_pwm_;
-  pwm_pub_.publish(pwm_state);
+  pwm_msg_.header.stamp = ros::Time::now();
+  pwm_msg_.effort = current_pwm_;
+  pwm_pub_.publish(pwm_msg_);
 }
 
 void DynamixelServoHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {

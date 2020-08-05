@@ -65,9 +65,6 @@ bool ServoBusInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
     if (!writeROMRAM(nh)) {
       ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
-    // magic sleep preventing problems after setting ROM values
-    // not sure if still needed for never firmware, but better keep it to be save
-    sleep(1);
   }
 
   writeTorque(nh.param("servos/auto_torque", false));
@@ -328,7 +325,7 @@ void ServoBusInterface::switchDynamixelControlMode() {
   bool torque_before_switch = current_torque_;
   writeTorque(false);
   // magic sleep to make sure that dynamixel have internally processed the request
-  ros::Duration(0.5).sleep();
+  ros::Duration(0.1).sleep();
 
   int32_t value = 3;
   if (control_mode_ == POSITION_CONTROL) {
@@ -494,7 +491,7 @@ bool ServoBusInterface::syncReadPositions() {
       double current_pos = driver_->convertValue2Radian(joint_ids_[i], data[i]);
       if (current_pos < 3.15 && current_pos > -3.15) {
         //only write values which are possible
-        current_position_[i] = current_pos;
+          current_position_[i] = current_pos;
       }
     }
   }

@@ -113,6 +113,7 @@ class DynamixelServoHardwareInterface : public hardware_interface::RobotHW {
 
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> *dyn_reconf_server_;
 
+  sensor_msgs::JointState pwm_msg_;
 };
 }
 
