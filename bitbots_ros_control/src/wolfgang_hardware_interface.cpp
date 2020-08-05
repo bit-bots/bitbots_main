@@ -125,6 +125,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
               && !only_pressure_
               && !only_imu_) {
             // Servos
+            // We need to add the tool to the driver for later reading writing
+            driver->setTools(model_number_specified_16, id);
             float mounting_offset;
             dxl_nh.param<float>("mounting_offset", mounting_offset, 0.0);
             float joint_offset;
@@ -165,7 +167,6 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   bool success = true;
   // iterate through all ports
-  ROS_INFO("init");
   //todo could also be done in parallel to speed up start time
   for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
@@ -180,9 +181,7 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
     speakError(speak_pub_, "error starting ros control");
   }
   // init servo interface last after all servo busses are there
-  ROS_INFO("servo in");
   success &= servo_interface_.init(root_nh, root_nh);
-  ROS_INFO("init fin");
   return success;
 }
 
@@ -236,7 +235,6 @@ void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt
 }
 
 void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
-  return;
   servo_interface_.write(t, dt);
   for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     for (hardware_interface::RobotHW *interface : port_interfaces) {

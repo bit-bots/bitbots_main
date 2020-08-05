@@ -68,20 +68,22 @@ ros_control:
     #  topic: imu/data_raw
     #  frame: imu_frame
     #  model_number: 0xBAFF
-    #LeftFoot:
-    #  id: 102
-    #  topic: /foot_pressure_left/raw
-    #  model_number: 0xAFFE
-    #RightFoot:
-    #  id: 101
-    #  topic: /foot_pressure_right/raw
-    #  model_number: 0xAFFE
+    LeftFoot:
+      id: 102
+      topic: /foot_pressure_left/raw
+      model_number: 0xAFFE
+    RightFoot:
+      id: 101
+      topic: /foot_pressure_right/raw
+      model_number: 0xAFFE
     #Buttons:
     #  id: 241
     #  model_number: 0xBAFF
     RShoulderPitch:
       id: 1
       model_number: 311
+      mounting_offset: 0.0
+      joint_offset: 0.0
     LShoulderPitch:
       id: 2
       model_number: 311

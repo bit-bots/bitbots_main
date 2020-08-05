@@ -66,7 +66,6 @@ bool ServoBusInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
       ROS_WARN("Couldn't write ROM and RAM values to all servos.");
     }
   }
-
   writeTorque(nh.param("servos/auto_torque", false));
 }
 
@@ -455,6 +454,7 @@ void ServoBusInterface::writeTorque(bool enabled) {
     int32_t *t = &torque[0];
     driver_->syncWrite("Torque_Enable", t);
     current_torque_ = enabled;
+    goal_torque_ = enabled;
   }
 }
 
