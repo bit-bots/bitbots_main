@@ -27,4 +27,34 @@ namespace bitbots_ros_control {
       memcpy(&f, &b, sizeof(f));
       return f;
     }
+
+    std::string gyroRangeToString(uint8_t range) {
+      switch(range) {
+        case 0:
+          return "250 deg/s";
+        case 1:
+          return "500 deg/s";
+        case 2:
+          return "1000 deg/s";
+        case 3:
+          return "2000 deg/s";
+        default:
+          return "invalid range, defaulting to 2000 deg/s";
+      }
+    }
+
+    std::string accelRangeToString(uint8_t range) {
+      switch(range) {
+        case 0:
+          return "2G";
+        case 1:
+          return "4G";
+        case 2:
+          return "8G";
+        case 3:
+          return "16G";
+        default:
+          return "invalid range, defaulting to 16G";
+      }
+    }
 }

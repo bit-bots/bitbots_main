@@ -27,6 +27,7 @@ set(SOURCES
   src/wolfgang_hardware_interface.cpp
   src/node.cpp
   src/utils.cpp
+  src/leds_hardware_interface.cpp
 )
 
 generate_dynamic_reconfigure_options(

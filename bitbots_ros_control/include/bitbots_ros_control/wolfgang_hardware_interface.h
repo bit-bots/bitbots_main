@@ -2,6 +2,7 @@
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_WOLFGANG_HARDWARE_INTERFACE_H_
 
 #include <bitbots_ros_control/imu_hardware_interface.h>
+#include <bitbots_ros_control/leds_hardware_interface.h>
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #include <bitbots_ros_control/bitfoot_hardware_interface.h>
 #include <bitbots_ros_control/button_hardware_interface.h>
@@ -24,6 +25,7 @@ private:
     DynamixelServoHardwareInterface servos_;
 
     ImuHardwareInterface imu_;
+    LedsHardwareInterface leds_;
     BitFootHardwareInterface left_foot_;
     BitFootHardwareInterface right_foot_;
     ButtonHardwareInterface buttons_;
