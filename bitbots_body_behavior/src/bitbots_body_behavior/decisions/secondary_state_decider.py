@@ -5,8 +5,10 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 
 class SecondaryStateDecider(AbstractDecisionElement):
-    """Decides in which secondary state the game is currently in. The mode of the secondary state is handled in the
-    game controller receiver, so the behavior does ont need to deal with this."""
+    """
+    Decides in which secondary state the game is currently in. The mode of the secondary state is handled in the
+    game controller receiver, so the behavior does ont need to deal with this.
+    """
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateDecider, self).__init__(blackboard, dsd)
         self.secondary_game_states = {
@@ -27,12 +29,17 @@ class SecondaryStateDecider(AbstractDecisionElement):
         return self.secondary_game_states[state_number]
 
     def get_reevaluate(self):
-        """Secondary game state can change during the game"""
+        """
+        Secondary game state can change during the game
+        """
         return True
 
 
 class SecondaryStateTeamDecider(AbstractDecisionElement):
-    """Decides if our team or the other team is allowed to execute the secondary state."""
+    """
+    Decides if our team or the other team is allowed to execute the secondary state.
+    """
+
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
         self.team_id = self.blackboard.gamestate.team_id
@@ -43,5 +50,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         return 'OTHER'
 
     def get_reevaluate(self):
-        """Secondary state Team can change during the game"""
+        """
+        Secondary state Team can change during the game
+        """
         return True

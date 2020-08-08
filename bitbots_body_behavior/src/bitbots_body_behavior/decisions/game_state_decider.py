@@ -16,6 +16,11 @@ class GameStateDecider(AbstractDecisionElement):
         }
 
     def perform(self, reevaluate=False):
+        """
+        Translates GameState in Blackboard into DSD Answer
+        :param reevaluate:
+        :return:
+        """
         if not self.blackboard.gamestate.is_allowed_to_move():
             rospy.loginfo_throttle(3.0, "Not allowed to move")
             return "NOT_ALLOWED_TO_MOVE"
