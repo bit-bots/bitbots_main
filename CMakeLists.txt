@@ -30,8 +30,11 @@ add_message_files(
 
 add_service_files(
    FILES
+   IMURanges.srv
+   ComplementaryFilterParams.srv
    ManualPenalize.srv
    FootScale.srv
+   Leds.srv
 )
 
 
