@@ -48,14 +48,15 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   calibrate_gyro_service_ = nh_.advertiseService("/imu/calibrate_gyro", &ImuHardwareInterface::calibrateGyro, this);
   reset_gyro_calibration_service_ = nh_.advertiseService("/imu/reset_gyro_calibration", &ImuHardwareInterface::resetGyroCalibration, this);
   complementary_filter_params_service_ = nh_.advertiseService("/imu/set_complementary_filter_params", &ImuHardwareInterface::setComplementaryFilterParams, this);
-  
+  calibrate_accel_service_ = nh_.advertiseService("/imu/calibrate_accel", &ImuHardwareInterface::calibrateAccel, this);
+
   uint16_t model_number = uint16_t(0xbaff);
   uint16_t* model_number_p = &model_number;
   if(driver_->ping(id_, model_number_p))
     ROS_WARN_STREAM("PING IMU SUCESSFUL, MODEL_NUM: " << *model_number_p);
   else
   {
-    ROS_ERROR("NOT SO NICE IMU BOY");
+    ROS_ERROR("IMU could not be pinged");
   }
   
   return true;
@@ -115,6 +116,12 @@ bool ImuHardwareInterface::setComplementaryFilterParams(bitbots_msgs::Complement
   return true;
 }
 
+bool ImuHardwareInterface::calibrateAccel(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp)
+{
+  calibrate_accel_ = true;
+  return true;
+}
+
 void ImuHardwareInterface::write() {
   if(write_ranges_) {
     ROS_INFO_STREAM("Setting Gyroscope range to " << gyroRangeToString(gyro_range_));
@@ -140,6 +147,11 @@ void ImuHardwareInterface::write() {
     driver_->writeRegister(id_, "Accel_Gain", accel_gain_);
     driver_->writeRegister(id_, "Bias_Alpha", bias_alpha_);
     write_complementary_filter_params_ = false;
+  }
+  if(calibrate_accel_)
+  {
+    driver_->writeRegister(id_, "Calibrate_Accel", 1);
+    calibrate_accel_ = false;
   }
 }
 

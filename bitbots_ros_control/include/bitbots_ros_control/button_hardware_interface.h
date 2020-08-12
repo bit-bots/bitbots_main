@@ -30,6 +30,7 @@ public:
   void write();
 
 private:
+  int counter_;
   ros::NodeHandle nh_;
   std::shared_ptr<DynamixelDriver> driver_;
   ros::Publisher button_pub_;

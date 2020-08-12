@@ -39,11 +39,6 @@
         <rosparam command="load" file="$(find bitbots_ros_control)/config/analyzers.yaml" />
     </node>
 
-    <include file="$(find bitbots_ros_control)/launch/imu_filter.launch">
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-    </include>
-
-
     <node pkg="bitbots_ros_control" type="pressure_converter.py" name="pressure_converter" output="screen">
         <rosparam file="$(find bitbots_ros_control)/config/pressure_$(env ROBOT_NAME).yaml" command="load" />
     </node>

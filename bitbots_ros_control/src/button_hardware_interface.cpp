@@ -18,6 +18,9 @@ bool ButtonHardwareInterface::read(){
   /**
    * Reads the buttons
    */
+  counter_ = (counter_ + 1) % 100;
+  if(counter_ != 0)
+    return true;
   uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
   if(driver_->readMultipleRegisters(241, 76, 3, data)){;
     bitbots_buttons::Buttons msg;

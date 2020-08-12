@@ -56,14 +56,17 @@ private:
   bool do_adaptive_gain_, do_bias_estimation_;
   float accel_gain_, bias_alpha_;
 
+  bool calibrate_accel_ = false;
+
   ros::ServiceServer imu_ranges_service_, calibrate_gyro_service_, reset_gyro_calibration_service_,
-                     complementary_filter_params_service_;
+                     complementary_filter_params_service_, calibrate_accel_service_;
 
   bool setIMURanges(bitbots_msgs::IMURangesRequest& req, bitbots_msgs::IMURangesResponse& resp);
   bool calibrateGyro(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp);
   bool resetGyroCalibration(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp);
   bool setComplementaryFilterParams(bitbots_msgs::ComplementaryFilterParamsRequest& req,
                                     bitbots_msgs::ComplementaryFilterParamsResponse& resp);
+  bool calibrateAccel(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp);
 };
 }
 #endif
