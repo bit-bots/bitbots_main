@@ -502,7 +502,7 @@
 <parent link="r_shoulder" />
 <child link="r_upper_arm" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="5.43" velocity="10.33" lower="-3.14159" upper="0"/>
+<limit effort="5.43" velocity="10.33" lower="0" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -711,7 +711,7 @@
 <parent link="l_shoulder" />
 <child link="l_upper_arm" />
 <axis xyz="-0 -0 -1"/>
-<limit effort="5.43" velocity="10.33" lower="0" upper="3.14159"/>
+<limit effort="5.43" velocity="10.33" lower="-3.14159" upper="0"/>
 <joint_properties friction="0.0"/>
 </joint>
 
