@@ -37,13 +37,12 @@ void BitFootHardwareInterface::read(const ros::Time& t, const ros::Duration& dt)
     ROS_ERROR_THROTTLE(3.0, "Could not read foot sensor");
   }
 
-  bitbots_msgs::FootPressure msg;
-  msg.header.stamp = ros::Time::now();
-  msg.left_front = current_pressure_[0];
-  msg.right_front = current_pressure_[1];
-  msg.left_back = current_pressure_[2];
-  msg.right_back= current_pressure_[3];
-  pressure_pub_.publish(msg);
+  msg_.header.stamp = ros::Time::now();
+  msg_.left_front = current_pressure_[0];
+  msg_.right_front = current_pressure_[1];
+  msg_.left_back = current_pressure_[2];
+  msg_.right_back = current_pressure_[3];
+  pressure_pub_.publish(msg_);
 }
 
 // we dont write anything to the pressure sensors

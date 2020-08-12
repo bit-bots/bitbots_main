@@ -9,8 +9,6 @@ DynamixelServoHardwareInterface::DynamixelServoHardwareInterface() {}
 
 void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
   bus_interfaces_.push_back(bus);
-  pwm_msg_ = sensor_msgs::JointState();
-  pwm_msg_.name = joint_names_;
 }
 
 bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
@@ -104,6 +102,9 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle 
   dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
+
+  pwm_msg_ = sensor_msgs::JointState();
+  pwm_msg_.name = joint_names_;
 
   ROS_INFO("Hardware interface init finished.");
   return true;

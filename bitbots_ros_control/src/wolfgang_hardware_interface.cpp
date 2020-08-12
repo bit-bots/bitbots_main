@@ -69,6 +69,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
       sleep(1);
       exit(1);
     }
+    // some interface seem to produce some gitter directly after connecting. wait or it will interfere with pings
+    sleep(1);
     driver->setPacketHandler(protocol_version);
     std::vector<hardware_interface::RobotHW *> interfaces_on_port;
     // iterate over all devices and ping them to see what is connected to this bus
@@ -91,14 +93,14 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
           }
           // ping was successful, add device correspondingly
           // only add them if the mode is set correspondingly
-          if (model_number_specified == 0xAFFE && !only_imu_) {//todo correct number
+          if (model_number_specified == 0 && !only_imu_) {//model number is currently 0 on foot sensors
             // bitfoot
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
               ROS_WARN("Bitfoot topic not specified");
             };
             interfaces_on_port.push_back(new BitFootHardwareInterface(driver, id, topic));
-          } else if (model_number_specified == 0xBAFF && !only_pressure_) { //todo correct number
+          } else if (model_number_specified == 0xBAFF && !only_pressure_) {
             //IMU
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
@@ -114,7 +116,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
              * registering further interfaces */
             interface->setParent(this);
             interfaces_on_port.push_back(interface);
-          } else if (model_number_specified == 101 && !only_pressure_) { //todo correct number
+          } else if (model_number_specified == 101 && !only_pressure_) {
             // Buttons
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {

@@ -1,6 +1,6 @@
 ros_control:
 
-  control_loop_hz: 10000
+  control_loop_hz: 1000
 
   port_info:
     port0:
@@ -24,10 +24,10 @@ ros_control:
   servos:
     # specifies which information should be read
     read_position: true
-    read_velocity: false
-    read_effort: false
+    read_velocity: true
+    read_effort: true
     read_pwm: false
-    read_volt_temp: false # this also corresponds for the error byte
+    read_volt_temp: true # this also corresponds for the error byte
 
     VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
     warn_temp: 60
@@ -47,8 +47,9 @@ ros_control:
       Min_Voltage_Limit: 95 #[About 0.1V]
       PWM_Limit: 885 # 885 = 100%
       #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
+      #todo acceleration limit does not exist as register?
       Acceleration_Limit: 32767 # [214.577 Rev/min2]
-      Velocity_Limit: 360 # [0.229rpm]
+      Velocity_Limit: 1023 # [0.229rpm]
       Max_Position_Limit: 4095 # [0.088 deg]
       Min_Position_Limit : 0 # [0.088 deg]
       # RAM
@@ -61,6 +62,8 @@ ros_control:
       Position_P_Gain: 700 #1100 # [/ 128] 0~16,383
       Feedforward_2nd_Gain: 0 # [/4]
       Feedforward_1st_Gain: 0 # [/4]
+      Profile_Acceleration: 0 # 0 for infinite
+      Profile_Velocity: 0 # 0 for infinite
 
   device_info:
     #IMU_torso:
@@ -71,11 +74,11 @@ ros_control:
     LeftFoot:
       id: 102
       topic: /foot_pressure_left/raw
-      model_number: 0xAFFE
+      model_number: 0
     RightFoot:
       id: 101
       topic: /foot_pressure_right/raw
-      model_number: 0xAFFE
+      model_number: 0
     #Buttons:
     #  id: 241
     #  model_number: 0xBAFF

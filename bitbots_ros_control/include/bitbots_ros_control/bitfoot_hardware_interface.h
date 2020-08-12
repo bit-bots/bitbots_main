@@ -38,6 +38,8 @@ class BitFootHardwareInterface : public hardware_interface::RobotHW {
 
   int id_;
   std::string topic_name_;
+  bitbots_msgs::FootPressure msg_;
+
 };
 }
 #endif
