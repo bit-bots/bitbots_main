@@ -35,6 +35,8 @@ add_service_files(
    ManualPenalize.srv
    FootScale.srv
    Leds.srv
+   AccelerometerCalibration.srv
+   SetAccelerometerCalibrationThreshold.srv
 )
 
 
