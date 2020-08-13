@@ -351,16 +351,17 @@ void ServoBusInterface::switchDynamixelControlMode() {
 diagnostic_msgs::DiagnosticStatus ServoBusInterface::createServoDiagMsg(int id,
                                                                         char level,
                                                                         std::string message,
-                                                                        std::map<std::string,
-                                                                                 std::string> map) {
+                                                                        std::map<std::string, std::string> map,
+                                                                        std::string name) {
   /**
    * Create a single Diagnostic message for one servo. This is used to build the array message which is then published.
    */
   diagnostic_msgs::DiagnosticStatus servo_status = diagnostic_msgs::DiagnosticStatus();
   servo_status.level = level;
-  servo_status.name = "Servo " + std::to_string(id);
+  // add prefix DS for dynamixel servo to sort in diagnostic analyser
+  servo_status.name = "DS" + name;
   servo_status.message = message;
-  servo_status.hardware_id = std::to_string(100 + id);
+  servo_status.hardware_id = std::to_string(id);
   std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
   // itarate through map and save it into values
   for (auto const &ent1 : map) {
@@ -387,12 +388,11 @@ void ServoBusInterface::processVte(bool success) {
     char level = diagnostic_msgs::DiagnosticStatus::OK;
     std::string message = "OK";
     std::map<std::string, std::string> map;
-    map.insert(std::make_pair("Joint Name", joint_names_[i]));
     if (!success) {
       // the read of VT or error failed, we will publish this and not the values
       message = "No response";
       level = diagnostic_msgs::DiagnosticStatus::STALE;
-      array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map));
+      array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map, joint_names_[i]));
       continue;
     }
     map.insert(std::make_pair("Input Voltage", std::to_string(current_input_voltage_[i])));
@@ -438,7 +438,7 @@ void ServoBusInterface::processVte(bool success) {
       }
     }
 
-    array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map));
+    array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map, joint_names_[i]));
   }
   array_msg.status = array;
   diagnostic_pub_.publish(array_msg);
@@ -491,7 +491,7 @@ bool ServoBusInterface::syncReadPositions() {
       double current_pos = driver_->convertValue2Radian(joint_ids_[i], data[i]);
       if (current_pos < 3.15 && current_pos > -3.15) {
         //only write values which are possible
-          current_position_[i] = current_pos;
+        current_position_[i] = current_pos;
       }
     }
   }

@@ -99,7 +99,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             if (!dxl_nh.getParam("topic", topic)) {
               ROS_WARN("Bitfoot topic not specified");
             };
-            interfaces_on_port.push_back(new BitFootHardwareInterface(driver, id, topic));
+            interfaces_on_port.push_back(new BitFootHardwareInterface(driver, id, topic, name));
           } else if (model_number_specified == 0xBAFF && !only_pressure_) {
             //IMU
             std::string topic;

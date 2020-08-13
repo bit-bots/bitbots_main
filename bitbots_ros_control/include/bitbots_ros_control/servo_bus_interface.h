@@ -47,7 +47,8 @@ class ServoBusInterface : public hardware_interface::RobotHW {
   diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id,
                                                        char level,
                                                        std::string message,
-                                                       std::map<std::string, std::string> map);
+                                                       std::map<std::string, std::string> map,
+                                                       std::string name);
   void processVte(bool success);
 
   bool goal_torque_;
