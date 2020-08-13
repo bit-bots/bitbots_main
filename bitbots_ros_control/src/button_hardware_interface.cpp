@@ -18,11 +18,15 @@ void ButtonHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){
   /**
    * Reads the buttons
    */
+  counter_ = (counter_ + 1) % 100;
+  if(counter_ != 0)
+    return true;
   uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
-  if(driver_->readMultipleRegisters(242, 36, 8, data)){;
+  if(driver_->readMultipleRegisters(241, 76, 3, data)){;
     bitbots_buttons::Buttons msg;
-    msg.button1 = !(*data & 64);
-    msg.button2 = !(*data & 32);
+    msg.button1 = data[0];
+    msg.button2 = data[1];
+    msg.button3 = data[2];
     button_pub_.publish(msg);
   }
   ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");

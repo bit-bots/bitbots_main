@@ -41,4 +41,31 @@ uint16_t dxlMakeword(uint64_t a, uint64_t b) {
 uint32_t dxlMakedword(uint64_t a, uint64_t b) {
   return uint32_t(uint16_t(a & 0xffff) | uint32_t(uint16_t(b & 0xffff) << 16));
 }
+
+float dxlMakeFloat(uint8_t *data) {
+  float f;
+  uint32_t b = dxlMakedword(dxlMakeword(data[0], data[1]), dxlMakeword(data[2], data[3]));
+  memcpy(&f, &b, sizeof(f));
+  return f;
+}
+
+std::string gyroRangeToString(uint8_t range) {
+  switch (range) {
+    case 0:return "250 deg/s";
+    case 1:return "500 deg/s";
+    case 2:return "1000 deg/s";
+    case 3:return "2000 deg/s";
+    default:return "invalid range, defaulting to 2000 deg/s";
+  }
+}
+
+std::string accelRangeToString(uint8_t range) {
+  switch (range) {
+    case 0:return "2G";
+    case 1:return "4G";
+    case 2:return "8G";
+    case 3:return "16G";
+    default:return "invalid range, defaulting to 16G";
+  }
+}
 }

@@ -14,6 +14,8 @@
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
+#include <bitbots_ros_control/utils.h>
+
 namespace bitbots_ros_control
 {
 
@@ -27,6 +29,7 @@ public:
   void write(const ros::Time& t, const ros::Duration& dt);
 
 private:
+  int counter_;
   ros::NodeHandle nh_;
   std::shared_ptr<DynamixelDriver> driver_;
   int id_;

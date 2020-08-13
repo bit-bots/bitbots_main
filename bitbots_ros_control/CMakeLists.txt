@@ -31,7 +31,9 @@ set(SOURCES
         src/servo_bus_interface.cpp
         src/node.cpp
         src/utils.cpp
+        src/leds_hardware_interface.cpp
         )
+
 
 generate_dynamic_reconfigure_options(
         cfg/dynamixel_servo_hardware_interface_params.cfg

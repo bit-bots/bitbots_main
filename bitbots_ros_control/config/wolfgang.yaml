@@ -70,10 +70,16 @@ ros_control:
       id: 42
       model_number: 0xABBA
       read_rate: 1
-    #IMU_torso:
+    IMU_torso:
+      id: 241
+      topic: imu/data
+      frame: imu_frame
+      model_number: 0xBAFF
+    #Buttons:
     #  id: 241
-    #  topic: imu/data_raw
-    #  frame: imu_frame
+    #  model_number: 0xBAFF
+    #LEDs:
+    #  id: 241
     #  model_number: 0xBAFF
     LeftFoot:
       id: 102
@@ -83,9 +89,6 @@ ros_control:
       id: 101
       topic: /foot_pressure_right/raw
       model_number: 0
-    #Buttons:
-    #  id: 241
-    #  model_number: 0xBAFF
     RShoulderPitch:
       id: 1
       model_number: 311
