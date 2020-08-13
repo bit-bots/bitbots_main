@@ -34,6 +34,10 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   linear_acceleration_covariance_ = (double*) malloc(9 * sizeof(double));
   std::fill(linear_acceleration_covariance_, linear_acceleration_covariance_+9, 0);
 
+
+  data_ = (uint8_t *) malloc(40 * sizeof(uint8_t));
+  accel_calib_data_ = (uint8_t *) malloc(28 * sizeof(uint8_t));
+  
   // init IMU
   std::string imu_name;
   std::string imu_frame;
@@ -49,6 +53,9 @@ bool ImuHardwareInterface::init(ros::NodeHandle& nh){
   reset_gyro_calibration_service_ = nh_.advertiseService("/imu/reset_gyro_calibration", &ImuHardwareInterface::resetGyroCalibration, this);
   complementary_filter_params_service_ = nh_.advertiseService("/imu/set_complementary_filter_params", &ImuHardwareInterface::setComplementaryFilterParams, this);
   calibrate_accel_service_ = nh_.advertiseService("/imu/calibrate_accel", &ImuHardwareInterface::calibrateAccel, this);
+  read_accel_calibration_service_ = nh_.advertiseService("/imu/read_accel_calibration", &ImuHardwareInterface::readAccelCalibration, this);
+  reset_accel_calibration_service_ = nh_.advertiseService("/imu/reset_accel_calibration", &ImuHardwareInterface::resetAccelCalibraton, this);
+  set_accel_calib_threshold_service_ = nh_.advertiseService("/imu/set_accel_calibration_threshold", &ImuHardwareInterface::setAccelCalibrationThreshold, this);
 
   uint16_t model_number = uint16_t(0xbaff);
   uint16_t* model_number_p = &model_number;
@@ -66,26 +73,25 @@ bool ImuHardwareInterface::read(){
   /**
    * Reads the IMU
    */
-  uint8_t *data = (uint8_t *) malloc(40 * sizeof(uint8_t));
 
-    if(driver_->readMultipleRegisters(id_, 36, 40, data)){
-      angular_velocity_[0] = dxlMakeFloat(data + 0);
-      angular_velocity_[1] = dxlMakeFloat(data + 4);
-      angular_velocity_[2] = dxlMakeFloat(data + 8);
+  if(driver_->readMultipleRegisters(id_, 36, 40, data_)){
+    angular_velocity_[0] = dxlMakeFloat(data_ + 0);
+    angular_velocity_[1] = dxlMakeFloat(data_ + 4);
+    angular_velocity_[2] = dxlMakeFloat(data_ + 8);
 
-      linear_acceleration_[0] = dxlMakeFloat(data + 12);
-      linear_acceleration_[1] = dxlMakeFloat(data + 16);
-      linear_acceleration_[2] = dxlMakeFloat(data + 20);
+    linear_acceleration_[0] = dxlMakeFloat(data_ + 12);
+    linear_acceleration_[1] = dxlMakeFloat(data_ + 16);
+    linear_acceleration_[2] = dxlMakeFloat(data_ + 20);
 
-      orientation_[0] = dxlMakeFloat(data + 24);
-      orientation_[1] = dxlMakeFloat(data + 28);
-      orientation_[2] = dxlMakeFloat(data + 32);
-      orientation_[3] = dxlMakeFloat(data + 36);
-      return true;
-    }else {
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
-      return false;
-    }
+    orientation_[0] = dxlMakeFloat(data_ + 24);
+    orientation_[1] = dxlMakeFloat(data_ + 28);
+    orientation_[2] = dxlMakeFloat(data_ + 32);
+    orientation_[3] = dxlMakeFloat(data_ + 36);
+    return true;
+  }else {
+    ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
+    return false;
+  }
 }
 
 bool ImuHardwareInterface::setIMURanges(bitbots_msgs::IMURangesRequest& req, bitbots_msgs::IMURangesResponse& resp) {
@@ -122,6 +128,41 @@ bool ImuHardwareInterface::calibrateAccel(std_srvs::EmptyRequest& req, std_srvs:
   return true;
 }
 
+bool ImuHardwareInterface::resetAccelCalibraton(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp)
+{
+  reset_accel_calibration_ = true;
+  return true;
+}
+
+bool ImuHardwareInterface::readAccelCalibration(bitbots_msgs::AccelerometerCalibrationRequest& req, bitbots_msgs::AccelerometerCalibrationResponse& resp)
+{
+  resp.biases.resize(3);
+  resp.scales.resize(3);
+  if(driver_->readMultipleRegisters(id_, 118, 28, accel_calib_data_))
+  {
+    resp.threshold = dxlMakeFloat(accel_calib_data_ + 0);
+    resp.biases[0] = dxlMakeFloat(accel_calib_data_ + 4);
+    resp.biases[1] = dxlMakeFloat(accel_calib_data_ + 8);
+    resp.biases[2] = dxlMakeFloat(accel_calib_data_ + 12);
+    resp.scales[0] = dxlMakeFloat(accel_calib_data_ + 16);
+    resp.scales[1] = dxlMakeFloat(accel_calib_data_ + 20);
+    resp.scales[2] = dxlMakeFloat(accel_calib_data_ + 24);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool ImuHardwareInterface::setAccelCalibrationThreshold(bitbots_msgs::SetAccelerometerCalibrationThresholdRequest& req,
+                                                        bitbots_msgs::SetAccelerometerCalibrationThresholdResponse& resp)
+{
+  accel_calib_threshold_ = req.threshold;
+  set_accel_calib_threshold_ = true;
+  return true;
+}
+
 void ImuHardwareInterface::write() {
   if(write_ranges_) {
     ROS_INFO_STREAM("Setting Gyroscope range to " << gyroRangeToString(gyro_range_));
@@ -152,6 +193,18 @@ void ImuHardwareInterface::write() {
   {
     driver_->writeRegister(id_, "Calibrate_Accel", 1);
     calibrate_accel_ = false;
+  }
+  if(reset_accel_calibration_)
+  {
+    driver_->writeRegister(id_, "Reset_Accel_Calibration", 1);
+    reset_accel_calibration_ = false;
+  }
+  if(set_accel_calib_threshold_)
+  {
+    uint32_t data;
+    memcpy(&data, &accel_calib_threshold_, sizeof(data));
+    driver_->writeRegister(id_, "Accel_Calibration_Threshold", data);
+    set_accel_calib_threshold_ = false;
   }
 }
 

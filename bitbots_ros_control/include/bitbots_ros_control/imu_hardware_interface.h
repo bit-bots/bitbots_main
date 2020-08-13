@@ -14,7 +14,10 @@
 
 #include <bitbots_msgs/IMURanges.h>
 #include <bitbots_msgs/ComplementaryFilterParams.h>
+#include <bitbots_msgs/AccelerometerCalibration.h>
+#include <bitbots_msgs/SetAccelerometerCalibrationThreshold.h>
 #include <std_srvs/Empty.h>
+
 
 namespace bitbots_ros_control
 {
@@ -35,6 +38,8 @@ private:
   uint8_t id_;
   hardware_interface::ImuSensorInterface imu_interface_;
   hardware_interface::RobotHW* parent_;
+  uint8_t *data_;
+  uint8_t *accel_calib_data_;
 
   uint32_t last_seq_number_{};
   double* orientation_{}; //quaternion (x,y,z,w)
@@ -57,9 +62,19 @@ private:
   float accel_gain_, bias_alpha_;
 
   bool calibrate_accel_ = false;
+  bool reset_accel_calibration_ = false;
+
+  bool read_accel_calibration_ = false;
+  float accel_calib_threshold_read_;
+  float accel_calib_bias_[3];
+  float accel_calib_scale_[3];
+  
+  bool set_accel_calib_threshold_ = false;
+  float accel_calib_threshold_;
 
   ros::ServiceServer imu_ranges_service_, calibrate_gyro_service_, reset_gyro_calibration_service_,
-                     complementary_filter_params_service_, calibrate_accel_service_;
+                     complementary_filter_params_service_, calibrate_accel_service_, reset_accel_calibration_service_,
+                     read_accel_calibration_service_, set_accel_calib_threshold_service_;
 
   bool setIMURanges(bitbots_msgs::IMURangesRequest& req, bitbots_msgs::IMURangesResponse& resp);
   bool calibrateGyro(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp);
@@ -67,6 +82,10 @@ private:
   bool setComplementaryFilterParams(bitbots_msgs::ComplementaryFilterParamsRequest& req,
                                     bitbots_msgs::ComplementaryFilterParamsResponse& resp);
   bool calibrateAccel(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp);
+  bool resetAccelCalibraton(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& resp);
+  bool readAccelCalibration(bitbots_msgs::AccelerometerCalibrationRequest& req, bitbots_msgs::AccelerometerCalibrationResponse& resp);
+  bool setAccelCalibrationThreshold(bitbots_msgs::SetAccelerometerCalibrationThresholdRequest& req,
+                                    bitbots_msgs::SetAccelerometerCalibrationThresholdResponse& resp);
 };
 }
 #endif
