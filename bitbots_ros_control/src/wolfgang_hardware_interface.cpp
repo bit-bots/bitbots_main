@@ -1,5 +1,4 @@
 #include <bitbots_ros_control/wolfgang_hardware_interface.h>
-#include <bitbots_ros_control/utils.h>
 
 namespace bitbots_ros_control {
 
@@ -93,13 +92,20 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
           }
           // ping was successful, add device correspondingly
           // only add them if the mode is set correspondingly
-          if (model_number_specified == 0 && !only_imu_) {//model number is currently 0 on foot sensors
+          if (model_number_specified == 0xABBA) {
+            // CORE
+            int read_rate;
+            dxl_nh.param<int>("read_rate", read_rate, 1);
+            CoreHardwareInterface *interface = new CoreHardwareInterface(driver, id, read_rate);
+            interfaces_on_port.push_back(interface);
+          } else if (model_number_specified == 0 && !only_imu_) {//model number is currently 0 on foot sensors
             // bitfoot
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
               ROS_WARN("Bitfoot topic not specified");
             };
-            interfaces_on_port.push_back(new BitFootHardwareInterface(driver, id, topic, name));
+            BitFootHardwareInterface *interface = new BitFootHardwareInterface(driver, id, topic, name);
+            interfaces_on_port.push_back(interface);
           } else if (model_number_specified == 0xBAFF && !only_pressure_) {
             //IMU
             std::string topic;
@@ -134,9 +140,6 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             float joint_offset;
             dxl_nh.param<float>("joint_offset", joint_offset, 0.0);
             servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
-          } else if (model_number_specified == 0xABBA) {
-            //CORE board
-            //TODO
           } else {
             ROS_WARN("Could not identify device for ID %d", id);
           }
@@ -168,7 +171,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 
 void threaded_init(std::vector<hardware_interface::RobotHW *> &port_interfaces,
                    ros::NodeHandle &root_nh,
-                   int& success) {
+                   int &success) {
   success = true;
   for (hardware_interface::RobotHW *interface : port_interfaces) {
     // giving 2 times same node handle to keep interface of base class, dirty
@@ -179,7 +182,7 @@ void threaded_init(std::vector<hardware_interface::RobotHW *> &port_interfaces,
 bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   // iterate through all ports
   std::vector<std::thread> threads;
-  std::vector<int*> successes;
+  std::vector<int *> successes;
   int i = 0;
   for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port

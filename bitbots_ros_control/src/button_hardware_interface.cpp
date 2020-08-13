@@ -2,8 +2,6 @@
 
 namespace bitbots_ros_control
 {
-ButtonHardwareInterface::ButtonHardwareInterface(){}
-
 ButtonHardwareInterface::ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic){
   driver_ = driver;
   id_ = id;

@@ -18,8 +18,7 @@ namespace bitbots_ros_control {
 
 class BitFootHardwareInterface : public hardware_interface::RobotHW {
  public:
-  BitFootHardwareInterface();
-  BitFootHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, std::string topic_name, std::string name);
+  explicit BitFootHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, std::string topic_name, std::string name);
 
   bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
 

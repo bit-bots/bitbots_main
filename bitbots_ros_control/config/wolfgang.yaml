@@ -30,8 +30,8 @@ ros_control:
     read_volt_temp: true # this also corresponds for the error byte
 
     VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
-    warn_temp: 60
-    warn_volt: 12
+    warn_temp: 55
+    warn_volt: 14
 
     control_mode: position
     auto_torque: true
@@ -66,6 +66,10 @@ ros_control:
       Profile_Velocity: 0 # 0 for infinite
 
   device_info:
+    Core:
+      id: 42
+      model_number: 0xABBA
+      read_rate: 1
     #IMU_torso:
     #  id: 241
     #  topic: imu/data_raw

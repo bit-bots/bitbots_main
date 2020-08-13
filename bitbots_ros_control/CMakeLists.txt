@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(yaml-cpp REQUIRED)
 
 set(SOURCES
+        src/core_hardware_interface.cpp
         src/dynamixel_servo_hardware_interface.cpp
         src/imu_hardware_interface.cpp
         src/bitfoot_hardware_interface.cpp

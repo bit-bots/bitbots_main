@@ -32,7 +32,7 @@ namespace bitbots_ros_control {
 
 class ServoBusInterface : public hardware_interface::RobotHW {
  public:
-  ServoBusInterface(std::shared_ptr<DynamixelDriver> &driver,
+  explicit ServoBusInterface(std::shared_ptr<DynamixelDriver> &driver,
                     std::vector<std::tuple<int, std::string, float, float>> servos);
   bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
   void read(const ros::Time &t, const ros::Duration &dt);

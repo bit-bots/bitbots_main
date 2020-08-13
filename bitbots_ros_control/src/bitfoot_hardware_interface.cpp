@@ -3,8 +3,6 @@
 
 namespace bitbots_ros_control {
 
-BitFootHardwareInterface::BitFootHardwareInterface() {}
-
 BitFootHardwareInterface::BitFootHardwareInterface(std::shared_ptr<DynamixelDriver> &driver,
                                                    int id,
                                                    std::string topic_name,
