@@ -13,3 +13,15 @@ analyzers:
     startswith: PS
     timeout: 0.1
     find_and_remove_prefix: PS
+  Core:
+    type: diagnostic_aggregator/GenericAnalyzer
+    path: Core
+    startswith: CORE
+    timeout: 0.1
+    find_and_remove_prefix: CORE
+  IMU:
+    type: diagnostic_aggregator/GenericAnalyzer
+    path: Imu
+    startswith: IMU
+    timeout: 0.1
+    find_and_remove_prefix: IMU

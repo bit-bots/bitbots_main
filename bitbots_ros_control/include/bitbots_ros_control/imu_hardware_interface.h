@@ -89,6 +89,8 @@ private:
   bool readAccelCalibration(bitbots_msgs::AccelerometerCalibrationRequest& req, bitbots_msgs::AccelerometerCalibrationResponse& resp);
   bool setAccelCalibrationThreshold(bitbots_msgs::SetAccelerometerCalibrationThresholdRequest& req,
                                     bitbots_msgs::SetAccelerometerCalibrationThresholdResponse& resp);
+  ros::Publisher diagnostic_pub_;
+  int diag_counter_;
 };
 }
 #endif
