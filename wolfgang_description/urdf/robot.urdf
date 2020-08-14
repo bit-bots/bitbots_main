@@ -282,13 +282,13 @@
 <mesh filename="package://wolfgang_description/urdf/torso.stl"/>
 </geometry>
 <material name="torso_material">
-<color rgba="0.571731 0.588068 0.594843 1.0"/>
+<color rgba="0.57079 0.587232 0.59405 1.0"/>
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.00516898 -0.00168765 0.106193" rpy="0 0 0"/>
-<mass value="2.21811" />
-<inertia ixx="0.0192884" ixy="-1.35952e-05"  ixz="-0.00141343" iyy="0.0165192" iyz="0.000256147" izz="0.00834722" />
+<origin xyz="-0.00516891 -0.00169508 0.106293" rpy="0 0 0"/>
+<mass value="2.2039" />
+<inertia ixx="0.0192586" ixy="-1.66036e-05"  ixz="-0.00141507" iyy="0.016494" iyz="0.000255447" izz="0.00830433" />
 </inertial>
 </link>
 
@@ -517,7 +517,7 @@
 
 <link name="l_shoulder">
 <collision>
-<origin xyz="-0.02595 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
+<origin xyz="-0.02595 0.042 -2.77556e-17" rpy="1.5708 2.69257e-16 -1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
 </geometry>
@@ -526,7 +526,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0 0 0" rpy="-1.07025e-32 -0 1.2024e-34" />
+<origin xyz="0 0 -2.77556e-17" rpy="4.03198e-33 -5.25487e-46 -1.08705e-48" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
 </geometry>
@@ -535,7 +535,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-0.01695 0.042 0" rpy="1.5708 -2.47462e-18 -1.5708" />
+<origin xyz="-0.01695 0.042 -5.55112e-17" rpy="1.5708 3.67828e-16 -1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
 </geometry>
@@ -561,7 +561,7 @@
 
 <link name="l_upper_arm">
 <collision>
-<origin xyz="1.38778e-17 5.55112e-17 -0.0235" rpy="-1.5708 4.4964e-15 1.1855e-29" />
+<origin xyz="0 2.77556e-17 -0.0235" rpy="-1.5708 -4.38538e-15 -2.0118e-29" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
 </geometry>
@@ -570,7 +570,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-0.0147 -0.0105 -0.0235" rpy="-1.5708 9.99201e-15 1.5708" />
+<origin xyz="-0.0147 -0.0105 -0.0235" rpy="-1.5708 3.44169e-15 1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
 </geometry>
@@ -579,7 +579,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0.0147 -0.0105 -0.0235" rpy="1.5708 1.02696e-14 1.5708" />
+<origin xyz="0.0147 -0.0105 -0.0235" rpy="1.5708 3.44169e-15 1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
 </geometry>
@@ -588,7 +588,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0.024 -0.064 -0.038499" rpy="1.45196e-15 -1.5708 0" />
+<origin xyz="0.024 -0.064 -0.038499" rpy="4.35589e-15 -1.5708 0" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
 </geometry>
@@ -632,7 +632,7 @@
 
 <link name="l_lower_arm">
 <collision>
-<origin xyz="0 -1.73472e-18 -0.0235" rpy="-1.5708 -8.30884e-31 -1.04771e-30" />
+<origin xyz="0 -1.73472e-18 -0.0235" rpy="-1.5708 1.77494e-30 1.26218e-29" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
 </geometry>
@@ -641,7 +641,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="1.84575e-15 -0.163682 -0.0405" rpy="1.5708 -5.48692e-31 -8.50491e-31" />
+<origin xyz="-6.93889e-18 -0.163682 -0.0405" rpy="1.5708 -1.0102e-29 1.41995e-29" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
 </geometry>
@@ -650,7 +650,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-5.13478e-16 -0.163682 -0.0405" rpy="-1.5708 5.10009e-16 3.14159" />
+<origin xyz="-8.32667e-17 -0.163682 -0.0405" rpy="-1.5708 1.65734e-29 -3.14159" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/hand.stl"/>
 </geometry>
@@ -659,7 +659,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="9.02056e-17 -0.163682 -0.0045" rpy="1.5708 -5.10009e-16 -1.72085e-15" />
+<origin xyz="-6.245e-17 -0.163682 -0.0045" rpy="1.5708 -1.65734e-29 4.01294e-27" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
 </geometry>
@@ -691,14 +691,14 @@
 </inertial>
 </link>
 <joint name="l_wrist_frame" type="fixed">
-<origin xyz="2.91434e-16 -0.225182 -0.0235" rpy="-1.5708 6.97876e-16 -1.5708" />
+<origin xyz="-7.63278e-17 -0.225182 -0.0235" rpy="-1.5708 1.69653e-16 -1.5708" />
 <parent link="l_lower_arm" />
 <child link="l_wrist" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="LElbow" type="revolute">
-<origin xyz="-0.024 -0.144 -0.0235" rpy="-1.5708 1.11022e-14 1.5708" />
+<origin xyz="-0.024 -0.144 -0.0235" rpy="-1.5708 3.08909e-14 1.5708" />
 <parent link="l_upper_arm" />
 <child link="l_lower_arm" />
 <axis xyz="0 0 1"/>
@@ -707,7 +707,7 @@
 </joint>
 
 <joint name="LShoulderRoll" type="revolute">
-<origin xyz="-0.01695 0.042 8.32667e-17" rpy="-1.5708 8.42077e-17 1.5708" />
+<origin xyz="-0.01695 0.042 -2.77556e-17" rpy="-1.5708 -5.19331e-15 1.5708" />
 <parent link="l_shoulder" />
 <child link="l_upper_arm" />
 <axis xyz="-0 -0 -1"/>
@@ -716,7 +716,7 @@
 </joint>
 
 <joint name="LShoulderPitch" type="revolute">
-<origin xyz="-0.0015 0.0765 0.2035" rpy="3.14159 7.77156e-16 3.14159" />
+<origin xyz="-0.0015 0.0765 0.2035" rpy="-3.14159 1.66533e-16 3.14159" />
 <parent link="torso" />
 <child link="l_shoulder" />
 <axis xyz="-0 1 -0"/>
@@ -752,7 +752,7 @@
 
 <link name="r_hip_2">
 <collision>
-<origin xyz="0 0 -0.026" rpy="-1.5708 4.34181e-16 -6.8556e-16" />
+<origin xyz="6.93889e-18 0 -0.026" rpy="-1.5708 4.34181e-16 -6.8556e-16" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
 </geometry>
@@ -788,7 +788,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-4.22579e-15 -4.16334e-17 -0.0691" rpy="-1.5708 -1.5708 0" />
+<origin xyz="-4.44089e-15 -1.11022e-16 -0.0691" rpy="-1.5708 -1.5708 0" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
 </geometry>
@@ -868,7 +868,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="3.46945e-17 -0.053 6.93889e-18" rpy="8.32667e-17 -8.32667e-17 -7.99057e-16" />
+<origin xyz="-3.46945e-18 -0.053 -6.93889e-18" rpy="8.32667e-17 -8.32667e-17 -7.99057e-16" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
 </geometry>
@@ -912,7 +912,7 @@
 
 <link name="r_lower_leg">
 <collision>
-<origin xyz="-2.05391e-15 -0.0062 -3.60934e-05" rpy="1.5708 0.0872665 1.87426e-17" />
+<origin xyz="-2.0331e-15 -0.0062 -3.60934e-05" rpy="1.5708 0.0872665 1.87426e-17" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/torsion_spring_sodemann_t105-180-813r.stl"/>
 </geometry>
@@ -930,7 +930,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="4.16334e-16 0.0525 -0.17" rpy="-1.29858e-17 3.88714e-17 3.24404e-33" />
+<origin xyz="4.3715e-16 0.0525 -0.17" rpy="-1.29858e-17 3.88714e-17 3.24404e-33" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
 </geometry>
@@ -939,7 +939,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0 -0.0015 -0.17" rpy="1.4561e-17 4.65191e-17 3.07336e-31" />
+<origin xyz="6.93889e-18 -0.0015 -0.17" rpy="1.4561e-17 4.65191e-17 3.07336e-31" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
 </geometry>
@@ -957,7 +957,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="2.96291e-15 -0.0035 -0.17" rpy="7.13209e-18 -5.78502e-18 -2.31072e-30" />
+<origin xyz="2.96985e-15 -0.0035 -0.17" rpy="7.13209e-18 -5.78502e-18 -2.31072e-30" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
 </geometry>
@@ -984,7 +984,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-6.93889e-18 -0.0035 -2.77556e-17" rpy="4.49839e-17 -5.78502e-18 4.78903e-30" />
+<origin xyz="1.38778e-17 -0.0035 0" rpy="4.49839e-17 -5.78502e-18 4.78903e-30" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
 </geometry>
@@ -1019,7 +1019,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-0.0431 0 -0.026" rpy="-1.5708 -1.5708 0" />
+<origin xyz="-0.0431 5.55112e-17 -0.026" rpy="-1.5708 -1.5708 0" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
 </geometry>
@@ -1046,7 +1046,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0 0 -0.026" rpy="-1.5708 4.17077e-31 5.63874e-18" />
+<origin xyz="-6.93889e-18 0 -0.026" rpy="-1.5708 4.17077e-31 5.63874e-18" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
 </geometry>
@@ -1090,7 +1090,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0.06 0.1635 -0.034" rpy="7.54761e-16 -8.55971e-17 4.16935e-17" />
+<origin xyz="0.06 0.1635 -0.034" rpy="7.54761e-16 -8.55971e-17 -1.38177e-17" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
 </geometry>
@@ -1370,7 +1370,7 @@
 </joint>
 
 <joint name="RAnkleRoll" type="revolute">
-<origin xyz="-0.0691 0 -0.026" rpy="1.5708 1.5708 0" />
+<origin xyz="-0.0691 3.83027e-15 -0.026" rpy="1.5708 1.5708 0" />
 <parent link="r_ankle" />
 <child link="r_foot" />
 <axis xyz="0 -1 0"/>
@@ -1379,7 +1379,7 @@
 </joint>
 
 <joint name="RAnklePitch" type="revolute">
-<origin xyz="4.23273e-16 0.0505 -0.17" rpy="-1.5708 -7.47915e-15 1.91582e-15" />
+<origin xyz="4.44089e-16 0.0505 -0.17" rpy="-1.5708 -7.47915e-15 1.91582e-15" />
 <parent link="r_lower_leg" />
 <child link="r_ankle" />
 <axis xyz="-0 -0 -1"/>
@@ -1397,7 +1397,7 @@
 </joint>
 
 <joint name="RHipPitch" type="revolute">
-<origin xyz="-0.0265 -2.77556e-17 -0.0691" rpy="-1.5708 1.5708 0" />
+<origin xyz="-0.0265 -9.71445e-17 -0.0691" rpy="-1.5708 1.5708 0" />
 <parent link="r_hip_2" />
 <child link="r_upper_leg" />
 <axis xyz="-0 1 -0"/>
@@ -1415,10 +1415,10 @@
 </joint>
 
 <joint name="RHipYaw" type="revolute">
-<origin xyz="-1.33227e-15 -0.055 -7.91468e-18" rpy="-1.5708 -0 0" />
+<origin xyz="7.99361e-15 -0.055 4.68375e-17" rpy="-1.5708 -0 0" />
 <parent link="torso" />
 <child link="r_hip_1" />
-<axis xyz="0 -1 0"/>
+<axis xyz="-0 1 -0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2117,7 +2117,7 @@
 <origin xyz="1.82493e-15 0.055 -4.22839e-18" rpy="-1.5708 -0 0" />
 <parent link="torso" />
 <child link="l_hip_1" />
-<axis xyz="0 -1 0"/>
+<axis xyz="-0 1 -0"/>
 <limit effort="7.57" velocity="8.22" lower="-1.5708" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2283,7 +2283,7 @@
 <origin xyz="0.036 0.0235 -0.024" rpy="-1.5708 3.17216e-15 -5.33479e-15" />
 <parent link="neck" />
 <child link="head" />
-<axis xyz="0 0 -1"/>
+<axis xyz="-0 -0 1"/>
 <limit effort="5.43" velocity="10.33" lower="-0.523599" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
@@ -2292,7 +2292,7 @@
 <origin xyz="-0.0095 2.82644e-16 0.2345" rpy="-3.14159 3.41087e-16 -4.44089e-16" />
 <parent link="torso" />
 <child link="neck" />
-<axis xyz="0 0 1"/>
+<axis xyz="-0 -0 -1"/>
 <limit effort="5.43" velocity="10.33" lower="-2.0944" upper="2.0944"/>
 <joint_properties friction="0.0"/>
 </joint>
