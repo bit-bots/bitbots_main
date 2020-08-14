@@ -83,10 +83,8 @@ void ImuHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){
     orientation_[1] = dxlMakeFloat(data_ + 28);
     orientation_[2] = dxlMakeFloat(data_ + 32);
     orientation_[3] = dxlMakeFloat(data_ + 36);
-    return true;
   }else {
     ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
-    return false;
   }
 }
 
@@ -159,7 +157,7 @@ bool ImuHardwareInterface::setAccelCalibrationThreshold(bitbots_msgs::SetAcceler
   return true;
 }
 
-void ImuHardwareInterface::write() {
+void ImuHardwareInterface::write(const ros::Time& t, const ros::Duration& dt) {
   if(write_ranges_) {
     ROS_INFO_STREAM("Setting Gyroscope range to " << gyroRangeToString(gyro_range_));
     ROS_INFO_STREAM("Setting Accelerometer range to " << accelRangeToString(accel_range_));

@@ -64,9 +64,9 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       VEXT_.data = (((float) dxlMakeword(data[4], data[5])) * (3.3 / 1024)) * 6;
       VDXL_.data = (((float) dxlMakeword(data[6], data[7])) * (3.3 / 1024)) * 6;
       // convert to ampere. first go to voltage by 1024*3.3. shift by 2.5 and mulitply by volt/ampere
-      current_.data = (((float) dxlMakeword(data[8], data[9])) * (3.3 / 1024));
+      current_.data = ((((float) dxlMakeword(data[8], data[9])) * (3.3 / 1024)) - 2.5) / 0.066;
       // we need to apply a threshold on this to see if power is on or off
-      float power = (float)(dxlMakeword(data[10], data[11]) * (3.3 / 1024)) * 6;
+      float power = (float)(dxlMakeword(data[10], data[11]) * (3.3 / 1024));
       power_switch_status_.data = power > 3.3 / 2;
       power_pub_.publish(power_switch_status_);
       vcc_pub_.publish(VCC_);
