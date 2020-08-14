@@ -23,8 +23,6 @@
         <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
     </group>
 
-    <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
-
     <include file="$(find bitbots_animation_server)/launch/animation.launch">
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
