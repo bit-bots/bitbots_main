@@ -75,9 +75,13 @@ ros_control:
       topic: imu/data
       frame: imu_frame
       model_number: 0xBAFF
-    #Buttons:
-    #  id: 241
-    #  model_number: 0xBAFF
+      interface_type: IMU
+    Buttons:
+      id: 241
+      model_number: 0xBAFF
+      interface_type: Button
+      topic: buttons
+      read_rate: 50
     #LEDs:
     #  id: 241
     #  model_number: 0xBAFF

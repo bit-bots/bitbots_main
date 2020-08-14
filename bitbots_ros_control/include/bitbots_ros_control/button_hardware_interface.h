@@ -22,7 +22,7 @@ namespace bitbots_ros_control
 class ButtonHardwareInterface : public hardware_interface::RobotHW
 {
 public:
-  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic);
+  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic, int read_rate_);
 
   bool init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh);
   void read(const ros::Time& t, const ros::Duration& dt);
@@ -35,6 +35,9 @@ private:
   int id_;
   std::string topic_;
   ros::Publisher button_pub_;
+  int read_rate_;
+  ros::Publisher diagnostic_pub_;
+
 };
 }
 

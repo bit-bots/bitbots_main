@@ -83,6 +83,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
         ros::NodeHandle dxl_nh(nh, "device_info/" + name);
         int model_number_specified;
         dxl_nh.getParam("model_number", model_number_specified);
+        // some devices provide more than one type of interface, e.g. the IMU provides additionally buttons and LEDs
+        std::string interface_type;
+        dxl_nh.param<std::string>("interface_type", interface_type, "");
         uint16_t model_number_specified_16 = uint16_t(model_number_specified);
         uint16_t *model_number_returned_16 = new uint16_t;
         if (driver->ping(uint8_t(id), model_number_returned_16)) {
@@ -92,6 +95,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
           }
           // ping was successful, add device correspondingly
           // only add them if the mode is set correspondingly
+          // TODO maybe move more of the parameter stuff in the init of the modules instead of doing everything here
           if (model_number_specified == 0xABBA) {
             // CORE
             int read_rate;
@@ -106,7 +110,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             };
             BitFootHardwareInterface *interface = new BitFootHardwareInterface(driver, id, topic, name);
             interfaces_on_port.push_back(interface);
-          } else if (model_number_specified == 0xBAFF && !only_pressure_) {
+          } else if (model_number_specified == 0xBAFF && interface_type == "IMU" && !only_pressure_) {
             //IMU
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
@@ -122,13 +126,15 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
              * registering further interfaces */
             interface->setParent(this);
             interfaces_on_port.push_back(interface);
-          } else if (model_number_specified == 101 && !only_pressure_) {
+          } else if (model_number_specified == 0xBAFF && interface_type == "Button" && !only_pressure_) {
             // Buttons
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
               ROS_WARN("Button topic not specified");
-            };
-            interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic));
+            }
+            int read_rate;
+            dxl_nh.param<int>("read_rate", read_rate, 50);
+            interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic, read_rate));
           } else if ((model_number_specified == 311 || model_number_specified == 321 || model_number_specified == 1100)
               && !only_pressure_
               && !only_imu_) {
