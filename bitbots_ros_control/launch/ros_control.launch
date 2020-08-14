@@ -39,6 +39,8 @@
         <rosparam command="load" file="$(find bitbots_ros_control)/config/analyzers.yaml" />
     </node>
 
+    <node pkg="bitbots_ros_control" type="led_error_blink.py" name="error_blink"/>
+
     <include file="$(find bitbots_ros_control)/launch/pressure_converter.launch"/>
 
     <node pkg="bitbots_ros_control" name="button_zero" type="zero_on_button.py"/>

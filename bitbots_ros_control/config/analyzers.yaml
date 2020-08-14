@@ -1,33 +1,33 @@
-pub_rate: 1.0 # Optional
+pub_rate: 10.0 # Optional
 base_path: '' # Optional, prepended to all diagnostic output
 analyzers:
   Servos:
     type: diagnostic_aggregator/GenericAnalyzer
     path: Servos
     startswith: DS
-    timeout: 0.1
+    timeout: 0.2
     find_and_remove_prefix: DS
   Pressure:
     type: diagnostic_aggregator/GenericAnalyzer
     path: Pressure
     startswith: PS
-    timeout: 0.1
+    timeout: 0.2
     find_and_remove_prefix: PS
   Core:
     type: diagnostic_aggregator/GenericAnalyzer
     path: Core
     startswith: CORE
-    timeout: 0.1
+    timeout: 0.2
     find_and_remove_prefix: CORE
   IMU:
     type: diagnostic_aggregator/GenericAnalyzer
     path: Imu
     startswith: IMU
-    timeout: 0.1
+    timeout: 0.2
     find_and_remove_prefix: IMU
   Buttons:
     type: diagnostic_aggregator/GenericAnalyzer
     path: Buttons
     startswith: BUTTON
-    timeout: 0.1
+    timeout: 0.2
     find_and_remove_prefix: BUTTON

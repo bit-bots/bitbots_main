@@ -29,7 +29,7 @@ private:
   uint8_t id_;
 
   bool write_leds_ = false;
-  std::vector<uint32_t> leds_;
+  std::vector<std_msgs::ColorRGBA> leds_;
 
   ros::ServiceServer leds_service_;
   bool setLeds(bitbots_msgs::LedsRequest& req, bitbots_msgs::LedsResponse& resp);
