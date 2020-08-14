@@ -41,6 +41,8 @@
 
     <node pkg="bitbots_ros_control" type="led_error_blink.py" name="error_blink"/>
 
+    <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
+
     <include file="$(find bitbots_ros_control)/launch/pressure_converter.launch"/>
 
     <node pkg="bitbots_ros_control" name="button_zero" type="zero_on_button.py"/>
