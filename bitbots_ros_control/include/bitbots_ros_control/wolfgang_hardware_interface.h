@@ -12,6 +12,7 @@
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
 #include <bitbots_ros_control/bitfoot_hardware_interface.h>
 #include <bitbots_ros_control/button_hardware_interface.h>
+#include <bitbots_ros_control/leds_hardware_interface.h>
 
 namespace bitbots_ros_control {
 

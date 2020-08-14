@@ -19,9 +19,9 @@ public:
   LedsHardwareInterface();
   explicit LedsHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, uint8_t id, uint8_t num_leds);
 
-  bool init(ros::NodeHandle& nh);
-  bool read();
-  void write();
+  bool init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh);
+  void read(const ros::Time& t, const ros::Duration& dt);
+  void write(const ros::Time& t, const ros::Duration& dt);
 
 private:
   ros::NodeHandle nh_;

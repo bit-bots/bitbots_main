@@ -14,29 +14,14 @@ LedsHardwareInterface::LedsHardwareInterface(std::shared_ptr<DynamixelDriver>& d
 }
 
 
-bool LedsHardwareInterface::init(ros::NodeHandle& nh){
+bool LedsHardwareInterface::init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh){
   nh_ = nh;
-
   leds_service_ = nh_.advertiseService("/set_leds", &LedsHardwareInterface::setLeds, this);
 
-  /* this does not work for some reason and segfaults, we will just assume the hardware has been pinged by the imu interface for now
-  uint16_t model_number = uint16_t(0xbaff);
-  uint16_t* model_number_p = &model_number;
-  if(driver_->ping(id_, model_number_p))
-  {
-    ROS_WARN_STREAM("PING LEDS SUCESSFUL, MODEL_NUM: " << *model_number_p);
-  }
-  else
-  {
-    ROS_ERROR("LEDS NOT FOUND");
-  }
-  */
   return true;
 }
 
-bool LedsHardwareInterface::read(){
-  return true;
-}
+void LedsHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){}
 
 bool LedsHardwareInterface::setLeds(bitbots_msgs::LedsRequest& req, bitbots_msgs::LedsResponse& resp) {
   if (req.leds.size() != leds_.size())
@@ -55,18 +40,21 @@ bool LedsHardwareInterface::setLeds(bitbots_msgs::LedsRequest& req, bitbots_msgs
     leds_[i] |= ((uint8_t) req.leds[i].g * 255) << 8;
     leds_[i] |= ((uint8_t) req.leds[i].b * 255) << 16;
     leds_[i] |= ((uint8_t) req.leds[i].a * 255) << 24;
+
   }
   write_leds_ = true;
   return true;
 }
 
-void LedsHardwareInterface::write() {
+void LedsHardwareInterface::write(const ros::Time& t, const ros::Duration& dt) {
   if(write_leds_)
   {
+
     ROS_INFO("Writing LEDS.");
     driver_->writeRegister(id_, "LED_0", leds_[0]);
     driver_->writeRegister(id_, "LED_1", leds_[1]);
     driver_->writeRegister(id_, "LED_2", leds_[2]);
+
     write_leds_ = false;
   }
 }

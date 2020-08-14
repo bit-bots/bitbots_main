@@ -107,7 +107,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
               ROS_WARN("Bitfoot topic not specified");
-            };
+            }
             BitFootHardwareInterface *interface = new BitFootHardwareInterface(driver, id, topic, name);
             interfaces_on_port.push_back(interface);
           } else if (model_number_specified == 0xBAFF && interface_type == "IMU" && !only_pressure_) {
@@ -115,11 +115,12 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             std::string topic;
             if (!dxl_nh.getParam("topic", topic)) {
               ROS_WARN("IMU topic not specified");
-            };
+            }
             std::string frame;
             if (!dxl_nh.getParam("frame", frame)) {
               ROS_WARN("IMU frame not specified");
-            };
+            }
+            driver->setTools(model_number_specified_16, id);
             ImuHardwareInterface *interface = new ImuHardwareInterface(driver, id, topic, frame, name);
             /* Hardware interfaces must be registered at the main RobotHW class.
              * Therefore, a pointer to this class is passed down to the RobotHW classes
@@ -135,11 +136,16 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
             int read_rate;
             dxl_nh.param<int>("read_rate", read_rate, 50);
             interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic, read_rate));
+          } else if (model_number_specified == 0xBAFF && interface_type == "LED" && !only_pressure_) {
+            // LEDs
+            int number_of_LEDs;
+            dxl_nh.param<int>("read_rate", number_of_LEDs, 3);
+            interfaces_on_port.push_back(new LedsHardwareInterface(driver, id, number_of_LEDs));
           } else if ((model_number_specified == 311 || model_number_specified == 321 || model_number_specified == 1100)
               && !only_pressure_
               && !only_imu_) {
             // Servos
-            // We need to add the tool to the driver for later reading writing
+            // We need to add the tool to the driver for later reading and writing
             driver->setTools(model_number_specified_16, id);
             float mounting_offset;
             dxl_nh.param<float>("mounting_offset", mounting_offset, 0.0);

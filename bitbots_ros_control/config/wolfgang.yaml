@@ -82,9 +82,11 @@ ros_control:
       interface_type: Button
       topic: buttons
       read_rate: 50
-    #LEDs:
-    #  id: 241
-    #  model_number: 0xBAFF
+    LEDs:
+      id: 241
+      model_number: 0xBAFF
+      interface_type: LED
+      number_of_LEDs: 3
     LeftFoot:
       id: 102
       topic: /foot_pressure_left/raw

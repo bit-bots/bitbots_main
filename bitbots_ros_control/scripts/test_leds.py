@@ -10,7 +10,7 @@ prox = rospy.ServiceProxy("/set_leds", Leds)
 request = LedsRequest()
 for i in range(3):
     request.leds.append(ColorRGBA())
-    request.leds[i].r = 0.0
+    request.leds[i].r = 1.0
     request.leds[i].g = 0.0
     request.leds[i].b = 0.0
     request.leds[i].a = 1.0
