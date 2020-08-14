@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_bringup</name>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <description>The bitbots_bringup package is a collection of util classes used in many ROS packages from
   the Hamburg Bit-Bots.</description>
 
