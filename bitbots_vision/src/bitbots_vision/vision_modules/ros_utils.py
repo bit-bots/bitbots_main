@@ -3,10 +3,10 @@ import re
 import rospy
 import yaml
 from cv_bridge import CvBridge
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, PolygonStamped
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
-    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Audio, ImageWithRegionOfInterest
+    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, Audio, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
 """
@@ -405,21 +405,21 @@ def build_obstacle_msgs(obstacle_color, detections):
         message_list.append(obstacle_msg)
     return message_list
 
-def build_field_boundary_msg(header, field_boundary):
+def build_field_boundary_polygon_msg(header, field_boundary):
     """
-    Builds a FieldBoundaryInImage ROS message.
+    Builds a PolygonStamped ROS geometry message containing the field boundary.
 
     :param header: ros header of the new message. Mostly the header of the image
     :param field_boundary: List of tuples containing the field boundary points.
-    :return: FieldBoundaryInImage message
+    :return: PolygonStamped message
     """
     # Create message
-    field_boundary_msg = FieldBoundaryInImage()
+    field_boundary_msg = PolygonStamped()
     # Add header
     field_boundary_msg.header = header
     # Add field boundary points
     for point in field_boundary:
-        field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
+        field_boundary_msg.polygon.points.append(Point(point[0], point[1], 0))
     return field_boundary_msg
 
 def build_line_information_in_image_msg(header, line_segments):
