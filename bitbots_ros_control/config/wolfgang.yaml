@@ -69,7 +69,7 @@ ros_control:
     Core:
       id: 42
       model_number: 0xABBA
-      read_rate: 1
+      read_rate: 100
     IMU_torso:
       id: 241
       topic: imu/data
@@ -80,7 +80,7 @@ ros_control:
       id: 241
       model_number: 0xBAFF
       interface_type: Button
-      topic: buttons
+      topic: /buttons
       read_rate: 50
     LEDs:
       id: 241
