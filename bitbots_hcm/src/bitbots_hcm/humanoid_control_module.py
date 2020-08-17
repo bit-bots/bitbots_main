@@ -10,7 +10,7 @@ from dynamic_reconfigure.server import Server
 from std_msgs.msg import Bool, String
 from sensor_msgs.msg import Imu, JointState
 
-from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Speak
+from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Audio
 from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
 
@@ -50,10 +50,10 @@ class HardwareControlManager:
         # Publisher / subscriber
         self.joint_goal_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
         self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
-        self.blackboard.speak_publisher = rospy.Publisher('speak', Speak, queue_size=1)
+        self.blackboard.speak_publisher = rospy.Publisher('speak', Audio, queue_size=1)
 
         rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
-        speak("Starting hcm", self.blackboard.speak_publisher, priority=Speak.HIGH_PRIORITY)
+        speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
 
         rospy.Subscriber("imu/data", Imu, self.update_imu, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("foot_pressure_left/filtered", FootPressure, self.update_pressure_left, queue_size=1, tcp_nodelay=True)
@@ -232,7 +232,7 @@ class HardwareControlManager:
         # we got external shutdown, tell it to the DSD, it will handle it
         self.blackboard.shut_down_request = True
         rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")
-        speak("Stopping HCM", self.blackboard.speak_publisher, priority=Speak.HIGH_PRIORITY)
+        speak("Stopping HCM", self.blackboard.speak_publisher, priority=50)
         # now wait for it finishing the shutdown procedure
         while not self.blackboard.current_state == STATE_HCM_OFF:
             # we still have to update everything
