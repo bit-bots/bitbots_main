@@ -9,7 +9,8 @@ import cPickle as pickle
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from dynamic_reconfigure.server import Server
-from humanoid_league_msgs.msg import VisualCompassRotation, GameState
+from tf_conversions.transformations import quaternion_from_euler
+from humanoid_league_msgs.msg import GameState, PoseWithCertaintyStamped
 from bitbots_visual_compass.cfg import VisualCompassConfig
 from worker import VisualCompass
 from key_point_converter import KeyPointConverter
@@ -54,7 +55,7 @@ class VisualCompassStartup():
         # Register publisher of 'visual_compass'-messages
         self.pub_compass = rospy.Publisher(
             'visual_compass',
-            VisualCompassRotation,
+            PoseWithCertaintyStamped,
             queue_size=1)
 
         # Register VisualCompassConfig server for dynamic reconfigure and set callback
@@ -159,14 +160,14 @@ class VisualCompassStartup():
         """
         Builds the ros message and publishes the result.
         """
-        msg = VisualCompassRotation()
+        msg = PoseWithCertaintyStamped()
 
-        # Create VisualCompassRotation-message
+        # Create PoseWithCertaintyStamped-message where only the orentation is used
         msg.header.frame_id = header_frame_id
         msg.header.stamp = header_stamp
 
-        msg.orientation = (orientation + self.orientation_offset) % (2 * math.pi)  # Orientation changes about PI in the second game half
-        msg.confidence = confidence
+        msg.pose.pose.pose.orientation = quaternion_from_euler(0,0,(orientation + self.orientation_offset) % (2 * math.pi))  # Orientation changes about PI in the second game half
+        msg.pose.confidence = confidence
 
         # Publish VisualCompassMsg-message
         self.pub_compass.publish(msg)

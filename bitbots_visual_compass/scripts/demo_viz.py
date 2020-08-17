@@ -4,7 +4,8 @@ import rospkg
 import math
 import cv2
 import numpy as np
-from humanoid_league_msgs.msg import VisualCompassRotation
+from humanoid_league_msgs.msg import PoseWithCertaintyStamped
+from tf_conversions.transformations import euler_from_quaternion
 
 
 class VisualCompassVisualization():
@@ -24,16 +25,9 @@ class VisualCompassVisualization():
         rospy.init_node('bitbots_visual_compass_demo_viz')
         rospy.loginfo('Launching demo tool!')
 
-
-        # Register publisher of 'visual_compass'-messages
-        self.pub_compass = rospy.Publisher(
-            'visual_compass',
-            VisualCompassRotation,
-            queue_size=1)
-
-        self.sub_image_msg = rospy.Subscriber(
+        rospy.Subscriber(
                 'visual_compass',
-                VisualCompassRotation,
+                PoseWithCertaintyStamped,
                 self.compass_callback,
                 tcp_nodelay=True)
 
@@ -47,7 +41,7 @@ class VisualCompassVisualization():
         """
         canvas = np.zeros((300,300), dtype=np.uint8)
 
-        angle = ((2 * math.pi - msg.orientation) - 0.5 * math.pi)
+        angle = ((2 * math.pi - euler_from_quaternion(msg.pose.pose.pose.orientation)[2]) - 0.5 * math.pi)
         length = msg.confidence * self.scale
 
         vektor = (int(math.cos(angle)*length), int(math.sin(angle)*length))
@@ -56,7 +50,6 @@ class VisualCompassVisualization():
         point = (center[0] + vektor[0], center[1] + vektor[1])
 
         img	= cv2.arrowedLine(canvas, tuple(center), tuple(point), (255,255,255), thickness = 3, tipLength = 0.3)
-
 
         output_str = "{} Deg | {}%".format(int(math.degrees(msg.orientation)), int(msg.confidence * 100))
         text_margin = 10

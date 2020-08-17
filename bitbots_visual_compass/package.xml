@@ -24,6 +24,7 @@
   <depend>dynamic_reconfigure</depend>
   <depend>beignet</depend>
   <depend>tf2</depend>
+  <depend>tf_conversions</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>wolves_image_provider</depend>
   <depend>python3-cv_bridge</depend>
