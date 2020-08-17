@@ -4,9 +4,8 @@ from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
     LineInformationInImage, \
     LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
     ObstacleInImageArray, ObstaclesRelative, ObstacleRelative, \
-    GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, \
-    FieldBoundaryInImage, PixelsRelative
-from geometry_msgs.msg import Point
+    GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, PixelsRelative
+from geometry_msgs.msg import Point, PolygonStamped
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 import tf2_ros
@@ -85,7 +84,7 @@ class TransformBall(object):
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines_pc, queue_size=1)
         rospy.Subscriber(goal_parts_in_image_topic,  GoalPartsInImage, self._callback_goal_parts, queue_size=1)
         rospy.Subscriber(obstacles_in_image_topic, ObstacleInImageArray, self._callback_obstacles, queue_size=1)
-        rospy.Subscriber(field_boundary_in_image_topic, FieldBoundaryInImage,
+        rospy.Subscriber(field_boundary_in_image_topic, PolygonStamped,
                          self._callback_field_boundary, queue_size=1)
 
         rospy.spin()
@@ -282,7 +281,7 @@ class TransformBall(object):
         field_boundary = PixelsRelative()
         field_boundary.header = msg.header
 
-        for p in msg.field_boundary_points:
+        for p in msg.polygon.points:
             p_relative = self._transform(p, field, msg.header.stamp)
             if p_relative is not None:
                 field_boundary.pixels.append(p_relative)
