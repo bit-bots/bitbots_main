@@ -6,7 +6,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point, PolygonStamped
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
-    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, Audio, ImageWithRegionOfInterest
+    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, Audio, RegionOfInterestWithImage
 from bitbots_msgs.msg import Config
 
 """
@@ -561,7 +561,7 @@ def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, 
     :param offset: an offset for the field boundary
     :return: fcnn heatmap under the field boundary
     """
-    msg = ImageWithRegionOfInterest()
+    msg = RegionOfInterestWithImage()
     msg.header.frame_id = header.frame_id
     msg.header.stamp = header.stamp
     field_boundary_top = field_boundary_detector.get_upper_bound(y_offset=offset)
@@ -571,4 +571,6 @@ def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, 
     msg.regionOfInterest.y_offset = field_boundary_top
     msg.regionOfInterest.height = fcnn_output.shape[0] - 1 - field_boundary_top
     msg.regionOfInterest.width = fcnn_output.shape[1] - 1
+    msg.original_width = fcnn_output.shape[1]
+    msg.original_height = fcnn_output.shape[0]
     return msg

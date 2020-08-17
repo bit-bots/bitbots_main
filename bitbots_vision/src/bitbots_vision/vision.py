@@ -12,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from geometry_msgs import PolygonStamped
 from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
-    ObstacleInImageArray, ObstacleInImage, ImageWithRegionOfInterest, \
+    ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
     GoalPostInImageArray, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
@@ -397,7 +397,7 @@ class Vision:
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
         self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
         self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
-        self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
+        self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', RegionOfInterestWithImage)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
         self._pub_debug_fcnn_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)

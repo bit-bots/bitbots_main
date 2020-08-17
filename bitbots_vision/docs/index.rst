@@ -158,7 +158,7 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
 -  ``/scripts/convert_to_image.py``
 
    This is a small script to
-   convert ``ImageWithRegionOfInterest`` of FCNNs to an ``Image``
+   convert ``RegionOfInterestWithImage`` of FCNNs to an ``Image``
    message for debug visualization.
 
 -  ``scripts/extract_from_rosbag.py``
