@@ -2,7 +2,7 @@
 import rospy
 from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
     LineInformationInImage, \
-    LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
+    LineInformationRelative, LineSegmentRelative, LineIntersectionRelative, \
     ObstacleInImageArray, ObstaclesRelative, ObstacleRelative, \
     GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, PixelsRelative
 from geometry_msgs.msg import Point, PolygonStamped
@@ -135,18 +135,6 @@ class TransformBall(object):
             if rel_seg.start is not None and rel_seg.end is not None:
                 line.segments.append(rel_seg)
 
-        for circle in msg.circles:
-            rel_circle = LineCircleRelative()
-            rel_circle.left = self._transform(circle.left, field, msg.header.stamp)
-            rel_circle.middle = self._transform(circle.middle, field, msg.header.stamp)
-            rel_circle.right = self._transform(circle.right, field, msg.header.stamp)
-
-            rel_circle.confidence = circle.confidence
-
-            # only proceed if all transformations were successful
-            if rel_circle.left is not None and rel_circle.middle is not None and rel_circle.right is not None:
-                line.circles.append(rel_circle)
-
         for intersection in msg.intersections:
             rel_inter = LineIntersectionRelative()
             broken = False
@@ -168,11 +156,11 @@ class TransformBall(object):
 
             if not broken:
                 line.intersections.append(rel_inter)
-        if line.segments or line.circles or line.intersections:
+        if line.segments or line.intersections:
             self._line_relative_pub.publish(line)
         else:
             rospy.logwarn_throttle(5.0, rospy.get_name() +
-                                   ": Could not transform any segments, circles or intersections" +
+                                   ": Could not transform any segments or intersections" +
                                    " in LineInformationInImage message.")
 
     def _callback_lines_pc(self, msg):
