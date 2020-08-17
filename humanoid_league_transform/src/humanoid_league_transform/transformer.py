@@ -4,7 +4,7 @@ from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
     LineInformationInImage, \
     LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
     ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
-    GoalInImage, GoalRelative, GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, \
+    GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, \
     FieldBoundaryInImage, PixelsRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo, PointCloud2
@@ -31,7 +31,6 @@ class TransformBall(object):
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
         balls_in_image_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
         lines_in_image_topic = rospy.get_param("~lines/lines_topic", "/line_in_image")
-        goal_in_image_topic = rospy.get_param("~goals/goals_topic", "/goal_in_image")
         goal_parts_in_image_topic = rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image")
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
         field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
@@ -74,7 +73,6 @@ class TransformBall(object):
             self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if publish_lines_as_pointcloud:
             self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
-        self._goal_relative_pub = rospy.Publisher("goal_relative", GoalRelative, queue_size=1)
         self._goal_parts_relative = rospy.Publisher("goal_parts_relative", GoalPartsRelative, queue_size=1)
         self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
         self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
@@ -85,7 +83,6 @@ class TransformBall(object):
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines, queue_size=1)
         if publish_lines_as_pointcloud:
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines_pc, queue_size=1)
-        rospy.Subscriber(goal_in_image_topic, GoalInImage, self._callback_goal, queue_size=1)
         rospy.Subscriber(goal_parts_in_image_topic,  GoalPartsInImage, self._callback_goal_parts, queue_size=1)
         rospy.Subscriber(obstacles_in_image_topic, ObstaclesInImage, self._callback_obstacles, queue_size=1)
         rospy.Subscriber(field_boundary_in_image_topic, FieldBoundaryInImage,
@@ -198,38 +195,6 @@ class TransformBall(object):
         pc_header.frame_id = self._publish_frame
         self._line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points[:num_transformed_correctly]))
 
-    def _callback_goal(self, msg):
-        field = self.get_plane(msg.header.stamp, 0.0)
-        if field is None:
-            return
-
-        goal = GoalRelative()
-        goal.header.stamp = msg.header.stamp
-        goal.header.frame_id = self._publish_frame
-
-        transformed_left = self._transform(msg.left_post.foot_point, field, msg.header.stamp)
-        if transformed_left is None:
-                rospy.logwarn_throttle(5.0, rospy.get_name() +
-                                       ": Got a left post with foot point ({},{}) I could not transform.".format(
-                                           msg.left_post.foot_point.x,
-                                           msg.left_post.foot_point.y))
-        else:
-            goal.left_post = transformed_left
-
-        # Messages do not contain None values so the coordinates have to be checked
-        if msg.right_post.foot_point.x != 0 and msg.right_post.foot_point.y != 0:
-            transformed_right = self._transform(msg.right_post.foot_point, field, msg.header.stamp)
-            if transformed_right is None:
-                rospy.logwarn_throttle(5.0, rospy.get_name() +
-                                       ": Got a right post with foot point ({},{}) I could not transform.".format(
-                                           msg.left_post.foot_point.x,
-                                           msg.left_post.foot_point.y))
-            else:
-                goal.right_post = transformed_right
-
-        goal.confidence = msg.confidence
-        self._goal_relative_pub.publish(goal)
-
     def _callback_goal_parts(self, msg):
         field = self.get_plane(msg.header.stamp, 0.0)
         if field is None:
@@ -251,7 +216,7 @@ class TransformBall(object):
             image_vertical_resolution =  self._camera_info.height / max(self._camera_info.binning_y, 1)
             if goal_post_in_image.foot_point.y < image_vertical_resolution - self._goalpost_footpoint_out_of_image_threshold:
                 # Transform footpoint
-                relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)   
+                relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)
                 if relative_foot_point is None:
                     rospy.logwarn_throttle(5.0, rospy.get_name() +
                                         ": Got a post with foot point ({},{}) I could not transform.".format(
