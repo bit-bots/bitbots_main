@@ -188,10 +188,10 @@ void Localization::GoalCallback(const hlm::GoalRelative &msg) {
 void Localization::FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg) {
   fieldboundary_relative_.field_boundary_points.clear();
   fieldboundary_relative_.header = msg.header;
-  for (hlm::FieldBoundaryInImage fBinImage : fieldboundary_in_image_) { // find corresponding fb_in_image message
+  for (gm::PolygonStamped fBinImage : fieldboundary_in_image_) { // find corresponding fb_in_image message
     if (fBinImage.header.stamp == msg.header.stamp) {
       for (int i = 1; i < msg.field_boundary_points.size() - 2; i++) { //ignore most left and right point
-        if (fBinImage.field_boundary_points[i].y > 0 && fBinImage.field_boundary_points[i + 1].y
+        if (fBinImage.polygon.points[i].y > 0 && fBinImage.polygon.points[i + 1].y
             > 0) { //ignore points that form a line on uppermost row in image
           std::vector<gm::Point> vector = interpolateFieldboundaryPoints(msg.field_boundary_points[i],
                                                                          msg.field_boundary_points[i + 1]);
@@ -222,7 +222,7 @@ void Localization::CrossesCallback(const hlm::PixelsRelative &msg) {
   crosses_ = msg;
 }
 
-void Localization::FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg) {
+void Localization::FieldBoundaryInImageCallback(const gm::PolygonStamped &msg){
   fieldboundary_in_image_.push_back(msg);
 }
 
@@ -492,10 +492,10 @@ void Localization::publish_ratings() {
 }
 
 void Localization::publish_debug_rating(
-    std::vector<std::pair<double, double>> measurements, 
-    double scale, 
-    const char name[], 
-    std::shared_ptr<Map> map, 
+    std::vector<std::pair<double, double>> measurements,
+    double scale,
+    const char name[],
+    std::shared_ptr<Map> map,
     ros::Publisher &publisher) {
 
   RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);

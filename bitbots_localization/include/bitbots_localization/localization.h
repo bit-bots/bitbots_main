@@ -24,6 +24,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/CameraInfo.h>
 
@@ -49,7 +50,6 @@
 #include <humanoid_league_msgs/PixelRelative.h>
 #include <humanoid_league_msgs/PixelsRelative.h>
 #include <humanoid_league_msgs/FieldBoundaryRelative.h>
-#include <humanoid_league_msgs/FieldBoundaryInImage.h>
 
 #include <bitbots_localization/map.h>
 #include <bitbots_localization/LocalizationConfig.h>
@@ -93,7 +93,7 @@ class Localization {
 
   void CrossesCallback(const hlm::PixelsRelative &msg);
 
-  void FieldBoundaryInImageCallback(const hlm::FieldBoundaryInImage &msg);
+  void FieldBoundaryInImageCallback(const gm::PolygonStamped &msg);
 
   void reset_filter(int distribution);
 
@@ -149,7 +149,7 @@ class Localization {
   hlm::PixelsRelative t_crossings_;
   hlm::PixelsRelative crosses_;
   sensor_msgs::CameraInfo cam_info_;
-  std::vector<hlm::FieldBoundaryInImage> fieldboundary_in_image_;
+  std::vector<gm::PolygonStamped> fieldboundary_in_image_;
 
   ros::Time last_stamp_lines = ros::Time(0);
   ros::Time last_stamp_goals = ros::Time(0);
@@ -187,10 +187,10 @@ class Localization {
   void publish_ratings();
 
   void publish_debug_rating(
-    std::vector<std::pair<double, double>>    measurements, 
-    double scale, 
-    const char name[24], 
-    std::shared_ptr<Map> map, 
+    std::vector<std::pair<double, double>>    measurements,
+    double scale,
+    const char name[24],
+    std::shared_ptr<Map> map,
     ros::Publisher &publisher);
 
   void updateMeasurements();
