@@ -553,7 +553,7 @@ class Vision:
         # Get goalpost msgs and add them to the detected goal posts list
         goal_post_msgs = ros_utils.build_goal_post_msgs(goal_posts)
         # Create goalposts msg
-        goal_posts_msg = ros_utils.build_goal_posts_msg(image_msg.header, goal_post_msgs)
+        goal_posts_msg = ros_utils.build_goal_post_array_msg(image_msg.header, goal_post_msgs)
         # Check if there is a goal
         if goal_posts_msg:
             # If we have a goal, lets publish it

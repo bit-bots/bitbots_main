@@ -255,7 +255,7 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
         rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return subscriber_object
 
-def build_goal_posts_msg(header, goal_post_msgs):
+def build_goal_post_array_msg(header, goal_post_msgs):
     """
     Builds a GoalPostInImageArray message out of a list of GoalPostInImage messages
 
@@ -277,7 +277,7 @@ def build_goal_post_msgs(goalposts):
     Builds a list of goalpost messages
 
     :param goalposts: goalpost candidates
-    :return: list of goalposts msgs
+    :return: List of goalpost messages
     """
     # Create an empty list of goalposts
     message_list = []
