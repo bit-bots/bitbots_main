@@ -3,8 +3,8 @@ import rospy
 from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
     LineInformationInImage, \
     LineInformationRelative, LineSegmentRelative, LineIntersectionRelative, \
-    ObstacleInImageArray, ObstaclesRelative, ObstacleRelative, \
-    GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, PixelsRelative
+    ObstacleInImage, ObstacleInImageArray, ObstacleRelativeArray, ObstacleRelative, \
+    PoseWithCertaintyArray
 from geometry_msgs.msg import Point, PolygonStamped
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -73,7 +73,7 @@ class TransformBall(object):
         if publish_lines_as_pointcloud:
             self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
         self._goal_parts_relative = rospy.Publisher("goal_parts_relative", GoalPartsRelative, queue_size=1)
-        self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstaclesRelative, queue_size=1)
+        self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
         self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
 
         # Subscribers
@@ -235,26 +235,26 @@ class TransformBall(object):
 
         self._goal_parts_relative.publish(goal_parts_relative_msg)
 
-    def _callback_obstacles(self, msg):
+    def _callback_obstacles(self, msg: ObstacleInImageArray):
         field = self.get_plane(msg.header.stamp, 0.0)
         if field is None:
             return
 
-        obstacles = ObstaclesRelative()
+        obstacles = ObstacleRelativeArray()
         obstacles.header = msg.header
         obstacles.header.frame_id = self._publish_frame
 
         for o in msg.obstacles:
             obstacle = ObstacleRelative()
             obstacle.playerNumber = o.playerNumber
-            obstacle.confidence = o.confidence
-            obstacle.color = o.color
+            obstacle.pose.confidence = o.confidence
+            obstacle.type = o.type
             point = Point()
             point.x = o.top_left.x + o.height
             point.y = o.top_left.y + o.width/2
             position = self._transform(point, field, msg.header.stamp)
             if position is not None:
-                obstacle.position = position
+                obstacle.pose.pose.pose.position = position
                 obstacles.obstacles.append(obstacle)
             else:
                 rospy.logwarn_throttle(5.0, rospy.get_name() + ": Got an obstacle I could not transform")
