@@ -3,7 +3,7 @@
 import rospy
 import time
 from bitbots_buttons.msg import Buttons
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Audio
 from std_srvs.srv import Empty
 
 from humanoid_league_speaker.speaker import speak
@@ -35,7 +35,7 @@ class ButtonNode(object):
 
         # --- Initialize Topics ---
         rospy.Subscriber("/buttons", Buttons, self.button_cb)
-        self.speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        self.speak_publisher = rospy.Publisher('/speak', Audio, queue_size=10)
         self.shoot_publisher = rospy.Publisher('/shoot_button', Bool, queue_size=1)
 
         if self.manual_penality_mode:
