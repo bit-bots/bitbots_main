@@ -5,7 +5,7 @@
 #include <string>
 
 #include <std_msgs/Bool.h>
-#include <humanoid_league_msgs/Speak.h>
+#include <humanoid_league_msgs/Audio.h>
 #include <sensor_msgs/JointState.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>

@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <string>
 
-#include <humanoid_league_msgs/Speak.h>
+#include <humanoid_league_msgs/Audio.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <bitbots_buttons/Buttons.h>

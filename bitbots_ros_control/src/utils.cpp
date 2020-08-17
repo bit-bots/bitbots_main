@@ -28,9 +28,9 @@ void speakError(const ros::Publisher &speak_pub, std::string text) {
   /**
     *  Helper method to send a message for text-to-speech output
     */
-  humanoid_league_msgs::Speak msg = humanoid_league_msgs::Speak();
+  humanoid_league_msgs::Audio msg = humanoid_league_msgs::Audio();
   msg.text = text;
-  msg.priority = humanoid_league_msgs::Speak::HIGH_PRIORITY;
+  msg.priority = 100;
   speak_pub.publish(msg);
 }
 

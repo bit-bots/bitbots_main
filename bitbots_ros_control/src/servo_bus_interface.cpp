@@ -12,7 +12,7 @@ ServoBusInterface::ServoBusInterface(std::shared_ptr<DynamixelDriver> &driver,
 
 bool ServoBusInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  speak_pub_ = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, true);
+  speak_pub_ = nh.advertise<humanoid_league_msgs::Audio>("/speak", 1, true);
 
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;
