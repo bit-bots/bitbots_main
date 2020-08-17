@@ -3,8 +3,8 @@ import rospy
 from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
     LineInformationInImage, \
     LineInformationRelative, LineSegmentRelative, LineIntersectionRelative, \
-    ObstacleInImage, ObstacleInImageArray, ObstacleRelativeArray, ObstacleRelative, \
-    PoseWithCertaintyArray
+    ObstacleInImageArray, ObstacleRelativeArray, ObstacleRelative, \
+    PoseWithCertainty, PoseWithCertaintyArray, GoalPostInImageArray
 from geometry_msgs.msg import Point, PolygonStamped
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -22,15 +22,15 @@ class TransformBall(object):
 
         # Parameters
         self._ball_height = rospy.get_param("~ball/ball_radius", 0.075)
-        self._bar_height = rospy.get_param("~goal_parts/bar_height", 2.0)
+        self._bar_height = rospy.get_param("~goalposts/bar_height", 2.0)
         self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
         self._goalpost_footpoint_out_of_image_threshold = \
-            rospy.get_param("~goal_parts/footpoint_out_of_image_threshold", 30)
+            rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 30)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
         ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
         lines_in_image_topic = rospy.get_param("~lines/lines_topic", "/line_in_image")
-        goal_parts_in_image_topic = rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image")
+        goalposts_in_image_topic = rospy.get_param("~goalposts/goalposts_topic", "/goalposts_in_image")
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
         field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
                                                         "/field_boundary_in_image")
@@ -72,7 +72,7 @@ class TransformBall(object):
             self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if publish_lines_as_pointcloud:
             self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
-        self._goal_parts_relative = rospy.Publisher("goal_parts_relative", GoalPartsRelative, queue_size=1)
+        self._goalposts_relative = rospy.Publisher("goal_parts_relative", PoseWithCertaintyArray, queue_size=1)
         self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
         self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
 
@@ -82,7 +82,7 @@ class TransformBall(object):
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines, queue_size=1)
         if publish_lines_as_pointcloud:
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines_pc, queue_size=1)
-        rospy.Subscriber(goal_parts_in_image_topic,  GoalPartsInImage, self._callback_goal_parts, queue_size=1)
+        rospy.Subscriber(goalposts_in_image_topic, GoalPostInImageArray, self._callback_goalposts, queue_size=1)
         rospy.Subscriber(obstacles_in_image_topic, ObstacleInImageArray, self._callback_obstacles, queue_size=1)
         rospy.Subscriber(field_boundary_in_image_topic, PolygonStamped,
                          self._callback_field_boundary, queue_size=1)
@@ -182,7 +182,7 @@ class TransformBall(object):
         pc_header.frame_id = self._publish_frame
         self._line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points[:num_transformed_correctly]))
 
-    def _callback_goal_parts(self, msg):
+    def _callback_goalposts(self, msg: GoalPostInImageArray):
         field = self.get_plane(msg.header.stamp, 0.0)
         if field is None:
             return
@@ -192,10 +192,9 @@ class TransformBall(object):
             return
 
         # Create new message
-
-        goal_parts_relative_msg = GoalPartsRelative()
-        goal_parts_relative_msg.header.stamp = msg.header.stamp
-        goal_parts_relative_msg.header.frame_id = self._publish_frame
+        goalposts_relative_msg = PoseWithCertaintyArray()
+        goalposts_relative_msg.header.stamp = msg.header.stamp
+        goalposts_relative_msg.header.frame_id = self._publish_frame
 
         # Transform goal posts
         for goal_post_in_image in msg.posts:
@@ -210,30 +209,12 @@ class TransformBall(object):
                                             goal_post_in_image.foot_point.x,
                                             goal_post_in_image.foot_point.y))
                 else:
-                    post_relative = GoalPostRelative()
-                    post_relative.foot_point = relative_foot_point
+                    post_relative = PoseWithCertainty()
+                    post_relative.pose.pose.position = relative_foot_point
                     post_relative.confidence = goal_post_in_image.confidence
-                    goal_parts_relative_msg.posts.append(post_relative)
+                    goalposts_relative_msg.poses.append(post_relative)
 
-        # Transform goal bars
-        for goal_bar_in_image in msg.bars:
-            relative_left_point = self._transform(goal_bar_in_image.left_point, bar_plane, msg.header.stamp)
-            relative_right_point = self._transform(goal_bar_in_image.right_point, bar_plane, msg.header.stamp)
-            if relative_right_point is None or relative_left_point is None:
-                rospy.logwarn_throttle(5.0, rospy.get_name() +
-                                       ": Got a bar with end points ({},{}) and ({},{}) I could not transform.".format(
-                                           goal_bar_in_image.left_point.x,
-                                           goal_bar_in_image.left_point.y,
-                                           goal_bar_in_image.right_point.x,
-                                           goal_bar_in_image.right_point.y))
-            else:
-                bar_relative = GoalBarRelative()
-                bar_relative.left_point = relative_left_point
-                bar_relative.right_point = relative_right_point
-                bar_relative.confidence = goal_bar_in_image.confidence
-                goal_parts_relative_msg.bars.append(bar_relative)
-
-        self._goal_parts_relative.publish(goal_parts_relative_msg)
+        self._goalposts_relative.publish(goalposts_relative_msg)
 
     def _callback_obstacles(self, msg: ObstacleInImageArray):
         field = self.get_plane(msg.header.stamp, 0.0)
@@ -325,7 +306,7 @@ class TransformBall(object):
         field_normal = field_point - field_normal
         return field_normal, field_point
 
-    def _transform(self, point, field, stamp):
+    def _transform(self, point, field, stamp) -> Point:
         camera_projection_matrix = self._camera_info.K
 
         # calculate a point on a projection plane 1 m (for convenience) away
