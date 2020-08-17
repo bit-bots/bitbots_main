@@ -29,7 +29,7 @@ class TransformBall(object):
             rospy.get_param("~goal_parts/footpoint_out_of_image_threshold", 30)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
-        ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "/ball_in_image_array")
+        ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
         lines_in_image_topic = rospy.get_param("~lines/lines_topic", "/line_in_image")
         goal_parts_in_image_topic = rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image")
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
