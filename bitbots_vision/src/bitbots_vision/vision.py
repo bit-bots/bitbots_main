@@ -11,7 +11,7 @@ from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
-    ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
+    ObstacleInImageArray, ObstacleInImage, ImageWithRegionOfInterest, \
     GoalPostInImageArray, FieldBoundaryInImage, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
@@ -394,7 +394,7 @@ class Vision:
         self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
+        self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
         self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
         self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
@@ -537,7 +537,7 @@ class Vision:
         list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
                                                                    self._unknown_obstacle_detector.get_candidates()))
         # Build obstacles msgs containing all obstacles
-        obstacles_msg = ros_utils.build_obstacles_msg(image_msg.header, list_of_obstacle_msgs)
+        obstacles_msg = ros_utils.build_obstacle_array_msg(image_msg.header, list_of_obstacle_msgs)
         # Publish obstacles
         self._pub_obstacle.publish(obstacles_msg)
 

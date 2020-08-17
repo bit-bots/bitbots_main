@@ -5,7 +5,7 @@ import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
+from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
     ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Audio, ImageWithRegionOfInterest
 from bitbots_msgs.msg import Config
 
@@ -366,20 +366,20 @@ def build_ball_msg(top_ball_candidate):
     ball_msg.confidence = top_ball_candidate.get_rating()
     return ball_msg
 
-def build_obstacles_msg(header, obstacles):
+def build_obstacle_array_msg(header, obstacles):
     """
-    Builds a ObstaclesInImage message containing a list of obstacle messages
+    Builds a ObstacleInImageArray message containing a list of obstacle messages
 
     :param header: ros header of the new message. Mostly the header of the image
     :param obstacles: a list of obstacle messages
-    :return: ObstaclesInImage message
+    :return: ObstacleInImageArray message
     """
     # Create obstacle msg
-    obstacles_msg = ObstaclesInImage()
+    obstacles_msg = ObstacleInImageArray()
     # Add header
     obstacles_msg.header.frame_id = header.frame_id
     obstacles_msg.header.stamp = header.stamp
-    # Add red obstacles
+    # Add obstacles
     obstacles_msg.obstacles = obstacles
     return obstacles_msg
 
