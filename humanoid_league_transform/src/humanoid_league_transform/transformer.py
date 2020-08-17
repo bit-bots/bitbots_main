@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from humanoid_league_msgs.msg import BallRelative, BallsInImage, \
+from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
     LineInformationInImage, \
     LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
     ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
@@ -29,7 +29,7 @@ class TransformBall(object):
             rospy.get_param("~goal_parts/footpoint_out_of_image_threshold", 30)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
-        balls_in_image_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
+        ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "/ball_in_image_array")
         lines_in_image_topic = rospy.get_param("~lines/lines_topic", "/line_in_image")
         goal_parts_in_image_topic = rospy.get_param("~goal_parts/goal_parts_topic", "/goal_parts_in_image")
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
@@ -78,7 +78,7 @@ class TransformBall(object):
         self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
 
         # Subscribers
-        rospy.Subscriber(balls_in_image_topic, BallsInImage, self._callback_ball, queue_size=1)
+        rospy.Subscriber(ball_in_image_array_topic, BallInImageArray, self._callback_ball, queue_size=1)
         if publish_lines_as_lines_relative:
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines, queue_size=1)
         if publish_lines_as_pointcloud:
@@ -105,7 +105,7 @@ class TransformBall(object):
         br.header.frame_id = self._publish_frame
 
         if len(msg.candidates) > 1:
-            rospy.logwarn_throttle(5.0, "Multiple ball candidates in BallsInImage message. " +
+            rospy.logwarn_throttle(5.0, "Multiple ball candidates in BallInImageArray message. " +
                                    "They will be published as multiple BallRelative messages")
         for ball in msg.candidates:
             br.ball_relative = self._transform(ball.center, field, msg.header.stamp)
