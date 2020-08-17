@@ -3,7 +3,7 @@ import rospy
 from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
     LineInformationInImage, \
     LineInformationRelative, LineSegmentRelative, LineCircleRelative, LineIntersectionRelative, \
-    ObstaclesInImage, ObstaclesRelative, ObstacleRelative, \
+    ObstacleInImageArray, ObstaclesRelative, ObstacleRelative, \
     GoalPartsInImage, GoalPartsRelative, GoalPostRelative, GoalBarRelative, \
     FieldBoundaryInImage, PixelsRelative
 from geometry_msgs.msg import Point
@@ -84,7 +84,7 @@ class TransformBall(object):
         if publish_lines_as_pointcloud:
             rospy.Subscriber(lines_in_image_topic, LineInformationInImage, self._callback_lines_pc, queue_size=1)
         rospy.Subscriber(goal_parts_in_image_topic,  GoalPartsInImage, self._callback_goal_parts, queue_size=1)
-        rospy.Subscriber(obstacles_in_image_topic, ObstaclesInImage, self._callback_obstacles, queue_size=1)
+        rospy.Subscriber(obstacles_in_image_topic, ObstacleInImageArray, self._callback_obstacles, queue_size=1)
         rospy.Subscriber(field_boundary_in_image_topic, FieldBoundaryInImage,
                          self._callback_field_boundary, queue_size=1)
 
