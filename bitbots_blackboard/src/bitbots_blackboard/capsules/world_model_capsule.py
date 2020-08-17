@@ -10,13 +10,14 @@ import math
 import rospy
 import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
-from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative, BallRelative
+from humanoid_league_msgs.msg import ObstaclesRelative, GoalRelative, BallRelative
 
 
 class WorldModelCapsule:
     def __init__(self, field_length, field_width, goal_width):
-        self.position = Position2D()
+        self.position = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.ball = PointStamped()  # The ball in the base footprint frame
@@ -39,7 +40,9 @@ class WorldModelCapsule:
         self.goal_publisher = rospy.Publisher('/debug/viz_goal', GoalRelative, queue_size=1)
 
     def get_current_position(self):
-        return self.position.pose.x, self.position.pose.y, self.position.pose.theta
+        orientation = self.position.pose.pose.orientation
+        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        return self.position.pose.pose.position.x, self.position.pose.pose.position.y, theta
 
     ############
     ### Ball ###
@@ -246,12 +249,5 @@ class WorldModelCapsule:
         dist = math.sqrt(u ** 2 + v ** 2)
         return dist
 
-    def position_callback(self, pos):
-        # Convert PositionWithCovarianceStamped to Position2D
-        position2d = Position2D()
-        position2d.header = pos.header
-        position2d.pose.x = pos.pose.pose.position.x
-        position2d.pose.y = pos.pose.pose.position.y
-        rotation = pos.pose.pose.orientation
-        position2d.pose.theta = euler_from_quaternion([rotation.x, rotation.y, rotation.z, rotation.w])[2]
-        self.position = position2d
+    def position_callback(self, pos: PoseWithCovarianceStamped):
+        self.position = pos
