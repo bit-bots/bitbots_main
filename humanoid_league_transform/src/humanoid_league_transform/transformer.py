@@ -137,25 +137,15 @@ class TransformBall(object):
 
         for intersection in msg.intersections:
             rel_inter = LineIntersectionRelative()
-            broken = False
-            for segment in intersection.segments:
-                rel_seg = LineSegmentRelative()
-                rel_seg.start = self._transform(segment.start, field, msg.header.stamp)
-                rel_seg.end = self._transform(segment.end, field, msg.header.stamp)
 
-                rel_seg.confidence = segment.confidence
+            rel_inter_pos = self._transform(intersection.point, field, msg.header.stamp)
 
-                if rel_seg.start is not None and rel_seg.end is not None:
-                    rel_inter.segments.append(rel_seg)
-                else:
-                    broken = True
-                    break
-
-            rel_inter.type = intersection.type
-            rel_inter.confidence = intersection.confidence
-
-            if not broken:
+            if rel_inter_pos is not None:
+                rel_inter.type = intersection.type
+                rel_inter.pose.confidence = intersection.confidence
+                rel_inter.pose.pose.pose.position = rel_inter_pos
                 line.intersections.append(rel_inter)
+                
         if line.segments or line.intersections:
             self._line_relative_pub.publish(line)
         else:
