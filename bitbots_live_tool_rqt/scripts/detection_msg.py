@@ -1,4 +1,4 @@
-from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GoalRelative
+from humanoid_league_msgs.msg import BallRelative, ObstacleRelative
 from geometry_msgs.msg import Point, Pose
 from std_msgs.msg import Header
 import yaml
