@@ -1,5 +1,0 @@
-<launch>
-    <node pkg="bitbots_pixel_visualizer" type="pixel_visualizer" name="bitbots_pixel_visualizer" output="screen" >
-        <rosparam command="load" file="$(find bitbots_pixel_visualizer)/config/pixel_visualizer_config.yaml"/>
-    </node>
-</launch>
