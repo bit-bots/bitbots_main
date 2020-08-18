@@ -25,7 +25,7 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 }
 
 double RobotPoseObservationModel::calculate_weight_for_class(
-    const RobotState &state, 
+    const RobotState &state,
     const std::vector<std::pair<double, double>> &last_measurement,
     std::shared_ptr<Map> map) const {
   double particle_weight_for_class = 0;
@@ -58,16 +58,16 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_crosses = last_measurement_crosses_.size();
 
   double weight = (number_of_effective_measurements_ == 0) ? 0 : (
-      ( particle_weight_lines * config_.lines_factor + 
-        particle_weight_goal * config_.goals_factor + 
+      ( particle_weight_lines * config_.lines_factor +
+        particle_weight_goal * config_.goals_factor +
         particle_weight_field_boundary * config_.field_boundary_factor +
-        particle_weight_corners * config_.corners_factor + 
-        particle_weight_t_crossings * config_.t_crossings_factor + 
+        particle_weight_corners * config_.corners_factor +
+        particle_weight_t_crossings * config_.t_crossings_factor +
         particle_weight_crosses * config_.crosses_factor) /
           number_of_effective_measurements_); // TODO evaluate this devision
 
   if (weight < min_weight_) {
-    weight = min_weight_;   
+    weight = min_weight_;
   }
 
   return weight; //exponential?
@@ -76,7 +76,7 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelative measurement) {
   // convert to polar
   for (hlm::LineSegmentRelative &segment : measurement.segments) {
-    std::pair<double, double> linePolar = cartesianToPolar(segment.start.x, segment.start.y);
+    std::pair<double, double> linePolar = cartesianToPolar(segment.start.pose.position.x, segment.start.pose.position.y);
     last_measurement_lines_.push_back(linePolar);
   }
 }
