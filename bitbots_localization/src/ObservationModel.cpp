@@ -81,21 +81,17 @@ void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelati
   }
 }
 
-void RobotPoseObservationModel::set_measurement_goal(hlm::GoalRelative measurement) {
+void RobotPoseObservationModel::set_measurement_goal(hlm::PoseWithCertaintyArray measurement) {
   // convert to polar
-  if (measurement.left_post.x != 0 && measurement.left_post.y != 0) {
-    std::pair<double, double> postOnePolar = cartesianToPolar(measurement.left_post.x, measurement.left_post.y);
-    last_measurement_goal_.push_back(postOnePolar);
-    if (measurement.left_post.x != measurement.right_post.x && measurement.left_post.y != measurement.right_post.y) {
-      std::pair<double, double> postTwoPolar = cartesianToPolar(measurement.right_post.x, measurement.right_post.y);
-      last_measurement_goal_.push_back(postTwoPolar);
-    }
+  for (hlm::PoseWithCertainty &post : measurement.poses) {
+    std::pair<double, double> postPolar = cartesianToPolar(post.pose.pose.position.x, post.pose.pose.position.y);
+    last_measurement_goal_.push_back(postPolar);
   }
 }
 
-void RobotPoseObservationModel::set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement) {
+void RobotPoseObservationModel::set_measurement_field_boundary(gm::PolygonStamped measurement) {
   // convert to polar
-  for (gm::Point &point : measurement.field_boundary_points) {
+  for (gm::Point32 &point : measurement.polygon.points) {
     std::pair<double, double> fieldBoundaryPointPolar = cartesianToPolar(point.x,
                                                                          point.y); // z is 0
     last_measurement_field_boundary_.push_back(fieldBoundaryPointPolar);

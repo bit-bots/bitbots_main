@@ -17,6 +17,7 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
@@ -46,8 +47,7 @@
 
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/LineSegmentRelative.h>
-#include <humanoid_league_msgs/GoalRelative.h>
-#include <humanoid_league_msgs/FieldBoundaryRelative.h>
+#include <humanoid_league_msgs/PoseWithCertaintyArray.h>
 
 #include <bitbots_localization/map.h>
 #include <bitbots_localization/LocalizationConfig.h>
@@ -81,9 +81,9 @@ class Localization {
 
   void LineCallback(const hlm::LineInformationRelative &msg);
 
-  void GoalCallback(const hlm::GoalRelative &msg); //TODO
+  void GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg); //TODO
 
-  void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
+  void FieldboundaryCallback(const gm::PolygonStamped &msg);
 
   void FieldBoundaryInImageCallback(const gm::PolygonStamped &msg);
 
@@ -135,8 +135,8 @@ class Localization {
   bool resampled_ = false;
 
   hlm::LineInformationRelative line_information_relative_;
-  hlm::GoalRelative goal_relative_;
-  hlm::FieldBoundaryRelative fieldboundary_relative_;
+  hlm::PoseWithCertaintyArray goal_posts_relative_;
+  gm::PolygonStamped fieldboundary_relative_;
   sensor_msgs::CameraInfo cam_info_;
   std::vector<gm::PolygonStamped> fieldboundary_in_image_;
 
@@ -144,7 +144,7 @@ class Localization {
   ros::Time last_stamp_goals = ros::Time(0);
   ros::Time last_stamp_fb_points = ros::Time(0);
 
-  std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
+  std::vector<gm::Point32> interpolateFieldboundaryPoints(gm::Point32 point1, gm::Point32 point2);
 
   void run_filter_one_step(const ros::TimerEvent &e);
 
@@ -156,7 +156,7 @@ class Localization {
   std::shared_ptr<Map> crosses_map_;
 
   gmms::GaussianMixtureModel pose_gmm_;
-  std::vector<gm::Point> line_points_;
+  std::vector<gm::Point32> line_points_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
   bl::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;

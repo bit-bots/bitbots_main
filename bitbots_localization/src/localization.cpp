@@ -26,7 +26,7 @@ Localization::Localization() : line_points_(), tfListener(tfBuffer) {
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
   line_subscriber_ = nh_.subscribe(config.line_topic, 1, &Localization::LineCallback, this);
-  goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalCallback, this);
+  goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalPostsCallback, this);
   fieldboundary_subscriber_ = nh_.subscribe(config.fieldboundary_topic, 1, &Localization::FieldboundaryCallback,
                                             this);
   fieldboundary_in_image_subscriber_ = nh_.subscribe(config.fieldboundary_in_image_topic, 1,
@@ -56,7 +56,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   crosses_map_.reset(new Map(config.map_path_crosses, config));
 
   line_information_relative_.header.stamp = ros::Time(0);
-  goal_relative_.header.stamp = ros::Time(0);
+  goal_posts_relative_.header.stamp = ros::Time(0);
   fieldboundary_relative_.header.stamp = ros::Time(0);
 
   robot_pose_observation_model_.reset(
@@ -175,22 +175,22 @@ void Localization::LineCallback(const hlm::LineInformationRelative &msg) {
   line_information_relative_ = msg;
 }
 
-void Localization::GoalCallback(const hlm::GoalRelative &msg) {
-  goal_relative_ = msg;
+void Localization::GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg) {
+  goal_posts_relative_ = msg;
 }
 
-void Localization::FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg) {
-  fieldboundary_relative_.field_boundary_points.clear();
+void Localization::FieldboundaryCallback(const gm::PolygonStamped &msg) {
+  fieldboundary_relative_.polygon.points.clear();
   fieldboundary_relative_.header = msg.header;
   for (gm::PolygonStamped fBinImage : fieldboundary_in_image_) { // find corresponding fb_in_image message
     if (fBinImage.header.stamp == msg.header.stamp) {
-      for (int i = 1; i < msg.field_boundary_points.size() - 2; i++) { //ignore most left and right point
+      for (int i = 1; i < msg.polygon.points.size() - 2; i++) { //ignore most left and right point
         if (fBinImage.polygon.points[i].y > 0 && fBinImage.polygon.points[i + 1].y
             > 0) { //ignore points that form a line on uppermost row in image
-          std::vector<gm::Point> vector = interpolateFieldboundaryPoints(msg.field_boundary_points[i],
-                                                                         msg.field_boundary_points[i + 1]);
-          for (gm::Point point : vector) {
-            fieldboundary_relative_.field_boundary_points.push_back(point);
+          std::vector<gm::Point32> vector = interpolateFieldboundaryPoints(msg.polygon.points[i],
+                                                                         msg.polygon.points[i + 1]);
+          for (gm::Point32 point : vector) {
+            fieldboundary_relative_.polygon.points.push_back(point);
           }
         }
       }
@@ -208,9 +208,9 @@ void Localization::FieldBoundaryInImageCallback(const gm::PolygonStamped &msg){
   fieldboundary_in_image_.push_back(msg);
 }
 
-std::vector<gm::Point> Localization::interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2) {
+std::vector<gm::Point32> Localization::interpolateFieldboundaryPoints(gm::Point32 point1, gm::Point32 point2) {
 
-  std::vector<gm::Point> pointsInterpolated;
+  std::vector<gm::Point32> pointsInterpolated;
   double dx = abs(point2.x - point1.x);
   double dy = abs(point2.y - point1.y);
 
@@ -220,7 +220,7 @@ std::vector<gm::Point> Localization::interpolateFieldboundaryPoints(gm::Point po
   double stepsizex = dx / steps;
 
   for (int i = 0; i < steps; i++) {
-    gm::Point point;
+    gm::Point32 point;
     point.y = point1.y + (i * stepsizey);
     point.x = point1.x + (i * stepsizex);
     pointsInterpolated.push_back(point);
@@ -296,8 +296,8 @@ void Localization::updateMeasurements() {
     robot_pose_observation_model_->set_measurement_t_crossings(line_information_relative_);
     }
   }
-  if (config_.goals_factor && goal_relative_.header.stamp != last_stamp_goals) {
-    robot_pose_observation_model_->set_measurement_goal(goal_relative_);
+  if (config_.goals_factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
+    robot_pose_observation_model_->set_measurement_goal(goal_posts_relative_);
   }
   if (config_.field_boundary_factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
     robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
@@ -305,7 +305,7 @@ void Localization::updateMeasurements() {
 
   // Set timestamps to mark past messages
   last_stamp_lines = line_information_relative_.header.stamp;
-  last_stamp_goals = goal_relative_.header.stamp;
+  last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
 }
 

@@ -12,11 +12,13 @@
 #include <bitbots_localization/LocalizationConfig.h>
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/LineIntersectionRelative.h>
-#include <humanoid_league_msgs/GoalRelative.h>
-#include <humanoid_league_msgs/FieldBoundaryRelative.h>
+#include <humanoid_league_msgs/PoseWithCertainty.h>
+#include <humanoid_league_msgs/PoseWithCertaintyArray.h>
+#include <geometry_msgs/PolygonStamped.h>
 
 namespace bl = bitbots_localization;
 namespace hlm = humanoid_league_msgs;
+namespace gm = geometry_msgs;
 
 class RobotPoseObservationModel : public particle_filter::ObservationModel<RobotState> {
 
@@ -39,9 +41,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_measurement_lines(hlm::LineInformationRelative measurement);
 
-  void set_measurement_goal(hlm::GoalRelative measurement);
+  void set_measurement_goal(hlm::PoseWithCertaintyArray measurement);
 
-  void set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement);
+  void set_measurement_field_boundary(gm::PolygonStamped measurement);
 
   void set_measurement_corners(hlm::LineInformationRelative measurement);
 
