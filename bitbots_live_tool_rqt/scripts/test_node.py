@@ -4,7 +4,7 @@
 import rospy
 from std_msgs.msg import Header
 
-from humanoid_league_msgs.msg import BallRelative, ObstaclesRelative, ObstacleRelative, Strategy, GameState, RobotControlState
+from humanoid_league_msgs.msg import BallRelative, ObstacleRelativeArray, ObstacleRelative, Strategy, GameState, RobotControlState
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Pose2D
 import math
 import yaml
@@ -45,7 +45,7 @@ def publisher_main():
     print('started publisher node')
     pub = rospy.Publisher('ball_relative', BallRelative, queue_size = 10)
     pubRobo = rospy.Publisher('amcl_pose', PoseWithCovarianceStamped, queue_size = 10)
-    pubTeam = rospy.Publisher('obstacles_relative', ObstaclesRelative, queue_size = 10)
+    pubTeam = rospy.Publisher('obstacles_relative', ObstacleRelativeArray, queue_size = 10)
     pubStrategy = rospy.Publisher('strategy', Strategy, queue_size = 10)
     pubGame = rospy.Publisher('gamestate', GameState, queue_size = 10)
     pubState = rospy.Publisher('robot_state', RobotControlState, queue_size = 10)
@@ -153,33 +153,33 @@ def publisher_main():
 
 
         # Teammates with pathmaker, contains list of teammates
-        msgTeam = ObstaclesRelative()
+        msgTeam = ObstacleRelativeArray()
         msgTeam1 = ObstacleRelative()
 
-        msgTeam1.color = 2  # magenta
-        msgTeam1.position.x = teammate1[int(team1Counter) % team1Length].get('x')
-        msgTeam1.position.y = teammate1[int(team1Counter) % team1Length].get('y')
+        msgTeam1.type = 2  # magenta
+        msgTeam1.pose.pose.pose.position.x = teammate1[int(team1Counter) % team1Length].get('x')
+        msgTeam1.pose.pose.pose.position.y = teammate1[int(team1Counter) % team1Length].get('y')
 
 
         msgTeam2 = ObstacleRelative()
-        msgTeam2.color = 2 # magenta
-        msgTeam2.position.x = teammate2[int(team2Counter) % team2Length].get('x')
-        msgTeam2.position.y = teammate2[int(team2Counter) % team2Length].get('y')
+        msgTeam2.type = 2 # magenta
+        msgTeam2.pose.pose.pose.position.x = teammate2[int(team2Counter) % team2Length].get('x')
+        msgTeam2.pose.pose.pose.position.y = teammate2[int(team2Counter) % team2Length].get('y')
 
 
         # Opponents with pathmaker, contains list of opponents
 
-        msgOp = ObstaclesRelative()
+        msgOp = ObstacleRelativeArray()
 
         msgUndef = ObstacleRelative()
-        msgUndef.color = 1 # undef
-        msgUndef.position.x = undef[int(undefCounter) % undefLength].get('x')
-        msgUndef.position.y = undef[int(undefCounter) % undefLength].get('y')
+        msgUndef.type = 1 # undef
+        msgUndef.pose.pose.pose.position.x = undef[int(undefCounter) % undefLength].get('x')
+        msgUndef.pose.pose.pose.position.y = undef[int(undefCounter) % undefLength].get('y')
 
         msgOp1 = ObstacleRelative()
-        msgOp1.color = 3 # cyan
-        msgOp1.position.x = opponent1[int(op1Counter) % op1Length].get('x')
-        msgOp1.position.y = opponent1[int(op1Counter) % op1Length].get('y')
+        msgOp1.type = 3 # cyan
+        msgOp1.pose.pose.pose.position.x = opponent1[int(op1Counter) % op1Length].get('x')
+        msgOp1.pose.pose.pose.position.y = opponent1[int(op1Counter) % op1Length].get('y')
 
 
 
