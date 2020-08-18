@@ -74,7 +74,7 @@ class TransformBall(object):
             self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
         self._goalposts_relative = rospy.Publisher("goal_parts_relative", PoseWithCertaintyArray, queue_size=1)
         self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
-        self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PixelsRelative, queue_size=1)
+        self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PolygonStamped, queue_size=1)
 
         # Subscribers
         rospy.Subscriber(ball_in_image_array_topic, BallInImageArray, self._callback_ball, queue_size=1)
@@ -237,13 +237,13 @@ class TransformBall(object):
         if field is None:
             return
 
-        field_boundary = PixelsRelative()
+        field_boundary = PolygonStamped()
         field_boundary.header = msg.header
 
         for p in msg.polygon.points:
             p_relative = self._transform(p, field, msg.header.stamp)
             if p_relative is not None:
-                field_boundary.pixels.append(p_relative)
+                field_boundary.polygon.points.append(p_relative)
             else:
                 rospy.logwarn_throttle(5.0, rospy.get_name() +
                                        ": At least one point of the Field Boundary could not be transformed," +
