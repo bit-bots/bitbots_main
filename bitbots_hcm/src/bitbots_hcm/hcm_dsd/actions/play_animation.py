@@ -19,9 +19,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
-        # deactivate the reevaluate
-        if not self.blackboard.shut_down_request:
-            self.do_not_reevaluate()
+        self.do_not_reevaluate()
 
         if self.first_perform:
             # get the animation that should be played
@@ -60,17 +58,17 @@ class AbstractPlayAnimation(AbstractActionElement):
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))     
+            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))
         if not first_try:
             server_running = False
-            while not server_running and not self.blackboard.shut_down_request and not rospy.is_shutdown():            
+            while not server_running and not self.blackboard.shut_down_request and not rospy.is_shutdown():
                 rospy.logerr_throttle(5.0,
-                "Animation Action Server not running! Motion can not work without animation action server. "
-                "Will now wait until server is accessible!")
+                                      "Animation Action Server not running! Motion can not work without animation action server. "
+                                      "Will now wait until server is accessible!")
                 server_running = self.blackboard.animation_action_client.wait_for_server(rospy.Duration(1))
             if server_running:
                 rospy.logwarn("Animation server now running, hcm will go on.")
-            else:               
+            else:
                 rospy.logwarn("Animation server did not start.")
                 return False
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
@@ -161,6 +159,7 @@ class PlayAnimationDynup(AbstractActionElement):
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
         # deactivate the reevaluate
+        self.do_not_reevaluate()
 
         if self.first_perform:
             # get the animation that should be played

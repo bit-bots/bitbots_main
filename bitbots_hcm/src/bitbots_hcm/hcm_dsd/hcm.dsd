@@ -1,21 +1,22 @@
 -->HCM
 $StartHCM
-    SHUTDOWN_REQUESTED --> @PlayAnimationSitDown, @TurnMotorsOff, @StayShutDown
+    SHUTDOWN_REQUESTED --> @PlayAnimationMotorOff, @TurnMotorsOff, @StayShutDown
     RUNNING --> $Stop
         STOPPED -->  @ForceStopWalking, @PlayAnimationStopped, @StayStopped
         FREE -->$Record
             RECORD_ACTIVE --> @StayRecord
-            FREE --> $CheckIMU
-                IMU_NOT_STARTED --> @WaitForIMU
-                PROBLEM --> @WaitForIMU
-                CONNECTION --> $CheckPressureSensor
-                    PRESSURE_NOT_STARTED --> @WaitForPressure
-                    PROBLEM --> @WaitForPressure
-                    CONNECTION --> $CheckMotors
-                        PROBLEM --> @WaitForMotors
-                        TURN_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
-                        TURN_ON --> @TurnMotorsOn
-                        OKAY --> $PickedUp
+            FREE --> $CheckMotors
+                MOTORS_NOT_STARTED --> @WaitForMotorStartup
+                PROBLEM --> @WaitForMotors
+                TURN_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
+                TURN_ON --> @TurnMotorsOn
+                OKAY --> $CheckIMU
+                    IMU_NOT_STARTED --> @WaitForIMUStartup
+                    PROBLEM --> @WaitForIMU
+                    CONNECTION --> $CheckPressureSensor
+                        PRESSURE_NOT_STARTED --> @WaitForPressureStartup
+                        PROBLEM --> @WaitForPressure
+                        CONNECTION --> $PickedUp
                             PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
                             ON_GROUND --> $FallingClassifier
                                 FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1

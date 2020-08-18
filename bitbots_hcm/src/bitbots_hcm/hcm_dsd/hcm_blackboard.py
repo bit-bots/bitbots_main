@@ -44,6 +44,7 @@ class HcmBlackboard():
         # this is used to prevent calling rospy.Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
         self.current_time = rospy.Time()
+        self.start_time = rospy.Time()
 
         # Imu
         self.last_imu_update_time = None
@@ -88,10 +89,12 @@ class HcmBlackboard():
         self.stand_up_right_animation = rospy.get_param("hcm/animations/stand_up_right")
 
         # motors
-        self.last_motor_goal_time = rospy.Time.now()  # initilize with current time, or motors will be turned off on start
+        # initialize with current time, or motors will be turned off on start
+        self.last_motor_goal_time = rospy.Time.now()
         self.last_motor_update_time = rospy.Time.from_sec(0)
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
+        #todo rename in current joint state
         self.current_joint_positions = None
         anim_package = rospy.get_param("hcm/animations/anim_package")
         rospack = rospkg.RosPack()
@@ -102,6 +105,7 @@ class HcmBlackboard():
         keyframes = json_data["keyframes"]
         self.walkready_pose_dict = keyframes[-1]["goals"]
         self.walkready_pose_threshold = rospy.get_param("hcm/animations/walkready_pose_threshold")
+        self.is_power_on = False
 
         # walking
         self.last_walking_goal_time = rospy.Time()
@@ -118,7 +122,7 @@ class HcmBlackboard():
         # kicking
         self.last_kick_feedback = None  # type: rospy.Time
 
-        # direct messages for falling classfier
+        # direct messages for falling classier
         # todo needs refactoring
 
         rospack = rospkg.RosPack()

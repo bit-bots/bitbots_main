@@ -72,6 +72,8 @@ class HardwareControlManager:
         rospy.Subscriber("joint_states", JointState, self.joint_state_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("cop_l", PointStamped, self.cop_l_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("cop_r", PointStamped, self.cop_r_cb, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("core/power_switch_status", Bool, self.power_cb, queue_size=1, tcp_nodelay=True)
+
 
         self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
 
@@ -221,9 +223,13 @@ class HardwareControlManager:
     def cop_r_cb(self, msg):
         self.blackboard.cop_r_msg = msg
 
+    def power_cb(self, msg):
+        self.blackboard.is_power_on = msg.data
+
     def main_loop(self):
-        """  """
-        rate = rospy.Rate(200)
+        """ Keeps updating the DSD and publish its current state.
+            All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
+        rate = rospy.Rate(1000)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
