@@ -29,9 +29,6 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalCallback, this);
   fieldboundary_subscriber_ = nh_.subscribe(config.fieldboundary_topic, 1, &Localization::FieldboundaryCallback,
                                             this);
-  corners_subscriber_ = nh_.subscribe(config.corners_topic, 1, &Localization::CornerCallback, this);
-  t_crossings_subscriber_ = nh_.subscribe(config.tcrossings_topic, 1, &Localization::TCrossingsCallback, this);
-  crosses_subscriber_ = nh_.subscribe(config.crosses_topic, 1, &Localization::CrossesCallback, this);
   fieldboundary_in_image_subscriber_ = nh_.subscribe(config.fieldboundary_in_image_topic, 1,
                                                      &Localization::FieldBoundaryInImageCallback, this);
 
@@ -61,9 +58,6 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   line_information_relative_.header.stamp = ros::Time(0);
   goal_relative_.header.stamp = ros::Time(0);
   fieldboundary_relative_.header.stamp = ros::Time(0);
-  corners_.header.stamp = ros::Time(0);
-  t_crossings_.header.stamp = ros::Time(0);
-  crosses_.header.stamp = ros::Time(0);
 
   robot_pose_observation_model_.reset(
       new RobotPoseObservationModel(
@@ -210,18 +204,6 @@ void Localization::FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg) 
   }
 }
 
-void Localization::CornerCallback(const hlm::PixelsRelative &msg) {
-  corners_ = msg;
-}
-
-void Localization::TCrossingsCallback(const hlm::PixelsRelative &msg) {
-  t_crossings_ = msg;
-}
-
-void Localization::CrossesCallback(const hlm::PixelsRelative &msg) {
-  crosses_ = msg;
-}
-
 void Localization::FieldBoundaryInImageCallback(const gm::PolygonStamped &msg){
   fieldboundary_in_image_.push_back(msg);
 }
@@ -296,8 +278,23 @@ void Localization::reset_filter(int distribution, double x, double y) {
 
 void Localization::updateMeasurements() {
   // Sets the measurements in the oservation model
-  if (config_.lines_factor && line_information_relative_.header.stamp != last_stamp_lines) {
-    robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
+  if (line_information_relative_.header.stamp != last_stamp_lines) {
+    if (config_.lines_factor)
+    {
+      robot_pose_observation_model_->set_measurement_lines(line_information_relative_);
+    }
+    if (config_.crosses_factor)
+    {
+      robot_pose_observation_model_->set_measurement_crosses(line_information_relative_);
+    }
+    if (config_.corners_factor)
+    {
+      robot_pose_observation_model_->set_measurement_corners(line_information_relative_);
+    }
+    if (config_.t_crossings_factor)
+    {
+    robot_pose_observation_model_->set_measurement_t_crossings(line_information_relative_);
+    }
   }
   if (config_.goals_factor && goal_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goal(goal_relative_);
@@ -305,23 +302,11 @@ void Localization::updateMeasurements() {
   if (config_.field_boundary_factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
     robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
   }
-  if (config_.corners_factor && corners_.header.stamp != last_stamp_corners) {
-    robot_pose_observation_model_->set_measurement_corners(corners_);
-  }
-  if (config_.t_crossings_factor && t_crossings_.header.stamp != last_stamp_tcrossings) {
-    robot_pose_observation_model_->set_measurement_t_crossings(t_crossings_);
-  }
-  if (config_.crosses_factor && crosses_.header.stamp != last_stamp_crosses) {
-    robot_pose_observation_model_->set_measurement_crosses(crosses_);
-  }
 
   // Set timestamps to mark past messages
   last_stamp_lines = line_information_relative_.header.stamp;
   last_stamp_goals = goal_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
-  last_stamp_corners = corners_.header.stamp;
-  last_stamp_tcrossings = t_crossings_.header.stamp;
-  last_stamp_crosses = crosses_.header.stamp;
 }
 
 void Localization::getMotion() {

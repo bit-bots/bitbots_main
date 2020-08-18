@@ -11,8 +11,8 @@
 #include <bitbots_localization/tools.h>
 #include <bitbots_localization/LocalizationConfig.h>
 #include <humanoid_league_msgs/LineInformationRelative.h>
+#include <humanoid_league_msgs/LineIntersectionRelative.h>
 #include <humanoid_league_msgs/GoalRelative.h>
-#include <humanoid_league_msgs/PixelsRelative.h>
 #include <humanoid_league_msgs/FieldBoundaryRelative.h>
 
 namespace bl = bitbots_localization;
@@ -43,11 +43,11 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement);
 
-  void set_measurement_corners(hlm::PixelsRelative measurement);
+  void set_measurement_corners(hlm::LineInformationRelative measurement);
 
-  void set_measurement_t_crossings(hlm::PixelsRelative measurement);
+  void set_measurement_t_crossings(hlm::LineInformationRelative measurement);
 
-  void set_measurement_crosses(hlm::PixelsRelative measurement);
+  void set_measurement_crosses(hlm::LineInformationRelative measurement);
 
   std::vector<std::pair<double, double>> get_measurement_lines() const;
 
@@ -81,7 +81,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
  private:
 
   double calculate_weight_for_class(
-    const RobotState &state, 
+    const RobotState &state,
     const std::vector<std::pair<double, double>> &last_measurement,
     std::shared_ptr<Map> map) const;
 

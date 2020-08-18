@@ -47,8 +47,6 @@
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/LineSegmentRelative.h>
 #include <humanoid_league_msgs/GoalRelative.h>
-#include <humanoid_league_msgs/PixelRelative.h>
-#include <humanoid_league_msgs/PixelsRelative.h>
 #include <humanoid_league_msgs/FieldBoundaryRelative.h>
 
 #include <bitbots_localization/map.h>
@@ -86,12 +84,6 @@ class Localization {
   void GoalCallback(const hlm::GoalRelative &msg); //TODO
 
   void FieldboundaryCallback(const hlm::FieldBoundaryRelative &msg);
-
-  void CornerCallback(const hlm::PixelsRelative &msg);
-
-  void TCrossingsCallback(const hlm::PixelsRelative &msg);
-
-  void CrossesCallback(const hlm::PixelsRelative &msg);
 
   void FieldBoundaryInImageCallback(const gm::PolygonStamped &msg);
 
@@ -145,18 +137,12 @@ class Localization {
   hlm::LineInformationRelative line_information_relative_;
   hlm::GoalRelative goal_relative_;
   hlm::FieldBoundaryRelative fieldboundary_relative_;
-  hlm::PixelsRelative corners_;
-  hlm::PixelsRelative t_crossings_;
-  hlm::PixelsRelative crosses_;
   sensor_msgs::CameraInfo cam_info_;
   std::vector<gm::PolygonStamped> fieldboundary_in_image_;
 
   ros::Time last_stamp_lines = ros::Time(0);
   ros::Time last_stamp_goals = ros::Time(0);
   ros::Time last_stamp_fb_points = ros::Time(0);
-  ros::Time last_stamp_corners = ros::Time(0);
-  ros::Time last_stamp_tcrossings = ros::Time(0);
-  ros::Time last_stamp_crosses = ros::Time(0);
 
   std::vector<gm::Point> interpolateFieldboundaryPoints(gm::Point point1, gm::Point point2);
 

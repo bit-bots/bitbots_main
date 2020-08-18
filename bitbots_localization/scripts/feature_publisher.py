@@ -2,7 +2,7 @@
 import rospy
 import tf2_ros
 from tf2_geometry_msgs import PoseStamped
-from humanoid_league_msgs.msg import LineInformationRelative, LineIntersectionRelative, PixelRelative, GoalRelative
+from humanoid_league_msgs.msg import LineInformationRelative, LineIntersectionRelative, GoalRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo
 import numpy as np

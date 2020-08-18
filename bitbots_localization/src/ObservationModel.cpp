@@ -102,27 +102,36 @@ void RobotPoseObservationModel::set_measurement_field_boundary(hlm::FieldBoundar
   }
 }
 
-void RobotPoseObservationModel::set_measurement_corners(hlm::PixelsRelative measurement) {
+void RobotPoseObservationModel::set_measurement_corners(hlm::LineInformationRelative measurement) {
   // convert to polar
-  for (hlm::PixelRelative &pixel : measurement.pixels) {
-    std::pair<double, double> cornerPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
-    last_measurement_corners_.push_back(cornerPolar);
+  for (hlm::LineIntersectionRelative &intersection : measurement.intersections) {
+    if (intersection.type == intersection.L)
+    {
+      std::pair<double, double> cornerPolar = cartesianToPolar(intersection.pose.pose.pose.position.x, intersection.pose.pose.pose.position.y); // z is 0
+      last_measurement_corners_.push_back(cornerPolar);
+    }
   }
 }
 
-void RobotPoseObservationModel::set_measurement_t_crossings(hlm::PixelsRelative measurement) {
+void RobotPoseObservationModel::set_measurement_t_crossings(hlm::LineInformationRelative measurement) {
   // convert to polar
-  for (hlm::PixelRelative &pixel : measurement.pixels) {
-    std::pair<double, double> tcrossingsPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
-    last_measurement_t_crossings_.push_back(tcrossingsPolar);
+  for (hlm::LineIntersectionRelative &intersection : measurement.intersections) {
+    if (intersection.type == intersection.T)
+    {
+      std::pair<double, double> cornerPolar = cartesianToPolar(intersection.pose.pose.pose.position.x, intersection.pose.pose.pose.position.y); // z is 0
+      last_measurement_t_crossings_.push_back(cornerPolar);
+    }
   }
 }
 
-void RobotPoseObservationModel::set_measurement_crosses(hlm::PixelsRelative measurement) {
+void RobotPoseObservationModel::set_measurement_crosses(hlm::LineInformationRelative measurement) {
   // convert to polar
-  for (hlm::PixelRelative &pixel : measurement.pixels) {
-    std::pair<double, double> cornerPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
-    last_measurement_crosses_.push_back(cornerPolar);
+  for (hlm::LineIntersectionRelative &intersection : measurement.intersections) {
+    if (intersection.type == intersection.X)
+    {
+      std::pair<double, double> cornerPolar = cartesianToPolar(intersection.pose.pose.pose.position.x, intersection.pose.pose.pose.position.y); // z is 0
+      last_measurement_crosses_.push_back(cornerPolar);
+    }
   }
 }
 
