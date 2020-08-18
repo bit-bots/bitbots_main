@@ -12,7 +12,7 @@ import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
-from humanoid_league_msgs.msg import ObstaclesRelative, GoalRelative, BallRelative
+from humanoid_league_msgs.msg import GoalRelative, BallRelative
 
 
 class WorldModelCapsule:
@@ -25,7 +25,6 @@ class WorldModelCapsule:
         self.goal_odom = GoalRelative()
         self.goal_odom.header.stamp = rospy.Time.now()
         self.goal_odom.header.frame_id = 'odom'
-        self.obstacles = ObstaclesRelative()
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
