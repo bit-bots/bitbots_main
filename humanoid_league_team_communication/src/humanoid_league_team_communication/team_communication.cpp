@@ -393,7 +393,7 @@ void TeamCommunication::goalCallback(const humanoid_league_msgs::GoalRelative& m
 
 }
 
-void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg){
+void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg){
   // clear team_robots_ and obstacle:robots because of new data from vision
   team_robots_.clear();
   opponent_robots_.clear();
@@ -418,17 +418,17 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstaclesR
 
   for (auto const& obstacle : msg.obstacles){
     //only take obstacles that are team mates or opponents
-    if( obstacle.color == team_color_)
+    if( obstacle.type == team_color_)
     {
-      x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
-      belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
+      belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0);
       team_robots_.push_back({x, y, belief});
     }
     else if (obstacle.color == opponent_color){
-      x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
-      belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
+      belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0);
       opponent_robots_.push_back({x, y, belief});
     }
   }
