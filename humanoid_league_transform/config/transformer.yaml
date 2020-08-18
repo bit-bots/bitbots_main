@@ -10,7 +10,7 @@ lines:
   pointcloud: true
 
 goalposts:
-  goalposts_topic: '/goal_parts_in_image'
+  goalposts_topic: '/goal_posts_in_image'
   footpoint_out_of_image_threshold: 30
   bar_height: 2.0
 
