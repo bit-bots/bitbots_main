@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """
-Hello World
+Tool to transform gazebo objects
 """
 import rospy
-
-
+import tf
 from geometry_msgs.msg import TransformStamped, PoseWithCovarianceStamped
 from gazebo_msgs.msg import ModelStates
-from humanoid_league_msgs.msg import BallRelative
-import tf
+from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 
 
 class TFWorld(object):
@@ -19,8 +17,8 @@ class TFWorld(object):
         self.robot_pub = rospy.Publisher("amcl_pose", PoseWithCovarianceStamped, queue_size=1, tcp_nodelay=True)
         self.robo_msg = PoseWithCovarianceStamped()
 
-        self.ball_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1, tcp_nodelay=True)
-        self.ball_msg = BallRelative()
+        self.balls_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1, tcp_nodelay=True)
+        self.balls = []
         rospy.spin()
 
 
@@ -50,11 +48,23 @@ class TFWorld(object):
                 transform.transform.rotation = msg.pose[i].orientation
                 br.sendTransformMessage(transform)
 
-                self.ball_msg.ball_relative.x = msg.pose[i].position.x
-                self.ball_msg.ball_relative.y = msg.pose[i].position.y
-                self.ball_msg.header.stamp = rospy.Time.now()
-                self.ball_msg.header.frame_id = "world"
-                self.ball_pub.publish(self.ball_msg)
+                ball_msg = PoseWithCertainty()
+                ball_msg.pose.pose.position.x = msg.pose[i].position.x
+                ball_msg.pose.pose.position.y = msg.pose[i].position.y
+                ball_msg.pose.pose.position.z = msg.pose[i].position.z
+                ball_msg.pose.pose.orientation.x = 0
+                ball_msg.pose.pose.orientation.y = 0
+                ball_msg.pose.pose.orientation.z = 0
+                ball_msg.pose.pose.orientation.w = 1
+                ball_msg.pose.covariance = [1]*36
+                ball_msg.confidence = 1.0
+                self.balls.append(ball_msg)
+
+        balls_msg = PoseWithCertaintyArray()
+        balls_msg.header.frame_id = "world"
+        balls_msg.header.stamp = rospy.Time.now()
+        balls_msg.poses = self.balls
+        self.balls_pub.publish(balls_msg)
 
 
         transform = TransformStamped()
