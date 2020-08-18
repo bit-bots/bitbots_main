@@ -67,7 +67,7 @@ class WorldModelCapsule:
     def get_ball_speed(self):
         raise NotImplementedError
 
-    def ball_callback(self, msg):
+    def balls_callback(self, msg):
         # type: (PoseWithCertaintyArray) -> None
         if msg.poses:
             balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
