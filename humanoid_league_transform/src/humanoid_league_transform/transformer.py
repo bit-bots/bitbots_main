@@ -126,8 +126,8 @@ class TransformBall(object):
 
         for seg in msg.segments:
             rel_seg = LineSegmentRelative()
-            rel_seg.start = self._transform(seg.start, field, msg.header.stamp)
-            rel_seg.end = self._transform(seg.end, field, msg.header.stamp)
+            rel_seg.pose.position.start = self._transform(seg.start, field, msg.header.stamp)
+            rel_seg.pose.position.end = self._transform(seg.end, field, msg.header.stamp)
 
             rel_seg.confidence = seg.confidence
 
@@ -145,7 +145,7 @@ class TransformBall(object):
                 rel_inter.pose.confidence = intersection.confidence
                 rel_inter.pose.pose.pose.position = rel_inter_pos
                 line.intersections.append(rel_inter)
-                
+
         if line.segments or line.intersections:
             self._line_relative_pub.publish(line)
         else:
