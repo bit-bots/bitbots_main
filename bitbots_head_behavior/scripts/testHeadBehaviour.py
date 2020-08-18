@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import rospy
-from humanoid_league_msgs.msg import BallInImage, BallRelative, BallInImageArray
+from humanoid_league_msgs.msg import BallInImage, BallInImageArray
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
