@@ -4,33 +4,46 @@
 import rospy
 import sys
 import random
-from humanoid_league_msgs.msg import BallRelative
+from humanoid_league_msgs.msg import PoseWithCertainty, PoseWithCertaintyArray
 
 delta = 1
 max_x = 10
 min_x = 0.3
 max_y = 10
 min_y = -10
+max_z = 0
+min_z = 0
 
 if __name__ == "__main__":
     rospy.init_node("ball_relative_publisher")
-    ball_relative_publisher = rospy.Publisher("ball_relative", BallRelative, queue_size=10, tcp_nodelay=True)
-    ball_msg = BallRelative()
+    balls_relative_publisher = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=10, tcp_nodelay=True)
+
     x = random.uniform(min_x, max_x) / 4
     y = random.uniform(min_y, max_y) / 4
+    z = random.uniform(min_z, max_z) / 4
 
     while not rospy.is_shutdown():
-        if len(sys.argv) == 3:
-            ball_msg.ball_relative.x = float(sys.argv[1])
-            ball_msg.ball_relative.y = float(sys.argv[2])
+        ball_msg = PoseWithCertainty()
+        if len(sys.argv) is in [3, 4]:
+            ball_msg.pose.pose.position.x = float(sys.argv[1])
+            ball_msg.pose.pose.position.y = float(sys.argv[2])
+            if len(sys.argv) == 4:
+                ball_msg.pose.pose.position.z= float(sys.argv[3])
         else:
             ball_msg.ball_relative.x = x
             ball_msg.ball_relative.y = y
+            ball_msg.ball_relative.z = z
+
+            # New position for next step
             x = max(min_x, min(x + delta * random.uniform(-1, 1), max_x))
             y = max(min_y, min(y + delta * random.uniform(-1, 1), max_y))
-        ball_msg.ball_relative.z = 0
-        ball_msg.confidence = 1
-        ball_msg.header.stamp = rospy.Time.now()
-        rospy.loginfo(ball_msg)
-        ball_relative_publisher.publish(ball_msg)
+            z = max(min_z, min(z + delta * random.uniform(-1, 1), max_z))
+
+        ball_msg.confidence = 1.0
+
+        balls_msg = PoseWithCertaintyArray()
+        balls_msg.header.stamp = rospy.Time.now()
+        balls_msg.poses = [ball_msg]
+        balls_relative_publisher.publish(balls_msg)
+
         rospy.sleep(0.5)
