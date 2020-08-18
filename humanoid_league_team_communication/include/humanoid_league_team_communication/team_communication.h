@@ -6,7 +6,7 @@
 #include "humanoid_league_msgs/BallRelative.h"
 #include "humanoid_league_msgs/TeamData.h"
 #include "humanoid_league_msgs/GoalRelative.h"
-#include "humanoid_league_msgs/ObstaclesRelative.h"
+#include "humanoid_league_msgs/ObstacleRelativeArray.h"
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/Position2D.h"
 #include "humanoid_league_msgs/RobotControlState.h"
@@ -40,7 +40,7 @@ class TeamCommunication{
   void positionCallback(const humanoid_league_msgs::Position2D& msg);
   void ballCallback(const humanoid_league_msgs::BallRelative& msg);
   void goalCallback(const humanoid_league_msgs::GoalRelative& msg);
-  void obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg);
+  void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg);
   void worldCallback(const humanoid_league_msgs::Model& msg);
 
   int avg_walking_speed_ = 0;
