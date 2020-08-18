@@ -2,8 +2,7 @@
 WorldModellCapsule
 ^^^^^^^^^^^^^^^^^^
 
-Provides informations about the world model.
-
+Provides information about the world model.
 """
 import math
 
@@ -12,7 +11,7 @@ import tf2_ros as tf2
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
-from humanoid_league_msgs.msg import GoalRelative, BallRelative
+from humanoid_league_msgs.msg import GoalRelative, PoseWithCertaintyArray
 
 
 class WorldModelCapsule:
@@ -34,7 +33,7 @@ class WorldModelCapsule:
         self.field_width = field_width
         self.goal_width = goal_width
 
-        # Publisher for Visualisation in RViZ
+        # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('/debug/viz_goal', GoalRelative, queue_size=1)
 
@@ -68,27 +67,33 @@ class WorldModelCapsule:
     def get_ball_speed(self):
         raise NotImplementedError
 
-    def ball_callback(self, ball):
-        # type: (BallRelative) -> None
-        if ball.confidence == 0:
-            return
+    def ball_callback(self, msg):
+        # type: (PoseWithCertaintyArray) -> None
+        if msg.poses:
+            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
+            ball = balls[0]  # Ball with highest confidence
 
-        # adding a minor delay to timestamp to ease transformations.
-        ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
-        ball_buffer = PointStamped(ball.header, ball.ball_relative)
-        if ball.header.frame_id != 'base_footprint':
-            try:
-                self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+            if ball.confidence == 0:
+                return
+
+            # adding a minor delay to timestamp to ease transformations.
+            ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
+            ball_buffer = PointStamped(ball.header, ball.ball_relative)
+            if ball.header.frame_id != 'base_footprint':
+                try:
+                    self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+                    self.ball_seen_time = rospy.Time.now()
+                    self.ball_seen = True
+
+                except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                    rospy.logwarn(e)
+            else:
+                self.ball = ball_buffer
                 self.ball_seen_time = rospy.Time.now()
                 self.ball_seen = True
-
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
+            self.ball_publisher.publish(self.ball)
         else:
-            self.ball = ball_buffer
-            self.ball_seen_time = rospy.Time.now()
-            self.ball_seen = True
-        self.ball_publisher.publish(self.ball)
+            return
 
     def forget_ball(self):
         """Forget that we saw a ball"""
