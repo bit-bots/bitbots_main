@@ -13,7 +13,6 @@ from humanoid_league_msgs.msg import RobotControlState
 from bitbots_hcm.fall_classifier import FallClassifier
 import rospkg
 
-
 # robot states that are published to the rest of the software
 # definition from humanoid_league_msgs/RobotControlState.msg
 STATE_CONTROLLABLE = 0

@@ -27,7 +27,7 @@ import os
 class HardwareControlManager:
     def __init__(self):
 
-        # necessary for on shutdown hook, incase of direct shutdown before finished initilization
+        # necessary for on shutdown hook, in case of direct shutdown before finished initialization
         self.blackboard = None
 
         # --- Initialize Node ---
@@ -57,8 +57,10 @@ class HardwareControlManager:
         speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
 
         rospy.Subscriber("imu/data", Imu, self.update_imu, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("foot_pressure_left/filtered", FootPressure, self.update_pressure_left, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("foot_pressure_right/filtered", FootPressure, self.update_pressure_right, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("foot_pressure_left/filtered", FootPressure, self.update_pressure_left, queue_size=1,
+                         tcp_nodelay=True)
+        rospy.Subscriber("foot_pressure_right/filtered", FootPressure, self.update_pressure_right, queue_size=1,
+                         tcp_nodelay=True)
         rospy.Subscriber("walking_motor_goals", JointCommand, self.walking_goal_callback, queue_size=1,
                          tcp_nodelay=True)
         rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1, tcp_nodelay=True)
@@ -123,8 +125,7 @@ class HardwareControlManager:
 
     def walking_goal_callback(self, msg):
         self.blackboard.last_walking_goal_time = rospy.Time.now()
-        if self.blackboard.current_state == STATE_CONTROLLABLE or \
-                        self.blackboard.current_state == STATE_WALKING:
+        if self.blackboard.current_state == STATE_CONTROLLABLE or self.blackboard.current_state == STATE_WALKING:
             self.joint_goal_publisher.publish(msg)
 
     def dynup_callback(self, msg):
@@ -230,11 +231,12 @@ class HardwareControlManager:
             self.hcm_state_publisher.publish(self.blackboard.current_state)
 
             try:
-                # catch exeption of moving backwarts in time, when restarting simulator
+                # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException:
                 rospy.logwarn(
-                    "We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
+                    "We moved backwards in time. I hope you just reset the simulation. If not there is something "
+                    "wrong")
             except rospy.exceptions.ROSInterruptException:
                 exit()
 

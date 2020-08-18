@@ -8,9 +8,11 @@ from geometry_msgs.msg import Point
 import math
 import numpy as np
 
+
 class FallClassifier:
 
     def __init__(self, path, smooth_threshold=10):
+        """We open a saved classifier which uses the scikit-learn library."""
         with open(path + "classifier.pkl", 'rb') as file:
             self.classifier = pickle.load(file)
         with open(path + "scaler.pkl", 'rb') as file:
@@ -18,7 +20,7 @@ class FallClassifier:
         with open(path + "types.pkl", 'rb') as file:
             self.types = pickle.load(file)
 
-        #print(F'{self.classifier}  {self.types}')
+        # print(F'{self.classifier}  {self.types}')
 
         self.counter = 0
         self.last_prediction = 0
@@ -32,11 +34,11 @@ class FallClassifier:
                                   imu_fused=self.types['imu_fused'], cop=self.types['cop'])
         scaled_date = self.scaler.transform([data])
         result = self.classifier.predict(scaled_date)
-        #print((time.time() - start_time) * 1000)
+        # print((time.time() - start_time) * 1000)
         return result[0]
 
     def smooth_classify(self, imu, joint_state, cop_l, cop_r):
-        # only predict a fall if we classified this 10 times straight
+        """ Only predict a fall if we got same result more than smooth_threshold times straight. """
         prediction = self.classify(imu, joint_state, cop_l, cop_r)
         if prediction == self.last_prediction and prediction != 0:
             self.counter += 1
@@ -85,6 +87,7 @@ def get_data_from_msgs(imu_msg, joint_state_msg, cop_l_msg, cop_r_msg, imu_raw=T
         data.append(cop_r_msg.point.x)
         data.append(cop_r_msg.point.y)
     return data
+
 
 # Python version of this code https://github.com/AIS-Bonn/rot_conv_lib/blob/master/src/rot_conv.cpp
 def fused_from_quat(q):

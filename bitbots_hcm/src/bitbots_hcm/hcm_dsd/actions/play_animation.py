@@ -29,7 +29,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             anim = self.chose_animation()
 
             # try to start animation
-            sucess = self.start_animation(anim)            
+            sucess = self.start_animation(anim)
             # if we fail, we need to abort this action
             if not sucess:
                 rospy.logerr("Could not start animation. Will abort play animation action!")
@@ -95,10 +95,12 @@ class PlayAnimationStandUpBack(AbstractPlayAnimation):
         rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
         return self.blackboard.stand_up_back_animation
 
+
 class PlayAnimationStandUpLeft(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING STAND UP LEFT ANIMATION")
         return self.blackboard.stand_up_left_animation
+
 
 class PlayAnimationStandUpRight(AbstractPlayAnimation):
     def chose_animation(self):
@@ -209,4 +211,3 @@ class PlayAnimationDynup(AbstractActionElement):
     def animation_finished(self):
         state = self.blackboard.dynup_action_client.get_state()
         return state == 3
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 import rospy
 from humanoid_league_msgs.msg import Audio
 from std_msgs.msg import Bool
@@ -28,7 +28,6 @@ class Pause(object):
         self.speak_publisher = rospy.Publisher("/speak", Audio, queue_size=10)
 
         self.talking = rospy.get_param("/pause/talking", True)
-
 
     def manual_update(self, req):
         if req.penalize == 0:
