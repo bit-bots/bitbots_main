@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import rospy
-from humanoid_league_msgs.msg import BallRelative, BallInImageArray, \
-    LineInformationInImage, \
-    LineInformationRelative, LineSegmentRelative, LineIntersectionRelative, \
+from humanoid_league_msgs.msg import LineInformationInImage, LineInformationRelative, \
+    LineSegmentRelative, LineIntersectionRelative, \
     ObstacleInImageArray, ObstacleRelativeArray, ObstacleRelative, \
     PoseWithCertainty, PoseWithCertaintyArray, GoalPostInImageArray
 from geometry_msgs.msg import Point, PolygonStamped
@@ -13,7 +12,7 @@ from tf2_geometry_msgs import PointStamped
 import numpy as np
 
 
-class TransformBall(object):
+class Transformer(object):
     def __init__(self):
         rospy.init_node("humanoid_league_transformer")
 
@@ -67,7 +66,7 @@ class TransformBall(object):
                          self._camera_info.header.frame_id)
 
         # Publishers TODO make topics configurable
-        self._ball_relative_pub = rospy.Publisher("ball_relative", BallRelative, queue_size=1)
+        self._balls_relative_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1)
         if publish_lines_as_lines_relative:
             self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if publish_lines_as_pointcloud:
@@ -99,21 +98,20 @@ class TransformBall(object):
         if field is None:
             return
 
-        br = BallRelative()
-        br.header.stamp = msg.header.stamp
-        br.header.frame_id = self._publish_frame
-
-        if len(msg.candidates) > 1:
-            rospy.logwarn_throttle(5.0, "Multiple ball candidates in BallInImageArray message. " +
-                                   "They will be published as multiple BallRelative messages")
+        balls = []
         for ball in msg.candidates:
-            br.ball_relative = self._transform(ball.center, field, msg.header.stamp)
-            br.confidence = ball.confidence
+            ball_relative = PoseWithCertainty()
+            
+            ball_relative.pose.pose.position = self._transform(ball.center, field, msg.header.stamp)
+            ball_relative.confidence = ball.confidence
+            balls.append(ball_relative)
 
-            if br.ball_relative is not None:
-                self._ball_relative_pub.publish(br)
-            else:
-                rospy.logwarn_throttle(5.0, rospy.get_name() + ": Got a ball I could not transform")
+        balls_relative = PoseWithCertaintyArray()
+        balls_relative.header.stamp = msg.header.stamp
+        balls_relative.header.frame_id = self._publish_frame
+        balls_relative.poses = balls
+
+        self._balls_relative_pub.publish(balls_relative)
 
     def _callback_lines(self, msg):
         field = self.get_plane(msg.header.stamp, 0.0)
@@ -338,4 +336,4 @@ class TransformBall(object):
 
 
 if __name__ == "__main__":
-    TransformBall()
+    Transformer()
