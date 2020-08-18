@@ -51,9 +51,9 @@ bool LedsHardwareInterface::setLeds(bitbots_msgs::LedsRequest &req, bitbots_msgs
 
 uint32_t rgba_to_int32(std_msgs::ColorRGBA rgba) {
   uint32_t led = (uint8_t) rgba.r * 255;
-  led |= ((uint8_t) rgba.g * 255) << 8;
-  led |= ((uint8_t) rgba.b * 255) << 16;
-  led |= ((uint8_t) rgba.a * 255) << 24;
+  led |= ((uint8_t) (rgba.g * 255)) << 8;
+  led |= ((uint8_t) (rgba.b * 255)) << 16;
+  led |= ((uint8_t) (rgba.a * 255)) << 24;
   return led;
 }
 

@@ -11,6 +11,8 @@ ERROR_TIMEOUT = 1
 rospy.init_node("error_blink")
 
 last_hardware_error_time = None
+# true means warning, false error
+warn_not_error = True
 currently_blinking = False
 leds_red = False
 led_set_time = None
@@ -21,24 +23,40 @@ red_request = LedsRequest()
 red_leds_array = []
 for i in range(3):
     red_led = ColorRGBA()
-    red_led.r = 1
-    red_led.a = 0
+    red_led.r = 1.0
+    red_led.a = 1.0
     red_leds_array.append(red_led)
+
 red_request.leds = red_leds_array
+
+orange_leds_array = []
+for i in range(3):
+    orange_led = ColorRGBA()
+    orange_led.r = 1
+    orange_led.g = 0.5
+    orange_led.b = 0
+    orange_led.a = 1.0
+    orange_leds_array.append(orange_led)
 
 previous_req = LedsRequest()
 
 
 def cb(msg: DiagnosticStatus):
-    global last_hardware_error_time
+    global last_hardware_error_time, warn_not_error
     # we check if any status in the received array is not ok
     if msg.level != DiagnosticStatus.OK:
+        warn_not_error = msg.level == DiagnosticStatus.WARN
         last_hardware_error_time = rospy.Time.now().to_sec()
 
 
 def set_red():
-    global leds_red, red_request
+    global leds_red, red_request, warn_not_error
     leds_red = True
+    # set orange or red
+    if warn_not_error:
+        red_request.leds = orange_leds_array
+    else:
+        red_request.leds = red_leds_array
     previous_req.leds = led_serv(red_request).previous_leds
 
 

@@ -171,6 +171,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 
   if (pinged.size() != dxl_devices.size()) {
     ROS_ERROR("Could not ping all devices!");
+    speakError(speak_pub_, "error starting ros control");
     // check which devices were not pinged successful
     for (std::pair<std::string, int> &device : dxl_devices) {
       if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
@@ -178,6 +179,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
         ROS_ERROR("%s with id %d missing", device.first.c_str(), device.second);
       }
     }
+  }else{
+    speakError(speak_pub_, "ros control startup successful");
   }
 }
 
@@ -211,11 +214,6 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   bool success = true;
   for (bool s : successes) {
     success &= s;
-  }
-  if (success) {
-    speakError(speak_pub_, "ros control startup successful");
-  } else {
-    speakError(speak_pub_, "error starting ros control");
   }
   // init servo interface last after all servo busses are there
   success &= servo_interface_.init(root_nh, root_nh);

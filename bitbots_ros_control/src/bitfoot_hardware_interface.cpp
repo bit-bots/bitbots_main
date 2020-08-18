@@ -38,7 +38,7 @@ void BitFootHardwareInterface::read(const ros::Time &t, const ros::Duration &dt)
       current_pressure_[i].push_back((double) pres_d);
     }
   } else {
-    ROS_ERROR_THROTTLE(3.0, "Could not read foot sensor");
+    ROS_ERROR_THROTTLE(3.0, "Could not read %s", name_.c_str());
     read_successful = false;
   }
 
