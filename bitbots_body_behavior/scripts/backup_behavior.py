@@ -137,21 +137,24 @@ class Behavior(object):
             self.goal_in_front = False
 
     def balls_relative_cb(self, msg):
-        balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
-        ball = balls[0]  # Ball with highest confidence
+        if msg.poses:
+            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
+            ball = balls[0]  # Ball with highest confidence
 
-        # Get ball relative to base footprint
-        ball_obj = PointStamped()
-        ball_obj.header = msg.header
-        ball_obj.point = ball
-        x, y = self.get_ball_position_uv(ball_obj)
-        self.ball_position = (float(x), float(y))
-        # Set ball distance
-        self.ball_distance = math.sqrt(float(self.ball_position[0])**2 + float(self.ball_position[1])**2)
-        # Calculate the angle in which we are facing the ball
-        self.ball_angle = math.atan2(float(self.ball_position[1]),float(self.ball_position[0]))
-        # Set the refresh time
-        self.ball_age = time.time()
+            # Get ball relative to base footprint
+            ball_obj = PointStamped()
+            ball_obj.header = msg.header
+            ball_obj.point = ball
+            x, y = self.get_ball_position_uv(ball_obj)
+            self.ball_position = (float(x), float(y))
+            # Set ball distance
+            self.ball_distance = math.sqrt(float(self.ball_position[0])**2 + float(self.ball_position[1])**2)
+            # Calculate the angle in which we are facing the ball
+            self.ball_angle = math.atan2(float(self.ball_position[1]),float(self.ball_position[0]))
+            # Set the refresh time
+            self.ball_age = time.time()
+        else:
+            rospy.logwarn("Received empty balls message")
 
 
     def get_ball_position_uv(self, ball):
