@@ -15,7 +15,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
                                                                      ros::TransportHints().tcpNoDelay());
   ros::Subscriber ball_relative_subscriber = n.subscribe("/ball_relative",
                                                          1,
-                                                         &ConvenienceFramesBroadcaster::ballCallback,
+                                                         &ConvenienceFramesBroadcaster::ballsCallback,
                                                          this,
                                                          ros::TransportHints().tcpNoDelay());
   ros::Subscriber goal_relative_subscriber = n.subscribe("/goal_relative",
@@ -134,9 +134,13 @@ void ConvenienceFramesBroadcaster::supportFootCallback(const std_msgs::Char::Con
   is_left_support = (msg->data == 'l');
 }
 
-void ConvenienceFramesBroadcaster::ballCallback(const humanoid_league_msgs::BallRelative::ConstPtr &msg) {
-  publishTransform(msg->header.frame_id, "ball",
-                   msg->ball_relative.x, msg->ball_relative.y, msg->ball_relative.z);
+void ConvenienceFramesBroadcaster::ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg) {
+  for (humanoid_league_msgs::PoseWithCertainty ball : msg->poses) {
+    publishTransform(msg->header.frame_id, "ball",
+                    ball.pose.pose.position.x,
+                    ball.pose.pose.position.y,
+                    ball.pose.pose.position.z);
+  }
 }
 
 void ConvenienceFramesBroadcaster::goalCallback(const humanoid_league_msgs::GoalRelative::ConstPtr &msg) {
