@@ -1,0 +1,6 @@
+bool do_adaptive_gain
+bool do_bias_estimation
+float32 bias_alpha
+float32 accel_gain
+
+---
