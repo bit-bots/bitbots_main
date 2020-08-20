@@ -97,7 +97,7 @@ class Simulation:
                                  jointDamping=joint_damping)
                 p.changeDynamics(self.plane_index, -1, lateralFriction=lateral_friction,
                                  spinningFriction=spinning_friction,
-                                 rollingFriction=rolling_friction, resistution=0.9)
+                                 rollingFriction=rolling_friction, restitution=0.9)
 
     def set_filter_params(self, cutoff, order):
         for i in range(p.getNumJoints(self.robot_index)):
