@@ -1,7 +1,3 @@
-[submodule "lib/pointcloud_to_laserscan"]
-	path = lib/pointcloud_to_laserscan
-	url = https://github.com/ros-perception/pointcloud_to_laserscan.git
-	branch = lunar-devel
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
 	url = https://github.com/TAMS-Group/bio_ik.git
@@ -62,26 +58,12 @@
 [submodule "udp_bridge"]
 	path = udp_bridge
 	url = git@github.com:bit-bots/udp_bridge.git
-[submodule "lib/dwa_local_planner"]
-	path = lib/dwa_local_planner
-	url = git@github.com:bit-bots/dwa_local_planner.git
-[submodule "lib/vision_opencv"]
-	path = lib/vision_opencv
-	url = git@github.com:ros-perception/vision_opencv.git
-    branch = melodic
 [submodule "bitbots_tools"]
 	path = bitbots_tools
 	url = git@github.com:bit-bots/bitbots_tools.git
-[submodule "lib/geometry2"]
-	path = lib/geometry2
-	url = https://github.com/ros/geometry2
-    branch = melodic-devel
 [submodule "lib/particle_filter"]
 	path = lib/particle_filter
 	url = git@github.com:bit-bots/particle_filter.git
-[submodule "lib/orocos_kinematics_dynamics"]
-	path = lib/orocos_kinematics_dynamics
-	url = https://github.com/orocos/orocos_kinematics_dynamics.git
 [submodule "lib/rot_conv_lib"]
 	path = lib/rot_conv_lib
 	url = git@github.com:bit-bots/rot_conv_lib.git
