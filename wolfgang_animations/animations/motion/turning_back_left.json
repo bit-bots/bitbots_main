@@ -14,7 +14,7 @@
                 "LHipPitch": 27, 
                 "LHipRoll": 4, 
                 "LHipYaw": -43, 
-                "LKnee": -58, 
+                "LKnee": 58,
                 "LShoulderPitch": 0, 
                 "LShoulderRoll": 0, 
                 "RAnklePitch": 26, 
@@ -23,7 +23,7 @@
                 "RHipPitch": -27, 
                 "RHipRoll": -4, 
                 "RHipYaw": 1, 
-                "RKnee": 58, 
+                "RKnee": -58,
                 "RShoulderPitch": 0, 
                 "RShoulderRoll": 0
             }, 
