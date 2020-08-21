@@ -169,7 +169,9 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
             dxl_nh.param<float>("joint_offset", joint_offset, 0.0);
             servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
           } else {
-            ROS_WARN("Could not identify device for ID %d", id);
+            if (!only_pressure_ && !only_imu_){
+              ROS_WARN("Could not identify device for ID %d", id);
+            }
           }
           pinged.push_back(name);
         }
