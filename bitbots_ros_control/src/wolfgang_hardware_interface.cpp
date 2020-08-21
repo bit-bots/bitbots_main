@@ -8,6 +8,7 @@ namespace bitbots_ros_control {
  * a common bus driver over multiple hardware interfaces possible.
  */
 WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
+  first_ping_error_ = true;
   speak_pub_ = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
 
   // load parameters
@@ -43,6 +44,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   // create overall servo interface since we need a single interface for the controllers
   servo_interface_ = DynamixelServoHardwareInterface();
   servo_interface_.setParent(this);
+  //todo check and remove if possible
   /* duplicate?
   // set the dynamic reconfigure and load standard params for servo interface
  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
@@ -51,6 +53,20 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, servo_interface_, _1, _2);
  server.setCallback(f);*/
 
+  // try to ping all devices on the list, add them to the driver and create corresponding hardware interfaces
+  // try until interruption to enable the user to turn on the power
+  while (ros::ok()) {
+    if (create_interfaces(nh, dxl_devices)) {
+      break;
+    }
+    //sleep(3);
+  }
+}
+
+//todo this could be done parallel with threads for speed up
+bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
+                                                  std::vector<std::pair<std::string, int>> dxl_devices) {
+  interfaces_ = std::vector<std::vector<hardware_interface::RobotHW *>>();
   // init bus drivers
   std::vector<std::string> pinged;
   XmlRpc::XmlRpcValue port_xml;
@@ -69,7 +85,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
       exit(1);
     }
     // some interface seem to produce some gitter directly after connecting. wait or it will interfere with pings
-    sleep(1);
+    // sleep(1);
     driver->setPacketHandler(protocol_version);
     std::vector<hardware_interface::RobotHW *> interfaces_on_port;
     // iterate over all devices and ping them to see what is connected to this bus
@@ -170,17 +186,28 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   }
 
   if (pinged.size() != dxl_devices.size()) {
-    ROS_ERROR("Could not ping all devices!");
-    speakError(speak_pub_, "error starting ros control");
-    // check which devices were not pinged successful
-    for (std::pair<std::string, int> &device : dxl_devices) {
-      if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
+    if (pinged.empty() || pinged.size() == 1) {
+      ROS_ERROR("Could not start ros control. Power is off!");
+      speakError(speak_pub_, "Could not start ros control. Power is off!");
+    } else {
+      if (first_ping_error_) {
+        first_ping_error_ = false;
       } else {
-        ROS_ERROR("%s with id %d missing", device.first.c_str(), device.second);
+        ROS_ERROR("Could not ping all devices!");
+        speakError(speak_pub_, "error starting ros control");
+        // check which devices were not pinged successful
+        for (std::pair<std::string, int> &device : dxl_devices) {
+          if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
+          } else {
+            ROS_ERROR("%s with id %d missing", device.first.c_str(), device.second);
+          }
+        }
       }
     }
-  }else{
+    return false;
+  } else {
     speakError(speak_pub_, "ros control startup successful");
+    return true;
   }
 }
 

@@ -10,6 +10,13 @@ CoreHardwareInterface::CoreHardwareInterface(std::shared_ptr<DynamixelDriver> &d
   read_counter_ = 0;
   requested_power_switch_status_ = true;
   power_switch_status_.data = false;
+
+  power_switch_status_ = std_msgs::Bool();
+  VCC_ = std_msgs::Float64();
+  VBAT_ = std_msgs::Float64();
+  VEXT_ = std_msgs::Float64();
+  VDXL_ = std_msgs::Float64();
+  current_ = std_msgs::Float64();
 }
 
 bool CoreHardwareInterface::switch_power(std_srvs::SetBoolRequest &req, std_srvs::SetBoolResponse &resp) {
@@ -25,13 +32,6 @@ bool CoreHardwareInterface::switch_power(std_srvs::SetBoolRequest &req, std_srvs
 
 bool CoreHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
-
-  power_switch_status_ = std_msgs::Bool();
-  VCC_ = std_msgs::Float64();
-  VBAT_ = std_msgs::Float64();
-  VEXT_ = std_msgs::Float64();
-  VDXL_ = std_msgs::Float64();
-  current_ = std_msgs::Float64();
 
   power_pub_ = nh.advertise<std_msgs::Bool>("/core/power_switch_status", 1);
   vcc_pub_ = nh.advertise<std_msgs::Float64>("/core/vcc", 1);
@@ -66,7 +66,7 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       // convert to ampere. first go to voltage by 1024*3.3. shift by 2.5 and mulitply by volt/ampere
       current_.data = ((((float) dxlMakeword(data[8], data[9])) * (3.3 / 1024)) - 2.5) / 0.066;
       // we need to apply a threshold on this to see if power is on or off
-      float power = (float)(dxlMakeword(data[10], data[11]) * (3.3 / 1024));
+      float power = (float) (dxlMakeword(data[10], data[11]) * (3.3 / 1024));
       power_switch_status_.data = power > 3.3 / 2;
       power_pub_.publish(power_switch_status_);
       vcc_pub_.publish(VCC_);

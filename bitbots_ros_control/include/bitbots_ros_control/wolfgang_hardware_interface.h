@@ -26,10 +26,15 @@ class WolfgangHardwareInterface : public hardware_interface::RobotHW {
   void write(const ros::Time &t, const ros::Duration &dt);
 
  private:
+  bool create_interfaces(ros::NodeHandle &nh, std::vector<std::pair<std::string, int>> dxl_devices);
+
   // two dimensional list of all hardware interfaces, sorted by port
   std::vector<std::vector<hardware_interface::RobotHW *>> interfaces_;
   DynamixelServoHardwareInterface servo_interface_;
   ros::Publisher speak_pub_;
+
+  // prevent unnecessary error when power is turned on
+  bool first_ping_error_;
 
   bool only_imu_;
   bool only_pressure_;

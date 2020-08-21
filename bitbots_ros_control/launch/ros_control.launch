@@ -22,14 +22,14 @@
 
     <group if="$(arg only_imu)">
         <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-              output="screen" args="--timeout 20  imu_sensor_controller">
+              output="screen" args="--timeout 300  imu_sensor_controller">
         </node>
     </group>
 
     <group unless="$(arg only_imu)">
         <group unless="$(arg only_pressure)">
             <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
-                  args="--timeout 20 joint_state_controller imu_sensor_controller DynamixelController">
+                  args="--timeout 300 joint_state_controller imu_sensor_controller DynamixelController">
             </node>
         </group>
     </group>
