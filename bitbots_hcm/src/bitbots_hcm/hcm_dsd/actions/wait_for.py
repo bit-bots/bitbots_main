@@ -48,7 +48,7 @@ class WaitForPressure(AbstractActionElement):
         super(WaitForPressure, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        rospy.logwarn_throttle(10, "HCM gets no correct pressure data. Waiting for pressure sensors to connect.\n"
+        rospy.logwarn_throttle(30, "HCM gets no correct pressure data. Waiting for pressure sensors to connect.\n"
                                    "Use rqt_monitor to check hardware status. "
                                    "Please check if the pressure sensors are correctly zeroed. If you "
                                    "have no pressure sensors installed, you may want to set the HCM config "

@@ -5,6 +5,8 @@ import humanoid_league_msgs.msg
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLLABLE, STATE_FALLEN, STATE_FALLING, \
     STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, \
     STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF, STATE_KICKING
+from humanoid_league_speaker.speaker import speak
+from humanoid_league_msgs.msg import Speak
 
 
 class StartHCM(AbstractDecisionElement):
@@ -69,7 +71,7 @@ class CheckMotors(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(CheckMotors, self).__init__(blackboard, dsd, parameters)
         self.last_msg = None
-        self.last_different_msg_time = 0
+        self.last_different_msg_time = rospy.Time.from_sec(0)
         self.had_problem = False
 
     def perform(self, reevaluate=False):
@@ -82,7 +84,8 @@ class CheckMotors(AbstractDecisionElement):
         # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
         # have a small break, since this can happen often due to loose cabling
         if self.last_msg is not None and self.blackboard.current_joint_positions is not None \
-                and not self.last_msg.position == self.blackboard.current_joint_positions.position:
+                and not self.last_msg.position == self.blackboard.current_joint_positions.position \
+                and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
         self.last_msg = self.blackboard.current_joint_positions
 
@@ -96,24 +99,24 @@ class CheckMotors(AbstractDecisionElement):
                                     self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
             self.blackboard.current_state = STATE_MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off
-            return "TURN_MOTORS_OFF"
+            return "TURN_OFF"
 
         # see if we get no messages or always the exact same
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_different_msg_time.to_sec() > 0.1:
+        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
             if self.blackboard.is_power_on:
-                if not self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() -
-                    self.blackboard.start_time.to_sec() < 10:
+                if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
+                        self.blackboard.start_time.to_sec() < 10:
                     # we are still in startup phase, just wait and dont complain
-                    return "START_UP_MOTORS"
+                    return "MOTORS_NOT_STARTED"
                 else:
                     # tell that we have a hardware problem
-                    self.blackboard.current_state = STATE_HARDWARE_PROBLEM
                     self.had_problem = True
                     # wait for motors to connect
+                    self.blackboard.current_state = STATE_HARDWARE_PROBLEM
                     return "PROBLEM"
             else:
                 # we have to turn the motors on
-                return "TURN_MOTORS_ON"
+                return "TURN_ON"
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
@@ -133,34 +136,30 @@ class CheckIMU(AbstractDecisionElement):
     Since the HCM can not detect falls without it, we will shut everything down if we dont have an imu.
     """
 
-    def __init__(self):
+    def __init__(self, blackboard, dsd, parameters=None):
         super(CheckIMU, self).__init__(blackboard, dsd, parameters)
         self.last_msg = None
-        self.last_different_msg_time = 0
+        self.last_different_msg_time = rospy.Time.from_sec(0)
         self.had_problem = False
 
     def perform(self, reevaluate=False):
-        self.clear_debug_data()
-
         if self.blackboard.visualization_active:
-            # In visualization, we do not have an IMU. Therefore, return CONNECTION to ignore that.
-            return "CONNECTION"
+            # In visualization, we do not have an IMU. Therefore, return OKAY to ignore that.
+            return "OKAY"
 
         # we will get always the same message if there is no connection, so check if it differs
         if self.last_msg is not None and self.blackboard.imu_msg is not None \
-                and not self.last_msg.orientation == self.blackboard.imu_msg.orientation:
+                and not self.last_msg.orientation == self.blackboard.imu_msg.orientation \
+                and not self.blackboard.imu_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
         self.last_msg = self.blackboard.imu_msg
 
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_different_msg_time.to_sec() > 0.1:
-            if not self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() -
-                self.blackboard.start_time.to_sec() < 10:
+        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
+            if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
+                    self.blackboard.start_time.to_sec() < 10:
                 # wait for the IMU to start
                 return "IMU_NOT_STARTED"
             else:
-                # tell that we have a hardware problem
-                self.publish_debug_data("Time since last IMU update",
-                                        self.blackboard.current_time.to_sec() - self.blackboard.last_imu_update_time.to_sec())
                 self.blackboard.current_state = STATE_HARDWARE_PROBLEM
                 self.had_problem = True
                 return "PROBLEM"
@@ -170,7 +169,7 @@ class CheckIMU(AbstractDecisionElement):
             rospy.loginfo("IMU is now connected. Will resume.")
             self.had_problem = False
 
-        return "CONNECTION"
+        return "OKAY"
 
     def get_reevaluate(self):
         return True
@@ -184,12 +183,10 @@ class CheckPressureSensor(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(CheckPressureSensor, self).__init__(blackboard, dsd, parameters)
         self.last_pressure_values = None
-        self.last_different_msg_time = 0
+        self.last_different_msg_time = rospy.Time.from_sec(0)
         self.had_problem = False
 
     def perform(self, reevaluate=False):
-        self.clear_debug_data()
-
         if self.blackboard.visualization_active:
             # no pressure sensors is visualization, but thats okay
             return "OKAY"
@@ -197,29 +194,16 @@ class CheckPressureSensor(AbstractDecisionElement):
         if not self.blackboard.pressure_sensors_installed:
             # no pressure sensors installed, no check necessary
             return "OKAY"
+        if not self.blackboard.pressure_diag_error:
+            self.last_different_msg_time = self.blackboard.current_time
 
-        # check each strain gage independently, since sometimes connection is lost to just one of them
-        if self.last_pressure_values is not None:
-            found_same = False
-            for i in range(len(self.blackboard.pressures)):
-                if self.blackboard.pressures[i] == self.last_pressure_values[i]:
-                    found_same = True
-                    break
-            if not found_same:
-                self.last_different_msg_time = self.blackboard.current_time
-        self.last_pressure_values = self.blackboard.pressures
-
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_different_msg_time.to_sec() > 0.1:
-            if not self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() -
-                self.blackboard.start_time.to_sec() < 10:
+        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
+            if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
+                    self.blackboard.start_time.to_sec() < 10:
                 # wait for the pressure sensors to start
                 self.blackboard.current_state = STATE_STARTUP
                 return "PRESSURE_NOT_STARTED"
-            elif self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec() > self.blackboard.pressure_timeout_duration \
-                    or self.same_pressure_msg_counter >= 10:
-                # tell that we have a hardware problem
-                self.publish_debug_data("Time since last pressure-sensor update",
-                                        self.blackboard.current_time.to_sec() - self.blackboard.last_pressure_update_time.to_sec())
+            else:
                 self.blackboard.current_state = STATE_HARDWARE_PROBLEM
                 return "PROBLEM"
 
@@ -228,7 +212,7 @@ class CheckPressureSensor(AbstractDecisionElement):
             rospy.loginfo("Pressure sensors are now connected. Will resume.")
             self.had_problem = False
 
-        return "CONNECTION"
+        return "OKAY"
 
     def get_reevaluate(self):
         return True
@@ -246,7 +230,9 @@ class PickedUp(AbstractDecisionElement):
                 abs(self.blackboard.smooth_accel[0]) < self.blackboard.pickup_accel_threshold and \
                 abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
             self.blackboard.current_state = STATE_PICKED_UP
-            # we do an action sequence to tgo to walkready and stay in picked up state
+            if not reevaluate:
+                speak("Picked up!", self.blackboard.speak_publisher, priority=Speak.HIGH_PRIORITY)
+            # we do an action sequence to go to walkready and stay in picked up state
             return "PICKED_UP"
 
         # robot is not picked up

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import math
+import sys
+
 import numpy
 
 import rospy
@@ -73,7 +75,6 @@ class HardwareControlManager:
         rospy.Subscriber("cop_l", PointStamped, self.cop_l_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("cop_r", PointStamped, self.cop_r_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("core/power_switch_status", Bool, self.power_cb, queue_size=1, tcp_nodelay=True)
-
 
         self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
 
@@ -233,8 +234,12 @@ class HardwareControlManager:
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
-            self.dsd.update()
-            self.hcm_state_publisher.publish(self.blackboard.current_state)
+            try:
+                self.dsd.update()
+                self.hcm_state_publisher.publish(self.blackboard.current_state)
+            except IndexError:
+                # this error will happen during shutdown procedure, just ignore it
+                pass
 
             try:
                 # catch exception of moving backwards in time, when restarting simulator
@@ -259,7 +264,7 @@ class HardwareControlManager:
             self.blackboard.current_time = rospy.Time.now()
             self.dsd.update()
             self.hcm_state_publisher.publish(self.blackboard.current_state)
-            rospy.sleep(0.1)
+            rospy.sleep(0.01)
 
 
 def main():

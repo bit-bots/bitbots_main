@@ -26,6 +26,8 @@ class AbstractPlayAnimation(AbstractActionElement):
             # defined by implementations of this abstract class
             anim = self.chose_animation()
 
+            rospy.logerr(anim)
+
             # try to start animation
             sucess = self.start_animation(anim)
             # if we fail, we need to abort this action

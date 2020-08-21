@@ -5,6 +5,7 @@ import tf
 from sensor_msgs.msg import Imu
 import rospy
 
+
 # todo hip pitch offset
 
 class FallChecker(object):
@@ -21,16 +22,22 @@ class FallChecker(object):
         self.ground_coefficient = rospy.get_param("hcm/falling/" + robot_type_name + "/ground_coefficient")
         rospy.set_param("hcm/ground_coefficient", self.ground_coefficient)
 
-        if not rospy.has_param("ZMPConfig/" + robot_type_name + "/HipPitch"):
-            rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
+        walking_pitch_param_name = "/walking/engine/trunk_pitch"
+        if not rospy.has_param(walking_pitch_param_name):
+            rospy.logwarn("Trunk pitch parameter from walking was not found on parameter server, will use 0.")
+            self.pitch_offset = 0
+        else:
+            self.pitch_offset = rospy.get_param(walking_pitch_param_name)
 
         self.falling_threshold_front = rospy.get_param("hcm/threshold_gyro_y_front")
         # rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
         self.falling_threshold_side = rospy.get_param("hcm/threshold_gyro_x_side")
         # rospy.set_param("hcm/threshold_gyro_x_side", self.falling_threshold_side)
-        self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling_threshold_orientation_front_back"))
+        self.falling_threshold_orientation_front_back = math.radians(
+            rospy.get_param("hcm/falling_threshold_orientation_front_back"))
         # rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
-        self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))
+        self.falling_threshold_orientation_left_right = math.radians(
+            rospy.get_param("hcm/falling_threshold_orientation_left_right"))
         # rospy.set_param("hcm/falling_threshold_orientation_left_right", self.falling_threshold_orientation_left_right)
 
         # Grenzwerte an Untergrund anpassen
@@ -42,7 +49,6 @@ class FallChecker(object):
         self.LEFT = "LEFT"
         self.RIGHT = "RIGHT"
         self.SIDE = "SIDE"
-
 
     def update_reconfigurable_values(self, config, level):
         # Dynamic Reconfigure
@@ -69,7 +75,7 @@ class FallChecker(object):
         x_fall_quantification = self.calc_fall_quantification(
             self.falling_threshold_orientation_left_right,
             self.falling_threshold_front,
-            euler[0],
+            euler[0] - self.pitch_offset,
             not_much_smoothed_gyro[0])
 
         y_fall_quantification = self.calc_fall_quantification(
@@ -102,15 +108,16 @@ class FallChecker(object):
                 return self.RIGHT
         return None
 
-    def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
+    def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler,
+                                 current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
         if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
             # calculatiung the orentation skalar for the threshold
-            skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
+            skalar = max((falling_threshold_orientation - abs(current_axis_euler)) / falling_threshold_orientation, 0)
             # checking if the rotation velocity is lower than the the threshold
             if falling_threshold_gyro * skalar < abs(current_axis__gyro):
                 # returning the fall quantification function
-                return abs(current_axis__gyro) * (1-skalar)
+                return abs(current_axis__gyro) * (1 - skalar)
         return 0
 
     def check_fallen(self, smooth_accel, not_much_smoothed_gyro):

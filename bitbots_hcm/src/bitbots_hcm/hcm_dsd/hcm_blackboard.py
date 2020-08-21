@@ -4,6 +4,8 @@ import math
 import json
 import rospkg
 import os
+
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from std_srvs.srv import Empty
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
@@ -43,8 +45,8 @@ class HcmBlackboard():
 
         # this is used to prevent calling rospy.Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
-        self.current_time = rospy.Time()
-        self.start_time = rospy.Time()
+        self.current_time = rospy.Time().now()
+        self.start_time = rospy.Time().now()
 
         # Imu
         self.last_imu_update_time = None
@@ -94,7 +96,7 @@ class HcmBlackboard():
         self.last_motor_update_time = rospy.Time.from_sec(0)
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
-        #todo rename in current joint state
+        # todo rename in current joint state
         self.current_joint_positions = None
         anim_package = rospy.get_param("hcm/animations/anim_package")
         rospack = rospkg.RosPack()
@@ -136,5 +138,20 @@ class HcmBlackboard():
         def last_kick_feedback_callback(msg):
             self.last_kick_feedback = rospy.Time.now()
 
-        rospy.Subscriber('/dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=False,
+        rospy.Subscriber('/dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=True,
                          queue_size=1)
+
+        self.servo_diag_error = False
+        self.imu_diag_error = False
+        self.pressure_diag_error = False
+
+        def diag_cb(msg: DiagnosticArray):
+            for status in msg.status:
+                if status.name == "/Servos":
+                    self.servo_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
+                elif status.name == "/IMU":
+                    self.imu_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
+                elif status.name == "/Pressure":
+                    self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
+
+        rospy.Subscriber("/diagnostics_agg", DiagnosticArray, diag_cb, tcp_nodelay=True, queue_size=1)
