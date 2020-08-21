@@ -116,6 +116,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
             // CORE
             int read_rate;
             dxl_nh.param<int>("read_rate", read_rate, 1);
+            driver->setTools(model_number_specified_16, id);
             CoreHardwareInterface *interface = new CoreHardwareInterface(driver, id, read_rate);
             interfaces_on_port.push_back(interface);
           } else if (model_number_specified == 0 && !only_imu_) {//model number is currently 0 on foot sensors

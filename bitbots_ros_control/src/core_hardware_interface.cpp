@@ -24,7 +24,7 @@ bool CoreHardwareInterface::switch_power(std_srvs::SetBoolRequest &req, std_srvs
   // wait for main loop to set value
   // we only need to write something if requested power status and current power status do not match
   if (requested_power_switch_status_ != power_switch_status_.data) {
-    driver_->writeRegister(id_, "ADDR_CONTROL_ITEM_POWER", requested_power_switch_status_);
+    driver_->writeRegister(id_, "Power", requested_power_switch_status_);
   }
   resp.success = true;
   return true;
