@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard

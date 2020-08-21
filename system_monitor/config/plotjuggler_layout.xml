@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget name="Main Window" parent="main_window">
+  <plotmatrix rows="2" columns="1" tab_name="CPU">
+   <plot row="0" col="0">
+    <range top="100.000000" bottom="0.000000" left="0.000000" right="8.029071"/>
+    <limitY max="100" min="0"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.0/cpu_usage" B="180" G="119" R="31"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.1/cpu_usage" B="40" G="39" R="214"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.2/cpu_usage" B="56" G="201" R="26"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.3/cpu_usage" B="14" G="127" R="255"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.4/cpu_usage" B="193" G="76" R="241"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.5/cpu_usage" B="189" G="103" R="148"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.6/cpu_usage" B="207" G="190" R="23"/>
+    <curve custom_transform="noTransform" name="/system_workload/cpus.7/cpu_usage" B="34" G="189" R="188"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range top="279.000000" bottom="1.000000" left="0.000000" right="8.029071"/>
+    <limitY min="1"/>
+    <curve custom_transform="noTransform" name="/system_workload/running_processes" B="180" G="119" R="31"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix rows="1" columns="1" tab_name="Memory">
+   <plot row="0" col="0">
+    <range top="16662851584.000000" bottom="0.000000" left="0.000000" right="0.518927"/>
+    <limitY min="0"/>
+    <curve custom_transform="noTransform" name="/system_workload/memory_total" B="40" G="39" R="214"/>
+    <curve custom_transform="noTransform" name="/system_workload/memory_used" B="180" G="119" R="31"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix rows="1" columns="1" tab_name="Network">
+   <plot row="0" col="0">
+    <range top="24198.000000" bottom="0.000000" left="0.000000" right="4.023767"/>
+    <limitY min="0"/>
+    <curve custom_transform="noTransform" name="/system_workload/network_interfaces.0/rate_received_bytes" B="180" G="119" R="31"/>
+    <curve custom_transform="noTransform" name="/system_workload/network_interfaces.0/rate_sent_bytes" B="40" G="39" R="214"/>
+    <curve custom_transform="noTransform" name="/system_workload/network_interfaces.1/rate_received_bytes" B="56" G="201" R="26"/>
+    <curve custom_transform="noTransform" name="/system_workload/network_interfaces.1/rate_sent_bytes" B="14" G="127" R="255"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <currentPlotMatrix index="0"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS bags">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="ROS /rosout Visualization" status="idle"/>
+  <plugin ID="ROS Topic Re-Publisher" status="idle"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets>
+  <snippet name="1st_derivative" language="JS">
+   <global>var prevX = 0
+var prevY = 0</global>
+   <equation>dx = time - prevX
+dy = value - prevY
+prevX = time
+prevY = value
+
+return dy/dx</equation>
+  </snippet>
+  <snippet name="1st_order_lowpass" language="JS">
+   <global>var prevY = 0
+var alpha = 0.1</global>
+   <equation>prevY = alpha * value + (1.-alpha) * prevY
+
+return prevY</equation>
+  </snippet>
+  <snippet name="2D_velocity" language="JS">
+   <global>var prev_x = 0
+var prev_y = 0
+var prev_t = 0</global>
+   <equation>X = $$your_odometry/position/x$$
+Y = $$your_odometry/position/y$$
+
+var dist = sqrt( (X-prev_x)*(X-prev_x) + (Y-prev_y)*(Y-prev_y) )
+var dT = time - prev_t
+
+prev_x = X
+prev_y = Y
+prev_t = time
+
+return dist / dT</equation>
+  </snippet>
+  <snippet name="average_two_curves" language="JS">
+   <global></global>
+   <equation>a = $$PLOT_A$$
+b = $$PLOT_B$$
+
+return (a+b)/2</equation>
+  </snippet>
+  <snippet name="integral" language="JS">
+   <global>var integral = 0</global>
+   <equation>integral += value
+return integral</equation>
+  </snippet>
+  <snippet name="rad_to_deg" language="JS">
+   <global></global>
+   <equation>return value*180/3.1417</equation>
+  </snippet>
+  <snippet name="remove_offset" language="JS">
+   <global>var is_first = true
+var first_value = 0</global>
+   <equation>if (is_first)
+{
+  is_first = false
+  first_value = value
+}
+
+return value - first_value</equation>
+  </snippet>
+  <snippet name="yaw_from_quaternion" language="JS">
+   <global>// source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+function quaternionToYaw(x, y, z, w)
+{
+  // yaw (z-axis rotation)
+  t1 = 2.0 * (w * z + x * y);
+  t2 = 1.0 - 2.0 * (y * y + z * z);
+  yaw = Math.atan2(t1, t2);
+
+  return yaw
+}</global>
+   <equation>return quaternionToYaw(x, y, z, w);</equation>
+  </snippet>
+ </snippets>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
+

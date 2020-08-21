@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="bitbots_convenience_frames" type="convenience_frames" name="convenience_frames" />
+
+</launch>

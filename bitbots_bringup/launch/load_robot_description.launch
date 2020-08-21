@@ -27,7 +27,7 @@
             <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_logitech.urdf.xacro" />
         </group>
         <group if="$(arg basler)">
-            <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
+            <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/robot.urdf use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />
             <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro" />
         </group>
         <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
@@ -66,15 +66,18 @@
             <remap from="/joint_states" to="joint_states" />    
         </node>
         <param name="/simulation_active" value="true"/>
+        <param name="/use_sim_time" value="true"/>
     </group>
 
     <group unless="$(arg sim)">
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
         </node>
         <param name="/simulation_active" value="false"/>
+        <param name="/use_sim_time" value="false"/>
     </group>
 
     <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
-    <include file="$(find bitbots_odometry)/launch/odometry.launch" />
 
+    <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
+    <include file="$(find bitbots_convenience_frames)/launch/convenience_frames.launch"/>
 </launch>
