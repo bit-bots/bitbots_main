@@ -39,7 +39,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
 
   // wait for transforms from joints
   while (!tf_buffer_.canTransform("l_sole", "base_link", ros::Time(0), ros::Duration(1)) && ros::ok()) {
-    ROS_WARN("Wainting for transforms from robot joints");
+    ROS_WARN_THROTTLE(30, "Wainting for transforms from robot joints");
   }
 
   ros::Rate r(200.0);
