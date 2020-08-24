@@ -1,6 +1,11 @@
+#ShutDownProcedure
+$PickedUp
+    PICKED_UP --> @TurnMotorsOff, @StayShutDown
+    ON_GROUND --> @PlayAnimationMotorOff, @TurnMotorsOff, @StayShutDown
+
 -->HCM
 $StartHCM
-    SHUTDOWN_REQUESTED --> @PlayAnimationMotorOff, @TurnMotorsOff, @StayShutDown
+    SHUTDOWN_REQUESTED --> #ShutDownProcedure
     RUNNING --> $Stop
         STOPPED -->  @ForceStopWalking, @PlayAnimationStopped, @StayStopped
         FREE -->$Record
