@@ -10,7 +10,7 @@ from copy import deepcopy
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
-from geometry_msgs import PolygonStamped
+from geometry_msgs.msg import PolygonStamped
 from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
     ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
     GoalPostInImageArray, Audio
