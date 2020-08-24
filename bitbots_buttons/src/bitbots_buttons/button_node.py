@@ -89,7 +89,7 @@ class ButtonNode(object):
                     self.button2_long()
             self.button2_time = 0
 
-    def button1_short(self):
+    def button2_short(self):
         """
         Unpenalizes the robot, if it is penalized and manual penalty mode is true.
         """
@@ -118,7 +118,7 @@ class ButtonNode(object):
             speak("Foot zeroing failed", self.speak_publisher, speaking_active=self.speaking_active)
             print("foot zeroing service did not process request: " + str(exc))
 
-    def button2_short(self):
+    def button1_short(self):
         """
         Penalizes the robot, if it is not penalized and manual penalty mode is true.
         """
