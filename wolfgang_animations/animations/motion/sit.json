@@ -7,7 +7,7 @@
             "duration": 1.0, 
             "goals": {
                 "HeadPan": 0,
-                "HeadTilt": 47, 
+                "HeadTilt": 0,
                 "LAnklePitch": -80, 
                 "LAnkleRoll": 0, 
                 "LElbow": -88, 
