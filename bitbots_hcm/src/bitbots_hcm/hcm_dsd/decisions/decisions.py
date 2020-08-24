@@ -248,7 +248,6 @@ class Falling(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        return "NOT_FALLING"
         # check if the robot is currently falling
         falling_direction = self.blackboard.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion)
         if self.blackboard.falling_detection_active and falling_direction is not None:
@@ -327,7 +326,6 @@ class Fallen(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        return "NOT_FALLEN"
         # check if the robot is currently laying on the ground
         fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
         if self.blackboard.is_stand_up_active and fallen_side is not None:

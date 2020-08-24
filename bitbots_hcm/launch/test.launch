@@ -16,4 +16,6 @@
         <arg name="sim" value="$(arg sim)"/>          
     </include>
 
+    <include file="$(find bitbots_dynup)/launch/dynup.launch"/>
+
 </launch>

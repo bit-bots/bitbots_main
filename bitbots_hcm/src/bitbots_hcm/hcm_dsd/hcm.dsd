@@ -19,17 +19,17 @@ $StartHCM
                         OKAY --> $PickedUp
                             PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
                             ON_GROUND --> $Fallen
-                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
-                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
-                                FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup
-                                FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup
-                                NOT_FALLEN --> $FallingClassifier
+                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationWalkready
+                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationWalkready
+                                FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationWalkready
+                                FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationWalkready
+                                NOT_FALLEN --> $Falling
                                     FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
                                     FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
                                     FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
                                     FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
                                     NOT_FALLING --> $Sitting
-                                        YES --> @PlayAnimationDynup
+                                        YES --> @PlayAnimationWalkready
                                         NO --> $ExternalAnimation
                                             ANIMATION_RUNNING --> @StayAnimationRunning
                                             FREE --> $Walking
