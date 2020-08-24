@@ -14,6 +14,11 @@ class AbstractChangeMotorPower(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractChangeMotorPower, self).__init__(blackboard, dsd, parameters=None)
 
+        try:
+            rospy.wait_for_service('/core/switch_power', timeout=10)
+        except:
+            rospy.logwarn("HCM waiting for switch power service")
+        rospy.wait_for_service('/core/switch_power')
         self.switch_power = rospy.ServiceProxy('/core/switch_power', SetBool)
 
     def perform(self, reevaluate=False):
