@@ -9,7 +9,7 @@ CoreHardwareInterface::CoreHardwareInterface(std::shared_ptr<DynamixelDriver> &d
   read_rate_ = read_rate;
   read_counter_ = 0;
   requested_power_switch_status_ = true;
-  power_switch_status_.data = false;
+  power_switch_status_.data = true;
 
   power_switch_status_ = std_msgs::Bool();
   VCC_ = std_msgs::Float64();
@@ -22,10 +22,6 @@ CoreHardwareInterface::CoreHardwareInterface(std::shared_ptr<DynamixelDriver> &d
 bool CoreHardwareInterface::switch_power(std_srvs::SetBoolRequest &req, std_srvs::SetBoolResponse &resp) {
   requested_power_switch_status_ = req.data;
   // wait for main loop to set value
-  // we only need to write something if requested power status and current power status do not match
-  if (requested_power_switch_status_ != power_switch_status_.data) {
-    driver_->writeRegister(id_, "Power", requested_power_switch_status_);
-  }
   resp.success = true;
   return true;
 }
@@ -123,7 +119,11 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
   read_counter_++;
 }
 
-// we dont write anything to the pressure sensors
 void CoreHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
+  // we only need to write something if requested power status and current power status do not match
+  if (requested_power_switch_status_ != power_switch_status_.data) {
+    driver_->writeRegister(id_, "Power", requested_power_switch_status_);
+    power_switch_status_.data  = requested_power_switch_status_;
+  }
 }
 }
