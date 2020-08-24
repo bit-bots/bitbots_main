@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import RobotControlState
 
 # robot states that are published to the rest of the software
 # definition from humanoid_league_msgs/RobotControlState.msg
-STATE_CONTROLABLE = 0
+STATE_CONTROLLABLE = 0
 STATE_FALLING = 1
 STATE_FALLEN = 2
 STATE_GETTING_UP = 3
@@ -34,7 +34,7 @@ STATE_KICKING = 15
 
 class HcmBlackboard():
     def __init__(self):
-        self.current_state = STATE_STARTUP 
+        self.current_state = STATE_STARTUP
         self.stopped = False
         self.shut_down_request = False
         self.simulation_active = rospy.get_param("/simulation_active", False)

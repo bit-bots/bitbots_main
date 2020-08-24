@@ -15,7 +15,7 @@ from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
+from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
     STATE_SHUT_DOWN, STATE_HCM_OFF, STATE_FALLEN, STATE_KICKING
 from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
@@ -117,7 +117,7 @@ class HardwareControlManager:
 
     def walking_goal_callback(self, msg):
         self.blackboard.last_walking_goal_time = rospy.Time.now()
-        if self.blackboard.current_state == STATE_CONTROLABLE or \
+        if self.blackboard.current_state == STATE_CONTROLLABLE or \
                         self.blackboard.current_state == STATE_WALKING:
             self.joint_goal_publisher.publish(msg)
 
@@ -127,7 +127,7 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
-        if self.blackboard.current_state == STATE_CONTROLABLE or self.blackboard.current_state == STATE_WALKING:
+        if self.blackboard.current_state == STATE_CONTROLLABLE or self.blackboard.current_state == STATE_WALKING:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
 
@@ -163,7 +163,7 @@ class HardwareControlManager:
             else:
                 # comming from outside
                 # check if we can run an animation now
-                if self.blackboard.current_state != STATE_CONTROLABLE:
+                if self.blackboard.current_state != STATE_CONTROLLABLE:
                     rospy.logwarn("HCM is not controllable, animation refused.")
                     return
                 else:

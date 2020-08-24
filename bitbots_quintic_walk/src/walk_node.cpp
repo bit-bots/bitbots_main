@@ -7,7 +7,7 @@ namespace bitbots_quintic_walk {
 WalkNode::WalkNode() :
   robot_model_loader_("robot_description", false) {
   // init variables
-  robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLABLE;
+  robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
   current_request_.orders = {0, 0, 0};
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
@@ -82,7 +82,7 @@ void WalkNode::run() {
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
        * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
       // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-      current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLABLE ||
+      current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
           robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
           robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
       // update walk engine response
