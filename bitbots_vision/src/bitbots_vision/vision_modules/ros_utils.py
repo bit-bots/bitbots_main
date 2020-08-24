@@ -6,7 +6,7 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point, PolygonStamped
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
-    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, GoalInImage, Audio, RegionOfInterestWithImage
+    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, Audio, RegionOfInterestWithImage
 from bitbots_msgs.msg import Config
 
 """
@@ -293,45 +293,6 @@ def build_goal_post_msgs(goalposts):
         post_msg.top_point = post_msg.foot_point
         message_list.append(post_msg)
     return message_list
-
-def build_goal_msg(goal_parts_msg):
-    """
-    Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same.
-    This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context.
-
-    :param goal_parts_msg: goal parts as ros message
-    :return: goal message
-    """
-    # Make new goal message
-    goal_msg = GoalInImage()
-    # Add header of the goal parts
-    goal_msg.header = goal_parts_msg.header
-    # Create goal posts at unrealistic high/low values
-    left_post = GoalPostInImage()
-    left_post.foot_point.x = 9999999999
-    left_post.confidence = 1.0
-    right_post = GoalPostInImage()
-    right_post.foot_point.x = -9999999999
-    right_post.confidence = 1.0
-
-    # Set our posts
-    for post in goal_parts_msg.posts:
-        # Decide if its a left post
-        if post.foot_point.x < left_post.foot_point.x:
-            left_post = post
-            left_post.confidence = post.confidence
-        # Decide if its a right post
-        if post.foot_point.x > right_post.foot_point.x:
-            right_post = post
-            right_post.confidence = post.confidence
-
-    # Set posts in message
-    goal_msg.left_post = left_post
-    goal_msg.right_post = right_post
-    goal_msg.confidence = 1.0
-    # Return message if there are any posts
-    if goal_parts_msg.posts:
-        return goal_msg
 
 def build_balls_msg(header, balls):
     """
