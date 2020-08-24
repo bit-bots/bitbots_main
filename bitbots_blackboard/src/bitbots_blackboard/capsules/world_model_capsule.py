@@ -71,14 +71,14 @@ class WorldModelCapsule:
         # type: (PoseWithCertaintyArray) -> None
         if msg.poses:
             balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
+            msg.header.stamp += rospy.Duration.from_sec(0.01)
             ball = balls[0]  # Ball with highest confidence
 
             if ball.confidence == 0:
                 return
 
             # adding a minor delay to timestamp to ease transformations.
-            ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
-            ball_buffer = PointStamped(ball.header, ball.ball_relative)
+            ball_buffer = PointStamped(msg.header, ball.ball_relative)
             if ball.header.frame_id != 'base_footprint':
                 try:
                     self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
