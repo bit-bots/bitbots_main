@@ -11,17 +11,36 @@ LedsHardwareInterface::LedsHardwareInterface(std::shared_ptr<DynamixelDriver> &d
   // we want to write the LEDs in the beginning to show that ros control started successfully. set LED 1 white
   write_leds_ = true;
   leds_[0] = std_msgs::ColorRGBA();
-  leds_[0].r = 1.0;
-  leds_[0].g = 1.0;
-  leds_[0].b = 1.0;
+  leds_[0].r = 0.1;
+  leds_[0].g = 0.1;
+  leds_[0].b = 0.1;
   leds_[0].a = 1.0;
 }
 
 bool LedsHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
   leds_service_ = nh_.advertiseService("/set_leds", &LedsHardwareInterface::setLeds, this);
+  sub0_ = nh_.subscribe("/led0",1, &LedsHardwareInterface::ledCb0, this, ros::TransportHints().tcpNoDelay());
+  sub1_ = nh_.subscribe("/led1",1, &LedsHardwareInterface::ledCb1, this, ros::TransportHints().tcpNoDelay());
+  sub2_ = nh_.subscribe("/led2",1, &LedsHardwareInterface::ledCb2, this, ros::TransportHints().tcpNoDelay());
 
   return true;
+}
+
+// todo this could be done more clever and for a general number of leds
+void LedsHardwareInterface::ledCb0(std_msgs::ColorRGBA msg){
+    leds_[0] = msg;
+    write_leds_ = true;
+}
+
+void LedsHardwareInterface::ledCb1(std_msgs::ColorRGBA msg){
+    leds_[1] = msg;
+    write_leds_ = true;
+}
+
+void LedsHardwareInterface::ledCb2(std_msgs::ColorRGBA msg){
+    leds_[2] = msg;
+    write_leds_ = true;
 }
 
 void LedsHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {}

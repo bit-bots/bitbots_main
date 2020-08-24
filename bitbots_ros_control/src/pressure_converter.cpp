@@ -73,7 +73,7 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   sub_ = pnh_.subscribe(topic + "/raw",
                         1,
                         &PressureConverter::pressureCallback,
-                        this/*, ros::TransportHints().tcpNoDelay()*/);
+                        this, ros::TransportHints().tcpNoDelay());
 }
 
 void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPtr &pressure_raw) {

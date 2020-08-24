@@ -33,6 +33,14 @@ private:
 
   ros::ServiceServer leds_service_;
   bool setLeds(bitbots_msgs::LedsRequest& req, bitbots_msgs::LedsResponse& resp);
+
+  void ledCb0(std_msgs::ColorRGBA msg);
+  void ledCb1(std_msgs::ColorRGBA msg);
+  void ledCb2(std_msgs::ColorRGBA msg);
+
+  ros::Subscriber sub0_;
+  ros::Subscriber sub1_;
+  ros::Subscriber sub2_;
 };
 }
 #endif
