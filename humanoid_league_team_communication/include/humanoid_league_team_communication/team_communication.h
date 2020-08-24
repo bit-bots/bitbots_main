@@ -9,7 +9,7 @@
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
-#include "humanoid_league_msgs/Model.h"
+//#include "humanoid_league_msgs/Model.h"
 #include "humanoid_league_msgs/PoseWithCertainty.h"
 #include "humanoid_league_msgs/PoseWithCertaintyArray.h"
 #include <ros/ros.h>
