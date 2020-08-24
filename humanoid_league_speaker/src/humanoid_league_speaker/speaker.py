@@ -14,7 +14,7 @@ from humanoid_league_speaker.cfg import speaker_paramsConfig
 from humanoid_league_msgs.msg import Audio
 
 
-def speak(text, publisher, priority=1, speaking_active=True):
+def speak(text, publisher, priority=20, speaking_active=True):
     """ Utility method which can be used by other classes to easily publish a message."""
     if speaking_active:
         msg = Audio()
