@@ -58,8 +58,6 @@ if __name__ == "__main__":
         seg.end.x = x_end
         seg.end.y = y_end
         seg.confidence = 1.0
-        seg.start_width = 5
-        seg.end_width = 5
         li.segments.append(seg)
 
         pub.publish(li)

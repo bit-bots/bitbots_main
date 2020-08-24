@@ -50,7 +50,7 @@ TeamCommunication::TeamCommunication() : nh_() {
   //else{
   sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
                                   ros::TransportHints().tcpNoDelay());
-  sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballCallback, this,
+    sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballsCallback, this,
                               ros::TransportHints().tcpNoDelay());
   sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
                                    this, ros::TransportHints().tcpNoDelay());
@@ -367,14 +367,24 @@ void TeamCommunication::positionCallback(const geometry_msgs::PoseWithCovariance
   position_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg){
+void TeamCommunication::ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg){
+  // TODO: Replace sorting by just filtering for the ball with highest confidence
+  auto sortByConfidence = (humanoid_league_msgs::PoseWithCertainty const& ball1,
+    humanoid_league_msgs::PoseWithCertainty const& ball2) -> bool
+  {
+    return ball1->confidence >= ball2->confidence;
+  }
+
+  std::sort(msg->poses.begin(), msg->poses.end(), sortByConfidence);  // Sort balls by confidence
+  humanoid_league_msgs::PoseWithCertainty const& ball = msg->poses[0];  // Choose ball with highest confidence
+
   //conversion from m (ROS message) to mm (self.mitecom)
-  ball_relative_x_ = static_cast<uint64_t>(msg.pose.pose.position.x * 1000.0);
-  ball_relative_y_ = static_cast<uint64_t>(msg.pose.pose.position.y * 1000.0);
+  ball_relative_x_ = static_cast<uint64_t>(ball->pose.pose.position.x * 1000.0);
+  ball_relative_y_ = static_cast<uint64_t>(ball->pose.pose.position.y * 1000.0);
   //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  //ball_belief_ = static_cast<uint64_t>(msg.confidence * 255.0); TODO transformation
+  //ball_belief_ = static_cast<uint64_t>(ball->confidence * 255.0); //TODO transformation
   //use pythagoras to compute time to ball
-  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(msg.pose.pose.position.x, 2.0) + pow(msg.pose.pose.position.y, 2.0))) * 1000.0) / avg_walking_speed_);
+  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(ball_relative_x_, 2.0) + pow(ball_relative_y_, 2.0))) * 1000.0) / avg_walking_speed_);
   time_to_position_at_ball_set_ = true;
   ball_exists_ = msg.header.stamp.sec;
 }
@@ -424,15 +434,15 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
     //only take obstacles that are team mates or opponents
     if( obstacle.type == team_color_)
     {
-      x = static_cast<uint64_t>(obstacle.pose.pose.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.pose.pose.position.y * 1000.0);
-      //belief = static_cast<uint64_t>(obstacle.confidence * 255.0); TODO confidence
+      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
+      //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0); //TODO confidence
       team_robots_.push_back({x, y, belief});
     }
-    else if (obstacle.type == opponent_color){
-      x = static_cast<uint64_t>(obstacle.pose.pose.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.pose.pose.position.y * 1000.0);
-      //belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+    else if (obstacle.color == opponent_color){
+      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
+      //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0);
       opponent_robots_.push_back({x, y, belief});
     }
   }
@@ -442,7 +452,7 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
 /**
 void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
   //ball
-  ballCallback(msg.ball);
+  ballsCallback(msg.ball);
 
   //position
   //conversion from m (ROS message) to mm (self.mitecom)

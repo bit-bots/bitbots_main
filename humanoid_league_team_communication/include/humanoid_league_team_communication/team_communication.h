@@ -3,11 +3,16 @@
 
 #include <pthread.h>
 #include <vector>
+#include <algorithm>
 #include "humanoid_league_msgs/TeamData.h"
+#include "humanoid_league_msgs/GoalRelative.h"
 #include "humanoid_league_msgs/ObstacleRelativeArray.h"
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
+#include "humanoid_league_msgs/Model.h"
+#include "humanoid_league_msgs/PoseWithCertainty.h"
+#include "humanoid_league_msgs/PoseWithCertaintyArray.h"
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
@@ -35,8 +40,8 @@ class TeamCommunication{
   void strategyCallback(humanoid_league_msgs::Strategy msg);
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
-  void ballCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
-  void goalCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
+  void ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg);
+  void goalCallback(const geometry_msgs::PoseWithCovarianceArray& msg);
   void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg);
   //void worldCallback(const humanoid_league_msgs::Model& msg);
 
