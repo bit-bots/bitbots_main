@@ -71,7 +71,7 @@ class Transformer(object):
             self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if publish_lines_as_pointcloud:
             self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
-        self._goalposts_relative = rospy.Publisher("goal_parts_relative", PoseWithCertaintyArray, queue_size=1)
+        self._goalposts_relative = rospy.Publisher("goal_posts_relative", PoseWithCertaintyArray, queue_size=1)
         self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
         self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PolygonStamped, queue_size=1)
 
