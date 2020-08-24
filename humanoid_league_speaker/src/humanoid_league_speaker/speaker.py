@@ -11,13 +11,13 @@ from dynamic_reconfigure.server import Server
 
 from humanoid_league_speaker.cfg import speaker_paramsConfig
 
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Audio
 
 
-def speak(text, publisher, priority=Speak.MID_PRIORITY, speaking_active=True):
+def speak(text, publisher, priority=1, speaking_active=True):
     """ Utility method which can be used by other classes to easily publish a message."""
     if speaking_active:
-        msg = Speak()
+        msg = Audio()
         msg.priority = priority
         msg.text = text
         publisher.publish(msg)
@@ -56,7 +56,7 @@ class Speaker(object):
         self.server = Server(speaker_paramsConfig, self.reconfigure)
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/speak", Speak, self.speak_cb)
+        rospy.Subscriber("/speak", Audio, self.speak_cb)
 
         # --- Start loop ---
         self.run_speaker()
@@ -126,14 +126,14 @@ class Speaker(object):
             # don't accept new messages
             return
 
-        if prio == msg.LOW_PRIORITY and self.message_level == 0:
+        if prio == 0 and self.message_level == 0:
             for queued_text in self.low_prio_queue:
                 if queued_text == (text, is_file):
                     new = False
                     break
             if new:
                 self.low_prio_queue.append((text, is_file))
-        elif prio == msg.MID_PRIORITY and self.message_level <= 1:
+        elif prio == 1 and self.message_level <= 1:
             for queued_text in self.mid_prio_queue:
                 if queued_text == (text, is_file):
                     new = False
