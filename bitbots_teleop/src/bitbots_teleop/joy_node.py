@@ -30,6 +30,7 @@ class JoyNode(object):
         rospy.Subscriber("joint_states", JointState, self.joint_state_cb, queue_size=1)
         self.speak_pub = rospy.Publisher('speak', Audio, queue_size=1)
         self.speak_msg = Audio()
+
         self.speak_msg.priority = 1
 
         self.walk_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
