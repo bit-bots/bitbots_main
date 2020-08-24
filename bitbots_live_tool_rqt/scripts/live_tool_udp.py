@@ -5,7 +5,7 @@ import os
 from std_msgs.msg import String
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, Pose2D
 
-from humanoid_league_msgs.msg import BallRelative, ObstaclesRelative, GoalRelative, GameState, Strategy, RobotControlState
+from humanoid_league_msgs.msg import BallRelative, ObstacleRelativeArray, GameState, Strategy, RobotControlState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 import time
@@ -62,12 +62,6 @@ class LiveToolSender():
         self.detectionMsg.setObstacleRelative(data)
         #print (yaml.load(detectionMsg.getMsg()))
 
-
-    #def callback_goal_relative(data):
-    #    detectionMsg.setGoalRelative(data)
-        #print (yaml.load(detectionMsg.getMsg()))
-
-
     #def callback_trajectory(data):
     #    trajectoryMsg.setTrajectory(data)
         #print (yaml.load(trajectoryMsg.getMsg()))
@@ -91,8 +85,7 @@ class LiveToolSender():
         # Subscriptions
         rospy.Subscriber("/ball_relative", BallRelative, self.callback_ball_location)
         rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.callback_amcl_pose)
-        rospy.Subscriber("/obstacles_relative", ObstaclesRelative, self.callback_obstacles_relative)
-        #rospy.Subscriber("/goal_relative", GoalRelative, callback_goal_relative)
+        rospy.Subscriber("/obstacles_relative", ObstacleRelativeArray, self.callback_obstacles_relative)
         rospy.Subscriber("/gamestate", GameState, self.callback_gamestate)
         rospy.Subscriber("/strategy", Strategy, self.callback_strategy)
         rospy.Subscriber("/robot_state", RobotControlState, self.callback_robot_state)
