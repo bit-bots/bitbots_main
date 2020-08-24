@@ -23,7 +23,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
                                                          &ConvenienceFramesBroadcaster::goalCallback,
                                                          this,
                                                          ros::TransportHints().tcpNoDelay());
-  ros::Subscriber goal_parts_relative_subscriber = n.subscribe("/goal_posts_relative",
+  ros::Subscriber goal_posts_relative_subscriber = n.subscribe("/goal_posts_relative",
                                                                1,
                                                                &ConvenienceFramesBroadcaster::goalPostsCallback,
                                                                this,
