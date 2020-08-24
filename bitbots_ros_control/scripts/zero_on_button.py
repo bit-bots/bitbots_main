@@ -15,11 +15,11 @@ def cb(msg):
     print(msg.button1)
     print(not button_prev_state)
     print(rospy.get_rostime() - press_time > rospy.Duration(1.0))
-    if msg.button1 and not button_prev_state and rospy.get_rostime() - press_time > rospy.Duration(1.0):
+    if msg.button3 and not button_prev_state and rospy.get_rostime() - press_time > rospy.Duration(1.0):
         zero_l()
         zero_r()
         press_time = rospy.get_rostime()
-    button_prev_state = msg.button1
+    button_prev_state = msg.button3
 
 
 rospy.Subscriber("/buttons", Buttons, cb, queue_size=1)
