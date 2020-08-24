@@ -5,7 +5,6 @@
 #include <vector>
 #include <algorithm>
 #include "humanoid_league_msgs/TeamData.h"
-#include "humanoid_league_msgs/GoalRelative.h"
 #include "humanoid_league_msgs/ObstacleRelativeArray.h"
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/RobotControlState.h"
@@ -40,8 +39,8 @@ class TeamCommunication{
   void strategyCallback(humanoid_league_msgs::Strategy msg);
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg);
-  void ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg);
-  void goalCallback(const geometry_msgs::PoseWithCovarianceArray& msg);
+  void ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg);
+  void goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg);
   void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg);
   //void worldCallback(const humanoid_league_msgs::Model& msg);
 

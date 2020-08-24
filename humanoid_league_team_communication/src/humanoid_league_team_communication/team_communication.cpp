@@ -241,50 +241,50 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
 
     //opponent_robot_a
     humanoid_league_msgs::ObstacleRelative opponent_robot_a_msg;
-    opponent_robot_a_msg.pose.pose.position.x = rob_data.get_opponent_robot_a_x() / 1000.0;
-    opponent_robot_a_msg.pose.pose.position.y = rob_data.get_opponent_robot_a_y() / 1000.0;
+    opponent_robot_a_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_a_x() / 1000.0;
+    opponent_robot_a_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_a_y() / 1000.0;
     //opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255.0;
     opponent_robot_a.push_back(opponent_robot_a_msg);
 
     //opponent_robot_b
     humanoid_league_msgs::ObstacleRelative opponent_robot_b_msg;
-    opponent_robot_b_msg.pose.pose.position.x = rob_data.get_opponent_robot_b_x() / 1000.0;
-    opponent_robot_b_msg.pose.pose.position.y = rob_data.get_opponent_robot_b_y() / 1000.0;
+    opponent_robot_b_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_b_x() / 1000.0;
+    opponent_robot_b_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_b_y() / 1000.0;
     //opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255.0;
     opponent_robot_b.push_back(opponent_robot_b_msg);
 
     //opponent_robot_c
     humanoid_league_msgs::ObstacleRelative opponent_robot_c_msg;
-    opponent_robot_c_msg.pose.pose.position.x = rob_data.get_opponent_robot_c_x() / 1000.0;
-    opponent_robot_c_msg.pose.pose.position.y = rob_data.get_opponent_robot_c_y() / 1000.0;
+    opponent_robot_c_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_c_x() / 1000.0;
+    opponent_robot_c_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_c_y() / 1000.0;
     //opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255.0;
     opponent_robot_c.push_back(opponent_robot_c_msg);
 
     //opponent_robot_d
     humanoid_league_msgs::ObstacleRelative opponent_robot_d_msg;
-    opponent_robot_d_msg.pose.pose.position.x = rob_data.get_opponent_robot_d_x() / 1000.0;
-    opponent_robot_d_msg.pose.pose.position.y = rob_data.get_opponent_robot_d_y() / 1000.0;
+    opponent_robot_d_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_d_x() / 1000.0;
+    opponent_robot_d_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_d_y() / 1000.0;
     //opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255.0;
     opponent_robot_d.push_back(opponent_robot_d_msg);
 
     //team_robot_a
     humanoid_league_msgs::ObstacleRelative team_robot_a_msg;
-    team_robot_a_msg.pose.pose.position.x = rob_data.get_team_robot_a_x() / 1000.0;
-    team_robot_a_msg.pose.pose.position.y = rob_data.get_team_robot_a_y() / 1000.0;
+    team_robot_a_msg.pose.pose.pose.position.x = rob_data.get_team_robot_a_x() / 1000.0;
+    team_robot_a_msg.pose.pose.pose.position.y = rob_data.get_team_robot_a_y() / 1000.0;
     //team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
     team_robot_a.push_back(team_robot_a_msg);
 
     //team_robot_b
     humanoid_league_msgs::ObstacleRelative team_robot_b_msg;
-    team_robot_b_msg.pose.pose.position.x = rob_data.get_team_robot_b_x() / 1000.0;
-    team_robot_b_msg.pose.pose.position.y = rob_data.get_team_robot_b_y() / 1000.0;
+    team_robot_b_msg.pose.pose.pose.position.x = rob_data.get_team_robot_b_x() / 1000.0;
+    team_robot_b_msg.pose.pose.pose.position.y = rob_data.get_team_robot_b_y() / 1000.0;
     //team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255.0;
     team_robot_b.push_back(team_robot_b_msg);
 
     //team_robot_c
     humanoid_league_msgs::ObstacleRelative team_robot_c_msg;
-    team_robot_c_msg.pose.pose.position.x = rob_data.get_team_robot_c_x() / 1000.0;
-    team_robot_c_msg.pose.pose.position.y = rob_data.get_team_robot_c_y() / 1000.0;
+    team_robot_c_msg.pose.pose.pose.position.x = rob_data.get_team_robot_c_x() / 1000.0;
+    team_robot_c_msg.pose.pose.pose.position.y = rob_data.get_team_robot_c_y() / 1000.0;
     //team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
     team_robot_c.push_back(team_robot_c_msg);
 
@@ -367,20 +367,20 @@ void TeamCommunication::positionCallback(const geometry_msgs::PoseWithCovariance
   position_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg){
+void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg){
   // TODO: Replace sorting by just filtering for the ball with highest confidence
-  auto sortByConfidence = (humanoid_league_msgs::PoseWithCertainty const& ball1,
-    humanoid_league_msgs::PoseWithCertainty const& ball2) -> bool
+  auto sortByConfidence = [](humanoid_league_msgs::PoseWithCertainty& ball1,
+    humanoid_league_msgs::PoseWithCertainty& ball2) -> bool
   {
-    return ball1->confidence >= ball2->confidence;
-  }
+    return ball1.confidence >= ball2.confidence;
+  };
 
-  std::sort(msg->poses.begin(), msg->poses.end(), sortByConfidence);  // Sort balls by confidence
-  humanoid_league_msgs::PoseWithCertainty const& ball = msg->poses[0];  // Choose ball with highest confidence
+  std::sort(msg.poses.begin(), msg.poses.end(), sortByConfidence);  // Sort balls by confidence
+  humanoid_league_msgs::PoseWithCertainty ball = msg.poses[0];  // Choose ball with highest confidence
 
   //conversion from m (ROS message) to mm (self.mitecom)
-  ball_relative_x_ = static_cast<uint64_t>(ball->pose.pose.position.x * 1000.0);
-  ball_relative_y_ = static_cast<uint64_t>(ball->pose.pose.position.y * 1000.0);
+  ball_relative_x_ = static_cast<uint64_t>(ball.pose.pose.position.x * 1000.0);
+  ball_relative_y_ = static_cast<uint64_t>(ball.pose.pose.position.y * 1000.0);
   //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
   //ball_belief_ = static_cast<uint64_t>(ball->confidence * 255.0); //TODO transformation
   //use pythagoras to compute time to ball
@@ -389,7 +389,7 @@ void TeamCommunication::ballsCallback(const humanoid_league_msgs::PoseWithCertai
   ball_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::goalCallback(const geometry_msgs::PoseWithCovarianceStamped& msg) {
+void TeamCommunication::goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg) {
   /* todo von python nach c++ (es gibt keine positions in der msg)
    * todo improve computation of position
    * if msg.positions is None or msg.positions == []:
@@ -439,7 +439,7 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
       //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0); //TODO confidence
       team_robots_.push_back({x, y, belief});
     }
-    else if (obstacle.color == opponent_color){
+    else if (obstacle.type == opponent_color){
       x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
       y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
       //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0);
