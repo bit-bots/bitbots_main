@@ -3,7 +3,7 @@ import rospy
 from humanoid_league_msgs.msg import LineInformationInImage, LineInformationRelative, \
     LineSegmentRelative, LineIntersectionRelative, \
     ObstacleInImageArray, ObstacleRelativeArray, ObstacleRelative, \
-    PoseWithCertainty, PoseWithCertaintyArray, GoalPostInImageArray
+    PoseWithCertainty, PoseWithCertaintyArray, GoalPostInImageArray, BallInImageArray
 from geometry_msgs.msg import Point, PolygonStamped
 from sensor_msgs.msg import CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -101,7 +101,7 @@ class Transformer(object):
         balls = []
         for ball in msg.candidates:
             ball_relative = PoseWithCertainty()
-            
+
             ball_relative.pose.pose.position = self._transform(ball.center, field, msg.header.stamp)
             ball_relative.confidence = ball.confidence
             balls.append(ball_relative)
