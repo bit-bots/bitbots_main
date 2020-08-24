@@ -118,6 +118,8 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
             dxl_nh.param<int>("read_rate", read_rate, 1);
             driver->setTools(model_number_specified_16, id);
             CoreHardwareInterface *interface = new CoreHardwareInterface(driver, id, read_rate);
+            // turn on power, just to be sure
+            interface->write(ros::Time::now(), ros::Duration(0));
             interfaces_on_port.push_back(interface);
           } else if (model_number_specified == 0 && !only_imu_) {//model number is currently 0 on foot sensors
             // bitfoot

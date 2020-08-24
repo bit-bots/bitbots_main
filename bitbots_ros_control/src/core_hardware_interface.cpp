@@ -9,7 +9,7 @@ CoreHardwareInterface::CoreHardwareInterface(std::shared_ptr<DynamixelDriver> &d
   read_rate_ = read_rate;
   read_counter_ = 0;
   requested_power_switch_status_ = true;
-  power_switch_status_.data = true;
+  power_switch_status_.data = false;
 
   power_switch_status_ = std_msgs::Bool();
   VCC_ = std_msgs::Float64();
