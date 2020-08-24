@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
   bool first_update = true;
   ros::Rate rate(pnh.param("control_loop_hz", 1000));
   ros::Time stop_time;
+  bool shut_down_started = false;
 
   while (!request_shutdown || ros::Time::now().toSec() - stop_time.toSec() < 5) {
     hw.read(current_time, period);
@@ -64,8 +65,9 @@ int main(int argc, char *argv[]) {
     ros::spinOnce();
     rate.sleep();
 
-    if (request_shutdown) {
+    if (request_shutdown && !shut_down_started) {
       stop_time = ros::Time::now();
+      shut_down_started = true;
     }
   }
   thread.join();
