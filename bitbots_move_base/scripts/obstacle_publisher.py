@@ -28,7 +28,7 @@ class ObstaclePublisher:
 
         rospy.spin()
 
-    def _ball_callback(self, msg):
+    def _balls_callback(self, msg):
         balls = msg.poses
         for ball in balls:
             self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, [[ball.pose.pose.position.x, ball.pose.pose.position.y, ball.pose.pose.position.z]]))
