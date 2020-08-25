@@ -70,6 +70,13 @@ ros_control:
       id: 42
       model_number: 0xABBA
       read_rate: 100
+      interface_type: CORE
+    LEDs_core:
+      id: 42
+      model_number: 0xABBA
+      interface_type: LED
+      number_of_LEDs: 3
+      start_number: 0
     IMU_torso:
       id: 241
       topic: imu/data
@@ -87,6 +94,7 @@ ros_control:
       model_number: 0xBAFF
       interface_type: LED
       number_of_LEDs: 3
+      start_number: 3
     LeftFoot:
       id: 102
       topic: /foot_pressure_left/raw

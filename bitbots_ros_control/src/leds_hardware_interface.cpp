@@ -4,43 +4,59 @@
 namespace bitbots_ros_control {
 LedsHardwareInterface::LedsHardwareInterface() {}
 
-LedsHardwareInterface::LedsHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, uint8_t id, uint8_t num_leds) {
+LedsHardwareInterface::LedsHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, uint8_t id, uint8_t num_leds,
+                                             uint8_t start_number) {
   driver_ = driver;
   id_ = id;
   leds_.resize(num_leds);
+  start_number_ = start_number;
   // we want to write the LEDs in the beginning to show that ros control started successfully. set LED 1 white
   write_leds_ = true;
   leds_[0] = std_msgs::ColorRGBA();
-  leds_[0].r = 0.1;
-  leds_[0].g = 0.1;
-  leds_[0].b = 0.1;
+  leds_[0].r = 0.3;
+  leds_[0].g = 0.3;
+  leds_[0].b = 0.3;
   leds_[0].a = 1.0;
 }
 
 bool LedsHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
-  leds_service_ = nh_.advertiseService("/set_leds", &LedsHardwareInterface::setLeds, this);
-  sub0_ = nh_.subscribe("/led0",1, &LedsHardwareInterface::ledCb0, this, ros::TransportHints().tcpNoDelay());
-  sub1_ = nh_.subscribe("/led1",1, &LedsHardwareInterface::ledCb1, this, ros::TransportHints().tcpNoDelay());
-  sub2_ = nh_.subscribe("/led2",1, &LedsHardwareInterface::ledCb2, this, ros::TransportHints().tcpNoDelay());
+  if (start_number_ == 0) {
+    leds_service_ = nh_.advertiseService("/set_leds", &LedsHardwareInterface::setLeds, this);
+  }
+  sub0_ = nh_.subscribe("/led" + std::to_string(start_number_),
+                        1,
+                        &LedsHardwareInterface::ledCb0,
+                        this,
+                        ros::TransportHints().tcpNoDelay());
+  sub1_ = nh_.subscribe("/led" + std::to_string(start_number_ + 1),
+                        1,
+                        &LedsHardwareInterface::ledCb1,
+                        this,
+                        ros::TransportHints().tcpNoDelay());
+  sub2_ = nh_.subscribe("/led" + std::to_string(start_number_ + 2),
+                        1,
+                        &LedsHardwareInterface::ledCb2,
+                        this,
+                        ros::TransportHints().tcpNoDelay());
 
   return true;
 }
 
 // todo this could be done more clever and for a general number of leds
-void LedsHardwareInterface::ledCb0(std_msgs::ColorRGBA msg){
-    leds_[0] = msg;
-    write_leds_ = true;
+void LedsHardwareInterface::ledCb0(std_msgs::ColorRGBA msg) {
+  leds_[0] = msg;
+  write_leds_ = true;
 }
 
-void LedsHardwareInterface::ledCb1(std_msgs::ColorRGBA msg){
-    leds_[1] = msg;
-    write_leds_ = true;
+void LedsHardwareInterface::ledCb1(std_msgs::ColorRGBA msg) {
+  leds_[1] = msg;
+  write_leds_ = true;
 }
 
-void LedsHardwareInterface::ledCb2(std_msgs::ColorRGBA msg){
-    leds_[2] = msg;
-    write_leds_ = true;
+void LedsHardwareInterface::ledCb2(std_msgs::ColorRGBA msg) {
+  leds_[2] = msg;
+  write_leds_ = true;
 }
 
 void LedsHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {}

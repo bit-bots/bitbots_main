@@ -112,7 +112,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
           // ping was successful, add device correspondingly
           // only add them if the mode is set correspondingly
           // TODO maybe move more of the parameter stuff in the init of the modules instead of doing everything here
-          if (model_number_specified == 0xABBA) {
+          if (model_number_specified == 0xABBA && interface_type == "CORE") {
             // CORE
             int read_rate;
             dxl_nh.param<int>("read_rate", read_rate, 1);
@@ -155,11 +155,12 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
             int read_rate;
             dxl_nh.param<int>("read_rate", read_rate, 50);
             interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic, read_rate));
-          } else if (model_number_specified == 0xBAFF && interface_type == "LED" && !only_pressure_) {
+          } else if ((model_number_specified == 0xBAFF || model_number_specified == 0xABBA) && interface_type == "LED" && !only_pressure_) {
             // LEDs
-            int number_of_LEDs;
-            dxl_nh.param<int>("read_rate", number_of_LEDs, 3);
-            interfaces_on_port.push_back(new LedsHardwareInterface(driver, id, number_of_LEDs));
+            int number_of_LEDs, start_number;
+            dxl_nh.param<int>("number_of_LEDs", number_of_LEDs, 3);
+            dxl_nh.param<int>("start_number", start_number, 0);
+            interfaces_on_port.push_back(new LedsHardwareInterface(driver, id, number_of_LEDs, start_number));
           } else if ((model_number_specified == 311 || model_number_specified == 321 || model_number_specified == 1100)
               && !only_pressure_
               && !only_imu_) {
@@ -172,7 +173,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
             dxl_nh.param<float>("joint_offset", joint_offset, 0.0);
             servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
           } else {
-            if (!only_pressure_ && !only_imu_){
+            if (!only_pressure_ && !only_imu_) {
               ROS_WARN("Could not identify device for ID %d", id);
             }
           }
@@ -211,7 +212,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
     }
     return false;
   } else {
-    speakError(speak_pub_, "ros control startup successful");
+    speakError(speak_pub_, "ross control startup successful");
     return true;
   }
 }
