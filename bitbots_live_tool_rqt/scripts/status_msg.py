@@ -98,7 +98,7 @@ class StatusMsg:
     def setStatusMsg(self, data):
         self.data[StatusMsg.label_state] = data.state
         """
-        uint8 CONTROLABLE=0
+        uint8 CONTROLLABLE=0
         uint8 FALLING=1
         uint8 FALLEN=2
         uint8 GETTING_UP=3

@@ -13,9 +13,9 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
                                                                      &ConvenienceFramesBroadcaster::supportFootCallback,
                                                                      this,
                                                                      ros::TransportHints().tcpNoDelay());
-  ros::Subscriber ball_relative_subscriber = n.subscribe("/ball_relative",
+  ros::Subscriber ball_relative_subscriber = n.subscribe("/balls_relative",
                                                          1,
-                                                         &ConvenienceFramesBroadcaster::ballCallback,
+                                                         &ConvenienceFramesBroadcaster::ballsCallback,
                                                          this,
                                                          ros::TransportHints().tcpNoDelay());
   ros::Subscriber goal_relative_subscriber = n.subscribe("/goal_relative",
@@ -23,9 +23,9 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
                                                          &ConvenienceFramesBroadcaster::goalCallback,
                                                          this,
                                                          ros::TransportHints().tcpNoDelay());
-  ros::Subscriber goal_parts_relative_subscriber = n.subscribe("/goal_parts_relative",
+  ros::Subscriber goal_posts_relative_subscriber = n.subscribe("/goal_posts_relative",
                                                                1,
-                                                               &ConvenienceFramesBroadcaster::goalPartsCallback,
+                                                               &ConvenienceFramesBroadcaster::goalPostsCallback,
                                                                this,
                                                                ros::TransportHints().tcpNoDelay());
 
@@ -134,25 +134,35 @@ void ConvenienceFramesBroadcaster::supportFootCallback(const std_msgs::Char::Con
   is_left_support = (msg->data == 'l');
 }
 
-void ConvenienceFramesBroadcaster::ballCallback(const humanoid_league_msgs::BallRelative::ConstPtr &msg) {
-  publishTransform(msg->header.frame_id, "ball",
-                   msg->ball_relative.x, msg->ball_relative.y, msg->ball_relative.z);
+void ConvenienceFramesBroadcaster::ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg) {
+  for (humanoid_league_msgs::PoseWithCertainty ball : msg->poses) {
+    publishTransform(msg->header.frame_id, "ball",
+                    ball.pose.pose.position.x,
+                    ball.pose.pose.position.y,
+                    ball.pose.pose.position.z);
+  }
 }
 
-void ConvenienceFramesBroadcaster::goalCallback(const humanoid_league_msgs::GoalRelative::ConstPtr &msg) {
-  publishTransform(msg->header.frame_id, "left_post",
-                   msg->left_post.x, msg->left_post.y, msg->left_post.z);
-  publishTransform(msg->header.frame_id, "right_post",
-                   msg->right_post.x, msg->right_post.y, msg->right_post.z);
+void ConvenienceFramesBroadcaster::goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg) {
+  if (msg->poses.size() > 0)
+  {
+    publishTransform(msg->header.frame_id, "left_post",
+                    msg->poses[0].pose.pose.position.x, msg->poses[0].pose.pose.position.y, msg->poses[0].pose.pose.position.z);
+  }
+  if (msg->poses.size() > 2)
+  {
+    publishTransform(msg->header.frame_id, "right_post",
+                     msg->poses[1].pose.pose.position.x, msg->poses[1].pose.pose.position.y, msg->poses[1].pose.pose.position.z);
+  }
 }
 
-void ConvenienceFramesBroadcaster::goalPartsCallback(const humanoid_league_msgs::GoalPartsRelative::ConstPtr &msg) {
-  for (long i = 0; i < msg->posts.size(); i++) {
+void ConvenienceFramesBroadcaster::goalPostsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg) {
+  for (long i = 0; i < msg->poses.size(); i++) {
     publishTransform(msg->header.frame_id,
                      "post_" + std::to_string(i),
-                     msg->posts[i].foot_point.x,
-                     msg->posts[i].foot_point.y,
-                     msg->posts[i].foot_point.z);
+                     msg->poses[i].pose.pose.position.x,
+                     msg->poses[i].pose.pose.position.y,
+                     msg->poses[i].pose.pose.position.z);
   }
 }
 

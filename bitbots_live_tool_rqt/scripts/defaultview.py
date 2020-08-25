@@ -30,10 +30,10 @@ class DefaultView :
         # decodes the integer for the corresponding action
         self.actionDecoder = {0: 'Undefinded', 1: 'Positioning', 2: 'Going to ball', 3: 'Trying to score', 4: 'Waiting'}
         # decodes the integer for the corresponding hardware state
-        self.stateDecoder = {0: 'CONTROLABLE', 1: 'FALLING', 2: 'FALLEN', 3: 'GETTING_UP', 4: 'ANIMATION_RUNNING', 5: 'STARTUP', \
+        self.stateDecoder = {0: 'CONTROLLABLE', 1: 'FALLING', 2: 'FALLEN', 3: 'GETTING_UP', 4: 'ANIMATION_RUNNING', 5: 'STARTUP', \
                              6: 'SHUTDOWN', 7: 'PENALTY', 8: 'PENALTY_ANIMATION', 9: 'RECORD', 10: 'WALKING', 11: 'MOTOR_OFF', \
                              12: 'HCM_OFF', 13: 'HARDWARE_PROBLEM', 14: 'PICKED_UP'}
-        
+
         # elements for stats of rob
         self.lbName = lb_name
         self.lbNextAction = lb_nextaction
