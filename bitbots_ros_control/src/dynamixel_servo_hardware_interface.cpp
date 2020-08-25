@@ -26,7 +26,7 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle& nh){
   set_torque_indiv_sub_ = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual", 1, &DynamixelServoHardwareInterface::individualTorqueCb, this, ros::TransportHints().tcpNoDelay());
   pwm_pub_ = nh.advertise<sensor_msgs::JointState>("/servo_PID_status", 10, true);
   diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  speak_pub_ = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1, true);
+  speak_pub_ = nh.advertise<humanoid_league_msgs::Audio>("/speak", 1, true);
 
   torqueless_mode_ = nh.param("torqueless_mode", false);
 

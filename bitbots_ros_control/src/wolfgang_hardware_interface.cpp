@@ -9,7 +9,7 @@ namespace bitbots_ros_control {
  * a common bus driver over multiple hardware interfaces possible.
  */
 WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle& nh){
-  speak_pub_ = nh.advertise<humanoid_league_msgs::Speak>("/speak", 1);
+  speak_pub_ = nh.advertise<humanoid_league_msgs::Audio>("/speak", 1);
 
   // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
