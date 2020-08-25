@@ -2,14 +2,14 @@ import rospy
 import math
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 import humanoid_league_msgs.msg
-from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLABLE, STATE_FALLEN, STATE_FALLING, \
+from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLLABLE, STATE_FALLEN, STATE_FALLING, \
     STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, \
     STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF, STATE_KICKING
 
 
 class StartHCM(AbstractDecisionElement):
     """
-    Initializes HCM. 
+    Initializes HCM.
     """
 
     def perform(self, reevaluate=False):
@@ -124,7 +124,7 @@ class CheckMotors(AbstractDecisionElement):
     def perform(self, reevaluate=False):
 
         if not self.blackboard.current_time.to_sec() - self.blackboard.last_motor_update_time.to_sec() < 0.1:
-            # tell that we have a hardware problem                            
+            # tell that we have a hardware problem
             self.blackboard.current_state = STATE_HARDWARE_PROBLEM
             # wait for motors to connect
             return "PROBLEM"
@@ -162,7 +162,7 @@ class PickedUp(AbstractDecisionElement):
         # check if the robot is currently being picked up
         if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressure) < 1:
             self.blackboard.current_state = STATE_PICKED_UP
-            # we do an action sequence to tgo to walkready and stay in picked up state            
+            # we do an action sequence to tgo to walkready and stay in picked up state
             return "PICKED_UP"
 
         # robot is not picked up
@@ -305,7 +305,7 @@ class Controlable(AbstractDecisionElement):
             self.blackboard.current_state = STATE_ANIMATION_RUNNING
             return "NOT_WALKREADY"
         else:
-            self.blackboard.current_state = STATE_CONTROLABLE
+            self.blackboard.current_state = STATE_CONTROLLABLE
             return "WALKREADY"
 
     def is_walkready(self):

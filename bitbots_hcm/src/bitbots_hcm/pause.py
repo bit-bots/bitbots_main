@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 import rospy
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Audio
 from std_msgs.msg import Bool
 
 from bitbots_msgs.srv import ManualPenalize
@@ -25,7 +25,7 @@ class Pause(object):
 
         self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
         self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10, latch=True)
-        self.speak_publisher = rospy.Publisher("/speak", Speak, queue_size=10)
+        self.speak_publisher = rospy.Publisher("/speak", Audio, queue_size=10)
 
         self.talking = rospy.get_param("/pause/talking", True)
 
@@ -52,7 +52,7 @@ class Pause(object):
         else:
             text = "Unpause!"
         rospy.logwarn(text)
-        speak(text, self.speak_publisher, speaking_active=self.talking, priority=Speak.HIGH_PRIORITY)
+        speak(text, self.speak_publisher, speaking_active=self.talking, priority=90)
         self.pause_publisher.publish(Bool(state))
 
 

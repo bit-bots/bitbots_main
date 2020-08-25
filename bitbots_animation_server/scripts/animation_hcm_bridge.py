@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from bitbots_msgs.msg import JointCommand
 
@@ -16,10 +17,15 @@ class AnimationHcmBridge:
                                                tcp_nodelay=True)
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = JOINT_NAMES
-        self.joint_command_msg.positions = [0] * 20
-        self.joint_command_msg.velocities = [-1] * 20
+        self.joint_command_msg.positions = [0] * len(JOINT_NAMES)
+        self.joint_command_msg.velocities = [-1] * len(JOINT_NAMES)
+        self.joint_command_msg.accelerations = [-1] * len(JOINT_NAMES)
+        self.joint_command_msg.max_currents = [-1] * len(JOINT_NAMES)
 
         rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=10, tcp_nodelay=True)
+
+        while not rospy.is_shutdown():
+            rospy.sleep(1)
 
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = rospy.Time.now()
@@ -29,3 +35,6 @@ class AnimationHcmBridge:
             self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = -1
 
         self.joint_publisher.publish(self.joint_command_msg)
+
+if __name__ == '__main__':
+    bridge = AnimationHcmBridge()

@@ -86,7 +86,7 @@ class PlayAnimationAction(object):
         rate = rospy.Rate(200)
         start_time = rospy.get_time()
 
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and animator:
             # first check if we have another goal
             self.check_for_new_goal()
             new_goal = self._as.current_goal.goal.goal.animation

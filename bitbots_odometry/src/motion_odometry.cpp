@@ -37,7 +37,7 @@ MotionOdometry::MotionOdometry() {
     //check if joint states were received, otherwise we can't provide odometry
     ros::Duration joints_delta_t = ros::Time::now() - joint_update_time_;
     if (joints_delta_t.toSec() > 0.05) {
-      ROS_WARN_THROTTLE(10, "No joint states received. Will not provide odometry.");
+      ROS_WARN_THROTTLE(30, "No joint states received. Will not provide odometry.");
     } else {
       // check if step finished, meaning left->right or right->left support. double support is skipped
       if ((current_support_state_ == 'l' && previous_support_state_ == 'r') ||
