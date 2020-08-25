@@ -344,18 +344,18 @@ def build_obstacle_array_msg(header, obstacles):
     obstacles_msg.obstacles = obstacles
     return obstacles_msg
 
-def build_obstacle_msgs(obstacle_color, detections):
+def build_obstacle_msgs(obstacle_type, detections):
     """
     Builds a list of obstacles for a certain color
 
-    :param obstacle_color: color of the obstacles
+    :param obstacle_type: type of the obstacles
     :param detections: obstacle candidates
     :return: list of obstacle msgs
     """
     message_list = []
     for detected_obstacle in detections:
         obstacle_msg = ObstacleInImage()
-        obstacle_msg.color = obstacle_color
+        obstacle_msg.type = obstacle_type
         obstacle_msg.top_left.x = detected_obstacle.get_upper_left_x()
         obstacle_msg.top_left.y = detected_obstacle.get_upper_left_y()
         obstacle_msg.height = int(detected_obstacle.get_height())
