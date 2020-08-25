@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import rospy
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Audio
 
 
 def sender():
-    pub = rospy.Publisher('speak', Speak, queue_size=10)
+    pub = rospy.Publisher('speak', Audio, queue_size=10)
     rospy.init_node('send_text', anonymous=False)
     if rospy.has_param("~text") or rospy.has_param("~filename"):
-        msg = Speak()
+        msg = Audio()
         if rospy.has_param("~text"):
             msg.text = rospy.get_param("~text")
         if rospy.has_param("~filename"):
@@ -16,7 +16,7 @@ def sender():
         if rospy.has_param("~prio"):
             msg.priority = rospy.get_param("~prio")
         else:
-            msg.priority = msg.MID_PRIORITY
+            msg.priority = 1
         pub.publish(msg)
     else:
         print("Please specify Text by adding _text:=YOURTEXT at the end of rosrun")
