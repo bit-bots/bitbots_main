@@ -21,7 +21,7 @@ class ObstaclePublisher:
         self.clearer.wait_for_service()
         rospy.logwarn("Found Service clear_costmap")
 
-        rospy.Subscriber("balls_relative", PoseWithCertaintyArrray, self._balls_callback, queue_size=1)
+        rospy.Subscriber("balls_relative", PoseWithCertaintyArray, self._balls_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
 
         self.obstacle_publisher = rospy.Publisher("obstacles", PointCloud2, queue_size=10)
