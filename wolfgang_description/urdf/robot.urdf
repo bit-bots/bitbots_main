@@ -2161,8 +2161,8 @@
 <origin xyz="0.036 0.0235 -0.024" rpy="-1.5708 3.17216e-15 -5.33479e-15" />
 <parent link="neck" />
 <child link="head" />
-<axis xyz="0 0 -1"/>
-<limit effort="5.43" velocity="10.33" lower="0" upper="1.5708"/>
+<axis xyz="0 0 1"/>
+<limit effort="5.43" velocity="10.33" lower="-1.5708" upper="0"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -2170,7 +2170,7 @@
 <origin xyz="-0.0095 2.82644e-16 0.2345" rpy="-3.14159 3.41087e-16 -4.44089e-16" />
 <parent link="torso" />
 <child link="neck" />
-<axis xyz="0 0 1"/>
+<axis xyz="0 0 -1"/>
 <limit effort="5.43" velocity="10.33" lower="-2.0944" upper="2.0944"/>
 <joint_properties friction="0.0"/>
 </joint>
