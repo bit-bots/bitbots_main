@@ -100,11 +100,12 @@ class Transformer(object):
 
         balls = []
         for ball in msg.candidates:
-            ball_relative = PoseWithCertainty()
-
-            ball_relative.pose.pose.position = self._transform(ball.center, field, msg.header.stamp)
-            ball_relative.confidence = ball.confidence
-            balls.append(ball_relative)
+            transformed_ball = self._transform(ball.center, field, msg.header.stamp)
+            if transformed_ball is not None:
+                ball_relative = PoseWithCertainty()
+                ball_relative.pose.pose.position = transformed_ball
+                ball_relative.confidence = ball.confidence
+                balls.append(ball_relative)
 
         balls_relative = PoseWithCertaintyArray()
         balls_relative.header.stamp = msg.header.stamp
