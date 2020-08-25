@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_hcm</name>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <description>The bitbots_hcm package provides a low-level behavior which controls the current state of the robot.
   It will perform falling and standing-up handling by its own. It will also decide which other nodes can write motor
   goal positions.</description>
