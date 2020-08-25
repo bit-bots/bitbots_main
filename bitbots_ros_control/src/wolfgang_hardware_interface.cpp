@@ -192,7 +192,8 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
   }
 
   if (pinged.size() != dxl_devices.size()) {
-    if (pinged.empty() || pinged.size() == 1) {
+    // when we only have 1 or two devices its only the core
+    if (pinged.empty() || pinged.size() == 1  || pinged.size() == 2) {
       ROS_ERROR("Could not start ros control. Power is off!");
       speakError(speak_pub_, "Could not start ros control. Power is off!");
     } else {
