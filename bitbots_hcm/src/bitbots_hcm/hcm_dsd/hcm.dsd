@@ -6,6 +6,7 @@ $PickedUp
 -->HCM
 $StartHCM
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
+    SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop
         STOPPED -->  @ForceStopWalking, @PlayAnimationStopped, @StayStopped
         FREE -->$Record

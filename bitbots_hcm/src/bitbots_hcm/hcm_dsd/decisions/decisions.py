@@ -16,8 +16,12 @@ class StartHCM(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.shut_down_request:
-            self.blackboard.current_state = STATE_SHUT_DOWN
-            return "SHUTDOWN_REQUESTED"
+            if self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
+                self.blackboard.current_state = STATE_SHUT_DOWN
+                return "SHUTDOWN_WHILE_HARDWARE_PROBLEM"
+            else:
+                self.blackboard.current_state = STATE_SHUT_DOWN
+                return "SHUTDOWN_REQUESTED"
         else:
             if not reevaluate:
                 self.blackboard.current_state = STATE_STARTUP
