@@ -13,7 +13,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
                                                                      &ConvenienceFramesBroadcaster::supportFootCallback,
                                                                      this,
                                                                      ros::TransportHints().tcpNoDelay());
-  ros::Subscriber ball_relative_subscriber = n.subscribe("/ball_relative",
+  ros::Subscriber ball_relative_subscriber = n.subscribe("/balls_relative",
                                                          1,
                                                          &ConvenienceFramesBroadcaster::ballsCallback,
                                                          this,
