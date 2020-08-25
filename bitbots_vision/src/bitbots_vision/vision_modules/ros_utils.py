@@ -362,6 +362,8 @@ def build_obstacle_msgs(obstacle_type, detections):
         obstacle_msg.width = int(detected_obstacle.get_width())
         if detected_obstacle.get_rating() is not None:
             obstacle_msg.confidence = detected_obstacle.get_rating()
+        else:
+            obstacle_msg.confidence = 1.0
         obstacle_msg.playerNumber = 42
         message_list.append(obstacle_msg)
     return message_list
