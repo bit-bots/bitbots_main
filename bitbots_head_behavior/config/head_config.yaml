@@ -87,7 +87,7 @@ behavior:
     visual_compass_trigger_topic: '/visual_compass_ground_truth_trigger'
 
     # These values describe the minimal required delta between current joint states and target joint states in degrees
-    # to reduce unnecessary movement due to noise in the detection of the BallRelative.
+    # to reduce unnecessary movement due to noise in the detection of the Ball.
     ball_tracking_min_pan_delta: 1.5
     ball_tracking_min_tilt_delta: 1.5
 

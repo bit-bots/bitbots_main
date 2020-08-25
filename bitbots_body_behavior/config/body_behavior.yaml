@@ -10,7 +10,7 @@ behavior:
     # used for decision making
     use_localization: false
 
-    # Position format as in humanoid_league_msg/Position2D
+    # Position format:
     #      y
     #      ^       ______________________
     #      |    M  |          |          |  O
