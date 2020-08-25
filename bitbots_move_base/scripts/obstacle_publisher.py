@@ -6,7 +6,7 @@ ObstaclePublisher
 This node publishes the ball and other obstacles as an obstacle to avoid walking through it
 """
 import rospy
-from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArrray
+from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_srvs.srv import Empty
