@@ -238,6 +238,7 @@ class Transformer(object):
 
         field_boundary = PolygonStamped()
         field_boundary.header = msg.header
+        field_boundary.header.frame_id = self._publish_frame
 
         for p in msg.polygon.points:
             p_relative = self._transform(p, field, msg.header.stamp)
