@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_live_tool_rqt</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The bitbots_live_tool_rqt package</description>
 
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
