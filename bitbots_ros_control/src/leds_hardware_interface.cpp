@@ -45,18 +45,27 @@ bool LedsHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
 
 // todo this could be done more clever and for a general number of leds
 void LedsHardwareInterface::ledCb0(std_msgs::ColorRGBA msg) {
-  leds_[0] = msg;
-  write_leds_ = true;
+  // only write to bus if there is actually a change
+  if(msg.r != leds_[0].r || msg.g != leds_[0].g || msg.b != leds_[0].b ){
+    leds_[0] = msg;
+    write_leds_ = true;
+  }
 }
 
 void LedsHardwareInterface::ledCb1(std_msgs::ColorRGBA msg) {
-  leds_[1] = msg;
-  write_leds_ = true;
+  // only write to bus if there is actually a change
+  if(msg.r != leds_[1].r || msg.g != leds_[1].g || msg.b != leds_[1].b ){
+    leds_[1] = msg;
+    write_leds_ = true;
+  }
 }
 
 void LedsHardwareInterface::ledCb2(std_msgs::ColorRGBA msg) {
-  leds_[2] = msg;
-  write_leds_ = true;
+  // only write to bus if there is actually a change
+  if(msg.r != leds_[2].r || msg.g != leds_[2].g || msg.b != leds_[2].b ){
+    leds_[2] = msg;
+    write_leds_ = true;
+  }
 }
 
 void LedsHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {}

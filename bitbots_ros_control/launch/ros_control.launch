@@ -34,5 +34,8 @@
     <include file="$(find bitbots_ros_control)/launch/pressure_converter.launch"/>
 
     <node pkg="bitbots_ros_control" name="button_zero" type="zero_on_button.py"/>
+
+     <node pkg="bitbots_ros_control" name="battery_led" type="battery_led.py"/>
+
 </launch>
 
