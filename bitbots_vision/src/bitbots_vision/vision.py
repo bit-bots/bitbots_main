@@ -10,9 +10,10 @@ from copy import deepcopy
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
-from humanoid_league_msgs.msg import BallsInImage, LineInformationInImage, \
-    ObstaclesInImage, ObstacleInImage, ImageWithRegionOfInterest, \
-    GoalPartsInImage, FieldBoundaryInImage, Speak
+from geometry_msgs.msg import PolygonStamped
+from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
+    ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
+    GoalPostInImageArray, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
@@ -52,7 +53,7 @@ class Vision:
         self._pub_lines = None
         self._pub_line_mask = None
         self._pub_obstacle = None
-        self._pub_goal_parts = None
+        self._pub_goal_posts = None
         self._pub_ball_fcnn = None
         self._pub_debug_image = None
         self._pub_debug_fcnn_image = None
@@ -79,7 +80,7 @@ class Vision:
             latch=True)
 
         # Speak publisher
-        self._speak_publisher = rospy.Publisher('/speak', Speak, queue_size=10)
+        self._speak_publisher = rospy.Publisher('/speak', Audio, queue_size=10)
 
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
@@ -391,14 +392,14 @@ class Vision:
         :param dict config: new, incoming _config
         :return: None
         """
-        self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallsInImage)
+        self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstaclesInImage, queue_size=3)
-        self._pub_goal_parts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_parts, 'ROS_goal_parts_msg_topic', GoalPartsInImage, queue_size=3)
-        self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', ImageWithRegionOfInterest)
+        self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
+        self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
+        self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', RegionOfInterestWithImage)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundaryInImage)
+        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
         self._pub_debug_fcnn_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
         self._pub_white_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
         self._pub_red_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
@@ -537,7 +538,7 @@ class Vision:
         list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
                                                                    self._unknown_obstacle_detector.get_candidates()))
         # Build obstacles msgs containing all obstacles
-        obstacles_msg = ros_utils.build_obstacles_msg(image_msg.header, list_of_obstacle_msgs)
+        obstacles_msg = ros_utils.build_obstacle_array_msg(image_msg.header, list_of_obstacle_msgs)
         # Publish obstacles
         self._pub_obstacle.publish(obstacles_msg)
 
@@ -550,14 +551,14 @@ class Vision:
             self._goalpost_detector.get_candidates(),
             self._goal_post_field_boundary_y_offset)
 
-        # Get goalpost msgs and add them to the detected goal parts list
-        goal_posts_msg = ros_utils.build_goalpost_msgs(goal_posts)
-        # Create goalparts msg
-        goal_parts_msg = ros_utils.build_goal_parts_msg(image_msg.header, goal_posts_msg)
+        # Get goalpost msgs and add them to the detected goal posts list
+        goal_post_msgs = ros_utils.build_goal_post_msgs(goal_posts)
+        # Create goalposts msg
+        goal_posts_msg = ros_utils.build_goal_post_array_msg(image_msg.header, goal_post_msgs)
         # Check if there is a goal
-        if goal_parts_msg:
+        if goal_posts_msg:
             # If we have a goal, lets publish it
-            self._pub_goal_parts.publish(goal_parts_msg)
+            self._pub_goal_posts.publish(goal_posts_msg)
 
         #########
         # Lines #
@@ -587,7 +588,7 @@ class Vision:
         # Get field boundary msg
         convex_field_boundary = self._field_boundary_detector.get_convex_field_boundary_points()
         # Build ros message
-        convex_field_boundary_msg = ros_utils.build_field_boundary_msg(image_msg.header, convex_field_boundary)
+        convex_field_boundary_msg = ros_utils.build_field_boundary_polygon_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self._pub_convex_field_boundary.publish(convex_field_boundary_msg)
 

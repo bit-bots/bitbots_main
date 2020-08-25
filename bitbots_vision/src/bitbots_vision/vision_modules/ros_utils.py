@@ -3,10 +3,10 @@ import re
 import rospy
 import yaml
 from cv_bridge import CvBridge
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, PolygonStamped
 from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from humanoid_league_msgs.msg import BallInImage, BallsInImage, LineInformationInImage, LineSegmentInImage, ObstaclesInImage, \
-    ObstacleInImage, GoalPartsInImage, GoalPostInImage, GoalInImage, FieldBoundaryInImage, Speak, ImageWithRegionOfInterest
+from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
+    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, Audio, RegionOfInterestWithImage
 from bitbots_msgs.msg import Config
 
 """
@@ -255,29 +255,29 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
         rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]), logger_name="vision_ros_utils")
     return subscriber_object
 
-def build_goal_parts_msg(header, goal_parts):
+def build_goal_post_array_msg(header, goal_post_msgs):
     """
-    Builds a GoalPartsInImage message out of a list of GoalPostInImage messages
+    Builds a GoalPostInImageArray message out of a list of GoalPostInImage messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param goal_parts: a list of goal part messages, e.g. GoalPostInImage
-    :return: GoalPartsInImage message
+    :param goal_post_msgs: List of goal post messages
+    :return: GoalPostInImageArray message
     """
-    # Create goalparts msg
-    goal_parts_msg = GoalPartsInImage()
+    # Create goalposts msg
+    goal_posts_msg = GoalPostInImageArray()
     # Add header
-    goal_parts_msg.header.frame_id = header.frame_id
-    goal_parts_msg.header.stamp = header.stamp
-    # Add detected goal parts to the message
-    goal_parts_msg.posts = goal_parts
-    return goal_parts_msg
+    goal_posts_msg.header.frame_id = header.frame_id
+    goal_posts_msg.header.stamp = header.stamp
+    # Add detected goal posts to the message
+    goal_posts_msg.posts = goal_post_msgs
+    return goal_posts_msg
 
-def build_goalpost_msgs(goalposts):
+def build_goal_post_msgs(goalposts):
     """
     Builds a list of goalpost messages
 
     :param goalposts: goalpost candidates
-    :return: list of goalposts msgs
+    :return: List of goalpost messages
     """
     # Create an empty list of goalposts
     message_list = []
@@ -294,45 +294,6 @@ def build_goalpost_msgs(goalposts):
         message_list.append(post_msg)
     return message_list
 
-def build_goal_msg(goal_parts_msg):
-    """
-    Builds a goal message with a right and left post. If there is only one post in the image, the right and left post are the same.
-    This should be reworked! The vision should only publish posts and e.g. the worldmodel builds a goal out of this context.
-
-    :param goal_parts_msg: goal parts as ros message
-    :return: goal message
-    """
-    # Make new goal message
-    goal_msg = GoalInImage()
-    # Add header of the goal parts
-    goal_msg.header = goal_parts_msg.header
-    # Create goal posts at unrealistic high/low values
-    left_post = GoalPostInImage()
-    left_post.foot_point.x = 9999999999
-    left_post.confidence = 1.0
-    right_post = GoalPostInImage()
-    right_post.foot_point.x = -9999999999
-    right_post.confidence = 1.0
-
-    # Set our posts
-    for post in goal_parts_msg.posts:
-        # Decide if its a left post
-        if post.foot_point.x < left_post.foot_point.x:
-            left_post = post
-            left_post.confidence = post.confidence
-        # Decide if its a right post
-        if post.foot_point.x > right_post.foot_point.x:
-            right_post = post
-            right_post.confidence = post.confidence
-
-    # Set posts in message
-    goal_msg.left_post = left_post
-    goal_msg.right_post = right_post
-    goal_msg.confidence = 1.0
-    # Return message if there are any posts
-    if goal_parts_msg.posts:
-        return goal_msg
-
 def build_balls_msg(header, balls):
     """
     Builds a balls message out of a list of ball messages
@@ -342,7 +303,7 @@ def build_balls_msg(header, balls):
     :return: balls msg
     """
     # create ball msg
-    balls_msg = BallsInImage()
+    balls_msg = BallInImageArray()
     # Set header
     balls_msg.header.frame_id = header.frame_id
     balls_msg.header.stamp = header.stamp
@@ -366,60 +327,62 @@ def build_ball_msg(top_ball_candidate):
     ball_msg.confidence = top_ball_candidate.get_rating()
     return ball_msg
 
-def build_obstacles_msg(header, obstacles):
+def build_obstacle_array_msg(header, obstacles):
     """
-    Builds a ObstaclesInImage message containing a list of obstacle messages
+    Builds a ObstacleInImageArray message containing a list of obstacle messages
 
     :param header: ros header of the new message. Mostly the header of the image
     :param obstacles: a list of obstacle messages
-    :return: ObstaclesInImage message
+    :return: ObstacleInImageArray message
     """
     # Create obstacle msg
-    obstacles_msg = ObstaclesInImage()
+    obstacles_msg = ObstacleInImageArray()
     # Add header
     obstacles_msg.header.frame_id = header.frame_id
     obstacles_msg.header.stamp = header.stamp
-    # Add red obstacles
+    # Add obstacles
     obstacles_msg.obstacles = obstacles
     return obstacles_msg
 
-def build_obstacle_msgs(obstacle_color, detections):
+def build_obstacle_msgs(obstacle_type, detections):
     """
     Builds a list of obstacles for a certain color
 
-    :param obstacle_color: color of the obstacles
+    :param obstacle_type: type of the obstacles
     :param detections: obstacle candidates
     :return: list of obstacle msgs
     """
     message_list = []
     for detected_obstacle in detections:
         obstacle_msg = ObstacleInImage()
-        obstacle_msg.color = obstacle_color
+        obstacle_msg.type = obstacle_type
         obstacle_msg.top_left.x = detected_obstacle.get_upper_left_x()
         obstacle_msg.top_left.y = detected_obstacle.get_upper_left_y()
         obstacle_msg.height = int(detected_obstacle.get_height())
         obstacle_msg.width = int(detected_obstacle.get_width())
         if detected_obstacle.get_rating() is not None:
             obstacle_msg.confidence = detected_obstacle.get_rating()
+        else:
+            obstacle_msg.confidence = 1.0
         obstacle_msg.playerNumber = 42
         message_list.append(obstacle_msg)
     return message_list
 
-def build_field_boundary_msg(header, field_boundary):
+def build_field_boundary_polygon_msg(header, field_boundary):
     """
-    Builds a FieldBoundaryInImage ROS message.
+    Builds a PolygonStamped ROS geometry message containing the field boundary.
 
     :param header: ros header of the new message. Mostly the header of the image
     :param field_boundary: List of tuples containing the field boundary points.
-    :return: FieldBoundaryInImage message
+    :return: PolygonStamped message
     """
     # Create message
-    field_boundary_msg = FieldBoundaryInImage()
+    field_boundary_msg = PolygonStamped()
     # Add header
     field_boundary_msg.header = header
     # Add field boundary points
     for point in field_boundary:
-        field_boundary_msg.field_boundary_points.append(Point(point[0], point[1], 0))
+        field_boundary_msg.polygon.points.append(Point(point[0], point[1], 0))
     return field_boundary_msg
 
 def build_line_information_in_image_msg(header, line_segments):
@@ -476,7 +439,7 @@ def speak(string, speech_publisher):
     :param string: Text the robot should say
     :param speech_publisher: ROS publisher for the speech message
     """
-    speak_message = Speak()
+    speak_message = Audio()
     speak_message.text = string
     speech_publisher.publish(speak_message)
 
@@ -561,7 +524,7 @@ def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, 
     :param offset: an offset for the field boundary
     :return: fcnn heatmap under the field boundary
     """
-    msg = ImageWithRegionOfInterest()
+    msg = RegionOfInterestWithImage()
     msg.header.frame_id = header.frame_id
     msg.header.stamp = header.stamp
     field_boundary_top = field_boundary_detector.get_upper_bound(y_offset=offset)
@@ -571,4 +534,6 @@ def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, 
     msg.regionOfInterest.y_offset = field_boundary_top
     msg.regionOfInterest.height = fcnn_output.shape[0] - 1 - field_boundary_top
     msg.regionOfInterest.width = fcnn_output.shape[1] - 1
+    msg.original_width = fcnn_output.shape[1]
+    msg.original_height = fcnn_output.shape[0]
     return msg
