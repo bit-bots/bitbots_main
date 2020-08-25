@@ -282,13 +282,13 @@
 <mesh filename="package://wolfgang_description/urdf/torso.stl"/>
 </geometry>
 <material name="torso_material">
-<color rgba="0.57079 0.587232 0.59405 1.0"/>
+<color rgba="0.57077 0.587214 0.594034 1.0"/>
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.00516891 -0.00169508 0.106293" rpy="0 0 0"/>
-<mass value="2.2039" />
-<inertia ixx="0.0192586" ixy="-1.66036e-05"  ixz="-0.00141507" iyy="0.016494" iyz="0.000255447" izz="0.00830433" />
+<origin xyz="-0.00517343 -0.00170042 0.106296" rpy="0 0 0"/>
+<mass value="2.2036" />
+<inertia ixx="0.019258" ixy="-1.62135e-05"  ixz="-0.00141519" iyy="0.0164936" iyz="0.000255344" izz="0.00830353" />
 </inertial>
 </link>
 
@@ -1401,7 +1401,7 @@
 <parent link="r_hip_2" />
 <child link="r_upper_leg" />
 <axis xyz="-0 1 -0"/>
-<limit effort="7.57" velocity="8.22" lower="-0.0139626" upper="1.5708"/>
+<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="0.785398"/>
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -2100,7 +2100,7 @@
 <parent link="l_hip_2" />
 <child link="l_upper_leg" />
 <axis xyz="7.95491e-17 -3.00167e-16 -1"/>
-<limit effort="7.57" velocity="8.22" lower="-1.5708" upper="0.0139626"/>
+<limit effort="7.57" velocity="8.22" lower="-0.785398" upper="1.5708"/>
 <joint_properties friction="0.0"/>
 </joint>
 
