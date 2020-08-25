@@ -10,23 +10,23 @@ import rospy
 import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 
 
 class GoalRelative:
     header = Header()
-    left_post = PointStamped()
-    right_post = PointStamped()
+    left_post = Point()
+    right_post = Point()
 
     def to_pose_with_certainty_array(self):
         p = PoseWithCertaintyArray()
         p.header = self.header
         l = PoseWithCertainty()
-        l.pose.pose.position = self.left_post.point
+        l.pose.pose.position = self.left_post
         r = PoseWithCertainty()
-        r.pose.pose.position = self.right_post.point
+        r.pose.pose.position = self.right_post
         p.poses = [l, r]
         return p
 
@@ -218,15 +218,14 @@ class WorldModelCapsule:
             left_post = second_post
             right_post = first_post
 
-        goal_left_buffer = PointStamped(goal_parts.header, left_post)
-        goal_right_buffer = PointStamped(goal_parts.header, right_post)
-
         self.goal.header = goal_parts.header
-        self.goal.left_post = goal_left_buffer
-        self.goal.right_post = goal_right_buffer
+        self.goal.left_post = left_post
+        self.goal.right_post = right_post
 
         self.goal_odom.header = goal_parts.header
-        if goal_left_buffer.header.frame_id != 'odom':
+        if goal_parts.header.frame_id != 'odom':
+            goal_left_buffer = PointStamped(goal_parts.header, left_post)
+            goal_right_buffer = PointStamped(goal_parts.header, right_post)
             try:
                 self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom', timeout=rospy.Duration(0.2)).point
                 self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, 'odom', timeout=rospy.Duration(0.2)).point
@@ -235,8 +234,8 @@ class WorldModelCapsule:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
         else:
-            self.goal_odom.left_post = goal_left_buffer.point
-            self.goal_odom.right_post = goal_right_buffer.point
+            self.goal_odom.left_post = left_post
+            self.goal_odom.right_post = right_post
             self.goal_seen_time = rospy.Time.now()
         self.goal_publisher.publish(self.goal_odom.to_pose_with_certainty_array())
 

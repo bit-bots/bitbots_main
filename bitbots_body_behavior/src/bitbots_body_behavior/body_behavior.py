@@ -14,7 +14,7 @@ import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
-    PlayAnimationAction, GoalPartsRelative, RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
+    PlayAnimationAction, RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
 from move_base_msgs.msg import MoveBaseActionFeedback
 from actionlib_msgs.msg import GoalID
 
