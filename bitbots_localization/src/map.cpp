@@ -18,7 +18,7 @@ Map::Map(const std::string& file_path, const bl::LocalizationConfig &config) {
   //convert to absolute path
   fs::path absolute_map_path = fs::absolute(map_path, package_path);
   //load map
-  map = cv::imread(absolute_map_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+  map = cv::imread(absolute_map_path.string(), cv::IMREAD_GRAYSCALE);
 
   if (!map.data) {
     printf("No image data '%s'\n", map_path.filename().c_str());

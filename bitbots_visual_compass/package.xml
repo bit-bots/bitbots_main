@@ -1,6 +1,6 @@
 <package format="2">
   <name>bitbots_visual_compass</name>
-  <version>0.0.2</version>
+  <version>0.1.0</version>
   <description>The visual_compass package</description>
 
   <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
@@ -24,6 +24,7 @@
   <depend>dynamic_reconfigure</depend>
   <depend>beignet</depend>
   <depend>tf2</depend>
+  <depend>tf_conversions</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>wolves_image_provider</depend>
   <depend>python3-cv_bridge</depend>

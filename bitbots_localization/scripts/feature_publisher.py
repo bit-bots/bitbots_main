@@ -2,7 +2,7 @@
 import rospy
 import tf2_ros
 from tf2_geometry_msgs import PoseStamped
-from humanoid_league_msgs.msg import PixelsRelative, PixelRelative, GoalRelative
+from humanoid_league_msgs.msg import LineInformationRelative, LineIntersectionRelative, GoalRelative
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import CameraInfo
 import numpy as np
@@ -14,22 +14,18 @@ listener = tf2_ros.TransformListener(tfBuffer)
 
 cam_info = None
 
-pubCorners = None
-pubTcrossings = None
-pubCrosses = None
+pubLineContainer = None
+
+message_container = LineInformationRelative()
 
 use_camerainfo = True
 
-def publish_corners():
+def add_corners():
     global tf_buffer
     global cam_info
-    global pubCorners
-
-    corners_msg = PixelsRelative()
+    global pubLineContainer
 
     corners = ["cornerTL", "cornerBL", "cornerGTL", "cornerGBL", "cornerTR", "cornerBR", "cornerGTR", "cornerGBR"]
-
-    corners_msg = PixelsRelative()
 
     for corner in corners:
         try:
@@ -65,29 +61,25 @@ def publish_corners():
                         point_msg.y = add_gaussian_noise(pose.pose.position.y)
                         point_msg.z = pose.pose.position.z  # todo set to 0?
 
-                        pixel_msg = PixelRelative()
-                        pixel_msg.position = point_msg
+                        pixel_msg = LineIntersectionRelative()
+                        pixel_msg.pose.pose.pose.position = point_msg
+                        pixels.type = pixel_msg.L
 
-                        corners_msg.pixels.append(pixel_msg)
+                        message_container.intersections.append(pixel_msg)
 
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             continue
 
-    corners_msg.header.stamp = rospy.Time.now()
-
-    pubCorners.publish(corners_msg)
+    message_container.header.stamp = rospy.Time.now()
 
 
-def publish_tcrossings():
+def add_tcrossings():
 
     global tfBuffer
     global cam_info
-    global pubTcrossings
 
     tcrossings = ["tcrossingTL", "tcrossingBL", "tcrossingTM", "tcrossingBM", "tcrossingTR", "tcrossingBR"]
 
-    corners_msg = PixelsRelative()
-    corners_msg.header.frame_id = "camera_optical_frame"
     for corner in tcrossings:
         try:
             trans = tfBuffer.lookup_transform("camera_optical_frame", str(corner), rospy.Time())
@@ -121,25 +113,22 @@ def publish_tcrossings():
                         point_msg.y = add_gaussian_noise(pose.pose.position.y)
                         point_msg.z = pose.pose.position.z#todo set to 0?
 
-                        pixel_msg = PixelRelative()
-                        pixel_msg.position = point_msg
+                        pixel_msg = LineIntersectionRelative()
+                        pixel_msg.pose.pose.pose.position = point_msg
+                        pixels.type = pixel_msg.L
 
-                        corners_msg.pixels.append(pixel_msg)
+                        message_container.intersections.append(pixel_msg)
 
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             continue
 
-    corners_msg.header.stamp = rospy.Time.now()
-
-    pubTcrossings.publish(corners_msg)
+    message_container.header.stamp = rospy.Time.now()
 
 
-def publish_crosses():
+def add_crosses():
     global tf_buffer
     global cam_info
-    global pubCrosses #todo really necessary?!
 
-    crosses_msg = PixelsRelative()
     crosses = ["crossL", "crossR", "crossTM", "crosMM", "crossBM"]
 
     for cross in crosses:
@@ -170,17 +159,16 @@ def publish_crosses():
                         point_msg.y = add_gaussian_noise(pose.pose.position.y)
                         point_msg.z = pose.pose.position.z #todo set to 0?
 
-                        pixel_msg = PixelRelative()
-                        pixel_msg.position = point_msg
+                        pixel_msg = LineIntersectionRelative()
+                        pixel_msg.pose.pose.pose.position = point_msg
+                        pixels.type = pixel_msg.L
 
-                        crosses_msg.pixels.append(pixel_msg)
+                        message_container.intersections.append(pixel_msg)
 
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             continue
 
-    crosses_msg.header.stamp = rospy.Time.now()
-
-    pubCrosses.publish(crosses_msg)
+    message_container.header.stamp = rospy.Time.now()
 
 def publish_goals():
     global tf_buffer
@@ -236,32 +224,28 @@ def publish_goals():
 
     pubGoals.publish(goals_msg)
 
-
-
 def add_gaussian_noise(x):
     return x
-
 
 
 def cam_info_cb(msg):
     global cam_info
     cam_info = msg
     global tf_buffer
-    global pubCorners
+    global pubLineContainer
 
-    publish_corners()
-    publish_tcrossings()
-    publish_crosses()
+    add_corners()
+    add_tcrossings()
+    add_crosses()
     publish_goals()
 
+    pubGoals.publish(message_container)
+    message_container = LineInformationRelative()
+
 if __name__ == '__main__':
-
-
     cam_info_sub = rospy.Subscriber("/camera_info", CameraInfo, cam_info_cb)
 
-    pubCorners = rospy.Publisher('/corners', PixelsRelative, queue_size=10)
-    pubTcrossings = rospy.Publisher('/tcrossings', PixelsRelative, queue_size=10)
-    pubCrosses = rospy.Publisher('/crosses', PixelsRelative, queue_size=10)
+    pubLineContainer = rospy.Publisher('/lines', LineInformationRelative, queue_size=10)
 
     pubGoals = rospy.Publisher('/goals_simulated', GoalRelative, queue_size=10)
 

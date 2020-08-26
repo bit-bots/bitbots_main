@@ -25,7 +25,7 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 }
 
 double RobotPoseObservationModel::calculate_weight_for_class(
-    const RobotState &state, 
+    const RobotState &state,
     const std::vector<std::pair<double, double>> &last_measurement,
     std::shared_ptr<Map> map) const {
   double particle_weight_for_class = 0;
@@ -58,16 +58,16 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_crosses = last_measurement_crosses_.size();
 
   double weight = (number_of_effective_measurements_ == 0) ? 0 : (
-      ( particle_weight_lines * config_.lines_factor + 
-        particle_weight_goal * config_.goals_factor + 
+      ( particle_weight_lines * config_.lines_factor +
+        particle_weight_goal * config_.goals_factor +
         particle_weight_field_boundary * config_.field_boundary_factor +
-        particle_weight_corners * config_.corners_factor + 
-        particle_weight_t_crossings * config_.t_crossings_factor + 
+        particle_weight_corners * config_.corners_factor +
+        particle_weight_t_crossings * config_.t_crossings_factor +
         particle_weight_crosses * config_.crosses_factor) /
           number_of_effective_measurements_); // TODO evaluate this devision
 
   if (weight < min_weight_) {
-    weight = min_weight_;   
+    weight = min_weight_;
   }
 
   return weight; //exponential?
@@ -76,53 +76,58 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelative measurement) {
   // convert to polar
   for (hlm::LineSegmentRelative &segment : measurement.segments) {
-    std::pair<double, double> linePolar = cartesianToPolar(segment.start.x, segment.start.y);
+    std::pair<double, double> linePolar = cartesianToPolar(segment.start.pose.position.x, segment.start.pose.position.y);
     last_measurement_lines_.push_back(linePolar);
   }
 }
 
-void RobotPoseObservationModel::set_measurement_goal(hlm::GoalRelative measurement) {
+void RobotPoseObservationModel::set_measurement_goal(hlm::PoseWithCertaintyArray measurement) {
   // convert to polar
-  if (measurement.left_post.x != 0 && measurement.left_post.y != 0) {
-    std::pair<double, double> postOnePolar = cartesianToPolar(measurement.left_post.x, measurement.left_post.y);
-    last_measurement_goal_.push_back(postOnePolar);
-    if (measurement.left_post.x != measurement.right_post.x && measurement.left_post.y != measurement.right_post.y) {
-      std::pair<double, double> postTwoPolar = cartesianToPolar(measurement.right_post.x, measurement.right_post.y);
-      last_measurement_goal_.push_back(postTwoPolar);
-    }
+  for (hlm::PoseWithCertainty &post : measurement.poses) {
+    std::pair<double, double> postPolar = cartesianToPolar(post.pose.pose.position.x, post.pose.pose.position.y);
+    last_measurement_goal_.push_back(postPolar);
   }
 }
 
-void RobotPoseObservationModel::set_measurement_field_boundary(hlm::FieldBoundaryRelative measurement) {
+void RobotPoseObservationModel::set_measurement_field_boundary(gm::PolygonStamped measurement) {
   // convert to polar
-  for (gm::Point &point : measurement.field_boundary_points) {
+  for (gm::Point32 &point : measurement.polygon.points) {
     std::pair<double, double> fieldBoundaryPointPolar = cartesianToPolar(point.x,
                                                                          point.y); // z is 0
     last_measurement_field_boundary_.push_back(fieldBoundaryPointPolar);
   }
 }
 
-void RobotPoseObservationModel::set_measurement_corners(hlm::PixelsRelative measurement) {
+void RobotPoseObservationModel::set_measurement_corners(hlm::LineInformationRelative measurement) {
   // convert to polar
-  for (hlm::PixelRelative &pixel : measurement.pixels) {
-    std::pair<double, double> cornerPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
-    last_measurement_corners_.push_back(cornerPolar);
+  for (hlm::LineIntersectionRelative &intersection : measurement.intersections) {
+    if (intersection.type == intersection.L)
+    {
+      std::pair<double, double> cornerPolar = cartesianToPolar(intersection.pose.pose.pose.position.x, intersection.pose.pose.pose.position.y); // z is 0
+      last_measurement_corners_.push_back(cornerPolar);
+    }
   }
 }
 
-void RobotPoseObservationModel::set_measurement_t_crossings(hlm::PixelsRelative measurement) {
+void RobotPoseObservationModel::set_measurement_t_crossings(hlm::LineInformationRelative measurement) {
   // convert to polar
-  for (hlm::PixelRelative &pixel : measurement.pixels) {
-    std::pair<double, double> tcrossingsPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
-    last_measurement_t_crossings_.push_back(tcrossingsPolar);
+  for (hlm::LineIntersectionRelative &intersection : measurement.intersections) {
+    if (intersection.type == intersection.T)
+    {
+      std::pair<double, double> cornerPolar = cartesianToPolar(intersection.pose.pose.pose.position.x, intersection.pose.pose.pose.position.y); // z is 0
+      last_measurement_t_crossings_.push_back(cornerPolar);
+    }
   }
 }
 
-void RobotPoseObservationModel::set_measurement_crosses(hlm::PixelsRelative measurement) {
+void RobotPoseObservationModel::set_measurement_crosses(hlm::LineInformationRelative measurement) {
   // convert to polar
-  for (hlm::PixelRelative &pixel : measurement.pixels) {
-    std::pair<double, double> cornerPolar = cartesianToPolar(pixel.position.x, pixel.position.y); // z is 0
-    last_measurement_crosses_.push_back(cornerPolar);
+  for (hlm::LineIntersectionRelative &intersection : measurement.intersections) {
+    if (intersection.type == intersection.X)
+    {
+      std::pair<double, double> cornerPolar = cartesianToPolar(intersection.pose.pose.pose.position.x, intersection.pose.pose.pose.position.y); // z is 0
+      last_measurement_crosses_.push_back(cornerPolar);
+    }
   }
 }
 
