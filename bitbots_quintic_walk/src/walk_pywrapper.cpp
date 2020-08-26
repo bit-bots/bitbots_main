@@ -42,7 +42,7 @@ std::string to_python(const M& msg)
 
 void init_ros(){
     std::map<std::string, std::string> empty;
-   ros::init(empty, "walking");
+   ros::init(empty, "walking", ros::init_options::AnonymousName);
 }
 
 PyWalkWrapper::PyWalkWrapper(const std::string ns): walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns))
