@@ -183,7 +183,7 @@ void Localization::FieldboundaryCallback(const gm::PolygonStamped &msg) {
   fieldboundary_relative_.polygon.points.clear();
   fieldboundary_relative_.header = msg.header;
   for (gm::PolygonStamped fBinImage : fieldboundary_in_image_) { // find corresponding fb_in_image message
-    if (fBinImage.header.stamp == msg.header.stamp) {ts.size() - 2; i++) { //ignore most left and right point
+    if (fBinImage.header.stamp == msg.header.stamp) {
       for (int i = 1; i < msg.polygon.points.size() - 2; i++) { //ignore most left and right point
         if (fBinImage.polygon.points[i].y > 0 && fBinImage.polygon.points[i + 1].y
             > 0) { //ignore points that form a line on uppermost row in image
