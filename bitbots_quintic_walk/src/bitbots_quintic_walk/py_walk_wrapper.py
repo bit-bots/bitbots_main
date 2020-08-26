@@ -2,6 +2,9 @@ from io import BytesIO
 
 import rospy
 from std_msgs.msg import Int64
+import sys
+print(sys.version)
+print(sys.path)
 
 from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros
 from bitbots_msgs.msg import JointCommand

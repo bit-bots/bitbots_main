@@ -160,4 +160,5 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
              &PyWalkWrapper::set_engine_dyn_reconf);
 
     def("init_ros", &init_ros);
+
 }
