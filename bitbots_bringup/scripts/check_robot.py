@@ -9,6 +9,10 @@ from bitbots_msgs.msg import FootPressure
 from diagnostic_msgs.msg import DiagnosticStatus
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Empty
+import actionlib
+from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from geometry_msgs.msg import Vector3, Quaternion
+from tf.transformations import quaternion_from_euler
 
 
 class bcolors:
@@ -51,7 +55,7 @@ def pressure_cb(msg, is_left=True):
 def is_motion_started():
     node_names = rosnode.get_node_names("/")
     started = True
-    nodes_in_motion = {"ros_control", "hcm", "walking", "animation_server", "kick"}
+    nodes_in_motion = {"/ros_control", "/hcm", "/walking", "/animation", "/dynamic_kick"}
     for node in nodes_in_motion:
         if not node in node_names:
             print(F"{node} not running")
@@ -61,17 +65,17 @@ def is_motion_started():
 
 def check_pressure(msg, min, max, foot_name):
     okay = True
-    if min > msg.left_front > max:
-        print_warn(F"  {foot_name} left_front out of limits. Min {min} Max {max} Value {msg.left_front}\n")
+    if msg.left_front < min or msg.left_front > max:
+        print_warn(F"  {foot_name} left_front out of limits. Min {min} Max {max} Value {round(msg.left_front, 2)}\n")
         okay = False
-    if min > msg.left_back > max:
-        print_warn(F"  {foot_name} left_back out of limits. Min {min} Max {max} Value {msg.left_back}\n")
+    if msg.left_back < min or msg.left_back > max:
+        print_warn(F"  {foot_name} left_back out of limits. Min {min} Max {max} Value {round(msg.left_back, 2)}\n")
         okay = False
-    if min > msg.right_back > max:
-        print_warn(F"  {foot_name} right_back out of limits. Min {min} Max {max} Value {msg.right_back}\n")
+    if msg.right_back < min or msg.right_back > max:
+        print_warn(F"  {foot_name} right_back out of limits. Min {min} Max {max} Value {round(msg.right_back, 2)}\n")
         okay = False
-    if min > msg.right_front > max:
-        print_warn(F"  {foot_name} right_front out of limits. Min {min} Max {max} Value {msg.right_fronts}\n")
+    if msg.right_front < min or msg.right_front > max:
+        print_warn(F"  {foot_name} right_front out of limits. Min {min} Max {max} Value {round(msg.right_front, 2)}\n")
         okay = False
     return okay
 
@@ -79,16 +83,20 @@ def check_pressure(msg, min, max, foot_name):
 if __name__ == '__main__':
     print("### This script will check the robot hardware and motions. Please follow the instructions\n")
 
+    rospy.init_node("checker")
+
     # start necessary software
     print("First the motion software will be started. Please hold the robot and press enter.\n")
     input("Press Enter to continue...")
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
     rospack = rospkg.RosPack()
-    launch = roslaunch.parent.ROSLaunchParent(uuid, [rospack.get_path('rospy_tutorials') + "/launch/test_node.launch"])
+    launch = roslaunch.parent.ROSLaunchParent(uuid, [
+        rospack.get_path('bitbots_bringup') + "/launch/motion_standalone.launch"])
     launch.start()
     while True:
         if is_motion_started():
+            rospy.sleep(5)
             break
         else:
             print("Waiting for software to be started \n")
@@ -97,8 +105,8 @@ if __name__ == '__main__':
 
     # check diagnostic status
     print("Will check diagnostic status of robot.\n")
-    rospy.Subscriber("/diagnostics_top_level", DiagnosticStatus, diagnostic_cb, tcp_nodelay=True)
-    rospy.sleep(1)
+    diag_sub = rospy.Subscriber("/diagnostics_toplevel_state", DiagnosticStatus, diagnostic_cb, tcp_nodelay=True)
+    rospy.sleep(3)
     if diag_status == DiagnosticStatus.OK:
         print("    Diagnostic status okay.")
     else:
@@ -107,22 +115,29 @@ if __name__ == '__main__':
 
     # check publishing frequency of imu, servos, pwm, goals, pressure, robot_state
     # the topics which will be checked with minimal publishing rate
-    topics_to_check = {"/imu_data": 900, "/joint_states": 900, "/robot_state": 900, "/foot_pressure_left/raw": 900,
-                       "/foot_pressure_left/filtered": 900, "foot_pressure_right/raw": 900,
-                       "/foot_pressure_right/filtered": 900, "/core/vdxl": 900, "/diagnostics_toplevel": 9}
-    rt = rostopic.ROSTopicHz(-1)
+    topics_to_check = {"/imu/data": 900, "/joint_states": 900, "/robot_state": 900, "/foot_pressure_left/raw": 900,
+                       "/foot_pressure_left/filtered": 900, "/foot_pressure_right/raw": 900,
+                       "/foot_pressure_right/filtered": 900, "/core/vdxl": 9, "/diagnostics_toplevel_state": 9}
+    rts = []
     for topic in topics_to_check.keys():
         msg_class, real_topic, _ = rostopic.get_topic_class(topic)
-        rospy.Subscriber(real_topic, msg_class, rt.callback_hz, callback_args=topic, tcp_nodelay=True)
-    print("Please wait a few seconds for topics to be evaluated\n")
+        if real_topic is None or msg_class is None:
+            print_warn(F"Problem with topic {topic}")
+        else:
+            rt = rostopic.ROSTopicHz(-1)
+            rt_sub = rospy.Subscriber(topic, msg_class, rt.callback_hz, callback_args=topic, tcp_nodelay=True)
+            rts.append((rt, rt_sub))
+    print("Please wait a few seconds for publishing rates of topics to be evaluated\n")
     rospy.sleep(5)
     print("Topics have been evaluated:\n")
+    i = 0
     for topic in topics_to_check.keys():
-        rate = rt.get_hz(topic)
-        if rate < topics_to_check[topic]:
-            print_warn("  Topic " + topic + ": " + str(rate) + "\n")
+        rate = rts[i][0].get_hz(topic)[0]
+        if rate is None or rate < topics_to_check[topic]:
+            print_warn(F"  Low rate on Topic {topic}: {round(rate, 2)} \n")
         else:
-            print("  Topic %s: %f \n", topic, rate)
+            print(F"  Okay rate Topic {topic}: {round(rate, 2)} \n")
+        i += 1
     # todo check if some of the topics have very heterogeneous msg receive times
 
     # check tf
@@ -132,13 +147,14 @@ if __name__ == '__main__':
     print("\n\n")
     print("We will check the foot pressure sensors next\n")
     input("Please hold the robot in the air so that the feet don't touch the ground and press enter.")
-    left_pressure_sub = rospy.Subscriber("/foot_pressure/left", FootPressure, pressure_cb, callback_args=True,
+    left_pressure_sub = rospy.Subscriber("/foot_pressure_left/filtered", FootPressure, pressure_cb, callback_args=True,
                                          tcp_nodelay=True)
-    right_pressure_sub = rospy.Subscriber("/foot_pressure/right", FootPressure, pressure_cb, callback_args=False,
+    right_pressure_sub = rospy.Subscriber("/foot_pressure_right/filtered", FootPressure, pressure_cb,
+                                          callback_args=False,
                                           tcp_nodelay=True)
     rospy.sleep(0.5)
     while (not left_pressure) and (not right_pressure):
-        print("Waiting to receive pressure msgs\n")
+        rospy.loginfo_throttle(1, "Waiting to receive pressure msgs\n")
     print("Pressure messages received\n")
     both_okay = True
     both_okay = both_okay and check_pressure(left_pressure, -1, 1, "left")
@@ -174,20 +190,20 @@ if __name__ == '__main__':
     # todo check pickup hcm state
 
     # check fall front
-    input("Next we will check front falling detection.\n "
+    input("\nNext we will check front falling detection.\n "
           "Please let the robot fall on its belly, but hold it to prevent damage. "
           "The robot should perform a safety motion. Afterwards it should stand up by itself. "
           "Press enter when you're done.\n")
 
-    input("Next we will check back falling detection.\n "
+    input("\nNext we will check back falling detection.\n "
           "Please let the robot fall on its back, but hold it to prevent damage. "
           "The robot should perform a safety motion. Afterwards it should stand up by itself. "
-          "Press enter when you're done")
+          "Press enter when you're done.\n")
 
     # check walk motion
-    walk_pub = rospy.Publisher("/cmd_vel", Twist)
+    walk_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
     text = input(
-        "We will check walking of the robot. After pressing enter, robot will start walking in different directions. "
+        "\nWe will check walking of the robot. After pressing enter, robot will start walking in different directions. "
         "It will stop when it is finished. Please make sure there is space and catch it if it falls. Press y if you want to check walking.")
     if text == "y":
         cmd_msg = Twist()
@@ -206,9 +222,10 @@ if __name__ == '__main__':
         rospy.sleep(5)
         cmd_msg.linear.y = 0
         walk_pub.publish(cmd_msg)
+        rospy.sleep(1)
 
     # check kick motion
-    text = input("We will check the kick motion. Please hold make sure the robot is safe. "
+    text = input("\nWe will check the kick motion. Please hold make sure the robot is safe. "
                  "Press y if you want to perform this test.")
     client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
     goal = KickGoal()
@@ -247,9 +264,20 @@ if __name__ == '__main__':
             print('Unknown state', state)
         print(str(result))
 
+    def active_cb():
+        print("Server accepted action")
 
-    client.send_goal(goal)
+    def feedback_cb(feedback):
+        if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
+            print('Feedback')
+            print(feedback)
+            print()
+
     client.done_cb = done_cb
+    client.feedback_cb = feedback_cb
+    client.active_cb = active_cb
+    client.send_goal(goal)
+
     client.wait_for_result()
 
     input("All tests finished, script will exit and turn off robot. Please hold robot and press enter")
