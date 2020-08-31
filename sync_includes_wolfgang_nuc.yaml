@@ -38,6 +38,7 @@ include:
     - humanoid_league_msgs
     - humanoid_league_visualization:
         - humanoid_league_rviz_marker
+    - human_pose_estimation_openvino
     - lib:
         - rot_conv_lib
         - bio_ik
@@ -60,6 +61,7 @@ include:
         - bitbots_vision
         - python_extensions
         - white_balancer
+        - bitbots_gestures
 exclude:
     - "*.bag"
     - "*.pyc"
