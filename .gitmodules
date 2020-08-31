@@ -67,3 +67,6 @@
 [submodule "lib/rot_conv_lib"]
 	path = lib/rot_conv_lib
 	url = git@github.com:bit-bots/rot_conv_lib.git
+[submodule "human_pose_estimation_openvino"]
+	path = human_pose_estimation_openvino
+	url = git@github.com:bit-bots/human_pose_estimation_openvino.git
