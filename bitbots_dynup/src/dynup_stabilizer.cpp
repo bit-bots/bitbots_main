@@ -27,27 +27,29 @@ void Stabilizer::reset() {
 }
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
-    tf2::Transform to_trunk_tf;
-    tf2::fromMsg(to_trunk_.transform, to_trunk_tf);
-    tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * to_trunk_tf;
+    tf2::Transform right_foot_goal;
+    if(use_stabilizing_ && stabilize_now_) {
+        tf2::Transform to_trunk_tf;
+        tf2::fromMsg(to_trunk_.transform, to_trunk_tf);
+        tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * to_trunk_tf;
 
-    if(use_stabilizing_) {
-        if(stabilize_now_) {
-            double goal_pitch, goal_roll, goal_yaw;
-            tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
-            // first adapt trunk pitch value based on PID controller
-            double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - cop_.x, dt);
-            double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - cop_.y, dt);
-            tf2::Quaternion corrected_orientation;
-            corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
+        double goal_pitch, goal_roll, goal_yaw;
+        tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
+        // first adapt trunk pitch value based on PID controller
+        double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - cop_.x, dt);
+        double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - cop_.y, dt);
+        tf2::Quaternion corrected_orientation;
+        corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
+        trunk_goal.setRotation(corrected_orientation);
 
-            trunk_goal.setRotation(corrected_orientation);
-        }
+        tf2::Transform from_trunk_tf;
+        tf2::fromMsg(from_trunk_.transform, from_trunk_tf);
+        right_foot_goal = trunk_goal * from_trunk_tf;
+    }
+    else {
+        right_foot_goal = ik_goals.r_foot_goal_pose;
     }
 
-    tf2::Transform from_trunk_tf;
-    tf2::fromMsg(from_trunk_.transform, from_trunk_tf);
-    tf2::Transform right_foot_goal = trunk_goal * from_trunk_tf;
     tf2::Transform left_foot_goal = ik_goals.l_foot_goal_pose * right_foot_goal;
     tf2::Transform left_hand_goal = ik_goals.l_hand_goal_pose;
     tf2::Transform right_hand_goal = ik_goals.r_hand_goal_pose;
