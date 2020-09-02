@@ -9,6 +9,7 @@ from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 
+
 class PyWalk(object):
     def __init__(self, namespace=""):
         init_ros()
@@ -57,3 +58,9 @@ class PyWalk(object):
 
     def set_engine_dyn_reconf(self, param_dict):
         self.py_walk_wrapper.set_engine_dyn_reconf(param_dict)
+
+    def get_phase(self):
+        return self.py_walk_wrapper.get_phase()
+
+    def get_freq(self):
+        return self.py_walk_wrapper.get_freq()

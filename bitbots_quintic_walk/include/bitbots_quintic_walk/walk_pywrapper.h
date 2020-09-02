@@ -20,7 +20,9 @@ class PyWalkWrapper {
   moveit::py_bindings_tools::ByteString step(double dt, const std::string &cmdvel_msg, const std::string &imu_msg, const std::string &jointstate_msg);
   void reset();
   void set_robot_state(int state);
-   void set_engine_dyn_reconf(const boost::python::object params);
+  void set_engine_dyn_reconf(const boost::python::object params);
+  float get_phase();
+  float get_freq();
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;

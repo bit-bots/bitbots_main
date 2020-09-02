@@ -63,6 +63,14 @@ void PyWalkWrapper::reset() {
   walk_node_->reset();
 }
 
+float PyWalkWrapper::get_phase(){
+    return walk_node_->getEngine()->getPhase();
+}
+
+float PyWalkWrapper::get_freq(){
+    return walk_node_->getEngine()->getFreq();
+}
+
 void PyWalkWrapper::set_robot_state(int state) {
   humanoid_league_msgs::RobotControlState state_msg;
   state_msg.state = state;
@@ -157,8 +165,9 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("set_robot_state", &PyWalkWrapper::set_robot_state)
         .def("reset", &PyWalkWrapper::reset)
         .def("set_engine_dyn_reconf",
-             &PyWalkWrapper::set_engine_dyn_reconf);
+             &PyWalkWrapper::set_engine_dyn_reconf)
+        .def("get_phase", &PyWalkWrapper::get_phase)
+        .def("get_freq", &PyWalkWrapper::get_freq);
 
     def("init_ros", &init_ros);
-
 }
