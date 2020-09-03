@@ -43,6 +43,9 @@ class PyWalk(object):
         self.py_walk_wrapper.reset()
 
     def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg):
+        if dt == 0.0:
+            # preventing wierd spline interpolation errors on edge case
+            dt = 0.0001
         stepi = self.py_walk_wrapper.step(
             dt,
             self._to_cpp(cmdvel_msg),
