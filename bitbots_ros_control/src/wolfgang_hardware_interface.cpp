@@ -273,7 +273,7 @@ void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt
   for (std::thread &thread : threads) {
     thread.join();
   }
-  // aggrigate all servo values for controller
+  // aggregate all servo values for controller
   servo_interface_.read(t, dt);
 }
 
