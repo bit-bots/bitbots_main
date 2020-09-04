@@ -240,7 +240,7 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
     threads.push_back(std::thread(threaded_init, std::ref(port_interfaces), std::ref(root_nh), std::ref(suc)));
     i++;
   }
-  // wait for all reads to finish
+  // wait for all inits to finish
   for (std::thread &thread : threads) {
     thread.join();
   }
