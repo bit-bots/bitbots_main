@@ -328,7 +328,7 @@ void ServoBusInterface::switchDynamixelControlMode() {
 
   int32_t value = 3;
   if (control_mode_ == POSITION_CONTROL) {
-    value = 3;;
+    value = 3;
   } else if (control_mode_ == VELOCITY_CONTROL) {
     value = 1;
   } else if (control_mode_ == EFFORT_CONTROL) {
