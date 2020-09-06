@@ -276,7 +276,7 @@ class Transformer(object):
         # Get indices for all non 0 pixels (the pixels which should be displayed in the pointcloud)
         point_idx_tuple = np.where(image != 0)
 
-        # Resturcture index tuple to a array
+        # Restructure index tuple to a array
         point_idx_array = np.empty((point_idx_tuple[0].shape[0], 3))
         point_idx_array[:, 0] = point_idx_tuple[0]
         point_idx_array[:, 1] = point_idx_tuple[2]
