@@ -271,7 +271,7 @@ class Transformer(object):
             return
 
         # Convert image
-        image = self._cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+        image = self._cv_bridge.imgmsg_to_cv2(msg, '8UC1')
 
         # Get indices for all non 0 pixels (the pixels which should be displayed in the pointcloud)
         point_idx_tuple = np.where(image != 0)
