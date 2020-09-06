@@ -278,8 +278,8 @@ class Transformer(object):
 
         # Restructure index tuple to a array
         point_idx_array = np.empty((point_idx_tuple[0].shape[0], 3))
-        point_idx_array[:, 0] = point_idx_tuple[0]
-        point_idx_array[:, 1] = point_idx_tuple[2]
+        point_idx_array[:, 0] = point_idx_tuple[1]
+        point_idx_array[:, 1] = point_idx_tuple[0]
 
         # Project the pixels onto the field plane
         points_on_plane_from_cam = self._get_field_intersection_in_camera_frame_array(point_idx_array, field)
