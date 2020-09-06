@@ -290,7 +290,7 @@ class Transformer(object):
         # Lookup the transform from the camera to the field plane
         try:
             trans = self._tf_buffer.lookup_transform(
-                self._publish_frame.target_frame,
+                self._publish_frame,
                 self._camera_info.header.frame_id,
                 msg.header.stamp)
         except tf2_ros.LookupException as ex:
