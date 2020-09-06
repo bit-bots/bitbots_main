@@ -423,7 +423,11 @@ class Transformer(object):
         # we are casting a ray, intersections need to be in front of the camera
         relative_ray_distance[relative_ray_distance <= 0] = np.nan
 
-        return relative_ray_distance * ray_directions
+        ray_directions[:,0] = np.multiply(relative_ray_distance, ray_directions[:,0])
+        ray_directions[:,1] = np.multiply(relative_ray_distance, ray_directions[:,1])
+        ray_directions[:,2] = np.multiply(relative_ray_distance, ray_directions[:,2])
+
+        return ray_directions
 
 
 if __name__ == "__main__":
