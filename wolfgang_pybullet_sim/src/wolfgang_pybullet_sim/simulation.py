@@ -19,8 +19,8 @@ class Simulation:
         self.start_position = [0, 0, 0.43]
         self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
         self.initial_joints_positions = {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
-                                         "LHipYaw": 0, "LKnee": -60, "RAnklePitch": 30, "RAnkleRoll": 0,
-                                         "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": 60,
+                                         "LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
+                                         "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
                                          "LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
                                          "RShoulderRoll": 0, "RElbow": -45, "HeadPan": 0, "HeadTilt": 0}
 
@@ -84,7 +84,6 @@ class Simulation:
 
     def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
                           spinning_friction=0, rolling_friction=0):
-        print(self.links)
         for link_name in self.links.keys():
             if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
                 # print(p.getLinkState(self.robot_index, self.links[link_name]))

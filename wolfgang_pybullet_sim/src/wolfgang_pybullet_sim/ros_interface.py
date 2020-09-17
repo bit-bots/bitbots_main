@@ -40,7 +40,7 @@ class ROSInterface:
         self.odom_msg.header.frame_id = "odom"
         self.odom_msg.child_frame_id = "base_link"
 
-        srv = Server(simConfig, self._dynamic_reconfigure_callback)
+        srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
 
         # publisher
         self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_raw/left", FootPressure,
