@@ -86,4 +86,10 @@ const std::vector<std::string>& WalkIK::getRightLegJointNames(){
   return right_leg_joints_group_->getJointModelNames();
 }
 
+robot_state::RobotStatePtr WalkIK::get_goal_state(){
+    return goal_state_;
+}
+
+
+
 } // namespace bitbots_quintic_walk

@@ -59,6 +59,11 @@ class WalkNode {
       const geometry_msgs::Twist &cmdvel_msg,
       const sensor_msgs::Imu &imu_msg,
       const sensor_msgs::JointState &jointstate_msg);
+  /**
+   * Small helper method to get foot position via python wrapper
+   */
+  geometry_msgs::Pose get_left_foot_pose();
+
   void reset();
 
   /**
