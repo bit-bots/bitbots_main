@@ -14,7 +14,7 @@
                 "LHipPitch": 27, 
                 "LHipRoll": 4, 
                 "LHipYaw": -1, 
-                "LKnee": -58, 
+                "LKnee": 58,
                 "LShoulderPitch": -2, 
                 "LShoulderRoll": 0, 
                 "RAnklePitch": 26, 
@@ -23,7 +23,7 @@
                 "RHipPitch": -27, 
                 "RHipRoll": -4, 
                 "RHipYaw": 1, 
-                "RKnee": 58, 
+                "RKnee": -58,
                 "RShoulderPitch": 6, 
                 "RShoulderRoll": 0
             }, 
@@ -38,7 +38,7 @@
                 "LHipPitch": 2, 
                 "LHipRoll": 2, 
                 "LHipYaw": 2, 
-                "LKnee": 2, 
+                "LKnee": 2,
                 "LShoulderPitch": 0, 
                 "LShoulderRoll": 0, 
                 "RAnklePitch": 2, 
@@ -47,7 +47,7 @@
                 "RHipPitch": 2, 
                 "RHipRoll": 2, 
                 "RHipYaw": 2, 
-                "RKnee": 2, 
+                "RKnee": 2,
                 "RShoulderPitch": 0, 
                 "RShoulderRoll": 0
             }

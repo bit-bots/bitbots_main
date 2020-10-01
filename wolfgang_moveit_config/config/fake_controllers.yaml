@@ -29,37 +29,18 @@ controller_list:
       - RKnee
       - RAnklePitch
       - RAnkleRoll
-  - name: fake_LeftArm_controller
-      - LShoulderPitch
-      - LShoulderRoll
-      - LElbow
   - name: fake_RightArm_controller
+    joints:
       - RShoulderPitch
       - RShoulderRoll
       - RElbow
-  - name: fake_Arms_controller
+  - name: fake_LeftArm_controller
+    joints:
       - LShoulderPitch
       - LShoulderRoll
       - LElbow
-      - RShoulderPitch
-      - RShoulderRoll
-      - RElbow
-  - name: fake_All_controller
+  - name: fake_Arms_controller
     joints:
-      - LHipYaw
-      - LHipRoll
-      - LHipPitch
-      - LKnee
-      - LAnklePitch
-      - LAnkleRoll
-      - RHipYaw
-      - RHipRoll
-      - RHipPitch
-      - RKnee
-      - RAnklePitch
-      - RAnkleRoll
-      - HeadPan
-      - HeadTilt
       - LShoulderPitch
       - LShoulderRoll
       - LElbow
@@ -70,3 +51,28 @@ controller_list:
     joints:
       - HeadPan
       - HeadTilt
+  - name: fake_All_controller
+    joints:
+      - HeadPan
+      - HeadTilt
+      - LHipYaw
+      - LHipRoll
+      - LHipPitch
+      - LKnee
+      - LAnklePitch
+      - LAnkleRoll
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+      - RHipYaw
+      - RHipRoll
+      - RHipPitch
+      - RKnee
+      - RAnklePitch
+      - RAnkleRoll
+      - RShoulderPitch
+      - RShoulderRoll
+      - RElbow
+initial:  # Define initial robot poses.
+#  - group: LeftLeg
+#    pose: home

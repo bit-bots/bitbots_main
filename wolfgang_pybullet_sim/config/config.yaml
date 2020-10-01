@@ -1,0 +1,8 @@
+contact_stiffness: 1.0
+contact_damping: 1.0
+joint_damping: 1.0
+lateral_friction: 10000
+spinning_friction: 1000
+rolling_friction: 0.1
+order: 5
+cutoff: 10

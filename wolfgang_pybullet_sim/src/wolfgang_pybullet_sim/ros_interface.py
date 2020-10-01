@@ -11,11 +11,16 @@ from dynamic_reconfigure.server import Server
 
 
 class ROSInterface:
-    def __init__(self, simulation):
-        rospy.init_node("pybullet_sim")
-
+    def __init__(self, simulation, namespace='', node=True):
+        # give possibility to use the interface directly as class with setting node=False
+        if node:
+            if namespace == '':
+                rospy.init_node("pybullet_sim")
+            else:
+                rospy.init_node('pybullet_sim', anonymous=True, argv=['clock:=/' + self.namespace + '/clock'])
 
         self.simulation = simulation
+        self.namespace = namespace
         self.last_time = time.time()
         self.last_linear_vel = (0, 0, 0)
 
@@ -35,38 +40,46 @@ class ROSInterface:
         self.odom_msg.header.frame_id = "odom"
         self.odom_msg.child_frame_id = "base_link"
 
-
-        srv = Server(simConfig, self._dynamic_reconfigure_callback)
+        srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
 
         # publisher
-        self.left_foot_pressure_publisher = rospy.Publisher("foot_pressure_raw/left", FootPressure, queue_size=1)
-        self.right_foot_pressure_publisher = rospy.Publisher("foot_pressure_raw/right", FootPressure, queue_size=1)
-        self.left_foot_pressure_publisher_filtered = rospy.Publisher("foot_pressure_filtered/left", FootPressure, queue_size=1)
-        self.right_foot_pressure_publisher_filtered = rospy.Publisher("foot_pressure_filtered/right", FootPressure, queue_size=1)
-        self.joint_publisher = rospy.Publisher("joint_states", JointState, queue_size=1)
-        self.imu_publisher = rospy.Publisher("imu/data", Imu, queue_size=1)
-        self.clock_publisher = rospy.Publisher("clock", Clock, queue_size=1)
-        self.real_time_factor_publisher = rospy.Publisher("real_time_factor", Float32, queue_size=1)
-        self.true_odom_publisher = rospy.Publisher("true_odom", Odometry, queue_size=1)
+        self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_raw/left", FootPressure,
+                                                            queue_size=1)
+        self.right_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_raw/right", FootPressure,
+                                                             queue_size=1)
+        self.left_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_left/filtered",
+                                                                     FootPressure, queue_size=1)
+        self.right_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_right/filtered",
+                                                                      FootPressure, queue_size=1)
+        self.joint_publisher = rospy.Publisher(self.namespace + "joint_states", JointState, queue_size=1)
+        self.imu_publisher = rospy.Publisher(self.namespace + "imu/data", Imu, queue_size=1)
+        self.clock_publisher = rospy.Publisher(self.namespace + "clock", Clock, queue_size=1)
+        self.real_time_factor_publisher = rospy.Publisher(self.namespace + "real_time_factor", Float32, queue_size=1)
+        self.true_odom_publisher = rospy.Publisher(self.namespace + "true_odom", Odometry, queue_size=1)
 
         # subscriber
-        self.joint_goal_subscriber = rospy.Subscriber("DynamixelController/command", JointCommand, self.joint_goal_cb,
-                                                      queue_size=1, tcp_nodelay=True)
+        self.joint_goal_subscriber = rospy.Subscriber(self.namespace + "DynamixelController/command", JointCommand,
+                                                      self.joint_goal_cb, queue_size=1, tcp_nodelay=True)
 
-        self.reset_subscriber = rospy.Subscriber("reset", Bool, self.reset_cb, queue_size=1, tcp_nodelay=True)
+        self.reset_subscriber = rospy.Subscriber(self.namespace + "reset", Bool, self.reset_cb, queue_size=1,
+                                                 tcp_nodelay=True)
 
     def step(self):
         self.simulation.step()
-        self.publish_joints()
-        self.publish_imu()
-        self.publish_foot_pressure()
-        self.clock_msg.clock = rospy.Time.from_seconds(self.simulation.time)
-        self.clock_publisher.publish(self.clock_msg)
-        self.compute_real_time_factor()
+        if not self.simulation.paused:
+            self.publish_joints()
+            self.publish_imu()
+            self.publish_foot_pressure()
+            self.publish_true_odom()
+            self.clock_msg.clock = rospy.Time.from_seconds(self.simulation.time)
+            self.clock_publisher.publish(self.clock_msg)
+            self.compute_real_time_factor()
 
-    def run_simulation(self):
-        while not rospy.is_shutdown():
+    def run_simulation(self, duration=None, sleep=0):
+        start_time = rospy.get_time()
+        while not rospy.is_shutdown() and (duration is None or rospy.get_time() - start_time < duration):
             self.step()
+            time.sleep(sleep)
 
     def compute_real_time_factor(self):
         time_now = time.time()
@@ -74,7 +87,7 @@ class ROSInterface:
         self.last_time = time_now
         self.real_time_factor_publisher.publish(self.real_time_msg)
 
-    def publish_joints(self):
+    def get_joint_state_msg(self):
         positions = []
         velocities = []
         efforts = []
@@ -86,10 +99,13 @@ class ROSInterface:
         self.joint_state_msg.position = positions
         self.joint_state_msg.velocity = velocities
         self.joint_state_msg.effort = efforts
-        self.joint_state_msg.header.stamp = rospy.Time.now()
-        self.joint_publisher.publish(self.joint_state_msg)
+        self.joint_state_msg.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        return self.joint_state_msg
 
-    def publish_imu(self):
+    def publish_joints(self):
+        self.joint_publisher.publish(self.get_joint_state_msg())
+
+    def get_imu_msg(self):
         position, orientation = self.simulation.get_robot_pose()
         self.imu_msg.orientation.x = orientation[0]
         self.imu_msg.orientation.y = orientation[1]
@@ -105,8 +121,11 @@ class ROSInterface:
         self.imu_msg.linear_acceleration.x = linear_acc[0]
         self.imu_msg.linear_acceleration.y = linear_acc[0]
         self.imu_msg.linear_acceleration.z = linear_acc[0]
-        self.imu_msg.header.stamp = rospy.Time.now()
-        self.imu_publisher.publish(self.imu_msg)
+        self.imu_msg.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        return self.imu_msg
+
+    def publish_imu(self):
+        self.imu_publisher.publish(self.get_imu_msg())
 
     def publish_foot_pressure(self):
 
@@ -132,7 +151,6 @@ class ROSInterface:
         self.foot_msg_right.right_back = f_rrb[0]
         self.right_foot_pressure_publisher.publish(self.foot_msg_right)
 
-
         self.foot_msg_left.left_back = f_llb[1]
         self.foot_msg_left.left_front = f_llf[1]
         self.foot_msg_left.right_front = f_lrf[1]
@@ -147,8 +165,13 @@ class ROSInterface:
 
     def publish_true_odom(self):
         position, orientation = self.simulation.get_robot_pose()
-        self.odom_msg.pose.pose.position = position
-        self.odom_msg.pose.pose.orientation = orientation
+        self.odom_msg.pose.pose.position.x = position[0]
+        self.odom_msg.pose.pose.position.y = position[1]
+        self.odom_msg.pose.pose.position.z = position[2]
+        self.odom_msg.pose.pose.orientation.x = orientation[0]
+        self.odom_msg.pose.pose.orientation.y = orientation[1]
+        self.odom_msg.pose.pose.orientation.z = orientation[2]
+        self.odom_msg.pose.pose.orientation.w = orientation[3]
         self.true_odom_publisher.publish(self.odom_msg)
 
     def joint_goal_cb(self, msg: JointCommand):
@@ -162,6 +185,8 @@ class ROSInterface:
         self.simulation.reset()
 
     def _dynamic_reconfigure_callback(self, config, level):
-        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"], config["joint_damping"])
+        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"],
+                                          config["joint_damping"], config["lateral_friction"],
+                                          config["spinning_friction"], config["rolling_friction"])
         self.simulation.set_filter_params(config["cutoff"], config["order"])
         return config
