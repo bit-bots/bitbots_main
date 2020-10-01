@@ -6,7 +6,7 @@
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns):
-    robot_model_loader_(ns + "/robot_description", false),
+    robot_model_loader_(ns + "robot_description", false),
     stabilizer_(ns),
     walk_engine_(ns)
 {

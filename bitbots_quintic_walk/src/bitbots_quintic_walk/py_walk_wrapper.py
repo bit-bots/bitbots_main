@@ -13,6 +13,9 @@ from std_msgs.msg import String
 class PyWalk(object):
     def __init__(self, namespace=""):
         init_ros()
+        # make namespace end with a /
+        if namespace != "" and namespace[-1] != '/':
+            namespace = namespace + "/"
         self.py_walk_wrapper = PyWalkWrapper(namespace)
 
     def _to_cpp(self, msg):
@@ -61,6 +64,9 @@ class PyWalk(object):
 
     def set_engine_dyn_reconf(self, param_dict):
         self.py_walk_wrapper.set_engine_dyn_reconf(param_dict)
+
+    def set_node_dyn_reconf(self, param_dict):
+        self.py_walk_wrapper.set_node_dyn_reconf(param_dict)
 
     def get_phase(self):
         return self.py_walk_wrapper.get_phase()

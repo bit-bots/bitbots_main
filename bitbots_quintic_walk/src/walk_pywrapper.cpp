@@ -154,6 +154,86 @@ void PyWalkWrapper::set_engine_dyn_reconf(const boost::python::object params){
     engine->reconfCallback(dyn_conf, 0);
 }
 
+bool string2bool(const std::string & v){
+    return !v.empty () &&
+        (strcasecmp (v.c_str (), "true") == 0 ||
+         atoi (v.c_str ()) != 0);
+}
+
+void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params){
+    using namespace boost::python;
+
+    extract< dict > cppdict_ext(params);
+    if(!cppdict_ext.check()){
+        throw std::runtime_error(
+            "PassObj::pass_dict: type error: not a python dict.");
+    }
+
+    dict cppdict = cppdict_ext();
+    list keylist = cppdict.keys();
+
+    // create dyn reconf object
+    bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig dyn_conf;
+
+    // fill all values from dict to dyn reconf
+    int const len = boost::python::len(keylist);
+    //std::cout << "len(keylist) = " << len << std::endl;
+    // since c++ has no reflection we have to do this in a bad way
+    for(int i = 0; i < len; ++i){
+        // operator[] is in python::boost::object
+        std::string keystr = extract< std::string >(str(keylist[i]));
+        std::string valstr = extract< std::string >(str(cppdict[keylist[i]]));
+        //std::cout << "key:[" << keystr << "]->[" << valstr << "]" << std::endl;
+        if (keystr == "debug_active"){
+            dyn_conf.debug_active = string2bool(valstr);
+        }else if (keystr == "engine_freq"){
+            dyn_conf.engine_freq = string2bool(valstr);
+        }else if (keystr == "odom_pub_factor"){
+            dyn_conf.odom_pub_factor = std::stof(valstr);
+        }else if (keystr == "ik_timeout"){
+            dyn_conf.ik_timeout = std::stof(valstr);
+        }else if (keystr == "pressure_phase_reset_active"){
+            dyn_conf.pressure_phase_reset_active = string2bool(valstr);
+        }else if (keystr == "ground_min_pressure"){
+            dyn_conf.ground_min_pressure = std::stof(valstr);
+        }else if (keystr == "phase_reset_phase"){
+            dyn_conf.phase_reset_phase = std::stof(valstr);
+        }else if (keystr == "joint_min_effort"){
+            dyn_conf.joint_min_effort = std::stof(valstr);
+        }else if (keystr == "effort_phase_reset_active"){
+            dyn_conf.effort_phase_reset_active = string2bool(valstr);
+        }else if (keystr == "phase_rest_active"){
+            dyn_conf.phase_rest_active = string2bool(valstr);
+        }else if (keystr == "pause_duration"){
+            dyn_conf.pause_duration = std::stof(valstr);
+        }else if (keystr == "imu_active"){
+            dyn_conf.imu_active = string2bool(valstr);
+        }else  if (keystr == "imu_pitch_threshold"){
+            dyn_conf.imu_pitch_threshold = std::stof(valstr);
+        }else if (keystr == "imu_roll_threshold"){
+            dyn_conf.imu_roll_threshold = std::stof(valstr);
+        }else if (keystr == "imu_pitch_vel_threshold"){
+            dyn_conf.imu_pitch_vel_threshold = std::stof(valstr);
+        }else if (keystr == "imu_roll_vel_threshold"){
+            dyn_conf.imu_roll_vel_threshold = std::stof(valstr);
+        }else if (keystr == "max_step_x"){
+            dyn_conf.max_step_x = std::stof(valstr);
+        }else if (keystr == "max_step_y"){
+            dyn_conf.max_step_y = std::stof(valstr);
+        }else if (keystr == "max_step_xy"){
+            dyn_conf.max_step_xy = std::stof(valstr);
+        }else if (keystr == "max_step_z"){
+            dyn_conf.max_step_z = std::stof(valstr);
+        }else if (keystr == "max_step_angular"){
+            dyn_conf.max_step_angular = std::stof(valstr);
+        }else{
+            std::cout << keystr << " not knowen. WILL BE IGNORED\n";
+        }
+    }
+
+    walk_node_->reconfCallback(dyn_conf, 0);
+}
+
 
 BOOST_PYTHON_MODULE(py_quintic_walk)
 {
@@ -166,6 +246,8 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("reset", &PyWalkWrapper::reset)
         .def("set_engine_dyn_reconf",
              &PyWalkWrapper::set_engine_dyn_reconf)
+        .def("set_node_dyn_reconf",
+             &PyWalkWrapper::set_node_dyn_reconf)
         .def("get_phase", &PyWalkWrapper::get_phase)
         .def("get_freq", &PyWalkWrapper::get_freq);
 

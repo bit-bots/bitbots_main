@@ -21,6 +21,7 @@ class PyWalkWrapper {
   void reset();
   void set_robot_state(int state);
   void set_engine_dyn_reconf(const boost::python::object params);
+  void set_node_dyn_reconf(const boost::python::object params);
   float get_phase();
   float get_freq();
 
