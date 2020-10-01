@@ -1,0 +1,23 @@
+#VRML_SIM R2020b utf8
+DEF world_info WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.23076950869564306 0.9409687127447107 0.24763544877891294 1.4661228974692195
+  position 3.997491301967621 2.495938785582882 1.6480445581099623
+}
+TexturedBackground {
+  texture "stadium"
+}
+TexturedBackgroundLight {
+  texture "stadium"
+}
+Floor {
+  size 25 25
+  tileSize 1 1
+}
+DEF Robot Wolfgang {
+  translation 0 0.41 -1.506e-06
+  controller "<extern>"
+  supervisor TRUE
+}

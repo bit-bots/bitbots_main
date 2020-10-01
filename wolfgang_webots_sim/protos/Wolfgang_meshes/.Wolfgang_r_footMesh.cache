@@ -1,0 +1,11 @@
+Webots Proto Cache File version 1.5
+protoFileHash: cf5cfb78fe64a1669cbdb0a49a0638a1
+needsRobotAncestor: 0
+baseType: Shape
+slotType: 
+parameters: 
+tags: hidden
+license:  Apache License 2.0
+licenseUrl:  http://www.apache.org/licenses/LICENSE-2.0
+documentationUrl: 
+info: Extracted\sfrom:\srobot.urdf\n
