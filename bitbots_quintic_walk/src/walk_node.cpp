@@ -224,6 +224,13 @@ bitbots_msgs::JointCommand WalkNode::step(double dt, const geometry_msgs::Twist 
 
 }
 
+geometry_msgs::Pose WalkNode::get_left_foot_pose(){
+  robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
+  geometry_msgs::Pose pose;
+  tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose);
+  return pose;
+}
+
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.

@@ -5,9 +5,10 @@ from std_msgs.msg import Int64
 
 from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros
 from bitbots_msgs.msg import JointCommand
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
+
 
 
 class PyWalk(object):
@@ -60,6 +61,11 @@ class PyWalk(object):
             JointCommand
         )
 
+        return result
+
+    def get_left_foot_pose(self):
+        foot_pose = self.py_walk_wrapper.get_left_foot_pose()
+        result = self._from_cpp(foot_pose, Pose)
         return result
 
     def set_engine_dyn_reconf(self, param_dict):
