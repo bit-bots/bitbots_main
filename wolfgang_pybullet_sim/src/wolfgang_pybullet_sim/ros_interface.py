@@ -28,7 +28,7 @@ class ROSInterface:
         self.real_time_msg = Float32()
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.frame_id = "base_link"
-        self.joint_state_msg.name = self.simulation.initial_joints_positions.keys()
+        self.joint_state_msg.name = self.simulation.get_joint_names()
         self.imu_msg = Imu()
         self.imu_msg.header.frame_id = "imu_frame"
         self.clock_msg = Clock()
@@ -128,6 +128,10 @@ class ROSInterface:
         self.imu_publisher.publish(self.get_imu_msg())
 
     def publish_foot_pressure(self):
+        # some models dont have sensors
+        if len(self.simulation.pressure_sensors) == 0:
+            rospy.logwarn_once("No pressure sensors found in simulation model")
+            return
 
         f_llb = self.simulation.pressure_sensors["LLB"].get_force()
         f_llf = self.simulation.pressure_sensors["LLF"].get_force()

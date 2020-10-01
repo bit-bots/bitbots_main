@@ -10,10 +10,11 @@ import rospkg
 
 
 class Simulation:
-    def __init__(self, gui):
+    def __init__(self, gui, urdf_path=None, foot_link_names=[]):
         self.gui = gui
         self.paused = False
         self.gravity = True
+        self.foot_link_names = foot_link_names
 
         # config values
         self.start_position = [0, 0, 0.43]
@@ -41,11 +42,12 @@ class Simulation:
                          rollingFriction=-1, restitution=0.9)
 
         # Loading robot
-        rospack = rospkg.RosPack()
-        path = rospack.get_path("wolfgang_description")
         flags = p.URDF_USE_INERTIA_FROM_FILE + p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
-        self.robot_index = p.loadURDF(path + "/urdf/robot.urdf",
-                                      self.start_position, self.start_orientation, flags=flags)
+        if urdf_path is None:
+            # use wolfgang as standard
+            rospack = rospkg.RosPack()
+            urdf_path = rospack.get_path("wolfgang_description") + "/urdf/robot.urdf"
+        self.robot_index = p.loadURDF(urdf_path, self.start_position, self.start_orientation, flags=flags)
 
         # Engine parameters
         # time step should be at 240Hz (due to pyBullet documentation)
@@ -66,11 +68,12 @@ class Simulation:
         for i in range(p.getNumJoints(self.robot_index)):
             joint_info = p.getJointInfo(self.robot_index, i)
             name = joint_info[1].decode('utf-8')
+            type = joint_info[2]
             # we can get the links by seeing where the joint is attached
             self.links[joint_info[12].decode('utf-8')] = link_index
             link_index += 1
-            if name in self.initial_joints_positions.keys():
-                # remember joint
+            if type == 0:
+                # remember joint if its revolute (0) and not fixed (4)
                 self.joints[name] = Joint(i, self.robot_index)
             elif name in ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]:
                 p.enableJointForceTorqueSensor(self.robot_index, i)
@@ -85,7 +88,8 @@ class Simulation:
     def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
                           spinning_friction=0, rolling_friction=0):
         for link_name in self.links.keys():
-            if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
+            if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf",
+                             "rrb"] or link_name in self.foot_link_names:
                 # print(p.getLinkState(self.robot_index, self.links[link_name]))
                 p.changeDynamics(self.robot_index, self.links[link_name],
                                  lateralFriction=lateral_friction,
@@ -109,7 +113,10 @@ class Simulation:
         # set joints to initial position
         for name in self.joints:
             joint = self.joints[name]
-            pos_in_rad = math.radians(self.initial_joints_positions[name])
+            try:
+                pos_in_rad = math.radians(self.initial_joints_positions[name])
+            except KeyError:
+                pos_in_rad = 0
             joint.reset_position(pos_in_rad, 0)
             joint.set_position(pos_in_rad)
 
@@ -171,6 +178,13 @@ class Simulation:
     def get_robot_velocity(self):
         (vx, vy, vz), (vr, vp, vy) = p.getBaseVelocity(self.robot_index)
         return (vx, vy, vz), (vr, vp, vy)
+
+    def get_joint_names(self):
+        names = []
+        for name in self.joints:
+            joint = self.joints[name]
+            names.append(joint.name)
+        return names
 
 
 class Joint:
