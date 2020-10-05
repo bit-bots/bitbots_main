@@ -19,6 +19,13 @@ There are other possible ways to achieve the goals of the HCM:
 
 We decided on using the HCM approach to make it easy to exchange motion parts (each part is a single ROS node) and to have a semantic state of the robot, since it is necessary information for the high level behavior.
 
+For a more detailed description read:
+
+..
+
+    Marc Bestmann, Jianwei Zhang "Humanoid Control Module: An Abstraction Layer for Humanoid Robots" , IEEE ICARSC 2020, Sao Miguel, Portugal.
+
+
 Tasks of the HCM
 ----------------
 
@@ -53,13 +60,23 @@ Dependend on its state, it forwards the goals or not.
 Sensor data is not influenced by the HCM, since it does not need to be mutexed.
 
 How the HCM is started
----------------------------
+----------------------
 
 The easiest way to start the HCM is to launch the complete motion (`roslaunch bitbots_bringup motion_standalone.launch`).
 For debugging it is sometimes better to launch the single parts by themselves.
 The HCM needs the animation server (`roslaunch bitbots_animation_server animation.launch`) to work because it is needed to perform falling and stand up animations.
 To be able to actually control the hardware, ros_control needs to run (`roslaunch bitbots_ros_control ros_control_standalone.launch`).
 Finally launch the HCM itself (`roslaunch bitbots_hcm hcm_standalone.launch`).
+
+How to retrain the falling classification
+-----------------------------------------
+
+All necessary scripts are in the `training folder`. Previous labeled datasets can be found `here <https://cloud.mafiasi.de/s/o6YW3eTWXqnLrkt>`_.
+
+The `label.py` script allows to label either online on a robot or on a prerecorded rosbag.
+
+The `train.py` script allows to train the classifier.
+
 
 
 What to do when it does not work
