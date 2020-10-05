@@ -61,7 +61,6 @@ include:
         - bitbots_vision
         - python_extensions
         - white_balancer
-        - bitbots_gestures
 exclude:
     - "*.bag"
     - "*.pyc"
