@@ -3,26 +3,35 @@ ros_control:
   control_loop_hz: 1000
 
   port_info:
-    port_name: /dev/ttyDXLBOARD
-    baudrate: 2000000
-    protocol_version: 2
-
-  IMU:
-    name: imu/data_raw
-    frame: imu_frame
+    port0:
+      device_file: /dev/ttyUSB0
+      baudrate: 4000000
+      protocol_version: 2
+    port1:
+      device_file: /dev/ttyUSB1
+      baudrate: 4000000
+      protocol_version: 2
+    port2:
+      device_file: /dev/ttyUSB2
+      baudrate: 4000000
+      protocol_version: 2
+    port3:
+      device_file: /dev/ttyUSB3
+      baudrate: 4000000
+      protocol_version: 2
 
   # specification of the connected dynamixel servos
   servos:
     # specifies which information should be read
     read_position: true
-    read_velocity: false
-    read_effort: false
+    read_velocity: true
+    read_effort: true
     read_pwm: false
     read_volt_temp: true # this also corresponds for the error byte
 
     VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
-    warn_temp: 60
-    warn_volt: 12
+    warn_temp: 55
+    warn_volt: 14
 
     control_mode: position
     auto_torque: true
@@ -38,8 +47,9 @@ ros_control:
       Min_Voltage_Limit: 95 #[About 0.1V]
       PWM_Limit: 885 # 885 = 100%
       #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
+      #todo acceleration limit does not exist as register?
       Acceleration_Limit: 32767 # [214.577 Rev/min2]
-      Velocity_Limit: 360 # [0.229rpm]
+      Velocity_Limit: 1023 # [0.229rpm]
       Max_Position_Limit: 4095 # [0.088 deg]
       Min_Position_Limit : 0 # [0.088 deg]
       # RAM
@@ -52,65 +62,106 @@ ros_control:
       Position_P_Gain: 700 #1100 # [/ 128] 0~16,383
       Feedforward_2nd_Gain: 0 # [/4]
       Feedforward_1st_Gain: 0 # [/4]
+      Profile_Acceleration: 0 # 0 for infinite
+      Profile_Velocity: 0 # 0 for infinite
 
-    device_info:
-      RShoulderPitch:
-        id: 1
-        model_number: 311
-      LShoulderPitch:
-        id: 2
-        model_number: 311
-      RShoulderRoll:
-        id: 3
-        model_number: 321
-      LShoulderRoll:
-        id: 4
-        model_number: 311
-      RElbow:
-        id: 5
-        model_number: 321
-      LElbow:
-        id: 6
-        model_number: 311
-      RHipYaw:
-        id: 7
-        model_number: 321
-      LHipYaw:
-        id: 8
-        model_number: 321
-      RHipRoll:
-        id: 9
-        model_number: 321
-      LHipRoll:
-        id: 10
-        model_number: 321
-      RHipPitch:
-        id: 11
-        model_number: 321
-      LHipPitch:
-        id: 12
-        model_number: 321
-      RKnee:
-        id: 13
-        model_number: 321
-      LKnee:
-        id: 14
-        model_number: 321
-      RAnklePitch:
-        id: 15
-        model_number: 321
-      LAnklePitch:
-        id: 16
-        model_number: 321
-      RAnkleRoll:
-        id: 17
-        model_number: 321
-      LAnkleRoll:
-        id: 18
-        model_number: 321
-      HeadPan:
-        id: 19
-        model_number: 311
-      HeadTilt:
-        id: 20
-        model_number: 311
+  device_info:
+    Core:
+      id: 42
+      model_number: 0xABBA
+      read_rate: 100
+      interface_type: CORE
+    LEDs_core:
+      id: 42
+      model_number: 0xABBA
+      interface_type: LED
+      number_of_LEDs: 3
+      start_number: 0
+    IMU_torso:
+      id: 241
+      topic: imu/data
+      frame: imu_frame
+      model_number: 0xBAFF
+      interface_type: IMU
+    Buttons:
+      id: 241
+      model_number: 0xBAFF
+      interface_type: Button
+      topic: /buttons
+      read_rate: 50
+    LEDs:
+      id: 241
+      model_number: 0xBAFF
+      interface_type: LED
+      number_of_LEDs: 3
+      start_number: 3
+    LeftFoot:
+      id: 102
+      topic: /foot_pressure_left/raw
+      model_number: 0
+    RightFoot:
+      id: 101
+      topic: /foot_pressure_right/raw
+      model_number: 0
+    RShoulderPitch:
+      id: 1
+      model_number: 311
+      mounting_offset: 0.0
+      joint_offset: 0.0
+    LShoulderPitch:
+      id: 2
+      model_number: 311
+    RShoulderRoll:
+      id: 3
+      model_number: 311
+    LShoulderRoll:
+      id: 4
+      model_number: 311
+    RElbow:
+      id: 5
+      model_number: 311
+    LElbow:
+      id: 6
+      model_number: 311
+    RHipYaw:
+      id: 7
+      model_number: 321
+    LHipYaw:
+      id: 8
+      model_number: 321
+    RHipRoll:
+      id: 9
+      model_number: 321
+    LHipRoll:
+      id: 10
+      model_number: 321
+    RHipPitch:
+      id: 11
+      model_number: 321
+    LHipPitch:
+      id: 12
+      model_number: 321
+    RKnee:
+      id: 13
+      model_number: 1100
+    LKnee:
+      id: 14
+      model_number: 1100
+    RAnklePitch:
+      id: 15
+      model_number: 321
+    LAnklePitch:
+      id: 16
+      model_number: 321
+    RAnkleRoll:
+      id: 17
+      model_number: 321
+    LAnkleRoll:
+      id: 18
+      model_number: 321
+    HeadPan:
+      id: 19
+      model_number: 311
+    HeadTilt:
+      id: 20
+      model_number: 311

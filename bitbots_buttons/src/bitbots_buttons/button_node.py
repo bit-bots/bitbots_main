@@ -43,7 +43,8 @@ class ButtonNode(object):
             try:
                 rospy.wait_for_service("manual_penalize", 0.5)
             except rospy.exceptions.ROSException as exc:
-                rospy.logerr("service 'manual_penalize' not available. Please start HCM")
+                # we can not be sure that the HCM is running, since we may only started the low level software
+                pass
             self.manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
 
         if not self.in_game_mode:
@@ -88,7 +89,7 @@ class ButtonNode(object):
                     self.button2_long()
             self.button2_time = 0
 
-    def button1_short(self):
+    def button2_short(self):
         """
         Unpenalizes the robot, if it is penalized and manual penalty mode is true.
         """
@@ -117,7 +118,7 @@ class ButtonNode(object):
             speak("Foot zeroing failed", self.speak_publisher, speaking_active=self.speaking_active)
             print("foot zeroing service did not process request: " + str(exc))
 
-    def button2_short(self):
+    def button1_short(self):
         """
         Penalizes the robot, if it is not penalized and manual penalty mode is true.
         """

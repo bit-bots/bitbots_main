@@ -14,23 +14,28 @@
 
 #include <dynamixel_workbench/dynamixel_driver.h>
 
-namespace bitbots_ros_control
-{
+#include <bitbots_ros_control/utils.h>
 
-class ButtonHardwareInterface : public hardware_interface::RobotHW
-{
-public:
-  ButtonHardwareInterface();
-  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver);
+namespace bitbots_ros_control {
 
-  bool init(ros::NodeHandle& nh);
-  bool read();
-  void write();
+class ButtonHardwareInterface : public hardware_interface::RobotHW {
+ public:
+  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, std::string topic, int read_rate_);
 
-private:
+  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh);
+  void read(const ros::Time &t, const ros::Duration &dt);
+  void write(const ros::Time &t, const ros::Duration &dt);
+
+ private:
+  int counter_;
   ros::NodeHandle nh_;
   std::shared_ptr<DynamixelDriver> driver_;
+  int id_;
+  std::string topic_;
   ros::Publisher button_pub_;
+  int read_rate_;
+  ros::Publisher diagnostic_pub_;
+
 };
 }
 

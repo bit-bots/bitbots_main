@@ -3,46 +3,50 @@ project(bitbots_ros_control)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  dynamixel_workbench_toolbox
-  hardware_interface
-  controller_manager
-  dynamic_reconfigure
-  humanoid_league_msgs
-  pluginlib
-  controller_interface
-  bitbots_buttons
-  transmission_interface
-  realtime_tools
-  bitbots_msgs
-  tf2_ros
-)
+        roscpp
+        std_msgs
+        dynamixel_workbench_toolbox
+        hardware_interface
+        controller_manager
+        dynamic_reconfigure
+        humanoid_league_msgs
+        pluginlib
+        controller_interface
+        bitbots_buttons
+        transmission_interface
+        realtime_tools
+        bitbots_msgs
+        tf2_ros
+        )
 find_package(yaml-cpp REQUIRED)
 
 set(SOURCES
-  src/dynamixel_servo_hardware_interface.cpp
-  src/imu_hardware_interface.cpp
-  src/bitfoot_hardware_interface.cpp
-  src/button_hardware_interface.cpp
-  src/dynamixel_controller.cpp
-  src/wolfgang_hardware_interface.cpp
-  src/node.cpp
-  src/utils.cpp
-)
+        src/core_hardware_interface.cpp
+        src/dynamixel_servo_hardware_interface.cpp
+        src/imu_hardware_interface.cpp
+        src/bitfoot_hardware_interface.cpp
+        src/button_hardware_interface.cpp
+        src/dynamixel_controller.cpp
+        src/wolfgang_hardware_interface.cpp
+        src/servo_bus_interface.cpp
+        src/node.cpp
+        src/utils.cpp
+        src/leds_hardware_interface.cpp
+        )
+
 
 generate_dynamic_reconfigure_options(
         cfg/dynamixel_servo_hardware_interface_params.cfg
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager controller_interface
+        INCLUDE_DIRS include
+        CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager controller_interface
 )
 
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(node ${SOURCES})
