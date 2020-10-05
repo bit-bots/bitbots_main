@@ -138,10 +138,6 @@ if __name__ == '__main__':
         else:
             print(F"  Okay rate Topic {topic}: {round(rate, 2)} \n")
         i += 1
-    # todo check if some of the topics have very heterogeneous msg receive times
-
-    # check tf
-    # todo do some kind of check to see if tf tree is connected
 
     # check pressure values when robot in air
     print("\n\n")
@@ -186,8 +182,6 @@ if __name__ == '__main__':
     else:
         print_warn("Problem with pressure. "
                    "Please recalibrate the sensors using rosrun bitbots_ros_control pressure_calibaration\n")
-
-    # todo check pickup hcm state
 
     # check fall front
     input("\nNext we will check front falling detection.\n "
