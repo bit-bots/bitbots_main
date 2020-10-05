@@ -104,7 +104,7 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       status.message = "No response";
     }
     std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
-    // itarate through map and save it into values
+    // iterate through map and save it into values
     for (auto const &ent1 : map) {
       diagnostic_msgs::KeyValue key_value = diagnostic_msgs::KeyValue();
       key_value.key = ent1.first;
