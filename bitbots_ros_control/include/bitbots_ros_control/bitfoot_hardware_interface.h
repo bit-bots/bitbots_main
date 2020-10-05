@@ -25,9 +25,9 @@ class BitFootHardwareInterface : public hardware_interface::RobotHW {
 
   bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
 
-  void read(const ros::Time &t, const ros::Duration &dt);
+  void read(const ros::Time &t, const ros::Duration &dt) override;
 
-  void write(const ros::Time &t, const ros::Duration &dt);
+  void write(const ros::Time &t, const ros::Duration &dt) override;
 
  private:
   ros::NodeHandle nh_;

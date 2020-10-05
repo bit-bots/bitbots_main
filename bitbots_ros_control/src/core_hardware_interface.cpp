@@ -49,6 +49,7 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
    */
 
   if (read_counter_ % read_rate_ == 0) {
+    read_counter_ = 0;
     uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
     // read core
     bool read_successful = true;

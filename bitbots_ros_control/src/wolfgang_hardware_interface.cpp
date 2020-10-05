@@ -44,14 +44,6 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   // create overall servo interface since we need a single interface for the controllers
   servo_interface_ = DynamixelServoHardwareInterface();
   servo_interface_.setParent(this);
-  //todo check and remove if possible
-  /* duplicate?
-  // set the dynamic reconfigure and load standard params for servo interface
- dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig> server;
- dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType
-     f;
- f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, servo_interface_, _1, _2);
- server.setCallback(f);*/
 
   // try to ping all devices on the list, add them to the driver and create corresponding hardware interfaces
   // try until interruption to enable the user to turn on the power
@@ -63,7 +55,6 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   }
 }
 
-//todo this could be done parallel with threads for speed up
 bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
                                                   std::vector<std::pair<std::string, int>> dxl_devices) {
   interfaces_ = std::vector < std::vector < hardware_interface::RobotHW * >> ();
@@ -85,6 +76,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
       exit(1);
     }
     // some interface seem to produce some gitter directly after connecting. wait or it will interfere with pings
+    // uncomment the following line if you are using such an interface
     // sleep(1);
     driver->setPacketHandler(protocol_version);
     std::vector < hardware_interface::RobotHW * > interfaces_on_port;
@@ -236,6 +228,7 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   int i = 0;
   for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
+    // we use an int instead of bool, since std::ref can't handle bool
     int suc = 0;
     successes.push_back(&suc);
     threads.push_back(std::thread(threaded_init, std::ref(port_interfaces), std::ref(root_nh), std::ref(suc)));
@@ -259,7 +252,6 @@ void threaded_read(std::vector<hardware_interface::RobotHW *> &port_interfaces,
                    const ros::Time &t,
                    const ros::Duration &dt) {
   for (hardware_interface::RobotHW *interface : port_interfaces) {
-    // giving 2 times same node handle to keep interface of base class, dirty
     interface->read(t, dt);
   }
 }
@@ -282,7 +274,6 @@ void threaded_write(std::vector<hardware_interface::RobotHW *> &port_interfaces,
                     const ros::Time &t,
                     const ros::Duration &dt) {
   for (hardware_interface::RobotHW *interface : port_interfaces) {
-    // giving 2 times same node handle to keep interface of base class, dirty
     interface->write(t, dt);
   }
 }
@@ -297,7 +288,7 @@ void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &d
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 
-  // wait for all reads to finish
+  // wait for all writes to finish
   for (std::thread &thread : threads) {
     thread.join();
   }
