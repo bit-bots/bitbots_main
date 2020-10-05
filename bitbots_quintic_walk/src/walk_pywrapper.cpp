@@ -228,7 +228,7 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
     } else if (keystr == "max_step_angular") {
       dyn_conf.max_step_angular = std::stof(valstr);
     } else {
-      std::cout << keystr << " not knowen. WILL BE IGNORED\n";
+      std::cout << keystr << " not known. WILL BE IGNORED\n";
     }
   }
 
