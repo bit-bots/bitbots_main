@@ -20,7 +20,6 @@
 
         </include>
         <node name="set_volume" pkg="bitbots_bringup" type="set_volume.sh" args="100%" />
-        <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
     </group>
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch">
