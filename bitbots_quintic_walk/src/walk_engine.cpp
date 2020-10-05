@@ -555,22 +555,20 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // foot goal position, this results in lowering the trunk correctly during the step
   double
       trunk_height_including_foot_z_movement = params_.trunk_height + std::min(0.0, support_to_next_.getOrigin().z());
-
+  // Periodic z movement of trunk is at lowest point at double support center, highest at single support center
   trunk_spline_.z()->addPoint(0.0,
                               trunk_pos_at_foot_change_.z(),
                               trunk_pos_vel_at_foot_change_.z(),
                               trunk_pos_acc_at_foot_change_.z());
-  trunk_spline_.z()->addPoint(double_support_length + time_shift,
+  trunk_spline_.z()->addPoint(double_support_length / 2 + time_shift,
                               trunk_height_including_foot_z_movement);
-  trunk_spline_.z()->addPoint(double_support_length + time_shift + params_.trunk_z_apex,
+  trunk_spline_.z()->addPoint(double_support_length + single_support_length / 2 + time_shift,
                               trunk_height_including_foot_z_movement + params_.trunk_z_movement);
-  trunk_spline_.z()->addPoint(half_period + time_shift,
+  trunk_spline_.z()->addPoint(half_period + double_support_length / 2 + time_shift,
                               trunk_height_including_foot_z_movement);
-  trunk_spline_.z()->addPoint(half_period + double_support_length + time_shift,
-                              trunk_height_including_foot_z_movement);
-  trunk_spline_.z()->addPoint(half_period + double_support_length + time_shift + params_.trunk_z_apex,
+  trunk_spline_.z()->addPoint(half_period + double_support_length + single_support_length / 2 + time_shift,
                               trunk_height_including_foot_z_movement + params_.trunk_z_movement);
-  trunk_spline_.z()->addPoint(period + time_shift,
+  trunk_spline_.z()->addPoint(period + double_support_length / 2 +time_shift,
                               trunk_height_including_foot_z_movement);
 
   //Define trunk rotation as rool pitch yaw

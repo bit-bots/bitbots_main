@@ -152,6 +152,8 @@ void PyWalkWrapper::set_engine_dyn_reconf(const boost::python::object params) {
       dyn_conf.trunk_pitch_p_coef_forward = std::stof(valstr);
     } else if (keystr == "trunk_pitch_p_coef_turn") {
       dyn_conf.trunk_pitch_p_coef_turn = std::stof(valstr);
+    } else if (keystr == "trunk_z_movement") {
+      dyn_conf.trunk_z_movement = std::stof(valstr);
     } else {
       std::cout << keystr << " not knowen. WILL BE IGNORED\n";
     }
