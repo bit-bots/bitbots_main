@@ -560,15 +560,17 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                               trunk_pos_at_foot_change_.z(),
                               trunk_pos_vel_at_foot_change_.z(),
                               trunk_pos_acc_at_foot_change_.z());
-  trunk_spline_.z()->addPoint(double_support_length / 2 + time_shift,
+  trunk_spline_.z()->addPoint(double_support_length / 2,
                               trunk_height_including_foot_z_movement);
-  trunk_spline_.z()->addPoint(double_support_length + single_support_length / 2 + time_shift,
-                              trunk_height_including_foot_z_movement + params_.trunk_z_movement);
-  trunk_spline_.z()->addPoint(half_period + double_support_length / 2 + time_shift,
-                              trunk_height_including_foot_z_movement);
-  trunk_spline_.z()->addPoint(half_period + double_support_length + single_support_length / 2 + time_shift,
-                              trunk_height_including_foot_z_movement + params_.trunk_z_movement);
-  trunk_spline_.z()->addPoint(period + double_support_length / 2 +time_shift,
+  if (!start_movement) {
+    trunk_spline_.z()->addPoint(double_support_length + single_support_length / 2,
+                                trunk_height_including_foot_z_movement + params_.trunk_z_movement);
+    trunk_spline_.z()->addPoint(half_period + double_support_length / 2,
+                                trunk_height_including_foot_z_movement);
+    trunk_spline_.z()->addPoint(half_period + double_support_length + single_support_length / 2,
+                                trunk_height_including_foot_z_movement + params_.trunk_z_movement);
+  }
+  trunk_spline_.z()->addPoint(period + double_support_length / 2,
                               trunk_height_including_foot_z_movement);
 
   //Define trunk rotation as rool pitch yaw
