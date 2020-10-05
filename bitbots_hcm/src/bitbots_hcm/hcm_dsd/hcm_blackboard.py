@@ -96,8 +96,7 @@ class HcmBlackboard():
         self.last_motor_update_time = rospy.Time.from_sec(0)
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
-        # todo rename in current joint state
-        self.current_joint_positions = None
+        self.current_joint_state = None
         anim_package = rospy.get_param("hcm/animations/anim_package")
         rospack = rospkg.RosPack()
         path = rospack.get_path(anim_package)
@@ -130,7 +129,8 @@ class HcmBlackboard():
         rospack = rospkg.RosPack()
         rospack.list()
         path = rospack.get_path('bitbots_hcm')
-        self.classifier = FallClassifier(path + "/src/bitbots_hcm/classifier/")
+        smooth_threshold = rospy.get_param("/smooth_threshold", 10)
+        self.classifier = FallClassifier(path + "/src/bitbots_hcm/classifier/", smooth_threshold=smooth_threshold)
         self.imu_msg = None
         self.cop_l_msg = None
         self.cop_r_msg = None

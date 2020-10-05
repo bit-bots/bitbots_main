@@ -87,11 +87,11 @@ class CheckMotors(AbstractDecisionElement):
         # we check if the values are actually changing, since the joint_state controller will publish the same message
         # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
         # have a small break, since this can happen often due to loose cabling
-        if self.last_msg is not None and self.blackboard.current_joint_positions is not None \
-                and not self.last_msg.position == self.blackboard.current_joint_positions.position \
+        if self.last_msg is not None and self.blackboard.current_joint_state is not None \
+                and not self.last_msg.position == self.blackboard.current_joint_state.position \
                 and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
-        self.last_msg = self.blackboard.current_joint_positions
+        self.last_msg = self.blackboard.current_joint_state
 
         # check if we want to turn the motors off after not using them for a longer time
         if self.blackboard.last_motor_goal_time is not None \
@@ -277,7 +277,7 @@ class FallingClassifier(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg,
-                                                                self.blackboard.current_joint_positions,
+                                                                self.blackboard.current_joint_state,
                                                                 self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
         if prediction == 0:
             return "NOT_FALLING"
@@ -307,11 +307,11 @@ class Sitting(AbstractDecisionElement):
         left_knee = 0
         right_knee = 0
         i = 0
-        for joint_name in self.blackboard.current_joint_positions.name:
+        for joint_name in self.blackboard.current_joint_state.name:
             if joint_name == "LKnee":
-                left_knee = self.blackboard.current_joint_positions.position[i]
+                left_knee = self.blackboard.current_joint_state.position[i]
             elif joint_name == "RKnee":
-                right_knee = self.blackboard.current_joint_positions.position[i]
+                right_knee = self.blackboard.current_joint_state.position[i]
             i += 1
 
         if abs(left_knee) > 2.5 and abs(right_knee) > 2.5:
@@ -409,15 +409,15 @@ class Controlable(AbstractDecisionElement):
         """
         We check if any joint is has an offset from the walkready pose which is higher than a threshold
         """
-        if self.blackboard.current_joint_positions is None:
+        if self.blackboard.current_joint_state is None:
             return False
         i = 0
-        for joint_name in self.blackboard.current_joint_positions.name:
+        for joint_name in self.blackboard.current_joint_state.name:
             if joint_name == "HeadPan" or joint_name == "HeadTilt":
                 # we dont care about the head position
                 i += 1
                 continue
-            if abs(math.degrees(self.blackboard.current_joint_positions.position[i]) -
+            if abs(math.degrees(self.blackboard.current_joint_state.position[i]) -
                    self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
                 return False
             i += 1
