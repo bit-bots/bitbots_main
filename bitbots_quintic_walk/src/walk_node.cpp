@@ -31,7 +31,7 @@ WalkNode::WalkNode(const std::string ns) :
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1, true);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
-  robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
+  robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robotStateCb, this,
                                    ros::TransportHints().tcpNoDelay());
   joint_state_sub_ =
       nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
@@ -187,8 +187,6 @@ bitbots_msgs::JointCommand WalkNode::step(double dt,
   WalkResponse response;
 
   // we don't want to walk, even if we have orders, if we are not in the right state
-  /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
-   * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
   current_request_.walkable_state = true;
   // update walk engine response
   walk_engine_.setGoals(current_request_);
@@ -356,7 +354,7 @@ void WalkNode::checkPhaseRestAndReset() {
   }
 }
 
-void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
+void WalkNode::robotStateCb(const humanoid_league_msgs::RobotControlState msg) {
   robot_state_ = msg.state;
 }
 

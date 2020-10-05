@@ -90,7 +90,7 @@ class WalkNode {
    * Sets the current state of the robot
    * @param msg The current state
    */
-  void robStateCb(humanoid_league_msgs::RobotControlState msg);
+  void robotStateCb(humanoid_league_msgs::RobotControlState msg);
 
   WalkEngine *getEngine();
 
