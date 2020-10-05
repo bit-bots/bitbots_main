@@ -43,8 +43,8 @@ class ButtonNode(object):
             try:
                 rospy.wait_for_service("manual_penalize", 0.5)
             except rospy.exceptions.ROSException as exc:
+                # we can not be sure that the HCM is running, since we may only started the low level software
                 pass
-                #rospy.logerr("service 'manual_penalize' not available. Please start HCM")
             self.manual_penalize_method = rospy.ServiceProxy("manual_penalize", ManualPenalize)
 
         if not self.in_game_mode:
