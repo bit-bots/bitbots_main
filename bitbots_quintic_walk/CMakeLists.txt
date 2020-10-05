@@ -18,7 +18,12 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-find_package(Boost REQUIRED COMPONENTS python3)
+find_package(PythonLibs)
+if(PYTHONLIBS_VERSION_STRING VERSION_LESS "3.8")
+    find_package(Boost REQUIRED COMPONENTS python3)
+else()
+    find_package(Boost REQUIRED COMPONENTS python)
+endif()
 find_package (PythonLibs COMPONENTS Interpreter Development)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -99,6 +104,7 @@ target_link_libraries(WalkNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
 
 # create the lib
 add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
+add_dependencies(py_quintic_walk ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 # link
 target_link_libraries(py_quintic_walk ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${CODE_LIBRARIES})
