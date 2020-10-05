@@ -24,8 +24,9 @@ WalkEngine::WalkEngine(const std::string ns) :
 
   // init dynamic reconfigure
   dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(ns+
-          "/walking/engine"));
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
+          ns +
+              "/walking/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
@@ -68,11 +69,11 @@ WalkResponse WalkEngine::update(double dt) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return createResponse();
     }
-  }else if (engine_state_ == WalkState::WALKING) {
+  } else if (engine_state_ == WalkState::WALKING) {
     // check if the step would finish with this update of the phase
-    bool step_will_finish = (phase_ < 0.5 && phase_ + dt * params_.freq > 0.5 ) || phase_ + dt * params_.freq > 1.0;
+    bool step_will_finish = (phase_ < 0.5 && phase_ + dt * params_.freq > 0.5) || phase_ + dt * params_.freq > 1.0;
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
-    if(step_will_finish && phase_rest_active_){
+    if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
       ROS_WARN("PHASE REST");
       return createResponse();
@@ -217,7 +218,7 @@ void WalkEngine::endStep() {
   }
 }
 
-void WalkEngine::setPhaseRest(bool active){
+void WalkEngine::setPhaseRest(bool active) {
   phase_rest_active_ = active;
 }
 
@@ -552,7 +553,8 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
   // When walking downwards, the correct trunk height is the one relative to the flying
   // foot goal position, this results in lowering the trunk correctly during the step
-  double trunk_height_including_foot_z_movement = params_.trunk_height + std::min(0.0, support_to_next_.getOrigin().z());
+  double
+      trunk_height_including_foot_z_movement = params_.trunk_height + std::min(0.0, support_to_next_.getOrigin().z());
 
   trunk_spline_.z()->addPoint(0.0,
                               trunk_pos_at_foot_change_.z(),
@@ -796,11 +798,10 @@ double WalkEngine::getPhase() const {
   return phase_;
 }
 
-double WalkEngine::getPhaseResetPhase() const{
+double WalkEngine::getPhaseResetPhase() const {
   // returning the phase when the foot is on apex in step phase (between 0 and 0.5)
   return (params_.double_support_ratio + params_.foot_apex_phase * (1 - params_.double_support_ratio)) / 2;
 }
-
 
 double WalkEngine::getTrajsTime() const {
   double t;

@@ -16,8 +16,8 @@ class WalkIK : public bitbots_splines::AbstractIK<WalkResponse> {
   void reset() override;
   void setIKTimeout(double timeout);
 
-  const std::vector<std::string>& getLeftLegJointNames();
-  const std::vector<std::string>& getRightLegJointNames();
+  const std::vector<std::string> &getLeftLegJointNames();
+  const std::vector<std::string> &getRightLegJointNames();
 
   robot_state::RobotStatePtr get_goal_state();
 
