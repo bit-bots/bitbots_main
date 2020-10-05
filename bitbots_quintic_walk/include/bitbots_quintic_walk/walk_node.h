@@ -53,7 +53,18 @@ namespace bitbots_quintic_walk {
 
 class WalkNode {
  public:
-  WalkNode();
+  WalkNode(const std::string ns);
+  bitbots_msgs::JointCommand step(
+      double dt,
+      const geometry_msgs::Twist &cmdvel_msg,
+      const sensor_msgs::Imu &imu_msg,
+      const sensor_msgs::JointState &jointstate_msg);
+  /**
+   * Small helper method to get foot position via python wrapper
+   */
+  geometry_msgs::Pose get_left_foot_pose();
+
+  void reset();
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
@@ -75,6 +86,14 @@ class WalkNode {
    */
   void initializeEngine();
 
+  /**
+   * Sets the current state of the robot
+   * @param msg The current state
+   */
+  void robotStateCb(humanoid_league_msgs::RobotControlState msg);
+
+  WalkEngine *getEngine();
+
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
 
@@ -87,8 +106,6 @@ class WalkNode {
   void checkPhaseRestAndReset();
   void pressureRightCb(bitbots_msgs::FootPressure msg);
   void pressureLeftCb(bitbots_msgs::FootPressure msg);
-
-  void robStateCb(humanoid_league_msgs::RobotControlState msg);
 
   void jointStateCb(const sensor_msgs::JointState &msg);
 
@@ -146,7 +163,8 @@ class WalkNode {
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
    * Is used to limit _currentOrders to sane values
    */
-  Eigen::Vector3d max_step_;
+  Eigen::Vector3d max_step_linear_;
+  double max_step_angular_;
 
   /**
    * Measures how much distance we can traverse in X and Y direction combined

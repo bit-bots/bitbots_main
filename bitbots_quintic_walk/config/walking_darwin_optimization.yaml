@@ -1,5 +1,28 @@
 walking:
   engine:
+    foot_apex_phase: 0.5
+    foot_rise: 0.04
+    trunk_pitch: 0.0
+    trunk_pitch_p_coef_forward: 0
+    trunk_pitch_p_coef_turn: 0
+    trunk_y_offset: 0
+
+
+    first_step_swing_factor: 0.886454298551084
+    first_step_trunk_phase: -0.323654810252584
+    foot_distance: 0.10
+    foot_overshoot_phase: 0.725077437667735
+    foot_overshoot_ratio: 0.649313647473396
+
+    freq: 1
+    double_support_ratio: 0.425379848643776 
+    trunk_height: 0.182510378433659 
+    trunk_phase: -0.0688125099697594 
+    trunk_swing: 0.901505368041237 
+    trunk_x_offset: 0.0192265370164455 
+    trunk_x_offset_p_coef_forward: -0.522698454878785 
+    trunk_x_offset_p_coef_turn: 0.227845760960143 
+
 
     foot_z_pause: 0.0
     trunk_pause: 0.0
@@ -13,7 +36,7 @@ walking:
 
   node:
     # update frequency of the engine
-    engine_freq: 1000.0
+    engine_freq: 30
 
     # parameters for bioIK
     ik_timeout: 0.01
@@ -26,6 +49,7 @@ walking:
     max_step_y: 1000
     max_step_xy: 1000
     max_step_z: 1000
+    max_step_angular: 1000
 
     vel: -1
     acc: -1
@@ -41,7 +65,7 @@ walking:
     phase_reset_active: False
     ground_min_pressure: 1.5
     phase_reset_phase: 0.25
-    joint_min_effort: 35
+    joint_min_effort: 3
     effort_phase_reset_active: False
 
     publish_odom_tf: False

@@ -11,7 +11,7 @@ WalkVisualizer::WalkVisualizer() {
 
 }
 
-void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model){
+void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model) {
   kinematic_model_ = kinematic_model;
 }
 

@@ -1,14 +1,20 @@
 #include "bitbots_quintic_walk/walk_node.h"
 
 #include <memory>
+#include <iostream>
 
 namespace bitbots_quintic_walk {
 
-WalkNode::WalkNode() :
-  robot_model_loader_("robot_description", false) {
+WalkNode::WalkNode(const std::string ns) :
+    robot_model_loader_(ns + "robot_description", false),
+    stabilizer_(ns),
+    walk_engine_(ns) {
+  nh_ = ros::NodeHandle(ns);
+
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
-  current_request_.orders = {0, 0, 0};
+  current_request_.linear_orders = {0, 0, 0};
+  current_request_.angular_z = 0;
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
   current_fly_pressure_ = 0;
@@ -16,16 +22,16 @@ WalkNode::WalkNode() :
 
   // read config
   nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
-  nh_.param<bool>("/simulation_active", simulation_active_, false);
-  nh_.param<bool>("/walking/node/publish_odom_tf", publish_odom_tf_, false);
+  nh_.param<bool>("simulation_active", simulation_active_, false);
+  nh_.param<bool>("walking/node/publish_odom_tf", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
-  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("/walk_engine_odometry", 1);
+  pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_engine_odometry", 1);
   pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1, true);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
-  robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robStateCb, this,
+  robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robotStateCb, this,
                                    ros::TransportHints().tcpNoDelay());
   joint_state_sub_ =
       nh_.subscribe("joint_states", 1, &WalkNode::jointStateCb, this, ros::TransportHints().tcpNoDelay());
@@ -54,14 +60,14 @@ WalkNode::WalkNode() :
 
   // initialize dynamic-reconfigure
   dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(
-          "~/node"));
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(ns +
+          "/walking/node"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
   // this has to be done to prevent strange initilization bugs
-  walk_engine_ = WalkEngine();
+  walk_engine_ = WalkEngine(ns);
 }
 
 void WalkNode::run() {
@@ -165,6 +171,66 @@ double WalkNode::getTimeDelta() {
   return dt;
 }
 
+void WalkNode::reset() {
+  walk_engine_.reset();
+  stabilizer_.reset();
+}
+
+bitbots_msgs::JointCommand WalkNode::step(double dt,
+                                          const geometry_msgs::Twist &cmdvel_msg,
+                                          const sensor_msgs::Imu &imu_msg,
+                                          const sensor_msgs::JointState &jointstate_msg) {
+  cmdVelCb(cmdvel_msg);
+  imuCb(imu_msg);
+  jointStateCb(jointstate_msg);
+
+  WalkResponse response;
+
+  // we don't want to walk, even if we have orders, if we are not in the right state
+  current_request_.walkable_state = true;
+  // update walk engine response
+  walk_engine_.setGoals(current_request_);
+  checkPhaseRestAndReset();
+  response = walk_engine_.update(dt);
+  visualizer_.publishEngineDebug(response);
+
+  response.current_fused_roll = current_trunk_fused_roll_;
+  response.current_fused_pitch = current_trunk_fused_pitch_;
+  // get bioIk goals from stabilizer
+  WalkResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+
+  // compute motor goals from IK
+  bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+  /* Construct JointCommand message */
+  bitbots_msgs::JointCommand command;
+
+  /*
+  * Since our JointGoals type is a vector of strings
+  *  combined with a vector of numbers (motor name -> target position)
+  *  and bitbots_msgs::JointCommand needs both vectors as well,
+  *  we can just assign them
+  */
+  command.joint_names = goals.first;
+  command.positions = goals.second;
+
+  /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
+  std::vector<double> vels(goals.first.size(), -1.0);
+  std::vector<double> accs(goals.first.size(), -1.0);
+  std::vector<double> pwms(goals.first.size(), -1.0);
+  command.velocities = vels;
+  command.accelerations = accs;
+  command.max_currents = pwms;
+  return command;
+
+}
+
+geometry_msgs::Pose WalkNode::get_left_foot_pose() {
+  robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
+  geometry_msgs::Pose pose;
+  tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose);
+  return pose;
+}
+
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
@@ -173,29 +239,41 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
   // the sideward movement only does one step per double step, therefore we need to multiply it by 2
-  current_request_.orders = {msg.linear.x * factor, msg.linear.y * factor * 2, msg.angular.z * factor};
+  current_request_.linear_orders = {msg.linear.x * factor, msg.linear.y * factor * 2, msg.linear.z * factor};
+  current_request_.angular_z = msg.angular.z * factor;
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    current_request_.orders[i] = std::max(std::min(current_request_.orders[i], max_step_[i]), max_step_[i] * -1);
+    current_request_.linear_orders[i] =
+        std::max(std::min(current_request_.linear_orders[i], max_step_linear_[i]), max_step_linear_[i] * -1);
   }
+  current_request_.angular_z =
+      std::max(std::min(current_request_.angular_z, max_step_angular_), max_step_angular_ * -1);
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_ != 0) {
-    double scaling_factor = (current_request_.orders[0] + current_request_.orders[1]) / max_step_xy_;
+    double scaling_factor = (current_request_.linear_orders[0] + current_request_.linear_orders[1]) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      current_request_.orders[i] = current_request_.orders[i] / std::max(scaling_factor, 1.0);
+      current_request_.linear_orders[i] = current_request_.linear_orders[i] / std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x * factor != current_request_.orders[0] ||
-      msg.linear.y * factor != current_request_.orders[1] /2 ||
-      msg.angular.z * factor != current_request_.orders[2]) {
+  if (msg.linear.x * factor != current_request_.linear_orders[0] ||
+      msg.linear.y * factor != current_request_.linear_orders[1] / 2 ||
+      msg.linear.z * factor != current_request_.linear_orders[2] ||
+      msg.angular.z * factor != current_request_.angular_z) {
     ROS_WARN(
-        "Speed command was x: %.2f y: %.2f z: %.2f xy: %.2f \n maximum is x: %.2f y: %.2f z: %.2f xy: %.2f \n using x: %.2f y: %.2f z: %.2f",
-        msg.linear.x, msg.linear.y, msg.angular.z, msg.linear.x + msg.linear.y, max_step_[0] / factor,
-        max_step_[1] / factor, max_step_[2] / factor, max_step_xy_ / factor,
-        current_request_.orders[0] / factor, current_request_.orders[1] / factor / 2, current_request_.orders[2] / factor);
+        "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
+        msg.linear.x,
+        msg.linear.y,
+        msg.linear.z,
+        msg.angular.z,
+        msg.linear.x + msg.linear.y,
+        max_step_linear_[0] / factor,
+        max_step_linear_[1] / factor / 2,
+        max_step_linear_[2] / factor,
+        max_step_angular_ / factor,
+        max_step_xy_ / factor);
   }
 }
 
@@ -265,19 +343,18 @@ void WalkNode::checkPhaseRestAndReset() {
 
   if ((phase > phase_reset_phase && phase < 0.5) || (phase > 0.5 + phase_reset_phase)) {
     // check if we want to perform a phase reset
-    if(pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_){
+    if (pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_) {
       // reset phase by using pressure sensors
-      ROS_WARN("Phase resetted by pressure!");
       walk_engine_.endStep();
-    }else if(effort_phase_reset_active_ && current_fly_effort_ > joint_min_effort_){
+    } else if (effort_phase_reset_active_ && current_fly_effort_ > joint_min_effort_) {
       // reset phase by using joint efforts
-      ROS_WARN("Phase resetted by effort!");
+      //ROS_WARN("Phase resetted by effort!");
       walk_engine_.endStep();
     }
   }
 }
 
-void WalkNode::robStateCb(const humanoid_league_msgs::RobotControlState msg) {
+void WalkNode::robotStateCb(const humanoid_league_msgs::RobotControlState msg) {
   robot_state_ = msg.state;
 }
 
@@ -291,17 +368,18 @@ void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
 
   // compute the effort that is currently on the flying leg to check if it has ground contact
   // only if we have the necessary data
-  if(msg.effort.size() == msg.name.size()){
+  if (msg.effort.size() == msg.name.size()) {
     double effort_sum = 0;
-    const std::vector<std::string>& fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
+    const std::vector<std::string>
+        &fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
     for (int i = 0; i < names.size(); i++) {
       // add effort on this joint to sum, if it is part of the flying leg
-      if(std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()){
-          effort_sum = effort_sum + abs(msg.effort[i]);
+      if (std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()) {
+        effort_sum = effort_sum + abs(msg.effort[i]);
       }
     }
     current_fly_effort_ = effort_sum;
-  }else{
+  } else {
     ROS_WARN_ONCE("Joint states have no effort information. Phase reset based on this will not work.");
   }
 }
@@ -319,9 +397,10 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   engine_frequency_ = config.engine_freq;
   odom_pub_factor_ = config.odom_pub_factor;
 
-  max_step_[0] = config.max_step_x;
-  max_step_[1] = config.max_step_y;
-  max_step_[2] = config.max_step_z;
+  max_step_linear_[0] = config.max_step_x;
+  max_step_linear_[1] = config.max_step_y;
+  max_step_linear_[2] = config.max_step_z;
+  max_step_angular_ = config.max_step_angular;
   max_step_xy_ = config.max_step_xy;
 
   imu_active_ = config.imu_active;
@@ -336,9 +415,9 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   ground_min_pressure_ = config.ground_min_pressure;
   joint_min_effort_ = config.joint_min_effort;
   // phase rest can only work if one phase resetting method is active
-  if(effort_phase_reset_active_ || pressure_phase_reset_active_){
+  if (effort_phase_reset_active_ || pressure_phase_reset_active_) {
     walk_engine_.setPhaseRest(config.phase_rest_active);
-  }else{
+  } else {
     walk_engine_.setPhaseRest(false);
   }
 
@@ -400,9 +479,10 @@ void WalkNode::publishOdometry(WalkResponse response) {
   odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  twist.linear.x = current_request_.orders.x() * walk_engine_.getFreq() * 2;
-  twist.linear.y = current_request_.orders.y() * walk_engine_.getFreq() * 2;
-  twist.angular.z = current_request_.orders.z() * walk_engine_.getFreq() * 2;
+  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2;
+  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() * 2;
+  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2;
+  twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2;
 
   odom_msg_.twist.twist = twist;
   pub_odometry_.publish(odom_msg_);
@@ -427,12 +507,16 @@ void WalkNode::initializeEngine() {
   walk_engine_.reset();
 }
 
+WalkEngine *WalkNode::getEngine() {
+  return &walk_engine_;
+}
+
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "walking");
   // init node
-  bitbots_quintic_walk::WalkNode node;
+  bitbots_quintic_walk::WalkNode node("");
 
   // run the node
   node.initializeEngine();

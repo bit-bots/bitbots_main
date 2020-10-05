@@ -39,7 +39,7 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
 
   void init(robot_model::RobotModelPtr kinematic_model);
 
-    private:
+ private:
 
   int marker_id_;
 
