@@ -77,7 +77,7 @@ float PyWalkWrapper::get_freq() {
 void PyWalkWrapper::set_robot_state(int state) {
   humanoid_league_msgs::RobotControlState state_msg;
   state_msg.state = state;
-  walk_node_->robStateCb(state_msg);
+  walk_node_->robotStateCb(state_msg);
 }
 
 void PyWalkWrapper::set_engine_dyn_reconf(const boost::python::object params) {
