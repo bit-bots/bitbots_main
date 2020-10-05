@@ -6,7 +6,7 @@ import copy
 
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
-from humanoid_league_msgs.msg import Speak, HeadMode
+from humanoid_league_msgs.msg import Audio, HeadMode
 import humanoid_league_msgs.msg
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
@@ -28,8 +28,9 @@ class JoyNode(object):
         # --- Initialize Topics ---
         rospy.Subscriber("/joy", Joy, self.joy_cb, queue_size=1)
         rospy.Subscriber("joint_states", JointState, self.joint_state_cb, queue_size=1)
-        self.speak_pub = rospy.Publisher('speak', Speak, queue_size=1)
-        self.speak_msg = Speak()
+        self.speak_pub = rospy.Publisher('speak', Audio, queue_size=1)
+        self.speak_msg = Audio()
+
         self.speak_msg.priority = 1
 
         self.walk_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
