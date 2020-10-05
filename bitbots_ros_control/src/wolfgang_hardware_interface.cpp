@@ -297,7 +297,7 @@ void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &d
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 
-  // wait for all reads to finish
+  // wait for all writes to finish
   for (std::thread &thread : threads) {
     thread.join();
   }
