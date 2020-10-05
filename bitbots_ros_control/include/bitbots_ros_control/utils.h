@@ -13,7 +13,7 @@ enum ControlMode {
   CURRENT_BASED_POSITION_CONTROL
 };
 
-bool stringToControlMode(std::string _control_modestr, ControlMode &control_mode);
+bool stringToControlMode(std::string control_modestr, ControlMode &control_mode);
 void speakError(const ros::Publisher &speak_pub, std::string text);
 
 uint16_t dxlMakeword(uint64_t a, uint64_t b);
