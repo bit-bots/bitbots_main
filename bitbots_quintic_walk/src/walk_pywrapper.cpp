@@ -149,7 +149,7 @@ void PyWalkWrapper::set_engine_dyn_reconf(const boost::python::object params) {
     } else if (keystr == "trunk_z_movement") {
       dyn_conf.trunk_z_movement = std::stof(valstr);
     } else {
-      std::cout << keystr << " not knowen. WILL BE IGNORED\n";
+      std::cout << keystr << " not known. WILL BE IGNORED\n";
     }
   }
 
