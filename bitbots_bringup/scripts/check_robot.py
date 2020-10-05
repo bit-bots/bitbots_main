@@ -149,14 +149,14 @@ if __name__ == '__main__':
                                           callback_args=False,
                                           tcp_nodelay=True)
     rospy.sleep(0.5)
-    while (not left_pressure) and (not right_pressure):
+    while (not left_pressure) and (not right_pressure) and (not rospy.is_shutdown()):
         rospy.loginfo_throttle(1, "Waiting to receive pressure msgs\n")
     print("Pressure messages received\n")
     both_okay = True
     both_okay = both_okay and check_pressure(left_pressure, -1, 1, "left")
     both_okay = both_okay and check_pressure(right_pressure, -1, 1, "right")
     if not both_okay:
-        print_warn("Pressure not correctly zero. Will try call zero service.\n")
+        print_warn("Pressure not correctly zero. Will try to call zero service.\n")
         # call zero service
         zero_l = rospy.ServiceProxy("/foot_pressure_left/set_foot_zero", Empty)
         zero_r = rospy.ServiceProxy("/foot_pressure_right/set_foot_zero", Empty)
@@ -221,58 +221,57 @@ if __name__ == '__main__':
     # check kick motion
     text = input("\nWe will check the kick motion. Please hold make sure the robot is safe. "
                  "Press y if you want to perform this test.")
-    client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
-    goal = KickGoal()
-    goal.header.stamp = rospy.Time.now()
-    goal.header.frame_id = "base_footprint"
-    goal.ball_position.x = 0.2
-    goal.ball_position.y = -0.09
-    goal.ball_position.z = 0
-    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, 0))
-    goal.kick_speed = 1
+    if text == 'y':
+        def done_cb(state, result):
+            print('Action completed: ', end='')
+            if state == GoalStatus.PENDING:
+                print('Pending')
+            elif state == GoalStatus.ACTIVE:
+                print('Active')
+            elif state == GoalStatus.PREEMPTED:
+                print('Preempted')
+            elif state == GoalStatus.SUCCEEDED:
+                print('Succeeded')
+            elif state == GoalStatus.ABORTED:
+                print('Aborted')
+            elif state == GoalStatus.REJECTED:
+                print('Rejected')
+            elif state == GoalStatus.PREEMPTING:
+                print('Preempting')
+            elif state == GoalStatus.RECALLING:
+                print('Recalling')
+            elif state == GoalStatus.RECALLED:
+                print('Recalled')
+            elif state == GoalStatus.LOST:
+                print('Lost')
+            else:
+                print('Unknown state', state)
+            print(str(result))
 
+        def active_cb():
+            print("Server accepted action")
 
-    def done_cb(state, result):
-        print('Action completed: ', end='')
-        if state == GoalStatus.PENDING:
-            print('Pending')
-        elif state == GoalStatus.ACTIVE:
-            print('Active')
-        elif state == GoalStatus.PREEMPTED:
-            print('Preempted')
-        elif state == GoalStatus.SUCCEEDED:
-            print('Succeeded')
-        elif state == GoalStatus.ABORTED:
-            print('Aborted')
-        elif state == GoalStatus.REJECTED:
-            print('Rejected')
-        elif state == GoalStatus.PREEMPTING:
-            print('Preempting')
-        elif state == GoalStatus.RECALLING:
-            print('Recalling')
-        elif state == GoalStatus.RECALLED:
-            print('Recalled')
-        elif state == GoalStatus.LOST:
-            print('Lost')
-        else:
-            print('Unknown state', state)
-        print(str(result))
+        def feedback_cb(feedback):
+            if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
+                print('Feedback')
+                print(feedback)
+                print()
 
-    def active_cb():
-        print("Server accepted action")
+        goal = KickGoal()
+        goal.header.stamp = rospy.Time.now()
+        goal.header.frame_id = "base_footprint"
+        goal.ball_position.x = 0.2
+        goal.ball_position.y = -0.09
+        goal.ball_position.z = 0
+        goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, 0))
+        goal.kick_speed = 1
 
-    def feedback_cb(feedback):
-        if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
-            print('Feedback')
-            print(feedback)
-            print()
-
-    client.done_cb = done_cb
-    client.feedback_cb = feedback_cb
-    client.active_cb = active_cb
-    client.send_goal(goal)
-
-    client.wait_for_result()
+        client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
+        client.done_cb = done_cb
+        client.feedback_cb = feedback_cb
+        client.active_cb = active_cb
+        client.send_goal(goal)
+        client.wait_for_result()
 
     input("All tests finished, script will exit and turn off robot. Please hold robot and press enter")
     # shutdown the launch
