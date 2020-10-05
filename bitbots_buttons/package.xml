@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_buttons</name>
-  <version>1.1.0</version>
+  <version>1.3.0</version>
   <description>The bitbots_buttons package handles actions after pressing buttons on a robot.</description>
 
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
