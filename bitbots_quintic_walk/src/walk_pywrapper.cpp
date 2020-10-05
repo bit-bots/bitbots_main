@@ -41,10 +41,6 @@ void init_ros() {
 }
 
 PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
-  //walk_node_.reset(new );
-  //ros::init(empty, "walking");
-  //
-  //walk_node_.reset(new bitbots_quintic_walk::WalkNode());
   set_robot_state(0);
 }
 
@@ -101,13 +97,11 @@ void PyWalkWrapper::set_engine_dyn_reconf(const boost::python::object params) {
 
   // fill all values from dict to dyn reconf
   int const len = boost::python::len(keylist);
-  //std::cout << "len(keylist) = " << len << std::endl;
   // since c++ has no reflection we have to do this in a bad way
   for (int i = 0; i < len; ++i) {
     // operator[] is in python::boost::object
     std::string keystr = extract<std::string>(str(keylist[i]));
     std::string valstr = extract<std::string>(str(cppdict[keylist[i]]));
-    //std::cout << "key:[" << keystr << "]->[" << valstr << "]" << std::endl;
     if (keystr == "double_support_ratio") {
       dyn_conf.double_support_ratio = std::stof(valstr);
     } else if (keystr == "freq") {
@@ -186,13 +180,11 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
 
   // fill all values from dict to dyn reconf
   int const len = boost::python::len(keylist);
-  //std::cout << "len(keylist) = " << len << std::endl;
   // since c++ has no reflection we have to do this in a bad way
   for (int i = 0; i < len; ++i) {
     // operator[] is in python::boost::object
     std::string keystr = extract<std::string>(str(keylist[i]));
     std::string valstr = extract<std::string>(str(cppdict[keylist[i]]));
-    //std::cout << "key:[" << keystr << "]->[" << valstr << "]" << std::endl;
     if (keystr == "debug_active") {
       dyn_conf.debug_active = string2bool(valstr);
     } else if (keystr == "engine_freq") {

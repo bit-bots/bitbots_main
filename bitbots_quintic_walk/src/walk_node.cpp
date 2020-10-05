@@ -347,7 +347,6 @@ void WalkNode::checkPhaseRestAndReset() {
     // check if we want to perform a phase reset
     if (pressure_phase_reset_active_ && current_fly_pressure_ > ground_min_pressure_) {
       // reset phase by using pressure sensors
-      //ROS_WARN("Phase resetted by pressure!");
       walk_engine_.endStep();
     } else if (effort_phase_reset_active_ && current_fly_effort_ > joint_min_effort_) {
       // reset phase by using joint efforts
