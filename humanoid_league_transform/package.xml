@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>humanoid_league_transform</name>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
   <description>humanoid_league_transform provides a node to transform from a pixel in an image to real world coordinates.
     CameraInfo and the TF-Tree needs to be available for it to properly work</description>
 

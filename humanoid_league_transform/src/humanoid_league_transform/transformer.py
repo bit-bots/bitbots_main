@@ -44,9 +44,12 @@ class Transformer(object):
         cam_info_counter = 0
         while self._camera_info is None:
             rospy.sleep(0.1)
-            if cam_info_counter > 50:
+            cam_info_counter += 1
+            if cam_info_counter > 100:
                 rospy.logerr_throttle(5, rospy.get_name() + ": Camera Info not received on topic '" +
                                       camera_info_topic + "'")
+            if rospy.is_shutdown():
+                return
 
         # Wait up to 5 seconds for transforms to become available, then print an error and try again
         # rospy.Time(0) gets the most recent transform

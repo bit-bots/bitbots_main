@@ -22,13 +22,13 @@ if __name__ == "__main__":
     pub = rospy.Publisher("balls_in_image", BallInImageArray, queue_size=10)
 
     while True:
-        x_str = raw_input("x:")
+        x_str = input("x:")
         try:
             x = int(x_str)
         except ValueError:
             print("try again")
             continue
-        y_str = raw_input("y:")
+        y_str = input("y:")
         try:
             y = int(y_str)
         except ValueError:
