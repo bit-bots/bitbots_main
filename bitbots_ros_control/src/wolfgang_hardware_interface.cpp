@@ -292,7 +292,7 @@ void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &d
   servo_interface_.write(t, dt);
 
   std::vector<std::thread> threads;
-  // start all reads
+  // start all writes
   for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
