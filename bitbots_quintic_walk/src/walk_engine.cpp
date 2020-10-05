@@ -1,5 +1,5 @@
 /*
-This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -17,7 +17,12 @@ WalkEngine::WalkEngine(const std::string ns) :
     pause_duration_(0.0),
     phase_rest_active_(false),
     is_left_support_foot_(false),
-    engine_state_(WalkState::IDLE) {
+    engine_state_(WalkState::IDLE),
+    foot_pos_vel_at_foot_change_({0.0, 0.0, 0.0}),
+    foot_pos_acc_at_foot_change_({0.0, 0.0, 0.0}),
+    foot_orientation_pos_at_last_foot_change_({0, 0, 0}),
+    foot_orientation_vel_at_last_foot_change_({0, 0, 0}),
+    foot_orientation_acc_at_foot_change_({0, 0, 0}) {
   left_in_world_.setIdentity();
   right_in_world_.setIdentity();
   reset();
@@ -31,7 +36,7 @@ WalkEngine::WalkEngine(const std::string ns) :
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
-  // move left and right in world by foot distance for correct initilization
+  // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
   right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
 }
@@ -348,11 +353,20 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
     saveCurrentRobotState();
     stepFromOrders(request_.linear_orders, request_.angular_z);
   } else {
+    // reset all foot change parameters
     // when we do start step, only transform the y coordinate since we stand still and only move trunk sideward
-    trunk_pos_at_foot_change_[1] = trunk_pos_at_foot_change_.y() - support_to_next_.getOrigin().y();
+    trunk_pos_at_foot_change_ = {0.0, trunk_pos_at_foot_change_.y() - support_to_next_.getOrigin().y(), params_.trunk_height};
+    trunk_pos_vel_at_foot_change_.setZero();
+    trunk_pos_acc_at_foot_change_.setZero();
+    trunk_orientation_pos_at_last_foot_change_ = {0.0, params_.trunk_pitch, 0.0};
+    trunk_orientation_vel_at_last_foot_change_.setZero();
+    trunk_orientation_acc_at_foot_change_.setZero();
     foot_pos_at_foot_change_ = {0.0, support_to_next_.getOrigin().y() * -1, 0.0};
-    foot_pos_vel_at_foot_change_ = {0.0, 0.0, 0.0};
-    foot_pos_acc_at_foot_change_ = {0.0, 0.0, 0.0};
+    foot_pos_vel_at_foot_change_.setZero();
+    foot_pos_acc_at_foot_change_.setZero();
+    foot_orientation_pos_at_last_foot_change_.setZero();
+    foot_orientation_vel_at_last_foot_change_.setZero();
+    foot_orientation_acc_at_foot_change_.setZero();
     stepFromOrders({0, 0, 0}, 0);
   }
 
