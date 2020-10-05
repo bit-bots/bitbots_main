@@ -25,15 +25,13 @@ PressureConverter::PressureConverter(ros::NodeHandle &pnh, char side) {
   sole_lr_ = side;
   sole_lr_ += "_sole";
 
-  if (!pnh.getParam(zero_lr_, zero_))
-  {
+  if (!pnh.getParam(zero_lr_, zero_)) {
     ROS_ERROR_STREAM(ros::this_node::getName() << ": " << zero_lr_ << " not specified");
-    zero_ = {0,0,0,0};
+    zero_ = {0, 0, 0, 0};
   }
-  if (!pnh.getParam(scale_lr_, scale_))
-  {
+  if (!pnh.getParam(scale_lr_, scale_)) {
     ROS_ERROR_STREAM(ros::this_node::getName() << ": " << scale_lr_ << " not specified");
-    scale_ = {1,1,1,1};
+    scale_ = {1, 1, 1, 1};
   }
   if (!pnh.getParam("cop_threshold", cop_threshold_))
     ROS_ERROR_STREAM(ros::this_node::getName() << ": cop_threshold not specified");

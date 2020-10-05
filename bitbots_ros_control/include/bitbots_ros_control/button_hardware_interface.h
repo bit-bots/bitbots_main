@@ -16,19 +16,17 @@
 
 #include <bitbots_ros_control/utils.h>
 
-namespace bitbots_ros_control
-{
+namespace bitbots_ros_control {
 
-class ButtonHardwareInterface : public hardware_interface::RobotHW
-{
-public:
-  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic, int read_rate_);
+class ButtonHardwareInterface : public hardware_interface::RobotHW {
+ public:
+  explicit ButtonHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, std::string topic, int read_rate_);
 
-  bool init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh);
-  void read(const ros::Time& t, const ros::Duration& dt);
-  void write(const ros::Time& t, const ros::Duration& dt);
+  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh);
+  void read(const ros::Time &t, const ros::Duration &dt);
+  void write(const ros::Time &t, const ros::Duration &dt);
 
-private:
+ private:
   int counter_;
   ros::NodeHandle nh_;
   std::shared_ptr<DynamixelDriver> driver_;

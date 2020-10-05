@@ -66,7 +66,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 //todo this could be done parallel with threads for speed up
 bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
                                                   std::vector<std::pair<std::string, int>> dxl_devices) {
-  interfaces_ = std::vector<std::vector<hardware_interface::RobotHW *>>();
+  interfaces_ = std::vector < std::vector < hardware_interface::RobotHW * >> ();
   // init bus drivers
   std::vector<std::string> pinged;
   XmlRpc::XmlRpcValue port_xml;
@@ -87,7 +87,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
     // some interface seem to produce some gitter directly after connecting. wait or it will interfere with pings
     // sleep(1);
     driver->setPacketHandler(protocol_version);
-    std::vector<hardware_interface::RobotHW *> interfaces_on_port;
+    std::vector < hardware_interface::RobotHW * > interfaces_on_port;
     // iterate over all devices and ping them to see what is connected to this bus
     std::vector<std::tuple<int, std::string, float, float>> servos_on_port;
     for (std::pair<std::string, int> &device : dxl_devices) {
@@ -155,7 +155,8 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
             int read_rate;
             dxl_nh.param<int>("read_rate", read_rate, 50);
             interfaces_on_port.push_back(new ButtonHardwareInterface(driver, id, topic, read_rate));
-          } else if ((model_number_specified == 0xBAFF || model_number_specified == 0xABBA) && interface_type == "LED" && !only_pressure_) {
+          } else if ((model_number_specified == 0xBAFF || model_number_specified == 0xABBA) && interface_type == "LED"
+              && !only_pressure_) {
             // LEDs
             int number_of_LEDs, start_number;
             dxl_nh.param<int>("number_of_LEDs", number_of_LEDs, 3);
@@ -193,7 +194,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
 
   if (pinged.size() != dxl_devices.size()) {
     // when we only have 1 or two devices its only the core
-    if (pinged.empty() || pinged.size() == 1  || pinged.size() == 2) {
+    if (pinged.empty() || pinged.size() == 1 || pinged.size() == 2) {
       ROS_ERROR("Could not start ros control. Power is off!");
       speakError(speak_pub_, "Could not start ros control. Power is off!");
     } else {
@@ -233,7 +234,7 @@ bool WolfgangHardwareInterface::init(ros::NodeHandle &root_nh) {
   std::vector<std::thread> threads;
   std::vector<int *> successes;
   int i = 0;
-  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
+  for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
     int suc = 0;
     successes.push_back(&suc);
@@ -266,7 +267,7 @@ void threaded_read(std::vector<hardware_interface::RobotHW *> &port_interfaces,
 void WolfgangHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
+  for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
   // wait for all reads to finish
@@ -292,7 +293,7 @@ void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &d
 
   std::vector<std::thread> threads;
   // start all reads
-  for (std::vector<hardware_interface::RobotHW *> &port_interfaces : interfaces_) {
+  for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
     threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
   }
 

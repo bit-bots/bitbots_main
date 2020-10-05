@@ -85,9 +85,9 @@ void BitFootHardwareInterface::read(const ros::Time &t, const ros::Duration &dt)
       }
       all_okay &= okay;
       std::string okay_string;
-      if(okay){
+      if (okay) {
         okay_string = "Okay";
-      }else{
+      } else {
         okay_string = "Error";
       }
       map.insert(std::make_pair(gauge_name, okay_string));

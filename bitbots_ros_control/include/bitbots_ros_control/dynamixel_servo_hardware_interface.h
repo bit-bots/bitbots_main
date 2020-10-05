@@ -43,7 +43,6 @@ std::string vecToString(const std::vector<T> &vec) {
   return ss.str();
 }
 
-
 struct State {
   State() : position(0), velocity(0), effort(0) {}
   double position;

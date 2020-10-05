@@ -18,13 +18,16 @@ namespace bitbots_ros_control {
 
 class BitFootHardwareInterface : public hardware_interface::RobotHW {
  public:
-  explicit BitFootHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, std::string topic_name, std::string name);
+  explicit BitFootHardwareInterface(std::shared_ptr<DynamixelDriver> &driver,
+                                    int id,
+                                    std::string topic_name,
+                                    std::string name);
 
   bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
 
-  void read(const ros::Time& t, const ros::Duration& dt);
+  void read(const ros::Time &t, const ros::Duration &dt);
 
-  void write(const ros::Time& t, const ros::Duration& dt);
+  void write(const ros::Time &t, const ros::Duration &dt);
 
  private:
   ros::NodeHandle nh_;

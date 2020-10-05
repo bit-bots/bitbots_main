@@ -10,7 +10,6 @@
 #include <hardware_interface/robot_hw.h>
 #include <bitbots_ros_control/utils.h>
 
-
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>

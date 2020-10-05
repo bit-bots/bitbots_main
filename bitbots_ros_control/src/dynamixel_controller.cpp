@@ -42,4 +42,5 @@ void DynamixelController::update(const ros::Time & /*time*/, const ros::Duration
   }
 }
 }
-PLUGINLIB_EXPORT_CLASS(dynamixel_controller::DynamixelController, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(dynamixel_controller::DynamixelController, controller_interface::ControllerBase
+)

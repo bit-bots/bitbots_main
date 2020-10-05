@@ -188,7 +188,7 @@ void DynamixelServoHardwareInterface::read(const ros::Time &t, const ros::Durati
       i++;
     }
   }
-  // PWM values are not part of joint state controller and have to be published independetly
+  // PWM values are not part of joint state controller and have to be published independently
   pwm_msg_.header.stamp = ros::Time::now();
   pwm_msg_.effort = current_pwm_;
   pwm_pub_.publish(pwm_msg_);

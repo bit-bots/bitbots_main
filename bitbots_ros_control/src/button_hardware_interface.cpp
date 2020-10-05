@@ -1,15 +1,15 @@
 #include <bitbots_ros_control/button_hardware_interface.h>
 
-namespace bitbots_ros_control
-{
-ButtonHardwareInterface::ButtonHardwareInterface(std::shared_ptr<DynamixelDriver>& driver, int id, std::string topic, int read_rate){
+namespace bitbots_ros_control {
+ButtonHardwareInterface::ButtonHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id,
+                                                 std::string topic, int read_rate) {
   driver_ = driver;
   id_ = id;
   topic_ = topic;
   read_rate_ = read_rate;
 }
 
-bool ButtonHardwareInterface::init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh){
+bool ButtonHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
   button_pub_ = nh.advertise<bitbots_buttons::Buttons>(topic_, 1);
   diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
@@ -17,22 +17,22 @@ bool ButtonHardwareInterface::init(ros::NodeHandle& nh, ros::NodeHandle &hw_nh){
   return true;
 }
 
-void ButtonHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){
+void ButtonHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
   /**
    * Reads the buttons
    */
   counter_ = (counter_ + 1) % read_rate_;
-  if(counter_ != 0)
+  if (counter_ != 0)
     return;
   uint8_t *data = (uint8_t *) malloc(sizeof(uint8_t));
   bool read_successful = true;
-  if(driver_->readMultipleRegisters(id_, 76, 3, data)) {
+  if (driver_->readMultipleRegisters(id_, 76, 3, data)) {
     bitbots_buttons::Buttons msg;
     msg.button1 = data[0];
     msg.button2 = data[1];
     msg.button3 = data[2];
     button_pub_.publish(msg);
-  }else{
+  } else {
     ROS_ERROR_THROTTLE(1.0, "Couldn't read Buttons");
     read_successful = false;
   }
@@ -60,6 +60,6 @@ void ButtonHardwareInterface::read(const ros::Time& t, const ros::Duration& dt){
 }
 
 // we dont write anything to the buttons
-void ButtonHardwareInterface::write(const ros::Time& t, const ros::Duration& dt){}
+void ButtonHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {}
 
 }

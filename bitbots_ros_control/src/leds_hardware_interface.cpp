@@ -46,7 +46,7 @@ bool LedsHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
 // todo this could be done more clever and for a general number of leds
 void LedsHardwareInterface::ledCb0(std_msgs::ColorRGBA msg) {
   // only write to bus if there is actually a change
-  if(msg.r != leds_[0].r || msg.g != leds_[0].g || msg.b != leds_[0].b ){
+  if (msg.r != leds_[0].r || msg.g != leds_[0].g || msg.b != leds_[0].b) {
     leds_[0] = msg;
     write_leds_ = true;
   }
@@ -54,7 +54,7 @@ void LedsHardwareInterface::ledCb0(std_msgs::ColorRGBA msg) {
 
 void LedsHardwareInterface::ledCb1(std_msgs::ColorRGBA msg) {
   // only write to bus if there is actually a change
-  if(msg.r != leds_[1].r || msg.g != leds_[1].g || msg.b != leds_[1].b ){
+  if (msg.r != leds_[1].r || msg.g != leds_[1].g || msg.b != leds_[1].b) {
     leds_[1] = msg;
     write_leds_ = true;
   }
@@ -62,7 +62,7 @@ void LedsHardwareInterface::ledCb1(std_msgs::ColorRGBA msg) {
 
 void LedsHardwareInterface::ledCb2(std_msgs::ColorRGBA msg) {
   // only write to bus if there is actually a change
-  if(msg.r != leds_[2].r || msg.g != leds_[2].g || msg.b != leds_[2].b ){
+  if (msg.r != leds_[2].r || msg.g != leds_[2].g || msg.b != leds_[2].b) {
     leds_[2] = msg;
     write_leds_ = true;
   }
@@ -94,10 +94,10 @@ bool LedsHardwareInterface::setLeds(bitbots_msgs::LedsRequest &req, bitbots_msgs
 }
 
 uint32_t rgba_to_int32(std_msgs::ColorRGBA rgba) {
-  uint32_t led = ((uint8_t) (rgba.r * 255));
-  led |= ((uint8_t) (rgba.g * 255)) << 8;
-  led |= ((uint8_t) (rgba.b * 255)) << 16;
-  led |= ((uint8_t) (rgba.a * 255)) << 24;
+  uint32_t led = ((uint8_t)(rgba.r * 255));
+  led |= ((uint8_t)(rgba.g * 255)) << 8;
+  led |= ((uint8_t)(rgba.b * 255)) << 16;
+  led |= ((uint8_t)(rgba.a * 255)) << 24;
   return led;
 }
 

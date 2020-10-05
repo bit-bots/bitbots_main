@@ -126,7 +126,7 @@ bool ServoBusInterface::writeROMRAM(ros::NodeHandle &nh) {
   bool sucess = true;
   int i = 0;
   for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it) {
-    std::string register_name = (std::string) (it->first);
+    std::string register_name = (std::string)(it->first);
     int register_value;
     nh.getParam(("servos/ROM_RAM/" + register_name).c_str(), register_value);
     ROS_DEBUG("Setting %s on all servos to %d", register_name.c_str(), register_value);

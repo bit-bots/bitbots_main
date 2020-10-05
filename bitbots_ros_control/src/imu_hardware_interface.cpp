@@ -100,7 +100,8 @@ void ImuHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
   if (driver_->readMultipleRegisters(id_, 36, 40, data_)) {
     // sometimes we only get 0 right after power on, don't use that data
     // test on orientation is sufficient as 0,0,0,0 would not be a valid quaternion
-    if (dxlMakeFloat(data_ + 24) + dxlMakeFloat(data_ + 28) + dxlMakeFloat(data_ + 32) + dxlMakeFloat(data_ + 36) != 0){
+    if (dxlMakeFloat(data_ + 24) + dxlMakeFloat(data_ + 28) + dxlMakeFloat(data_ + 32) + dxlMakeFloat(data_ + 36)
+        != 0) {
       angular_velocity_[0] = dxlMakeFloat(data_ + 0);
       angular_velocity_[1] = dxlMakeFloat(data_ + 4);
       angular_velocity_[2] = dxlMakeFloat(data_ + 8);
@@ -113,7 +114,7 @@ void ImuHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       orientation_[1] = dxlMakeFloat(data_ + 28);
       orientation_[2] = dxlMakeFloat(data_ + 32);
       orientation_[3] = dxlMakeFloat(data_ + 36);
-     }
+    }
   } else {
     ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
     read_successful = false;
