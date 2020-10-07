@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         realtime_tools
         bitbots_msgs
         tf2_ros
+        bitbots_docs
         )
 find_package(yaml-cpp REQUIRED)
 
@@ -43,6 +44,8 @@ catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager controller_interface
 )
+
+enable_bitbots_docs()
 
 include_directories(
         include
