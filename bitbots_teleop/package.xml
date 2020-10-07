@@ -15,6 +15,7 @@
 
   <depend>rospy</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_docs</depend>
 
   <exec_depend>std_msgs</exec_depend>
 
