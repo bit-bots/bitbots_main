@@ -1,6 +1,7 @@
 import time
 import rospy
 from bitbots_msgs.msg import FootPressure, JointCommand
+from geometry_msgs.msg import PointStamped
 from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState, Imu
@@ -43,9 +44,9 @@ class ROSInterface:
         srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
 
         # publisher
-        self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_raw/left", FootPressure,
+        self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_left/raw", FootPressure,
                                                             queue_size=1)
-        self.right_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_raw/right", FootPressure,
+        self.right_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_right/raw", FootPressure,
                                                              queue_size=1)
         self.left_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_left/filtered",
                                                                      FootPressure, queue_size=1)
@@ -56,6 +57,8 @@ class ROSInterface:
         self.clock_publisher = rospy.Publisher(self.namespace + "clock", Clock, queue_size=1)
         self.real_time_factor_publisher = rospy.Publisher(self.namespace + "real_time_factor", Float32, queue_size=1)
         self.true_odom_publisher = rospy.Publisher(self.namespace + "true_odom", Odometry, queue_size=1)
+        self.cop_l_pub_ = rospy.Publisher(self.namespace + "cop_l", PointStamped, queue_size=1)
+        self.cop_r_pub_ = rospy.Publisher(self.namespace + "cop_r", PointStamped, queue_size=1)
 
         # subscriber
         self.joint_goal_subscriber = rospy.Subscriber(self.namespace + "DynamixelController/command", JointCommand,
@@ -166,6 +169,39 @@ class ROSInterface:
         self.foot_msg_right.right_front = f_rrf[1]
         self.foot_msg_right.right_back = f_rrb[1]
         self.right_foot_pressure_publisher_filtered.publish(self.foot_msg_right)
+
+        # center position on foot
+        pos_x = 0.085
+        pos_y = 0.045
+        threshold = 0.1
+
+        cop_l = PointStamped()
+        cop_l.header.frame_id = "l_sole"
+        cop_l.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        sum_of_forces = f_llb[1] + f_llf[1] + f_lrf[1] + f_lrb[1]
+        if sum_of_forces > threshold:
+            cop_l.point.x = (f_llf[1] + f_lrf[1] - f_llb[1] - f_lrb[1]) * pos_x / sum_of_forces
+            cop_l.point.x = max(min(cop_l.point.x, pos_x), -pos_x)
+            cop_l.point.y = (f_llf[1] + f_llb[1] - f_lrf[1] - f_lrb[1]) * pos_y / sum_of_forces
+            cop_l.point.y = max(min(cop_l.point.y, pos_y), -pos_y)
+        else:
+            cop_l.point.x = 0
+            cop_l.point.y = 0
+        self.cop_l_pub_.publish(cop_l)
+
+        cop_r = PointStamped()
+        cop_r.header.frame_id = "r_sole"
+        cop_r.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        sum_of_forces = f_rlb[1] + f_rlf[1] + f_rrf[1] + f_rrb[1]
+        if sum_of_forces > threshold:
+            cop_r.point.x = (f_rlf[1] + f_rrf[1] - f_rlb[1] - f_rrb[1]) * pos_x / sum_of_forces
+            cop_r.point.x = max(min(cop_r.point.x, pos_x), -pos_x)
+            cop_r.point.y = (f_rlf[1] + f_rlb[1] - f_rrf[1] - f_rrb[1]) * pos_y / sum_of_forces
+            cop_r.point.y = max(min(cop_r.point.y, pos_y), -pos_y)
+        else:
+            cop_r.point.x = 0
+            cop_r.point.y = 0
+        self.cop_r_pub_.publish(cop_r)
 
     def publish_true_odom(self):
         position, orientation = self.simulation.get_robot_pose()
