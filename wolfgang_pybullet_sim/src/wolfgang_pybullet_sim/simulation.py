@@ -4,13 +4,18 @@ import sys
 import time
 import pybullet as p
 from time import sleep
+
+import rospy
 from scipy import signal
 import pybullet_data
 import rospkg
 
 
+from wolfgang_pybullet_sim.terrain import Terrain
+
+
 class Simulation:
-    def __init__(self, gui, urdf_path=None, foot_link_names=[]):
+    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain=False):
         self.gui = gui
         self.paused = False
         self.gravity = True
@@ -19,11 +24,12 @@ class Simulation:
         # config values
         self.start_position = [0, 0, 0.43]
         self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
-        self.initial_joints_positions = {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
-                                         "LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
-                                         "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
-                                         "LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
-                                         "RShoulderRoll": 0, "RElbow": -45, "HeadPan": 0, "HeadTilt": 0}
+        rospy.logwarn("initial joints deactivated for testing. should not be in production code")
+        self.initial_joints_positions ={}# {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
+                                         #"LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
+                                         #"RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
+                                         #"LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
+                                         #"RShoulderRoll": 0, "RElbow": -45, "HeadPan": 0, "HeadTilt": 0}
 
         # Instantiating Bullet
         if self.gui:
@@ -36,10 +42,15 @@ class Simulation:
         p.configureDebugVisualizer(p.COV_ENABLE_GUI, False)
 
         # Loading floor
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-        self.plane_index = p.loadURDF('plane.urdf')
-        p.changeDynamics(self.plane_index, -1, lateralFriction=1, spinningFriction=-1,
-                         rollingFriction=-1, restitution=0.9)
+        if terrain:
+            self.max_terrain_height = 0.04
+            self.terrain = Terrain(self.max_terrain_height)
+            self.plane_index = self.terrain.id
+        else:
+            p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
+            self.plane_index = p.loadURDF('plane.urdf')
+            p.changeDynamics(self.plane_index, -1, lateralFriction=1, spinningFriction=-1,
+                             rollingFriction=-1, restitution=0.9)
 
         # Loading robot
         flags = p.URDF_USE_INERTIA_FROM_FILE + p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
@@ -133,6 +144,7 @@ class Simulation:
             nKey = ord('n')
             sKey = ord('s')
             tKey = ord('t')
+            fKey = ord('f')
             spaceKey = p.B3G_SPACE
             keys = p.getKeyboardEvents()
             if rKey in keys and keys[rKey] & p.KEY_WAS_TRIGGERED:
@@ -146,6 +158,9 @@ class Simulation:
             if tKey in keys and keys[tKey] & p.KEY_WAS_TRIGGERED:
                 self.real_time = not self.real_time
                 p.setRealTimeSimulation(self.real_time)
+            if fKey in keys and keys[fKey] & p.KEY_WAS_TRIGGERED:
+                # generate new terain
+                self.terrain.randomize()
 
         # check if simulation should continue currently
         if not self.paused or single_step:
