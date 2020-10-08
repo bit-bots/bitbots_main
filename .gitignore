@@ -3,3 +3,5 @@
 **/doc/_generated
 **/doc/manifest.yaml
 **/doc/html
+
+__pycache__
