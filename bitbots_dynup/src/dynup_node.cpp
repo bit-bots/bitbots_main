@@ -16,14 +16,14 @@ DynUpNode::DynUpNode() :
     ROS_FATAL("No robot model loaded, killing dynamic up.");
     exit(1);
   }
-  double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().x() +
-                          kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().x() +
-                          kinematic_model->getLinkModel("r_shoulder")->getShapeExtentsAtOrigin().x();
+  double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().y() +
+                          kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().y();
   geometry_msgs::PoseStamped shoulder_origin, shoulder_tf;
-  shoulder_origin.header.frame_id="r_upper_arm";
+  shoulder_origin.header.frame_id="r_shoulder";
   tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link",
-                         ros::Duration(0.2));                
-  engine_.init(arm_max_length, shoulder_tf.pose.position.y, shoulder_tf.pose.position.z);
+                         ros::Duration(0.2));
+  //arm max length, y offset, z offset from base link
+  engine_.init(0.37, 0.12, 0.19); //TODO: These values are hardcoded for now and should be calculated from the model instead.
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);

@@ -23,7 +23,7 @@ void DynupIK::reset() {
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
-  /* ik options is basicaly the command which we send to bio_ik and which describes what we want to do */
+  /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
   auto ik_options = kinematics::KinematicsQueryOptions();
   ik_options.return_approximate_solution = true;
 
