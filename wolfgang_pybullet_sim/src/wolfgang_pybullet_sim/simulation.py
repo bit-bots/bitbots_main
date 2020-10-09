@@ -161,13 +161,19 @@ class Simulation:
             if fKey in keys and keys[fKey] & p.KEY_WAS_TRIGGERED:
                 # generate new terain
                 self.terrain.randomize()
+            # block until pause is over
+            while self.paused and not single_step:
+                keys = p.getKeyboardEvents()
+                if spaceKey in keys and keys[spaceKey] & p.KEY_WAS_TRIGGERED:
+                    self.paused = not self.paused
+                if sKey in keys and keys[sKey] & p.KEY_IS_DOWN:
+                    single_step = True
+                sleep(0.01)
 
-        # check if simulation should continue currently
-        if not self.paused or single_step:
-            self.time += self.timestep
-            p.stepSimulation()
-            for name, ps in self.pressure_sensors.items():
-                ps.filter_step()
+        self.time += self.timestep
+        p.stepSimulation()
+        for name, ps in self.pressure_sensors.items():
+            ps.filter_step()
 
     def set_gravity(self, active):
         if active:
