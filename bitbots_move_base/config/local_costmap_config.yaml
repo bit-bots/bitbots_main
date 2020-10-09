@@ -12,6 +12,6 @@ local_costmap:
   publish_frequency: 1.0
   transform_tolerance: 1.0
   rolling_window: true
-  width: 8.0
-  height: 8.0
+  width: 1.5
+  height: 1.5
   robot_radius: 0.2
