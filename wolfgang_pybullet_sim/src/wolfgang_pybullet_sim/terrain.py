@@ -13,20 +13,19 @@ class Terrain:
         self.id = -1
         self.collision_shape = -1
 
-        self.max_height = max_height
         self.scale = scale
         self.rows = int(size[0] / scale[0])
         self.cols = int(size[1] / scale[1])
         self.heightfield_data = [0] * self.rows * self.cols
 
-        self.randomize()
+        self.randomize(max_height)
 
-    def randomize(self):
+    def randomize(self, max_height):
 
         for j in range(int(self.cols / 2)):
             for i in range(int(self.rows / 2)):
                 # create a quadratic shape with random height
-                height = random.uniform(0, self.max_height)
+                height = random.uniform(0, max_height)
                 self.heightfield_data[2 * i + 2 * j * self.rows] = height
                 self.heightfield_data[2 * i + 1 + 2 * j * self.rows] = height
                 self.heightfield_data[2 * i + (2 * j + 1) * self.rows] = height
