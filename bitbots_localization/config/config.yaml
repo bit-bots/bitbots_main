@@ -3,7 +3,7 @@
   # MISC #
   ########
 
-  init_mode: 2
+  init_mode: 4
 
   field_boundary_interpolation_steps: 1
 
@@ -41,14 +41,14 @@
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.5
-  diffusion_multiplicator: 0.009
+  diffusion_multiplicator: 0.005
 
-  drift_distance_to_direction: 0.3
+  drift_distance_to_direction: 3.0
   drift_roation_to_direction: 0.0
-  drift_distance_to_distance: 0.1
-  drift_roation_to_distance: 0.1
+  drift_distance_to_distance: 0.3
+  drift_roation_to_distance: 0.5
   drift_distance_to_rotation: 0.0
-  drift_rotation_to_rotation: 2.0
+  drift_rotation_to_rotation: 3.0
 
   max_rotation: 0.45
   max_translation: 0.09
