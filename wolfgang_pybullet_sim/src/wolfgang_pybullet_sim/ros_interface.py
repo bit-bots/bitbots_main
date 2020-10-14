@@ -131,6 +131,9 @@ class ROSInterface:
         self.imu_publisher.publish(self.get_imu_msg())
 
     def get_pressure_filtered_left(self):
+        if len(self.simulation.pressure_sensors) == 0:
+            rospy.logwarn_once("No pressure sensors found in simulation model")
+            return self.foot_msg_left
         f_llb = self.simulation.pressure_sensors["LLB"].get_force()
         f_llf = self.simulation.pressure_sensors["LLF"].get_force()
         f_lrf = self.simulation.pressure_sensors["LRF"].get_force()
@@ -142,6 +145,9 @@ class ROSInterface:
         return self.foot_msg_left
 
     def get_pressure_filtered_right(self):
+        if len(self.simulation.pressure_sensors) == 0:
+            rospy.logwarn_once("No pressure sensors found in simulation model")
+            return self.foot_msg_right
         f_rlb = self.simulation.pressure_sensors["RLB"].get_force()
         f_rlf = self.simulation.pressure_sensors["RLF"].get_force()
         f_rrf = self.simulation.pressure_sensors["RRF"].get_force()
