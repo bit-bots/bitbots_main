@@ -4,6 +4,7 @@ project(system_monitor)
 find_package(catkin REQUIRED COMPONENTS
     message_generation
     std_msgs
+    bitbots_docs
 )
 
 catkin_python_setup()
@@ -22,3 +23,5 @@ generate_messages (
 )
 
 catkin_package(CATKIN_DEPENDS std_msgs message_runtime)
+
+enable_bitbots_docs()

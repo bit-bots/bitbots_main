@@ -23,6 +23,7 @@
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <exec_depend>message_runtime</exec_depend>
+  <depend>bitbots_docs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

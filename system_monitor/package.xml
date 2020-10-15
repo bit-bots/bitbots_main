@@ -22,6 +22,7 @@
   <exec_depend>message_runtime</exec_depend>
   <depend>std_msgs</depend>
   <depend>python3-psutil</depend>
+  <depend>bitbots_docs</depend>
 
   <export></export>
 </package>
