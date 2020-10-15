@@ -17,6 +17,7 @@
   <depend>std_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_docs</depend>
 
   <exec_depend>message_runtime</exec_depend>
 
