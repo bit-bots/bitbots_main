@@ -16,8 +16,7 @@
     <include file="$(find humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
 
     <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
-    <!-- TODO: replace this with the launch file when one exists -->
-    <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen" />
+    <include file="$(find bitbots_dynamic_kick)/launch/dynamic_kick.launch" />
 
     <node name="show_world_model_objects" pkg="bitbots_body_behavior" type="show_world_model_objects.py"
           output="screen"/>

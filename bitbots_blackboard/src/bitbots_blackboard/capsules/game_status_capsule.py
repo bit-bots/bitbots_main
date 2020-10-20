@@ -28,13 +28,16 @@ class GameStatusCapsule:
     def get_secondary_state(self):
         return self.gamestate.secondaryState
 
+    def get_secondary_team(self):
+        return self.gamestate.secondaryStateTeam
+
     def has_kickoff(self):
         return self.gamestate.hasKickOff
 
     def has_penalty_kick(self):
         return (self.gamestate.secondaryState == GameState.STATE_PENALTYKICK or
                 self.gamestate.secondaryState == GameState.STATE_PENALTYSHOOT) and \
-               self.gamestate.secondrayStateTeam == self.team_id
+               self.gamestate.secondaryStateTeam == self.team_id
 
     def get_own_goals(self):
         return self.gamestate.ownScore

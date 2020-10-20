@@ -3,20 +3,37 @@ WorldModelCapsule
 ^^^^^^^^^^^^^^^^^^
 
 Provides information about the world model.
-
 """
 import math
 
 import rospy
 import tf2_ros as tf2
+from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped
 from tf.transformations import euler_from_quaternion
-from humanoid_league_msgs.msg import Position2D, ObstaclesRelative, GoalRelative, BallRelative
+from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
+
+
+class GoalRelative:
+    header = Header()
+    left_post = Point()
+    right_post = Point()
+
+    def to_pose_with_certainty_array(self):
+        p = PoseWithCertaintyArray()
+        p.header = self.header
+        l = PoseWithCertainty()
+        l.pose.pose.position = self.left_post
+        r = PoseWithCertainty()
+        r.pose.pose.position = self.right_post
+        p.poses = [l, r]
+        return p
 
 
 class WorldModelCapsule:
-    def __init__(self, field_length, field_width):
-        self.position = Position2D()
+    def __init__(self, field_length, field_width, goal_width):
+        self.position = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.ball = PointStamped()  # The ball in the base footprint frame
@@ -24,7 +41,6 @@ class WorldModelCapsule:
         self.goal_odom = GoalRelative()
         self.goal_odom.header.stamp = rospy.Time.now()
         self.goal_odom.header.frame_id = 'odom'
-        self.obstacles = ObstaclesRelative()
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
@@ -32,13 +48,16 @@ class WorldModelCapsule:
         self.ball_seen = False
         self.field_length = field_length
         self.field_width = field_width
+        self.goal_width = goal_width
 
-        # Publisher for Visualisation in RViZ
+        # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
-        self.goal_publisher = rospy.Publisher('/debug/viz_goal', GoalRelative, queue_size=1)
+        self.goal_publisher = rospy.Publisher('/debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
 
     def get_current_position(self):
-        return self.position.pose.x, self.position.pose.y, self.position.pose.theta
+        orientation = self.position.pose.pose.orientation
+        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        return self.position.pose.pose.position.x, self.position.pose.pose.position.y, theta
 
     ############
     ### Ball ###
@@ -72,27 +91,32 @@ class WorldModelCapsule:
     def get_ball_speed(self):
         raise NotImplementedError
 
-    def ball_callback(self, ball):
-        # type: (BallRelative) -> None
-        if ball.confidence == 0:
-            return
+    def balls_callback(self, msg: PoseWithCertaintyArray):
+        if msg.poses:
+            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
+            ball = balls[0]  # Ball with highest confidence
 
-        # adding a minor delay to timestamp to ease transformations.
-        ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
-        ball_buffer = PointStamped(ball.header, ball.ball_relative)
-        if ball.header.frame_id != 'base_footprint':
-            try:
-                self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+            if ball.confidence == 0:
+                return
+
+            # adding a minor delay to timestamp to ease transformations.
+            msg.header.stamp += rospy.Duration.from_sec(0.01)
+            ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
+            if msg.header.frame_id != 'base_footprint':
+                try:
+                    self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+                    self.ball_seen_time = rospy.Time.now()
+                    self.ball_seen = True
+
+                except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                    rospy.logwarn(e)
+            else:
+                self.ball = ball_buffer
                 self.ball_seen_time = rospy.Time.now()
                 self.ball_seen = True
-
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
+            self.ball_publisher.publish(self.ball)
         else:
-            self.ball = ball_buffer
-            self.ball_seen_time = rospy.Time.now()
-            self.ball_seen = True
-        self.ball_publisher.publish(self.ball)
+            return
 
     def forget_ball(self):
         """Forget that we saw a ball"""
@@ -201,6 +225,8 @@ class WorldModelCapsule:
     def goal_parts_callback(self, msg):
         # type: (GoalPartsRelative) -> None
         goal_parts = msg
+
+    def goalposts_callback(self, goal_parts: PoseWithCertaintyArray):
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
         goal_parts.header.stamp = goal_parts.header.stamp + rospy.Duration.from_sec(0.01)
@@ -209,11 +235,13 @@ class WorldModelCapsule:
         goal_combination = (-1, -1, -1)
         # Enumerate all goalpost combinations, this also combines each post with itself,
         # to get the special case that only one post was detected and the maximum distance is 0.
-        for first_post_id, first_post in enumerate(goal_parts.posts):
-            for second_post_id, second_post in enumerate(goal_parts.posts):
+        for first_post_id, first_post in enumerate(goal_parts.poses):
+            for second_post_id, second_post in enumerate(goal_parts.poses):
                 # Get the minimal angular difference between the two posts
-                angular_distance = abs((math.atan2(first_post.foot_point.x, first_post.foot_point.y) - math.atan2(
-                    second_post.foot_point.x, second_post.foot_point.y) + math.pi) % (2*math.pi) - math.pi)
+                first_post_pos = first_post.pose.pose.position
+                second_post_pos = second_post.pose.pose.position
+                angular_distance = abs((math.atan2(first_post_pos.x, first_post_pos.y) - math.atan2(
+                    second_post_pos.x, second_post_pos.y) + math.pi) % (2*math.pi) - math.pi)
                 # Set a new pair of posts if the distance is bigger than the previous ones
                 if angular_distance > goal_combination[2]:
                     goal_combination = (first_post_id, second_post_id, angular_distance)
@@ -221,25 +249,24 @@ class WorldModelCapsule:
         if goal_combination[2] == -1:
             return
         # Define right and left post
-        first_post = goal_parts.posts[goal_combination[0]]
-        second_post = goal_parts.posts[goal_combination[1]]
-        if math.atan2(first_post.foot_point.y, first_post.foot_point.x) > \
-                math.atan2(first_post.foot_point.y, first_post.foot_point.x):
+        first_post = goal_parts.poses[goal_combination[0]].pose.pose.position
+        second_post = goal_parts.poses[goal_combination[1]].pose.pose.position
+        if math.atan2(first_post.y, first_post.x) > \
+                math.atan2(first_post.y, first_post.x):
             left_post = first_post
             right_post = second_post
         else:
             left_post = second_post
             right_post = first_post
 
-        goal_left_buffer = PointStamped(goal_parts.header, left_post.foot_point)
-        goal_right_buffer = PointStamped(goal_parts.header, right_post.foot_point)
-
         self.goal.header = goal_parts.header
-        self.goal.left_post = goal_left_buffer
-        self.goal.right_post = goal_right_buffer
+        self.goal.left_post = left_post
+        self.goal.right_post = right_post
 
         self.goal_odom.header = goal_parts.header
-        if goal_left_buffer.header.frame_id != 'odom':
+        if goal_parts.header.frame_id != 'odom':
+            goal_left_buffer = PointStamped(goal_parts.header, left_post)
+            goal_right_buffer = PointStamped(goal_parts.header, right_post)
             try:
                 self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, 'odom',
                                                                     timeout=rospy.Duration(0.2)).point
@@ -250,10 +277,10 @@ class WorldModelCapsule:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
         else:
-            self.goal_odom.left_post = goal_left_buffer.point
-            self.goal_odom.right_post = goal_right_buffer.point
+            self.goal_odom.left_post = left_post
+            self.goal_odom.right_post = right_post
             self.goal_seen_time = rospy.Time.now()
-        self.goal_publisher.publish(self.goal_odom)
+        self.goal_publisher.publish(self.goal_odom.to_pose_with_certainty_array())
 
     #############
     # ## Common #
@@ -282,12 +309,5 @@ class WorldModelCapsule:
         dist = math.sqrt(u ** 2 + v ** 2)
         return dist
 
-    def position_callback(self, pos):
-        # Convert PositionWithCovarianceStamped to Position2D
-        position2d = Position2D()
-        position2d.header = pos.header
-        position2d.pose.x = pos.pose.pose.position.x
-        position2d.pose.y = pos.pose.pose.position.y
-        rotation = pos.pose.pose.orientation
-        position2d.pose.theta = euler_from_quaternion([rotation.x, rotation.y, rotation.z, rotation.w])[2]
-        self.position = position2d
+    def position_callback(self, pos: PoseWithCovarianceStamped):
+        self.position = pos

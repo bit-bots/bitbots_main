@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import rospy
-from humanoid_league_msgs.msg import BallInImage, BallRelative, BallsInImage
+from humanoid_league_msgs.msg import BallInImage, BallInImageArray
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
@@ -19,7 +19,7 @@ def run():
 
     counter = 320
     direction = 1
-        
+
     rospy.loginfo("Create Test")
     rospy.init_node("bitbots_testHeadBehaviour")
     pub_hmg.publish(hmg)
@@ -38,7 +38,7 @@ def run():
         ball.center.y = 200
         ball.diameter = 10
         ball.confidence = 1
-        balls = BallsInImage()
+        balls = BallInImageArray()
         balls.candidates.append(ball)
 
         pub_ball.publish(balls)

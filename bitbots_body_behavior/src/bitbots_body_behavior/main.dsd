@@ -99,21 +99,87 @@ $RoleDecider
         Initial --> @LookAtBall, @StandAndWait
         Ready --> #PositioningReady
         Set --> @StandAndWait
-        Playing --> #GoalieBehavior
+        Playing --> $SecondaryStateDecider
+            Normal --> #GoalieBehavior
+            Penaltyshoot --> @LookAtBall, @StandAndWait
+            Overtime --> #GoalieBehavior
+            Timeout --> @LookAtBall, @StandAndWait
+            Direct_Freekick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Indirect_Freekick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Penaltykick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Corner_Kick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Goal_Kick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Throw_In --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     offense --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
         Ready --> #PositioningReady
         Set --> @StandAndWait
-        Playing --> #OffenseBehavior
+        Playing --> $SecondaryStateDecider
+            Normal --> #OffenseBehavior
+            Penaltyshoot --> @LookAtBall, @StandAndWait
+            Overtime --> #OffenseBehavior
+            Timeout --> @LookAtBall, @StandAndWait
+            Direct_Freekick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Indirect_Freekick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Penaltykick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Corner_Kick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Goal_Kick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Throw_In --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     defense --> $GameStateDecider
         Initial --> @LookAtBall, @StandAndWait
         Ready --> #PositioningReady
         Set --> @StandAndWait
-        Playing --> #DefenseBehavior
+        Playing --> $SecondaryStateDecider
+            Normal --> #DefenseBehavior
+            Penaltyshoot --> @LookAtBall, @StandAndWait
+            Overtime --> #DefenseBehavior
+            Timeout --> @LookAtBall, @StandAndWait
+            Direct_Freekick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Indirect_Freekick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Penaltykick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Corner_Kick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Goal_Kick --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
+            Throw_In --> $SecondaryStateTeamDecider
+                OUR --> @LookAtBall, @StandAndWait
+                OTHER --> @LookAtBall, @StandAndWait
         Finished --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     penalty --> $GameStateDecider
