@@ -15,7 +15,7 @@ G = 9.81
 
 
 class WebotsController:
-    def __init__(self, namespace='', ros_active=False, mode='normal'):
+    def __init__(self, namespace='', ros_active=False, mode='normal', robot='wolfgang'):
         self.ros_active = ros_active
         self.time = 0
         self.clock_msg = Clock()
@@ -39,22 +39,55 @@ class WebotsController:
         else:
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
 
-        self.robot_node = self.supervisor.getFromDef("Robot")
+        self.robot_name = robot
+        if robot == 'wolfgang':
+            self.robot_node_name = "Robot"
+            self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
+                                "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch",
+                                "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan",
+                                "HeadTilt"]
+            self.external_motor_names = self.motor_names
+            sensor_postfix = "_sensor"
+            accel_name = "imu accelerometer"
+            gyro_name = "imu gyro"
+            camera_name = "camera"
+        elif robot == 'darwin':
+            self.robot_node_name = "Darwin"
+            self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
+                                "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
+                                "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
+            self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
+                                         "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
+                                         "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
+                                         "LAnkleRoll", "HeadPan", "HeadTilt"]
+            sensor_postfix = "S"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyro"
+            camera_name = "Camera"
+        elif robot == 'nao':
+            self.robot_node_name = "Robot"
+            self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbowYaw",
+                                "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch",
+                                "RKneePitch", "LKneePitch", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadYaw",
+                                "HeadPitch"]
+            self.external_motor_names = self.motor_names
+            sensor_postfix = "S"
+            accel_name = "accelerometer"
+            gyro_name = "gyro"
+            camera_name = "CameraTop"
 
-        self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow", "LElbow",
-                            "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch", "RKnee", "LKnee",
-                            "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan", "HeadTilt"]
+        self.robot_node = self.supervisor.getFromDef(self.robot_node_name)
         for motor_name in self.motor_names:
             self.motors.append(self.supervisor.getMotor(motor_name))
             self.motors[-1].enableTorqueFeedback(self.timestep)
-            self.sensors.append(self.supervisor.getPositionSensor(motor_name + "_sensor"))
+            self.sensors.append(self.supervisor.getPositionSensor(motor_name + sensor_postfix))
             self.sensors[-1].enable(self.timestep)
 
-        self.accel = self.supervisor.getAccelerometer("imu accelerometer")
+        self.accel = self.supervisor.getAccelerometer(accel_name)
         self.accel.enable(self.timestep)
-        self.gyro = self.supervisor.getGyro("imu gyro")
+        self.gyro = self.supervisor.getGyro(gyro_name)
         self.gyro.enable(self.timestep)
-        self.camera = self.supervisor.getCamera("camera")
+        self.camera = self.supervisor.getCamera(camera_name)
         self.camera.enable(self.timestep)
 
         if self.ros_active:
@@ -68,6 +101,7 @@ class WebotsController:
 
         self.translation_field = self.robot_node.getField("translation")
         self.rotation_field = self.robot_node.getField("rotation")
+        self.world_info = self.supervisor.getFromDef("world_info")
 
     def step_sim(self):
         self.time += self.timestep / 1000
@@ -88,7 +122,7 @@ class WebotsController:
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
             try:
-                motor_index = self.motor_names.index(name)
+                motor_index = self.external_motor_names.index(name)
                 self.motors[motor_index].setPosition(command.positions[i])
             except ValueError:
                 print(f"invalid motor specified ({name})")
@@ -109,7 +143,7 @@ class WebotsController:
         js.position = []
         js.effort = []
         for i in range(len(self.sensors)):
-            js.name.append(self.motor_names[i])
+            js.name.append(self.external_motor_names[i])
             value = self.sensors[i].getValue()
             js.position.append(value)
             js.effort.append(self.motors[i].getTorqueFeedback())
@@ -190,17 +224,27 @@ class WebotsController:
             print(f"id: {s.getId()}, type: {s.getType()}, def: {s.getDef()}")
 
     def set_robot_pose_rpy(self, pos, rpy):
-        self.translation_field.setSFVec3f(pos_ros_to_webots(pos))
-        self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
+        if self.robot_name == "nao":
+            self.translation_field.setSFVec3f([pos[0],pos[1],pos[2]])
+            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
+        else:
+            self.translation_field.setSFVec3f(pos_ros_to_webots(pos))
+            self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
 
     def set_robot_rpy(self, rpy):
-        self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
+        if self.robot_name == "nao":
+            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
+        else:
+            self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
 
     def get_robot_pose_rpy(self):
         pos = self.translation_field.getSFVec3f()
         rot = self.rotation_field.getSFRotation()
-        return pos_webots_to_ros(pos), axis_to_rpy(*rot)
-
+        if self.robot_node_name == "nao":
+            rpy = axis_to_rpy(*rot)
+            return pos, (rpy[2], rpy[0], rpy[1])
+        else:
+            return pos_webots_to_ros(pos), axis_to_rpy(*rot)
 
 def pos_webots_to_ros(pos):
     x = pos[2]

@@ -1,0 +1,21 @@
+#VRML_SIM R2020b utf8
+DEF world_info WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation 0.009783483023544898 0.9932532002222163 0.11555242839617817 2.853911668771612
+  position 2.0145566836095767 1.599186214023985 -3.2077601160240237
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 25 25
+  tileSize 1 1
+}
+DEF Robot Nao {
+  degreeOfFreedom 21
+  controller "<extern>"
+  supervisor TRUE
+}

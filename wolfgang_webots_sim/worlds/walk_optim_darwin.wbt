@@ -1,0 +1,21 @@
+#VRML_SIM R2020a utf8
+DEF world_info WorldInfo {
+}
+Viewpoint {
+  orientation -0.23076950869564306 0.9409687127447107 0.24763544877891294 1.4661228974692195
+  position 3.997491301967621 2.495938785582882 1.6480445581099623
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 25 25
+  tileSize 1 1
+}
+DEF Darwin Darwin-op {
+  translation -0.0035670545592781993 0.7335759626829667 0.8976218697580429
+  rotation -0.9987527032791494 0.005033930364477207 0.04967592211199424 -0.12582716513933476
+  controller "<extern>"
+  supervisor TRUE
+}
