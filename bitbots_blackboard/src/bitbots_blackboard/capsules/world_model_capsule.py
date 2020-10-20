@@ -80,9 +80,10 @@ class WorldModelCapsule:
     def get_ball_position_uv_approach_frame(self):
         try:
             ball_position = self.tf_buffer.transform(self.ball, 'approach_frame', timeout=rospy.Duration(0.3))
+            return ball_position.point.x, ball_position.point.y
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            rospy.logwarn(e)
-        return ball_position.point.x, ball_position.point.y
+            rospy.logwarn(f"ball position in base footprint used: {e}")
+        return self.ball.point.x, self.ball.point.y
 
     def get_ball_distance(self):
         u, v = self.get_ball_position_uv_approach_frame()
@@ -205,7 +206,7 @@ class WorldModelCapsule:
         try:
             left_bfp = self.tf_buffer.transform(left, 'approach_frame', timeout=rospy.Duration(0.2)).point
             right_bfp = self.tf_buffer.transform(right, 'approach_frame', timeout=rospy.Duration(0.2)).point
-        except (tf2.ExtrapolationException) as e:
+        except tf2.ExtrapolationException as e:
             rospy.logwarn(e)
             try:
                 # retrying with latest time stamp available because the time stamp of the goal_odom.header
@@ -218,6 +219,9 @@ class WorldModelCapsule:
                 rospy.logwarn(e)
                 rospy.logerr('Severe transformation problem concerning the goal!')
                 return None
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(f"goal position in base footprint used: {e}")
+            return self.get_detection_based_goal_position_uv()
 
         return (left_bfp.x + right_bfp.x / 2.0), \
                (left_bfp.y + right_bfp.y / 2.0)
