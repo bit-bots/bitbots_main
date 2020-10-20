@@ -40,6 +40,7 @@ class WebotsController:
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
 
         self.robot_name = robot
+        self.switch_coordinate_system = True
         if robot == 'wolfgang':
             self.robot_node_name = "Robot"
             self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
@@ -67,14 +68,31 @@ class WebotsController:
         elif robot == 'nao':
             self.robot_node_name = "Robot"
             self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbowYaw",
-                                "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch",
-                                "RKneePitch", "LKneePitch", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadYaw",
+                                "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch",
+                                "LHipPitch",
+                                "RKneePitch", "LKneePitch", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll",
+                                "HeadYaw",
                                 "HeadPitch"]
             self.external_motor_names = self.motor_names
             sensor_postfix = "S"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
+            self.switch_coordinate_system = False
+        elif robot == 'op3':
+            self.robot_node_name = "Robot"
+            self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
+                                "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
+                                "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
+            self.external_motor_names = ["r_sho_pitch", "l_sho_pitch", "r_sho_roll", "l_sho_roll",
+                                         "r_el", "l_el", "r_hip_yaw", "l_hip_yaw", "r_hip_roll", "l_hip_roll",
+                                         "r_hip_pitch", "l_hip_pitch", "r_knee", "l_knee", "r_ank_pitch",
+                                         "l_ank_pitch", "r_ank_roll", "l_ank_roll", "head_pan", "head_tilt"]
+            sensor_postfix = "S"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyro"
+            camera_name = "Camera"
+            self.switch_coordinate_system = False
 
         self.robot_node = self.supervisor.getFromDef(self.robot_node_name)
         for motor_name in self.motor_names:
@@ -224,27 +242,28 @@ class WebotsController:
             print(f"id: {s.getId()}, type: {s.getType()}, def: {s.getDef()}")
 
     def set_robot_pose_rpy(self, pos, rpy):
-        if self.robot_name == "nao":
-            self.translation_field.setSFVec3f([pos[0],pos[1],pos[2]])
-            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
-        else:
+        if self.switch_coordinate_system:
             self.translation_field.setSFVec3f(pos_ros_to_webots(pos))
             self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
+        else:
+            self.translation_field.setSFVec3f([pos[0], pos[1], pos[2]])
+            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
 
     def set_robot_rpy(self, rpy):
-        if self.robot_name == "nao":
-            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
-        else:
+        if self.switch_coordinate_system:
             self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
+        else:
+            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
 
     def get_robot_pose_rpy(self):
         pos = self.translation_field.getSFVec3f()
         rot = self.rotation_field.getSFRotation()
-        if self.robot_node_name == "nao":
+        if self.switch_coordinate_system:
+            return pos_webots_to_ros(pos), axis_to_rpy(*rot)
+        else:
             rpy = axis_to_rpy(*rot)
             return pos, (rpy[2], rpy[0], rpy[1])
-        else:
-            return pos_webots_to_ros(pos), axis_to_rpy(*rot)
+
 
 def pos_webots_to_ros(pos):
     x = pos[2]
