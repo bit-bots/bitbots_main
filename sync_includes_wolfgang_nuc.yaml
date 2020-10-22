@@ -43,14 +43,10 @@ include:
         - rot_conv_lib
         - bio_ik
         - bio_ik_service
-        - dwa_local_planner
         - DynamixelSDK
         - dynamixel-workbench
         - dynamixel-workbench-msgs
-        - geometry2
-        - orocos_kinematics_dynamics
-        - pointcloud_to_laserscan
-        - vision_opencv
+        - particle_filter
     - scripts
     - udp_bridge
     - wolfgang_robot:
