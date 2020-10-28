@@ -49,11 +49,9 @@ class Simulation:
         else:
             p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
             self.plane_index = p.loadURDF('plane.urdf')
-            p.changeDynamics(self.plane_index, -1, lateralFriction=1, spinningFriction=-1,
-                             rollingFriction=-1, restitution=0.9)
 
         # Loading robot
-        flags = p.URDF_USE_INERTIA_FROM_FILE + p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
+        flags = p.URDF_USE_INERTIA_FROM_FILE #+ p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
         if urdf_path is None:
             # use wolfgang as standard
             rospack = rospkg.RosPack()
@@ -91,13 +89,13 @@ class Simulation:
                 self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index, 10, 5)
 
         # set friction for feet
-        self.set_foot_dynamics(0.0, 0.0, 0.0)
+        #self.set_foot_dynamics(0.0, 0.0, 0.0)
 
         # reset robot to initial position
         self.reset()
 
     def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
-                          spinning_friction=0, rolling_friction=0):
+                          spinning_friction=1, rolling_friction=1):
         for link_name in self.links.keys():
             if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf",
                              "rrb"] or link_name in self.foot_link_names:
