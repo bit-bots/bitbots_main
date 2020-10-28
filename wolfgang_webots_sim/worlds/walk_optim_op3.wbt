@@ -1,0 +1,20 @@
+#VRML_SIM R2020a utf8
+DEF world_info WorldInfo {
+}
+Viewpoint {
+  orientation -0.06676370434342076 0.9915802432292494 0.11095597784602246 1.4519466780680859
+  position 3.7620900330660367 0.7871631228394527 1.025059885864207
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 25 25
+  tileSize 1 1
+}
+DEF Robot RobotisOp3 {
+  translation 2.07294e-08 0.28 -1.0534e-06
+  rotation 0.5773509358554485 0.5773509358554485 0.5773489358556708 -2.094395307179586
+  controller "<extern>"
+}
