@@ -45,6 +45,8 @@ hcm:
   falling_new_back: -6
   falling_new_left: -18
   falling_new_right: 18
+  # smoothing threshold for classifier
+  smooth_threshold: 10
 
   pick_up_accel_treshold: 7
 

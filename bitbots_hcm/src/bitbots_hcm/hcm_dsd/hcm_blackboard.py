@@ -129,7 +129,7 @@ class HcmBlackboard():
         rospack = rospkg.RosPack()
         rospack.list()
         path = rospack.get_path('bitbots_hcm')
-        smooth_threshold = rospy.get_param("/smooth_threshold", 10)
+        smooth_threshold = rospy.get_param("hcm/smooth_threshold", 10)
         self.classifier = FallClassifier(path + "/src/bitbots_hcm/classifier/", smooth_threshold=smooth_threshold)
         self.imu_msg = None
         self.cop_l_msg = None
