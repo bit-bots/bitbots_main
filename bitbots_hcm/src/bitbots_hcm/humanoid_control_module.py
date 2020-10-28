@@ -123,7 +123,7 @@ class HardwareControlManager:
         """ Dynamic reconfigure of the fall checker values."""
         # just pass on to the StandupHandler, as all the variables are located there
         self.blackboard.fall_checker.update_reconfigurable_values(config, level)
-        self.blackboard.pickup_accel_threshold = config["pick_up_accel_treshold"]
+        self.blackboard.pickup_accel_threshold = config["pick_up_accel_threshold"]
         return config
 
     def walking_goal_callback(self, msg):

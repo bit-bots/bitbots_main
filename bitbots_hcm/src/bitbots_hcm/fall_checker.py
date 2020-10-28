@@ -15,12 +15,12 @@ class FallChecker(BaseEstimator):
     def __init__(self, thresh_gyro_front=rospy.get_param("hcm/threshold_gyro_y_front"),
                  thresh_gyro_side=rospy.get_param("hcm/threshold_gyro_x_side"),
                  thresh_orient_front=math.radians(rospy.get_param("hcm/falling_threshold_orientation_front_back")),
-                 tresh_orient_side=math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))):
+                 thresh_orient_side=math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))):
 
         self.thresh_gyro_front = thresh_gyro_front
         self.thresh_gyro_side = thresh_gyro_side
         self.thresh_orient_front = thresh_orient_front
-        self.tresh_orient_side = tresh_orient_side
+        self.thresh_orient_side = thresh_orient_side
 
         self.STABLE = 0
         self.FRONT = 1
@@ -37,7 +37,7 @@ class FallChecker(BaseEstimator):
 
         # setting the fall quantification function
         x_fall_quantification = self.calc_fall_quantification(
-            self.tresh_orient_side,
+            self.thresh_orient_side,
             self.thresh_gyro_front,
             euler[0],
             not_much_smoothed_gyro[0])

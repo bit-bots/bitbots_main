@@ -151,9 +151,9 @@ def bb(trial: optuna.Trial):
     thresh_gyro_front = trial.suggest_float("thresh_gyro_front", 0, 20)
     thresh_gyro_side = trial.suggest_float("thresh_gyro_side", 0, 20)
     thresh_orient_front = trial.suggest_float("thresh_orient_front", 0, math.pi)
-    tresh_orient_side = trial.suggest_float("tresh_orient_side", 0, math.pi)
+    thresh_orient_side = trial.suggest_float("thresh_orient_side", 0, math.pi)
     classifier = FallChecker(thresh_gyro_front=thresh_gyro_front, thresh_gyro_side=thresh_gyro_side,
-                             thresh_orient_front=thresh_orient_front, tresh_orient_side=tresh_orient_side)
+                             thresh_orient_front=thresh_orient_front, thresh_orient_side=thresh_orient_side)
     return evaluate_classifier(classifier)
 
 
@@ -214,6 +214,6 @@ elif args.bb:
     classifier = FallChecker(thresh_gyro_front=study.best_params['thresh_gyro_front'],
                              thresh_gyro_side=study.best_params['thresh_gyro_side'],
                              thresh_orient_front=study.best_params['thresh_orient_front'],
-                             tresh_orient_side=study.best_params['tresh_orient_side'])
+                             thresh_orient_side=study.best_params['thresh_orient_side'])
 classifier.fit(x_scaled, y)
 pickle_classifier(classifier, name)

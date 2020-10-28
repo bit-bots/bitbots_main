@@ -48,7 +48,7 @@ hcm:
   # smoothing threshold for classifier
   smooth_threshold: 10
 
-  pick_up_accel_treshold: 7
+  pick_up_accel_threshold: 7
 
   falling:
 
