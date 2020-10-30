@@ -2,9 +2,9 @@
 
 namespace bitbots_quintic_walk {
 
-WalkStabilizer::WalkStabilizer() {
-  pid_trunk_fused_pitch_.init(ros::NodeHandle("walking/pid_trunk_fused_pitch"), false);
-  pid_trunk_fused_roll_.init(ros::NodeHandle("walking/pid_trunk_fused_roll"), false);
+WalkStabilizer::WalkStabilizer(const std::string ns) {
+  pid_trunk_fused_pitch_.init(ros::NodeHandle(ns + "/walking/pid_trunk_fused_pitch"), false);
+  pid_trunk_fused_roll_.init(ros::NodeHandle(ns + "/walking/pid_trunk_fused_roll"), false);
 
   reset();
 }
@@ -26,8 +26,10 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const ros::
   rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
   // adapt trunk values based on PID controllers
-  double fused_roll_correction = pid_trunk_fused_roll_.computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
-  double fused_pitch_correction = pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
+  double fused_roll_correction =
+      pid_trunk_fused_roll_.computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
+  double fused_pitch_correction =
+      pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
 
   tf2::Quaternion corrected_orientation;
   goal_fused.fusedRoll += fused_roll_correction;

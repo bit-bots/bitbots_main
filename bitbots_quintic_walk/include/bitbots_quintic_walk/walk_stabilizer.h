@@ -18,13 +18,13 @@ namespace bitbots_quintic_walk {
 
 class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
-  WalkStabilizer();
+  WalkStabilizer(const std::string ns);
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const ros::Duration &dt) override;
 
  private:
-   control_toolbox::Pid pid_trunk_fused_pitch_;
-   control_toolbox::Pid pid_trunk_fused_roll_;
+  control_toolbox::Pid pid_trunk_fused_pitch_;
+  control_toolbox::Pid pid_trunk_fused_roll_;
 };
 } // namespace bitbots_quintic_walk
 
