@@ -458,7 +458,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
 
     :param dict old_config: old config dict
     :param dict new_config: new config dict
-    :param list of str or str params: regex discribing parameter name or list of parameter names
+    :param list of str or str params_expressions: regex discribing parameter name or list of parameter names
     :param bool check_generals: Also check for general params (Default True)
     :return bool: True if parameter has changed
     """
@@ -490,6 +490,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
             raise KeyError('\'{}\' not in dict.'.format(param))
         # Check if param is new or if param has changed
         elif param not in old_config or old_config[param] != new_config[param]:
+            rospy.logdebug(f"Parameter '{param}' has changed to '{new_config[param]}'", logger_name="vision_ros_utils")
             return True
     return False
 
