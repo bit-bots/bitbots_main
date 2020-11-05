@@ -1,0 +1,6 @@
+{
+    "documentId": "7c9b2b33f4117af700005b74",
+    "outputFormat": "urdf",
+    "noDynamics": true,
+    "useFixedLinks": true
+}

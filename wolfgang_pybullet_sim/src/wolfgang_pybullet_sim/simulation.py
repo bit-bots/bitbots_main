@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import math
 import sys
+import os
 import time
 import pybullet as p
 from time import sleep
@@ -29,19 +30,27 @@ class Simulation:
             self.client_id = p.connect(p.GUI)
         else:
             self.client_id = p.connect(p.DIRECT)
-        p.setGravity(0, 0, -9.81)
+        if self.gravity:
+            p.setGravity(0, 0, -9.81)
         self.time = 0
         # disable debug interface, only show robot
         p.configureDebugVisualizer(p.COV_ENABLE_GUI, False)
 
-        # Loading floor
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
+        # Load floor
+        p.setAdditionalSearchPath(pybullet_data.getDataPath())  # needed for plane.urdf
         self.plane_index = p.loadURDF('plane.urdf')
         p.changeDynamics(self.plane_index, -1, lateralFriction=1, spinningFriction=-1,
                          rollingFriction=-1, restitution=0.9)
 
-        # Loading robot
+        # Load field
         rospack = rospkg.RosPack()
+        path = os.path.join(rospack.get_path('wolfgang_pybullet_sim'), 'models')
+        p.setAdditionalSearchPath(path)  # needed to find field model
+        self.field_index = p.loadURDF('field/field.urdf')
+        p.changeDynamics(self.field_index, -1, lateralFriction=1, spinningFriction=-1,
+                         rollingFriction=-1, restitution=0.9)
+
+        # Load robot
         path = rospack.get_path("wolfgang_description")
         flags = p.URDF_USE_INERTIA_FROM_FILE + p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
         self.robot_index = p.loadURDF(path + "/urdf/robot.urdf",
