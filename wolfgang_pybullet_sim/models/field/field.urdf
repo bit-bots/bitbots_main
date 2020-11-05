@@ -24,7 +24,7 @@
 <mesh filename="package://goalsally.stl"/>
 </geometry>
 <material name="goalsally_material">
-<color rgba="0.737255 0.937255 0.917647 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </collision>
 <collision>
@@ -51,7 +51,7 @@
 <mesh filename="package://goalsopponent.stl"/>
 </geometry>
 <material name="goalsopponent_material">
-<color rgba="0.882353 0.572549 0.478431 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </collision>
 <collision>
@@ -69,7 +69,7 @@
 <mesh filename="package://goalsallyback.stl"/>
 </geometry>
 <material name="goalsallyback_material">
-<color rgba="0 0.356863 0.329412 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </collision>
 <collision>
@@ -78,7 +78,7 @@
 <mesh filename="package://goalsopponentback.stl"/>
 </geometry>
 <material name="goalsopponentback_material">
-<color rgba="0.458824 0.105882 0 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </collision>
 <collision>
@@ -178,7 +178,7 @@
 <mesh filename="package://goalsally.stl"/>
 </geometry>
 <material name="field_1_3_visual_material">
-<color rgba="0.737255 0.937255 0.917647 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </visual>
 </link>
@@ -253,7 +253,7 @@
 <mesh filename="package://goalsopponent.stl"/>
 </geometry>
 <material name="field_1_6_visual_material">
-<color rgba="0.882353 0.572549 0.478431 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </visual>
 </link>
@@ -303,7 +303,7 @@
 <mesh filename="package://goalsallyback.stl"/>
 </geometry>
 <material name="field_1_8_visual_material">
-<color rgba="0 0.356863 0.329412 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </visual>
 </link>
@@ -328,7 +328,7 @@
 <mesh filename="package://goalsopponentback.stl"/>
 </geometry>
 <material name="field_1_9_visual_material">
-<color rgba="0.458824 0.105882 0 1.0"/>
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
 </material>
 </visual>
 </link>
