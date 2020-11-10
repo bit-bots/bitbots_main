@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from humanoid_league_msgs.msg import ImageWithRegionOfInterest
+from humanoid_league_msgs.msg import RegionOfInterestWithImage
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import Image
 import numpy as np
@@ -13,14 +13,12 @@ class Converter(object):
         rospy.init_node("image_converter")
 
         rospy.Subscriber(rospy.get_param("fcnn_image_topic", "fcnn_image"),
-                         ImageWithRegionOfInterest,
+                         RegionOfInterestWithImage,
                          self._callback_fcnn,
                          queue_size=1,
                          tcp_nodelay=True,
                          buff_size=60000000)
             # https://github.com/ros/ros_comm/issues/536
-
-        self.initial_image_size = (640, 360)
 
         self.image_pub = rospy.Publisher('converted_image', Image, queue_size=1)
 
@@ -34,7 +32,7 @@ class Converter(object):
         rospy.logdebug((int(msg.regionOfInterest.width) + 1, int(msg.regionOfInterest.height) + 1), logger_name="image_converter")
         input_image = cv2.resize(input_image, (int(msg.regionOfInterest.width) + 1, int(msg.regionOfInterest.height) + 1))
 
-        output_image = np.zeros((self.initial_image_size[1], self.initial_image_size[0], 3), dtype=np.uint8)
+        output_image = np.zeros((msg.original_width, msg.original_height, 3), dtype=np.uint8)
         output_image[:,:,0] = 180  # everything is dark blue
         output_image[int(msg.regionOfInterest.y_offset):int(msg.regionOfInterest.y_offset + msg.regionOfInterest.height) + 1, int(msg.regionOfInterest.x_offset):int(msg.regionOfInterest.x_offset + msg.regionOfInterest.width) + 1] = input_image  # copying the image into the empty frame
 

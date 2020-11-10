@@ -292,7 +292,7 @@ class ObstacleDetector(CandidateFinder):
             if h < 0:
                 rospy.logerr('Negative obstacle height', logger_name="vision_obstacle_detector")
             # Append with new candidate
-            self._obstacles.append(Candidate(x, y, w, h))
+            self._obstacles.append(Candidate(x, y, w, h, 1))
 
     def get_all_obstacles(self):
         # type: () -> list[Candidate]
