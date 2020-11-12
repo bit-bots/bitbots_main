@@ -6,7 +6,7 @@ import tf2_ros
 from geometry_msgs.msg import Pose, Vector3, PointStamped, Point
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
-from humanoid_league_msgs.msg import GoalRelative
+from humanoid_league_msgs.msg import PoseWithCertaintyArray
 from std_msgs.msg import String
 
 
@@ -50,31 +50,31 @@ class ShowWorldModelObjects:
         self.marker_ball.lifetime = rospy.Duration(self.lifetime_ball)
 
         # init goal markers
-        self.marker_goal_left = Marker()  # type:Marker
-        self.marker_goal_left.id = 1
-        self.marker_goal_left.type = Marker.CYLINDER
+        self.marker_goal_first_post = Marker()  # type:Marker
+        self.marker_goal_first_post.id = 1
+        self.marker_goal_first_post.type = Marker.CYLINDER
         self.goal_post_pose = Pose()
         scale = Vector3(self.post_diameter, self.post_diameter, self.post_height)
-        self.marker_goal_left.scale = scale
+        self.marker_goal_first_post.scale = scale
         self.post_left_color = ColorRGBA()
         self.post_left_color.a = 0.0
         self.post_left_color.g = 1.0
-        self.marker_goal_left.color = self.post_left_color
-        self.marker_goal_left.pose = position
-        self.marker_goal_left.lifetime = rospy.Duration(self.lifetime_goal)
+        self.marker_goal_first_post.color = self.post_left_color
+        self.marker_goal_first_post.pose = position
+        self.marker_goal_first_post.lifetime = rospy.Duration(self.lifetime_goal)
 
-        self.marker_goal_right = Marker()  # type:Marker
-        self.marker_goal_right.id = 2
-        self.marker_goal_right.type = Marker.CYLINDER
+        self.marker_goal_second_post = Marker()  # type:Marker
+        self.marker_goal_second_post.id = 2
+        self.marker_goal_second_post.type = Marker.CYLINDER
         self.goal_post_pose = Pose()
         scale = Vector3(self.post_diameter, self.post_diameter, self.post_height)
-        self.marker_goal_right.scale = scale
+        self.marker_goal_second_post.scale = scale
         self.post_right_color = ColorRGBA()
         self.post_right_color.a = 0.0
         self.post_right_color.b = 1.0
-        self.marker_goal_right.color = self.post_right_color
-        self.marker_goal_right.pose = position
-        self.marker_goal_right.lifetime = rospy.Duration(self.lifetime_goal)
+        self.marker_goal_second_post.color = self.post_right_color
+        self.marker_goal_second_post.pose = position
+        self.marker_goal_second_post.lifetime = rospy.Duration(self.lifetime_goal)
 
         # init ball kick area markers
         self.marker_kick_area_right = Marker()
@@ -105,7 +105,7 @@ class ShowWorldModelObjects:
 
         # init subscribers
         rospy.Subscriber("/debug/viz_ball", PointStamped, self.ball_cb, queue_size=10)
-        rospy.Subscriber("/debug/viz_goal", GoalRelative, self.goal_cb, queue_size=10)
+        rospy.Subscriber("/debug/viz_goal", PoseWithCertaintyArray, self.goal_cb, queue_size=10)
         rospy.Subscriber("/debug/viz_ball_kick_area", String, self.kick_area_cb, queue_size=10)
 
         # load kick area info
@@ -188,16 +188,18 @@ class ShowWorldModelObjects:
         self.marker_publisher.publish(self.marker_ball)
 
     def goal_cb(self, msg):
-        self.marker_goal_left.header = msg.header
-        self.marker_goal_left.pose.position = msg.left_post
-        self.marker_goal_left.pose.position.z = 0.5 * self.post_height
-        self.marker_goal_left.color.a = 0.5
-        self.marker_goal_right.header = msg.header
-        self.marker_goal_right.pose.position = msg.right_post
-        self.marker_goal_right.pose.position.z = 0.5 * self.post_height
-        self.marker_goal_right.color.a = 0.5
-        self.marker_publisher.publish(self.marker_goal_left)
-        self.marker_publisher.publish(self.marker_goal_right)
+        if len(msg.poses) > 0:
+            self.marker_goal_first_post.header = msg.header
+            self.marker_goal_first_post.pose.position = msg.poses[0].pose.pose.position
+            self.marker_goal_first_post.pose.position.z = 0.5 * self.post_height
+            self.marker_goal_first_post.color.a = 0.5
+            self.marker_publisher.publish(self.marker_goal_first_post)
+        if len(msg.poses) > 1:
+            self.marker_goal_second_post.header = msg.header
+            self.marker_goal_second_post.pose.position = msg.poses[1].pose.pose.position
+            self.marker_goal_second_post.pose.position.z = 0.5 * self.post_height
+            self.marker_goal_second_post.color.a = 0.5
+            self.marker_publisher.publish(self.marker_goal_second_post)
 
     def kick_area_cb(self, msg):
         # set the marker for the right ball_kick_area to green and the left one to red as the behavior decided the ball

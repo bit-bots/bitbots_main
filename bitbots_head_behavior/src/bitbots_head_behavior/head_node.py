@@ -10,7 +10,7 @@ import rospy
 from bitbots_blackboard.blackboard import HeadBlackboard
 from dynamic_stack_decider.dsd import DSD
 
-from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, BallRelative
+from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, PoseWithCertainty, PoseWithCertaintyArray
 from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
@@ -37,7 +37,7 @@ def init():
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
-    rospy.Subscriber("/ball_relative", BallRelative, blackboard.world_model.ball_callback)
+    rospy.Subscriber("/balls_relative", PoseWithCertaintyArray, blackboard.world_model.balls_callback)
     rospy.Subscriber('/joint_states', JointState, blackboard.head_capsule.joint_state_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("/head_motor_goals", JointCommand, queue_size=10)
     blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher( blackboard.config['visual_compass_trigger_topic'], Header, queue_size=5)
