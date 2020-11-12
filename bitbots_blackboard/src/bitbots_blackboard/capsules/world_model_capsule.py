@@ -32,7 +32,8 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, field_length, field_width, goal_width):
+    def __init__(self, config, field_length, field_width, goal_width):
+        self.config = config
         self.position = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -268,3 +269,17 @@ class WorldModelCapsule:
 
     def position_callback(self, pos: PoseWithCovarianceStamped):
         self.position = pos
+
+    def get_localization_position_precision(self):
+        x_sdev = self.position.pose.covariance[0]  # position 0,0 in a 2D-matrix
+        y_sdev = self.position.pose.covariance[7]  # position 1,1 in a 2D-matrix
+        theta_sdev = self.position.pose.covariance[35]  # position 5,5 in a 2D-matrix
+        return (x_sdev, y_sdev, theta_sdev)
+
+    def localization_position_precision_in_threshold(self):
+        precision = self.get_localization_position_precision()
+        return precision[0] < self.config['x_sdev'] and \
+               precision[1] < self.config['y_sdev'] and \
+               precision[2] < self.config['theta_sdev']
+
+

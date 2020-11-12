@@ -93,4 +93,10 @@ behavior:
       # base topic under which an actionserver listens for KickAction messages
       topic: "/dynamic_kick"
 
+    # the maximal allowed standard deviation of the localization pose.
+    position_precision_threshold:
+      x_sdev: 0.3
+      y_sdev: 0.3
+      theta_sdev: 0.1
+
 role: "offense"
