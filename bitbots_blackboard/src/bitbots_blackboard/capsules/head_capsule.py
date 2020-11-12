@@ -1,6 +1,7 @@
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
+from bitbots_head_behavior.collision_checker import CollisionChecker
 import tf2_ros as tf2
 
 class HeadCapsule:
@@ -26,6 +27,8 @@ class HeadCapsule:
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
         self.current_head_position = [0, 0]
+
+        self.collision_checker = CollisionChecker()
 
     def head_mode_callback(self, msg):
         """
@@ -80,11 +83,15 @@ class HeadCapsule:
             else:
                 pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
 
-        self.pos_msg.positions = pan_position, tilt_position
-        self.pos_msg.velocities = [pan_speed, tilt_speed]
-        self.pos_msg.header.stamp = rospy.Time.now()
-
-        self.position_publisher.publish(self.pos_msg)
+        # Check for collision
+        self.collision_checker.set_head_motors(pan_position, tilt_position)
+        if self.collision_checker.check_collision():
+            rospy.logwarn(f"Colliding head position: {pan_position}, {tilt_position}. Not moving.")
+        else:
+            self.pos_msg.positions = pan_position, tilt_position
+            self.pos_msg.velocities = [pan_speed, tilt_speed]
+            self.pos_msg.header.stamp = rospy.Time.now()
+            self.position_publisher.publish(self.pos_msg)
 
     def pre_clip(self, pan, tilt):
         """
