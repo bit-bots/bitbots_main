@@ -12,15 +12,15 @@ from sklearn.metrics import accuracy_score
 
 class FallChecker(BaseEstimator):
 
-    def __init__(self, thresh_gyro_front=rospy.get_param("hcm/threshold_gyro_y_front"),
-                 thresh_gyro_side=rospy.get_param("hcm/threshold_gyro_x_side"),
-                 thresh_orient_front=math.radians(rospy.get_param("hcm/falling_threshold_orientation_front_back")),
-                 thresh_orient_side=math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))):
+    def __init__(self, thresh_gyro_pitch=rospy.get_param("hcm/falling_thresh_gyro_pitch"),
+                 thresh_gyro_roll=rospy.get_param("hcm/falling_thresh_gyro_roll"),
+                 thresh_orient_pitch=math.radians(rospy.get_param("hcm/falling_thresh_orient_pitch")),
+                 thresh_orient_roll=math.radians(rospy.get_param("hcm/falling_thresh_orient_roll"))):
 
-        self.thresh_gyro_front = thresh_gyro_front
-        self.thresh_gyro_side = thresh_gyro_side
-        self.thresh_orient_front = thresh_orient_front
-        self.thresh_orient_side = thresh_orient_side
+        self.thresh_gyro_pitch = thresh_gyro_pitch
+        self.thresh_gyro_roll = thresh_gyro_roll
+        self.thresh_orient_pitch = thresh_orient_pitch
+        self.thresh_orient_roll = thresh_orient_roll
 
         self.STABLE = 0
         self.FRONT = 1
@@ -32,27 +32,27 @@ class FallChecker(BaseEstimator):
         """Checks if the robot is currently falling and in which direction. """
         # Checks if robot is still
         bools = [abs(n) < 0.1 for n in not_much_smoothed_gyro]
-        if bools[0] and bools[1] and bools[2]:
+        if all(bools):
             return self.STABLE
 
         # setting the fall quantification function
-        x_fall_quantification = self.calc_fall_quantification(
-            self.thresh_orient_side,
-            self.thresh_gyro_front,
+        roll_fall_quantification = self.calc_fall_quantification(
+            self.thresh_orient_roll,
+            self.thresh_gyro_roll,
             euler[0],
             not_much_smoothed_gyro[0])
 
-        y_fall_quantification = self.calc_fall_quantification(
-            self.thresh_orient_front,
-            self.thresh_gyro_side,
+        pitch_fall_quantification = self.calc_fall_quantification(
+            self.thresh_orient_pitch,
+            self.thresh_gyro_pitch,
             euler[1],
             not_much_smoothed_gyro[1])
 
-        if x_fall_quantification + y_fall_quantification == 0:
+        if roll_fall_quantification + pitch_fall_quantification == 0:
             return self.STABLE
 
         # compare quantification functions
-        if y_fall_quantification > x_fall_quantification:
+        if pitch_fall_quantification > roll_fall_quantification:
             # detect the falling direction
             if not_much_smoothed_gyro[1] < 0:
                 return self.BACK
@@ -81,6 +81,7 @@ class FallChecker(BaseEstimator):
 
     def fit(self, x, y):
         # we have to do nothing, as we are not actually fitting any model
+        rospy.logwarn("You can not train this type of classifier")
         pass
 
     def score(self, X, y, sample_weight=None):
