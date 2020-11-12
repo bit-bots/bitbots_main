@@ -96,7 +96,7 @@ if __name__ == "__main__":
         path = args.path
     else:
         path = os.getcwd()
-        print("Using the launch dir as path: {}".format(path))
+        print(f"Using the launch dir as path: '{path}'")
 
     # Check if the progressbar is installed
     if progressbar_installed:

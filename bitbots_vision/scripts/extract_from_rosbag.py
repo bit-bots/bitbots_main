@@ -54,14 +54,14 @@ def int_input(question, min_int=None, max_int=None):
 
     # Construct full question with min and max
     if min_int is not None and max_int is None:
-        extension = " [MIN: {}]".format(min_int)
+        extension = f" [MIN: {min_int}]"
     elif min_int is None and max_int is not None:
-        extension = " [MAX: {}]".format(max_int)
+        extension = f" [MAX: {max_int}]"
     elif min_int is not None and max_int is not None:
         if not min_int <= max_int:
             raise ValueError("min_int must be smaller or equal to max_int.")
         else:
-            extension = " [{} - {}] ".format(min_int, max_int)
+            extension = f" [{min_int} - {max_int}] "
 
     while answer is None:
         try:
@@ -104,10 +104,7 @@ if len(image_topics_and_info) == 0:  # no topics found
     print("No messages of type sensor_msgs/Image found in the provided rosbag")
     exit()
 elif len(image_topics_and_info) == 1:  # 1 topic found
-    print(
-        "Found exactly one topic ({0}) of type sensor_msgs/Image with {1} messages".format(
-            image_topics_and_info[0][0],
-            image_topics_and_info[0][1].message_count))
+    print(f"Found exactly one topic ({image_topics_and_info[0][0],}) of type sensor_msgs/Image with {image_topics_and_info[0][1].message_count} messages.")
     if image_topics_and_info[0][0] == args.topic:
         chosen_set_num = 0
     else:
@@ -129,13 +126,13 @@ else:  # Multiple topics found
 
 chosen_set = image_topics_and_info[chosen_set_num]
 
-print("The dataset you have selected has a frequency of {0}".format(chosen_set[1].frequency))
+print(f"The dataset you have selected has a frequency of {chosen_set[1].frequency}")
 if args.n is None:
     n = int_input("Every n-th image will be saved. Please specify n", min_int=1)
 else:
     n = args.n
 
-print("Extracting every {}-th image.".format(n))
+print(f"Extracting every {n}-th image.")
 
 try:
     os.mkdir(args.outputdir)
@@ -161,11 +158,11 @@ for bag_msg in bag.read_messages(chosen_set[0]):
     img.step = msg_from_bag.step
 
     cv_image = bridge.imgmsg_to_cv2(img, desired_encoding="passthrough")
-    cv2.imwrite(args.outputdir + "/img{:05d}".format(frame_number) + ".png", cv_image)
+    cv2.imwrite(f"{args.outputdir}/img{frame_number:05d}.png", cv_image)
     frame_number += 1
     if frame_number % 10 == 0:
-        print("\r{}/{}".format(frame_number, chosen_set[1].message_count // n), end="")
+        print(f"\r{frame_number}/{chosen_set[1].message_count // n}", end="")
 
-print("\r{}/{}".format(frame_number, chosen_set[1].message_count // n))
+print(f"\r{frame_number}/{chosen_set[1].message_count // n}")
 
 print("Image extraction complete.")

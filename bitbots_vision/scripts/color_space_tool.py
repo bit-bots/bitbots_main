@@ -165,7 +165,7 @@ class ColorspaceTool():
         interpolated_points = set()
         if os.cpu_count():
             processes = os.cpu_count()
-            print("Running on all {} cores.".format(processes))
+            print(f"Running on all {processes} cores.")
         else:
             processes = 1
         length = len(self.main_cluster)
@@ -222,7 +222,7 @@ class ColorspaceTool():
         """
         Creates an interactive 3d plotly graph for the color space.
         """
-        point_colors = ['rgb({}, {}, {})'.format(*self.get_value_tuple(index)) for index in range(self.point_count)]
+        point_colors = [f'rgb{self.get_value_tuple(index)}' for index in range(self.point_count)]
 
         if len(self.interpolated_points) > 0:
             visible = 'legendonly'
@@ -261,7 +261,7 @@ class ColorspaceTool():
             )
             data.append(trace2)
         if len(self.interpolated_points) > 0:
-            point_colors = ['rgb({}, {}, {})'.format(*point) for point in self.interpolated_points]
+            point_colors = [f'rgb{point}' for point in self.interpolated_points]
             x, y, z = zip(*self.interpolated_points)
             trace3 = go.Scatter3d(
                 x=x,
@@ -277,7 +277,7 @@ class ColorspaceTool():
             )
             data.append(trace3)
         layout = go.Layout(
-            title='Colorspace {}'.format(filename[7:-5]),
+            title=f'Colorspace {filename[7:-5]}',
             scene=dict(
                 xaxis=dict(
                     range=[0, 255],
@@ -342,12 +342,12 @@ class ColorspaceTool():
             blue=blue
         )
 
-        filename = '{}_{}.pickle'.format(filename, output_type)
+        filename = f'{filename}_{output_type}.pickle'
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile, protocol=2)
             # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
 
-        print("Output saved to '{}'.".format(filename))
+        print(f"Output saved to '{filename}'.")
 
 if __name__ == "__main__":
     tool = ColorspaceTool()
@@ -357,9 +357,9 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--visual-output", help="Show graph.", action='store_true')
     parser.add_argument("-nc", "--no-cluster", help="Disables clustering.", action='store_true')
     parser.add_argument("-ni", "--no-interpolation", help="Disables interpolation.", action='store_true')
-    parser.add_argument("-dt", "--distance-threshold", help="Point to point distance threshold. Default={}".format(tool.distance_threshold), type=float)
-    parser.add_argument("-cc", "--cluster-count", help="Number of used clusters. Default={}".format(tool.cluster_count_threshold), type=int)
-    parser.add_argument("-it", "--interpolation-threshold", help="Interpolates a new point to points near other points in this threshold. Default={}".format(tool.interpolation_threshold), type=float)
+    parser.add_argument("-dt", "--distance-threshold", help=f"Point to point distance threshold. Default={tool.distance_threshold}", type=float)
+    parser.add_argument("-cc", "--cluster-count", help=f"Number of used clusters. Default={tool.cluster_count_threshold}", type=int)
+    parser.add_argument("-it", "--interpolation-threshold", help=f"Interpolates a new point to points near other points in this threshold. Default={tool.interpolation_threshold}", type=float)
     parser.add_argument("-mib", "--min-brightness", help="Defines a mimimum brightness for each point. Value is between 0 and 255.", type=int)
     parser.add_argument("-mab", "--max-brightness", help="Defines a maximum brightness for each point. Value is between 0 and 255.", type=int)
     args = parser.parse_args()
@@ -387,9 +387,9 @@ if __name__ == "__main__":
         if args.visual_output:
             import plotly.offline as py
             import plotly.graph_objs as go
-            html_filename = "plotly_{}.html".format(name)
+            html_filename = f"plotly_{name}.html"
             tool.plot_values(html_filename)
-            print("Open '{}' to see the graph".format(html_filename))
+            print(f"Open '{html_filename}' to see the graph")
         if args.output:
             tool.save(name)
     else:
