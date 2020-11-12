@@ -13,17 +13,27 @@ from bitbots_msgs.msg import JointCommand
 import sys, select, termios, tty
 
 msg = """
-Reading from the keyboard and publishing to "cmd_vel"!
----------------------------
-Moving around:
-   q    w    e
-   a    s    d   
+BitBots Teleop
+--------------
+Walk around:
+    q    w    e
+    a    s    d   
 
 q/e: turn left/right
 a/d: left/rigth
 w/s: forward/back
 
-Velocities increase / decrease with multiple presses.
+Move head:
+    u    i    o
+    j    k    l
+    m    ,    .        
+
+k: zero head position
+i/,: up/down
+j/l: left/right
+u/o/m/.: combinations
+
+Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
 
 CTRL-C to quit
@@ -152,7 +162,10 @@ if __name__=="__main__":
 			sys.stdout.write("\x1b[A")
 			sys.stdout.write("\x1b[A")
 			sys.stdout.write("\x1b[A")
-			print ("x:    " + str(x) + "     \ny:    " + str(y) + "     \nturn: " + str(th) + "     ")
+			sys.stdout.write("\x1b[A")
+			sys.stdout.write("\x1b[A")
+			sys.stdout.write("\x1b[A")
+			print(f"x:    {x}          \ny:    {y}          \nturn: {th}          \n\nhead pan: {head_pan_pos:.2f}          \nhead tilt: {head_tilt_pos:.2f}          ")
 
 	except Exception as e:
 		print(e)
