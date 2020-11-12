@@ -15,5 +15,7 @@ class RoleDecider(AbstractDecisionElement):
         return self.role.upper()
 
     def get_reevaluate(self):
-        """The role does not change during the game"""
+        """
+        The role does not change during the game
+        """
         return False

@@ -29,5 +29,7 @@ class GameStateDecider(AbstractDecisionElement):
         return self.game_states[game_state_number]
 
     def get_reevaluate(self):
-        """Game state can change during the game"""
+        """
+        Game state can change during the game
+        """
         return True
