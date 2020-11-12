@@ -406,7 +406,9 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             mask = self._mask_image(optional_image, _base_color_space)
         else:
             # Mask of default cached image
-            mask = self._mask = self._mask_image(self._image, _base_color_space)
+            mask = self._static_mask
+            if mask is None:  # Check for cached static mask
+                mask = self._static_mask = self._mask_image(self._image, _base_color_space)
 
         return mask
 
