@@ -29,10 +29,23 @@ int main(int argc, char *argv[]) {
   spinner.start();
   controller_manager::ControllerManager *cm = new controller_manager::ControllerManager(&hw, nh);
   // load controller directly here so that we have control when we shut down
-  cm->loadController("joint_state_controller");
-  cm->loadController("imu_sensor_controller");
-  cm->loadController("DynamixelController");
-  const std::vector<std::string> names = {"joint_state_controller", "imu_sensor_controller", "DynamixelController"};
+  // sometimes we want to only load some of the controllers
+  bool only_imu, only_pressure;
+  nh.param<bool>("/ros_control/only_imu", only_imu, false);
+  nh.param<bool>("/ros_control/only_pressure", only_pressure, false);
+  std::vector<std::string> names;
+
+  if (only_imu){
+    cm->loadController("imu_sensor_controller");
+    names = {"imu_sensor_controller"};
+  }else if(only_pressure){
+    names = {};
+  }else {
+    cm->loadController("joint_state_controller");
+    cm->loadController("imu_sensor_controller");
+    cm->loadController("DynamixelController");
+    names = {"joint_state_controller", "imu_sensor_controller", "DynamixelController"};
+  }
   const std::vector<std::string> empty = {};
 
   // we have to start controller in own thread, otherwise it does not work, since the control manager needs to get its

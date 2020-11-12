@@ -13,9 +13,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
 
   // load parameters
   ROS_INFO_STREAM("Loading parameters from namespace " << nh.getNamespace());
-  nh.param<bool>("only_imu", only_imu_, false);
+  nh.param<bool>("/ros_control/only_imu", only_imu_, false);
   if (only_imu_) ROS_WARN("Starting in only IMU mode");
-  nh.param<bool>("only_pressure", only_pressure_, false);
+  nh.param<bool>("/ros_control/only_pressure", only_pressure_, false);
   if (only_pressure_) ROS_WARN("starting in only pressure sensor mode");
 
   if (only_pressure_ && only_imu_) {
