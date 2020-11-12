@@ -49,6 +49,7 @@ class Vision:
         self._config = {}
 
         # Publisher placeholder
+        self._pub_audio = None
         self._pub_balls = None
         self._pub_lines = None
         self._pub_line_mask = None
@@ -78,9 +79,6 @@ class Vision:
             Config,
             queue_size=1,
             latch=True)
-
-        # Speak publisher
-        self._speak_publisher = rospy.Publisher('/speak', Audio, queue_size=10)
 
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
@@ -392,6 +390,7 @@ class Vision:
         :param dict config: new, incoming _config
         :return: None
         """
+        self._pub_audio = ros_utils.create_or_update_publisher(self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
         self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
@@ -762,7 +761,7 @@ class Vision:
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
             rospy.logerr("Image is too dark! Camera cap not removed?", logger_name="vision")
-            ros_utils.speak("Hey!   Remove my camera cap!", self._speak_publisher)
+            ros_utils.speak("Hey!   Remove my camera cap!", self._pub_audio)
 
 
 if __name__ == '__main__':
