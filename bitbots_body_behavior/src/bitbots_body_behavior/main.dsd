@@ -97,7 +97,7 @@ $BallSeen
 $RoleDecider
     GOALIE --> $GameStateDecider
         INITIAL --> @LookAtBall, @StandAndWait
-        Ready --> #PositioningReady
+        READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> $SecondaryStateDecider
             NORMAL --> #GoalieBehavior
@@ -126,7 +126,7 @@ $RoleDecider
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     OFFENSE --> $GameStateDecider
         INITIAL --> @LookAtBall, @StandAndWait
-        Ready --> #PositioningReady
+        READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> $SecondaryStateDecider
             NORMAL --> #OffenseBehavior
@@ -155,7 +155,7 @@ $RoleDecider
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     DEFENSE --> $GameStateDecider
         INITIAL --> @LookAtBall, @StandAndWait
-        Ready --> #PositioningReady
+        READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> $SecondaryStateDecider
             NORMAL --> #DefenseBehavior
