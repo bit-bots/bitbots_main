@@ -9,9 +9,11 @@ class AlignedToGoal(AbstractDecisionElement):
         self.orientation_threshold = self.blackboard.config['goal_alignment_orientation_threshold']  # [deg]
 
     def perform(self, reevaluate=False):
-        """ It is determined if the robot is correctly aligned to the orientation of the move_base goal within a
+        """
+        It is determined if the robot is correctly aligned to the orientation of the move_base goal within a
         determined threshold by comparing the current orientation angle of the robot in the map with the one from the
-        move_base goal."""
+        move_base goal.
+        """
         if self.blackboard.pathfinding.get_current_pose() is None:
             # When move_base did not received a goal yet, no current position on the map is known.
             # In this case it is not know if the robot is aligned correctly to, e.g., the goal and therefore the robot

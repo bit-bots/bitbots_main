@@ -9,6 +9,11 @@ class Localization(AbstractDecisionElement):
         self.use_localization = blackboard.config['use_localization']  # type: bool
 
     def perform(self, reevaluate=False):
+        """
+        Determines whether the localization should be used in the current situation.
+        :param reevaluate:
+        :return:
+        """
         #TODO replace this with a dynamic decision based on how sure the robot is about its localization
         return 'YES' if self.use_localization else 'NO'
 
