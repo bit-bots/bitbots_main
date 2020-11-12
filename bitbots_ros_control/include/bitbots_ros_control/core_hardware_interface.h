@@ -40,6 +40,7 @@ class CoreHardwareInterface : public hardware_interface::RobotHW {
   int id_;
   int read_rate_;
   int read_counter_;
+  uint8_t *data_;
 
   bool requested_power_switch_status_;
   std_msgs::Bool power_switch_status_;

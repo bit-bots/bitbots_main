@@ -7,6 +7,7 @@ namespace bitbots_ros_control {
 
 DynamixelServoHardwareInterface::DynamixelServoHardwareInterface() {}
 
+
 void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
   bus_interfaces_.push_back(bus);
 }

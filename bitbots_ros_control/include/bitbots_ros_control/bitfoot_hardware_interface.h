@@ -44,6 +44,7 @@ class BitFootHardwareInterface : public hardware_interface::RobotHW {
   std::string name_;
   bitbots_msgs::FootPressure msg_;
   ros::Publisher diagnostic_pub_;
+  uint8_t *data_;
 
 };
 }

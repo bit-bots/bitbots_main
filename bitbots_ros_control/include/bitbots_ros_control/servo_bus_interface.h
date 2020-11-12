@@ -33,6 +33,7 @@ class ServoBusInterface : public hardware_interface::RobotHW {
  public:
   explicit ServoBusInterface(std::shared_ptr<DynamixelDriver> &driver,
                              std::vector<std::tuple<int, std::string, float, float>> servos);
+  ~ServoBusInterface();
   bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
   void read(const ros::Time &t, const ros::Duration &dt);
   void write(const ros::Time &t, const ros::Duration &dt);
@@ -68,6 +69,19 @@ class ServoBusInterface : public hardware_interface::RobotHW {
   void syncWriteProfileVelocity();
   void syncWriteCurrent();
   void syncWriteProfileAcceleration();
+
+  int32_t *data_sync_read_positions_;
+  int32_t *data_sync_read_velocities_;
+  int32_t *data_sync_read_efforts_;
+  int32_t *data_sync_read_pwms_;
+  int32_t *data_sync_read_error_;
+  int32_t *sync_write_goal_position_;
+  int32_t *sync_write_goal_velocity_;
+  int32_t *sync_write_profile_velocity_;
+  int32_t *sync_write_profile_acceleration_;
+  int32_t *sync_write_goal_current_;
+  int32_t *sync_write_goal_pwm_;
+  std::vector<uint8_t> sync_read_all_data_;
 
   bool first_cycle_;
   bool lost_servo_connection_;

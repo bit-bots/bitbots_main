@@ -55,6 +55,15 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(ros::NodeHandle &nh) {
   }
 }
 
+WolfgangHardwareInterface::~WolfgangHardwareInterface(){
+  // clean up memeory
+  for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
+    for (hardware_interface::RobotHW *interface : port_interfaces) {
+      delete interface;
+    }
+  }
+}
+
 bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
                                                   std::vector<std::pair<std::string, int>> dxl_devices) {
   interfaces_ = std::vector < std::vector < hardware_interface::RobotHW * >> ();
@@ -172,6 +181,7 @@ bool WolfgangHardwareInterface::create_interfaces(ros::NodeHandle &nh,
           }
           pinged.push_back(name);
         }
+        delete model_number_returned_16;
       }
     }
     // create a servo bus interface if there were servos found on this bus
@@ -281,7 +291,6 @@ void threaded_write(std::vector<hardware_interface::RobotHW *> &port_interfaces,
 void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
   // write all controller values to interfaces
   servo_interface_.write(t, dt);
-
   std::vector<std::thread> threads;
   // start all writes
   for (std::vector < hardware_interface::RobotHW * > &port_interfaces : interfaces_) {
@@ -293,4 +302,5 @@ void WolfgangHardwareInterface::write(const ros::Time &t, const ros::Duration &d
     thread.join();
   }
 }
+
 }

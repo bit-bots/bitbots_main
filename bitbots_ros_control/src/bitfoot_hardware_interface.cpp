@@ -16,6 +16,7 @@ BitFootHardwareInterface::BitFootHardwareInterface(std::shared_ptr<DynamixelDriv
 bool BitFootHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
   current_pressure_.resize(4, std::vector<double>());
+  data_ = (uint8_t *) malloc(16 * sizeof(uint8_t));
   pressure_pub_ = nh.advertise<bitbots_msgs::FootPressure>(topic_name_, 1);
   diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
   return true;
@@ -26,13 +27,12 @@ void BitFootHardwareInterface::read(const ros::Time &t, const ros::Duration &dt)
    * Reads the foot pressure sensors of the BitFoot
    */
 
-  uint8_t *data = (uint8_t *) malloc(16 * sizeof(uint8_t));
   // read foot
   bool read_successful = true;
-  if (driver_->readMultipleRegisters(id_, 36, 16, data)) {
+  if (driver_->readMultipleRegisters(id_, 36, 16, data_)) {
     for (int i = 0; i < 4; i++) {
-      int32_t pres = dxlMakedword(dxlMakeword(data[i * 4], data[i * 4 + 1]),
-                                  dxlMakeword(data[i * 4 + 2], data[i * 4 + 3]));
+      int32_t pres = dxlMakedword(dxlMakeword(data_[i * 4], data_[i * 4 + 1]),
+                                  dxlMakeword(data_[i * 4 + 2], data_[i * 4 + 3]));
       float pres_d = (float) pres;
       // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
       current_pressure_[i].push_back((double) pres_d);
