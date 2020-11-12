@@ -91,6 +91,9 @@ class Vision:
         self._transfer_image_msg = None
         self._transfer_image_msg_read_flag = False
 
+        # Yolo placeholder
+        self._yolo = None
+
         # Add model enums to _config
         ros_utils.add_model_enums(VisionConfig, self._package_path)
         ros_utils.add_color_space_enum(VisionConfig, self._package_path)
@@ -347,7 +350,7 @@ class Vision:
 
         # Check if  tpu version of yolo ball/goalpost detector is used
         if config['neural_network_type'] in ['yolo_ncs2']:
-            if ros_utils.config_param_change(self._config, config, ['neural_network_type']):
+            if ros_utils.config_param_change(self._config, config, ['neural_network_type', 'yolo_openvino_model_path']):
                 # Build absolute model path
                 yolo_openvino_model_path = os.path.join(self._package_path, 'models', config['yolo_openvino_model_path'])
                 # Check if it exists
