@@ -78,6 +78,9 @@
 
     <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
 
-    <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
+    <group unless="$(arg use_fake_walk)">
+        <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
+    </group>
+
     <include file="$(find bitbots_convenience_frames)/launch/convenience_frames.launch"/>
 </launch>
