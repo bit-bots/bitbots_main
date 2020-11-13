@@ -254,8 +254,8 @@ class WorldModelCapsule:
         return (x_sdev, y_sdev, theta_sdev)
 
     def localization_precision_in_threshold(self) -> bool:
-        # Check whether we recieved a message in the last pose_lost_time seconds.
-        if rospy.Time.now() - self.pose.header.stamp > self.config['pose_lost_time']:
+        # Check whether we received a message in the last pose_lost_time seconds.
+        if rospy.Time.now() - self.pose.header.stamp > rospy.Duration.from_sec(self.config['pose_lost_time']):
             return False
         # get the standard deviation values of the covariance matrix
         precision = self.get_localization_precision()

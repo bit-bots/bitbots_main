@@ -14,7 +14,7 @@ class Localization(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        if self.use_localization and self.blackboard.world_model.localization_precision_in_threshold:
+        if self.use_localization and self.blackboard.world_model.localization_precision_in_threshold():
             return 'YES'
         return 'NO'
 
