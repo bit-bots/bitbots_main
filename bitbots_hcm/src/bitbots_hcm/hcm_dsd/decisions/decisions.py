@@ -265,9 +265,8 @@ class Falling(AbstractDecisionElement):
                 return "FALLING_LEFT"
             if falling_direction == self.blackboard.fall_checker.RIGHT:
                 return "FALLING_RIGHT"
-        else:
-            # robot is not fallen
-            return "NOT_FALLING"
+        # robot is not fallen
+        return "NOT_FALLING"
 
     def get_reevaluate(self):
         return True
