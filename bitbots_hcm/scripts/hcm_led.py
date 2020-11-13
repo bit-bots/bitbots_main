@@ -67,7 +67,7 @@ def hcm_state_cb(msg: RobotControlState):
         led.r = 0.3
         led.g = 0
         led.b = 0.3
-    elif state == msg.PENALTY_ANIMANTION:
+    elif state == msg.PENALTY_ANIMATION:
         led.r = 0.3
         led.g = 0
         led.b = 0.3

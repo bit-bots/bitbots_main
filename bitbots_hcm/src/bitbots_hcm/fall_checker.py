@@ -28,6 +28,14 @@ class FallChecker(BaseEstimator):
         self.LEFT = 3
         self.RIGHT = 4
 
+    def update_reconfigurable_values(self, config, level):
+        # Dynamic Reconfigure
+        self.thresh_gyro_pitch = config["falling_thresh_gyro_pitch"]
+        self.thresh_gyro_roll = config["falling_thresh_gyro_roll"]
+        self.thresh_orient_pitch = math.radians(config["falling_thresh_orient_pitch"])
+        self.thresh_orient_roll = math.radians(config["falling_thresh_orient_roll"])
+        return config
+
     def check_falling(self, not_much_smoothed_gyro, euler):
         """Checks if the robot is currently falling and in which direction. """
         # Checks if robot is still

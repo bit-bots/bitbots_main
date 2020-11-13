@@ -6,7 +6,7 @@ from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CO
     STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, \
     STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF, STATE_KICKING
 from humanoid_league_speaker.speaker import speak
-from humanoid_league_msgs.msg import Speak
+from humanoid_league_msgs.msg import Audio
 
 
 class StartHCM(AbstractDecisionElement):
@@ -235,7 +235,7 @@ class PickedUp(AbstractDecisionElement):
                 abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
             self.blackboard.current_state = STATE_PICKED_UP
             if not reevaluate:
-                speak("Picked up!", self.blackboard.speak_publisher, priority=Speak.HIGH_PRIORITY)
+                speak("Picked up!", self.blackboard.speak_publisher, priority=50)
             # we do an action sequence to go to walkready and stay in picked up state
             return "PICKED_UP"
 
