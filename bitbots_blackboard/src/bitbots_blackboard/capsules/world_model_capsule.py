@@ -246,7 +246,7 @@ class WorldModelCapsule:
     def get_current_position(self):
         try:
             # get the most recent transform
-            transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time())
+            transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time(0))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return None
