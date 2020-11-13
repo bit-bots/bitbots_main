@@ -8,7 +8,7 @@ behavior:
 
     # When False, the behavior will use a simple fallback mode in which only detected image features are
     # used for decision making
-    use_localization: false
+    use_localization: true
 
     # Position format:
     #      y
@@ -92,5 +92,15 @@ behavior:
       wait_time: 10
       # base topic under which an actionserver listens for KickAction messages
       topic: "/dynamic_kick"
+
+    # the maximal allowed standard deviation of the localization pose.
+    pose_precision_threshold:
+      x_sdev: 0.3
+      y_sdev: 0.3
+      theta_sdev: 0.1
+
+    # maximum amount of time after which a localization pose is dropped.
+    # (This should not happen unless the localization has died. RIP in this case.)
+    pose_lost_time: 10
 
 role: "offense"

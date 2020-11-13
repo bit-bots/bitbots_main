@@ -32,8 +32,9 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, field_length, field_width, goal_width):
-        self.position = PoseWithCovarianceStamped()
+    def __init__(self, config, field_length, field_width, goal_width):
+        self.config = config
+        self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
         self.ball = PointStamped()  # The ball in the base footprint frame
@@ -53,11 +54,6 @@ class WorldModelCapsule:
         # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('/debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
-
-    def get_current_position(self):
-        orientation = self.position.pose.pose.orientation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        return self.position.pose.pose.position.x, self.position.pose.pose.position.y, theta
 
     ############
     ### Ball ###
@@ -239,6 +235,35 @@ class WorldModelCapsule:
             self.goal_seen_time = rospy.Time.now()
         self.goal_publisher.publish(self.goal_odom.to_pose_with_certainty_array())
 
+    ###########
+    # ## Pose #
+    ###########
+
+    def pose_callback(self, pos: PoseWithCovarianceStamped):
+        self.pose = pos
+
+    def get_current_position(self):
+        orientation = self.pose.pose.pose.orientation
+        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        return self.pose.pose.pose.position.x, self.pose.pose.pose.position.y, theta
+
+    def get_localization_precision(self):
+        x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+        theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
+        return (x_sdev, y_sdev, theta_sdev)
+
+    def localization_precision_in_threshold(self) -> bool:
+        # Check whether we received a message in the last pose_lost_time seconds.
+        if rospy.Time.now() - self.pose.header.stamp > rospy.Duration.from_sec(self.config['pose_lost_time']):
+            return False
+        # get the standard deviation values of the covariance matrix
+        precision = self.get_localization_precision()
+        # return whether those values are in the threshold
+        return precision[0] < self.config['pose_precision_threshold']['x_sdev'] and \
+               precision[1] < self.config['pose_precision_threshold']['y_sdev'] and \
+               precision[2] < self.config['pose_precision_threshold']['theta_sdev']
+
     #############
     # ## Common #
     #############
@@ -265,6 +290,3 @@ class WorldModelCapsule:
         u, v = self.get_uv_from_xy(x, y)
         dist = math.sqrt(u ** 2 + v ** 2)
         return dist
-
-    def position_callback(self, pos: PoseWithCovarianceStamped):
-        self.position = pos
