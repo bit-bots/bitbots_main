@@ -9,6 +9,8 @@
 
     <include file="$(find bitbots_vision)/launch/vision_startup.launch" />
 
+    <include file="$(find humanoid_league_transform)/launch/transformer.launch" />
+
 
     <arg name="depends_only" default="false" />
     <rosparam command="load" file="$(find bitbots_head_behavior)/config/head_config.yaml"/>
