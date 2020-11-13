@@ -8,7 +8,7 @@ behavior:
 
     # When False, the behavior will use a simple fallback mode in which only detected image features are
     # used for decision making
-    use_localization: false
+    use_localization: true
 
     # Position format:
     #      y
