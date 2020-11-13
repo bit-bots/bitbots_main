@@ -34,6 +34,7 @@ class GoalRelative:
 class WorldModelCapsule:
     def __init__(self, config, field_length, field_width, goal_width):
         self.config = config
+        # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -243,9 +244,22 @@ class WorldModelCapsule:
         self.pose = pos
 
     def get_current_position(self):
-        orientation = self.pose.pose.pose.orientation
+        if self.localization_precision_in_threshold():
+            try:
+                transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time())
+            except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+                return None
+        else:
+            # use odom if localization is not precise enough
+            try:
+                transform = self.tf_buffer.lookup_transform('odom', 'base_footprint', rospy.Time())
+            except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+                return None
+        orientation = transform.transform.rotation
         theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        return self.pose.pose.pose.position.x, self.pose.pose.pose.position.y, theta
+        return transform.transform.translation.x, transform.transform.translation.y, theta
 
     def get_localization_precision(self):
         x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
