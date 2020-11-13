@@ -432,11 +432,12 @@ class YoloHandlerNCS2(YoloHandler):
             # Create barrier. This lets all following processing steps wait until the prediction is calculated.
             if self._exec_net.requests[request_id].wait(-1) == 0:
                 # Get output
-                output = self._exec_net.requests[request_id].outputs
+                output = self._exec_net.requests[request_id].output_blobs
                 # Iterate over output layers
                 for layer_name, out_blob in output.items():
+                    buff = out_blob.buffer
                     # Reshape output layer
-                    out_blob = out_blob.reshape(self._net.layers[self._net.layers[layer_name].parents[0]].shape)
+                    out_blob = buff.reshape(self._net.layers[self._net.layers[layer_name].parents[0]].out_data[0].shape)
                     # Create layer params object
                     layer_params = self._YoloParams(self._net.layers[layer_name].params, out_blob.shape[2])
                     # Parse yolo bounding boxes out of output blob
