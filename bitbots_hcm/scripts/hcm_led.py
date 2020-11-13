@@ -23,7 +23,7 @@ def hcm_state_cb(msg: RobotControlState):
     last_state = state
     led = ColorRGBA()
     led.a = 1.0
-    if state == msg.CONTROLABLE:
+    if state == msg.CONTROLLABLE:
         led.r = 0.3
         led.g = 0.3
         led.b = 0.3

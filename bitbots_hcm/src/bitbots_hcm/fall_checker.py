@@ -94,3 +94,29 @@ class FallChecker(BaseEstimator):
             prediction = self.check_falling(entry[3:6], entry[6:9])
             y.append(prediction)
         return y
+
+    def check_fallen(self, smooth_accel, not_much_smoothed_gyro):
+        """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
+        # Checks if the robot is still moving.
+        if any(abs(n) >= 0.1 for n in not_much_smoothed_gyro):
+            return None
+
+        # Decides which side is facing downwards.
+        if smooth_accel[0] < -7:
+            rospy.loginfo("FALLEN TO THE FRONT")
+            return self.FRONT
+
+        if smooth_accel[0] > 7:
+            rospy.loginfo("FALLEN TO THE BACK")
+            return self.BACK
+
+        if smooth_accel[1] > 7:
+            rospy.loginfo("FALLEN TO THE RIGHT")
+            return self.RIGHT
+
+        if smooth_accel[1] < -7:
+            rospy.loginfo("FALLEN TO THE LEFT")
+            return self.LEFT
+
+        # If no side is facing downwards, the robot is not fallen yet.
+        return None
