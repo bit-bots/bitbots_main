@@ -19,4 +19,4 @@ class Localization(AbstractDecisionElement):
         return 'NO'
 
     def get_reevaluate(self):
-        return False
+        return True
