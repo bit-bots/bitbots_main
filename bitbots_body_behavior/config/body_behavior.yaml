@@ -94,9 +94,13 @@ behavior:
       topic: "/dynamic_kick"
 
     # the maximal allowed standard deviation of the localization pose.
-    position_precision_threshold:
+    pose_precision_threshold:
       x_sdev: 0.3
       y_sdev: 0.3
       theta_sdev: 0.1
+
+    # maximum amount of time after which a localization pose is dropped.
+    # (This should not happen unless the localization has died. RIP in this case.)
+    pose_lost_time: 10
 
 role: "offense"

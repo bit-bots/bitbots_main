@@ -44,7 +44,7 @@ if __name__ == "__main__":
     rospy.Subscriber("goal_posts_relative", PoseWithCertaintyArray, D.blackboard.world_model.goalposts_callback)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
-    rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, D.blackboard.world_model.position_callback)
+    rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, D.blackboard.world_model.pose_callback)
     rospy.Subscriber("robot_state", RobotControlState, D.blackboard.blackboard.robot_state_callback)
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
 
