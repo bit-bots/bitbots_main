@@ -244,19 +244,12 @@ class WorldModelCapsule:
         self.pose = pos
 
     def get_current_position(self):
-        if self.localization_precision_in_threshold():
-            try:
-                transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time())
-            except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
-                return None
-        else:
-            # use odom if localization is not precise enough
-            try:
-                transform = self.tf_buffer.lookup_transform('odom', 'base_footprint', rospy.Time())
-            except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
-                return None
+        try:
+            # get the most recent transform
+            transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time())
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return None
         orientation = transform.transform.rotation
         theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
