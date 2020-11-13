@@ -248,9 +248,9 @@ class WorldModelCapsule:
         return self.pose.pose.pose.position.x, self.pose.pose.pose.position.y, theta
 
     def get_localization_precision(self):
-        x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 2D-matrix
-        y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 2D-matrix
-        theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 2D-matrix
+        x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+        theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
         return (x_sdev, y_sdev, theta_sdev)
 
     def localization_precision_in_threshold(self) -> bool:
