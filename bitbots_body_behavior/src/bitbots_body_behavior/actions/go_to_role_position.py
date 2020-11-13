@@ -10,7 +10,12 @@ class GoToRolePosition(AbstractActionElement):
         super(GoToRolePosition, self).__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config['role_positions']
         try:
-            generalized_role_position = role_positions[self.blackboard.blackboard.duty]
+            if self.blackboard.blackboard.duty == 'goalie':
+                generalized_role_position = role_positions[self.blackboard.blackboard.duty]
+            else:
+                # players other than the goalie have multiple possible positions
+                generalized_role_position = \
+                    role_positions[self.blackboard.blackboard.duty][role_positions['pos_number']]
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
