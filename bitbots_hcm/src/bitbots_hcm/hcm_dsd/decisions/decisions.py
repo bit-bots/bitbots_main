@@ -228,6 +228,8 @@ class PickedUp(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        if self.blackboard.visualization_active:
+            return "ON_GROUND"
         # check if the robot is currently being picked up. foot have no connection to the ground,
         # but robot is more or less upright (to differentiate from falling)
         if self.blackboard.pressure_sensors_installed and sum(self.blackboard.pressures) < 10 and \
