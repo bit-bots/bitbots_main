@@ -24,7 +24,7 @@ role:
   file: /config/body_behavior.yaml
   options: ['goalie', 'offense', 'defense', 'penalty']
   explanation: ""
-role_position:
+behavior/body/role_positions/pos_number:
   package: bitbots_body_behavior
   file: /config/body_behavior.yaml
   options: [0, 1, 2]
