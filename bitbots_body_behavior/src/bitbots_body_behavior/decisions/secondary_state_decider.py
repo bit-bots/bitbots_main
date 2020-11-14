@@ -10,7 +10,7 @@ class SecondaryStateDecider(AbstractDecisionElement):
     game controller receiver, so the behavior does ont need to deal with this.
     """
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateDecider, self).__init__(blackboard, dsd)
+        super(SecondaryStateDecider, self).__init__(blackboard, dsd, parameters)
         self.secondary_game_states = {
             0: 'NORMAL',
             1: 'PENALTYSHOOT',  # should not happen during halftime or extra time

@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 class Localization(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(Localization, self).__init__(blackboard, dsd)
+        super(Localization, self).__init__(blackboard, dsd, parameters)
         self.use_localization = blackboard.config['use_localization']  # type: bool
 
     def perform(self, reevaluate=False):
