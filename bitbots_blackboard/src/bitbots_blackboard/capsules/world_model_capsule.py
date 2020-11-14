@@ -38,11 +38,20 @@ class WorldModelCapsule:
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
+
         self.ball = PointStamped()  # The ball in the base footprint frame
-        self.goal = GoalRelative()
+        self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
+        self.ball_odom.header.stamp = rospy.Time.now()
+        self.ball_odom.header.frame_id = 'odom'
+        self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
+        self.ball_map.header.stamp = rospy.Time.now()
+        self.ball_map.header.frame_id = 'map'
+
+        self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
         self.goal_odom.header.stamp = rospy.Time.now()
         self.goal_odom.header.frame_id = 'odom'
+
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
@@ -72,7 +81,24 @@ class WorldModelCapsule:
         return self.ball
 
     def get_ball_position_uv(self):
-        return self.ball.point.x, self.ball.point.y
+        if self.localization_precision_in_threshold():
+            ball = self.ball_map
+        else:
+            ball = self.ball_odom
+        try:
+            ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
+        except (tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            try:
+                # retrying with latest time stamp available because the time stamp of the ball_odom.header
+                # seems to be too young and an extrapolation would be required.
+                ball.header.stamp = rospy.Time(0)
+                ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
+            except (tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+                rospy.logerr('Severe transformation problem concerning the ball!')
+                return None
+        return ball_bfp.x, ball_bfp.y
 
     def get_ball_distance(self):
         u, v = self.get_ball_position_uv()
@@ -92,18 +118,16 @@ class WorldModelCapsule:
             # adding a minor delay to timestamp to ease transformations.
             msg.header.stamp += rospy.Duration.from_sec(0.01)
             ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
-            if msg.header.frame_id != 'base_footprint':
-                try:
-                    self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
-                    self.ball_seen_time = rospy.Time.now()
-                    self.ball_seen = True
-
-                except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                    rospy.logwarn(e)
-            else:
-                self.ball = ball_buffer
+            try:
+                self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+                self.ball_odom = self.tf_buffer.transform(ball_buffer, 'odom', timeout=rospy.Duration(0.3))
+                self.ball_map = self.tf_buffer.transform(ball_buffer, 'map', timeout=rospy.Duration(0.3))
                 self.ball_seen_time = rospy.Time.now()
                 self.ball_seen = True
+
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+
             self.ball_publisher.publish(self.ball)
         else:
             return
@@ -170,7 +194,7 @@ class WorldModelCapsule:
             rospy.logwarn(e)
             try:
                 # retrying with latest time stamp available because the time stamp of the goal_odom.header
-                # seems to be to young and an extrapolation would be required.
+                # seems to be too young and an extrapolation would be required.
                 left.header.stamp = rospy.Time(0)
                 right.header.stamp = rospy.Time(0)
                 left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
