@@ -34,12 +34,12 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-2.17271e-16 0.055 0.043" rpy="-1.5708 -0 1.5708" />
+<origin xyz="-0.049 -7.21645e-16 0.095" rpy="5.55112e-17 5.55112e-17 -2.96059e-16" />
 <geometry>
-<mesh filename="package://wolfgang_description/urdf/router_left.stl"/>
+<mesh filename="package://wolfgang_description/urdf/power_regulator.stl"/>
 </geometry>
-<material name="router_left_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
+<material name="power_regulator_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
 <collision>
@@ -52,24 +52,6 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-0.004 -0.0377 0.043" rpy="5.55112e-17 -6.84228e-49 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/battery_cage_holder.stl"/>
-</geometry>
-<material name="battery_cage_holder_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<collision>
-<origin xyz="-0.018 -3.33067e-16 0.029" rpy="-5.55112e-17 5.55112e-17 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/cage.stl"/>
-</geometry>
-<material name="cage_material">
-<color rgba="0.615686 0.811765 0.929412 1.0"/>
-</material>
-</collision>
-<collision>
 <origin xyz="-0.01 0.001 0.118" rpy="-5.55112e-17 8.2173e-33 -1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/core.stl"/>
@@ -79,7 +61,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="-0.0185 1.11022e-15 0.029" rpy="-5.55112e-17 5.55112e-17 -1.5708" />
+<origin xyz="-0.0175 -0.0035 0.0295" rpy="-5.55112e-17 5.55112e-17 -1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/battery.stl"/>
 </geometry>
@@ -121,6 +103,15 @@
 </geometry>
 <material name="mx-106_body_material">
 <color rgba="0.262745 0.282353 0.301961 1.0"/>
+</material>
+</collision>
+<collision>
+<origin xyz="-0.0375 -0.00925 0.0295" rpy="0 -0 1.5708" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/battery_clip.stl"/>
+</geometry>
+<material name="battery_clip_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
 </material>
 </collision>
 <collision>
@@ -169,6 +160,15 @@
 </material>
 </collision>
 <collision>
+<origin xyz="3.51759e-15 0.055 0.043" rpy="-1.5708 -6.84228e-49 1.5708" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/router_holder_left.stl"/>
+</geometry>
+<material name="router_holder_left_material">
+<color rgba="0.498039 0.498039 0.498039 1.0"/>
+</material>
+</collision>
+<collision>
 <origin xyz="-0.037 -0.0478 0.2141" rpy="3.14159 5.34761e-17 -1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/imu_bottom_cover.stl"/>
@@ -187,15 +187,6 @@
 </material>
 </collision>
 <collision>
-<origin xyz="1.35075e-15 -0.055 0.043" rpy="-1.5708 1.0261e-16 1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/router_right.stl"/>
-</geometry>
-<material name="router_right_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</collision>
-<collision>
 <origin xyz="-0.057 -0.077 0.213915" rpy="-1.5708 -6.08341e-17 1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
@@ -205,7 +196,7 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0.0215 4.16334e-17 0.006" rpy="0 -0 1.5708" />
+<origin xyz="0.03 5.89806e-17 0.006" rpy="0 -0 1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/speaker_holder.stl"/>
 </geometry>
@@ -219,15 +210,6 @@
 <mesh filename="package://wolfgang_description/urdf/baseplate_odroid_xu4_core.stl"/>
 </geometry>
 <material name="baseplate_odroid_xu4_core_material">
-<color rgba="0.717647 0.717647 0.717647 1.0"/>
-</material>
-</collision>
-<collision>
-<origin xyz="0.051 0.0367 0.057" rpy="-1.5708 6.91935e-17 -1.5708" />
-<geometry>
-<mesh filename="package://wolfgang_description/urdf/router.stl"/>
-</geometry>
-<material name="router_material">
 <color rgba="0.717647 0.717647 0.717647 1.0"/>
 </material>
 </collision>
@@ -250,6 +232,15 @@
 </material>
 </collision>
 <collision>
+<origin xyz="0.015 0.00025 0.0775" rpy="1.5708 1.92593e-32 1.5708" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/switch_holder.stl"/>
+</geometry>
+<material name="switch_holder_material">
+<color rgba="0.980392 0.713725 0.00392157 1.0"/>
+</material>
+</collision>
+<collision>
 <origin xyz="-0.077 -0.075 0.083" rpy="0 -0 1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/torso_top.stl"/>
@@ -259,11 +250,29 @@
 </material>
 </collision>
 <collision>
-<origin xyz="0.0222702 4.16334e-17 0.011" rpy="0 -0 1.5708" />
+<origin xyz="0.0314886 3.95288e-17 0.011" rpy="0 -0 1.5708" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/dummy_speaker.stl"/>
 </geometry>
 <material name="dummy_speaker_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
+<collision>
+<origin xyz="3.58047e-15 -0.055 0.043" rpy="-1.5708 -0 1.5708" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/router_holder_right.stl"/>
+</geometry>
+<material name="router_holder_right_material">
+<color rgba="0.498039 0.498039 0.498039 1.0"/>
+</material>
+</collision>
+<collision>
+<origin xyz="-0.004 -0.0377 0.043" rpy="0 -0 1.5708" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/battery_cage_holder.stl"/>
+</geometry>
+<material name="battery_cage_holder_material">
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
@@ -276,19 +285,28 @@
 <color rgba="0.615686 0.811765 0.929412 1.0"/>
 </material>
 </collision>
+<collision>
+<origin xyz="-0.0375 -0.00925 0.0295" rpy="0 -0 1.5708" />
+<geometry>
+<mesh filename="package://wolfgang_description/urdf/battery_cage.stl"/>
+</geometry>
+<material name="battery_cage_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</collision>
 <visual>
 <origin xyz="0 0 0" rpy="0 -0 0" />
 <geometry>
 <mesh filename="package://wolfgang_description/urdf/torso.stl"/>
 </geometry>
 <material name="torso_material">
-<color rgba="0.57077 0.587214 0.594034 1.0"/>
+<color rgba="0.563842 0.57833 0.5838 1.0"/>
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.00517343 -0.00170042 0.106296" rpy="0 0 0"/>
-<mass value="2.2036" />
-<inertia ixx="0.019258" ixy="-1.62135e-05"  ixz="-0.00141519" iyy="0.0164936" iyz="0.000255344" izz="0.00830353" />
+<origin xyz="-0.00564376 -0.0026297 0.109553" rpy="0 0 0"/>
+<mass value="2.0839" />
+<inertia ixx="0.0183896" ixy="-6.80173e-05"  ixz="-0.00140827" iyy="0.0158772" iyz="0.000104074" izz="0.00780317" />
 </inertial>
 </link>
 
@@ -1149,13 +1167,13 @@
 <mesh filename="package://wolfgang_description/urdf/r_foot.stl"/>
 </geometry>
 <material name="r_foot_material">
-<color rgba="0.68737 0.697629 0.68737 1.0"/>
+<color rgba="0.687441 0.697676 0.687441 1.0"/>
 </material>
 </visual>
 <inertial>
-<origin xyz="0.0119683 0.0911873 -0.0298528" rpy="0 0 0"/>
-<mass value="0.267613" />
-<inertia ixx="0.00088338" ixy="-3.29574e-05"  ixz="5.10482e-06" iyy="0.00031694" iyz="-1.75798e-05" izz="0.00115206" />
+<origin xyz="0.0119697 0.0911089 -0.0298585" rpy="0 0 0"/>
+<mass value="0.26824" />
+<inertia ixx="0.000884107" ixy="-3.29345e-05"  ixz="5.01436e-06" iyy="0.00031783" iyz="-1.77693e-05" izz="0.00115364" />
 </inertial>
 </link>
 
@@ -1167,9 +1185,23 @@
 </inertial>
 </link>
 <joint name="r_sole_frame" type="fixed">
-<origin xyz="0.015201 0.0908434 -0.0529" rpy="-4.18784e-16 2.31919e-15 1.5708" />
+<origin xyz="0.0152219 0.0907683 -0.0529" rpy="-4.18784e-16 2.31919e-15 1.5708" />
 <parent link="r_foot" />
 <child link="r_sole" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<link name="r_toe">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="r_toe_frame" type="fixed">
+<origin xyz="0.015 0.1845 -0.03775" rpy="-1.35689e-15 2.56061e-15 1.5708" />
+<parent link="r_foot" />
+<child link="r_toe" />
 <axis xyz="0 0 0"/>
 </joint>
 
@@ -1848,13 +1880,13 @@
 <mesh filename="package://wolfgang_description/urdf/l_foot.stl"/>
 </geometry>
 <material name="l_foot_material">
-<color rgba="0.68737 0.697629 0.68737 1.0"/>
+<color rgba="0.687441 0.697676 0.687441 1.0"/>
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.0120387 0.0911873 -0.0298528" rpy="0 0 0"/>
-<mass value="0.267613" />
-<inertia ixx="0.00088338" ixy="3.21318e-05"  ixz="-5.18281e-06" iyy="0.000316488" iyz="-1.75798e-05" izz="0.0011516" />
+<origin xyz="-0.0120399 0.0911089 -0.0298585" rpy="0 0 0"/>
+<mass value="0.26824" />
+<inertia ixx="0.000884107" ixy="3.21104e-05"  ixz="-5.09223e-06" iyy="0.000317378" iyz="-1.77693e-05" izz="0.00115319" />
 </inertial>
 </link>
 
@@ -1866,9 +1898,23 @@
 </inertial>
 </link>
 <joint name="l_sole_frame" type="fixed">
-<origin xyz="-0.015201 0.0908434 -0.0529" rpy="-5.77818e-15 -6.98371e-15 1.5708" />
+<origin xyz="-0.0152219 0.0907683 -0.0529" rpy="-5.77818e-15 -6.98371e-15 1.5708" />
 <parent link="l_foot" />
 <child link="l_sole" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<link name="l_toe">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="l_toe_frame" type="fixed">
+<origin xyz="-0.015 0.1845 -0.03775" rpy="-5.77818e-15 -6.88971e-15 1.5708" />
+<parent link="l_foot" />
+<child link="l_toe" />
 <axis xyz="0 0 0"/>
 </joint>
 
