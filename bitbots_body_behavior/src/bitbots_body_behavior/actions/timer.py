@@ -11,7 +11,7 @@ class StartTimer(AbstractActionElement):
         self.timer_name = parameters['name']
         if 'duration' not in parameters:
             raise Exception(f'StartTimer ({self.timer_name}): Duration parameter is missing!')
-        self.duration = parameters['duration']
+        self.duration = int(parameters['duration'])
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.start_timer(self.timer_name, self.duration)

@@ -56,7 +56,7 @@ class BlackboardCapsule:
         :param duration_secs: Duration of the timer in seconds
         :return: None
         """
-        self.timers[timer_name] = rospy.Time.now() + rospy.Duration.from_sec(duration_secs)
+        self.timers[timer_name] = rospy.Time.now() + rospy.Duration.from_sec(int(duration_secs))
 
     def end_timer(self, timer_name):
         """
