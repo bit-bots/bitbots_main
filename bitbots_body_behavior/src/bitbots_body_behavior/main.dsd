@@ -37,17 +37,17 @@ $BallSeen
     NO --> @Stop, @LookAtBall
 
 #Positioning
-$Localization
+$LocalizationAvailable
     YES --> @GoToRolePosition, @LookAtFieldFeatures
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
 #PositioningReady
-$Localization
+$LocalizationAvailable
     YES --> @GoToRolePosition, @LookAtFieldFeatures
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
 
 #GoalieBehavior
-$Localization
+$LocalizationAvailable
     YES --> $JustUnpenalized
         YES --> #Positioning
         NO --> $BallSeen
@@ -59,20 +59,29 @@ $Localization
         NO --> #NoLocalizationGoalieBehavior
 
 #OffenseBehavior
-$Localization
-    YES --> $JustUnpenalized
-        YES --> #Positioning
-        NO --> $BallSeen
-            YES --> #GoAndKickBallMapGoal
-            NO --> @Stop, @SearchBall
-    NO --> $JustUnpenalized
+$LocalizationAvailable
+    YES --> $LocalizationPrecision
+        HIGH --> $JustUnpenalized
+            YES --> #Positioning
+            NO --> $BallSeen
+                YES --> #GoAndKickBallMapGoal
+                NO --> @Stop, @SearchBall
+        LOW --> $TimerRunning + name:reorientation_block
+            YES --> #NoLocalizationOffenseBehavior
+            NO --> $TimerRunning + name:reorientation
+                YES -->
+                NO --> @Start
+    NO --> #NoLocalizationOffenseBehavior
+
+#NoLocalizationOffenseBehavior
+$JustUnpenalized
         YES --> @GoToRelativePosition + x:2 + y:0 + t:0
         NO --> #NoLocalizationPlayerBehavior
 
 #DefenseBehavior
 $JustUnpenalized
     YES --> #Positioning
-    NO --> $Localization
+    NO --> $LocalizationAvailable
         YES --> $BallSeen
             YES --> $BallInDefensiveArea
                 YES --> #GoAndKickBallAway

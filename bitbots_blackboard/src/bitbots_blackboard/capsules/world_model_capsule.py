@@ -271,6 +271,8 @@ class WorldModelCapsule:
                precision[1] < self.config['pose_precision_threshold']['y_sdev'] and \
                precision[2] < self.config['pose_precision_threshold']['theta_sdev']
 
+    def localization_pose_current(self):
+        return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.config['pose_lost_time'])
     #############
     # ## Common #
     #############
