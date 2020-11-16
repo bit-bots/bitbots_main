@@ -8,6 +8,8 @@ class TimerRunning(AbstractDecisionElement):
         super(TimerRunning, self).__init__(blackboard, dsd, parameters)
         if 'name' not in parameters:
             raise Exception('TimerRunning: Name parameter is missing!')
+        self.name = parameters['name']
+        self.last_result = ''
 
     def perform(self, reevaluate=False):
         """
@@ -15,19 +17,24 @@ class TimerRunning(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        if self.blackboard.blackboard.timer_running():
+        self.publish_debug_data(f"timer {self.name}", self.blackboard.blackboard.timer_remaining(self.name))
+        if self.blackboard.blackboard.timer_running(self.name):
+            self.last_result = 'YES'
             return 'YES'
+        self.last_result = 'NO'
         return 'NO'
 
     def get_reevaluate(self):
-        return True
+        return self.last_result == 'NO'
 
 
 class TimerEnded(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(TimerEnded, self).__init__(blackboard, dsd, parameters)
+
         if 'name' not in parameters:
             raise Exception('TimerEnded: Name parameter is missing!')
+        self.name = parameters['name']
 
     def perform(self, reevaluate=False):
         """
@@ -35,7 +42,9 @@ class TimerEnded(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        if self.blackboard.blackboard.timer_ended():
+        self.publish_debug_data(f"timer {self.name}", self.blackboard.blackboard.timer_remaining(self.name))
+
+        if self.blackboard.blackboard.timer_ended(self.name):
             return 'YES'
         return 'NO'
 

@@ -76,6 +76,17 @@ class BlackboardCapsule:
             return False
         return rospy.Time.now() < self.timers[timer_name]
 
+    def timer_remaining(self, timer_name):
+        """
+        Returns whether the timer is running
+        :param timer_name: Name of the timer
+        :return: Whether the timer is running. False if the timer doesn't exist.
+        """
+
+        if timer_name not in self.timers:
+            return -1
+        return rospy.Time.now() - self.timers[timer_name]
+
     def timer_ended(self, timer_name):
         """
         Returns whether the timer has ended
