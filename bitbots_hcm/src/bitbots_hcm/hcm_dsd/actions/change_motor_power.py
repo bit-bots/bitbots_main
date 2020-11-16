@@ -14,12 +14,14 @@ class AbstractChangeMotorPower(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractChangeMotorPower, self).__init__(blackboard, dsd, parameters=None)
 
-        try:
-            rospy.wait_for_service('/core/switch_power', timeout=10)
-        except:
-            rospy.logwarn("HCM waiting for switch power service")
-        rospy.wait_for_service('/core/switch_power')
-        self.switch_power = rospy.ServiceProxy('/core/switch_power', SetBool)
+        if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
+            # In visualization and simulation, we cannot disable motors
+            try:
+                rospy.wait_for_service('/core/switch_power', timeout=10)
+            except:
+                rospy.logwarn("HCM waiting for switch power service")
+            rospy.wait_for_service('/core/switch_power')
+            self.switch_power = rospy.ServiceProxy('/core/switch_power', SetBool)
 
     def perform(self, reevaluate=False):
         raise NotImplementedError
@@ -27,11 +29,13 @@ class AbstractChangeMotorPower(AbstractActionElement):
 
 class TurnMotorsOn(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
-        self.switch_power(True)
+        if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
+            self.switch_power(True)
         return self.pop()
 
 
 class TurnMotorsOff(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
-        self.switch_power(False)
+        if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
+            self.switch_power(False)
         return self.pop()

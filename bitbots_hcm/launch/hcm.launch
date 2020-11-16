@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="sim" default="false" doc="Disables checks for hardware, since we are in simulation."/>
+    <arg name="sim" default="false" doc="Disables some checks for hardware, since we are in simulation."/>
+    <arg name="viz" default="false" doc="Disables all checks for hardware, since we are in visualization."/>
     <arg name="wolfgang" default="true"/>
     <arg name="use_game_settings" default="false"/>
 
     <param name="/simulation_active" value="$(arg sim)" />
+    <param name="/visualization_active" value="$(arg viz)" />
     
     <group if="$(arg wolfgang)">
         <rosparam file="$(find bitbots_hcm)/config/hcm_wolfgang.yaml" command="load"/>
