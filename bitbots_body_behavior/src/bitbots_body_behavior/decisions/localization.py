@@ -21,6 +21,7 @@ class LocalizationAvailable(AbstractDecisionElement):
     def get_reevaluate(self):
         return True
 
+
 class LocalizationPrecision(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(LocalizationPrecision, self).__init__(blackboard, dsd, parameters)

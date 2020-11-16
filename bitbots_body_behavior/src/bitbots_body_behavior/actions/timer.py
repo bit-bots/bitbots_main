@@ -15,6 +15,7 @@ class StartTimer(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.start_timer(self.timer_name, self.duration)
+        return self.pop()
 
 
 class EndTimer(AbstractActionElement):
@@ -27,3 +28,4 @@ class EndTimer(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.end_timer(self.timer_name)
+        return self.pop()
