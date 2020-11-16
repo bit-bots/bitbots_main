@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>bitbots_blackboard</name>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
     <description>The bitbots_blackboard is used to share information
         between the different classes in the behaviour. It consists
         of several capsules each for there own purpose. For example
