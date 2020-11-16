@@ -6,10 +6,10 @@ from tf.transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
+
 class CircleBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(CircleBall, self).__init__(blackboard, dsd, parameters)
-
 
     def perform(self, reevaluate=False):
         """
@@ -23,13 +23,16 @@ class CircleBall(AbstractActionElement):
         if not goal_position:
             return
 
-        ball_position = self.blackboard.world_model.get_ball_position_uv()
-        ball_u, ball_v = ball_position
-        point = (ball_u, ball_v, self.blackboard.world_model.get_detection_based_goal_position_uv())
+        ball_u, ball_v, ball_frame = self.blackboard.world_model.get_ball_position_uv_approach_frame()
+        goal_u, goal_v, goal_frame = self.blackboard.world_model.get_detection_based_goal_position_uv_approach_frame()
+        point = (ball_u, ball_v, goal_u, goal_v)
+
+        if not ball_frame == goal_frame:
+            return
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'base_footprint'
+        pose_msg.header.frame_id = ball_frame
 
         # ball position
         pose_msg.pose.position = Point(point[0], point[1], 0)
@@ -40,4 +43,3 @@ class CircleBall(AbstractActionElement):
         pose_msg.pose.position.y -= 0.2  # 20 cm to the right of the ball
 
         self.blackboard.pathfinding.publish(pose_msg)
-
