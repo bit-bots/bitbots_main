@@ -5,17 +5,17 @@
     </include>
 
     <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+    <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
     <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode"  output="screen"/>
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
 
     <include file="$(find bitbots_animation_server)/launch/animation.launch" />
     <include file="$(find bitbots_hcm)/launch/hcm.launch">
-        <arg name="sim" value="true"/>
+        <arg name="viz" value="true"/>
     </include>
 
     <include file="$(find humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
 
-    <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
     <include file="$(find bitbots_dynamic_kick)/launch/dynamic_kick.launch" />
 
     <node name="show_world_model_objects" pkg="bitbots_body_behavior" type="show_world_model_objects.py"
