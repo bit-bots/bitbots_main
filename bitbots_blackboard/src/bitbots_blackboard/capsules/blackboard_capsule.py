@@ -58,6 +58,14 @@ class BlackboardCapsule:
         """
         self.timers[timer_name] = rospy.Time.now() + rospy.Duration.from_sec(duration_secs)
 
+    def end_timer(self, timer_name):
+        """
+        Ends a timer
+        :param timer_name: Name of the timer
+        :return: None
+        """
+        self.timers[timer_name] = rospy.Time.now()
+
     def timer_running(self, timer_name):
         """
         Returns whether the timer is running

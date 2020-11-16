@@ -15,3 +15,15 @@ class StartTimer(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.start_timer(self.timer_name, self.duration)
+
+
+class EndTimer(AbstractActionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(EndTimer, self).__init__(blackboard, dsd, parameters)
+
+        if 'name' not in parameters:
+            raise Exception('EndTimer: Name parameter is missing!')
+        self.timer_name = parameters['name']
+
+    def perform(self, reevaluate=False):
+        self.blackboard.blackboard.end_timer(self.timer_name)
