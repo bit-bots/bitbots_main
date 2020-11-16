@@ -18,4 +18,6 @@
 
     <node name="pause" pkg="bitbots_hcm" type="pause.py" />
 
+    <node name="hcm_led" pkg="bitbots_hcm" type="hcm_led.py" />
+
 </launch>
