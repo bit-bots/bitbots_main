@@ -9,6 +9,11 @@ class BallSeen(AbstractDecisionElement):
         self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
 
     def perform(self, reevaluate=False):
+        """
+        Determines whether the ball was seen recently (as defined in config)
+        :param reevaluate:
+        :return:
+        """
         if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
             return 'YES'
         return 'NO'

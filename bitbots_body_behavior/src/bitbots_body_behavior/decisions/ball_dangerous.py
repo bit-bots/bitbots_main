@@ -7,6 +7,9 @@ class BallDangerous(AbstractDecisionElement):
         self.goal_radius = self.blackboard.config['ball_dangerous_goal_radius']
 
     def perform(self, reevaluate=False):
+        """"
+        Determines whether the position is in the dangerous area (in a radius close to the goal)
+        """
         if self._in_dangerous_area(self.blackboard.world_model.get_ball_position_xy()):
             return 'YES'
         return 'NO'

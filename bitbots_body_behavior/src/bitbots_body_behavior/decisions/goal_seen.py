@@ -9,8 +9,13 @@ class GoalSeen(AbstractDecisionElement):
         self.goal_lost_time = rospy.Duration(self.blackboard.config['goal_lost_time'])
 
     def perform(self, reevaluate=False):
+        """
+        Determines whether the goal was seen recently (as defined in config)
+        :param reevaluate:
+        :return:
+        """
         self.publish_debug_data("goal_seen_time", rospy.Time.now() - self.blackboard.world_model.goal_last_seen())
-        if self.blackboard.world_model.goal_last_seen() != rospy.Time(0):
+        if rospy.Time.now() - self.blackboard.world_model.goal_last_seen() < self.goal_lost_time:
             return 'YES'
         return 'NO'
 

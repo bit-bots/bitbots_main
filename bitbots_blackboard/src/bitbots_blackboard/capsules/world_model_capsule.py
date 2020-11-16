@@ -32,15 +32,26 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, field_length, field_width, goal_width):
-        self.position = PoseWithCovarianceStamped()
+    def __init__(self, config, field_length, field_width, goal_width):
+        self.config = config
+        # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
+        self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
+
         self.ball = PointStamped()  # The ball in the base footprint frame
-        self.goal = GoalRelative()
+        self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
+        self.ball_odom.header.stamp = rospy.Time.now()
+        self.ball_odom.header.frame_id = 'odom'
+        self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
+        self.ball_map.header.stamp = rospy.Time.now()
+        self.ball_map.header.frame_id = 'map'
+
+        self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
         self.goal_odom.header.stamp = rospy.Time.now()
         self.goal_odom.header.frame_id = 'odom'
+
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
@@ -53,11 +64,6 @@ class WorldModelCapsule:
         # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('/debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
-
-    def get_current_position(self):
-        orientation = self.position.pose.pose.orientation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        return self.position.pose.pose.position.x, self.position.pose.pose.position.y, theta
 
     ############
     ### Ball ###
@@ -75,7 +81,18 @@ class WorldModelCapsule:
         return self.ball
 
     def get_ball_position_uv(self):
-        return self.ball.point.x, self.ball.point.y
+        if self.localization_precision_in_threshold():
+            ball = self.ball_map
+        else:
+            ball = self.ball_odom
+        ball.header.stamp = rospy.Time(0)
+        try:
+            ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
+        except (tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            rospy.logerr('Severe transformation problem concerning the ball!')
+            return None
+        return ball_bfp.x, ball_bfp.y
 
     def get_ball_position_uv_approach_frame(self):
         try:
@@ -103,18 +120,16 @@ class WorldModelCapsule:
             # adding a minor delay to timestamp to ease transformations.
             msg.header.stamp += rospy.Duration.from_sec(0.01)
             ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
-            if msg.header.frame_id != 'base_footprint':
-                try:
-                    self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
-                    self.ball_seen_time = rospy.Time.now()
-                    self.ball_seen = True
-
-                except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                    rospy.logwarn(e)
-            else:
-                self.ball = ball_buffer
+            try:
+                self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+                self.ball_odom = self.tf_buffer.transform(ball_buffer, 'odom', timeout=rospy.Duration(0.3))
+                self.ball_map = self.tf_buffer.transform(ball_buffer, 'map', timeout=rospy.Duration(0.3))
                 self.ball_seen_time = rospy.Time.now()
                 self.ball_seen = True
+
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+
             self.ball_publisher.publish(self.ball)
         else:
             return
@@ -174,22 +189,15 @@ class WorldModelCapsule:
         """
         left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
         right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
+        left.header.stamp = rospy.Time(0)
+        right.header.stamp = rospy.Time(0)
         try:
             left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
             right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
         except tf2.ExtrapolationException as e:
             rospy.logwarn(e)
-            try:
-                # retrying with latest time stamp available because the time stamp of the goal_odom.header
-                # seems to be to young and an extrapolation would be required.
-                left.header.stamp = rospy.Time(0)
-                right.header.stamp = rospy.Time(0)
-                left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
-                right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
-            except tf2.ExtrapolationException as e:
-                rospy.logwarn(e)
-                rospy.logerr('Severe transformation problem concerning the goal!')
-                return None
+            rospy.logerr('Severe transformation problem concerning the goal!')
+            return None
 
         return (left_bfp.x + right_bfp.x / 2.0), \
                (left_bfp.y + right_bfp.y / 2.0)
@@ -286,6 +294,41 @@ class WorldModelCapsule:
             self.goal_seen_time = rospy.Time.now()
         self.goal_publisher.publish(self.goal_odom.to_pose_with_certainty_array())
 
+    ###########
+    # ## Pose #
+    ###########
+
+    def pose_callback(self, pos: PoseWithCovarianceStamped):
+        self.pose = pos
+
+    def get_current_position(self):
+        try:
+            # get the most recent transform
+            transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time(0))
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return None
+        orientation = transform.transform.rotation
+        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        return transform.transform.translation.x, transform.transform.translation.y, theta
+
+    def get_localization_precision(self):
+        x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+        theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
+        return (x_sdev, y_sdev, theta_sdev)
+
+    def localization_precision_in_threshold(self) -> bool:
+        # Check whether we received a message in the last pose_lost_time seconds.
+        if rospy.Time.now() - self.pose.header.stamp > rospy.Duration.from_sec(self.config['pose_lost_time']):
+            return False
+        # get the standard deviation values of the covariance matrix
+        precision = self.get_localization_precision()
+        # return whether those values are in the threshold
+        return precision[0] < self.config['pose_precision_threshold']['x_sdev'] and \
+               precision[1] < self.config['pose_precision_threshold']['y_sdev'] and \
+               precision[2] < self.config['pose_precision_threshold']['theta_sdev']
+
     #############
     # ## Common #
     #############
@@ -312,6 +355,3 @@ class WorldModelCapsule:
         u, v = self.get_uv_from_xy(x, y)
         dist = math.sqrt(u ** 2 + v ** 2)
         return dist
-
-    def position_callback(self, pos: PoseWithCovarianceStamped):
-        self.position = pos

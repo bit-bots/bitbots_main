@@ -8,7 +8,7 @@ behavior:
 
     # When False, the behavior will use a simple fallback mode in which only detected image features are
     # used for decision making
-    use_localization: false
+    use_localization: true
 
     # Position format:
     #      y
@@ -28,12 +28,14 @@ behavior:
     # TODO: For four robots we need four initial positions
     role_positions:
       goalie: [-0.95, 0]
-      defense: [-0.5, 0.5]
-      offense: [-0.2, 0]
+      defense: [[-0.5, 0], [-0.45, 0.5], [-0.45, -0.5]]
+      offense: [[-0.25, 0], [-0.2, 0.5], [-0.2, -0.5]]
+      # position number 0 = center, 1 = left, 2 = right
+      pos_number: 0
 
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
-    ball_lost_time: 5
+    ball_lost_time: 15
 
     # The distance we try to keep from the ball when preparing a kick
     ball_approach_distance: 0.25
@@ -92,5 +94,15 @@ behavior:
       wait_time: 10
       # base topic under which an actionserver listens for KickAction messages
       topic: "/dynamic_kick"
+
+    # the maximal allowed standard deviation of the localization pose.
+    pose_precision_threshold:
+      x_sdev: 0.3
+      y_sdev: 0.3
+      theta_sdev: 0.1
+
+    # maximum amount of time after which a localization pose is dropped.
+    # (This should not happen unless the localization has died. RIP in this case.)
+    pose_lost_time: 10
 
 role: "offense"
