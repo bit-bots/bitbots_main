@@ -19,7 +19,6 @@ class GoToBall(AbstractActionElement):
         else:
             self.target = parameters['target']
 
-        self.approach_distance = blackboard.config['ball_approach_distance']
 
     def perform(self, reevaluate=False):
         ball_position = self.blackboard.world_model.get_ball_position_uv_approach_frame()
@@ -44,7 +43,7 @@ class GoToBall(AbstractActionElement):
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
             return
-        point = align(Point(*ball_point), self.approach_distance)
+        point = Point(*ball_point)
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
@@ -59,12 +58,3 @@ class GoToBall(AbstractActionElement):
         pose_msg.pose.orientation.w = quaternion[3]
 
         self.blackboard.pathfinding.publish(pose_msg)
-
-
-def align(pose_point, distance):
-    # type: (Point, float) -> Point
-    point = Point()
-    point.x = pose_point.x - distance * math.cos(pose_point.z)
-    point.y = pose_point.y - distance * math.sin(pose_point.z)
-    point.z = pose_point.z
-    return point
