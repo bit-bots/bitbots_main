@@ -40,7 +40,7 @@ hcm:
   falling_thresh_gyro_pitch: 7 # > gyroY
   falling_thresh_gyro_roll: 7 # > gyroX
   falling_thresh_orient_roll: 60 # > Point of no return in degrees
-  falling_thresh_orient_pitch: 45 # < Point of no return in degrees
+  falling_thresh_orient_pitch: 45 # > Point of no return in degrees
   # smoothing threshold for classifier
   smooth_threshold: 10
 
