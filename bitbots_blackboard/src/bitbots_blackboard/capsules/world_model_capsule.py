@@ -95,15 +95,20 @@ class WorldModelCapsule:
         return ball_bfp.x, ball_bfp.y
 
     def get_ball_position_uv_approach_frame(self):
+        if self.localization_precision_in_threshold():
+            ball = self.ball_map
+        else:
+            ball = self.ball_odom
         try:
-            ball_position = self.tf_buffer.transform(self.ball, 'approach_frame', timeout=rospy.Duration(0.3))
-            return ball_position.point.x, ball_position.point.y
+            ball_position = self.tf_buffer.transform(ball, 'approach_frame', timeout=rospy.Duration(0.3))
+            return ball_position.point.x, ball_position.point.y, 'approach_frame'
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(f"ball position in base footprint used: {e}")
-        return self.ball.point.x, self.ball.point.y
+            ball_u, ball_v = self.get_ball_position_uv()
+            return ball_u, ball_v, 'base_footprint'
 
     def get_ball_distance(self):
-        u, v = self.get_ball_position_uv_approach_frame()
+        u, v, frame = self.get_ball_position_uv_approach_frame()
         return math.sqrt(u ** 2 + v ** 2)
 
     def get_ball_speed(self):
@@ -229,10 +234,12 @@ class WorldModelCapsule:
                 return None
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(f"goal position in base footprint used: {e}")
-            return self.get_detection_based_goal_position_uv()
+            goal_u, goal_v = self.get_detection_based_goal_position_uv()
+            return goal_u, goal_v, 'base_footprint'
 
         return (left_bfp.x + right_bfp.x / 2.0), \
-               (left_bfp.y + right_bfp.y / 2.0)
+               (left_bfp.y + right_bfp.y / 2.0), \
+               'approach_frame'
 
     def goal_parts_callback(self, msg):
         # type: (GoalPartsRelative) -> None

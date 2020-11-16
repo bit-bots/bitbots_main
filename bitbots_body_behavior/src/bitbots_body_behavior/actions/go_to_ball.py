@@ -25,7 +25,7 @@ class GoToBall(AbstractActionElement):
         ball_position = self.blackboard.world_model.get_ball_position_uv_approach_frame()
         if not ball_position:
             return
-        ball_u, ball_v = ball_position
+        ball_u, ball_v, ball_frame = ball_position
 
         if 'map_goal' == self.target:
             ball_point = (ball_u, ball_v, self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball())
@@ -48,7 +48,7 @@ class GoToBall(AbstractActionElement):
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'approach_frame'
+        pose_msg.header.frame_id = ball_frame
 
         pose_msg.pose.position = Point(point.x, point.y, 0)
 
