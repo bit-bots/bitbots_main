@@ -85,19 +85,13 @@ class WorldModelCapsule:
             ball = self.ball_map
         else:
             ball = self.ball_odom
+        ball.header.stamp = rospy.Time(0)
         try:
             ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
         except (tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
-            try:
-                # retrying with latest time stamp available because the time stamp of the ball_odom.header
-                # seems to be too young and an extrapolation would be required.
-                ball.header.stamp = rospy.Time(0)
-                ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
-            except (tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
-                rospy.logerr('Severe transformation problem concerning the ball!')
-                return None
+            rospy.logerr('Severe transformation problem concerning the ball!')
+            return None
         return ball_bfp.x, ball_bfp.y
 
     def get_ball_distance(self):
@@ -187,22 +181,15 @@ class WorldModelCapsule:
         """
         left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
         right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
+        left.header.stamp = rospy.Time(0)
+        right.header.stamp = rospy.Time(0)
         try:
             left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
             right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
         except (tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
-            try:
-                # retrying with latest time stamp available because the time stamp of the goal_odom.header
-                # seems to be too young and an extrapolation would be required.
-                left.header.stamp = rospy.Time(0)
-                right.header.stamp = rospy.Time(0)
-                left_bfp = self.tf_buffer.transform(left, 'base_footprint', timeout=rospy.Duration(0.2)).point
-                right_bfp = self.tf_buffer.transform(right, 'base_footprint', timeout=rospy.Duration(0.2)).point
-            except (tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
-                rospy.logerr('Severe transformation problem concerning the goal!')
-                return None
+            rospy.logerr('Severe transformation problem concerning the goal!')
+            return None
 
         return (left_bfp.x + right_bfp.x / 2.0), \
                (left_bfp.y + right_bfp.y / 2.0)
