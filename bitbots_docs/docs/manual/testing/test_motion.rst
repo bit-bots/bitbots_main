@@ -36,6 +36,11 @@ Test Motion on Robot
 --------------------
 
 Make sure that you tested the hardware and lowlevel software first.
+Easiest way to do both is using following script
+
+``rosrun bitbots_bringup check_robot.py``
+
+Alternativly you can do it manually by following the following steps
 
 #. Test Kick on Robot
 	roslaunch bitbots_dynamic_kick test.launch

@@ -7,12 +7,25 @@ Do the test in the provided order, to find out which part is faulty.
 Preliminaries
 -------------
 
+Do the test in the provided order, to find out which part is faulty.
+
 #. Use robot compile to flash correct version on robot
 #. Put robot in a safe spot, on a rope hanging from the ceiling
 #. Check if all cables are correctly connected
+#. Open diagnostic view in rqt, it will provide a lot of information
 	
 Test hardware and ros_control
 -----------------------------
+
+The easiest way to do this is using the semi automatic script for this. Just start it and follow the instructions
+
+``rosrun bitbots_bringup check_robot.py``
+
+
+
+Manual procedure
+~~~~~~~~~~~~~~~~
+
 #. Test IMU
     ``roslaunch bitbots_ros_control ros_control_standalone.launch only_imu:=true``
         - start on your laptop ``roslaunch bitbots_ros_control viz_imu.launch`` you should see the filtered orientation and an arrow showing the sum of acceleration forces
