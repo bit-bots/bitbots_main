@@ -23,4 +23,7 @@ field_boundary:
 camera_info:
   camera_info_topic: '/camera_info'
 
+masks:
+  line_mask: '/line_mask_in_image'
+
 publish_frame: 'base_footprint'

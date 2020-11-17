@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 import rospy
+import tf2_ros
+import numpy as np
+import sensor_msgs.point_cloud2 as pc2
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image, CameraInfo, PointCloud2
+from geometry_msgs.msg import Point, PolygonStamped
+from tf2_geometry_msgs import PointStamped
+from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from humanoid_league_msgs.msg import LineInformationInImage, LineInformationRelative, \
     LineSegmentRelative, LineIntersectionRelative, \
     ObstacleInImageArray, ObstacleRelativeArray, ObstacleRelative, \
     PoseWithCertainty, PoseWithCertaintyArray, GoalPostInImageArray, BallInImageArray
-from geometry_msgs.msg import Point, PolygonStamped
-from sensor_msgs.msg import CameraInfo, PointCloud2
-import sensor_msgs.point_cloud2 as pc2
-import tf2_ros
-from tf2_geometry_msgs import PointStamped
-import numpy as np
 
 
 class Transformer(object):
@@ -18,6 +20,8 @@ class Transformer(object):
 
         self._tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
+
+        self._cv_bridge = CvBridge()
 
         # Parameters
         self._ball_height = rospy.get_param("~ball/ball_radius", 0.075)
@@ -33,6 +37,8 @@ class Transformer(object):
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
         field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
                                                         "/field_boundary_in_image")
+        line_mask_in_image_topic = rospy.get_param("~masks/line_mask",
+                                                        "/line_mask_in_image")
 
         publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
         publish_lines_as_pointcloud = rospy.get_param("~lines/pointcloud", False)
@@ -74,6 +80,7 @@ class Transformer(object):
             self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
         if publish_lines_as_pointcloud:
             self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
+        self._line_mask_relative_pc_pub = rospy.Publisher("line_mask_relative_pc", PointCloud2, queue_size=1)
         self._goalposts_relative = rospy.Publisher("goal_posts_relative", PoseWithCertaintyArray, queue_size=1)
         self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
         self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PolygonStamped, queue_size=1)
@@ -88,6 +95,8 @@ class Transformer(object):
         rospy.Subscriber(obstacles_in_image_topic, ObstacleInImageArray, self._callback_obstacles, queue_size=1)
         rospy.Subscriber(field_boundary_in_image_topic, PolygonStamped,
                          self._callback_field_boundary, queue_size=1)
+        rospy.Subscriber(line_mask_in_image_topic, Image,
+            lambda msg: self._callback_masks(msg, self._line_mask_relative_pc_pub), queue_size=1)
 
         rospy.spin()
 
@@ -103,7 +112,7 @@ class Transformer(object):
 
         balls = []
         for ball in msg.candidates:
-            transformed_ball = self._transform(ball.center, field, msg.header.stamp)
+            transformed_ball = self._transform_point(ball.center, field, msg.header.stamp)
             if transformed_ball is not None:
                 ball_relative = PoseWithCertainty()
                 ball_relative.pose.pose.position = transformed_ball
@@ -128,8 +137,8 @@ class Transformer(object):
 
         for seg in msg.segments:
             rel_seg = LineSegmentRelative()
-            rel_seg.pose.position.start = self._transform(seg.start, field, msg.header.stamp)
-            rel_seg.pose.position.end = self._transform(seg.end, field, msg.header.stamp)
+            rel_seg.pose.position.start = self._transform_point(seg.start, field, msg.header.stamp)
+            rel_seg.pose.position.end = self._transform_point(seg.end, field, msg.header.stamp)
 
             rel_seg.confidence = seg.confidence
 
@@ -140,7 +149,7 @@ class Transformer(object):
         for intersection in msg.intersections:
             rel_inter = LineIntersectionRelative()
 
-            rel_inter_pos = self._transform(intersection.point, field, msg.header.stamp)
+            rel_inter_pos = self._transform_point(intersection.point, field, msg.header.stamp)
 
             if rel_inter_pos is not None:
                 rel_inter.type = intersection.type
@@ -163,7 +172,7 @@ class Transformer(object):
         points = np.zeros((len(msg.segments), 3))
         num_transformed_correctly = 0
         for i in range(len(msg.segments)):
-            transformed = self._transform(msg.segments[i].start, field, msg.header.stamp)
+            transformed = self._transform_point(msg.segments[i].start, field, msg.header.stamp)
             if transformed is not None:
                 points[i] = np.array([transformed.x, transformed.y, transformed.z])
                 num_transformed_correctly += 1
@@ -194,7 +203,7 @@ class Transformer(object):
             image_vertical_resolution =  self._camera_info.height / max(self._camera_info.binning_y, 1)
             if goal_post_in_image.foot_point.y < image_vertical_resolution - self._goalpost_footpoint_out_of_image_threshold:
                 # Transform footpoint
-                relative_foot_point = self._transform(goal_post_in_image.foot_point, field, msg.header.stamp)
+                relative_foot_point = self._transform_point(goal_post_in_image.foot_point, field, msg.header.stamp)
                 if relative_foot_point is None:
                     rospy.logwarn_throttle(5.0, rospy.get_name() +
                                         ": Got a post with foot point ({},{}) I could not transform.".format(
@@ -225,7 +234,7 @@ class Transformer(object):
             point = Point()
             point.x = o.top_left.x + o.height
             point.y = o.top_left.y + o.width/2
-            position = self._transform(point, field, msg.header.stamp)
+            position = self._transform_point(point, field, msg.header.stamp)
             if position is not None:
                 obstacle.pose.pose.pose.position = position
                 obstacles.obstacles.append(obstacle)
@@ -244,7 +253,7 @@ class Transformer(object):
         field_boundary.header.frame_id = self._publish_frame
 
         for p in msg.polygon.points:
-            p_relative = self._transform(p, field, msg.header.stamp)
+            p_relative = self._transform_point(p, field, msg.header.stamp)
             if p_relative is not None:
                 field_boundary.polygon.points.append(p_relative)
             else:
@@ -254,6 +263,51 @@ class Transformer(object):
                 return
 
         self._field_boundary_pub.publish(field_boundary)
+
+    def _callback_masks(self, msg: Image, publisher: rospy.Publisher, encoding='8UC1'):
+        """
+        Projects a mask from the input image as a pointcloud on the field plane.
+        """
+        # Get field plane
+        field = self.get_plane(msg.header.stamp, 0.0)
+        if field is None:
+            return
+
+        # Convert image
+        image = self._cv_bridge.imgmsg_to_cv2(msg, encoding)
+
+        # Get indices for all non 0 pixels (the pixels which should be displayed in the pointcloud)
+        point_idx_tuple = np.where(image != 0)
+
+        # Restructure index tuple to a array
+        point_idx_array = np.empty((point_idx_tuple[0].shape[0], 3))
+        point_idx_array[:, 0] = point_idx_tuple[1]
+        point_idx_array[:, 1] = point_idx_tuple[0]
+
+        # Project the pixels onto the field plane
+        points_on_plane_from_cam = self._get_field_intersection_for_pixels(point_idx_array, field)
+
+        # Make a pointcloud2 out of them
+        pc_in_image_frame = pc2.create_cloud_xyz32(msg.header, points_on_plane_from_cam)
+
+        # Lookup the transform from the camera to the field plane
+        try:
+            trans = self._tf_buffer.lookup_transform(
+                self._publish_frame,
+                self._camera_info.header.frame_id,
+                msg.header.stamp)
+        except tf2_ros.LookupException as ex:
+            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            return
+        except tf2_ros.ExtrapolationException as ex:
+            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            return
+
+        # Transform the whole point cloud accordingly
+        pc_relative = do_transform_cloud(pc_in_image_frame, trans)
+
+        # Publish point cloud
+        publisher.publish(pc_relative)
 
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
@@ -299,24 +353,36 @@ class Transformer(object):
         field_normal = field_point - field_normal
         return field_normal, field_point
 
-    def _transform(self, point, field, stamp) -> Point:
+    def _get_field_intersection_for_pixels(self, points, field):
+        """
+        Projects an numpy array of points to the correspoding places on the field plane (in the camera frame).
+        """
         camera_projection_matrix = self._camera_info.K
 
-        # calculate a point on a projection plane 1 m (for convenience) away
-        # (point - image center / binning) / (focal length /binning)
-        x = (point.x - camera_projection_matrix[2] / max(self._camera_info.binning_x, 1)) / (camera_projection_matrix[0] / max(self._camera_info.binning_x, 1))
-        y = (point.y - camera_projection_matrix[5] / max(self._camera_info.binning_y, 1)) / (camera_projection_matrix[4] / max(self._camera_info.binning_y, 1))
-        z = 1.0
-        point_on_image = np.array([x, y, z])
+        binning_x = max(self._camera_info.binning_x, 1)
+        binning_y = max(self._camera_info.binning_y, 1)
 
-        intersection = self._line_plane_intersection(field[0], field[1], point_on_image)
-        if intersection is None:
+        points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] / binning_x)) / (camera_projection_matrix[0] / binning_x)
+        points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] / binning_y)) / (camera_projection_matrix[4] / binning_y)
+        points[:, 2] = 1
+
+        intersections = self._line_plane_intersections(field[0], field[1], points)
+
+        return intersections
+
+    def _transform_point(self, point: Point, field, stamp) -> Point:
+        np_point = self._get_field_intersection_for_pixels(np.array([[point.x, point.y, point.z]]), field)[0]
+
+        if np.isnan(np_point).any():
             return None
 
         intersection_stamped = PointStamped()
-        intersection_stamped.point = intersection
+        intersection_stamped.point.x = np_point[0]
+        intersection_stamped.point.y = np_point[1]
+        intersection_stamped.point.z = np_point[2]
         intersection_stamped.header.stamp = stamp
         intersection_stamped.header.frame_id = self._camera_info.header.frame_id
+
         try:
             intersection_transformed = self._tf_buffer.transform(intersection_stamped, self._publish_frame)
         except tf2_ros.LookupException as ex:
@@ -328,16 +394,18 @@ class Transformer(object):
 
         return intersection_transformed.point
 
-    def _line_plane_intersection(self, plane_normal, plane_point, ray_direction):
-        n_dot_u = plane_normal.dot(ray_direction)
+    def _line_plane_intersections(self, plane_normal, plane_point, ray_directions):
+        n_dot_u = np.tensordot(plane_normal, ray_directions, axes=([0],[1]))
         relative_ray_distance = -plane_normal.dot(- plane_point) / n_dot_u
 
         # we are casting a ray, intersections need to be in front of the camera
-        if relative_ray_distance < 0:
-            return None
+        relative_ray_distance[relative_ray_distance <= 0] = np.nan
 
-        intersection = relative_ray_distance * ray_direction
-        return Point(intersection[0], intersection[1], intersection[2])
+        ray_directions[:,0] = np.multiply(relative_ray_distance, ray_directions[:,0])
+        ray_directions[:,1] = np.multiply(relative_ray_distance, ray_directions[:,1])
+        ray_directions[:,2] = np.multiply(relative_ray_distance, ray_directions[:,2])
+
+        return ray_directions
 
 
 if __name__ == "__main__":
