@@ -24,7 +24,8 @@ class BallKickArea(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        ball_position = self.blackboard.world_model.get_ball_position_uv()
+        ball_data = self.blackboard.world_model.get_ball_position_uv_approach_frame()
+        ball_position = ball_data[0], ball_data[1]
 
         self.publish_debug_data("ball_position", {"u": ball_position[0], "v": ball_position[1]})
 
