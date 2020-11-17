@@ -21,7 +21,7 @@ if __name__ == "__main__":
     pose.header.frame_id = 'map'
     if len(sys.argv) > 1 and sys.argv[1] == '--bad':
         pose.pose.covariance[0] = 100
-        pose.pose.covariance[5] = 100
+        pose.pose.covariance[7] = 100
         pose.pose.covariance[35] = 100
 
     while not rospy.is_shutdown():
