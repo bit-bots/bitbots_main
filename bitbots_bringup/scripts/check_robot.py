@@ -13,7 +13,8 @@ import actionlib
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 from geometry_msgs.msg import Vector3, Quaternion
 from tf.transformations import quaternion_from_euler
-
+import dynamic_reconfigure.client
+from sensor_msgs.msg import JointState, Imu
 
 class bcolors:
     HEADER = '\033[95m'
@@ -31,11 +32,19 @@ def print_warn(str):
 
 
 diag_status = None
-
+had_diag_error = False
+had_diag_stale = False
+had_diag_warn = False
 
 def diagnostic_cb(msg: DiagnosticStatus):
-    global diag_status
+    global diag_status, had_diag_warn, had_diag_error, had_diag_stale
     diag_status = msg.level
+    if msg.level == DiagnosticStatus.WARN:
+        had_diag_warn = True
+    elif msg.level == DiagnosticStatus.ERROR:
+        had_diag_error = True
+    elif msg.level == DiagnosticStatus.STALE:
+        had_diag_stale = True
 
 
 left_pressure = None
@@ -79,11 +88,33 @@ def check_pressure(msg, min, max, foot_name):
         okay = False
     return okay
 
+got_pwm = False
+def pwm_callback(msg:JointState):
+    global got_pwm
+    for effort in msg.effort:
+        if effort = 100:
+            print_warn("Servo reported max PWM value. It is working at its limit!\n")
+
+#todo set correctly
+ACCLEL_LIMIT = 0
+ANGULAR_VEL_LIMIT = 0
+def imu_callback(msg: Imu):
+    for accel in msg.linear_acceleration:
+        if accel > ACCEL_LIMIT:
+            print_warn("IMU over accel limit! Orientation estimation will suffer.\n")
+    for angular_vel in msg.angular_velocity:
+        if angular_vel > ANGULAR_VEL_LIMIT:
+            print_warn("IMU over angular vel limit! Orientation estimation will suffer.\n")
 
 if __name__ == '__main__':
     print("### This script will check the robot hardware and motions. Please follow the instructions\n")
 
     rospy.init_node("checker")
+
+    # start subscribers
+    imu_sub = rospy.Subscriber("/imu/data", Imu, imu_callback, tcp_nodelay=True)
+    pwm_sub = rospy.Subscriber("/servo_PWM", JointState, pwm_callback, tcp_nodelay=True)
+
 
     # start necessary software
     print("First the motion software will be started. Please hold the robot and press enter.\n")
@@ -107,10 +138,21 @@ if __name__ == '__main__':
     print("Will check diagnostic status of robot.\n")
     diag_sub = rospy.Subscriber("/diagnostics_toplevel_state", DiagnosticStatus, diagnostic_cb, tcp_nodelay=True)
     rospy.sleep(3)
-    if diag_status == DiagnosticStatus.OK:
+
+    if not (had_diag_stale or had_diag_warn or had_diag_error):
         print("    Diagnostic status okay.")
     else:
         print_warn("    Diagnostics report problem. Please use rqt_monitor to investigate.")
+        if had_diag_error:
+            print_warn("    There were errors.")
+        if had_diag_warn:
+            print_warn("    There were warnings.")
+        if had_diag_stale:
+            print_warn("    There were stales.")
+        input("press enter when the issue is resulved")
+        had_diag_stale = False
+        had_diag_warn = False
+        had_diag_error = False
     print("\n\n")
 
     # check publishing frequency of imu, servos, pwm, goals, pressure, robot_state
@@ -182,6 +224,15 @@ if __name__ == '__main__':
     else:
         print_warn("Problem with pressure. "
                    "Please recalibrate the sensors using rosrun bitbots_ros_control pressure_calibaration\n")
+
+    # check servo PWM status
+    print("We will check the seervo PWM status now. This gives information if any servo is going on maximum torque.\n")
+    print("Will now try to activate PWM reading and wait till they are recieved.\n")
+    dyn_reconf_client = dynamic_reconfigure.client.Client("/ros_control", timeout=10.0)
+    client.update_configuration({read_pwm: True})
+    while not got_pwm:
+        rospy.sleep(0.1)
+    print("Got PWM values, will continue.\n")
 
     # check fall front
     input("\nNext we will check front falling detection.\n "
@@ -272,6 +323,18 @@ if __name__ == '__main__':
         client.active_cb = active_cb
         client.send_goal(goal)
         client.wait_for_result()
+
+    if not (had_diag_stale or had_diag_warn or had_diag_error):
+        print("Diagnostic status were okay during motions.")
+    else:
+        print_warn("Diagnostics report problem. Please use rqt_monitor to investigate.")
+        if had_diag_error:
+            print_warn("  There were errors.")
+        if had_diag_warn:
+            print_warn("  There were warnings.")
+        if had_diag_stale:
+            print_warn("  There were stales.")
+
 
     input("All tests finished, script will exit and turn off robot. Please hold robot and press enter")
     # shutdown the launch
