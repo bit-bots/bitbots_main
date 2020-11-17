@@ -6,8 +6,8 @@ namespace bitbots_dynup {
 DynUpNode::DynUpNode() :
     server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
     engine_(),
-    visualizer_("/debug/dynup"),
-    robot_model_loader_("/robot_description", false),
+    visualizer_("debug/dynup"),
+    robot_model_loader_("robot_description", false),
     listener_(tf_buffer_) {
 
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
@@ -23,7 +23,7 @@ DynUpNode::DynUpNode() :
   tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link",
                          ros::Duration(0.2));
   //arm max length, y offset, z offset from base link
-  engine_.init(0.37, 0.12, 0.19); //TODO: These values are hardcoded for now and should be calculated from the model instead.
+  engine_.init(0.37, 0.19, 0.19); //TODO: These values are hardcoded for now and should be calculated from the model instead.
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);
@@ -78,9 +78,9 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     engine_.setGoals(request);
     if(debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
-      visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
-      visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
-      visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+      //visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
+      //visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
+      //visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
     }
     loopEngine();
     bitbots_msgs::DynUpResult r;

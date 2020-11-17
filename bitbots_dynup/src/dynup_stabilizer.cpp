@@ -9,8 +9,8 @@ namespace bitbots_dynup {
 
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = std::move(kinematic_model);
-  ros::NodeHandle nhp = ros::NodeHandle("/dynup/pid_trunk_pitch");
-  ros::NodeHandle nhr = ros::NodeHandle("/dynup/pid_trunk_roll");
+  ros::NodeHandle nhp = ros::NodeHandle("dynup/pid_trunk_pitch");
+  ros::NodeHandle nhr = ros::NodeHandle("dynup/pid_trunk_roll");
 
   pid_trunk_pitch_.init(nhp, false);
   pid_trunk_roll_.init(nhr, false);
