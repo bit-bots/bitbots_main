@@ -78,14 +78,14 @@ class BlackboardCapsule:
 
     def timer_remaining(self, timer_name):
         """
-        Returns whether the timer is running
+        Returns how much seconds are remaining on the Timer
         :param timer_name: Name of the timer
-        :return: Whether the timer is running. False if the timer doesn't exist.
+        :return: The number of seconds left on the timer. -1 if the timer doesn't exist.
         """
 
         if timer_name not in self.timers:
             return -1
-        return rospy.Time.now() - self.timers[timer_name]
+        return (self.timers[timer_name] - rospy.Time.now()).to_sec()
 
     def timer_ended(self, timer_name):
         """
