@@ -7,11 +7,11 @@ class StartTimer(AbstractActionElement):
         super(StartTimer, self).__init__(blackboard, dsd, parameters)
 
         if 'name' not in parameters:
-            raise Exception('StartTimer: Name parameter is missing!')
+            raise KeyError('StartTimer: Name parameter is missing!')
         self.timer_name = parameters['name']
         if 'duration' not in parameters:
-            raise Exception(f'StartTimer ({self.timer_name}): Duration parameter is missing!')
-        self.duration = int(parameters['duration'])
+            raise KeyError(f'StartTimer ({self.timer_name}): Duration parameter is missing!')
+        self.duration = parameters['duration']
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.start_timer(self.timer_name, self.duration)
@@ -23,7 +23,7 @@ class EndTimer(AbstractActionElement):
         super(EndTimer, self).__init__(blackboard, dsd, parameters)
 
         if 'name' not in parameters:
-            raise Exception('EndTimer: Name parameter is missing!')
+            raise KeyError('EndTimer: Name parameter is missing!')
         self.timer_name = parameters['name']
 
     def perform(self, reevaluate=False):

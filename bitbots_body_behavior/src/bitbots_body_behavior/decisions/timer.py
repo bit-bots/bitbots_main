@@ -7,7 +7,7 @@ class TimerRunning(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(TimerRunning, self).__init__(blackboard, dsd, parameters)
         if 'name' not in parameters:
-            raise Exception('TimerRunning: Name parameter is missing!')
+            raise KeyError('TimerRunning: Name parameter is missing!')
         self.name = parameters['name']
         self.last_result = ''
 
@@ -33,7 +33,7 @@ class TimerEnded(AbstractDecisionElement):
         super(TimerEnded, self).__init__(blackboard, dsd, parameters)
 
         if 'name' not in parameters:
-            raise Exception('TimerEnded: Name parameter is missing!')
+            raise KeyError('TimerEnded: Name parameter is missing!')
         self.name = parameters['name']
 
     def perform(self, reevaluate=False):
