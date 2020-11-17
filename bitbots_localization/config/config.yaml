@@ -13,6 +13,7 @@
   #############
 
   line_topic: '/line_relative'
+  line_pointcloud_topic: '/line_mask_relative_pc'
   goal_topic: '/goals_simulated'
   fieldboundary_topic: '/field_boundary_relative'
   fieldboundary_in_image_topic: '/field_boundary_in_image'

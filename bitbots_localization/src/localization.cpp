@@ -26,6 +26,7 @@ Localization::Localization() : line_points_(), tfListener(tfBuffer) {
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
   line_subscriber_ = nh_.subscribe(config.line_topic, 1, &Localization::LineCallback, this);
+  line_point_cloud_subscriber_ = nh_.subscribe(config.line_pointcloud_topic, 1, &Localization::LinePointcloudCallback, this);
   goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalPostsCallback, this);
   fieldboundary_subscriber_ = nh_.subscribe(config.fieldboundary_topic, 1, &Localization::FieldboundaryCallback,
                                             this);
@@ -56,6 +57,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   crosses_map_.reset(new Map(config.map_path_crosses, config));
 
   line_information_relative_.header.stamp = ros::Time(0);
+  line_pointcloud_relative_.header.stamp = ros::Time(0);
   goal_posts_relative_.header.stamp = ros::Time(0);
   fieldboundary_relative_.header.stamp = ros::Time(0);
 
@@ -173,6 +175,10 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
 
 void Localization::LineCallback(const hlm::LineInformationRelative &msg) {
   line_information_relative_ = msg;
+}
+
+void Localization::LinePointcloudCallback(const sm::PointCloud2 &msg) {
+  line_pointcloud_relative_ = msg;
 }
 
 void Localization::GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg) {
@@ -296,6 +302,9 @@ void Localization::updateMeasurements() {
     robot_pose_observation_model_->set_measurement_t_crossings(line_information_relative_);
     }
   }
+  if (line_pointcloud_relative_.header.stamp != last_stamp_lines_pc && config_.lines_factor) {
+    robot_pose_observation_model_->set_measurement_lines_pc(line_pointcloud_relative_);
+  }
   if (config_.goals_factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goal(goal_posts_relative_);
   }
@@ -305,6 +314,7 @@ void Localization::updateMeasurements() {
 
   // Set timestamps to mark past messages
   last_stamp_lines = line_information_relative_.header.stamp;
+  last_stamp_lines_pc = line_pointcloud_relative_.header.stamp;
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
 }
