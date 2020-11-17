@@ -57,7 +57,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   double arm_max_length_;
   double arm_offset_y_;
   double arm_offset_z_;
-  bool front_;
+  int direction_;
 
   bitbots_splines::PoseSpline foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;

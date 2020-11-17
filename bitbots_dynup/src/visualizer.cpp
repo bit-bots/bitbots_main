@@ -23,7 +23,6 @@ Visualizer::Visualizer(const std::string &base_topic) :
                                     const std::string &frame) {
         //if (spline_publisher_.getNumSubscribers() == 0)
         //    return;
-
         visualization_msgs::MarkerArray path = getPath(splines, frame, params_.spline_smoothness);
 
         spline_publisher_.publish(path);

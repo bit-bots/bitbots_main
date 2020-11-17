@@ -11,8 +11,8 @@ struct DynupResponse {
 };
 
 struct DynupRequest {
-  /* Whether the robot should stand up from the front or back */
-  bool front;
+  /* Whether the robot should stand up from the front, back or from squad */
+  std::string direction;
   geometry_msgs::Pose l_foot_pose;
   geometry_msgs::Pose r_foot_pose;
   geometry_msgs::Pose l_hand_pose;

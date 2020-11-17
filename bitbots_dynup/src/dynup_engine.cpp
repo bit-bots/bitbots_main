@@ -1,4 +1,6 @@
 #include "bitbots_dynup/dynup_engine.h"
+#include <ros/ros.h>
+#include <ros/console.h>
 
 namespace bitbots_dynup {
 
@@ -446,7 +448,7 @@ void DynupEngine::calcSquatSplines(double time) {
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
   initializeSplines(goals.l_hand_pose, goals.r_hand_pose, goals.l_foot_pose, goals.r_foot_pose);
-  if(goals.front){
+  if(goals.direction == "front"){
      duration_ = params_.time_hands_side + 
                  params_.time_foot_close + 
                  params_.time_hands_front + 
@@ -455,17 +457,23 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                  params_.time_to_squat +
                  params_.wait_in_squat +
                  params_.rise_time;
-     front_ = true;
+      direction_ = 1;
      calcFrontSplines();
-  }else{
+  }
+  else if(goals.direction == "back"){
      duration_ = params_.time_legs_close +
                  params_.time_foot_ground +
                  params_.time_squat_push +
                  params_.time_full_squat +
                  params_.wait_in_squat +
                  params_.rise_time;
-     front_ = false;
+      direction_ = 0;
      calcBackSplines();
+  }
+  else {
+      duration_ = params_.rise_time;
+      direction_ = 2;
+      calcSquatSplines(0);
   }
 }
 
@@ -475,12 +483,13 @@ int DynupEngine::getPercentDone() const {
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
 bool DynupEngine::isStabilizingNeeded() const {
-    return (front_ && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
-                               params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat) ||
-           (!front_ && time_ >= params_.time_legs_close +
-                                params_.time_hands_down +
-                                params_.time_squat_push +
-                                params_.time_full_squat);
+    return (direction_ == 1 && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
+                                        params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat) ||
+           (direction_ == 0 && time_ >= params_.time_legs_close +
+                                        params_.time_hands_down +
+                                        params_.time_squat_push +
+                                        params_.time_full_squat) ||
+            (direction_ == 2);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {

@@ -71,16 +71,19 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
-    request.front = goal->front;
+    request.direction = goal->direction;
     request.r_foot_pose = std::get<1>(poses.value());
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
     if(debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
-      //visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
-      //visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
-      //visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+      visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
+      // Workaround for an error in the Visualizer. TODO
+      if(request.direction == "front" || request.direction == "back") {
+          visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
+          visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+      }
     }
     loopEngine();
     bitbots_msgs::DynUpResult r;
