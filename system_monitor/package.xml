@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>system_monitor</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>
     Monitor a systems workload and publish that information to ROS
   </description>
