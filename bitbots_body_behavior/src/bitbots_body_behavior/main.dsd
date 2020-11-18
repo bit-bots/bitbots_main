@@ -50,7 +50,7 @@ $LocalizationAvailable
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_block + duration:%behavior/body/reorientation_block_duration
+            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $JustUnpenalized
                 YES --> #Positioning
                 NO --> $BallSeen
@@ -58,11 +58,11 @@ $LocalizationAvailable
                         YES --> #GoAndKickBallMapGoal
                         NO --> @Stop, @LookAtBall
                     NO --> @SearchBall
-        LOW --> $TimerEnded + name:reorientation_block
+        LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
             YES --> $TimerRunning + name:reorientation
                 YES --> $TimerEnded + name:reorientation
-                    YES --> @StartTimer + name:reorientation_block + duration:%behavior/body/reorientation_block_duration
+                    YES --> @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
                     NO --> @LookAtFieldFeatures, @Stop
                 NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
     NO --> $JustUnpenalized
@@ -78,17 +78,17 @@ $JustUnpenalized
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_block + duration:%behavior/body/reorientation_block_duration
+            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $JustUnpenalized
                 YES --> #Positioning
                 NO --> $BallSeen
                     YES --> #GoAndKickBallMapGoal
                     NO --> @Stop, @SearchBall
-        LOW --> $TimerEnded + name:reorientation_block
+        LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationOffenseBehavior
             YES --> $TimerRunning + name:reorientation
                 YES --> $TimerEnded + name:reorientation
-                    YES --> @StartTimer + name:reorientation_block + duration:%behavior/body/reorientation_block_duration
+                    YES --> @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
                     NO --> @LookAtFieldFeatures, @Stop
                 NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
     NO --> #NoLocalizationOffenseBehavior
@@ -97,7 +97,7 @@ $LocalizationAvailable
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_block + duration:%behavior/body/reorientation_block_duration
+            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $JustUnpenalized
                 YES --> #Positioning
                 NO --> $BallSeen
@@ -107,11 +107,11 @@ $LocalizationAvailable
                             YES --> #GoAndKickBallAway
                             NO --> @GoToDefensePosition
                     NO --> @Stop, @SearchBall
-        LOW --> $TimerEnded + name:reorientation_block
+        LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationPlayerBehavior
             YES --> $TimerRunning + name:reorientation
                 YES --> $TimerEnded + name:reorientation
-                    YES --> @StartTimer + name:reorientation_block + duration:%behavior/body/reorientation_block_duration
+                    YES --> @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
                     NO --> @LookAtFieldFeatures, @Stop
                 NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
     NO --> #NoLocalizationPlayerBehavior

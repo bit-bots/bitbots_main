@@ -106,6 +106,6 @@ behavior:
     reorientation_duration: 10
 
     # Duration for which the robot pauses between reorientation runs.
-    reorientation_block_duration: 30
+    reorientation_pause_duration: 30
 
 role: "offense"
