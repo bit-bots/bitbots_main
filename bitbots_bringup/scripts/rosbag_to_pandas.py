@@ -5,6 +5,10 @@ import argparse
 import rosmsg
 import pandas as pd
 
+"""
+This script reads in a rosbag and ouputs a pandas dataframe representration of the data. This is usefull for later 
+processing, e.g. in scikit-learn or for creating plots.
+"""
 
 class COLORS:
     HEADER = '\033[95m'
