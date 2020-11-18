@@ -13,18 +13,23 @@ class TimerRunning(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         """
-        Determines whether the timer is currently running.
+        Determines whether the timer is currently running. Is only reevaluated if the last result was 'NO'.
         :param reevaluate:
         :return:
         """
         self.publish_debug_data(f"timer {self.name}", self.blackboard.blackboard.timer_remaining(self.name))
         if self.blackboard.blackboard.timer_running(self.name):
             self.last_result = 'YES'
-            return 'YES'
-        self.last_result = 'NO'
-        return 'NO'
+        else:
+            self.last_result = 'NO'
+        return self.last_result
 
     def get_reevaluate(self):
+        """
+        This decision is only evaluated if the last result was 'NO'.
+        This allows to define a situation in which the timer has ended after it was started before.
+        :return: Whether the decision is reevaluated (When the last result was 'NO')
+        """
         return self.last_result == 'NO'
 
 

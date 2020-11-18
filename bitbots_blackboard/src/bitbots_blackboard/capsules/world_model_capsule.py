@@ -309,6 +309,10 @@ class WorldModelCapsule:
         self.pose = pos
 
     def get_current_position(self):
+        """
+        The current position as determined by the localization
+        :return: The current position as determined by the localization
+        """
         try:
             # get the most recent transform
             transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time(0))
@@ -320,14 +324,22 @@ class WorldModelCapsule:
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
     def get_localization_precision(self):
+        """
+        Returns the current localization precision based on the covariance matrix.
+        :return: The current localization precision based on the covariance matrix.
+        """
         x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
         y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
         theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
         return (x_sdev, y_sdev, theta_sdev)
 
     def localization_precision_in_threshold(self) -> bool:
+        """
+        Returns whether the last localization precision values were in the threshold defined in the settings.
+        :return: Whether the last localization precision values were in the threshold defined in the settings.
+        """
         # Check whether we received a message in the last pose_lost_time seconds.
-        if rospy.Time.now() - self.pose.header.stamp > rospy.Duration.from_sec(self.config['pose_lost_time']):
+        if not self.localization_pose_current():
             return False
         # get the standard deviation values of the covariance matrix
         precision = self.get_localization_precision()
@@ -336,8 +348,14 @@ class WorldModelCapsule:
                precision[1] < self.config['pose_precision_threshold']['y_sdev'] and \
                precision[2] < self.config['pose_precision_threshold']['theta_sdev']
 
-    def localization_pose_current(self):
+    def localization_pose_current(self) -> bool:
+        """
+        Returns whether the last localization pose was receives in the last pose_lost_time-setting seconds.
+        :return: Whether the last localization pose was receives in the last pose_lost_time-setting seconds.
+        """
         return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.config['pose_lost_time'])
+
+
     #############
     # ## Common #
     #############
