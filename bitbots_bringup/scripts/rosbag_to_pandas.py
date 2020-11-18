@@ -10,6 +10,7 @@ This script reads in a rosbag and ouputs a pandas dataframe representration of t
 processing, e.g. in scikit-learn or for creating plots.
 """
 
+
 class COLORS:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -89,5 +90,3 @@ for i, frame in enumerate(frames):
     print(f"{COLORS.OKBLUE}{selected_topics_list[i]}{COLORS.ENDC}")
     print(frame.info())
     frame.to_pickle(selected_topics_list[i][1:].replace("/", "-") + ".pickle")
-
-
