@@ -310,8 +310,7 @@ class WorldModelCapsule:
 
     def get_current_position(self):
         """
-        The current position as determined by the localization
-        :return: The current position as determined by the localization
+        Returns the current position as determined by the localization
         """
         try:
             # get the most recent transform
@@ -326,7 +325,6 @@ class WorldModelCapsule:
     def get_localization_precision(self):
         """
         Returns the current localization precision based on the covariance matrix.
-        :return: The current localization precision based on the covariance matrix.
         """
         x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
         y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
@@ -336,7 +334,6 @@ class WorldModelCapsule:
     def localization_precision_in_threshold(self) -> bool:
         """
         Returns whether the last localization precision values were in the threshold defined in the settings.
-        :return: Whether the last localization precision values were in the threshold defined in the settings.
         """
         # Check whether we received a message in the last pose_lost_time seconds.
         if not self.localization_pose_current():
@@ -350,8 +347,7 @@ class WorldModelCapsule:
 
     def localization_pose_current(self) -> bool:
         """
-        Returns whether the last localization pose was receives in the last pose_lost_time-setting seconds.
-        :return: Whether the last localization pose was receives in the last pose_lost_time-setting seconds.
+        Returns whether the last localization pose was received in the last pose_lost_time-setting seconds.
         """
         return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.config['pose_lost_time'])
 
