@@ -3,6 +3,9 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 
 class JustUnpenalized(AbstractDecisionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(JustUnpenalized, self).__init__(blackboard, dsd, parameters)
+
     def perform(self, reevaluate=False):
         """
         Determines whether the robot was just unpenalized.

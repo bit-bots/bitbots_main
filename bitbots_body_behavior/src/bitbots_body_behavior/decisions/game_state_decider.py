@@ -6,7 +6,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 class GameStateDecider(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GameStateDecider, self).__init__(blackboard, dsd)
+        super(GameStateDecider, self).__init__(blackboard, dsd, parameters)
         self.game_states = {
             0: 'INITIAL',
             1: 'READY',

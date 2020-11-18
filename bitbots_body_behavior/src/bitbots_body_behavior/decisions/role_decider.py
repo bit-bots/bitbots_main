@@ -7,7 +7,7 @@ class RoleDecider(AbstractDecisionElement):
     Decides what kind of behaviour the robot performs
     """
     def __init__(self, blackboard, dsd, parameters=None):
-        super(RoleDecider, self).__init__(blackboard, dsd)
+        super(RoleDecider, self).__init__(blackboard, dsd, parameters)
         self.role = self.blackboard.blackboard.duty
 
     def perform(self, reevaluate=False):

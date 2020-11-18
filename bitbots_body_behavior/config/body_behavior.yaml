@@ -102,4 +102,10 @@ behavior:
     # (This should not happen unless the localization has died. RIP in this case.)
     pose_lost_time: 10
 
+    # Duration for which the robot tries to orient itself, when the localization precision is low.
+    reorientation_duration: 10
+
+    # Duration for which the robot pauses between reorientation runs.
+    reorientation_pause_duration: 30
+
 role: "offense"

@@ -21,6 +21,7 @@ class BlackboardCapsule:
 
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30.0))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.timers = dict()
 
     #####################
     # ## Tracking Part ##
@@ -43,3 +44,56 @@ class BlackboardCapsule:
             return self.state.state == RobotControlState.WALKING
         else:
             return False
+
+    #############
+    # ## Timer ##
+    #############
+
+    def start_timer(self, timer_name, duration_secs):
+        """
+        Starts a timer
+        :param timer_name: Name of the timer
+        :param duration_secs: Duration of the timer in seconds
+        :return: None
+        """
+        self.timers[timer_name] = rospy.Time.now() + rospy.Duration.from_sec(int(duration_secs))
+
+    def end_timer(self, timer_name):
+        """
+        Ends a timer
+        :param timer_name: Name of the timer
+        :return: None
+        """
+        self.timers[timer_name] = rospy.Time.now()
+
+    def timer_running(self, timer_name):
+        """
+        Returns whether the timer is running
+        :param timer_name: Name of the timer
+        :return: Whether the timer is running. False if the timer doesn't exist.
+        """
+        if timer_name not in self.timers:
+            return False
+        return rospy.Time.now() < self.timers[timer_name]
+
+    def timer_remaining(self, timer_name):
+        """
+        Returns how much seconds are remaining on the Timer
+        :param timer_name: Name of the timer
+        :return: The number of seconds left on the timer. -1 if the timer doesn't exist.
+        """
+
+        if timer_name not in self.timers:
+            return -1
+        return (self.timers[timer_name] - rospy.Time.now()).to_sec()
+
+    def timer_ended(self, timer_name):
+        """
+        Returns whether the timer has ended
+        :param timer_name: Name of the timer
+        :return: Whether the timer has ended. Also true, if timer doesn't exist.
+        """
+        if timer_name not in self.timers:
+            return True  # Don't wait for a non-existing Timer
+        return rospy.Time.now() > self.timers[timer_name]
+
