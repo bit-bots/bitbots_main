@@ -16,6 +16,7 @@ def collect_all():
     msgs = []
     running_processes = len(psutil.pids())
     timings = _get_cpu_stats()
+    overall_usage = 0
 
     for cpu, timings in timings.items():
         cpu_total = sum(timings)
@@ -27,8 +28,11 @@ def collect_all():
             cpu_name=cpu,
             cpu_usage=cpu_usage
         ))
+        overall_usage += cpu_usage
 
-    return running_processes, msgs
+    # compute mean of cpu usages
+    overall_usage_percentage = overall_usage / len(timings)
+    return running_processes, msgs, overall_usage_percentage
 
 
 def _get_cpu_stats():
