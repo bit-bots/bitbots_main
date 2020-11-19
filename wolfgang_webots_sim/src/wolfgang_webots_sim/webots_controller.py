@@ -6,8 +6,8 @@ import os
 try:
     from controller import Robot, Node, Supervisor, Field
 except:
-    print(f'Please execute "source {os.path.dirname(os.path.realpath(__file__))}/setenvs.sh" first')
-    exit(0)
+    env_file = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../scripts/setenvs.sh'))
+    exit(f'Please execute "source {env_file}" first')
 import rospy
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import JointState, Imu, Image
