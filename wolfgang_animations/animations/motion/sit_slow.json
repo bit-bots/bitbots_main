@@ -1,0 +1,91 @@
+{
+    "author": "Marc",
+    "description": "Sit robot down",
+    "hostname": "marc",
+    "keyframes": [
+        {
+            "duration": 1.0,
+            "pause": 10.0,
+            "goals": {
+                "LShoulderPitch": 0.0,
+                "LShoulderRoll": 0.0,
+                "RShoulderRoll": 0.0,
+                "HeadTilt": 0.0,
+                "LKnee": 0.0,
+                "RHipYaw": 0.0,
+                "LAnklePitch": 0.0,
+                "RKnee": 0.0,
+                "RAnkleRoll": 0.0,
+                "RAnklePitch": 0.0,
+                "LHipPitch": 0.0,
+                "LHipYaw": 0.0,
+                "LHipRoll": 0.0,
+                "RHipRoll": 0.0,
+                "LAnkleRoll": 0.0,
+                "LElbow": 0,
+                "RElbow": 0,
+                "RHipPitch": 0,
+                "HeadPan": 0.0,
+                "RShoulderPitch": 0.0
+            },
+            "name": "init"
+        },
+        {
+            "duration": 30.0,
+            "goals": {
+                "HeadPan": 0,
+                "HeadTilt": 0,
+                "LAnklePitch": -80, 
+                "LAnkleRoll": 0, 
+                "LElbow": -88, 
+                "LHipPitch": 65, 
+                "LHipRoll": -7, 
+                "LHipYaw": 2, 
+                "LKnee": 157, 
+                "LShoulderPitch": 11, 
+                "LShoulderRoll": -14, 
+                "RAnklePitch": 80, 
+                "RAnkleRoll": 1, 
+                "RElbow": 97, 
+                "RHipPitch": -63, 
+                "RHipRoll": -3, 
+                "RHipYaw": 0, 
+                "RKnee": -157, 
+                "RShoulderPitch": -14, 
+                "RShoulderRoll": 14
+            }, 
+            "name": "sit",
+            "pause": 10.0
+        },
+         {
+            "duration": 30.0,
+            "pause": 1.0,
+            "goals": {
+                "LShoulderPitch": 0.0,
+                "LShoulderRoll": 0.0,
+                "RShoulderRoll": 0.0,
+                "HeadTilt": 0.0,
+                "LKnee": 0.0,
+                "RHipYaw": 0.0,
+                "LAnklePitch": 0.0,
+                "RKnee": 0.0,
+                "RAnkleRoll": 0.0,
+                "RAnklePitch": 0.0,
+                "LHipPitch": 0.0,
+                "LHipYaw": 0.0,
+                "LHipRoll": 0.0,
+                "RHipRoll": 0.0,
+                "LAnkleRoll": 0.0,
+                "LElbow": 0,
+                "RElbow": 0,
+                "RHipPitch": 0,
+                "HeadPan": 0.0,
+                "RShoulderPitch": 0.0
+            },
+            "name": "init"
+         }
+    ], 
+    "last_edited": "2020-08-21 15:51:35.504961",
+    "name": "Sit",
+    "version": "0"
+}
