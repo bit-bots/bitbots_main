@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>wolfgang_description</name>
-  <version>2.1.0</version>
+  <version>2.1.1</version>
   <description>URDF description of the wolfgang robot.</description>
   
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
