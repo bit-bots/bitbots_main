@@ -7,7 +7,11 @@ import rospkg
 import rospy
 
 from wolfgang_webots_sim.utils import fix_webots_folder
-from wolfgang_webots_sim.webots_controller import WebotsController
+try:
+    from wolfgang_webots_sim.webots_controller import WebotsController
+except:
+    print(f'Please execute "source {os.path.dirname(os.path.realpath(__file__))}/setenvs.sh" first')
+    exit(0)
 
 rospack = rospkg.RosPack()
 path = rospack.get_path("wolfgang_webots_sim")
