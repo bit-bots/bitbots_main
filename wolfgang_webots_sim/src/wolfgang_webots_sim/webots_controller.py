@@ -131,6 +131,7 @@ class WebotsController:
         if self.ros_active:
             self.publish_imu()
             self.publish_joint_states()
+            self.publish_camera()
             self.publish_clock()
 
     def publish_clock(self):
