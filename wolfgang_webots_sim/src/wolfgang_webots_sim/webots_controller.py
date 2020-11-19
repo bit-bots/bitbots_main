@@ -187,15 +187,16 @@ class WebotsController:
         msg.header.stamp = rospy.Time.from_seconds(self.time)
         msg.header.frame_id = "imu_frame"
 
+        # change order because webots has different axis
         accel_vels = self.accel.getValues()
-        msg.linear_acceleration.x = accel_vels[0]
-        msg.linear_acceleration.y = accel_vels[1]
-        msg.linear_acceleration.z = accel_vels[2]
+        msg.linear_acceleration.x = accel_vels[2]
+        msg.linear_acceleration.y = -accel_vels[0]
+        msg.linear_acceleration.z = accel_vels[1]
 
         gyro_vels = self.gyro.getValues()
-        msg.angular_velocity.x = gyro_vels[0]
-        msg.angular_velocity.y = gyro_vels[1]
-        msg.angular_velocity.z = gyro_vels[2]
+        msg.angular_velocity.x = gyro_vels[2]
+        msg.angular_velocity.y = -gyro_vels[0]
+        msg.angular_velocity.z = gyro_vels[1]
 
         pos, rpy = self.get_robot_pose_rpy()
         quat_tf = quaternion_from_euler(*rpy)
