@@ -56,7 +56,7 @@ $LocalizationAvailable
                 NO --> $BallSeen
                     YES --> $BallDangerous
                         YES --> #GoAndKickBallMapGoal
-                        NO --> @Stop, @LookAtBall
+                        NO --> @GoToBlockPosition, @LookAtBall
                     NO --> @SearchBall
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
