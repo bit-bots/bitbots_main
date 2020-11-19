@@ -91,7 +91,7 @@ void PressureConverter::pressureCallback(const bitbots_msgs::FootPressureConstPt
   current_index_ = (current_index_ + 1) % average_;
 
   filtered_msg.left_front = std::max(filtered_msg.left_front, 0.0);
-  filtered_msg.left_back = std::max(filtered_msg.left_front, 0.0);
+  filtered_msg.left_back = std::max(filtered_msg.left_back, 0.0);
   filtered_msg.right_front = std::max(filtered_msg.right_front, 0.0);
   filtered_msg.right_back = std::max(filtered_msg.right_back, 0.0);
 
