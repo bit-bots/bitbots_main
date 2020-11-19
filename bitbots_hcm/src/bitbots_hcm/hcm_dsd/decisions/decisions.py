@@ -80,7 +80,7 @@ class CheckMotors(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         self.clear_debug_data()
-        if self.blackboard.simulation_active or self.blackboard.visualization_active:
+        if self.blackboard.visualization_active:
             # we will have no problems with hardware in simulation or visualization
             return "OKAY"
 
@@ -92,6 +92,13 @@ class CheckMotors(AbstractDecisionElement):
                 and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
         self.last_msg = self.blackboard.current_joint_state
+
+        if self.blackboard.simulation_active:
+            # Some simulators will give exact same joint messages which look like errors, so ignore this case
+            if self.last_msg:
+                return "OKAY"
+            else:
+                return "MOTORS_NOT_STARTED"
 
         # check if we want to turn the motors off after not using them for a longer time
         if self.blackboard.last_motor_goal_time is not None \
@@ -147,9 +154,8 @@ class CheckIMU(AbstractDecisionElement):
         self.had_problem = False
 
     def perform(self, reevaluate=False):
-        if self.blackboard.visualization_active or self.blackboard.simulation_active:
+        if self.blackboard.visualization_active:
             # In visualization, we do not have an IMU. Therefore, return OKAY to ignore that.
-            # Some simulators will give exact same IMU messages which look like errors, so ignore this case too
             return "OKAY"
 
         # we will get always the same message if there is no connection, so check if it differs
@@ -158,6 +164,13 @@ class CheckIMU(AbstractDecisionElement):
                 and not self.blackboard.imu_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
         self.last_msg = self.blackboard.imu_msg
+
+        if self.blackboard.simulation_active:
+            # Some simulators will give exact same IMU messages which look like errors, so ignore this case
+            if self.last_msg:
+                return "OKAY"
+            else:
+                return "IMU_NOT_STARTED"
 
         if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
             if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
