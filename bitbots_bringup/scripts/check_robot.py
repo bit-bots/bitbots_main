@@ -99,7 +99,7 @@ ACCEL_LIMIT = 35
 ANGULAR_VEL_LIMIT = 10
 def imu_callback(msg: Imu):
     for accel in msg.linear_acceleration:
-        if accel < -ACCEL_LIMIT or accel > ACCEL_LIMIT:
+        if abs(accel) > ACCEL_LIMIT:
             print_warn("IMU over accel limit! Orientation estimation will suffer.\n")
     for angular_vel in msg.angular_velocity:
         if abs(angular_vel) > ANGULAR_VEL_LIMIT:
