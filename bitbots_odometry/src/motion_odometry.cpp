@@ -131,10 +131,14 @@ void MotionOdometry::supportCallback(const std_msgs::Char msg) {
     }
     // on receiving first support state we should also set the location in the world correctly
     // we assume that our baseline is on x=0 and y=0
-    geometry_msgs::TransformStamped
-            base_to_current_support_msg = tf_buffer_.lookupTransform("base_link", current_support_link, ros::Time(0));
-    odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
-                                        -1 * base_to_current_support_msg.transform.translation.y, 0});
+    try{
+        geometry_msgs::TransformStamped
+                base_to_current_support_msg = tf_buffer_.lookupTransform("base_link", current_support_link, ros::Time(0), ros::Duration(10.0));
+        odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
+                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
+    }catch (tf2::TransformException ex){
+        ROS_WARN("Could not initialize motion odometry correctly, since there were no transforms available fast enough on startup. Will initialize with 0,0,0");
+    }
   }
 }
 
