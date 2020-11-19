@@ -2035,6 +2035,15 @@ PROTO Wolfgang [
                       }
                     ]
                     name "camera_optical_frame"
+                    physics Physics {
+                      density -1
+                      mass 0.0001
+                      centerOfMass [ 0.0 0.0 0.0 ]
+                      inertiaMatrix [
+                        3.442650e-04 3.337130e-04 4.218980e-04
+                        -2.072630e-05 1.058260e-06 5.117220e-05
+                      ]
+                    }
                   }
                   Solid {
                     translation -0.025450 0.053500 -0.023500

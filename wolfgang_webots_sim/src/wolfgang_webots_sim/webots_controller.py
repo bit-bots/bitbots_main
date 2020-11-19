@@ -2,15 +2,21 @@ import subprocess
 import time
 
 import tf
-from controller import Robot, Node, Supervisor, Field
+import os
+try:
+    from controller import Robot, Node, Supervisor, Field
+except:
+    print(f'Please execute "source {os.path.dirname(os.path.realpath(__file__))}/setenvs.sh" first')
+    exit(0)
 import rospy
+from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import JointState, Imu, Image
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand
 import math
-import os
+from tf.transformations import quaternion_from_euler
 
 G = 9.81
 
@@ -180,22 +186,20 @@ class WebotsController:
         msg = Imu()
         msg.header.stamp = rospy.Time.from_seconds(self.time)
         msg.header.frame_id = "imu_frame"
+
         accel_vels = self.accel.getValues()
+        msg.linear_acceleration.x = accel_vels[0]
+        msg.linear_acceleration.y = accel_vels[1]
+        msg.linear_acceleration.z = accel_vels[2]
 
-        msg.linear_acceleration.x = ((accel_vels[0] - 512.0) / 512.0) * 3 * G
-        msg.linear_acceleration.y = ((accel_vels[1] - 512.0) / 512.0) * 3 * G
-        msg.linear_acceleration.z = ((accel_vels[2] - 512.0) / 512.0) * 3 * G
         gyro_vels = self.gyro.getValues()
-        msg.angular_velocity.x = ((gyro_vels[0] - 512.0) / 512.0) * 1600 * (
-                math.pi / 180)  # is 400 deg/s the real value
-        msg.angular_velocity.y = ((gyro_vels[1] - 512.0) / 512.0) * 1600 * (math.pi / 180)
-        msg.angular_velocity.z = ((gyro_vels[2] - 512.0) / 512.0) * 1600 * (math.pi / 180)
+        msg.angular_velocity.x = gyro_vels[0]
+        msg.angular_velocity.y = gyro_vels[1]
+        msg.angular_velocity.z = gyro_vels[2]
 
-        # todo compute
-        msg.orientation.x = 0
-        msg.orientation.y = 0
-        msg.orientation.z = 0
-        msg.orientation.w = 1
+        pos, rpy = self.get_robot_pose_rpy()
+        quat_tf = quaternion_from_euler(*rpy)
+        msg.orientation = Quaternion(quat_tf[0], quat_tf[1], quat_tf[2], quat_tf[3])
         return msg
 
     def publish_imu(self):

@@ -9,11 +9,7 @@ import rospy
 import argparse
 
 from wolfgang_webots_sim.utils import fix_webots_folder
-try:
-    from wolfgang_webots_sim.webots_controller import WebotsController
-except:
-    print(f'Please execute "source {os.path.dirname(os.path.realpath(__file__))}/setenvs.sh" first')
-    exit(0)
+from wolfgang_webots_sim.webots_controller import WebotsController
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--nogui', help="Deactivate gui", action='store_true')
