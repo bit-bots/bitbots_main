@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
         while not rospy.is_shutdown():
             running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if config['do_cpu'] else (
-                -1, [])
+                -1, [], 0)
             memory_available, memory_used, memory_total = memory.collect_all() if config['do_memory'] else (-1, -1, -1)
             interfaces = network_interfaces.collect_all()
 
