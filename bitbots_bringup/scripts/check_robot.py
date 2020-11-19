@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 
 import rospy
 import rosnode
@@ -30,6 +31,11 @@ class bcolors:
 def print_warn(str):
     print(bcolors.WARNING + str + bcolors.ENDC)
 
+def print_info(str):
+    print(bcolors.OKGREEN + str + bcolors.ENDC)
+
+def input_info(str):
+    return input(bcolors.OKBLUE + str + bcolors.ENDC)
 
 diag_status = None
 had_diag_error = False
@@ -64,10 +70,10 @@ def pressure_cb(msg, is_left=True):
 def is_motion_started():
     node_names = rosnode.get_node_names("/")
     started = True
-    nodes_in_motion = {"/ros_control", "/hcm", "/walking", "/animation", "/dynamic_kick"}
+    nodes_in_motion = {"/ros_control", "/hcm", "/walking", "/animation", "/dynamic_kick", "/motion_odometry", "/odometry_fuser", "/DynupNode"}
     for node in nodes_in_motion:
         if not node in node_names:
-            print(F"{node} not running")
+            print_info(F"{node} not running")
             started = False
     return started
 
@@ -91,6 +97,7 @@ def check_pressure(msg, min, max, foot_name):
 got_pwm = False
 def pwm_callback(msg:JointState):
     global got_pwm
+    got_pwm= True
     for effort in msg.effort:
         if effort == 100:
             print_warn("Servo reported max PWM value. It is working at its limit!\n")
@@ -98,15 +105,15 @@ def pwm_callback(msg:JointState):
 ACCEL_LIMIT = 35
 ANGULAR_VEL_LIMIT = 10
 def imu_callback(msg: Imu):
-    for accel in msg.linear_acceleration:
+    for accel in [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]:
         if accel < -ACCEL_LIMIT or accel > ACCEL_LIMIT:
             print_warn("IMU over accel limit! Orientation estimation will suffer.\n")
-    for angular_vel in msg.angular_velocity:
+    for angular_vel in [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]:
         if angular_vel < -ANGULAR_VEL_LIMIT or angular_vel > ANGULAR_VEL_LIMIT:
             print_warn("IMU over angular vel limit! Orientation estimation will suffer.\n")
 
 if __name__ == '__main__':
-    print("### This script will check the robot hardware and motions. Please follow the instructions\n")
+    print_info("### This script will check the robot hardware and motions. Please follow the instructions\n")
 
     rospy.init_node("checker")
 
@@ -116,30 +123,31 @@ if __name__ == '__main__':
 
 
     # start necessary software
-    print("First the motion software will be started. Please hold the robot and press enter.\n")
-    input("Press Enter to continue...")
+    print_info("First the motion software will be started. Please hold the robot, turn on servo power and press enter.\n")
+    input_info("Press Enter to continue...")
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
     rospack = rospkg.RosPack()
     launch = roslaunch.parent.ROSLaunchParent(uuid, [
         rospack.get_path('bitbots_bringup') + "/launch/motion_standalone.launch"])
     launch.start()
+    rospy.sleep(5)
     while True:
         if is_motion_started():
             rospy.sleep(5)
             break
         else:
-            print("Waiting for software to be started \n")
+            print_info("Waiting for software to be started \n")
             rospy.sleep(1)
-    print("\n\n")
+    print_info("\n\n")
 
     # check diagnostic status
-    print("Will check diagnostic status of robot.\n")
+    print_info("Will check diagnostic status of robot.\n")
     diag_sub = rospy.Subscriber("/diagnostics_toplevel_state", DiagnosticStatus, diagnostic_cb, tcp_nodelay=True)
     rospy.sleep(3)
 
     if not (had_diag_stale or had_diag_warn or had_diag_error):
-        print("    Diagnostic status okay.")
+        print_info("    Diagnostic status okay.")
     else:
         print_warn("    Diagnostics report problem. Please use rqt_monitor to investigate.")
         if had_diag_error:
@@ -148,11 +156,11 @@ if __name__ == '__main__':
             print_warn("    There were warnings.")
         if had_diag_stale:
             print_warn("    There were stales.")
-        input("press enter when the issue is resolved")
+        input_info("press enter when the issue is resolved")
         had_diag_stale = False
         had_diag_warn = False
         had_diag_error = False
-    print("\n\n")
+    print_info("\n\n")
 
     # check publishing frequency of imu, servos, pwm, goals, pressure, robot_state
     # the topics which will be checked with minimal publishing rate
@@ -168,22 +176,22 @@ if __name__ == '__main__':
             rt = rostopic.ROSTopicHz(-1)
             rt_sub = rospy.Subscriber(topic, msg_class, rt.callback_hz, callback_args=topic, tcp_nodelay=True)
             rts.append((rt, rt_sub))
-    print("Please wait a few seconds for publishing rates of topics to be evaluated\n")
+    print_info("Please wait a few seconds for publishing rates of topics to be evaluated\n")
     rospy.sleep(5)
-    print("Topics have been evaluated:\n")
+    print_info("Topics have been evaluated:\n")
     i = 0
     for topic in topics_to_check.keys():
         rate = rts[i][0].get_hz(topic)[0]
         if rate is None or rate < topics_to_check[topic]:
             print_warn(F"  Low rate on Topic {topic}: {round(rate, 2)} \n")
         else:
-            print(F"  Okay rate Topic {topic}: {round(rate, 2)} \n")
+            print_info(F"  Okay rate Topic {topic}: {round(rate, 2)} \n")
         i += 1
 
     # check pressure values when robot in air
-    print("\n\n")
-    print("We will check the foot pressure sensors next\n")
-    input("Please hold the robot in the air so that the feet don't touch the ground and press enter.")
+    print_info("\n\n")
+    print_info("We will check the foot pressure sensors next\n")
+    input_info("Please hold the robot in the air so that the feet don't touch the ground and press enter.")
     left_pressure_sub = rospy.Subscriber("/foot_pressure_left/filtered", FootPressure, pressure_cb, callback_args=True,
                                          tcp_nodelay=True)
     right_pressure_sub = rospy.Subscriber("/foot_pressure_right/filtered", FootPressure, pressure_cb,
@@ -192,7 +200,7 @@ if __name__ == '__main__':
     rospy.sleep(0.5)
     while (not left_pressure) and (not right_pressure) and (not rospy.is_shutdown()):
         rospy.loginfo_throttle(1, "Waiting to receive pressure msgs\n")
-    print("Pressure messages received\n")
+    print_info("Pressure messages received\n")
     both_okay = True
     both_okay = both_okay and check_pressure(left_pressure, -1, 1, "left")
     both_okay = both_okay and check_pressure(right_pressure, -1, 1, "right")
@@ -209,44 +217,44 @@ if __name__ == '__main__':
         both_okay = both_okay and check_pressure(left_pressure, -1, 1, "left")
         both_okay = both_okay and check_pressure(right_pressure, -1, 1, "right")
         if both_okay:
-            print("Pressures correct after calling zero service. You can continue normally.\n")
+            print_info("Pressures correct after calling zero service. You can continue normally.\n")
         else:
             print_warn("Pressures still wrong. Please investigate the problem.\n")
 
     # check pressure values when robot in walkready
-    input("Please put the robot standing on the ground and press enter")
+    input_info("Please put the robot standing on the ground and press enter")
     both_okay = True
     both_okay = both_okay and check_pressure(left_pressure, 20, 40, "left")
     both_okay = both_okay and check_pressure(right_pressure, 20, 40, "right")
     if both_okay:
-        print("Pressure seems to be okay\n")
+        print_info("Pressure seems to be okay\n")
     else:
         print_warn("Problem with pressure. "
                    "Please recalibrate the sensors using rosrun bitbots_ros_control pressure_calibaration\n")
 
     # check servo PWM status
-    print("We will check the servo PWM status now. This gives information if any servo is going on maximum torque.\n")
-    print("Will now try to activate PWM reading and wait till they are recieved.\n")
-    dyn_reconf_client = dynamic_reconfigure.client.Client("/ros_control", timeout=10.0)
-    client.update_configuration({read_pwm: True})
+    print_info("We will check the servo PWM status now. This gives information if any servo is going on maximum torque.\n")
+    print_info("Will now try to activate PWM reading and wait till they are recieved.\n")
+    dyn_reconf_client = dynamic_reconfigure.client.Client("/ros_control/servos", timeout=10.0)
+    dyn_reconf_client.update_configuration({'read_pwm': True})
     while not got_pwm:
         rospy.sleep(0.1)
-    print("Got PWM values, will continue.\n")
+    print_info("Got PWM values, will continue.\n")
 
     # check fall front
-    input("\nNext we will check front falling detection.\n "
+    input_info("\nNext we will check front falling detection.\n "
           "Please let the robot fall on its belly, but hold it to prevent damage. "
           "The robot should perform a safety motion. Afterwards it should stand up by itself. "
           "Press enter when you're done.\n")
 
-    input("\nNext we will check back falling detection.\n "
+    input_info("\nNext we will check back falling detection.\n "
           "Please let the robot fall on its back, but hold it to prevent damage. "
           "The robot should perform a safety motion. Afterwards it should stand up by itself. "
           "Press enter when you're done.\n")
 
     # check walk motion
     walk_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-    text = input(
+    text = input_info(
         "\nWe will check walking of the robot. After pressing enter, robot will start walking in different directions. "
         "It will stop when it is finished. Please make sure there is space and catch it if it falls. Press y if you want to check walking.")
     if text == "y":
@@ -269,43 +277,43 @@ if __name__ == '__main__':
         rospy.sleep(1)
 
     # check kick motion
-    text = input("\nWe will check the kick motion. Please hold make sure the robot is safe. "
+    text = input_info("\nWe will check the kick motion. Please hold make sure the robot is safe. "
                  "Press y if you want to perform this test.")
     if text == 'y':
         def done_cb(state, result):
-            print('Action completed: ', end='')
+            print_info('Action completed: ', end='')
             if state == GoalStatus.PENDING:
-                print('Pending')
+                print_info('Pending')
             elif state == GoalStatus.ACTIVE:
-                print('Active')
+                print_info('Active')
             elif state == GoalStatus.PREEMPTED:
-                print('Preempted')
+                print_info('Preempted')
             elif state == GoalStatus.SUCCEEDED:
-                print('Succeeded')
+                print_info('Succeeded')
             elif state == GoalStatus.ABORTED:
-                print('Aborted')
+                print_info('Aborted')
             elif state == GoalStatus.REJECTED:
-                print('Rejected')
+                print_info('Rejected')
             elif state == GoalStatus.PREEMPTING:
-                print('Preempting')
+                print_info('Preempting')
             elif state == GoalStatus.RECALLING:
-                print('Recalling')
+                print_info('Recalling')
             elif state == GoalStatus.RECALLED:
-                print('Recalled')
+                print_info('Recalled')
             elif state == GoalStatus.LOST:
-                print('Lost')
+                print_info('Lost')
             else:
-                print('Unknown state', state)
-            print(str(result))
+                print_info('Unknown state', state)
+            print_info(str(result))
 
         def active_cb():
-            print("Server accepted action")
+            print_info("Server accepted action")
 
         def feedback_cb(feedback):
             if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
-                print('Feedback')
-                print(feedback)
-                print()
+                print_info('Feedback')
+                print_info(feedback)
+                print_info()
 
         goal = KickGoal()
         goal.header.stamp = rospy.Time.now()
@@ -324,7 +332,7 @@ if __name__ == '__main__':
         client.wait_for_result()
 
     if not (had_diag_stale or had_diag_warn or had_diag_error):
-        print("Diagnostic status were okay during motions.")
+        print_info("Diagnostic status were okay during motions.")
     else:
         print_warn("Diagnostics report problem. Please use rqt_monitor to investigate.")
         if had_diag_error:
@@ -335,6 +343,9 @@ if __name__ == '__main__':
             print_warn("  There were stales.")
 
 
-    input("All tests finished, script will exit and turn off robot. Please hold robot and press enter")
+    print_info("Will now call roswtf to investigate if there are any issues")
+    os.system("roswtf")
+
+    input_info("All tests finished, script will exit and turn off robot. Please hold robot and press enter")
     # shutdown the launch
     launch.shutdown()
