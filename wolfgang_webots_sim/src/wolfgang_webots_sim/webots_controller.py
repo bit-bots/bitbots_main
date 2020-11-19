@@ -6,6 +6,7 @@ from controller import Robot, Node, Supervisor, Field
 import rospy
 from sensor_msgs.msg import JointState, Imu, Image
 from rosgraph_msgs.msg import Clock
+from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand
 import math
@@ -121,6 +122,8 @@ class WebotsController:
         self.rotation_field = self.robot_node.getField("rotation")
         self.world_info = self.supervisor.getFromDef("world_info")
 
+        self.reset_service = rospy.Service("reset", Empty, self.reset_service)
+
     def step_sim(self):
         self.time += self.timestep / 1000
         self.supervisor.step(self.timestep)
@@ -229,12 +232,12 @@ class WebotsController:
         self.set_robot_pose_rpy(pos, rpy)
         self.robot_node.resetPhysics()
 
+    def reset_service(self, req):
+        self.reset()
+        return
+
     def reset(self):
-        # self.supervisor.simulationReset()
-        # reactivate camera after reset https://github.com/cyberbotics/webots/issues/1778
-        # self.supervisor.getSelf().restartController()
-        # self.camera = self.supervisor.getCamera("Camera")
-        # self.camera.enable(self.timestep)
+        self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
 
     def node(self):
