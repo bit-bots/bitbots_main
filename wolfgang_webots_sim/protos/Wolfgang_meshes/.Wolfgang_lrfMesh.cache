@@ -1,5 +1,5 @@
 Webots Proto Cache File version 1.5
-protoFileHash: 7611f0122d96d5dd75bcf04322cc1ab4
+protoFileHash: 1243509d4fdb8b122f2788d6598635b0
 needsRobotAncestor: 0
 baseType: Shape
 slotType: 
@@ -8,4 +8,4 @@ tags: hidden
 license:  Apache License 2.0
 licenseUrl:  http://www.apache.org/licenses/LICENSE-2.0
 documentationUrl: 
-info: Extracted\sfrom:\srobot.urdf\n
+info: Extracted\sfrom:\s/home/jasper/ws/src/bitbots_meta/wolfgang_robot/wolfgang_description/urdf/robot.urdf\n
