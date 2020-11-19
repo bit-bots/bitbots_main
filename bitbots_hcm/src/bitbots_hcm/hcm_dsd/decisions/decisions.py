@@ -147,8 +147,9 @@ class CheckIMU(AbstractDecisionElement):
         self.had_problem = False
 
     def perform(self, reevaluate=False):
-        if self.blackboard.visualization_active:
+        if self.blackboard.visualization_active or self.blackboard.simulation_active:
             # In visualization, we do not have an IMU. Therefore, return OKAY to ignore that.
+            # Some simulators will give exact same IMU messages which look like errors, so ignore this case too
             return "OKAY"
 
         # we will get always the same message if there is no connection, so check if it differs
