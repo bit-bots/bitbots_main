@@ -92,18 +92,17 @@ got_pwm = False
 def pwm_callback(msg:JointState):
     global got_pwm
     for effort in msg.effort:
-        if effort = 100:
+        if effort == 100:
             print_warn("Servo reported max PWM value. It is working at its limit!\n")
 
-#todo set correctly
-ACCLEL_LIMIT = 0
-ANGULAR_VEL_LIMIT = 0
+ACCEL_LIMIT = 35
+ANGULAR_VEL_LIMIT = 10
 def imu_callback(msg: Imu):
     for accel in msg.linear_acceleration:
-        if accel > ACCEL_LIMIT:
+        if accel < -ACCEL_LIMIT or accel > ACCEL_LIMIT:
             print_warn("IMU over accel limit! Orientation estimation will suffer.\n")
     for angular_vel in msg.angular_velocity:
-        if angular_vel > ANGULAR_VEL_LIMIT:
+        if angular_vel < -ANGULAR_VEL_LIMIT or angular_vel > ANGULAR_VEL_LIMIT:
             print_warn("IMU over angular vel limit! Orientation estimation will suffer.\n")
 
 if __name__ == '__main__':
@@ -149,7 +148,7 @@ if __name__ == '__main__':
             print_warn("    There were warnings.")
         if had_diag_stale:
             print_warn("    There were stales.")
-        input("press enter when the issue is resulved")
+        input("press enter when the issue is resolved")
         had_diag_stale = False
         had_diag_warn = False
         had_diag_error = False
@@ -226,7 +225,7 @@ if __name__ == '__main__':
                    "Please recalibrate the sensors using rosrun bitbots_ros_control pressure_calibaration\n")
 
     # check servo PWM status
-    print("We will check the seervo PWM status now. This gives information if any servo is going on maximum torque.\n")
+    print("We will check the servo PWM status now. This gives information if any servo is going on maximum torque.\n")
     print("Will now try to activate PWM reading and wait till they are recieved.\n")
     dyn_reconf_client = dynamic_reconfigure.client.Client("/ros_control", timeout=10.0)
     client.update_configuration({read_pwm: True})
