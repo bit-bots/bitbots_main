@@ -7,10 +7,11 @@
     <arg name="debug" default="false" doc="true: activates publishing of several debug images" />
     <arg name="use_game_settings" default="false" doc="true: loads additional game settings" />
 
-
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 6,7"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
 
     <!-- Start the vision-->
-    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen">
+    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen" launch-prefix="$(arg taskset)">
         <!-- Set vision config-->
         <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
 
@@ -34,7 +35,7 @@
     </group>
 
     <!-- Start dynamic-color-space node -->
-    <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen">
+    <node pkg="bitbots_vision" type="dynamic_color_space.py" name="bitbots_dynamic_color_space" output="screen"  launch-prefix="$(arg taskset)">
     </node>
 
     <!-- Start the camera only when necessary -->
