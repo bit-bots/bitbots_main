@@ -128,7 +128,7 @@ class WebotsController:
         self.rotation_field = self.robot_node.getField("rotation")
         self.world_info = self.supervisor.getFromDef("world_info")
 
-        self.reset_service = rospy.Service("reset", Empty, self.reset_service)
+        self.reset_service = rospy.Service("reset", Empty, self.reset)
 
     def step_sim(self):
         self.time += self.timestep / 1000
@@ -236,10 +236,7 @@ class WebotsController:
         self.set_robot_pose_rpy(pos, rpy)
         self.robot_node.resetPhysics()
 
-    def reset_service(self, req):
-        self.reset()
-
-    def reset(self):
+    def reset(self, req=None):
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
 
