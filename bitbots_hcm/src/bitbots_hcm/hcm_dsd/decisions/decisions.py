@@ -81,7 +81,7 @@ class CheckMotors(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         self.clear_debug_data()
         if self.blackboard.visualization_active:
-            # we will have no problems with hardware in simulation or visualization
+            # we will have no problems with hardware in visualization
             return "OKAY"
 
         # we check if the values are actually changing, since the joint_state controller will publish the same message
