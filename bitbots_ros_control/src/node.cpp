@@ -53,11 +53,21 @@ int main(int argc, char *argv[]) {
   std::thread
       thread = std::thread(&controller_manager::ControllerManager::switchController, cm, names, empty, 2, true, 3);
 
+  // diagnostics
+  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
+  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
+  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
+  diagnostic_msgs::DiagnosticStatus status = diagnostic_msgs::DiagnosticStatus();
+  // add prefix PS for pressure sensor to sort in diagnostic analyser
+  status.name = "BUSBus";
+  status.hardware_id = "Bus";
+
   // Start control loop
   ros::Time current_time = ros::Time::now();
   ros::Duration period = ros::Time::now() - current_time;
   bool first_update = true;
-  ros::Rate rate(pnh.param("control_loop_hz", 1000));
+  float control_loop_hz = pnh.param("control_loop_hz", 1000);
+  ros::Rate rate(control_loop_hz);
   ros::Time stop_time;
   bool shut_down_started = false;
 
@@ -76,6 +86,17 @@ int main(int argc, char *argv[]) {
     hw.write(current_time, period);
     ros::spinOnce();
     rate.sleep();
+    // check if we are staying the correct cycle time. warning if more than 10% off
+    array_msg.header.stamp = ros::Time::now();
+    if(rate.cycleTime() < ros::Duration(1/control_loop_hz)*1.1){
+      status.level = diagnostic_msgs::DiagnosticStatus::OK;
+      status.message = "";
+    }else{
+      status.level = diagnostic_msgs::DiagnosticStatus::WARN;
+      status.message = "Bus runs not at specified frequency";
+    }
+    array_msg.status = array;
+    diagnostic_pub_.publish(array_msg);
 
     if (request_shutdown && !shut_down_started) {
       stop_time = ros::Time::now();
