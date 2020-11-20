@@ -5,11 +5,11 @@
     <param name="/use_sim_time" value="true"/>
 
     <group if="$(arg gui)">
-        <node pkg="wolfgang_webots_sim" type="start_simulation.py" name="webots_sim" output="screen">
+        <node pkg="wolfgang_webots_sim" type="start_simulation.py" name="webots_sim" output="screen" required="true">
         </node>
     </group>
     <group unless="$(arg gui)">
-        <node pkg="wolfgang_webots_sim" type="start_simulation.py" name="webots_sim" output="screen" args="--nogui">
+        <node pkg="wolfgang_webots_sim" type="start_simulation.py" name="webots_sim" output="screen" required="true" args="--nogui">
         </node>
     </group>
 </launch>
