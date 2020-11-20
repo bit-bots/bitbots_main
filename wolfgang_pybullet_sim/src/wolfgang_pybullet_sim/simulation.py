@@ -25,12 +25,11 @@ class Simulation:
         # config values
         self.start_position = [0, 0, 0.43]
         self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
-        rospy.logwarn("initial joints deactivated for testing. should not be in production code")
-        self.initial_joints_positions ={}# {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
-                                         #"LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
-                                         #"RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
-                                         #"LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
-                                         #"RShoulderRoll": 0, "RElbow": -45, "HeadPan": 0, "HeadTilt": 0}
+        self.initial_joints_positions ={"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
+                                         "LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
+                                         "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
+                                         "LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
+                                         "RShoulderRoll": 0, "RElbow": -45, "HeadPan": 0, "HeadTilt": 0}
 
         # Instantiating Bullet
         if self.gui:
@@ -98,8 +97,8 @@ class Simulation:
                 p.enableJointForceTorqueSensor(self.robot_index, i)
                 self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index, 10, 5)
 
-        # set friction for feet
-        #self.set_foot_dynamics(0.0, 0.0, 0.0)
+        # this can be used to test different ground / foot frictions. default should be fine for robocup field
+        # self.set_foot_dynamics(0.0, 0.0, 0.0)
 
         # reset robot to initial position
         self.reset()
@@ -147,12 +146,17 @@ class Simulation:
         # get keyboard events if gui is active
         single_step = False
         if self.gui:
-            # rest if R-key was pressed
+            # reset if R-key was pressed
             rKey = ord('r')
+            # gravity
             nKey = ord('n')
+            # single step
             sKey = ord('s')
+            # real time
             tKey = ord('t')
+            # randomize terrain
             fKey = ord('f')
+            # pause
             spaceKey = p.B3G_SPACE
             keys = p.getKeyboardEvents()
             if rKey in keys and keys[rKey] & p.KEY_WAS_TRIGGERED:
@@ -176,6 +180,7 @@ class Simulation:
                     self.paused = not self.paused
                 if sKey in keys and keys[sKey] & p.KEY_IS_DOWN:
                     single_step = True
+                # sleep a bit to not block a whole CPU core while waiting
                 sleep(0.01)
 
         self.time += self.timestep
