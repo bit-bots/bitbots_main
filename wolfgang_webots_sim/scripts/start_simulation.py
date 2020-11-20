@@ -33,8 +33,7 @@ sim_proc = subprocess.Popen(arguments)
 os.environ["WEBOTS_PID"] = str(sim_proc.pid)
 fix_webots_folder(sim_proc.pid)
 
-robot_controller = WebotsController('', True, mode=batch)
+robot_controller = WebotsController('', True, mode=mode)
 
 while not rospy.is_shutdown():
     robot_controller.step()
-
