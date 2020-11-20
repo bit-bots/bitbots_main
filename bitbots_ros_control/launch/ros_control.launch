@@ -6,6 +6,9 @@
     <arg name="only_imu" default="false"/>
     <arg name="only_pressure" default="false"/>
 
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 0"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
     <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
     <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
 
@@ -14,7 +17,7 @@
     <param name="/ros_control/only_imu" value="$(arg only_imu)"/>
     <param name="/ros_control/only_pressure" value="$(arg only_pressure)"/>
 
-    <node pkg="bitbots_ros_control" type="node" name="ros_control" output="screen"/>
+    <node pkg="bitbots_ros_control" type="node" name="ros_control" output="screen" launch-prefix="$(arg taskset)"/>
 
     <group if="$(arg use_game_settings)">
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
@@ -37,7 +40,7 @@
 
     <node pkg="bitbots_ros_control" name="button_zero" type="zero_on_button.py"/>
 
-     <node pkg="bitbots_ros_control" name="battery_led" type="battery_led.py"/>
+    <node pkg="bitbots_ros_control" name="battery_led" type="battery_led.py"/>
 
 </launch>
 

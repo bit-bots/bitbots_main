@@ -1,6 +1,6 @@
 ros_control:
 
-  control_loop_hz: 1000
+  control_loop_hz: 500
 
   port_info:
     port0:

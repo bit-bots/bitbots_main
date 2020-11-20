@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-    <node name="pressure_converter" pkg="bitbots_ros_control" type="pressure_converter">
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 1"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+    <node name="pressure_converter" pkg="bitbots_ros_control" type="pressure_converter" launch-prefix="$(arg taskset)">
         <rosparam command="load" file="$(find bitbots_ros_control)/config/pressure_converter.yaml" />
         <rosparam command="load" file="$(find bitbots_ros_control)/config/pressure_$(optenv ROBOT_NAME nobot).yaml" />
     </node>
