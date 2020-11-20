@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_msgs</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <description>Messages for the code of the Hamburg Bit-Bots</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
