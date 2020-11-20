@@ -238,7 +238,6 @@ class WebotsController:
 
     def reset_service(self, req):
         self.reset()
-        return
 
     def reset(self):
         self.supervisor.simulationReset()
