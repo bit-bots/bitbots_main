@@ -27,6 +27,8 @@
 
     <node pkg="bitbots_ros_control" type="led_error_blink.py" name="error_blink"/>
 
+    <include file="$(find system_monitor)/launch/system_monitor.launch"/>
+
     <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
 
     <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>

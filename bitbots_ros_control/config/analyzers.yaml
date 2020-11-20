@@ -31,3 +31,9 @@ analyzers:
     startswith: BUTTON
     timeout: 0.2
     find_and_remove_prefix: BUTTON
+  System:
+    type: diagnostic_aggregator/GenericAnalyzer
+    path: System
+    startswith: SYSTEM
+    timeout: 1
+    find_and_remove_prefix: SYSTEM
