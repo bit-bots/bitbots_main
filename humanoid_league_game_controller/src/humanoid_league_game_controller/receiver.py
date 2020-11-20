@@ -19,6 +19,7 @@ import rospy
 from construct import Container, ConstError
 
 from humanoid_league_msgs.msg import GameState as GameStateMsg
+from std_msgs.msg import Bool
 from humanoid_league_game_controller.gamestate import GameState, ReturnData, GAME_CONTROLLER_RESPONSE_VERSION
 
 
@@ -42,6 +43,7 @@ class GameStateReceiver(object):
 
         self.man_penalize = False
         self.game_controller_lost_time = 20
+        self.game_controller_connected_publisher = rospy.Publisher('/game_controller_connected', Bool, queue_size=1)
 
         # The address listening on and the port for sending back the robots meta data
         self.addr = (rospy.get_param('/game_controller/listen_host'), rospy.get_param('/game_controller/listen_port'))
@@ -90,6 +92,11 @@ class GameStateReceiver(object):
             self.state = parsed_state
             self.time = time.time()
 
+            # Publish that game controller received message
+            msg = Bool()
+            msg.data = True
+            self.game_controller_connected_publisher.publish(msg)
+
             # Call the handler for the package
             self.on_new_gamestate(self.state)
 
@@ -110,6 +117,9 @@ class GameStateReceiver(object):
                 msg.allowedToMove = True
                 msg.gameState = 3  # PLAYING
                 self.state_publisher.publish(msg)
+                msg2 = Bool()
+                msg2.data = False
+                self.game_controller_connected_publisher.publish(msg2)
 
     def answer_to_gamecontroller(self, peer):
         """ Sends a life sign to the game controller """
@@ -189,9 +199,9 @@ class GameStateReceiver(object):
             elif state.secondary_state == 'STATE_PENALTYSHOOT':
                 # we have penalty kick
                 if state.kick_of_team == self.team:
-                   msg.allowedToMove = True
+                    msg.allowedToMove = True
                 else:
-                   msg.allowedToMove = False
+                    msg.allowedToMove = False
             elif state.kick_of_team == self.team:
                 msg.allowedToMove = True
             else:
@@ -226,4 +236,3 @@ class GameStateReceiver(object):
 if __name__ == '__main__':
     rec = GameStateReceiver()
     rec.receive_forever()
-
