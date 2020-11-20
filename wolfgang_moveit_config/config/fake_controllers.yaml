@@ -73,6 +73,3 @@ controller_list:
       - RShoulderPitch
       - RShoulderRoll
       - RElbow
-initial:  # Define initial robot poses.
-#  - group: LeftLeg
-#    pose: home

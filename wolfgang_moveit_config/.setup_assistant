@@ -8,4 +8,4 @@ moveit_setup_assistant_config:
   CONFIG:
     author_name: Marc Bestmann
     author_email: bestmann@informatik.uni-hamburg.de
-    generated_timestamp: 1598282884
+    generated_timestamp: 1601969583

@@ -1,0 +1,2454 @@
+#VRML_SIM R2020b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the Wolfgang
+# Extracted from: /home/jasper/ws/src/bitbots_meta/wolfgang_robot/wolfgang_description/urdf/robot.urdf
+
+PROTO Wolfgang [
+  field  SFVec3f     translation     0 0 0
+  field  SFRotation  rotation        1 0 0 -1.5708
+  field  SFString    name            "Wolfgang"  # Is `Robot.name`.
+  field  SFString    controller      "void"      # Is `Robot.controller`.
+  field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""          # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    children [
+      Wolfgang_torsoMesh {
+      }
+      Solid {
+        translation -0.036975 -0.047461 0.224000
+        rotation 0.000000 1.000000 0.000000 0.000000
+        name "imu_frame"
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000003 -1.000000 -0.000000
+          anchor -0.001500 -0.076500 0.203500
+          dampingConstant 0.0
+          staticFriction 0.0
+        }
+        device [
+          RotationalMotor {
+            name "RShoulderPitch"
+            maxVelocity 10.33
+            minPosition -3.14159
+            maxPosition 3.14159
+            maxTorque 5.43
+          }
+          PositionSensor {
+            name "RShoulderPitch_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.001500 -0.076500 0.203500
+          rotation 0.000000 0.000000 -1.000000 3.141590
+          children [
+            Wolfgang_r_shoulderMesh {
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 1.000000 -0.000004 0.000004
+                anchor -0.016950 0.042000 0.000000
+                dampingConstant 0.0
+                staticFriction 0.0
+              }
+              device [
+                RotationalMotor {
+                  name "RShoulderRoll"
+                  maxVelocity 10.33
+                  maxPosition 3.14159
+                  maxTorque 5.43
+                }
+                PositionSensor {
+                  name "RShoulderRoll_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.016950 0.042000 0.000000
+                rotation 0.577350 -0.577352 -0.577350 2.094399
+                children [
+                  Wolfgang_r_upper_armMesh {
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 1.000000 -0.000004 -0.000004
+                      anchor 0.024000 -0.144000 -0.023500
+                      dampingConstant 0.0
+                      staticFriction 0.0
+                    }
+                    device [
+                      RotationalMotor {
+                        name "RElbow"
+                        maxVelocity 10.33
+                        minPosition -1.0472
+                        maxPosition 1.5708
+                        maxTorque 5.43
+                      }
+                      PositionSensor {
+                        name "RElbow_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.024000 -0.144000 -0.023500
+                      rotation -0.577350 0.577352 -0.577350 2.094399
+                      children [
+                        Wolfgang_r_lower_armMesh {
+                        }
+                        Solid {
+                          translation 0.000000 -0.226182 -0.023500
+                          rotation 0.577350 -0.577352 -0.577350 2.094399
+                          name "r_wrist"
+                        }
+                      ]
+                      name "r_lower_arm"
+                      boundingObject Group {
+                        children [
+                          Transform {
+                            translation 0.000000 -0.108326 -0.005500
+                            rotation -0.000001 0.707108 -0.707105 3.141591
+                            children [
+                              Box {
+                                size 0.078998 0.002000 0.234653
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.000000 -0.017550 -0.022450
+                            rotation -1.000000 0.000000 0.000000 1.570800
+                            children [
+                              Box {
+                                size 0.040200 0.046100 0.061100
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.000000 -0.180702 -0.023500
+                            rotation 1.000000 0.000000 -0.000000 1.570800
+                            children [
+                              Box {
+                                size 0.078998 0.034000 0.089902
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.000000 -0.108326 -0.041500
+                            rotation -0.000001 0.707108 -0.707105 3.141591
+                            children [
+                              Box {
+                                size 0.078998 0.002000 0.234653
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.207774
+                        centerOfMass [ 0.000436 -0.060513 -0.023555 ]
+                        inertiaMatrix [
+                          1.088000e-03 8.903240e-05 1.100760e-03
+                          -1.161880e-06 -5.015150e-09 -3.226660e-08
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "r_upper_arm"
+                boundingObject Group {
+                  children [
+                    Transform {
+                      translation -0.000000 -0.017550 -0.022450
+                      rotation -1.000000 0.000000 -0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.040200 0.046100 0.061100
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.025125 -0.079000 -0.023500
+                      rotation -0.577350 -0.577350 -0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.040000 0.002250 0.170000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.019350 -0.010500 -0.023500
+                      rotation -0.577350 -0.577352 0.577350 2.094399
+                      children [
+                        Box {
+                          size 0.036000 0.040000 0.009300
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.025125 -0.079000 -0.023500
+                      rotation -0.577350 0.577350 0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.040000 0.002250 0.170000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.019350 -0.010500 -0.023500
+                      rotation 0.577350 0.577352 0.577350 2.094399
+                      children [
+                        Box {
+                          size 0.036000 0.040000 0.009300
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.001000 -0.071500 -0.023499
+                      rotation -0.000000 -1.000000 -0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.037600 0.023000 0.046000
+                        }
+                      ]
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.228498
+                  centerOfMass [ 0.000098 -0.032582 -0.023923 ]
+                  inertiaMatrix [
+                    2.414550e-04 1.794910e-04 3.711270e-04
+                    8.094790e-07 7.570950e-08 -2.798500e-06
+                  ]
+                }
+              }
+            }
+          ]
+          name "r_shoulder"
+          boundingObject Group {
+            children [
+              Transform {
+                translation -0.028200 0.042000 -0.000000
+                rotation -0.577350 -0.577352 0.577350 2.094399
+                children [
+                  Box {
+                    size 0.050000 0.050000 0.004500
+                  }
+                ]
+              }
+              Transform {
+                translation -0.021450 0.042000 -0.000000
+                rotation -0.577350 -0.577352 0.577350 2.094399
+                children [
+                  Box {
+                    size 0.050000 0.050000 0.009000
+                  }
+                ]
+              }
+              Transform {
+                translation 0.000000 0.022500 0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Box {
+                    size 0.063900 0.045000 0.034000
+                  }
+                ]
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.041445
+            centerOfMass [ -0.013540 0.028402 -0.000002 ]
+            inertiaMatrix [
+              1.854730e-05 2.766490e-05 3.495730e-05
+              7.630580e-06 -9.413860e-10 8.718250e-10
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000003 1.000000 -0.000003
+          anchor -0.001500 0.076500 0.203500
+          dampingConstant 0.0
+          staticFriction 0.0
+        }
+        device [
+          RotationalMotor {
+            name "LShoulderPitch"
+            maxVelocity 10.33
+            minPosition -3.14159
+            maxPosition 3.14159
+            maxTorque 5.43
+          }
+          PositionSensor {
+            name "LShoulderPitch_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.001500 0.076500 0.203500
+          rotation -0.000001 -1.000000 0.000001 3.141593
+          children [
+            Wolfgang_l_shoulderMesh {
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 1.000000 0.000004 0.000004
+                anchor -0.016950 0.042000 -0.000000
+                dampingConstant 0.0
+                staticFriction 0.0
+              }
+              device [
+                RotationalMotor {
+                  name "LShoulderRoll"
+                  maxVelocity 10.33
+                  minPosition -3.14159
+                  maxTorque 5.43
+                }
+                PositionSensor {
+                  name "LShoulderRoll_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.016950 0.042000 -0.000000
+                rotation -0.577350 -0.577352 0.577350 2.094399
+                children [
+                  Wolfgang_l_upper_armMesh {
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis -1.000000 -0.000004 -0.000004
+                      anchor -0.024000 -0.144000 -0.023500
+                      dampingConstant 0.0
+                      staticFriction 0.0
+                    }
+                    device [
+                      RotationalMotor {
+                        name "LElbow"
+                        maxVelocity 10.33
+                        minPosition -1.5708
+                        maxPosition 1.0472
+                        maxTorque 5.43
+                      }
+                      PositionSensor {
+                        name "LElbow_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation -0.024000 -0.144000 -0.023500
+                      rotation -0.577350 -0.577352 0.577350 2.094399
+                      children [
+                        Wolfgang_l_lower_armMesh {
+                        }
+                        Solid {
+                          translation -0.000000 -0.225182 -0.023500
+                          rotation -0.577350 0.577352 -0.577350 2.094399
+                          name "l_wrist"
+                        }
+                      ]
+                      name "l_lower_arm"
+                      boundingObject Group {
+                        children [
+                          Transform {
+                            translation 0.000000 -0.017550 -0.022450
+                            rotation -1.000000 -0.000000 0.000000 1.570800
+                            children [
+                              Box {
+                                size 0.040200 0.046100 0.061100
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.000001 -0.108326 -0.041500
+                            rotation 1.000000 0.000000 0.000000 1.570800
+                            children [
+                              Box {
+                                size 0.078998 0.002000 0.234653
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.000000 -0.180702 -0.023500
+                            rotation -0.000001 0.707108 -0.707105 3.141591
+                            children [
+                              Box {
+                                size 0.078998 0.034000 0.089902
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.000001 -0.108326 -0.005500
+                            rotation 1.000000 0.000000 0.000000 1.570800
+                            children [
+                              Box {
+                                size 0.078998 0.002000 0.234653
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.207774
+                        centerOfMass [ -0.000436 -0.060513 -0.023555 ]
+                        inertiaMatrix [
+                          1.088000e-03 8.903240e-05 1.100760e-03
+                          -1.148360e-05 5.011780e-09 -3.226660e-08
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "l_upper_arm"
+                boundingObject Group {
+                  children [
+                    Transform {
+                      translation -0.000000 -0.017550 -0.022450
+                      rotation -1.000000 -0.000000 -0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.040200 0.046100 0.061100
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.019350 -0.010500 -0.023500
+                      rotation -0.577350 -0.577352 0.577350 2.094399
+                      children [
+                        Box {
+                          size 0.036000 0.040000 0.009300
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.019350 -0.010500 -0.023500
+                      rotation 0.577350 0.577352 0.577350 2.094399
+                      children [
+                        Box {
+                          size 0.036000 0.040000 0.009300
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.001000 -0.071500 -0.023499
+                      rotation 0.000000 -1.000000 0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.037600 0.023000 0.046000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.025125 -0.079000 -0.023500
+                      rotation -0.577350 0.577350 0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.040000 0.002250 0.170000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.025125 -0.079000 -0.023500
+                      rotation -0.577350 -0.577350 -0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.040000 0.002250 0.170000
+                        }
+                      ]
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.228498
+                  centerOfMass [ 0.000098 -0.032582 -0.023923 ]
+                  inertiaMatrix [
+                    2.414550e-04 1.794910e-04 3.711270e-04
+                    8.094790e-07 7.570950e-08 -2.798500e-06
+                  ]
+                }
+              }
+            }
+          ]
+          name "l_shoulder"
+          boundingObject Group {
+            children [
+              Transform {
+                translation -0.028200 0.042000 -0.000000
+                rotation 0.577350 -0.577352 -0.577350 2.094399
+                children [
+                  Box {
+                    size 0.050000 0.050000 0.004500
+                  }
+                ]
+              }
+              Transform {
+                translation 0.000000 0.022500 -0.000000
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Box {
+                    size 0.063900 0.045000 0.034000
+                  }
+                ]
+              }
+              Transform {
+                translation -0.021450 0.042000 -0.000000
+                rotation 0.577350 -0.577352 -0.577350 2.094399
+                children [
+                  Box {
+                    size 0.050000 0.050000 0.009000
+                  }
+                ]
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.041445
+            centerOfMass [ -0.013540 0.028402 0.000002 ]
+            inertiaMatrix [
+              1.854730e-05 2.766490e-05 3.495730e-05
+              7.630580e-06 9.413860e-10 -8.718250e-10
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000000 -0.000004 -1.000000
+          anchor 0.000000 -0.055000 0.000000
+          dampingConstant 0.0
+          staticFriction 0.0
+        }
+        device [
+          RotationalMotor {
+            name "RHipYaw"
+            maxVelocity 8.22
+            minPosition -1.5708
+            maxPosition 1.5708
+            maxTorque 7.57
+          }
+          PositionSensor {
+            name "RHipYaw_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0.000000 -0.055000 0.000000
+          rotation -1.000000 -0.000000 0.000000 1.570800
+          children [
+            Wolfgang_r_hip_1Mesh {
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 1.000000 -0.000003 -0.000004
+                anchor -0.046000 0.041400 0.000000
+                dampingConstant 0.0
+                staticFriction 0.0
+              }
+              device [
+                RotationalMotor {
+                  name "RHipRoll"
+                  maxVelocity 8.22
+                  minPosition -1.5708
+                  maxPosition 1.5708
+                  maxTorque 7.57
+                }
+                PositionSensor {
+                  name "RHipRoll_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.046000 0.041400 0.000000
+                rotation -0.707105 0.000001 0.707108 3.141591
+                children [
+                  Wolfgang_r_hip_2Mesh {
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis -1.000000 -0.000004 0.000004
+                      anchor -0.026500 -0.000000 -0.069100
+                      dampingConstant 0.0
+                      staticFriction 0.0
+                    }
+                    device [
+                      RotationalMotor {
+                        name "RHipPitch"
+                        maxVelocity 8.22
+                        minPosition -1.5708
+                        maxPosition 0.785398
+                        maxTorque 7.57
+                      }
+                      PositionSensor {
+                        name "RHipPitch_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation -0.026500 -0.000000 -0.069100
+                      rotation -0.577350 0.577350 0.577352 2.094399
+                      children [
+                        Wolfgang_r_upper_legMesh {
+                        }
+                        HingeJoint {
+                          jointParameters HingeJointParameters {
+                            axis -0.000000 -1.000000 -0.000000
+                            anchor -0.003923 -0.051000 -0.169043
+                            dampingConstant 0.0
+                            staticFriction 0.0
+                          }
+                          device [
+                            RotationalMotor {
+                              name "RKnee"
+                              maxVelocity 10.0
+                              minPosition -2.96706
+                              maxTorque 10.0
+                            }
+                            PositionSensor {
+                              name "RKnee_sensor"
+                            }
+                          ]
+                          endPoint Solid {
+                            translation -0.003923 -0.051000 -0.169043
+                            rotation 0.000000 -1.000000 -0.000000 0.261799
+                            children [
+                              Wolfgang_r_lower_legMesh {
+                              }
+                              HingeJoint {
+                                jointParameters HingeJointParameters {
+                                  axis 0.000000 -1.000000 0.000004
+                                  anchor -0.000000 0.050500 -0.170000
+                                  dampingConstant 0.0
+                                  staticFriction 0.0
+                                }
+                                device [
+                                  RotationalMotor {
+                                    name "RAnklePitch"
+                                    maxVelocity 8.22
+                                    minPosition -1.5708
+                                    maxPosition 1.22173
+                                    maxTorque 7.57
+                                  }
+                                  PositionSensor {
+                                    name "RAnklePitch_sensor"
+                                  }
+                                ]
+                                endPoint Solid {
+                                  translation -0.000000 0.050500 -0.170000
+                                  rotation -0.999668 0.018230 0.018230 1.571132
+                                  children [
+                                    Wolfgang_r_ankleMesh {
+                                    }
+                                    HingeJoint {
+                                      jointParameters HingeJointParameters {
+                                        axis -1.000000 0.000004 -0.000000
+                                        anchor -0.069100 -0.000000 -0.026000
+                                        dampingConstant 0.0
+                                        staticFriction 0.0
+                                      }
+                                      device [
+                                        RotationalMotor {
+                                          name "RAnkleRoll"
+                                          maxVelocity 8.22
+                                          minPosition -1.0472
+                                          maxPosition 1.0472
+                                          maxTorque 7.57
+                                        }
+                                        PositionSensor {
+                                          name "RAnkleRoll_sensor"
+                                        }
+                                      ]
+                                      endPoint Solid {
+                                        translation -0.069100 -0.000000 -0.026000
+                                        rotation 0.572979 0.572976 -0.585998 2.081475
+                                        children [
+                                          Wolfgang_r_footMesh {
+                                          }
+                                          Solid {
+                                            translation 0.015201 0.090843 -0.052900
+                                            rotation -0.000000 0.000000 1.000000 1.570800
+                                            name "r_sole"
+                                          }
+                                          Solid {
+                                            translation -0.030000 -0.007000 -0.034000
+                                            rotation -0.000000 0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_rlbMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation -0.000000 0.000000 -1.000000 3.141590
+                                                name "r_cleat_l_back"
+                                              }
+                                            ]
+                                            name "rlb"
+                                            boundingObject Transform {
+                                              translation 0.000000 0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                4.172760e-26 1.815160e-25 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                          Solid {
+                                            translation -0.030000 0.177000 -0.034000
+                                            rotation -0.000000 0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_rlfMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation 0.000000 -0.000000 -1.000000 3.141590
+                                                name "r_cleat_l_front"
+                                              }
+                                            ]
+                                            name "rlf"
+                                            boundingObject Transform {
+                                              translation 0.000000 0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                1.353550e-26 -3.318830e-24 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                          Solid {
+                                            translation 0.060000 0.177000 -0.034000
+                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_rrfMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation 0.000000 -0.000000 -1.000000 3.141590
+                                                name "r_cleat_r_front"
+                                              }
+                                            ]
+                                            name "rrf"
+                                            boundingObject Transform {
+                                              translation 0.000000 0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                -3.908200e-26 -2.925130e-24 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                          Solid {
+                                            translation 0.060000 -0.007000 -0.034000
+                                            rotation 0.000000 0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_rrbMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation 0.000000 0.000000 1.000000 3.141590
+                                                name "r_cleat_r_back"
+                                              }
+                                            ]
+                                            name "rrb"
+                                            boundingObject Transform {
+                                              translation 0.000000 0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                -1.232840e-27 -2.076040e-24 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                        name "r_foot"
+                                        boundingObject Group {
+                                          children [
+                                            Transform {
+                                              translation -0.030000 0.006500 -0.032000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.000000 0.046000 -0.011000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.048000 0.100000 0.050000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.060000 0.163500 -0.032000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.008000 0.130000 -0.033200
+                                              rotation 1.000000 0.000000 -0.000000 3.141590
+                                              children [
+                                                Box {
+                                                  size 0.060000 0.060000 0.001600
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.030000 0.163500 -0.032000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.015000 0.090499 -0.034250
+                                              rotation -0.000000 -0.000000 -1.000000 1.570800
+                                              children [
+                                                Box {
+                                                  size 0.189000 0.106000 0.010500
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.060000 0.006500 -0.032000
+                                              rotation -0.000000 -0.000000 1.000000 3.141590
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.015000 0.142500 -0.023000
+                                              rotation -0.000000 -0.000000 -1.000000 1.570800
+                                              children [
+                                                Box {
+                                                  size 0.085000 0.106000 0.026000
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                        physics Physics {
+                                          density -1
+                                          mass 0.267613
+                                          centerOfMass [ 0.011968 0.091187 -0.029853 ]
+                                          inertiaMatrix [
+                                            8.833800e-04 3.169400e-04 1.152060e-03
+                                            -3.295740e-05 5.104820e-06 -1.757980e-05
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                  name "r_ankle"
+                                  boundingObject Group {
+                                    children [
+                                      Transform {
+                                        translation -0.020300 -0.007000 -0.043500
+                                        rotation 0.577350 0.577352 0.577350 2.094399
+                                        children [
+                                          Box {
+                                            size 0.028000 0.006000 0.011600
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation -0.042600 -0.018050 -0.026000
+                                        rotation -0.577350 -0.577350 -0.577352 2.094399
+                                        children [
+                                          Box {
+                                            size 0.040200 0.048000 0.065100
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation -0.020300 -0.007000 -0.008500
+                                        rotation -0.577350 0.577352 -0.577350 2.094399
+                                        children [
+                                          Box {
+                                            size 0.028000 0.006000 0.011600
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation 0.017300 -0.005000 -0.025900
+                                        rotation 0.707105 0.000001 -0.707108 3.141591
+                                        children [
+                                          Box {
+                                            size 0.030000 0.031000 0.005600
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation 0.000000 -0.018050 -0.026500
+                                        rotation -1.000000 -0.000000 0.000000 1.570800
+                                        children [
+                                          Box {
+                                            size 0.040200 0.048000 0.065100
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                  physics Physics {
+                                    density -1
+                                    mass 0.319807
+                                    centerOfMass [ -0.020456 -0.015528 -0.026004 ]
+                                    inertiaMatrix [
+                                      1.167750e-04 2.684730e-04 2.728560e-04
+                                      -4.537980e-06 6.109860e-07 -7.450810e-07
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                            name "r_lower_leg"
+                            boundingObject Group {
+                              children [
+                                Transform {
+                                  translation -0.000653 -0.012942 -0.007508
+                                  rotation 0.998099 0.043578 -0.043578 1.572703
+                                  children [
+                                    Box {
+                                      size 0.031700 0.092800 0.016153
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000005 0.049750 -0.000003
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.035991 0.001500 0.035994
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000074 0.051500 -0.085000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.048040 0.002000 0.206000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000074 -0.002500 -0.085000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.048040 0.002000 0.206000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.002535 0.024000 -0.056915
+                                  rotation -0.543774 0.593428 0.593425 2.145487
+                                  children [
+                                    Box {
+                                      size 0.064485 0.033500 0.051000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000000 -0.015850 0.000000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.033000 0.019300 0.033000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.014017 -0.008051 -0.041776
+                                  rotation 0.000001 1.000000 0.000001 3.316126
+                                  children [
+                                    Box {
+                                      size 0.015970 0.009102 0.030901
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000005 -0.000750 -0.000003
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.035991 0.001500 0.035994
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000000 -0.004850 0.000000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.030000 0.002700 0.030000
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                            physics Physics {
+                              density -1
+                              mass 0.112618
+                              centerOfMass [ 0.001623 0.011571 -0.048584 ]
+                              inertiaMatrix [
+                                3.784820e-04 3.167150e-04 9.771080e-05
+                                1.202140e-06 -1.033130e-05 6.383090e-05
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                      name "r_upper_leg"
+                      boundingObject Group {
+                        children [
+                          Transform {
+                            translation 0.013735 -0.040750 -0.137958
+                            rotation 0.186156 -0.694748 0.694745 2.773490
+                            children [
+                              Box {
+                                size 0.042000 0.026000 0.024500
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.002085 0.001000 -0.067502
+                            rotation 0.000000 1.000000 0.000000 0.000000
+                            children [
+                              Box {
+                                size 0.065511 0.002000 0.170996
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.000002 -0.052001 0.000001
+                            rotation 0.186156 -0.694748 0.694745 2.773490
+                            children [
+                              Box {
+                                size 0.035996 0.035995 0.002000
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.003827 -0.029150 -0.155620
+                            rotation 0.186156 -0.694748 0.694745 2.773490
+                            children [
+                              Box {
+                                size 0.033500 0.058500 0.054300
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.012910 -0.066000 -0.139444
+                            rotation 1.000000 -0.000000 0.000000 1.570800
+                            children [
+                              Box {
+                                size 0.030181 0.030888 0.022000
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.000002 -0.001001 0.000001
+                            rotation 0.186156 -0.694748 0.694745 2.773490
+                            children [
+                              Box {
+                                size 0.035996 0.035995 0.002000
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.002085 -0.054000 -0.067502
+                            rotation 0.000000 1.000000 0.000000 0.000000
+                            children [
+                              Box {
+                                size 0.065511 0.002000 0.170996
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.014169 -0.012250 -0.138208
+                            rotation -0.935113 0.250562 0.250563 1.637837
+                            children [
+                              Box {
+                                size 0.042000 0.026000 0.024500
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.002811 -0.026500 -0.083611
+                            rotation -0.092690 0.704064 0.704061 2.956736
+                            children [
+                              Box {
+                                size 0.035150 0.038000 0.053000
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.242311
+                        centerOfMass [ 0.004940 -0.028322 -0.133144 ]
+                        inertiaMatrix [
+                          5.017210e-04 4.589290e-04 1.134090e-04
+                          8.335820e-06 1.677430e-05 -4.689140e-06
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "r_hip_2"
+                boundingObject Group {
+                  children [
+                    Transform {
+                      translation -0.000000 -0.018050 -0.026500
+                      rotation -1.000000 0.000000 -0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.040200 0.048000 0.065100
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.017500 -0.007000 -0.048800
+                      rotation -0.707105 -0.707108 0.000001 3.141591
+                      children [
+                        Box {
+                          size 0.028000 0.006000 0.011600
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.001000 -0.005000 -0.086400
+                      rotation 0.000000 -0.000000 -1.000000 3.141590
+                      children [
+                        Box {
+                          size 0.030000 0.031000 0.005600
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.017500 -0.007000 -0.048800
+                      rotation -0.707105 0.707108 -0.000001 3.141591
+                      children [
+                        Box {
+                          size 0.028000 0.006000 0.011600
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.000500 -0.018050 -0.069100
+                      rotation -0.577350 -0.577350 -0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.040200 0.048000 0.065100
+                        }
+                      ]
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.319807
+                  centerOfMass [ 0.000014 -0.015528 -0.048641 ]
+                  inertiaMatrix [
+                    2.686270e-04 2.680490e-04 1.213310e-04
+                    6.085610e-08 6.672480e-07 3.876080e-06
+                  ]
+                }
+              }
+            }
+          ]
+          name "r_hip_1"
+          boundingObject Transform {
+            translation 0.000000 0.025987 0.000000
+            rotation 0.000000 1.000000 0.000000 0.000000
+            children [
+              Box {
+                size 0.100000 0.053175 0.050000
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.068973
+            centerOfMass [ 0.000000 0.010315 -0.000000 ]
+            inertiaMatrix [
+              2.189550e-05 1.071400e-04 1.105230e-04
+              -2.444750e-14 3.067930e-15 -6.566880e-11
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000000 -0.000004 -1.000000
+          anchor 0.000000 0.055000 -0.000000
+          dampingConstant 0.0
+          staticFriction 0.0
+        }
+        device [
+          RotationalMotor {
+            name "LHipYaw"
+            maxVelocity 8.22
+            minPosition -1.5708
+            maxPosition 1.5708
+            maxTorque 7.57
+          }
+          PositionSensor {
+            name "LHipYaw_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0.000000 0.055000 -0.000000
+          rotation -1.000000 -0.000000 0.000000 1.570800
+          children [
+            Wolfgang_l_hip_1Mesh {
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 1.000000 0.000003 -0.000004
+                anchor -0.046000 0.041400 0.000000
+                dampingConstant 0.0
+                staticFriction 0.0
+              }
+              device [
+                RotationalMotor {
+                  name "LHipRoll"
+                  maxVelocity 8.22
+                  minPosition -1.5708
+                  maxPosition 1.5708
+                  maxTorque 7.57
+                }
+                PositionSensor {
+                  name "LHipRoll_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.046000 0.041400 0.000000
+                rotation 0.707105 0.000001 -0.707108 3.141591
+                children [
+                  Wolfgang_l_hip_2Mesh {
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 1.000000 -0.000000 0.000004
+                      anchor 0.026000 0.000000 -0.069100
+                      dampingConstant 0.0
+                      staticFriction 0.0
+                    }
+                    device [
+                      RotationalMotor {
+                        name "LHipPitch"
+                        maxVelocity 8.22
+                        minPosition -0.785398
+                        maxPosition 1.5708
+                        maxTorque 7.57
+                      }
+                      PositionSensor {
+                        name "LHipPitch_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.026000 0.000000 -0.069100
+                      rotation 0.000000 -1.000000 0.000000 1.570800
+                      children [
+                        Wolfgang_l_upper_legMesh {
+                        }
+                        HingeJoint {
+                          jointParameters HingeJointParameters {
+                            axis 0.000001 0.000004 1.000000
+                            anchor 0.004356 -0.168793 0.049000
+                            dampingConstant 0.0
+                            staticFriction 0.0
+                          }
+                          device [
+                            RotationalMotor {
+                              name "LKnee"
+                              maxVelocity 10.0
+                              maxPosition 2.96706
+                              maxTorque 10.0
+                            }
+                            PositionSensor {
+                              name "LKnee_sensor"
+                            }
+                          ]
+                          endPoint Solid {
+                            translation 0.004356 -0.168793 0.049000
+                            rotation 0.092693 0.704064 0.704061 2.956736
+                            children [
+                              Wolfgang_l_lower_legMesh {
+                              }
+                              HingeJoint {
+                                jointParameters HingeJointParameters {
+                                  axis 0.000003 1.000000 0.000004
+                                  anchor 0.000000 -0.050500 -0.170000
+                                  dampingConstant 0.0
+                                  staticFriction 0.0
+                                }
+                                device [
+                                  RotationalMotor {
+                                    name "LAnklePitch"
+                                    maxVelocity 8.22
+                                    minPosition -1.22173
+                                    maxPosition 1.5708
+                                    maxTorque 7.57
+                                  }
+                                  PositionSensor {
+                                    name "LAnklePitch_sensor"
+                                  }
+                                ]
+                                endPoint Solid {
+                                  translation 0.000000 -0.050500 -0.170000
+                                  rotation -0.000001 -0.707108 0.707105 3.141591
+                                  children [
+                                    Wolfgang_l_ankleMesh {
+                                    }
+                                    HingeJoint {
+                                      jointParameters HingeJointParameters {
+                                        axis 1.000000 0.000004 0.000004
+                                        anchor 0.069100 0.000000 -0.026000
+                                        dampingConstant 0.0
+                                        staticFriction 0.0
+                                      }
+                                      device [
+                                        RotationalMotor {
+                                          name "LAnkleRoll"
+                                          maxVelocity 8.22
+                                          minPosition -1.0472
+                                          maxPosition 1.0472
+                                          maxTorque 7.57
+                                        }
+                                        PositionSensor {
+                                          name "LAnkleRoll_sensor"
+                                        }
+                                      ]
+                                      endPoint Solid {
+                                        translation 0.069100 0.000000 -0.026000
+                                        rotation 0.577350 -0.577350 0.577352 2.094399
+                                        children [
+                                          Wolfgang_l_footMesh {
+                                          }
+                                          Solid {
+                                            translation -0.015201 0.090843 -0.052900
+                                            rotation 0.000000 -0.000000 1.000000 1.570800
+                                            name "l_sole"
+                                          }
+                                          Solid {
+                                            translation -0.060000 -0.007000 -0.034000
+                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_llbMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation 0.000000 0.000000 1.000000 3.141590
+                                                name "l_cleat_l_back"
+                                              }
+                                            ]
+                                            name "llb"
+                                            boundingObject Transform {
+                                              translation 0.000000 -0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                -2.540260e-27 -3.401230e-27 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                          Solid {
+                                            translation -0.060000 0.177000 -0.034000
+                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_llfMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation -0.000000 -0.000000 -1.000000 3.141590
+                                                name "l_cleat_l_front"
+                                              }
+                                            ]
+                                            name "llf"
+                                            boundingObject Transform {
+                                              translation -0.000000 0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                2.251720e-27 8.036960e-25 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                          Solid {
+                                            translation 0.030000 0.177000 -0.034000
+                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_lrfMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation -0.000000 -0.000000 -1.000000 3.141590
+                                                name "l_cleat_r_front"
+                                              }
+                                            ]
+                                            name "lrf"
+                                            boundingObject Transform {
+                                              translation 0.000000 -0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                2.251720e-27 8.036960e-25 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                          Solid {
+                                            translation 0.030000 -0.007000 -0.034000
+                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            children [
+                                              Wolfgang_lrbMesh {
+                                              }
+                                              Solid {
+                                                translation 0.000000 -0.000500 -0.016000
+                                                rotation -0.000000 -0.000000 -1.000000 3.141590
+                                                name "l_cleat_r_back"
+                                              }
+                                            ]
+                                            name "lrb"
+                                            boundingObject Transform {
+                                              translation -0.000000 0.000000 -0.008000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.012000 0.012000 0.016000
+                                                }
+                                              ]
+                                            }
+                                            physics Physics {
+                                              density -1
+                                              mass 0.001660
+                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                              inertiaMatrix [
+                                                4.335200e-08 4.440490e-08 3.043970e-08
+                                                1.696600e-26 -1.091180e-24 -1.099300e-09
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                        name "l_foot"
+                                        boundingObject Group {
+                                          children [
+                                            Transform {
+                                              translation -0.060000 0.163500 -0.032000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.030000 0.006500 -0.032000
+                                              rotation -0.000000 0.000000 1.000000 3.141590
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.015000 0.090500 -0.034250
+                                              rotation 0.000000 0.000000 -1.000000 1.570800
+                                              children [
+                                                Box {
+                                                  size 0.189000 0.106000 0.010500
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.008000 0.130000 -0.033200
+                                              rotation 1.000000 -0.000000 0.000000 3.141590
+                                              children [
+                                                Box {
+                                                  size 0.060000 0.060000 0.001600
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.015000 0.142500 -0.023000
+                                              rotation -0.000000 -0.000000 -1.000000 1.570800
+                                              children [
+                                                Box {
+                                                  size 0.085000 0.106000 0.026000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.000000 0.046000 -0.011000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.048000 0.100000 0.050000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.030000 0.163500 -0.032000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.060000 0.006500 -0.032000
+                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              children [
+                                                Box {
+                                                  size 0.008000 0.040000 0.004000
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                        physics Physics {
+                                          density -1
+                                          mass 0.267613
+                                          centerOfMass [ -0.012039 0.091187 -0.029853 ]
+                                          inertiaMatrix [
+                                            8.833800e-04 3.164880e-04 1.151600e-03
+                                            3.213180e-05 -5.182810e-06 -1.757980e-05
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                  name "l_ankle"
+                                  boundingObject Group {
+                                    children [
+                                      Transform {
+                                        translation 0.020300 -0.007000 -0.043500
+                                        rotation 0.577350 -0.577352 -0.577350 2.094399
+                                        children [
+                                          Box {
+                                            size 0.028000 0.006000 0.011600
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation -0.017300 -0.005000 -0.025000
+                                        rotation -0.707105 -0.000001 -0.707108 3.141591
+                                        children [
+                                          Box {
+                                            size 0.030000 0.031000 0.005600
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation 0.020300 -0.007000 -0.008500
+                                        rotation -0.577350 -0.577352 0.577350 2.094399
+                                        children [
+                                          Box {
+                                            size 0.028000 0.006000 0.011600
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation 0.000000 -0.018050 -0.026500
+                                        rotation -1.000000 -0.000000 -0.000000 1.570800
+                                        children [
+                                          Box {
+                                            size 0.040200 0.048000 0.065100
+                                          }
+                                        ]
+                                      }
+                                      Transform {
+                                        translation 0.042600 -0.018050 -0.026000
+                                        rotation -0.577350 0.577350 0.577352 2.094399
+                                        children [
+                                          Box {
+                                            size 0.040200 0.048000 0.065100
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                  physics Physics {
+                                    density -1
+                                    mass 0.319807
+                                    centerOfMass [ 0.020459 -0.015528 -0.026014 ]
+                                    inertiaMatrix [
+                                      1.167730e-04 2.684240e-04 2.728100e-04
+                                      4.538570e-06 -6.750130e-07 -7.240730e-07
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                            name "l_lower_leg"
+                            boundingObject Group {
+                              children [
+                                Transform {
+                                  translation 0.000000 0.015850 -0.000000
+                                  rotation 1.000000 -0.000000 0.000000 3.141590
+                                  children [
+                                    Box {
+                                      size 0.033000 0.019300 0.033000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.013958 0.008051 -0.042453
+                                  rotation 0.000000 -0.000000 -1.000000 3.141590
+                                  children [
+                                    Box {
+                                      size 0.015970 0.009102 0.030901
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000000 0.004850 0.000000
+                                  rotation -1.000000 0.000000 0.000000 3.141590
+                                  children [
+                                    Box {
+                                      size 0.030000 0.002700 0.030000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation -0.000653 0.012942 -0.007472
+                                  rotation -0.998099 0.043578 0.043578 1.572703
+                                  children [
+                                    Box {
+                                      size 0.031700 0.092800 0.016153
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000005 -0.049750 -0.000003
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.035991 0.001500 0.035994
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.002535 -0.024000 -0.056915
+                                  rotation -0.543774 0.593428 0.593425 2.145487
+                                  children [
+                                    Box {
+                                      size 0.064485 0.033500 0.051000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000005 0.000750 -0.000003
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.035991 0.001500 0.035994
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000074 -0.051500 -0.085000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.048040 0.002000 0.206000
+                                    }
+                                  ]
+                                }
+                                Transform {
+                                  translation 0.000074 0.002500 -0.085000
+                                  rotation 0.000000 1.000000 0.000000 0.000000
+                                  children [
+                                    Box {
+                                      size 0.048040 0.002000 0.206000
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                            physics Physics {
+                              density -1
+                              mass 0.112624
+                              centerOfMass [ 0.001622 -0.011970 -0.048572 ]
+                              inertiaMatrix [
+                                3.797130e-04 3.168290e-04 9.881080e-05
+                                -1.516120e-06 -1.038290e-05 -6.254240e-05
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                      name "l_upper_leg"
+                      boundingObject Group {
+                        children [
+                          Transform {
+                            translation -0.013735 -0.137958 0.010250
+                            rotation 0.965926 0.258819 0.000000 3.141590
+                            children [
+                              Box {
+                                size 0.042000 0.026000 0.024500
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.000002 -0.000000 0.050000
+                            rotation -1.000000 0.000000 -0.000000 3.141590
+                            children [
+                              Box {
+                                size 0.035996 0.035995 0.002000
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.013302 -0.137708 0.038750
+                            rotation 0.000000 -0.000000 -1.000000 2.617990
+                            children [
+                              Box {
+                                size 0.042000 0.026000 0.024500
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.003394 -0.155370 0.027150
+                            rotation -0.000000 -0.000000 -1.000000 2.617990
+                            children [
+                              Box {
+                                size 0.033500 0.058500 0.054300
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.012334 -0.137295 0.064000
+                            rotation -0.000000 -0.000000 1.000000 2.617990
+                            children [
+                              Box {
+                                size 0.030181 0.030888 0.022000
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation 0.000002 0.000000 -0.001000
+                            rotation 0.000000 1.000000 0.000000 0.000000
+                            children [
+                              Box {
+                                size 0.035996 0.035995 0.002000
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.002085 -0.067502 -0.003000
+                            rotation 0.000001 -0.707108 -0.707105 3.141591
+                            children [
+                              Box {
+                                size 0.065511 0.002000 0.170996
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.002085 -0.067502 0.052000
+                            rotation 0.000001 0.707108 0.707105 3.141591
+                            children [
+                              Box {
+                                size 0.065511 0.002000 0.170996
+                              }
+                            ]
+                          }
+                          Transform {
+                            translation -0.002811 -0.083611 0.024500
+                            rotation -0.000000 -0.000000 -1.000000 0.261799
+                            children [
+                              Box {
+                                size 0.035150 0.038000 0.053000
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.242311
+                        centerOfMass [ -0.004631 -0.132966 0.026322 ]
+                        inertiaMatrix [
+                          4.951120e-04 1.208280e-04 4.545970e-04
+                          -2.807040e-05 2.533730e-06 4.334050e-06
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "l_hip_2"
+                boundingObject Group {
+                  children [
+                    Transform {
+                      translation 0.017500 -0.007000 -0.048800
+                      rotation -0.707105 0.707108 -0.000001 3.141591
+                      children [
+                        Box {
+                          size 0.028000 0.006000 0.011600
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.000000 -0.018050 -0.026500
+                      rotation -1.000000 -0.000000 0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.040200 0.048000 0.065100
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.000500 -0.018050 -0.069100
+                      rotation -0.577350 0.577350 0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.040200 0.048000 0.065100
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.017500 -0.007000 -0.048800
+                      rotation 0.707105 0.707108 0.000001 3.141591
+                      children [
+                        Box {
+                          size 0.028000 0.006000 0.011600
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.000100 -0.005000 -0.086400
+                      rotation 0.000000 0.000000 -1.000000 3.141590
+                      children [
+                        Box {
+                          size 0.030000 0.031000 0.005600
+                        }
+                      ]
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.319807
+                  centerOfMass [ -0.000004 -0.015528 -0.048644 ]
+                  inertiaMatrix [
+                    2.686730e-04 2.680980e-04 1.213330e-04
+                    -7.409920e-08 -6.187510e-07 3.883250e-06
+                  ]
+                }
+              }
+            }
+          ]
+          name "l_hip_1"
+          boundingObject Transform {
+            translation 0.000000 0.025987 0.000000
+            rotation 0.000000 1.000000 0.000000 0.000000
+            children [
+              Box {
+                size 0.100000 0.053175 0.050000
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.068973
+            centerOfMass [ 0.000000 0.010315 -0.000000 ]
+            inertiaMatrix [
+              2.189550e-05 1.071400e-04 1.105230e-04
+              -2.444750e-14 3.067930e-15 -6.566880e-11
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000000 -0.000003 1.000000
+          anchor -0.009500 0.000000 0.234500
+          dampingConstant 0.0
+          staticFriction 0.0
+        }
+        device [
+          RotationalMotor {
+            name "HeadPan"
+            maxVelocity 10.33
+            minPosition -2.0944
+            maxPosition 2.0944
+            maxTorque 5.43
+          }
+          PositionSensor {
+            name "HeadPan_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.009500 0.000000 0.234500
+          rotation -1.000000 0.000000 0.000000 3.141590
+          children [
+            Wolfgang_neckMesh {
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000000 1.000000 -0.000004
+                anchor 0.036000 0.023500 -0.024000
+                dampingConstant 0.0
+                staticFriction 0.0
+              }
+              device [
+                RotationalMotor {
+                  name "HeadTilt"
+                  maxVelocity 10.33
+                  minPosition -1.5708
+                  maxPosition 0.523599
+                  maxTorque 5.43
+                }
+                PositionSensor {
+                  name "HeadTilt_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation 0.036000 0.023500 -0.024000
+                rotation -1.000000 0.000000 -0.000000 1.570800
+                children [
+                  Wolfgang_headMesh {
+                  }
+                  Solid {
+                    translation 0.043700 0.079500 -0.023500
+                    rotation -1.000000 -0.000000 -0.000000 1.570800
+                    name "camera"
+                  }
+                  Solid {
+                    translation 0.143200 0.080000 -0.023500
+                    rotation 0.707105 -0.000001 0.707108 3.141591
+                    children [
+                      Accelerometer {
+                        name "imu accelerometer"
+                      }
+                      Gyro {
+                        name "imu gyro"
+                      }
+                      Compass {
+                        name "imu compass"
+                      }
+                      Transform {
+                        translation 0.00 0.00 0.00
+                        rotation 1 0 0 3.14
+                        children [
+                          Camera {
+                            name "camera"
+                            fieldOfView 0.570000
+                            width 620
+                            height 480
+                          }
+                        ]
+                      }
+                    ]
+                    name "camera_optical_frame"
+                    physics Physics {
+                      density -1
+                      mass 0.0001
+                      centerOfMass [ 0.0 0.0 0.0 ]
+                      inertiaMatrix [
+                        3.442650e-04 3.337130e-04 4.218980e-04
+                        -2.072630e-05 1.058260e-06 5.117220e-05
+                      ]
+                    }
+                  }
+                  Solid {
+                    translation -0.025450 0.053500 -0.023500
+                    rotation -1.000000 -0.000000 -0.000000 1.570800
+                    name "imu_frame_2"
+                  }
+                ]
+                name "head"
+                boundingObject Group {
+                  children [
+                    Transform {
+                      translation 0.029100 0.079500 -0.023500
+                      rotation -0.577350 -0.577350 -0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.043000 0.028200 0.043000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.000000 0.000000 0.004500
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Box {
+                          size 0.050000 0.050000 0.009000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.000000 -0.000000 0.011250
+                      rotation 0.000000 -0.000000 1.000000 3.141590
+                      children [
+                        Box {
+                          size 0.050000 0.050000 0.004500
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.001500 0.077500 0.002547
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Box {
+                          size 0.127000 0.055000 0.007095
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation 0.001500 0.077500 -0.049547
+                      rotation 0.000000 1.000000 0.000000 0.000000
+                      children [
+                        Box {
+                          size 0.127000 0.055000 0.007095
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.015150 0.079500 -0.023500
+                      rotation -0.577350 -0.577350 -0.577352 2.094399
+                      children [
+                        Box {
+                          size 0.029000 0.060300 0.029000
+                        }
+                      ]
+                    }
+                    Transform {
+                      translation -0.016500 0.036500 -0.017000
+                      rotation 0.000000 -1.000000 0.000000 1.570800
+                      children [
+                        Box {
+                          size 0.073000 0.087000 0.063000
+                        }
+                      ]
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.301358
+                  centerOfMass [ 0.000412 0.067494 -0.020065 ]
+                  inertiaMatrix [
+                    3.442650e-04 3.337130e-04 4.218980e-04
+                    -2.072630e-05 1.058260e-06 5.117220e-05
+                  ]
+                }
+              }
+            }
+          ]
+          name "neck"
+          boundingObject Group {
+            children [
+              Transform {
+                translation 0.003500 0.000000 -0.004650
+                rotation 0.000000 1.000000 0.000000 0.000000
+                children [
+                  Box {
+                    size 0.036000 0.040000 0.009300
+                  }
+                ]
+              }
+              Transform {
+                translation 0.018450 0.001050 -0.024000
+                rotation 0.707105 -0.000001 0.707108 3.141591
+                children [
+                  Box {
+                    size 0.040200 0.046100 0.061100
+                  }
+                ]
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.148233
+            centerOfMass [ 0.018691 -0.000078 -0.022014 ]
+            inertiaMatrix [
+              3.893550e-05 5.763180e-05 6.254140e-05
+              -5.287090e-07 4.956980e-06 -2.281580e-08
+            ]
+          }
+        }
+      }
+    ]
+    name IS name 
+    boundingObject Group {
+      children [
+        Transform {
+          translation 0.016050 0.054050 0.203500
+          rotation -0.707105 0.000001 0.707108 3.141591
+          children [
+            Box {
+              size 0.040200 0.046100 0.061100
+            }
+          ]
+        }
+        Transform {
+          translation 0.016050 -0.054050 0.203500
+          rotation -0.000000 -1.000000 -0.000000 1.570800
+          children [
+            Box {
+              size 0.040200 0.046100 0.061100
+            }
+          ]
+        }
+        Transform {
+          translation 0.049008 -0.062500 0.140750
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.015000 0.019716 0.022500
+            }
+          ]
+        }
+        Transform {
+          translation 0.022500 0.067550 0.061250
+          rotation -0.577350 -0.577352 0.577350 2.094399
+          children [
+            Box {
+              size 0.015500 0.036500 0.063000
+            }
+          ]
+        }
+        Transform {
+          translation -0.077028 0.067500 0.177415
+          rotation -0.577350 -0.577352 0.577350 2.094399
+          children [
+            Box {
+              size 0.019000 0.073000 0.040056
+            }
+          ]
+        }
+        Transform {
+          translation 0.002500 0.000400 0.026500
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.080200 0.041000 0.037000
+            }
+          ]
+        }
+        Transform {
+          translation -0.036750 -0.000500 0.029000
+          rotation 0.000000 0.000000 -1.000000 1.570800
+          children [
+            Box {
+              size 0.141000 0.044500 0.046000
+            }
+          ]
+        }
+        Transform {
+          translation -0.010000 0.001000 0.119000
+          rotation -0.000000 0.000000 -1.000000 1.570800
+          children [
+            Box {
+              size 0.132000 0.066000 0.002000
+            }
+          ]
+        }
+        Transform {
+          translation -0.038500 0.000000 0.029000
+          rotation 0.000000 0.000000 -1.000000 1.570800
+          children [
+            Box {
+              size 0.140000 0.040000 0.044000
+            }
+          ]
+        }
+        Transform {
+          translation 0.018050 -0.055000 0.026500
+          rotation 0.577350 -0.577352 -0.577350 2.094399
+          children [
+            Box {
+              size 0.040200 0.048000 0.065100
+            }
+          ]
+        }
+        Transform {
+          translation 0.073028 0.067500 0.177415
+          rotation -0.577350 0.577352 -0.577350 2.094399
+          children [
+            Box {
+              size 0.019000 0.073000 0.040056
+            }
+          ]
+        }
+        Transform {
+          translation -0.053008 -0.062400 0.140750
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.015000 0.019716 0.022500
+            }
+          ]
+        }
+        Transform {
+          translation 0.018050 0.055000 0.026500
+          rotation 0.577350 -0.577352 -0.577350 2.094399
+          children [
+            Box {
+              size 0.040200 0.048000 0.065100
+            }
+          ]
+        }
+        Transform {
+          translation -0.053008 0.050900 0.142250
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.038000 0.019716 0.019500
+            }
+          ]
+        }
+        Transform {
+          translation -0.002000 -0.011500 0.151500
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.111000 0.107000 0.005000
+            }
+          ]
+        }
+        Transform {
+          translation -0.018750 -0.048900 0.218000
+          rotation -0.707105 0.000001 0.707108 3.141591
+          children [
+            Box {
+              size 0.016000 0.042200 0.080500
+            }
+          ]
+        }
+        Transform {
+          translation 0.052500 -0.011500 0.167000
+          rotation 0.000000 -0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.084000 0.002000 0.019000
+            }
+          ]
+        }
+        Transform {
+          translation -0.002000 -0.000000 0.043000
+          rotation 0.000000 1.000000 0.000000 0.000000
+          children [
+            Box {
+              size 0.120000 0.150000 0.080000
+            }
+          ]
+        }
+        Transform {
+          translation -0.037000 -0.047800 0.215800
+          rotation 0.707105 -0.707108 -0.000001 3.141591
+          children [
+            Box {
+              size 0.030000 0.040000 0.005400
+            }
+          ]
+        }
+        Transform {
+          translation 0.008050 0.000000 0.212050
+          rotation -0.577350 -0.577352 0.577350 2.094399
+          children [
+            Box {
+              size 0.040200 0.046100 0.061100
+            }
+          ]
+        }
+        Transform {
+          translation 0.022500 -0.067550 0.061250
+          rotation -0.577350 -0.577352 0.577350 2.094399
+          children [
+            Box {
+              size 0.015500 0.036500 0.063000
+            }
+          ]
+        }
+        Transform {
+          translation -0.077028 -0.067500 0.177415
+          rotation -0.577350 -0.577352 0.577350 2.094399
+          children [
+            Box {
+              size 0.019000 0.073000 0.040056
+            }
+          ]
+        }
+        Transform {
+          translation 0.021500 0.000000 0.011000
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.036500 0.026500 0.010000
+            }
+          ]
+        }
+        Transform {
+          translation 0.001750 -0.000000 0.102000
+          rotation -0.000000 0.000000 -1.000000 1.570800
+          children [
+            Box {
+              size 0.139000 0.111500 0.028000
+            }
+          ]
+        }
+        Transform {
+          translation 0.016000 -0.000050 0.065000
+          rotation -0.577350 0.577352 -0.577350 2.094399
+          children [
+            Box {
+              size 0.125500 0.012000 0.078000
+            }
+          ]
+        }
+        Transform {
+          translation -0.002000 -0.011500 0.167000
+          rotation -0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.115000 0.111000 0.030000
+            }
+          ]
+        }
+        Transform {
+          translation 0.073028 -0.067500 0.177415
+          rotation -0.577350 0.577352 -0.577350 2.094399
+          children [
+            Box {
+              size 0.019000 0.073000 0.040056
+            }
+          ]
+        }
+        Transform {
+          translation -0.005000 0.000000 0.158000
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.150000 0.136000 0.150000
+            }
+          ]
+        }
+        Transform {
+          translation 0.022770 0.000000 0.027000
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.032000 0.023000 0.032000
+            }
+          ]
+        }
+        Transform {
+          translation 0.049008 0.051000 0.142250
+          rotation 0.000000 0.000000 1.000000 1.570800
+          children [
+            Box {
+              size 0.038000 0.019716 0.019500
+            }
+          ]
+        }
+      ]
+    }
+    physics Physics {
+      density -1
+      mass 2.203600
+      centerOfMass [ -0.005173 -0.001700 0.106296 ]
+      inertiaMatrix [
+        1.925800e-02 1.649360e-02 8.303530e-03
+        -1.621350e-05 -1.415190e-03 2.553440e-04
+      ]
+    }
+  }
+}

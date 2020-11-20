@@ -5,21 +5,27 @@ import os
 import time
 import pybullet as p
 from time import sleep
+
+import rospy
 from scipy import signal
 import pybullet_data
 import rospkg
 
 
+from wolfgang_pybullet_sim.terrain import Terrain
+
+
 class Simulation:
-    def __init__(self, gui):
+    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain=False):
         self.gui = gui
         self.paused = False
         self.gravity = True
+        self.foot_link_names = foot_link_names
 
         # config values
         self.start_position = [0, 0, 0.43]
         self.start_orientation = p.getQuaternionFromEuler((0, 0.25, 0))
-        self.initial_joints_positions = {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
+        self.initial_joints_positions ={"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
                                          "LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
                                          "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
                                          "LShoulderPitch": 0, "LShoulderRoll": 0, "LElbow": 45, "RShoulderPitch": 0,
@@ -37,10 +43,13 @@ class Simulation:
         p.configureDebugVisualizer(p.COV_ENABLE_GUI, False)
 
         # Load floor
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())  # needed for plane.urdf
-        self.plane_index = p.loadURDF('plane.urdf')
-        p.changeDynamics(self.plane_index, -1, lateralFriction=1, spinningFriction=-1,
-                         rollingFriction=-1, restitution=0.9)
+        if terrain:
+            self.max_terrain_height = 0.04
+            self.terrain = Terrain(self.max_terrain_height)
+            self.plane_index = self.terrain.id
+        else:
+            p.setAdditionalSearchPath(pybullet_data.getDataPath())  # needed for plane.urdf
+            self.plane_index = p.loadURDF('plane.urdf')
 
         # Load field
         rospack = rospkg.RosPack()
@@ -51,10 +60,12 @@ class Simulation:
                          rollingFriction=-1, restitution=0.9)
 
         # Load robot
-        path = rospack.get_path("wolfgang_description")
         flags = p.URDF_USE_INERTIA_FROM_FILE + p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
-        self.robot_index = p.loadURDF(path + "/urdf/robot.urdf",
-                                      self.start_position, self.start_orientation, flags=flags)
+        if urdf_path is None:
+            # use wolfgang as standard
+            rospack = rospkg.RosPack()
+            urdf_path = rospack.get_path("wolfgang_description") + "/urdf/robot.urdf"
+        self.robot_index = p.loadURDF(urdf_path, self.start_position, self.start_orientation, flags=flags)
 
         # Engine parameters
         # time step should be at 240Hz (due to pyBullet documentation)
@@ -75,26 +86,28 @@ class Simulation:
         for i in range(p.getNumJoints(self.robot_index)):
             joint_info = p.getJointInfo(self.robot_index, i)
             name = joint_info[1].decode('utf-8')
+            type = joint_info[2]
             # we can get the links by seeing where the joint is attached
             self.links[joint_info[12].decode('utf-8')] = link_index
             link_index += 1
-            if name in self.initial_joints_positions.keys():
-                # remember joint
+            if type == 0:
+                # remember joint if its revolute (0) and not fixed (4)
                 self.joints[name] = Joint(i, self.robot_index)
             elif name in ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]:
                 p.enableJointForceTorqueSensor(self.robot_index, i)
                 self.pressure_sensors[name] = PressureSensor(name, i, self.robot_index, 10, 5)
 
-        # set friction for feet
-        self.set_foot_dynamics(0.0, 0.0, 0.0)
+        # this can be used to test different ground / foot frictions. default should be fine for robocup field
+        # self.set_foot_dynamics(0.0, 0.0, 0.0)
 
         # reset robot to initial position
         self.reset()
 
     def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
-                          spinning_friction=0, rolling_friction=0):
+                          spinning_friction=1, rolling_friction=1):
         for link_name in self.links.keys():
-            if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]:
+            if link_name in ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf",
+                             "rrb"] or link_name in self.foot_link_names:
                 # print(p.getLinkState(self.robot_index, self.links[link_name]))
                 p.changeDynamics(self.robot_index, self.links[link_name],
                                  lateralFriction=lateral_friction,
@@ -118,7 +131,10 @@ class Simulation:
         # set joints to initial position
         for name in self.joints:
             joint = self.joints[name]
-            pos_in_rad = math.radians(self.initial_joints_positions[name])
+            try:
+                pos_in_rad = math.radians(self.initial_joints_positions[name])
+            except KeyError:
+                pos_in_rad = 0
             joint.reset_position(pos_in_rad, 0)
             joint.set_position(pos_in_rad)
 
@@ -130,11 +146,17 @@ class Simulation:
         # get keyboard events if gui is active
         single_step = False
         if self.gui:
-            # rest if R-key was pressed
+            # reset if R-key was pressed
             rKey = ord('r')
+            # gravity
             nKey = ord('n')
+            # single step
             sKey = ord('s')
+            # real time
             tKey = ord('t')
+            # randomize terrain
+            fKey = ord('f')
+            # pause
             spaceKey = p.B3G_SPACE
             keys = p.getKeyboardEvents()
             if rKey in keys and keys[rKey] & p.KEY_WAS_TRIGGERED:
@@ -148,13 +170,23 @@ class Simulation:
             if tKey in keys and keys[tKey] & p.KEY_WAS_TRIGGERED:
                 self.real_time = not self.real_time
                 p.setRealTimeSimulation(self.real_time)
+            if fKey in keys and keys[fKey] & p.KEY_WAS_TRIGGERED:
+                # generate new terain
+                self.terrain.randomize()
+            # block until pause is over
+            while self.paused and not single_step:
+                keys = p.getKeyboardEvents()
+                if spaceKey in keys and keys[spaceKey] & p.KEY_WAS_TRIGGERED:
+                    self.paused = not self.paused
+                if sKey in keys and keys[sKey] & p.KEY_IS_DOWN:
+                    single_step = True
+                # sleep a bit to not block a whole CPU core while waiting
+                sleep(0.01)
 
-        # check if simulation should continue currently
-        if not self.paused or single_step:
-            self.time += self.timestep
-            p.stepSimulation()
-            for name, ps in self.pressure_sensors.items():
-                ps.filter_step()
+        self.time += self.timestep
+        p.stepSimulation()
+        for name, ps in self.pressure_sensors.items():
+            ps.filter_step()
 
     def set_gravity(self, active):
         if active:
@@ -180,6 +212,13 @@ class Simulation:
     def get_robot_velocity(self):
         (vx, vy, vz), (vr, vp, vy) = p.getBaseVelocity(self.robot_index)
         return (vx, vy, vz), (vr, vp, vy)
+
+    def get_joint_names(self):
+        names = []
+        for name in self.joints:
+            joint = self.joints[name]
+            names.append(joint.name)
+        return names
 
 
 class Joint:
