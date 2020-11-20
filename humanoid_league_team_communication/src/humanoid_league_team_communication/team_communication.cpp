@@ -15,7 +15,7 @@ TeamCommunication::TeamCommunication() : nh_() {
   int teamcolor;
   nh_.getParam("team_communication/team_color", teamcolor);
   team_color_ = teamcolor;
-  nh_.getParam("team_communication/world_model", world_model_);
+  //nh_.getParam("team_communication/world_model", world_model_);
   nh_.getParam("team_communication/lifetime", lifetime_);
   nh_.getParam("team_communication/belief_threshold", belief_threshold_);
 
@@ -23,7 +23,7 @@ TeamCommunication::TeamCommunication() : nh_() {
   nh_.getParam("team_communication/strategy", strategy_topic_);
   nh_.getParam("team_communication/robot_state", robot_state_topic_);
   nh_.getParam("team_communication/goal", goal_topic_);
-  nh_.getParam("team_communication/world_model_node", world_model_topic_);
+  //nh_.getParam("team_communication/world_model_node", world_model_topic_);
   nh_.getParam("team_communication/position", position_topic_);
   nh_.getParam("team_communication/ball", ball_topic_);
   nh_.getParam("team_communication/obstacles", obstacles_topic_);
@@ -43,18 +43,18 @@ TeamCommunication::TeamCommunication() : nh_() {
   sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
                             ros::TransportHints().tcpNoDelay());
 
-  if(world_model_){
-    sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
-                               ros::TransportHints().tcpNoDelay());
-  }
-  else{
-    sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
+  //if(world_model_){
+  //  sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
+  //                            ros::TransportHints().tcpNoDelay());
+  //}
+  //else{
+  sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
                                   ros::TransportHints().tcpNoDelay());
-    sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballCallback, this,
+    sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballsCallback, this,
                               ros::TransportHints().tcpNoDelay());
-    sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
+  sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
                                    this, ros::TransportHints().tcpNoDelay());
-  }
+  //}
 }
 
 void TeamCommunication::run() {
@@ -189,17 +189,18 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   std::vector<uint8_t> roles;
   std::vector<uint8_t> actions;
   std::vector<uint8_t> states;
-  std::vector<geometry_msgs::Pose2D> own_position;
+  std::vector<geometry_msgs::Pose> own_position;
   //std::vector<uint8_t> own_position_beliefs;   unnecessary because of TeamData.msg
-  std::vector<humanoid_league_msgs::Position2D> ball_relative;
+  std::vector<geometry_msgs::PoseWithCovariance> ball_relative;
   //std::vector<humanoid_league_msgs::Position2D> oppgoal_relative;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_a;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_b;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_c;
-  std::vector<humanoid_league_msgs::Position2D> opponent_robot_d;
-  std::vector<humanoid_league_msgs::Position2D> team_robot_a;
-  std::vector<humanoid_league_msgs::Position2D> team_robot_b;
-  std::vector<humanoid_league_msgs::Position2D> team_robot_c;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_a;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_b;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_c;
+  std::vector<humanoid_league_msgs::ObstacleRelative> opponent_robot_d;
+  std::vector<humanoid_league_msgs::ObstacleRelative> team_robot_a;
+  std::vector<humanoid_league_msgs::ObstacleRelative> team_robot_b;
+  std::vector<humanoid_league_msgs::ObstacleRelative> team_robot_c;
+  std::vector<std::vector<humanoid_league_msgs::ObstacleRelative>> obstacles;
   std::vector<float> avg_walking_speeds;
   std::vector<float> time_to_position_at_balls;
   std::vector<float> max_kicking_distances;
@@ -217,18 +218,18 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
 
     //own position
     //TODO position confidence -> msg definitions
-    geometry_msgs::Pose2D pos_msg;
-    pos_msg.x = rob_data.get_absolute_x() / 1000.0;
-    pos_msg.y = rob_data.get_absolute_y() / 1000.0;
-    pos_msg.theta = rob_data.get_absolute_orientation() / 1000.0;
+    geometry_msgs::Pose pos_msg;
+    pos_msg.position.x = rob_data.get_absolute_x() / 1000.0;
+    pos_msg.position.y = rob_data.get_absolute_y() / 1000.0;
+    //pos_msg.theta = rob_data.get_absolute_orientation() / 1000.0; TODO this is a quaternion now
     own_position.push_back(pos_msg);
     //own_position_beliefs.push_back(rob_data.get_absolute_belief() / 255.0);   unnecessary because of TeamData.msg
 
     //ball
-    humanoid_league_msgs::Position2D ball_msg;
-    ball_msg.pose.x = rob_data.get_relative_ball_x() / 1000.0;
-    ball_msg.pose.y = rob_data.get_relative_ball_y() / 1000.0;
-    ball_msg.confidence = rob_data.get_ball_belief() / 255.0;
+    geometry_msgs::PoseWithCovariance ball_msg;
+    ball_msg.pose.position.x = rob_data.get_relative_ball_x() / 1000.0;
+    ball_msg.pose.position.y = rob_data.get_relative_ball_y() / 1000.0;
+    // ball_msg.confidence = rob_data.get_ball_belief() / 255.0; TODO Conversion needed
     ball_relative.push_back(ball_msg);
 
     /*//oppgoal
@@ -239,52 +240,52 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
     oppgoal_relative.push_back(oppgoal_msg);*/
 
     //opponent_robot_a
-    humanoid_league_msgs::Position2D opponent_robot_a_msg;
-    opponent_robot_a_msg.pose.x = rob_data.get_opponent_robot_a_x() / 1000.0;
-    opponent_robot_a_msg.pose.y = rob_data.get_opponent_robot_a_y() / 1000.0;
-    opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_a_msg;
+    opponent_robot_a_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_a_x() / 1000.0;
+    opponent_robot_a_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_a_y() / 1000.0;
+    //opponent_robot_a_msg.confidence = rob_data.get_opponent_robot_a_belief() / 255.0;
     opponent_robot_a.push_back(opponent_robot_a_msg);
 
     //opponent_robot_b
-    humanoid_league_msgs::Position2D opponent_robot_b_msg;
-    opponent_robot_b_msg.pose.x = rob_data.get_opponent_robot_b_x() / 1000.0;
-    opponent_robot_b_msg.pose.y = rob_data.get_opponent_robot_b_y() / 1000.0;
-    opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_b_msg;
+    opponent_robot_b_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_b_x() / 1000.0;
+    opponent_robot_b_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_b_y() / 1000.0;
+    //opponent_robot_b_msg.confidence = rob_data.get_opponent_robot_b_belief() / 255.0;
     opponent_robot_b.push_back(opponent_robot_b_msg);
 
     //opponent_robot_c
-    humanoid_league_msgs::Position2D opponent_robot_c_msg;
-    opponent_robot_c_msg.pose.x = rob_data.get_opponent_robot_c_x() / 1000.0;
-    opponent_robot_c_msg.pose.y = rob_data.get_opponent_robot_c_y() / 1000.0;
-    opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_c_msg;
+    opponent_robot_c_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_c_x() / 1000.0;
+    opponent_robot_c_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_c_y() / 1000.0;
+    //opponent_robot_c_msg.confidence = rob_data.get_opponent_robot_c_belief() / 255.0;
     opponent_robot_c.push_back(opponent_robot_c_msg);
 
     //opponent_robot_d
-    humanoid_league_msgs::Position2D opponent_robot_d_msg;
-    opponent_robot_d_msg.pose.x = rob_data.get_opponent_robot_d_x() / 1000.0;
-    opponent_robot_d_msg.pose.y = rob_data.get_opponent_robot_d_y() / 1000.0;
-    opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative opponent_robot_d_msg;
+    opponent_robot_d_msg.pose.pose.pose.position.x = rob_data.get_opponent_robot_d_x() / 1000.0;
+    opponent_robot_d_msg.pose.pose.pose.position.y = rob_data.get_opponent_robot_d_y() / 1000.0;
+    //opponent_robot_d_msg.confidence = rob_data.get_opponent_robot_d_belief() / 255.0;
     opponent_robot_d.push_back(opponent_robot_d_msg);
 
     //team_robot_a
-    humanoid_league_msgs::Position2D team_robot_a_msg;
-    team_robot_a_msg.pose.x = rob_data.get_team_robot_a_x() / 1000.0;
-    team_robot_a_msg.pose.y = rob_data.get_team_robot_a_y() / 1000.0;
-    team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative team_robot_a_msg;
+    team_robot_a_msg.pose.pose.pose.position.x = rob_data.get_team_robot_a_x() / 1000.0;
+    team_robot_a_msg.pose.pose.pose.position.y = rob_data.get_team_robot_a_y() / 1000.0;
+    //team_robot_a_msg.confidence = rob_data.get_team_robot_a_belief() / 255.0;
     team_robot_a.push_back(team_robot_a_msg);
 
     //team_robot_b
-    humanoid_league_msgs::Position2D team_robot_b_msg;
-    team_robot_b_msg.pose.x = rob_data.get_team_robot_b_x() / 1000.0;
-    team_robot_b_msg.pose.y = rob_data.get_team_robot_b_y() / 1000.0;
-    team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative team_robot_b_msg;
+    team_robot_b_msg.pose.pose.pose.position.x = rob_data.get_team_robot_b_x() / 1000.0;
+    team_robot_b_msg.pose.pose.pose.position.y = rob_data.get_team_robot_b_y() / 1000.0;
+    //team_robot_b_msg.confidence = rob_data.get_team_robot_b_belief() / 255.0;
     team_robot_b.push_back(team_robot_b_msg);
 
     //team_robot_c
-    humanoid_league_msgs::Position2D team_robot_c_msg;
-    team_robot_c_msg.pose.x = rob_data.get_team_robot_c_x() / 1000.0;
-    team_robot_c_msg.pose.y = rob_data.get_team_robot_c_y() / 1000.0;
-    team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
+    humanoid_league_msgs::ObstacleRelative team_robot_c_msg;
+    team_robot_c_msg.pose.pose.pose.position.x = rob_data.get_team_robot_c_x() / 1000.0;
+    team_robot_c_msg.pose.pose.pose.position.y = rob_data.get_team_robot_c_y() / 1000.0;
+    //team_robot_c_msg.confidence = rob_data.get_team_robot_c_belief() / 255.0;
     team_robot_c.push_back(team_robot_c_msg);
 
     avg_walking_speeds.push_back(rob_data.get_avg_walking_speed() / 1000.0);
@@ -298,34 +299,37 @@ void TeamCommunication::publishData(const MiTeCom::TeamRobotData& team_data){
   humanoid_league_msgs::TeamData message;
   message.header.stamp = ros::Time::now();
 
-  message.robot_ids = ids;
+    //Due to the message refactoring, the team data msg only includes information of one robot. This counteracts the
+    // Mitecom concept. Therefore, no received information will be published.
+    /**
+    message.robot_ids = ids;
 
-  message.role = roles;
-  message.action = actions;
-  message.state = states;
+    message.role = roles;
+    message.action = actions;
+    message.state = states;
 
-  message.robot_positions = own_position;
-  //own_position.confidence = own_position_beliefs;   unnecessary because of TeamData.msg
+    message.robot_position = own_position;
+    //own_position.confidence = own_position_beliefs;   unnecessary because of TeamData.msg
 
-  message.ball_relative = ball_relative;
+    message.ball_relative = ball_relative;
 
-  //message.oppgoal_relative = oppgoal_relative;
+    //message.oppgoal_relative = oppgoal_relative;
 
-  message.opponent_robot_a = opponent_robot_a;
-  message.opponent_robot_b = opponent_robot_b;
-  message.opponent_robot_c = opponent_robot_c;
-  message.opponent_robot_d = opponent_robot_d;
+    obstacles.push_back(opponent_robot_a);
+    obstacles.push_back(opponent_robot_b);
+    obstacles.push_back(opponent_robot_c);
+    obstacles.push_back(opponent_robot_d);
+    obstacles.push_back(team_robot_a);
+    obstacles.push_back(team_robot_b);
+    obstacles.push_back(team_robot_c);
+    message.obstacles = obstacles
 
-  message.team_robot_a = team_robot_a;
-  message.team_robot_b = team_robot_b;
-  message.team_robot_c = team_robot_c;
+    message.avg_walking_speed = avg_walking_speeds;
+    message.time_to_position_at_ball = time_to_position_at_balls;
+    message.max_kicking_distance = max_kicking_distances;
 
-  message.avg_walking_speed = avg_walking_speeds;
-  message.time_to_position_at_ball = time_to_position_at_balls;
-  message.max_kicking_distance = max_kicking_distances;
-
-  message.offensive_side = offensive_side;
-
+    message.strategy = offensive_side;
+    **/
   publisher_.publish(message);
 }
 
@@ -339,7 +343,7 @@ void TeamCommunication::strategyCallback(humanoid_league_msgs::Strategy msg) {
 void TeamCommunication::robotStateCallback(humanoid_league_msgs::RobotControlState msg) {
   state_ = msg.state;
   if (state_ == humanoid_league_msgs::RobotControlState::PENALTY ||
-      state_ == humanoid_league_msgs::RobotControlState::PENALTY_ANIMANTION ||
+      state_ == humanoid_league_msgs::RobotControlState::PENALTY_ANIMATION ||
       state_ == humanoid_league_msgs::RobotControlState::PICKED_UP){
     state_ = STATE_PENALIZED;
   }
@@ -353,29 +357,39 @@ void TeamCommunication::robotStateCallback(humanoid_league_msgs::RobotControlSta
   }
 }
 
-void TeamCommunication::positionCallback(const humanoid_league_msgs::Position2D& msg) {
+void TeamCommunication::positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg) {
   //conversion from m (ROS message) to mm (self.mitecom)
-  position_x_ = static_cast<uint64_t>(msg.pose.x * 1000.0);
-  position_y_ = static_cast<uint64_t>(msg.pose.y * 1000.0);
-  position_orientation_ = static_cast<uint64_t>(msg.pose.theta * 1000.0);
+  position_x_ = static_cast<uint64_t>(msg.pose.pose.position.x * 1000.0);
+  position_y_ = static_cast<uint64_t>(msg.pose.pose.position.y * 1000.0);
+  // position_orientation_ = static_cast<uint64_t>(msg.pose.theta * 1000.0);  TODO sent Quaternion
   //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  position_belief_ = static_cast<uint64_t>(msg.confidence * 255.0);
+  // position_belief_ = static_cast<uint64_t>(msg.confidence * 255.0); TODO transformation
   position_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::ballCallback(const humanoid_league_msgs::BallRelative& msg){
+void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg){
+  // TODO: Replace sorting by just filtering for the ball with highest confidence
+  auto sortByConfidence = [](humanoid_league_msgs::PoseWithCertainty& ball1,
+    humanoid_league_msgs::PoseWithCertainty& ball2) -> bool
+  {
+    return ball1.confidence >= ball2.confidence;
+  };
+
+  std::sort(msg.poses.begin(), msg.poses.end(), sortByConfidence);  // Sort balls by confidence
+  humanoid_league_msgs::PoseWithCertainty ball = msg.poses[0];  // Choose ball with highest confidence
+
   //conversion from m (ROS message) to mm (self.mitecom)
-  ball_relative_x_ = static_cast<uint64_t>(msg.ball_relative.x * 1000.0);
-  ball_relative_y_ = static_cast<uint64_t>(msg.ball_relative.y * 1000.0);
+  ball_relative_x_ = static_cast<uint64_t>(ball.pose.pose.position.x * 1000.0);
+  ball_relative_y_ = static_cast<uint64_t>(ball.pose.pose.position.y * 1000.0);
   //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  ball_belief_ = static_cast<uint64_t>(msg.confidence * 255.0);
+  //ball_belief_ = static_cast<uint64_t>(ball->confidence * 255.0); //TODO transformation
   //use pythagoras to compute time to ball
-  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(msg.ball_relative.x, 2.0) + pow(msg.ball_relative.y, 2.0))) * 1000.0) / avg_walking_speed_);
+  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(ball_relative_x_, 2.0) + pow(ball_relative_y_, 2.0))) * 1000.0) / avg_walking_speed_);
   time_to_position_at_ball_set_ = true;
   ball_exists_ = msg.header.stamp.sec;
 }
 
-void TeamCommunication::goalCallback(const humanoid_league_msgs::GoalRelative& msg) {
+void TeamCommunication::goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg) {
   /* todo von python nach c++ (es gibt keine positions in der msg)
    * todo improve computation of position
    * if msg.positions is None or msg.positions == []:
@@ -393,7 +407,7 @@ void TeamCommunication::goalCallback(const humanoid_league_msgs::GoalRelative& m
 
 }
 
-void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstaclesRelative& msg){
+void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg){
   // clear team_robots_ and obstacle:robots because of new data from vision
   team_robots_.clear();
   opponent_robots_.clear();
@@ -414,40 +428,39 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstaclesR
   }
   uint64_t x;
   uint64_t y;
-  uint64_t belief;
+  uint64_t belief = 0;
 
   for (auto const& obstacle : msg.obstacles){
     //only take obstacles that are team mates or opponents
-    if( obstacle.color == team_color_)
+    if( obstacle.type == team_color_)
     {
-      x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
-      belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
+      //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0); //TODO confidence
       team_robots_.push_back({x, y, belief});
     }
-    else if (obstacle.color == opponent_color){
-      x = static_cast<uint64_t>(obstacle.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.position.y * 1000.0);
-      belief = static_cast<uint64_t>(obstacle.confidence * 255.0);
+    else if (obstacle.type == opponent_color){
+      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
+      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
+      //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0);
       opponent_robots_.push_back({x, y, belief});
     }
   }
   obstacles_exists_ = ros::Time::now().sec;
 }
 
+/**
 void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
   //ball
-  ballCallback(msg.ball);
+  ballsCallback(msg.ball);
 
   //position
   //conversion from m (ROS message) to mm (self.mitecom)
   position_x_ = static_cast<uint64_t>(msg.position.pose.pose.position.x * 1000);
   position_y_ = static_cast<uint64_t>(msg.position.pose.pose.position.y * 1000);
-  tf::Quaternion quaternion(msg.position.pose.pose.orientation.x, msg.position.pose.pose.orientation.y,
-                            msg.position.pose.pose.orientation.z, msg.position.pose.pose.orientation.w);
-  tf::Matrix3x3 matrix_quaternion(quaternion);
-  double roll, pitch, yaw;
-  matrix_quaternion.getRPY(roll, pitch, yaw);
+  tf2::Quaternion quaternion(msg.position.pose.pose.orientation.x, msg.position.pose.pose.orientation.y,
+                             msg.position.pose.pose.orientation.z, msg.position.pose.pose.orientation.w);
+  double yaw = tf2::getYaw(quaternion);
   position_orientation_ = static_cast<uint64_t>(yaw * 1000.0);
   // convert covariance matrix to confidence, so Mitecom can send it as int
   double sum = 0;
@@ -468,6 +481,7 @@ void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
   //obstacles
   obstaclesCallback(msg.obstacles);
 }
+**/
 
 
 int main(int argc, char **argv){

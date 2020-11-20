@@ -19,8 +19,8 @@ import rospy
 from construct import Container, ConstError
 
 from humanoid_league_msgs.msg import GameState as GameStateMsg
-from gamestate import GameState, ReturnData, GAME_CONTROLLER_RESPONSE_VERSION
 from std_msgs.msg import Bool
+from humanoid_league_game_controller.gamestate import GameState, ReturnData, GAME_CONTROLLER_RESPONSE_VERSION
 
 
 class GameStateReceiver(object):

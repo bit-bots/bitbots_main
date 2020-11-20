@@ -2,13 +2,16 @@
 
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
-# The script provides a simple mechanism to test robot behaviour in different gamestates,
-# when no gamecontroller is running
+# The script provides a simple mechanism to test robot behaviour in different game states,
+# when no game controller is running
 
 import rospy
 from humanoid_league_msgs.msg import GameState as GameStateMsg
 
-import sys, select, termios, tty
+import sys
+import select
+import termios
+import tty
 
 msg = """
 Setting the GameState by entering a number:
@@ -19,36 +22,56 @@ Setting the GameState by entering a number:
 3: GAMESTATE_PLAYING=3
 4: GAMESTATE_FINISHED=4
 
+Set the secondary game state by entering:
+
+a: STATE_NORMAL = 0
+b: STATE_PENALTYSHOOT = 1
+c: STATE_OVERTIME = 2
+d: STATE_TIMEOUT = 3
+e: STATE_DIRECT_FREEKICK = 4
+f: STATE_INDIRECT_FREEKICK = 5
+g: STATE_PENALTYKICK = 6
+h: STATE_CORNER_KICK = 7
+i: STATE_GOAL_KICK = 8
+j: STATE_THROW_IN = 9
+
 p:     toggle penalized
 space: toggle allowed_to_move
+t:     toggle secondary state team
 
 CTRL-C to quit
+
+
 
 """
 
 
-def getKey():
+def get_key():
     tty.setraw(sys.stdin.fileno())
     select.select([sys.stdin], [], [], 0)
-    key = sys.stdin.read(1)
+    return_key = sys.stdin.read(1)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return key
+    return return_key
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
     rospy.init_node('sim_gamestate')
 
-    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1)
+    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1, latch=True)
 
     gameState = GameStateMsg()
     gameState.header.stamp = rospy.Time.now()
 
+    # init secondary state team to our teamID
+    gameState.secondaryStateTeam = rospy.get_param("team_id", 8)  # 8 is the default TeamID in the behavior
+    ourTeamID = gameState.secondaryStateTeam
+
     try:
         print(msg)
         while True:
-            key = getKey()
+            key = get_key()
             if key == ' ':
                 gameState.allowedToMove = not gameState.allowedToMove
             elif key == '\x03':
@@ -56,14 +79,27 @@ if __name__=="__main__":
             elif key in ['0', '1', '2', '3', '4']:
                 int_key = int(key)
                 gameState.gameState = int_key
-            elif key == 'p':  # penalize/unpenalize
+            elif key == 'p':  # penalize / unpenalize
                 gameState.penalized = not gameState.penalized
+            elif key in [chr(ord('a')+x) for x in range(10)]:
+                gameState.secondaryState = ord(key) - ord('a')
+            elif key == 't':
+                if gameState.secondaryStateTeam == ourTeamID:
+                    gameState.secondaryStateTeam = ourTeamID + 1
+                else:
+                    gameState.secondaryStateTeam = ourTeamID
 
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
+            sys.stdout.write("\x1b[A")
+            sys.stdout.write("\x1b[A")
             state_publisher.publish(gameState)
-            print ("Allowed to move:    " + str(gameState.allowedToMove) + "       \nGamestate:          " + str(gameState.gameState) + "       \nPenalized:          " + str(gameState.penalized) + "            ")
+            print("Allowed to move:      " + str(gameState.allowedToMove) + "       \nGamestate:            " + str(
+                gameState.gameState) + "       \nSecondary State:      " + str(
+                gameState.secondaryState) + "       \nSecondary State Team: " + str(
+                gameState.secondaryStateTeam) + " \nPenalized:            " + str(gameState.penalized) +
+                  "            ")
 
     except Exception as e:
         print(e)
@@ -72,5 +108,3 @@ if __name__=="__main__":
         print("\n")
 
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-
-

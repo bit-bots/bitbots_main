@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import rospy
 from humanoid_league_msgs.msg import LineInformationRelative
 from visualization_msgs.msg import Marker

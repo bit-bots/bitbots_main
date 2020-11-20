@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     humanoid_league_msgs
     geometry_msgs
+    bitbots_docs
 )
 
 catkin_package(
@@ -43,3 +44,5 @@ install(DIRECTORY include/${PROJECT_NAME}/
     DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
     FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
+
+enable_bitbots_docs()

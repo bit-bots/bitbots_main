@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 """
 Command line tool to publish lines on the /line_in_image topic
 """
@@ -20,28 +20,28 @@ if __name__ == "__main__":
     rospy.init_node("line_tester")
     pub = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=10)
 
-    x_start_str = raw_input("x_start:")
+    x_start_str = input("x_start:")
     try:
         x_start = int(x_start_str)
     except ValueError:
         print("try again")
         #continue
 
-    y_start_str = raw_input("y_start:")
+    y_start_str = input("y_start:")
     try:
         y_start = int(y_start_str)
     except ValueError:
         print("try again")
        # continue
 
-    x_end_str = raw_input("x_end:")
+    x_end_str = input("x_end:")
     try:
         x_end = int(x_end_str)
     except ValueError:
         print("try again")
        # continue
 
-    y_end_str = raw_input("y_end:")
+    y_end_str = input("y_end:")
     try:
         y_end = int(y_end_str)
     except ValueError:
@@ -58,8 +58,6 @@ if __name__ == "__main__":
         seg.end.x = x_end
         seg.end.y = y_end
         seg.confidence = 1.0
-        seg.start_width = 5
-        seg.end_width = 5
         li.segments.append(seg)
 
         pub.publish(li)

@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   dynamic_reconfigure
   humanoid_league_msgs
+  bitbots_docs
 )
 
 catkin_python_setup()
@@ -16,3 +17,5 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package()
+
+enable_bitbots_docs()
