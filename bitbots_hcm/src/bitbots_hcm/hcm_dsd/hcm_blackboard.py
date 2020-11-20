@@ -63,6 +63,7 @@ class HcmBlackboard():
         self.pressure_sensors_installed = rospy.get_param("hcm/pressure_sensors_installed", False)
         self.pressure_timeout_duration = rospy.get_param("hcm/pressure_timeout_duration")
         self.last_pressure_update_time = None
+        # initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
         self.pressures = [100] * 8
         foot_zero_service_name = rospy.get_param("hcm/foot_zero_service")
         self.foot_zero_service = rospy.ServiceProxy(foot_zero_service_name, Empty)
