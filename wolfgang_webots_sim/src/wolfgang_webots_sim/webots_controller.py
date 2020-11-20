@@ -133,7 +133,6 @@ class WebotsController:
     def step_sim(self):
         self.time += self.timestep / 1000
         self.supervisor.step(self.timestep)
-        # print(self.sensors[0].getValue(),  self.sensors[1].getValue(), self.sensors[2].getValue(),  self.sensors[3].getValue(), self.sensors[4].getValue(),  self.sensors[5].getValue())
 
     def step(self):
         self.step_sim()
