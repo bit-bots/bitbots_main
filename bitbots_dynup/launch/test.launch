@@ -1,7 +1,11 @@
 <launch>
   <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
   <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
-  <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" >
+
+  <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+  <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" launch-prefix="$(arg taskset)">
     <remap from="/animation_motor_goals" to="/DynamixelController/command"/>
   </node>
 </launch>

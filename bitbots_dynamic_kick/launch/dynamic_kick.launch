@@ -1,3 +1,6 @@
 <launch>
-  <node pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" output="screen" />
+  <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+  <node pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" output="screen" launch-prefix="$(arg taskset)"/>
 </launch>

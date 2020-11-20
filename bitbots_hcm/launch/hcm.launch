@@ -6,6 +6,9 @@
     <arg name="wolfgang" default="true"/>
     <arg name="use_game_settings" default="false"/>
 
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 2"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
     <param name="/simulation_active" value="$(arg sim)" />
     <param name="/visualization_active" value="$(arg viz)" />
     
@@ -14,7 +17,7 @@
             <group if="$(arg use_game_settings)">
                 <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
             </group>
-        <node name="hcm" pkg="bitbots_hcm" type="humanoid_control_module.py" args="" output="screen" >
+        <node name="hcm" pkg="bitbots_hcm" type="humanoid_control_module.py" args="" output="screen" launch-prefix="taskset -c 1">
         </node>
     </group>
 

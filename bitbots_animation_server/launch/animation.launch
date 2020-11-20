@@ -1,8 +1,13 @@
 <launch>
     <arg name="use_game_settings" default="false"/>
+
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
     <!--<rosparam file="$(find bitbots_animation_server)/config/animation.yaml" command="load"/>-->
     <group if="$(arg use_game_settings)">
             <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
-    <node name="animation" pkg="bitbots_animation_server" type="animation_node.py"  output="screen"/>
+
+    <node name="animation" pkg="bitbots_animation_server" type="animation_node.py"  output="screen" launch-prefix="$(arg taskset)"/>
 </launch>

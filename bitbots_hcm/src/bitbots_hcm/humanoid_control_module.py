@@ -230,7 +230,7 @@ class HardwareControlManager:
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        rate = rospy.Rate(1000)
+        rate = rospy.Rate(500)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
@@ -267,16 +267,5 @@ class HardwareControlManager:
             rospy.sleep(0.01)
 
 
-def main():
-    hcm = HardwareControlManager()
-
-
 if __name__ == "__main__":
-    try:
-        from bitbots_bringup.nice import Nice
-
-        nice = Nice()
-        nice.set_realtime()
-    except ImportError:
-        rospy.logwarn("Could not import Nice")
-    main()
+    hcm = HardwareControlManager()

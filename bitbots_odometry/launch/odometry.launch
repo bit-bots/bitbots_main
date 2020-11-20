@@ -1,4 +1,7 @@
 <launch>
-    <node name="motion_odometry" pkg="bitbots_odometry" type="motion_odometry" />
-    <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" />
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 4"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+    <node name="motion_odometry" pkg="bitbots_odometry" type="motion_odometry" launch-prefix="$(arg taskset)"/>
+    <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" launch-prefix="$(arg taskset)"/>
 </launch>
