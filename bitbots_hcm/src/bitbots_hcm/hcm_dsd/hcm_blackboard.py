@@ -98,6 +98,7 @@ class HcmBlackboard():
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
         self.current_joint_state = None
+        self.previous_joint_state = None
         anim_package = rospy.get_param("hcm/animations/anim_package")
         rospack = rospkg.RosPack()
         path = rospack.get_path(anim_package)

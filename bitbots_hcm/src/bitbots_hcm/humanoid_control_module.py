@@ -216,6 +216,7 @@ class HardwareControlManager:
 
     def joint_state_callback(self, msg):
         self.blackboard.last_motor_update_time = msg.header.stamp
+        self.blackboard.previous_joint_state = self.blackboard.current_joint_state
         self.blackboard.current_joint_state = msg
 
     def cop_l_cb(self, msg):

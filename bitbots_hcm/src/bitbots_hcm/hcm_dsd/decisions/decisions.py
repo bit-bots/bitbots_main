@@ -74,7 +74,6 @@ class CheckMotors(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(CheckMotors, self).__init__(blackboard, dsd, parameters)
-        self.last_msg = None
         self.last_different_msg_time = rospy.Time.from_sec(0)
         self.had_problem = False
 
@@ -87,11 +86,10 @@ class CheckMotors(AbstractDecisionElement):
         # we check if the values are actually changing, since the joint_state controller will publish the same message
         # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
         # have a small break, since this can happen often due to loose cabling
-        if self.last_msg is not None and self.blackboard.current_joint_state is not None \
-                and not self.last_msg.position == self.blackboard.current_joint_state.position \
+        if self.blackboard.previous_joint_state is not None and self.blackboard.current_joint_state is not None \
+                and not self.blackboard.previous_joint_state.position == self.blackboard.current_joint_state.position \
                 and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
-        self.last_msg = self.blackboard.current_joint_state
 
         if self.blackboard.simulation_active:
             # Some simulators will give exact same joint messages which look like errors, so ignore this case
