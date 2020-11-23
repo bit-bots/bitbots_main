@@ -62,7 +62,7 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       // convert to ampere. first go to voltage by 1024*3.3. shift by 2.5 and mulitply by volt/ampere
       current_.data = ((((float) dxlMakeword(data_[6], data_[7])) * (3.3 / 1024)) - 2.5) / -0.066;
       // we need to apply a threshold on this to see if power is on or off
-      power_switch_status_.data = dxlMakeword(data_[8], data_[9];
+      power_switch_status_.data = dxlMakeword(data_[8], data_[9]);
       //TODO cell voltages
       power_pub_.publish(power_switch_status_);
       vcc_pub_.publish(VCC_);
