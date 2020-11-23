@@ -87,6 +87,7 @@ class CheckMotors(AbstractDecisionElement):
         # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
         # have a small break, since this can happen often due to loose cabling
         if self.blackboard.previous_joint_state is not None and self.blackboard.current_joint_state is not None \
+                and not self.blackboard.previous_joint_state.effort == self.blackboard.current_joint_state.effort \
                 and not self.blackboard.previous_joint_state.position == self.blackboard.current_joint_state.position \
                 and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
