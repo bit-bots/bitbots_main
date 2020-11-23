@@ -53,18 +53,17 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
     read_counter_ = 0;
     // read core
     bool read_successful = true;
-    if (driver_->readMultipleRegisters(id_, 26, 12, data_)) {
+    if (driver_->readMultipleRegisters(id_, 28, 22, data_)) {
       // we read one string of bytes. see CORE firmware for definition of registers
       // convert to volt
-      VCC_.data = (((float) dxlMakeword(data_[0], data_[1])) * (3.3 / 1024)) * 6;
-      VBAT_.data = (((float) dxlMakeword(data_[2], data_[3])) * (3.3 / 1024)) * 6;
-      VEXT_.data = (((float) dxlMakeword(data_[4], data_[5])) * (3.3 / 1024)) * 6;
-      VDXL_.data = (((float) dxlMakeword(data_[6], data_[7])) * (3.3 / 1024)) * 6;
+      VEXT_.data = (((float) dxlMakeword(data_[0], data_[1])) * (3.3 / 1024)) * 6;
+      VCC_.data = (((float) dxlMakeword(data_[2], data_[3])) * (3.3 / 1024)) * 6;
+      VDXL_.data = (((float) dxlMakeword(data_[4], data_[5])) * (3.3 / 1024)) * 6;
       // convert to ampere. first go to voltage by 1024*3.3. shift by 2.5 and mulitply by volt/ampere
-      current_.data = ((((float) dxlMakeword(data_[8], data_[9])) * (3.3 / 1024)) - 2.5) / 0.066;
+      current_.data = ((((float) dxlMakeword(data_[6], data_[7])) * (3.3 / 1024)) - 2.5) / -0.066;
       // we need to apply a threshold on this to see if power is on or off
-      float power = (float) (dxlMakeword(data_[10], data_[11]) * (3.3 / 1024));
-      power_switch_status_.data = power > 3.3 / 2;
+      power_switch_status_.data = dxlMakeword(data_[8], data_[9];
+      //TODO cell voltages
       power_pub_.publish(power_switch_status_);
       vcc_pub_.publish(VCC_);
       vbat_pub_.publish(VBAT_);
