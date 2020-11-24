@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>wolfgang_webots_sim</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>Simulation environment using Webots for Wolfgang robot.</description>
   
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann </maintainer>

@@ -232,13 +232,21 @@ class WebotsController:
 
     def get_pressure_message(self):
         current_time = rospy.Time.from_sec(self.time)
+
         left_pressure = FootPressure()
         left_pressure.header.stamp = current_time
-        for p in self.pressure_sensors:
-            print(p.getValues())
-        #left_pressure.left_back =
+        left_pressure.left_back = self.pressure_sensors[0].getValues()[2]
+        left_pressure.left_front = self.pressure_sensors[1].getValues()[2]
+        left_pressure.right_front = self.pressure_sensors[2].getValues()[2]
+        left_pressure.right_back = self.pressure_sensors[3].getValues()[2]
 
         right_pressure = FootPressure()
+        left_pressure.header.stamp = current_time
+        right_pressure.left_back = self.pressure_sensors[4].getValues()[2]
+        right_pressure.left_front = self.pressure_sensors[5].getValues()[2]
+        right_pressure.right_front = self.pressure_sensors[6].getValues()[2]
+        right_pressure.right_back = self.pressure_sensors[7].getValues()[2]
+
         return left_pressure, right_pressure
 
     def publish_pressure(self):
