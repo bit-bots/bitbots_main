@@ -14,7 +14,7 @@ from sensor_msgs.msg import JointState, Imu, Image
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.msg import JointCommand, FootPressure
 import math
 from tf.transformations import quaternion_from_euler
 
@@ -63,8 +63,10 @@ class WebotsController:
             pressure_sensor_names = ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]
             self.pressure_sensors = []
             for name in pressure_sensor_names:
-                self.accel = self.supervisor.getTouch(name)
-            print(self.pressure_sensors)
+                sensor = self.supervisor.getTouchSensor(name)
+                sensor.enable(30)
+                self.pressure_sensors.append(sensor)
+
         elif robot == 'darwin':
             self.robot_node_name = "Darwin"
             self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
@@ -127,6 +129,8 @@ class WebotsController:
         self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
         self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
         self.pub_cam = rospy.Publisher(self.namespace + "/image_raw", Image, queue_size=1)
+        self.pub_pres_left = rospy.Publisher(self.namespace + "/foot_pressure_left/filtered", FootPressure, queue_size=1)
+        self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure, queue_size=1)
         self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
         rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
 
@@ -146,6 +150,7 @@ class WebotsController:
             self.publish_imu()
             self.publish_joint_states()
             self.publish_camera()
+            self.publish_pressure()
             self.publish_clock()
 
     def publish_clock(self):
@@ -224,6 +229,22 @@ class WebotsController:
 
     def get_image(self):
         return self.camera.getImage()
+
+    def get_pressure_message(self):
+        current_time = rospy.Time.from_sec(self.time)
+        left_pressure = FootPressure()
+        left_pressure.header.stamp = current_time
+        for p in self.pressure_sensors:
+            print(p.getValues())
+        #left_pressure.left_back =
+
+        right_pressure = FootPressure()
+        return left_pressure, right_pressure
+
+    def publish_pressure(self):
+        left, right = self.get_pressure_message()
+        self.pub_pres_left.publish(left)
+        self.pub_pres_right.publish(right)
 
     def set_gravity(self, active):
         if active:

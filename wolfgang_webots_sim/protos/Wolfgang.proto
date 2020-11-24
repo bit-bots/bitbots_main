@@ -692,6 +692,11 @@ PROTO Wolfgang [
                                                 rotation -0.000000 0.000000 -1.000000 3.141590
                                                 name "r_cleat_l_back"
                                               }
+                                              TouchSensor {
+                                                name "RLB"
+                                                type        "force-3d"
+                                                resolution  -1
+                                              }
                                             ]
                                             name "rlb"
                                             boundingObject Transform {
@@ -723,6 +728,11 @@ PROTO Wolfgang [
                                                 translation 0.000000 -0.000500 -0.016000
                                                 rotation 0.000000 -0.000000 -1.000000 3.141590
                                                 name "r_cleat_l_front"
+                                              }
+                                              TouchSensor {
+                                                name "RLF"
+                                                type        "force-3d"
+                                                resolution  -1
                                               }
                                             ]
                                             name "rlf"
@@ -756,6 +766,11 @@ PROTO Wolfgang [
                                                 rotation 0.000000 -0.000000 -1.000000 3.141590
                                                 name "r_cleat_r_front"
                                               }
+                                              TouchSensor {
+                                                name "RRF"
+                                                type        "force-3d"
+                                                resolution  -1
+                                              }
                                             ]
                                             name "rrf"
                                             boundingObject Transform {
@@ -787,6 +802,11 @@ PROTO Wolfgang [
                                                 translation 0.000000 -0.000500 -0.016000
                                                 rotation 0.000000 0.000000 1.000000 3.141590
                                                 name "r_cleat_r_back"
+                                              }
+                                              TouchSensor {
+                                                name "RRB"
+                                                type        "force-3d"
+                                                resolution  -1
                                               }
                                             ]
                                             name "rrb"
@@ -1405,13 +1425,19 @@ PROTO Wolfgang [
                                                 rotation 0.000000 0.000000 1.000000 3.141590
                                                 name "l_cleat_l_back"
                                               }
+                                              TouchSensor {
+                                                name "LLB"
+                                                type        "force-3d"
+                                                resolution  -1
+                                                boundingObject USE LLB_BOX
+                                              }
                                             ]
                                             name "llb"
                                             boundingObject Transform {
                                               translation 0.000000 -0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
                                               children [
-                                                Box {
+                                                geometry Box DEF LLB_BOX{
                                                   size 0.012000 0.012000 0.016000
                                                 }
                                               ]
@@ -1436,11 +1462,11 @@ PROTO Wolfgang [
                                                 translation 0.000000 -0.000500 -0.016000
                                                 rotation -0.000000 -0.000000 -1.000000 3.141590
                                                 name "l_cleat_l_front"
-                                              },
+                                              }
                                               TouchSensor {
-                                                  SFString type        "force-3d"
-                                                  SFFloat  resolution  -1
                                                   name "LLF"
+                                                  type        "force-3d"
+                                                  resolution  -1
                                                 }
                                             ]
                                             name "llf"
@@ -1474,6 +1500,11 @@ PROTO Wolfgang [
                                                 rotation -0.000000 -0.000000 -1.000000 3.141590
                                                 name "l_cleat_r_front"
                                               }
+                                              TouchSensor {
+                                                name "LRF"
+                                                type        "force-3d"
+                                                resolution  -1
+                                              }
                                             ]
                                             name "lrf"
                                             boundingObject Transform {
@@ -1505,6 +1536,11 @@ PROTO Wolfgang [
                                                 translation 0.000000 -0.000500 -0.016000
                                                 rotation -0.000000 -0.000000 -1.000000 3.141590
                                                 name "l_cleat_r_back"
+                                              }
+                                              TouchSensor {
+                                                name "LRB"
+                                                type        "force-3d"
+                                                resolution  -1
                                               }
                                             ]
                                             name "lrb"
