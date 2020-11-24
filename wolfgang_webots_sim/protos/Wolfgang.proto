@@ -1436,7 +1436,12 @@ PROTO Wolfgang [
                                                 translation 0.000000 -0.000500 -0.016000
                                                 rotation -0.000000 -0.000000 -1.000000 3.141590
                                                 name "l_cleat_l_front"
-                                              }
+                                              },
+                                              TouchSensor {
+                                                  SFString type        "force-3d"
+                                                  SFFloat  resolution  -1
+                                                  name "LLF"
+                                                }
                                             ]
                                             name "llf"
                                             boundingObject Transform {

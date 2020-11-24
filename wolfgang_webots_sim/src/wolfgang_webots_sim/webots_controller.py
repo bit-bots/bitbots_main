@@ -48,6 +48,7 @@ class WebotsController:
 
         self.robot_name = robot
         self.switch_coordinate_system = True
+        self.pressure_sensors = None
         if robot == 'wolfgang':
             self.robot_node_name = "Robot"
             self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
@@ -59,6 +60,11 @@ class WebotsController:
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
+            pressure_sensor_names = ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]
+            self.pressure_sensors = []
+            for name in pressure_sensor_names:
+                self.accel = self.supervisor.getTouch(name)
+            print(self.pressure_sensors)
         elif robot == 'darwin':
             self.robot_node_name = "Darwin"
             self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
