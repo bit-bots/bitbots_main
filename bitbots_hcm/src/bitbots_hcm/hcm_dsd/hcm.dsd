@@ -1,68 +1,42 @@
-#Falling
-$Fallen
-        FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + front:True
-        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + front:False
-        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight
-        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft
-        NOT_FALLEN --> $ExternalAnimation
-            ANIMATION_RUNNING --> @StayAnimationRunning
-            FREE --> $Walking
-                STOP_WALKING --> @StopWalking
-                STAY_WALKING --> @StayWalking
-                NOT_WALKING --> $Kicking
-                    NOT_KICKING --> $Controlable
-                        NOT_WALKREADY --> @PlayAnimationWalkready
-                        WALKREADY --> @StayControlable
-                    KICKING --> @StayKicking
-
-#Penalty
-$Penalty
-    PENALIZED --> @PenaltyStopWalking, @PlayAnimationPenalty, @StayInPenalty
-    FREE --> $MotorOffTimer
-        SIMULATION --> #Falling
-        TURN_MOTORS_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
-        TURN_MOTORS_ON --> @TurnMotorsOn
-        MOTORS_ARE_ON --> $CheckMotors
-            PROBLEM --> @WaitForMotors
-            CONNECTION --> $Record
-                RECORD_ACTIVE --> @StayRecord
-                FREE --> $PickedUp
-                    PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
-                    ON_GROUND --> #Falling
-
+#ShutDownProcedure
+$PickedUp
+    PICKED_UP --> @TurnMotorsOff, @StayShutDown
+    ON_GROUND --> @PlayAnimationMotorOff, @TurnMotorsOff, @StayShutDown
 
 -->HCM
 $StartHCM
-    SHUTDOWN_REQUESTED --> @PlayAnimationSitDown, @TurnMotorsOff, @StayShutDown
+    SHUTDOWN_REQUESTED --> #ShutDownProcedure
+    SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop
         STOPPED -->  @ForceStopWalking, @PlayAnimationStopped, @StayStopped
         FREE -->$Record
             RECORD_ACTIVE --> @StayRecord
-            FREE --> $CheckIMU
-                IMU_NOT_STARTED --> @WaitForIMU
-                PROBLEM --> @WaitForIMU
-                CONNECTION --> $CheckPressureSensor
-                    PRESSURE_NOT_STARTED --> @WaitForPressure
-                    PROBLEM --> @WaitForPressure
-                    CONNECTION --> $CheckMotors
-                        PROBLEM --> @WaitForMotors
-                        TURN_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
-                        TURN_ON --> @TurnMotorsOn
+            FREE --> $CheckMotors
+                MOTORS_NOT_STARTED --> @WaitForMotorStartup
+                PROBLEM --> @WaitForMotors
+                TURN_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
+                TURN_ON --> @TurnMotorsOn
+                OKAY --> $CheckIMU
+                    IMU_NOT_STARTED --> @WaitForIMUStartup
+                    PROBLEM --> @WaitForIMU
+                    OKAY --> $CheckPressureSensor
+                        PRESSURE_NOT_STARTED --> @WaitForPressureStartup
+                        PROBLEM --> @WaitForPressure
                         OKAY --> $PickedUp
                             PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
-                            ON_GROUND --> $Falling
-                                FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
-                                FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
-                                FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
-                                FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
-                                NOT_FALLING --> $Sitting
-                                    YES --> @PlayAnimationDynup
-                                    NO --> $Fallen
-                                        FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup
-                                        FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup
-                                        FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup
-                                        FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup
-                                        NOT_FALLEN --> $ExternalAnimation
+                            ON_GROUND --> $Fallen
+                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup + direction:squat
+                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup + direction:squat
+                                FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationStandUpBack, @PlayAnimationDynup + direction:squat
+                                FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationStandUpBack, @PlayAnimationDynup + direction:squat
+                                NOT_FALLEN --> $Falling
+                                    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
+                                    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
+                                    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
+                                    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
+                                    NOT_FALLING --> $Sitting
+                                        YES --> @PlayAnimationWalkready
+                                        NO --> $ExternalAnimation
                                             ANIMATION_RUNNING --> @StayAnimationRunning
                                             FREE --> $Walking
                                                 STOP_WALKING --> @StopWalking
