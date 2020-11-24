@@ -1414,7 +1414,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 -0.000000 1.000000 1.570800
                                             name "l_sole"
                                           }
-                                          Solid {
+                                          Solid DEF LLB_SHAPE{
                                             translation -0.060000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -1424,12 +1424,6 @@ PROTO Wolfgang [
                                                 translation 0.000000 -0.000500 -0.016000
                                                 rotation 0.000000 0.000000 1.000000 3.141590
                                                 name "l_cleat_l_back"
-                                              }
-                                              TouchSensor {
-                                                name "LLB"
-                                                type        "force-3d"
-                                                resolution  -1
-                                                boundingObject USE LLB_BOX
                                               }
                                             ]
                                             name "llb"
@@ -1451,6 +1445,12 @@ PROTO Wolfgang [
                                                 -2.540260e-27 -3.401230e-27 -1.099300e-09
                                               ]
                                             }
+                                          }
+                                          TouchSensor {
+                                                name "LLB"
+                                                type        "force-3d"
+                                                resolution  -1
+                                                boundingObject USE LLB_SHAPE
                                           }
                                           Solid {
                                             translation -0.060000 0.177000 -0.034000
