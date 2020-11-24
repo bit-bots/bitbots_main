@@ -36,7 +36,7 @@ walking:
     trunk_height: 0.40
     # Trunk pitch orientation
     # (in rad)
-    trunk_pitch: 0.18
+    trunk_pitch: 0.14
     # Phase offset of trunk oscillation
     # (half cycle phase, [-1:1])
     trunk_phase: -0.1
@@ -45,7 +45,7 @@ walking:
     trunk_x_offset: 0.0
     # Trunk lateral offset
     # (in m)
-    trunk_y_offset: 0.0
+    trunk_y_offset: 0.005
     # Trunk lateral oscillation amplitude ratio
     # (ratio, >= 0)
     trunk_swing: 0.2
@@ -53,7 +53,7 @@ walking:
     # (half cycle ratio, [0:1])
     trunk_pause: 0.0
     # Trunk forward offset proportional to forward step
-    # (in 1)
+    # (in m)
     trunk_x_offset_p_coef_forward: 0.0
     # Trunk forward offset proportional to rotation step
     # (in m/rad)
@@ -70,11 +70,11 @@ walking:
     kick_phase: 0.75
 
     first_step_swing_factor: 1.0
-    first_step_trunk_phase: 0.0
+    first_step_trunk_phase: -0.5
 
   node:
     # update frequency of the engine
-    engine_freq: 1000.0
+    engine_freq: 100.0
 
     # parameters for bioIK
     ik_timeout: 0.01
@@ -100,16 +100,26 @@ walking:
     imu_roll_vel_threshold: 5.7
     pause_duration: 3.0
 
-    phase_reset_active: False
+    phase_reset_active: True
     ground_min_pressure: 1.5
     phase_reset_phase: 0.25
     joint_min_effort: 35
-    effort_phase_reset_active: True
+    effort_phase_reset_active: False
 
     publish_odom_tf: False
 
-  pid_trunk:
-    p: 1
+  pid_trunk_fused_pitch:
+    p: 0.25
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: True
+
+  pid_trunk_fused_roll:
+    p: 0.111
     i: 0
     d: 0
     i_clamp: 0
