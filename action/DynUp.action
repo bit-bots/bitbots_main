@@ -1,5 +1,5 @@
 # goal definition
-bool front
+string direction
 
 ---
 #result definition
