@@ -26,15 +26,10 @@
         <arg name="basler" default="$(arg basler)"/>
     </include>
 
-    <!-- launch motion and gazebo with soccer field -->
+    <!-- launch motion and webots with soccer field -->
     <group if="$(arg use_fake_walk)">
-        <include file="$(find gazebo_ros)/launch/empty_world.launch">
-            <!-- use simpler physics when faking walk -->
-            <arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer_simple_physics.world"/>
-            <arg name="paused" value="false"/>
+        <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
         </include>
-        <rosparam file="$(find wolfgang_description)/config/wolfgang_control_simple_physics.yaml" command="load" ns="$(arg sim_ns)"/>
-        <node name="keep_stable" pkg="bitbots_bringup" type="keep_stable_in_sim.py" output="screen" />
         <!-- launch the motion without the walking -->
         <include file="$(find bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="true"/>
@@ -42,11 +37,8 @@
         </include>
     </group>
     <group unless="$(arg use_fake_walk)">
-        <include file="$(find gazebo_ros)/launch/empty_world.launch">
-            <arg name="world_name" value="$(find humanoid_league_gazebo_world)/worlds/robocup_soccer.world"/>
-            <arg name="paused" value="false"/>
+        <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
         </include>
-        <rosparam file="$(find wolfgang_description)/config/wolfgang_control.yaml" command="load" ns="$(arg sim_ns)"/>
         <!-- launch the motion including the walking -->
         <include file="$(find bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="true"/>
@@ -86,7 +78,7 @@
 
     <!-- simulate map frame -->
 
-    <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" />
+    <!--<node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" />-->
 
     <!-- spawn URDF and load the controllers -->
 

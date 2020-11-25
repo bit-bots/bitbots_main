@@ -20,7 +20,7 @@
     </group>
 
     <group if="$(arg vision)">
-        <include file="$(find bitbots_bringup)/launch/remote_vision.launch">
+        <include file="$(find bitbots_vision)/launch/vision_startup.launch">
             <arg name="sim" value="$(arg sim)" />
             <arg name="basler" value="$(arg basler)" />
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
