@@ -134,8 +134,8 @@ class WebotsController:
                                              queue_size=1)
         self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure,
                                               queue_size=1)
-        self.cop_l_pub_ = rospy.Publisher(self.namespace + "cop_l", PointStamped, queue_size=1)
-        self.cop_r_pub_ = rospy.Publisher(self.namespace + "cop_r", PointStamped, queue_size=1)
+        self.cop_l_pub_ = rospy.Publisher(self.namespace + "/cop_l", PointStamped, queue_size=1)
+        self.cop_r_pub_ = rospy.Publisher(self.namespace + "/cop_r", PointStamped, queue_size=1)
         self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
         rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
 
@@ -278,12 +278,12 @@ class WebotsController:
         cop_r.header.stamp = current_time
         sum = right_pressure.right_back + right_pressure.right_front + right_pressure.right_front + right_pressure.right_back
         if sum > threshold:
-            cop_r.point.x = (right_pressure.right_front + right_pressure.right_front -
-                             right_pressure.right_back - right_pressure.right_back) * pos_x / sum
-            cop_r.point.x = max(min(cop_l.point.x, pos_x), -pos_x)
-            cop_r.point.y = (right_pressure.right_front + right_pressure.right_back -
+            cop_r.point.x = (right_pressure.left_front + right_pressure.right_front -
+                             right_pressure.left_back - right_pressure.right_back) * pos_x / sum
+            cop_r.point.x = max(min(cop_r.point.x, pos_x), -pos_x)
+            cop_r.point.y = (right_pressure.left_front + right_pressure.left_back -
                              right_pressure.right_front - right_pressure.right_back) * pos_y / sum
-            cop_r.point.y = max(min(cop_l.point.x, pos_y), -pos_y)
+            cop_r.point.y = max(min(cop_r.point.x, pos_y), -pos_y)
         else:
             cop_r.point.x = 0
             cop_r.point.y = 0
