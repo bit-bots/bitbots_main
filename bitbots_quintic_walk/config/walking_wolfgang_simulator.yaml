@@ -36,7 +36,7 @@ walking:
     trunk_height: 0.40
     # Trunk pitch orientation
     # (in rad)
-    trunk_pitch: 0.14
+    trunk_pitch: 0.12
     # Phase offset of trunk oscillation
     # (half cycle phase, [-1:1])
     trunk_phase: -0.1
@@ -109,7 +109,7 @@ walking:
     publish_odom_tf: False
 
   pid_trunk_fused_pitch:
-    p: 0.0
+    p: 0.25
     i: 0
     d: 0
     i_clamp: 0
@@ -119,7 +119,7 @@ walking:
     publish_state: True
 
   pid_trunk_fused_roll:
-    p: 0.0
+    p: 0.111
     i: 0
     d: 0
     i_clamp: 0
