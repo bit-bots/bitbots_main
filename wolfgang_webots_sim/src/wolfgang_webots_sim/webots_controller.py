@@ -7,10 +7,11 @@ try:
     from controller import Robot, Node, Supervisor, Field
 except:
     env_file = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../scripts/setenvs.sh'))
-    exit(f'Please execute "source {env_file}" first')
+    # print clearly visible warning in terminal
+    exit(f'\033[91m\n###\n###\n###\nPlease execute\nsource {env_file}\nfirst\n###\n###\n###\n\033[0m')
 import rospy
 from geometry_msgs.msg import Quaternion
-from sensor_msgs.msg import JointState, Imu, Image
+from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
@@ -114,6 +115,11 @@ class WebotsController:
         self.accel.enable(self.timestep)
         self.gyro = self.supervisor.getGyro(gyro_name)
         self.gyro.enable(self.timestep)
+        if self.is_wolfgang:
+            self.accel_head = self.supervisor.getAccelerometer(accel_name+" 2")
+            self.accel_head.enable(self.timestep)
+            self.gyro_head = self.supervisor.getGyro(gyro_name+" 2")
+            self.gyro_head.enable(self.timestep)
         self.camera = self.supervisor.getCamera(camera_name)
         self.camera.enable(self.timestep)
 
@@ -122,7 +128,9 @@ class WebotsController:
                             argv=['clock:=/' + self.namespace + '/clock'])
         self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
         self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
+        self.pub_imu_head = rospy.Publisher(self.namespace + "/imu_head/data", Imu, queue_size=1)
         self.pub_cam = rospy.Publisher(self.namespace + "/image_raw", Image, queue_size=1)
+        self.pub_cam_info = rospy.Publisher(self.namespace + "/camera_info", CameraInfo, queue_size=1, latch=True)
         self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
         rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
 
@@ -131,6 +139,17 @@ class WebotsController:
         self.world_info = self.supervisor.getFromDef("world_info")
 
         self.reset_service = rospy.Service("reset", Empty, self.reset)
+
+        # publish camera info once, it will be latched
+        cam_info = CameraInfo()
+        cam_info.header.stamp = rospy.Time.from_seconds(self.time)
+        cam_info.header.frame_id = 'camera_optical_frame'
+        cam_info.height = self.camera.getHeight()
+        cam_info.width = self.camera.getWidth()
+        cam_info.K = [self.camera.getFocalLength(), 0, 0,
+                      0, self.camera.getFocalLength(), 0,
+                      0, 0, 1]
+        self.pub_cam_info.publish(cam_info)
 
     def step_sim(self):
         self.time += self.timestep / 1000
@@ -183,21 +202,36 @@ class WebotsController:
     def publish_joint_states(self):
         self.pub_js.publish(self.get_joint_state_msg())
 
-    def get_imu_msg(self):
+    def get_imu_msg(self, head=False):
         msg = Imu()
         msg.header.stamp = rospy.Time.from_seconds(self.time)
-        msg.header.frame_id = "imu_frame"
+        if head:
+            msg.header.frame_id = "imu_frame_2"
+        else:
+            msg.header.frame_id = "imu_frame"
 
         # change order because webots has different axis
-        accel_vels = self.accel.getValues()
-        msg.linear_acceleration.x = accel_vels[2]
-        msg.linear_acceleration.y = -accel_vels[0]
-        msg.linear_acceleration.z = accel_vels[1]
+        if head:
+            accel_vels = self.accel_head.getValues()
+            msg.linear_acceleration.x = accel_vels[2]
+            msg.linear_acceleration.y = -accel_vels[0]
+            msg.linear_acceleration.z = -accel_vels[1]
+        else:
+            accel_vels = self.accel.getValues()
+            msg.linear_acceleration.x = accel_vels[0]
+            msg.linear_acceleration.y = accel_vels[1]
+            msg.linear_acceleration.z = accel_vels[2]
 
-        gyro_vels = self.gyro.getValues()
-        msg.angular_velocity.x = gyro_vels[2]
-        msg.angular_velocity.y = -gyro_vels[0]
-        msg.angular_velocity.z = gyro_vels[1]
+        if head:
+            gyro_vels = self.gyro_head.getValues()
+            msg.angular_velocity.x = gyro_vels[2]
+            msg.angular_velocity.y = -gyro_vels[0]
+            msg.angular_velocity.z = -gyro_vels[1]
+        else:
+            gyro_vels = self.gyro.getValues()
+            msg.angular_velocity.x = gyro_vels[0]
+            msg.angular_velocity.y = gyro_vels[1]
+            msg.angular_velocity.z = gyro_vels[2]
 
         pos, rpy = self.get_robot_pose_rpy()
         quat_tf = quaternion_from_euler(*rpy)
@@ -205,7 +239,8 @@ class WebotsController:
         return msg
 
     def publish_imu(self):
-        self.pub_imu.publish(self.get_imu_msg())
+        self.pub_imu.publish(self.get_imu_msg(head=False))
+        self.pub_imu_head.publish(self.get_imu_msg(head=True))
 
     def publish_camera(self):
         img_msg = Image()
