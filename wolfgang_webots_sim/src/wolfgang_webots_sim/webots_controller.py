@@ -48,7 +48,9 @@ class WebotsController:
 
         self.robot_name = robot
         self.switch_coordinate_system = True
+        self.is_wolfgang = False
         if robot == 'wolfgang':
+            self.is_wolfgang = True
             self.robot_node_name = "Robot"
             self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
                                 "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch",
@@ -262,10 +264,12 @@ class WebotsController:
     def get_robot_pose_rpy(self):
         pos = self.translation_field.getSFVec3f()
         rot = self.rotation_field.getSFRotation()
+        rpy = axis_to_rpy(*rot)
+        if self.is_wolfgang:
+            rpy = (rpy[0] + math.pi / 2, -rpy[1], rpy[2])
         if self.switch_coordinate_system:
-            return pos_webots_to_ros(pos), axis_to_rpy(*rot)
+            return pos_webots_to_ros(pos), rpy
         else:
-            rpy = axis_to_rpy(*rot)
             return pos, (rpy[2], rpy[0], rpy[1])
 
 
