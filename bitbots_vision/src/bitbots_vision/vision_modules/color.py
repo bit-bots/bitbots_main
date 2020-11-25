@@ -195,7 +195,7 @@ class HsvSpaceColorDetector(ColorDetector):
         :param str color_str: color (described in the config) that should be detected.
         :return: None
         """
-        self._detector_name = "{}_color_detector".format(color_str)
+        self._detector_name = f"{color_str}_color_detector"
 
         # Initialization of parent ColorDetector.
         super(HsvSpaceColorDetector, self).__init__(config)
@@ -224,7 +224,7 @@ class HsvSpaceColorDetector(ColorDetector):
                         config[self._detector_name + '_upper_values_v']
                 ])
         except KeyError:
-            rospy.logerr("Undefined hsv color values for '{}'. Check config values.".format(self._detector_name), logger_name="vision_hsv_color_detector")
+            rospy.logerr(f"Undefined hsv color values for '{self._detector_name}'. Check config values.", logger_name="vision_hsv_color_detector")
             raise
 
     def match_pixel(self, pixel):
@@ -406,7 +406,9 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             mask = self._mask_image(optional_image, _base_color_space)
         else:
             # Mask of default cached image
-            mask = self._mask = self._mask_image(self._image, _base_color_space)
+            mask = self._static_mask
+            if mask is None:  # Check for cached static mask
+                mask = self._static_mask = self._mask_image(self._image, _base_color_space)
 
         return mask
 

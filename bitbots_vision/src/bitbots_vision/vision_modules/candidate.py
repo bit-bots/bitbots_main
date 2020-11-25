@@ -198,14 +198,9 @@ class Candidate:
         """
         Returns string representation of candidate.
         
-        :return str: String represeatation of candidate
+        :return str: String representation of candidate
         """
-        return 'x1,y1: {0},{1} | width,height: {2},{3} | rating: {4}'.format(
-            self.get_upper_left_x(),
-            self.get_upper_left_y(),
-            self.get_width(),
-            self.get_height(),
-            self._rating)
+        return f"x1,y1: {self.get_upper_left_x()},{self.get_upper_left_y()} | width,height: {self.get_width()},{self.get_height()} | rating: {self._rating}"
 
 
 class CandidateFinder(object):

@@ -72,19 +72,18 @@ def save(filename, color_space):
         blue = blue
     )
 
-    filename = '{}_{}.pickle'.format(filename, output_type)
+    filename = f'{filename}_{output_type}.pickle'
     with open(filename, 'wb') as outfile:
         pickle.dump(data, outfile, protocol=2)
         # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
 
-    print("Output saved to '{}'.".format(filename))
-
+    print(f"Output saved to '{filename}'.")
 
 def run(positive_color_space_path, negative_color_space_path, output_path):
-    print("Load positive color space '{}'".format(positive_color_space_path))
+    print(f"Load positive color space '{positive_color_space_path}'")
     positive_color_space = init_color_space(positive_color_space_path)
     print(np.count_nonzero(positive_color_space))
-    print("Load negative color space '{}'".format(negative_color_space_path))
+    print(f"Load negative color space '{negative_color_space_path}'")
     negative_color_space = init_color_space(negative_color_space_path)
     print(np.count_nonzero(negative_color_space))
     print("Filter color spaces")

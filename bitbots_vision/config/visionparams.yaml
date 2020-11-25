@@ -3,6 +3,7 @@
 vision_parallelize: true  # Run the neural net and the conventional part in parallel
 vision_blind_threshold: 30  # Brightness threshold under which the vision thinks, that someone forgot the camera cap
 
+ROS_audio_msg_topic: 'speak'  # ROS topic of the audio message
 ROS_img_msg_topic: 'camera/image_proc'  # ROS topic of the image message
 ROS_img_msg_queue_size: 1  # ROS queue size for the image message
 ROS_fcnn_img_msg_topic: 'fcnn_image'  # ROS topic of the fcnn output message
@@ -23,7 +24,7 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS 
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
-yolo_openvino_model_path: '2020_02_flo_yolo_openvino'  # Name of the yolo model
+yolo_openvino_model_path: '2020_11_12_flo_yolo_openvino'  # Name of the yolo model
 yolo_nms_threshold: 0.4  # Non maximum suppression threshold
 yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
 
@@ -42,7 +43,6 @@ ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate ra
 ball_candidate_max_count: 1  # The maximum number of balls that should be published
 
 goal_post_field_boundary_y_offset: 10  # Maximum distance between field boundary and goal post
-
 
 field_color_detector_path: 'basler_f031.pickle'  # Color space for the field color detector
 field_color_detector_use_hsv: false
@@ -90,7 +90,7 @@ field_boundary_detector_horizontal_steps: 30  # Number of scanlines
 field_boundary_detector_roi_height: 2  # Region Of Interest height in which we are looking for green
 field_boundary_detector_roi_width: 2  # Region Of Interest width in which we are looking for green
 field_boundary_detector_roi_increase: 0.1  # Value that increases the region of interest if it is located lower in the image
-field_boundary_detector_green_threshold: 136  # Threshold of green in the area covered by the kernel
+field_boundary_detector_green_threshold: 30  # Threshold of green in the area covered by the kernel
 field_boundary_detector_head_tilt_threshold: 20  # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
 
 line_detector_field_boundary_offset: 0  # Threshold in which we are also searching for lines over the field boundary

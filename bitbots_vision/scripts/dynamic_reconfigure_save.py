@@ -49,18 +49,18 @@ changed_params = 0
 # Iterate over old keys
 for key in data.keys():
     # Get the current key value from the parameter server
-    new_value = rospy.get_param("/bitbots_vision/{}".format(str(key)))
+    new_value = rospy.get_param(f"/bitbots_vision/{key}")
     # Check if param changed or if it's a debug parameter that should be ignored
     if new_value != data[key] and (not args.ignore_debug or not key in debug_params):
         data[key] = new_value
         changed_params += 1
-        print("{}:{}".format(key, new_value))
+        print(f"{key}:{new_value}")
 
 # Ask user if he wants to save it
-if args.no_confirm or input("\n {} parameters changed. Do you want to save? (y/n)".format(changed_params)) == "y":
+if args.no_confirm or input(f"\n {changed_params} parameters changed. Do you want to save? (y/n)").lower() == "y":
     # Save new file
     with open(config_path,"w") as fp:
         yaml.dump(data, fp)
-    print("Saved file")
+    print("Saved file.")
 else:
     print("Nothing has been saved!")

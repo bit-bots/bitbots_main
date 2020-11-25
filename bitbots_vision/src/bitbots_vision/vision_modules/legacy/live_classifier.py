@@ -34,9 +34,9 @@ class LiveClassifier(object):
         self.init = tf.global_variables_initializer()
         self.session.run(self.init)
         self.saver = tf.train.Saver()
-        rospy.loginfo("loading weights from '{}'...".format(self.model_load_path), logger_name="vision_classifier")
+        rospy.loginfo(f"Loading weights from '{self.model_load_path}'...", logger_name="vision_classifier")
         self.saver.restore(self.session, self.model_load_path)
-        rospy.loginfo("loaded successfully.", logger_name="vision_classifier")
+        rospy.loginfo("Loaded weights successfully.", logger_name="vision_classifier")
 
     def leaky_relu(self, x, leak=0.2, name=''):
         return tf.maximum(x, x * leak, name=name)

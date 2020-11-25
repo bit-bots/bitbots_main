@@ -83,11 +83,11 @@ Use the provided ``colorpicker.py`` tool as in `Additional Scripts`_ to generate
 
 Currently, the Bit-Bots vision package supports two file types for color spaces:
 
--  **``.pickle``**
+-  ``.pickle``
 
    Generally, this is a generated binary representation of color spaces we use to prevent the long loading times of the ``.yaml`` format.
 
--  **``.yaml``**
+-  ``.yaml``
 
    This format is deprecated.
    This format provides a human readable representation of color spaces.
@@ -214,7 +214,7 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
     :glob:
     :caption: Tutorials
 
-    tutorials/*
+    manual/tutorials/*
 
 Indices and tables
 ==================

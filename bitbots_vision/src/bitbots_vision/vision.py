@@ -49,6 +49,7 @@ class Vision:
         self._config = {}
 
         # Publisher placeholder
+        self._pub_audio = None
         self._pub_balls = None
         self._pub_lines = None
         self._pub_line_mask = None
@@ -79,9 +80,6 @@ class Vision:
             queue_size=1,
             latch=True)
 
-        # Speak publisher
-        self._speak_publisher = rospy.Publisher('/speak', Audio, queue_size=10)
-
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
 
@@ -92,6 +90,9 @@ class Vision:
         # Image transfer variable
         self._transfer_image_msg = None
         self._transfer_image_msg_read_flag = False
+
+        # Yolo placeholder
+        self._yolo = None
 
         # Add model enums to _config
         ros_utils.add_model_enums(VisionConfig, self._package_path)
@@ -349,7 +350,7 @@ class Vision:
 
         # Check if  tpu version of yolo ball/goalpost detector is used
         if config['neural_network_type'] in ['yolo_ncs2']:
-            if ros_utils.config_param_change(self._config, config, ['neural_network_type']):
+            if ros_utils.config_param_change(self._config, config, ['neural_network_type', 'yolo_openvino_model_path']):
                 # Build absolute model path
                 yolo_openvino_model_path = os.path.join(self._package_path, 'models', config['yolo_openvino_model_path'])
                 # Check if it exists
@@ -392,6 +393,7 @@ class Vision:
         :param dict config: new, incoming _config
         :return: None
         """
+        self._pub_audio = ros_utils.create_or_update_publisher(self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
         self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
         self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
@@ -432,8 +434,8 @@ class Vision:
         # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
-            rospy.logwarn('Vision: Dropped incoming Image-message, because its too old! ({} sec)'.format(image_age.to_sec()),
-                          logger_throttle=2, logger_name="")
+            rospy.logwarn(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)",
+                            logger_name="vision")
             return
 
         # Check flag
@@ -762,7 +764,7 @@ class Vision:
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
             rospy.logerr("Image is too dark! Camera cap not removed?", logger_name="vision")
-            ros_utils.speak("Hey!   Remove my camera cap!", self._speak_publisher)
+            ros_utils.speak("Hey!   Remove my camera cap!", self._pub_audio)
 
 
 if __name__ == '__main__':

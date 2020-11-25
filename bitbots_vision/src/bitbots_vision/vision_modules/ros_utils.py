@@ -145,23 +145,23 @@ def add_model_enums(cfg_type, package_path):
             fcnn_paths.append({
                 'name': folder,
                 'value': folder,
-                'description': 'fcnn {}'.format(folder)})
+                'description': f'fcnn {folder}'})
         # Is this model a yolo darknet model
         elif os.path.exists(os.path.join(models_directory, folder, "yolo_weights.weights")):
             # Append list with a new enum item
             yolo_darknet_paths.append({
                 'name': folder,
                 'value': folder,
-                'description': 'yolo {}'.format(folder)})
+                'description': f'yolo {folder}'})
         # Is this model an yolo openvino model
         elif os.path.exists(os.path.join(models_directory, folder, "yolo.bin")):
             # Append list with a new enum item
             yolo_openvino_paths.append({
                 'name': folder,
                 'value': folder,
-                'description': 'yolo {}'.format(folder)})
+                'description': f'yolo {folder}'})
         else:
-            rospy.logwarn("Directory '{}' contains unknown model type. Please remove all non model directories from the 'models' directory!".format(folder), logger_name="vision_ros_utils")
+            rospy.logwarn(f"Directory '{folder}' contains unknown model type. Please remove all non model directories from the 'models' directory!", logger_name="vision_ros_utils")
     # Add enums to configuration
     _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
     _change_enum_items(cfg_type, 'yolo_darknet_model_path', yolo_darknet_paths)
@@ -183,7 +183,7 @@ def add_color_space_enum(cfg_type, package_path):
     # Get all files in this directory
     color_space_files = [file for file in color_spaces if os.path.isfile(os.path.join(color_spaces_path, file))]
     # Create list with a new enum item for each file
-    color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': 'color space {}'.format(cs_file)} for cs_file in color_space_files]
+    color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': f'color space {cs_file}'} for cs_file in color_space_files]
 
     # Add enums to configuration
     _change_enum_items(cfg_type, 'field_color_detector_path', color_space_enum)
@@ -477,7 +477,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
 
     # Check if parameters matching this regex exist
     if len(params) == 0:
-        raise KeyError('Regex \'{}\' has no matches in dict.'.format(params))
+        raise KeyError(f"Regex '{params}' has no matches in dict.")
 
     # Add general params to parameters
     if check_generals:
@@ -487,7 +487,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
     for param in params:
         # Check if param exists in new config
         if param not in new_config:
-            raise KeyError('\'{}\' not in dict.'.format(param))
+            raise KeyError(f"Parameter '{param}' is not in dict.")
         # Check if param is new or if param has changed
         elif param not in old_config or old_config[param] != new_config[param]:
             rospy.logdebug(f"Parameter '{param}' has changed to '{new_config[param]}'", logger_name="vision_ros_utils")
