@@ -4,11 +4,6 @@ import time
 import tf
 import os
 
-# Source webots and import the simulation controller afterwards
-from envbash import load_envbash
-load_envbash(os.path.realpath(os.path.join(
-    os.path.dirname(__file__), 
-    '../../scripts/setenvs.sh')))
 from controller import Robot, Node, Supervisor, Field
 
 import rospy
