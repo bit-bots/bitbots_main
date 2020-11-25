@@ -3,12 +3,14 @@ import time
 
 import tf
 import os
-try:
-    from controller import Robot, Node, Supervisor, Field
-except:
-    env_file = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../scripts/setenvs.sh'))
-    # print clearly visible warning in terminal
-    exit(f'\033[91m\n###\n###\n###\nPlease execute\nsource {env_file}\nfirst\n###\n###\n###\n\033[0m')
+
+# Source webots and import the simulation controller afterwards
+from envbash import load_envbash
+load_envbash(os.path.realpath(os.path.join(
+    os.path.dirname(__file__), 
+    '../../scripts/setenvs.sh')))
+from controller import Robot, Node, Supervisor, Field
+
 import rospy
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
