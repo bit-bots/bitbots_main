@@ -2,10 +2,10 @@ walking:
   engine:
     # Full walk cycle frequency
     # (in Hz, > 0)
-    freq: 1.3
+    freq: 1.8
     # Length of double support phase in half cycle
     # (ratio, [0:1])
-    double_support_ratio: 0.05
+    double_support_ratio: 0.2
     # Lateral distance between the feet center
     # (in m, >= 0)
     foot_distance: 0.2
@@ -48,7 +48,7 @@ walking:
     trunk_y_offset: 0.005
     # Trunk lateral oscillation amplitude ratio
     # (ratio, >= 0)
-    trunk_swing: 0.2
+    trunk_swing: 0.4
     # Trunk swing pause length in phase at apex
     # (half cycle ratio, [0:1])
     trunk_pause: 0.0
@@ -100,7 +100,7 @@ walking:
     imu_roll_vel_threshold: 5.7
     pause_duration: 3.0
 
-    phase_reset_active: True
+    phase_reset_active: False
     ground_min_pressure: 1.5
     phase_reset_phase: 0.25
     joint_min_effort: 35
@@ -109,7 +109,7 @@ walking:
     publish_odom_tf: False
 
   pid_trunk_fused_pitch:
-    p: 0.25
+    p: 0.0
     i: 0
     d: 0
     i_clamp: 0
@@ -119,7 +119,7 @@ walking:
     publish_state: True
 
   pid_trunk_fused_roll:
-    p: 0.111
+    p: 0.0
     i: 0
     d: 0
     i_clamp: 0
