@@ -101,10 +101,11 @@ void BitFootHardwareInterface::read(const ros::Time &t, const ros::Duration &dt)
         status.message = "Cable problem to strain gauge";
       }
     } else {
-      status.level = diagnostic_msgs::DiagnosticStatus::STALE;
+      status.level = diagnostic_msgs::DiagnosticStatus::ERROR;
+      status.message = "Could not read foot sensor";
     }
     std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
-    // itarate through map and save it into values
+    // iterate through map and save it into values
     for (auto const &ent1 : map) {
       diagnostic_msgs::KeyValue key_value = diagnostic_msgs::KeyValue();
       key_value.key = ent1.first;
