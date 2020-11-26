@@ -265,8 +265,15 @@ void ImuHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
     ROS_INFO("Writing Complementary Filter parameters.");
     driver_->writeRegister(id_, "Do_Adaptive_Gain", do_adaptive_gain_);
     driver_->writeRegister(id_, "Do_Bias_Estimation", do_bias_estimation_);
-    driver_->writeRegister(id_, "Accel_Gain", accel_gain_);
-    driver_->writeRegister(id_, "Bias_Alpha", bias_alpha_);
+
+    // dynamixel library requires data (up to 4 bytes) as uint32_t
+    // float would be cast to int losing the decimal and being interpreted wrongly on the device
+    uint32_t data;
+    memcpy(&data, &accel_gain_, sizeof(data));
+    driver_->writeRegister(id_, "Accel_Gain", data);
+    memcpy(&data, &bias_alpha_, sizeof(data));
+    driver_->writeRegister(id_, "Bias_Alpha", data);
+
     write_complementary_filter_params_ = false;
   }
   if (calibrate_accel_) {
