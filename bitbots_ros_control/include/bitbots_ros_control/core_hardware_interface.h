@@ -13,6 +13,7 @@
 #include <dynamixel_workbench/dynamixel_driver.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <std_srvs/SetBool.h>
 
 namespace bitbots_ros_control {
@@ -46,6 +47,7 @@ class CoreHardwareInterface : public hardware_interface::RobotHW {
   std_msgs::Bool power_switch_status_;
   std_msgs::Float64 VCC_;
   std_msgs::Float64 VBAT_;
+  std_msgs::Float64MultiArray VBAT_individual_;
   std_msgs::Float64 VEXT_;
   std_msgs::Float64 VDXL_;
   std_msgs::Float64 current_;
@@ -54,6 +56,7 @@ class CoreHardwareInterface : public hardware_interface::RobotHW {
   ros::Publisher power_pub_;
   ros::Publisher vcc_pub_;
   ros::Publisher vbat_pub_;
+  ros::Publisher vbat_individual_pub_;
   ros::Publisher vext_pub_;
   ros::Publisher vdxl_pub_;
   ros::Publisher current_pub_;

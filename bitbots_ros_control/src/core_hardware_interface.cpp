@@ -28,11 +28,12 @@ bool CoreHardwareInterface::switch_power(std_srvs::SetBoolRequest &req, std_srvs
 
 bool CoreHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   nh_ = nh;
-
+  VBAT_individual_.data.resize(6);
   data_ = (uint8_t *) malloc(16 * sizeof(uint8_t));
   power_pub_ = nh.advertise<std_msgs::Bool>("/core/power_switch_status", 1);
   vcc_pub_ = nh.advertise<std_msgs::Float64>("/core/vcc", 1);
   vbat_pub_ = nh.advertise<std_msgs::Float64>("/core/vbat", 1);
+  vbat_individual_pub_ = nh.advertise<std_msgs::Float64MultiArray>("/core/vbat_cells", 1);
   vext_pub_ = nh.advertise<std_msgs::Float64>("/core/vext", 1);
   vdxl_pub_ = nh.advertise<std_msgs::Float64>("/core/vdxl", 1);
   current_pub_ = nh.advertise<std_msgs::Float64>("/core/current", 1);
@@ -63,10 +64,19 @@ void CoreHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       current_.data = ((((float) dxlMakeword(data_[6], data_[7])) * (3.3 / 1024)) - 2.5) / -0.066;
       // we need to apply a threshold on this to see if power is on or off
       power_switch_status_.data = dxlMakeword(data_[8], data_[9]);
-      //TODO cell voltages
+      // calculate cell voltages as voltages read * voltage divider ratio - previous cell voltage sum
+      VBAT_individual_.data[0] = ((float) dxlMakeword(data_[10], data_[11])) * (3.3 / 1024) * (3.3/(1.2+3.3));
+      VBAT_individual_.data[1] = ((float) dxlMakeword(data_[12], data_[13])) * (3.3 / 1024) * (3.6/(6.2+3.6))  - VBAT_individual_.data[0];
+      VBAT_individual_.data[2] = ((float) dxlMakeword(data_[14], data_[15])) * (3.3 / 1024) * (2.2/(6.8+2.2))  - VBAT_individual_.data[1];
+      VBAT_individual_.data[3] = ((float) dxlMakeword(data_[16], data_[17])) * (3.3 / 1024) * (3.6/(16.0+3.6)) - VBAT_individual_.data[2];
+      VBAT_individual_.data[4] = ((float) dxlMakeword(data_[18], data_[19])) * (3.3 / 1024) * (6.2/(36.0+6.2)) - VBAT_individual_.data[3];
+      VBAT_individual_.data[5] = ((float) dxlMakeword(data_[20], data_[21])) * (3.3 / 1024) * (1.8/(13.0+1.8)) - VBAT_individual_.data[4];
+      VBAT_.data = ((float) dxlMakeword(data_[20], data_[21])) * (3.3 / 1024) * (1.8/(13.0+1.8));
+
       power_pub_.publish(power_switch_status_);
       vcc_pub_.publish(VCC_);
       vbat_pub_.publish(VBAT_);
+      vbat_individual_pub_.publish(VBAT_individual_);
       vext_pub_.publish(VEXT_);
       vdxl_pub_.publish(VDXL_);
       current_pub_.publish(current_);
