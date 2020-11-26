@@ -143,10 +143,23 @@ class WebotsController:
         cam_info.header.frame_id = 'camera_optical_frame'
         cam_info.height = self.camera.getHeight()
         cam_info.width = self.camera.getWidth()
-        cam_info.K = [self.camera.getFocalLength(), 0, 0,
-                      0, self.camera.getFocalLength(), 0,
-                      0, 0, 1]
+        f_y = self.mat_from_fov_and_resolution(
+            self.h_fov_to_v_fov(self.camera.getFov(), cam_info.height, cam_info.width), 
+            cam_info.height)
+        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), cam_info.width)
+        cam_info.K = [f_x, 0  , cam_info.width / 2,
+                      0  , f_x, cam_info.height / 2,
+                      0  , 0  , 1]
+        cam_info.P = [f_x, 0  , cam_info.width / 2  , 0,
+                      0  , f_x, cam_info.height / 2 , 0,
+                      0  , 0  , 1                   , 0]
         self.pub_cam_info.publish(cam_info)
+
+    def mat_from_fov_and_resolution(self, fov, res):
+        return 0.5 * res * ( math.cos((fov/2)) / math.sin((fov/2)))
+
+    def h_fov_to_v_fov(self, h_fov, height, width):
+        return 2 * math.atan(math.tan(h_fov * 0.5) * (height / width))
 
     def step_sim(self):
         self.time += self.timestep / 1000
