@@ -255,6 +255,7 @@ class WebotsController:
     def publish_camera(self):
         img_msg = Image()
         img_msg.header.stamp = rospy.Time.from_seconds(self.time)
+        img_msg.header.frame_id = "camera_optical_frame"
         img_msg.height = self.camera.getHeight()
         img_msg.width = self.camera.getWidth()
         img_msg.encoding = "bgra8"
