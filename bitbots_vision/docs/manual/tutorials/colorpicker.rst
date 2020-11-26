@@ -23,7 +23,7 @@ External Camera
 4. Run ``rosrun bitbots_vision colorpicker.py`` to run the colorpicker on your PC.
 5. Now select all field colors, excluding the lines by clicking on them in the appearing window. For further usage look at the terminal window.
 
-If you use another generic USB camera, make sure it's driver publishes to ``/image_raw`` or use the ``wolves_image_provider`` (See https://github.com/bit-bots/wolves_image_provider).
+If you use another generic USB camera, make sure it's driver publishes to ``/camera/image_proc`` or use the ``wolves_image_provider`` (See https://github.com/bit-bots/wolves_image_provider).
 
 What's next?
 ============
