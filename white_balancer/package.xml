@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>white_balancer</name>
-  <version>1.0.1</version>
+  <version>1.1.1</version>
   <description>The white_balanceing package</description>
 
   <maintainer email="7vahl@informatik.uni-hamurg.de">Florian Vahl</maintainer>
