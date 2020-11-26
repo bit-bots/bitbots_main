@@ -201,6 +201,18 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
    -  ``2`` -> Move current image to **Balls** subdirectory
    -  ``3`` -> Move current image to **Goals** subdirectory
 
+- ``/scripts/rosbag_remapper.py``
+
+   This script remaps the "image_raw" topic in old rosbags to the new "camera/image_proc". Input can either be a single
+   bag or a folder containing bags. The new output bag or folder has an "_updated" appended to its name.
+
+   Usage:
+
+   ::
+
+    ./rosbag_remapper.py /path/to/rosbag_or_folder
+
+
 
 .. toctree::
    :maxdepth: 2
