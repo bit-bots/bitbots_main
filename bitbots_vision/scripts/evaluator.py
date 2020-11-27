@@ -42,10 +42,10 @@ class ImageMeasurement(object):
 
     def get_max_duration(self):
         # returns the maximal duration a measurement in the image took
-        max_duration = None
-        for eval in self.evaluations.values():
-            if eval.duration is not None and eval.duration > max_duration:
-                max_duration = eval.duration
+        max_duration = 0
+        for evaluation in self.evaluations.values():
+            if evaluation.duration is not None and evaluation.duration > max_duration:
+                max_duration = evaluation.duration
         return max_duration
 
 
