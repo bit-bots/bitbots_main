@@ -301,7 +301,7 @@ class Evaluator(object):
                     )),
                 self._generate_obstacle_mask_from_msg(msg, color=class_color[1]))
 
-            self._lock -= 1
+        self._lock -= 1
 
     def _goalpost_callback(self, msg):
         if 'goalpost' not in self._evaluated_classes:
