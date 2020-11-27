@@ -118,8 +118,8 @@ class Evaluator(object):
         self._set_sim_time_param()
 
         self.bridge = CvBridge()
+
         self._measurements = dict()
-        self._measured_classes = set()
 
         # Stop-Stuff
         self._stop = False  # stop flag to handle kills
@@ -207,8 +207,8 @@ class Evaluator(object):
             return
 
         # setting image size in the first run
-        if self._image_size is None:
-            self._image_size = image.shape[:-1]
+        if self._image_shape is None:
+            self._image_shape = image.shape[:-1]
 
         # building and sending message
         rospy.loginfo('sending image {} of {} (starting by 0).'.format(self._current_image_counter, self._image_count))
@@ -297,7 +297,6 @@ class Evaluator(object):
             self._lock -= 1
 
     def _goalpost_callback(self, msg):
-        print("Get gp")
         if 'goalpost' not in self._evaluated_classes:
             return
         self._lock += 1
@@ -327,6 +326,7 @@ class Evaluator(object):
         measurement.received_message = True
         # measure duration of processing
         measurement.duration = self._measure_timing(msg.header)
+
         # generating and matching masks
         measurement.pixel_mask_rates = self._match_masks(
             self._generate_line_mask_from_vectors(
@@ -362,7 +362,7 @@ class Evaluator(object):
         return (rospy.get_rostime() - header.stamp).to_sec()
 
     def _generate_polygon_mask_from_vectors(self, vectors):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
 
         for vector in vectors:
             if not vector:
@@ -371,19 +371,18 @@ class Evaluator(object):
         return mask
 
     def _generate_field_boundary_mask_from_vector(self, vector):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
         vector = [list(pts) for pts in vector][0] #TODO wtf
 
-        vector.append([self._image_size[1] - 1, self._image_size[0] - 0])
-        vector.append([0, self._image_size[0] - 1])  # extending the points to fill the space below the field_boundary
+        vector.append([self._image_shape[1] - 1, self._image_shape[0] - 0])
+        vector.append([0, self._image_shape[0] - 1])  # extending the points to fill the space below the field_boundary
         points = np.array(vector, dtype=np.int32)
         points = points.reshape((1, -1, 2))
         cv2.fillPoly(mask, points, 1.0)
         return mask
 
     def _generate_rectangle_mask_from_vectors(self, vectors):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
-
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
         for vector in vectors:
             if not vector:
                 continue
@@ -391,7 +390,7 @@ class Evaluator(object):
         return mask
 
     def _generate_circle_mask_from_vectors(self, vectors):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
 
         for vector in vectors:
             if not vector:
@@ -404,7 +403,7 @@ class Evaluator(object):
         return mask
 
     def _generate_line_mask_from_vectors(self, vectors):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
         for vector in vectors:
             if not vector:
                 continue
@@ -412,24 +411,24 @@ class Evaluator(object):
         return mask
 
     def _generate_ball_mask_from_msg(self, msg):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
         for ball in msg.candidates:
             cv2.circle(mask, (int(round(ball.center.x)), int(round(ball.center.y))), int(round(ball.diameter/2)), 1.0, thickness=-1)
         return mask
 
     def _generate_field_boundary_mask_from_msg(self, msg):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
-        points = [[int(point.x), int(point.y)] for point in msg.field_boundary_points]
-        points = points + [(self._image_size[1] - 1, self._image_size[0] - 0), (0, self._image_size[0] - 1)]  # extending the points to fill the space below the field_boundary
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
+        points = [[int(point.x), int(point.y)] for point in msg.polygon.points]
+        points = points + [(self._image_shape[1] - 1, self._image_shape[0] - 0), (0, self._image_shape[0] - 1)]  # extending the points to fill the space below the field_boundary
         points = np.array(points, dtype=np.int32)
         points = points.reshape((1, -1, 2))
         cv2.fillPoly(mask, points, 1.0)
         return mask
 
-    def _generate_obstacle_mask_from_msg(self, msg, color=-1):
+    def _generate_obstacle_mask_from_msg(self, msg, obstacle_type=-1):
         vectors = list()
         for obstacle in msg.obstacles:
-            if color == -1 or obstacle.color == color:
+            if obstacle_type == -1 or obstacle.type == obstacle_type:
                 vector = ((int(obstacle.top_left.x), int(obstacle.top_left.y)), (int(obstacle.top_left.x) + obstacle.width, int(obstacle.top_left.y) + obstacle.height))
                 vectors.append(vector)
         return self._generate_rectangle_mask_from_vectors(vectors)
@@ -441,19 +440,13 @@ class Evaluator(object):
                 vectors.append(vector)
         return self._generate_rectangle_mask_from_vectors(vectors)
 
-    def _generate_line_mask_from_msg(self, msg):
-        mask = np.zeros(self._image_size, dtype=np.uint8)
-        for line in msg.segments:
-            cv2.line(mask, (int(round(line.start.x)), int(round(line.start.y))), (int(round(line.end.x)), int(round(line.end.y))), 1.0, thickness=self._line_thickness)
-        return mask
-
     @staticmethod
     def _match_masks(label_mask, detected_mask):
         # matches the masks onto each other to determine multiple measurements.
         label_mask = label_mask.astype(bool)
         detected_mask = detected_mask.astype(bool)
         rates = dict()
-        rates['tp'] = float(np.mean((np.bitwise_and(label_mask, detected_mask))))
+        rates['tp'] = float(np.mean(np.bitwise_and(label_mask, detected_mask)))
         rates['tn'] = float(np.mean(np.bitwise_not(np.bitwise_or(label_mask, detected_mask))))
         rates['fp'] = float(np.mean(np.bitwise_and(detected_mask, np.bitwise_not(label_mask))))
         rates['fn'] = float(np.mean(np.bitwise_and(np.bitwise_not(detected_mask), label_mask)))
@@ -532,6 +525,7 @@ class Evaluator(object):
             for eval_class in self._evaluated_classes:
                 if not found_label[eval_class]:
                     not_in_image_count[eval_class] += 1
+                    rospy.logwarn('Image without label found')
                     add_image = False  # remove images when not all labels are defined somehow.
             if add_image:
                 filtered_images.append(image)
@@ -548,8 +542,8 @@ class Evaluator(object):
         new_end = vector[-1]
         if -10 < begin[0] < 10:
             new_begin = (0, begin[1])
-        if self._image_size[1]-10 < end[0] < self._image_size[1]+10:
-            new_end = (self._image_size[1] - 1, begin[1])
+        if self._image_shape[1]-10 < end[0] < self._image_shape[1]+10:
+            new_end = (self._image_shape[1] - 1, begin[1])
         vector[0] = new_begin
         vector[-1] = new_end
         return vector
