@@ -274,7 +274,14 @@ class Evaluator(object):
         self._lock -= 1
 
     def _obstacles_callback(self, msg):
-        class_colors = [('obstacle', 1), ('robot_red', 2), ('robot_blue', 3)]
+        class_colors = [
+            ('undefined',  0), 
+            ('obstacle',   1), 
+            ('robot_red',  2), 
+            ('robot_blue', 3), 
+            ('human',      4), 
+            ('pole',       5)]
+
         for class_color in class_colors:
             if class_color[0] not in self._evaluated_classes:
                 continue
