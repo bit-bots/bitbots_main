@@ -246,9 +246,9 @@ class PickedUp(AbstractDecisionElement):
         # check if the robot is currently being picked up. foot have no connection to the ground,
         # but robot is more or less upright (to differentiate from falling)
         if self.blackboard.pressure_sensors_installed and not self.blackboard.simulation_active and \
-                sum(self.blackboard.pressures) < 10 and abs(self.blackboard.smooth_accel[0]) < \
-                self.blackboard.pickup_accel_threshold and abs(self.blackboard.smooth_accel[1]) < \
-                self.blackboard.pickup_accel_threshold:
+                sum(self.blackboard.pressures) < 10 and \
+                abs(self.blackboard.smooth_accel[0]) < self.blackboard.pickup_accel_threshold and \
+                abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
             self.blackboard.current_state = STATE_PICKED_UP
             if not reevaluate:
                 speak("Picked up!", self.blackboard.speak_publisher, priority=50)
