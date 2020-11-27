@@ -562,10 +562,13 @@ class Evaluator(object):
         with open(filepath, 'w') as outfile:
             yaml.dump(serialized_measurements, outfile)  # , default_flow_style=False)
         rospy.loginfo('Done writing to file.')
+        fps = np.array([1 / k['evaluations']['max_latency'] \
+            for k in serialized_measurements if k['evaluations']['max_latency'] > 0])
+        rospy.loginfo(f'FPS | Mean: {np.mean(fps)} | Std: {np.std(fps)}')
         rospy.loginfo('Mean IoUs (by class):')
-        evaluations = [k['evaluations'] for k in serialized_measurements]
+        evaluations_by_class = [k['evaluations']['classes'] for k in serialized_measurements]
         for iou_class in self._evaluated_classes:
-            class_evals = [ev[iou_class] for ev in evaluations if ev and iou_class in ev.keys()]
+            class_evals = [ev[iou_class] for ev in evaluations_by_class if ev and iou_class in ev.keys()]
             ious = [measurement['pixel_mask_rates']['iou'] for measurement in class_evals if measurement]
             rospy.loginfo('{}: {}'.format(iou_class, sum(ious) / float(len(ious))))
 
