@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
   message_generation
   geometry_msgs
+  bitbots_docs
 )
 
 catkin_python_setup()
@@ -27,3 +28,5 @@ include_directories(
 #target_link_libraries(base_footprint
 #    ${catkin_LIBRARIES}
 #)
+
+enable_bitbots_docs()
