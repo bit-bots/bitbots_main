@@ -140,19 +140,19 @@ class Evaluator(object):
             for label in image['annotations']:
                 if label['type'] == 'field_boundary':
                     label['vector'] = self._fill_field_boundary_vector(label['vector'])
-        print(self._images)
         rospy.loginfo('Done filling field_boundary vectors.')
         self._set_sim_time_param()
 
-
-        self._send_image_counter = 0  # represents the image index of the image to be sent in the list defined by the label yaml file
         self._current_image_counter = 0  # represents the current image index in the list defined by the label yaml file
+        
+        self._image_send_time = rospy.Time.now()
+
         self._image_count = len(self._images)  # number of images (important for loop stuff)
-        self._image_size = None  # tuple (height, width)
+        self._image_shape = None  # tuple (height, width)
 
         self._lock = 0
-        self._send_image()
         self._react_timer = rospy.Timer(rospy.Duration(0.2), self._react_callback)  # 2 second timer TODO: make this a variable
+        self._send_image()
         rospy.spin()
 
     def _kill_callback(self, a, b):
@@ -160,33 +160,25 @@ class Evaluator(object):
         self._stop = True
 
     def _react_callback(self, event):
-        print(self._lock)
-        print(self._measured_classes)
-        print(self._evaluated_classes)
-        if self._lock < 0:
-            self._lock = 0
-        if len(self._measured_classes) == len(self._evaluated_classes) and not self._lock:
+        while self._lock:
+            #print('waiting...')
+            time.sleep(.05)
+        timeout = (rospy.Time.now() - self._image_send_time).to_sec() > 2.0
+        if timeout: rospy.logwarn("Stoped waiting for responses. Maybe some detections are lost")
+        if (self._recieved_all_messages_for_image(self._current_image_counter) or timeout) and not self._lock:
+            self._current_image_counter += 1
+            self._image_send_time = rospy.Time.now()
             self._send_image()
 
     def _get_send_image_name(self):
-        return self._images[self._send_image_counter]['name']
+        return self._images[self._current_image_counter]['name']
 
     def _get_current_labels(self):
         return self._images[self._current_image_counter]['annotations']
 
-    def _update_image_counter(self, seq):
-        # updates the image counter to publish a new image when necessary
-        # (it was not updated already by an other callback)
-        # TODO: do loop stuff here!
-        if self._send_image_counter <= seq:
-            self._send_image_counter += 1
-
     def _send_image(self, name=None):
-        while self._lock:
-            # print('waiting...')
-            time.sleep(.05)
         # handle stop at end of image list
-        if self._send_image_counter >= self._image_count:  # iterated through all images
+        if self._current_image_counter >= self._image_count:  # iterated through all images
             rospy.loginfo('iterated through all images.')
             self._stop = True
         # executing any kind of stop
@@ -219,15 +211,14 @@ class Evaluator(object):
             self._image_size = image.shape[:-1]
 
         # building and sending message
+        rospy.loginfo('sending image {} of {} (starting by 0).'.format(self._current_image_counter, self._image_count))
         msg = self.bridge.cv2_to_imgmsg(image, 'bgr8')
         msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = str(self._send_image_counter)
-        rospy.loginfo('sending image {} of {} (starting by 0).'.format(self._send_image_counter, self._image_count))
+        msg.header.frame_id = str(self._current_image_counter)
         self._image_pub.publish(msg)
-        self._current_image_counter = self._send_image_counter  # update the current image counter to the new current image
 
         # set up evaluation element in measurements list
-        self._measurements[self._send_image_counter] = ImageMeasurement(self._images[self._send_image_counter], self._evaluated_classes)
+        self._measurements[self._current_image_counter] = ImageMeasurement(self._images[self._current_image_counter], self._evaluated_classes)
 
     def _read_labels(self, filename):
         # reads the labels YAML file and returns a list of image names with their labels
@@ -257,7 +248,6 @@ class Evaluator(object):
                 rospy.logerr(exc)
         return images
 
-
     def _get_image_measurement(self, image_sequence):
         if image_sequence not in self._measurements.keys():
             rospy.logerr('got an unknown image with seq {}! Is there a ROS-bag running? Stop it please!'.format(image_sequence))
@@ -281,9 +271,7 @@ class Evaluator(object):
                     typename='ball'
                 )),
             self._generate_ball_mask_from_msg(msg))
-        self._update_image_counter(int(msg.header.frame_id))
         self._lock -= 1
-        self._measured_classes.add('ball')
 
     def _obstacles_callback(self, msg):
         class_colors = [('obstacle', 1), ('robot_red', 2), ('robot_blue', 3)]
@@ -306,9 +294,7 @@ class Evaluator(object):
                     )),
                 self._generate_obstacle_mask_from_msg(msg, color=class_color[1]))
 
-            self._update_image_counter(int(msg.header.frame_id))
             self._lock -= 1
-            self._measured_classes.add(class_color[0])
 
     def _goalpost_callback(self, msg):
         print("Get gp")
@@ -329,11 +315,7 @@ class Evaluator(object):
                     typename='goalpost'
                 )),
             self._generate_goal_post_mask_from_msg(msg))
-
-        self._update_image_counter(int(msg.header.frame_id))
         self._lock -= 1
-        self._measured_classes.add('goalpost')
-        print("Finished gp")
 
     def _lines_callback(self, msg):
         if 'line' not in self._evaluated_classes:
@@ -352,11 +334,8 @@ class Evaluator(object):
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='line'
                 )),
-            self._generate_line_mask_from_msg(msg))
-
-        self._update_image_counter(int(msg.header.frame_id))
+            self.bridge.imgmsg_to_cv2(msg, '8UC1'))
         self._lock -= 1
-        self._measured_classes.add('line')
 
     def _field_boundary_callback(self, msg):
         if 'field edge' not in self._evaluated_classes:
@@ -376,10 +355,7 @@ class Evaluator(object):
                     typename='field edge'
                 )),
             self._generate_field_boundary_mask_from_msg(msg))
-
-        self._update_image_counter(int(msg.header.frame_id))
         self._lock -= 1
-        self._measured_classes.add('field_boundary')
 
     def _measure_timing(self, header):
         # calculating the time the processing took
@@ -493,7 +469,6 @@ class Evaluator(object):
 
     def _recieved_all_messages_for_image(self, image_seq):
         while self._lock:
-            # print('waiting...')
             time.sleep(.05)
         measurement = self._measurements[image_seq]
         for eval_class in self._evaluated_classes:
