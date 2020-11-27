@@ -17,7 +17,7 @@
         <arg name="camera" value="false" />
     </include>
 
-    <node pkg="bitbots_vision" type="evaluator.py" name="bitbots_vision_evaluator" output="screen" >
+    <node pkg="bitbots_vision" type="evaluator.py" name="bitbots_vision_evaluator" required="true" output="screen" >
         <rosparam command="load" file="$(find bitbots_vision)/config/evaluator_params.yaml" />
         <param name="folder_path" value="$(arg folder_path)" />
         <param name="label_file_name" value="$(arg label_file_name)" />
