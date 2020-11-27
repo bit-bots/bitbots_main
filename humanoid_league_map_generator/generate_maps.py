@@ -5,11 +5,16 @@ import numpy as np
 from scipy import ndimage
 import math
 import os
-import rospkg
+import argparse
 
 # Generates .png files for localization
 # Default color scheme: black on white background
 # Scale: 1 px = 1 cm.
+
+parser = argparse.ArgumentParser(description="Generate maps for localization")
+parser.add_argument('output', help="output folder where the models should be saved")
+parser.add_argument('-p', '--package', dest="package", help="ros package where the models maps be saved")
+args = parser.parse_args()
 
 lines = True
 posts = False
@@ -35,8 +40,15 @@ center_circle_diameter = 150
 border_strip_width = 100
 line_width = 5
 
-# Path to store generated models
-path = os.path.join(rospkg.RosPack().get_path('bitbots_localization'), 'models')
+if args.package:
+    import rospkg
+    # Path to store generated models
+    path = os.path.join(rospkg.RosPack().get_path(args.package), args.output)
+else:
+    path = args.output
+
+if not os.path.exists(path):
+    os.mkdir(path)
 
 # Invert image image to get black on white background
 invert = True
