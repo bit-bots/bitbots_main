@@ -273,8 +273,7 @@ class Evaluator(object):
         for class_color in class_colors:
             if class_color[0] not in self._evaluated_classes:
                 continue
-            self._lock += 1
-            # getting the measurement which is set here
+            # Get the measurement env for the image and class
             measurement = self._get_image_measurement(int(msg.header.frame_id)).evaluations[class_color[0]]
             # mark as received
             measurement.received_message = True
