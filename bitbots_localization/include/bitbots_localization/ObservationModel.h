@@ -16,8 +16,7 @@
 #include <humanoid_league_msgs/PoseWithCertaintyArray.h>
 #include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/PointCloud.h>
-#include <sensor_msgs/point_cloud_conversion.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
 
 
 namespace sm = sensor_msgs;

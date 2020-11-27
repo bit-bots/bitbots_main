@@ -83,10 +83,10 @@ void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelati
 
 
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::PointCloud2 measurement){
-  sm::PointCloud out_cloud;
-  sm::convertPointCloud2ToPointCloud(measurement, out_cloud);
-  for(int i = 0 ; i < out_cloud.points.size(); ++i){
-      std::pair<double, double> linePolar = cartesianToPolar(out_cloud.points[i].x, out_cloud.points[i].y);
+  sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x");
+  for (; iter_xyz != iter_xyz.end(); ++iter_xyz)
+  {
+      std::pair<double, double> linePolar = cartesianToPolar(iter_xyz[0], iter_xyz[1]);
       last_measurement_lines_.push_back(linePolar);
   }
 }
