@@ -586,7 +586,6 @@ class Evaluator(object):
                         annotation['type'] = 'obstacle'
 
     def _set_sim_time_param(self):
-        return
         if rospy.get_param('/use_sim_time'):
             print('setting /use_sim_time to false...')
             rospy.set_param('/use_sim_time', False)
