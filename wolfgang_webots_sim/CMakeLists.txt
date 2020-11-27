@@ -9,8 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   rosgraph_msgs
   std_msgs
+  bitbots_docs
 )
 
 catkin_python_setup()
 
 catkin_package()
+
+enable_bitbots_docs()
