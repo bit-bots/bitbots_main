@@ -153,9 +153,16 @@ class Evaluator(object):
         self._stop = True
 
     def _react_callback(self, event):
-        while self._lock:
-            #print('waiting...')
-            time.sleep(.05)
+        # Executes any kind of stop
+        if self._stop:
+            rospy.loginfo('Stopping the evaluator.')
+            # stop timer
+            self._react_timer.shutdown()
+            # write measurements to file
+            self._write_measurements_to_file()
+            # stop the spinner
+            rospy.signal_shutdown('killed.')
+            sys.exit(0)
         timeout = (rospy.Time.now() - self._image_send_time).to_sec() > 2.0
         if timeout: rospy.logwarn("Stoped waiting for responses. Maybe some detections are lost")
         if (self._recieved_all_messages_for_image(self._current_image_counter) or timeout) and not self._lock:
@@ -174,17 +181,6 @@ class Evaluator(object):
         if self._current_image_counter >= self._image_count:  # iterated through all images
             rospy.loginfo('iterated through all images.')
             self._stop = True
-        # executing any kind of stop
-        if self._stop:
-            rospy.loginfo('Stopping the evaluator.')
-            # stop timer
-            self._react_timer.shutdown()
-            # write measurements to file
-            self._write_measurements_to_file()
-            # stop the spinner
-            rospy.signal_shutdown('killed.')
-            sys.exit(0)
-            return  # this is just to show that nothing happens after this
 
         # handling unknown image name
         if name is None:
