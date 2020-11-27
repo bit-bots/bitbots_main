@@ -176,15 +176,14 @@ class Evaluator(object):
     def _get_current_labels(self):
         return self._images[self._current_image_counter]['annotations']
 
-    def _send_image(self, name=None):
+    def _send_image(self):
         # handle stop at end of image list
         if self._current_image_counter >= self._image_count:  # iterated through all images
             rospy.loginfo('iterated through all images.')
             self._stop = True
 
-        # handling unknown image name
-        if name is None:
-            name = self._get_send_image_name()
+        # Get image name/id
+        name = self._get_image_name()
 
         print("Process image " + name)
 
