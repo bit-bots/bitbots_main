@@ -24,7 +24,6 @@ class Evaluation(object):
         self.duration = None
 
 
-
 class ImageMeasurement(object):
     def __init__(self, image_data, eval_classes):
         self.evaluations = dict()
@@ -34,8 +33,11 @@ class ImageMeasurement(object):
 
     def serialize(self):
         return {
-            'evaluations': {eval_class: vars(self.evaluations[eval_class]) for eval_class in self.evaluations.keys() if self.evaluations[eval_class].received_message},
-            'image_data': self.image_data
+            'evaluations': {
+                'classes': {eval_class: vars(self.evaluations[eval_class]) for eval_class in self.evaluations.keys() if self.evaluations[eval_class].received_message},
+                'max_latency': self.get_max_duration(),
+            },
+            'image_data': self.image_data,
         }
 
     def get_max_duration(self):
