@@ -185,7 +185,7 @@ class Evaluator(object):
         if self._stop:
             rospy.loginfo('Stopping the evaluator.')
             # stop timer
-            # self._resend_timer.shutdown()
+            self._react_timer.shutdown()
             # write measurements to file
             self._write_measurements_to_file()
             # stop the spinner
