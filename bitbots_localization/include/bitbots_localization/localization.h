@@ -27,7 +27,6 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/CameraInfo.h>
 
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -63,8 +62,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/PointCloud2.h>
 
 namespace bl = bitbots_localization;
+namespace sm = sensor_msgs;
 namespace hlm = humanoid_league_msgs;
 namespace gm = geometry_msgs;
 namespace pf = particle_filter;
@@ -81,6 +82,8 @@ class Localization {
 
   void LineCallback(const hlm::LineInformationRelative &msg);
 
+  void LinePointcloudCallback(const sm::PointCloud2 &msg);
+
   void GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg); //TODO
 
   void FieldboundaryCallback(const gm::PolygonStamped &msg);
@@ -95,6 +98,7 @@ class Localization {
 
  private:
   ros::Subscriber line_subscriber_;
+  ros::Subscriber line_point_cloud_subscriber_;
   ros::Subscriber goal_subscriber_;
   ros::Subscriber fieldboundary_subscriber_;
   ros::Subscriber corners_subscriber_;
@@ -135,12 +139,14 @@ class Localization {
   bool resampled_ = false;
 
   hlm::LineInformationRelative line_information_relative_;
+  sm::PointCloud2 line_pointcloud_relative_;
   hlm::PoseWithCertaintyArray goal_posts_relative_;
   gm::PolygonStamped fieldboundary_relative_;
-  sensor_msgs::CameraInfo cam_info_;
+  sm::CameraInfo cam_info_;
   std::vector<gm::PolygonStamped> fieldboundary_in_image_;
 
   ros::Time last_stamp_lines = ros::Time(0);
+  ros::Time last_stamp_lines_pc = ros::Time(0);
   ros::Time last_stamp_goals = ros::Time(0);
   ros::Time last_stamp_fb_points = ros::Time(0);
 

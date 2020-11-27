@@ -15,7 +15,11 @@
 #include <humanoid_league_msgs/PoseWithCertainty.h>
 #include <humanoid_league_msgs/PoseWithCertaintyArray.h>
 #include <geometry_msgs/PolygonStamped.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
 
+
+namespace sm = sensor_msgs;
 namespace bl = bitbots_localization;
 namespace hlm = humanoid_league_msgs;
 namespace gm = geometry_msgs;
@@ -40,6 +44,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   double measure(const RobotState &state) const override;
 
   void set_measurement_lines(hlm::LineInformationRelative measurement);
+
+  void set_measurement_lines_pc(sm::PointCloud2 measurement);
 
   void set_measurement_goal(hlm::PoseWithCertaintyArray measurement);
 
