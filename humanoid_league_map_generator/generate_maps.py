@@ -12,10 +12,16 @@ import rospkg
 # Default color scheme: black on white background
 # Scale: 1 px = 1 cm.
 
-lines = False
+lines = True
 posts = False
 fieldboundary = False
-features = True
+features = False
+
+corners_exact = False
+corners_blobs = False
+tcrossings = False
+tcrossings_blobs = False
+crosses_blobs = False
 
 # 2019 field WM
 field_length = 900
@@ -31,7 +37,7 @@ border_strip_width = 100
 line_width = 5
 
 # Path to store generated models
-path = os.path.join(rospkg.RosPack().get_path('humanoid_league_localization'), 'models')
+path = os.path.join(rospkg.RosPack().get_path('bitbots_localization'), 'models')
 
 # Invert image image to get black on white background
 invert = True
@@ -50,28 +56,28 @@ image_size = (field_width + border_strip_width * 2, field_length + border_strip_
 field_outline_start = (border_strip_width, border_strip_width)
 field_outline_end = (field_length + border_strip_width, field_width + border_strip_width)
 
-middle_line_start = (field_length/2 + border_strip_width, border_strip_width)
-middle_line_end = (field_length/2 + border_strip_width, field_width + border_strip_width)
+middle_line_start = (field_length//2 + border_strip_width, border_strip_width)
+middle_line_end = (field_length//2 + border_strip_width, field_width + border_strip_width)
 
-middle_point = (field_length/2 + border_strip_width, field_width/2 + border_strip_width)
+middle_point = (field_length//2 + border_strip_width, field_width//2 + border_strip_width)
 
-penalty_mark_left = (penalty_mark_distance + border_strip_width, field_width/2 + border_strip_width)
-penalty_mark_right = (image_size[1] - border_strip_width - penalty_mark_distance, field_width/2 + border_strip_width)
+penalty_mark_left = (penalty_mark_distance + border_strip_width, field_width//2 + border_strip_width)
+penalty_mark_right = (image_size[1] - border_strip_width - penalty_mark_distance, field_width//2 + border_strip_width)
 
-goal_area_left_start = (border_strip_width,  border_strip_width + field_width/2 - goal_area_width/2)
-goal_area_left_end = (border_strip_width + goal_area_length, field_width/2 + border_strip_width + goal_area_width/2)
+goal_area_left_start = (border_strip_width,  border_strip_width + field_width//2 - goal_area_width//2)
+goal_area_left_end = (border_strip_width + goal_area_length, field_width//2 + border_strip_width + goal_area_width//2)
 
 goal_area_right_start = (image_size[1] - goal_area_left_start[0], goal_area_left_start[1])
 goal_area_right_end = (image_size[1] - goal_area_left_end[0], goal_area_left_end[1])
 
-penalty_area_left_start = (border_strip_width,  border_strip_width + field_width/2 - penalty_area_width/2)
-penalty_area_left_end = (border_strip_width + penalty_area_length, field_width/2 + border_strip_width + penalty_area_width/2)
+penalty_area_left_start = (border_strip_width,  border_strip_width + field_width//2 - penalty_area_width//2)
+penalty_area_left_end = (border_strip_width + penalty_area_length, field_width//2 + border_strip_width + penalty_area_width//2)
 
 penalty_area_right_start = (image_size[1] - penalty_area_left_start[0], penalty_area_left_start[1])
 penalty_area_right_end = (image_size[1] - penalty_area_left_end[0], penalty_area_left_end[1])
 
-goalpost_left_1 = (border_strip_width, border_strip_width+field_width/2 + goal_width/2)
-goalpost_left_2 = (border_strip_width, border_strip_width+field_width/2 - goal_width/2)
+goalpost_left_1 = (border_strip_width, border_strip_width+field_width//2 + goal_width//2)
+goalpost_left_2 = (border_strip_width, border_strip_width+field_width//2 - goal_width//2)
 
 goalpost_right_1 = (image_size[1] - goalpost_left_1[0], goalpost_left_1[1])
 goalpost_right_2 = (image_size[1] - goalpost_left_2[0], goalpost_left_2[1])
@@ -133,7 +139,7 @@ if lines:
 	img_lines = cv2.line(img_lines, middle_line_start, middle_line_end, color, line_width)
 
 	# Draw center circle
-	img_lines = cv2.circle(img_lines, middle_point, center_circle_diameter / 2, color, line_width)
+	img_lines = cv2.circle(img_lines, middle_point, center_circle_diameter // 2, color, line_width)
 
 	# Draw center mark
 	if mark_type == 'point':
@@ -152,10 +158,10 @@ if lines:
 	# Draw goal area
 	img_lines = cv2.rectangle(img_lines, goal_area_left_start, goal_area_left_end, color, line_width)
 	img_lines = cv2.rectangle(img_lines, goal_area_right_start, goal_area_right_end, color, line_width)
-  
-  # Draw penalty area
-  img_lines = cv2.rectangle(img_lines, penalty_area_left_start, penalty_area_left_end, color, line_width)
-  img_lines = cv2.rectangle(img_lines, penalty_area_right_start, penalty_area_right_end, color, line_width)
+
+	# Draw penalty area
+	img_lines = cv2.rectangle(img_lines, penalty_area_left_start, penalty_area_left_end, color, line_width)
+	img_lines = cv2.rectangle(img_lines, penalty_area_right_start, penalty_area_right_end, color, line_width)
 
 
 	# blur and write
@@ -174,7 +180,7 @@ if posts:
 	img_posts = cv2.circle(img_posts, goalpost_left_2, line_width*2, color, -1)
 	img_posts = cv2.circle(img_posts, goalpost_right_1, line_width*2, color, -1)
 	img_posts = cv2.circle(img_posts, goalpost_right_2, line_width*2, color, -1)
-	
+
 	# blur and write
 	cv2.imwrite(os.path.join(path, 'posts.png'), blurGaussian(img_posts))
 
@@ -191,17 +197,12 @@ if fieldboundary:
 	img_fieldboundary = cv2.rectangle(img_fieldboundary, (100, 100), (image_size[1] + 100, image_size[0] + 100), color, line_width)
 
 	# blur and write
-	cv2.imwrite('/home/judith/robocup/bitbots_meta/humanoid_league_localization/models/fieldboundary.png', blurDistance(img_fieldboundary, 5)) #TODO oder gaussian?
+	cv2.imwrite(os.path.join(path, 'fieldboundary.png'), blurDistance(img_fieldboundary, 5)) #TODO oder gaussian?
+
 
 ############################################################################
 #features
 ############################################################################
-corners_exact = False
-corners_blobs = False
-tcrossings = False
-tcrossings_blobs = False
-crosses_blobs = True
-
 if features:
 	size = 30
 
@@ -322,16 +323,16 @@ if features:
 		#draw left goal area
 
 		#top
-		img_tcrossings = cv2.line(img_tcrossings, (goal_area_left_start[0], goal_area_left_start[1]-size/2),
-								  (goal_area_left_start[0], goal_area_left_start[1] + size / 2),
+		img_tcrossings = cv2.line(img_tcrossings, (goal_area_left_start[0], goal_area_left_start[1]-size//2),
+								  (goal_area_left_start[0], goal_area_left_start[1] + size // 2),
 								  color, line_width)
 		img_tcrossings = cv2.line(img_tcrossings, goal_area_left_start,
 								  (goal_area_left_start[0] + size, goal_area_left_start[1]),
 								  color, line_width)
 
 		#bottom
-		img_tcrossings = cv2.line(img_tcrossings, (goal_area_left_start[0], goal_area_left_end[1] - size / 2),
-								  (goal_area_left_start[0], goal_area_left_end[1] + size / 2),
+		img_tcrossings = cv2.line(img_tcrossings, (goal_area_left_start[0], goal_area_left_end[1] - size // 2),
+								  (goal_area_left_start[0], goal_area_left_end[1] + size // 2),
 								  color, line_width)
 		img_tcrossings = cv2.line(img_tcrossings, (goal_area_left_start[0], goal_area_left_end[1]),
 								  (goal_area_left_start[0] + size, goal_area_left_end[1]),
