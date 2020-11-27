@@ -110,10 +110,9 @@ class Evaluator(object):
         self._image_pub = rospy.Publisher('image_raw', Image, queue_size=1, latch=True)
 
         self._loop_images = rospy.get_param("bitbots_vision_evaluator/loop_images", False)
-
         self._image_path = rospy.get_param("bitbots_vision_evaluator/folder_path")
+        self._line_thickness = rospy.get_param("bitbots_vision_evaluator/line_thickness")
 
-        self._line_thickness = 3
         self._set_sim_time_param()
 
         self.bridge = CvBridge()
