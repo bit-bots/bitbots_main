@@ -311,6 +311,7 @@ class WebotsController:
         pos = self.translation_field.getSFVec3f()
         rot = self.rotation_field.getSFRotation()
         rpy = axis_to_rpy(*rot)
+        # webots cordinate system is left-handed and depends on the robot. these values were found experimentally
         if self.is_wolfgang:
             rpy = (rpy[0] + math.pi / 2, -rpy[1], rpy[2])
         if self.switch_coordinate_system:
