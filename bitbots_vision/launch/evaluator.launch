@@ -2,13 +2,20 @@
 
     <arg name="folder_path" doc="path into the folder with the images and the label file" />
     <arg name="label_file_name" doc="name of the yaml file containing the labels" default="labels.yaml" />
-    <arg name="output_file_path" doc="path where the output file should be stored" default="$(arg folder_path)" />
+    <arg name="output_file_path" doc="path where the output file should be stored" default="/tmp/eval.yaml" />
     <arg name="loop_images" doc="looping the images to allow longer (but repetitive) tests" default="false" />
     <arg name="listen_balls" doc="listen for ball messages" default="true" />
     <arg name="listen_lines" doc="listen for line messages" default="true" />
     <arg name="listen_obstacles" doc="listen for obstacle messages" default="false" />
     <arg name="listen_goalposts" doc="listen for goalpost messages (not working)" default="true" />
     <arg name="listen_field_boundary" doc="listen for field boundary messages" default="true" />
+    <arg name="vision" doc="start the vision" default="true" />
+
+    <param name="use_sim_time" value="false"/>
+
+    <include if="$(arg vision)" file="$(find bitbots_vision)/launch/vision_startup.launch">
+        <arg name="camera" value="false" />
+    </include>
 
     <node pkg="bitbots_vision" type="evaluator.py" name="bitbots_vision_evaluator" output="screen" >
         <rosparam command="load" file="$(find bitbots_vision)/config/evaluator_params.yaml" />
