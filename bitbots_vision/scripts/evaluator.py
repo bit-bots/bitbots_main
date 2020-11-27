@@ -135,13 +135,6 @@ class Evaluator(object):
         rospy.loginfo('Validating labels of {} images...'.format(len(self._images)))
         self._images = self._analyze_labels(self._images)
         rospy.loginfo('Labels of {} images are valid'.format(len(self._images)))
-        rospy.loginfo('Filling field_boundary vectors...')
-        for image in self._images:
-            for label in image['annotations']:
-                if label['type'] == 'field_boundary':
-                    label['vector'] = self._fill_field_boundary_vector(label['vector'])
-        rospy.loginfo('Done filling field_boundary vectors.')
-        self._set_sim_time_param()
 
         self._current_image_counter = 0  # represents the current image index in the list defined by the label yaml file
         
