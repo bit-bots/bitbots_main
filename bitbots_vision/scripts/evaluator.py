@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import rospy
-from humanoid_league_msgs.msg import LineInformationInImage, ObstaclesInImage, BallsInImage, FieldBoundaryInImage, GoalPartsInImage
-from geometry_msgs.msg import Point
+from humanoid_league_msgs.msg import \
+    ObstacleInImageArray, BallInImageArray, \
+    GoalPostInImageArray
+from geometry_msgs.msg import Point, PolygonStamped
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import numpy as np
@@ -57,8 +59,8 @@ class Evaluator(object):
         if rospy.get_param("bitbots_vision_evaluator/listen_balls", False):
             rospy.loginfo('listening for balls in image...')
             self._evaluated_classes.append('ball')
-            self._ball_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/balls_topic", "ball_in_image"),
-                 BallsInImage,
+            self._ball_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/balls_topic", "balls_in_image"),
+                 BallInImageArray,
                  self._balls_callback,
                  queue_size=1,
                  tcp_nodelay=True)
@@ -67,8 +69,8 @@ class Evaluator(object):
         if rospy.get_param("bitbots_vision_evaluator/listen_lines", False):
             rospy.loginfo('listening for lines in image...')
             self._evaluated_classes.append('line')
-            self._line_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/lines_topic", "lines_in_image"),
-                 LineInformationInImage,
+            self._line_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/lines_topic", "line_mask_in_image"),
+                 Image,
                  self._lines_callback,
                  queue_size=1,
                  tcp_nodelay=True)
@@ -80,7 +82,7 @@ class Evaluator(object):
             self._evaluated_classes.append('robot_blue')
             self._evaluated_classes.append('obstacle')
             self._obstacle_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/obstacles_topic", "obstacles_in_image"),
-                 ObstaclesInImage,
+                 ObstacleInImageArray,
                  self._obstacles_callback,
                  queue_size=1,
                  tcp_nodelay=True)
@@ -89,8 +91,8 @@ class Evaluator(object):
         if rospy.get_param("bitbots_vision_evaluator/listen_goalposts", False):
             rospy.loginfo('listening for goalposts in image...')
             self._evaluated_classes.append('goalpost')
-            self._goalpost_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/goalpost_topic", "goal_parts_in_image"),
-                 GoalPartsInImage,
+            self._goalpost_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/goalpost_topic", "goal_posts_in_image"),
+                 GoalPostInImageArray,
                  self._goalpost_callback,
                  queue_size=1,
                  tcp_nodelay=True)
@@ -100,7 +102,7 @@ class Evaluator(object):
             rospy.loginfo('listening for field_boundary in image...')
             self._evaluated_classes.append('field edge')
             self._field_boundary_sub = rospy.Subscriber(rospy.get_param("bitbots_vision_evaluator/field_boundary_topic", "field_boundary_in_image"),
-                 FieldBoundaryInImage,
+                 PolygonStamped,
                  self._field_boundary_callback,
                  queue_size=1,
                  tcp_nodelay=True)
