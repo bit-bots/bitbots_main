@@ -593,4 +593,3 @@ class Evaluator(object):
 
 if __name__ == "__main__":
     Evaluator()
-    rospy.spin()
