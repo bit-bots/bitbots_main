@@ -3,12 +3,13 @@
 vision_parallelize: true  # Run the neural net and the conventional part in parallel
 vision_blind_threshold: 30  # Brightness threshold under which the vision thinks, that someone forgot the camera cap
 
+ROS_audio_msg_topic: 'speak'  # ROS topic of the audio message
 ROS_img_msg_topic: 'image_raw'  # ROS topic of the image message
 ROS_img_msg_queue_size: 1  # ROS queue size for the image message
 ROS_fcnn_img_msg_topic: 'fcnn_image'  # ROS topic of the fcnn output message
 ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message
 ROS_ball_msg_topic: 'balls_in_image'  # ROS topic of the ball message
-ROS_goal_parts_msg_topic: 'goal_parts_in_image'  # ROS topic of the goal parts message
+ROS_goal_posts_msg_topic: 'goal_posts_in_image'  # ROS topic of the goal posts message
 ROS_obstacle_msg_topic: 'obstacles_in_image'  # ROS topic of the obstacles message
 ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
 ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message
@@ -23,7 +24,7 @@ ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS 
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
-yolo_openvino_model_path: '2020_02_flo_yolo_openvino'  # Name of the yolo model
+yolo_openvino_model_path: '2020_11_12_flo_yolo_openvino'  # Name of the yolo model
 yolo_nms_threshold: 0.4  # Non maximum suppression threshold
 yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
 
@@ -36,7 +37,7 @@ ball_fcnn_candidate_refinement_iteration_count: 1  # Number of iterations of ref
 ball_fcnn_publish_output: false  # Publish the output of the ball fcnn as ImageWithRegionOfInterest
 ball_fcnn_publish_field_boundary_offset: 5  # The offset added to the field_boundary when cropping the fcnn output for publication in pixels
 
-neural_network_type: 'yolo_darknet'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet, yolo_ncs2 or dummy)
+neural_network_type: 'yolo_ncs2'  # The neural network type that should be used (fcnn, yolo_opencv, yolo_darknet, yolo_ncs2 or dummy)
 ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
 ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
 ball_candidate_max_count: 1  # The maximum number of balls that should be published
@@ -89,7 +90,7 @@ field_boundary_detector_horizontal_steps: 30  # Number of scanlines
 field_boundary_detector_roi_height: 2  # Region Of Interest height in which we are looking for green
 field_boundary_detector_roi_width: 2  # Region Of Interest width in which we are looking for green
 field_boundary_detector_roi_increase: 0.1  # Value that increases the region of interest if it is located lower in the image
-field_boundary_detector_green_threshold: 136  # Threshold of green in the area covered by the kernel
+field_boundary_detector_green_threshold: 30  # Threshold of green in the area covered by the kernel
 field_boundary_detector_head_tilt_threshold: 20  # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
 
 line_detector_field_boundary_offset: 0  # Threshold in which we are also searching for lines over the field boundary

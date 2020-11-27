@@ -57,9 +57,9 @@ class FCNN03:
         self._init = tf.global_variables_initializer()
         self._session.run(self._init)
         self._saver = tf.train.Saver()
-        rospy.logdebug("loading weights from '{}'...".format(self._load_path), logger_name="vision_fcnn")
+        rospy.logdebug(f"Loading weights from '{self._load_path}'...", logger_name="vision_fcnn")
         self._saver.restore(self._session, self._load_path)
-        rospy.logdebug("loaded successfully.", logger_name="vision_fcnn")
+        rospy.logdebug("Loaded weights successfully.", logger_name="vision_fcnn")
 
     def _fcnn_model(self):
         """
