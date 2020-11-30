@@ -94,7 +94,7 @@ class CheckMotors(AbstractDecisionElement):
 
         if self.blackboard.simulation_active:
             # Some simulators will give exact same joint messages which look like errors, so ignore this case
-            if self.last_msg:
+            if self.blackboard.last_motor_update_time != rospy.Time.from_sec(0):
                 return "OKAY"
             else:
                 return "MOTORS_NOT_STARTED"
