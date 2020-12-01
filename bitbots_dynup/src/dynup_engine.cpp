@@ -10,6 +10,8 @@ void DynupEngine::init(double arm_max_length, double arm_offset_y, double arm_of
   arm_max_length_ = arm_max_length;
   arm_offset_y_ = arm_offset_y; //TODO: there has to be a better way to do this
   arm_offset_z_ = arm_offset_z;
+  ros::NodeHandle nh;
+  pub_engine_debug_ = nh.advertise<bitbots_dynup::DynupEngineDebug>("dynup_engine_debug", 1);
 }
 
 void DynupEngine::reset() {
@@ -21,29 +23,28 @@ void DynupEngine::reset() {
   foot_spline_ = bitbots_splines::PoseSpline();
 }
 
-void DynupEngine::publishDebug(ros::Publisher debug_publisher) {
-  visualization_msgs::Marker marker;
-  marker.header.stamp = ros::Time::now();
-  marker.id = 0;
-  marker.header.frame_id = "/base_link";
-  marker.type = visualization_msgs::Marker::SPHERE;
+void DynupEngine::publishDebug() {
+    if (pub_engine_debug_.getNumSubscribers() == 0) {
+        return;
+    }
 
-  marker.pose.position.x = 0;
-  marker.pose.position.y = 0;
-  marker.pose.position.z = 0;
+    bitbots_dynup::DynupEngineDebug msg;
+    msg.header.stamp = ros::Time::now();
 
-  marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = 0.0;
-  marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-  marker.scale.x = 0.05;
-  marker.scale.y = 0.05;
-  marker.scale.z = 0.05;
-  marker.color.r = 1.0;
-  marker.color.a = 1.0;
+    geometry_msgs::Pose l_arm_pose;
+    tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
+    msg.l_arm_pose = l_arm_pose;
+    geometry_msgs::Pose r_arm_pose;
+    msg.r_arm_pose = r_arm_pose;
+    tf2::toMsg(goals_.r_hand_goal_pose, r_arm_pose);
+    geometry_msgs::Pose l_leg_pose;
+    msg.l_leg_pose = l_leg_pose;
+    tf2::toMsg(goals_.l_foot_goal_pose, l_leg_pose);
+    geometry_msgs::Pose r_leg_pose;
+    tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
+    msg.r_leg_pose = r_leg_pose;
 
-  debug_publisher.publish(marker);
-  return;
+    pub_engine_debug_.publish(msg);
 }
 
 DynupResponse DynupEngine::update(double dt) {
@@ -59,6 +60,8 @@ DynupResponse DynupEngine::update(double dt) {
   goals_.r_foot_goal_pose = r_foot_pose;
   goals_.l_hand_goal_pose = l_hand_pose;
   goals_.r_hand_goal_pose = r_hand_pose;
+
+  publishDebug();
 
   time_ += dt;
 
@@ -442,12 +445,14 @@ void DynupEngine::calcSquatSplines(double time) {
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
     if (goals.direction == "front") {
-                 params_.time_hands_front +
-                 params_.time_foot_ground + 
-                 params_.time_torso_45 + 
-                 params_.time_to_squat +
-                 params_.wait_in_squat +
-                 params_.rise_time;
+        duration_ = params_.time_hands_side +
+                    params_.time_hands_front +
+                    params_.time_foot_close +
+                    params_.time_foot_ground +
+                    params_.time_torso_45 +
+                    params_.time_to_squat +
+                    params_.wait_in_squat +
+                    params_.rise_time;
       direction_ = 1;
      calcFrontSplines();
   }

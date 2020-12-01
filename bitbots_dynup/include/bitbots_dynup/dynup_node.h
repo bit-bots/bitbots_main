@@ -75,7 +75,7 @@ class DynUpNode {
    * Do main loop in which DynUpEngine::tick() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */
-  void loopEngine();
+  void loopEngine(ros::Rate loop_rate);
 
   /**
    * Retrieve current positions of left foot and trunk relative to right foot

@@ -39,9 +39,14 @@ void DynUpNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
     ik_.currentJointStates = jointstates;
 }
 
-void DynUpNode::copCallback(const sensor_msgs::Imu &cop) {
-  stabilizer_.cop_.x = cop.orientation.x;
-  stabilizer_.cop_.y = cop.orientation.y;
+void DynUpNode::copCallback(const sensor_msgs::Imu &msg) {
+  tf2::Quaternion quat;
+  tf2::convert(msg.orientation, quat);
+  // the tf2::Quaternion has a method to access roll pitch and yaw
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+  stabilizer_.cop_.x = pitch; //TODO: This should be imu, not cop. Also, change the message type.
+  stabilizer_.cop_.y = roll;
   stabilizer_.cop_.z = 0;
 }
 
@@ -85,7 +90,8 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
           visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
       }
     }
-    loopEngine();
+    ros::Rate loop_rate(engine_rate_);
+    loopEngine(loop_rate);
     bitbots_msgs::DynUpResult r;
     r.successful = true;
     server_.setSucceeded(r);
@@ -97,7 +103,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   }
 }
 
-void DynUpNode::loopEngine() {
+void DynUpNode::loopEngine(ros::Rate loop_rate) {
   int failed_tick_counter = 0;
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
@@ -120,9 +126,7 @@ void DynUpNode::loopEngine() {
 
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
-    ros::Rate loop_rate(engine_rate_);
     loop_rate.sleep();
-    engine_.publishDebug(debug_publisher_);
   }
 }
 

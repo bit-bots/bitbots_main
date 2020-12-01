@@ -22,6 +22,17 @@ generate_dynamic_reconfigure_options(
     cfg/bitbots_dynup_params.cfg
 )
 
+add_message_files(
+        FILES
+        DynupEngineDebug.msg
+)
+
+generate_messages(
+        DEPENDENCIES
+        std_msgs
+        geometry_msgs
+)
+
 catkin_package(
     INCLUDE_DIRS include
 )
@@ -38,6 +49,8 @@ set(SOURCES
     src/dynup_ik.cpp
     src/visualizer.cpp
 )
+
+
 
 add_executable(DynupNode ${SOURCES})
 

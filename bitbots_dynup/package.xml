@@ -12,6 +12,7 @@
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
 
   <depend>roscpp</depend>
   <depend>dynamic_reconfigure</depend>

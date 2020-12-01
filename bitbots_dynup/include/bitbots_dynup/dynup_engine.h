@@ -9,6 +9,7 @@
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <bitbots_dynup/DynUpConfig.h>
+#include <bitbots_dynup/DynupEngineDebug.h>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "dynup_stabilizer.h"
@@ -34,7 +35,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   /*
    * Publishes debug markers
    */
-  void publishDebug(ros::Publisher debug_publisher);
+  void publishDebug();
 
   int getPercentDone() const override;
 
@@ -69,6 +70,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
+
+  ros::Publisher pub_engine_debug_;
 
   /*
    * Helper method to extract the current pose of the left foot or the torso from the spline

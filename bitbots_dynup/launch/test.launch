@@ -16,18 +16,9 @@
     <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
   </group>
 
-  <include file="$(find bitbots_animation_server)/launch/animation.launch">
-    <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-  </include>
-
-
-  <include file="$(find bitbots_hcm)/launch/hcm.launch">
-    <arg name="sim" value="$(arg sim)"/>
-    <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-  </include>
-
 
   <node name="dynup" pkg="bitbots_dynup" type="DynupNode" output="screen">
+    <remap from="/animation_motor_goals" to="/DynamixelController/command"/>
   </node>
 
 </launch>
