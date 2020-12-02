@@ -73,6 +73,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   engine_.reset();
   ik_.reset();
   stabilizer_.reset();
+  last_ros_update_time_ = 0;
   if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
@@ -103,14 +104,38 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   }
 }
 
+double DynUpNode::getTimeDelta() {
+  // compute actual time delta that happened
+  double dt;
+  double current_ros_time = ros::Time::now().toSec();
+
+  // first call needs to be handled specially
+  if (last_ros_update_time_==0){
+    last_ros_update_time_ = current_ros_time;
+    return 0.001;
+  }
+
+  dt = current_ros_time - last_ros_update_time_;
+  // this can happen due to floating point precision
+  if (dt == 0) {
+    ROS_WARN("dt was 0");
+    dt = 0.001;
+  }
+  last_ros_update_time_ = current_ros_time;
+
+  return dt;
+}
+
 void DynUpNode::loopEngine(ros::Rate loop_rate) {
   int failed_tick_counter = 0;
+  double dt;
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    DynupResponse response = engine_.update(1.0 / engine_rate_);
-    stabilizer_.setStabilizeNow(engine_.isStabilizingNeeded());
-    stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)), tf_buffer_.lookupTransform("base_link", "r_sole", ros::Time(0)));
-    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(1.0 / engine_rate_));
+    dt = getTimeDelta();
+    DynupResponse response = engine_.update(dt);
+    stabilizer_.setStabilizeNow(engine_.isStabilizingNeeded()); // todo this information could also be included in the response
+    stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)), tf_buffer_.lookupTransform("base_link", "r_sole", ros::Time(0))); //todo this should not be done based on the tf buffer but on the current open loop goal state
+    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();

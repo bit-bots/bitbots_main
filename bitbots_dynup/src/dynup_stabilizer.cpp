@@ -77,7 +77,7 @@ void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
 }
 
 void Stabilizer::setTransforms(geometry_msgs::TransformStamped to_trunk, geometry_msgs::TransformStamped from_trunk) {
-    to_trunk_ = to_trunk;
+    to_trunk_ = to_trunk; //todo one of them is just the inverse of the other you dont need both. you can just use .inverse()
     from_trunk_ = from_trunk;
 }
 

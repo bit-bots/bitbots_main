@@ -46,6 +46,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   goal_state_->updateLinkTransforms();
 
+  // todo the |= is a bit wise or operator. i think this should be an and here not an or
   success |= goal_state_->setFromIK(r_leg_joints_group_,
                                    right_foot_goal_msg,
                                    0.001,
@@ -78,6 +79,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     bitbots_splines::JointGoals result;
     result.first = joint_names;
     result.second = joint_goals;
+    //todo add some explaining comment here
     for(int i = 0; i  < result.first.size(); i++)
     {
         if(result.first[i] == "HeadPan"||result.first[i] ==  "HeadTilt") {
@@ -86,6 +88,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     }
     return result;
   } else {
+    // node will count this as a missing tick and provide warning
     return {};
   }
 }

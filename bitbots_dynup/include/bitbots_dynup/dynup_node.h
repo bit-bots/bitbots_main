@@ -66,6 +66,7 @@ class DynUpNode {
   Visualizer visualizer_;
   DynupIK ik_;
   int engine_rate_;
+  double last_ros_update_time_;
   bool debug_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
@@ -94,6 +95,12 @@ class DynUpNode {
    * Publish goals to ROS
    */
   void publishGoals(const bitbots_splines::JointGoals &goals);
+
+  /**
+   * Helper method to achieve correctly sampled rate
+   */
+  double getTimeDelta();
+
 
 };
 
