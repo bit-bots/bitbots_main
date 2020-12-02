@@ -6,4 +6,4 @@ lines_topic: 'line_mask_in_image'
 goalposts_topic: 'goal_posts_in_image'
 field_boundary_topic: 'field_boundary_in_image'
 
-line_thickness: 4
+line_thickness: 10
