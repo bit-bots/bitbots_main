@@ -118,9 +118,6 @@ class Evaluator(object):
                  queue_size=1,
                  tcp_nodelay=True)
 
-
-        print(rospy.get_param("~listen_field_boundary", False))
-
         # make image publisher
         self._image_pub = rospy.Publisher(
             rospy.get_param("~image_publish_topic", "image_raw"), 
@@ -165,6 +162,7 @@ class Evaluator(object):
 
         self._image_count = len(self._images)  # number of images (important for loop stuff)
         self._image_shape = None  # tuple (height, width)
+        self._label_shape = None  # tuple (height, width)
 
         # A lock which checks if there is eval processing done at the moment
         self._lock = 0
@@ -242,9 +240,20 @@ class Evaluator(object):
             rospy.logwarn('Could not open image {} at path {}'.format(name, self._image_path))
             return
 
-        # Setting image size in the first run
+
+        # Setting label size as used by the imagetagger before we do the resizeing
+        if self._label_shape is None:
+            self._label_shape = image.shape[:-1]
+
+
+        # Set the resized image size as expected by the vision
         if self._image_shape is None:
-            self._image_shape = image.shape[:-1]
+            self._image_shape = np.array((
+                rospy.get_param("~image_resolution_y"), 
+                rospy.get_param("~image_resolution_x")))
+
+        # resize the image
+        image = cv2.resize(image, tuple(np.flip(self._image_shape)), interpolation=3)
 
         # Building and sending message
         rospy.loginfo('Sending image {} of {} (starting by 0).'.format(self._current_image_counter, self._image_count))
@@ -318,7 +327,8 @@ class Evaluator(object):
                 Evaluator._extract_vectors_from_annotations(
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='ball'
-                )),
+                ),
+                np.zeros(self._label_shape, dtype=np.uint8)),
             self._generate_ball_mask_from_msg(msg))
         # Release lock
         self._lock -= 1
@@ -355,7 +365,8 @@ class Evaluator(object):
                     Evaluator._extract_vectors_from_annotations(
                         self._images[int(msg.header.frame_id)]['annotations'],
                         typename=class_color[0]
-                    )),
+                    ),
+                    np.zeros(self._label_shape, dtype=np.uint8)),
                 self._generate_obstacle_mask_from_msg(msg, color=class_color[1]))
         # Release lock
         self._lock -= 1
@@ -380,7 +391,8 @@ class Evaluator(object):
                 Evaluator._extract_vectors_from_annotations(
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='goalpost'
-                )),
+                ),
+                np.zeros(self._label_shape, dtype=np.uint8)),
             self._generate_goal_post_mask_from_msg(msg))
         # Release lock
         self._lock -= 1
@@ -405,7 +417,8 @@ class Evaluator(object):
                 Evaluator._extract_vectors_from_annotations(
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='line'
-                )),
+                ),
+                np.zeros(self._label_shape, dtype=np.uint8)),
             self.bridge.imgmsg_to_cv2(msg, '8UC1'))
         # Release lock
         self._lock -= 1
@@ -430,7 +443,8 @@ class Evaluator(object):
                 Evaluator._extract_vectors_from_annotations(
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='field edge'
-                )),
+                ),
+                np.zeros(self._label_shape, dtype=np.uint8)),
             self._generate_field_boundary_mask_from_msg(msg))
         # Release lock
         self._lock -= 1
@@ -442,49 +456,43 @@ class Evaluator(object):
         """
         return (rospy.get_rostime() - header.stamp).to_sec()
 
-    def _generate_polygon_mask_from_vectors(self, vectors):
+    def _generate_polygon_mask_from_vectors(self, vectors, canvas):
         """
         Generates a polygon mask for a annotation vector
         """
-        mask = np.zeros(self._image_shape, dtype=np.uint8)
-
         for vector in vectors:
             if not vector:
                 continue
-            cv2.fillConvexPoly(mask, np.array(vector), 1.0)
-        return mask
+            cv2.fillConvexPoly(canvas, np.array(vector), 1.0)
+        return canvas
 
-    def _generate_field_boundary_mask_from_vector(self, vector):
+    def _generate_field_boundary_mask_from_vector(self, vector, canvas):
         """
         Generates a field boundary mask for a annotation vector #TODO polygon?
         """
-        mask = np.zeros(self._image_shape, dtype=np.uint8)
         vector = [list(pts) for pts in vector][0] #TODO wtf
 
-        vector.append([self._image_shape[1] - 1, self._image_shape[0] - 0])
-        vector.append([0, self._image_shape[0] - 1])  # extending the points to fill the space below the field_boundary
+        vector.append([self._label_shape[1] - 1, self._label_shape[0] - 0])
+        vector.append([0, self._label_shape[0] - 1])  # extending the points to fill the space below the field_boundary
         points = np.array(vector, dtype=np.int32)
         points = points.reshape((1, -1, 2))
-        cv2.fillPoly(mask, points, 1.0)
-        return mask
+        cv2.fillPoly(canvas, points, 1.0)
+        return canvas
 
-    def _generate_rectangle_mask_from_vectors(self, vectors):
+    def _generate_rectangle_mask_from_vectors(self, vectors, canvas):
         """
         Generates a box mask for a annotation vector
         """
-        mask = np.zeros(self._image_shape, dtype=np.uint8)
         for vector in vectors:
             if not vector:
                 continue
-            cv2.rectangle(mask, tuple(vector[0]), tuple(vector[1]), 1.0, thickness=-1)
-        return mask
+            cv2.rectangle(canvas, tuple(vector[0]), tuple(vector[1]), 1.0, thickness=-1)
+        return canvas
 
-    def _generate_circle_mask_from_vectors(self, vectors):
+    def _generate_circle_mask_from_vectors(self, vectors, canvas):
         """
         Generates a circle mask for a annotation vector
         """
-        mask = np.zeros(self._image_shape, dtype=np.uint8)
-
         for vector in vectors:
             if not vector:
                 continue
@@ -492,27 +500,18 @@ class Evaluator(object):
                 int(math.floor(vector[0][0] + (vector[1][0] - vector[0][0]) // 2)),
                 int(math.floor(vector[0][1] + (vector[1][1] - vector[0][1]) // 2)))
             radius = int(math.floor((vector[1][0] - vector[0][0]) / 2 + (vector[1][1] - vector[0][1]) / 2) / 2)
-            cv2.circle(mask, center, radius, 1.0, thickness=-1)
-        return mask
+            cv2.circle(canvas, center, radius, 1.0, thickness=-1)
+        return canvas
 
-    def _generate_line_mask_from_vectors(self, vectors):
+    def _generate_line_mask_from_vectors(self, vectors, canvas):
         """
         Generates a line mask for a annotation vector
         """
-        mask = np.zeros(self._image_shape, dtype=np.uint8)
         for vector in vectors:
             if not vector:
                 continue
-            cv2.line(mask, tuple(vector[0]), tuple(vector[1]), 1.0, thickness=self._line_thickness)
-        return mask
-
-    def _generate_polygon_mask_from_vectors(self, vektors):
-        mask = np.zeros(self._image_shape, dtype=np.uint8)
-        for vektor in vektors:
-            points = np.array(vektor, np.int32).reshape((-1,1,2))
-            cv2.fillPoly(mask, [points], 1.0)
-        return mask
-
+            cv2.line(canvas, tuple(vector[0]), tuple(vector[1]), 1.0, thickness=self._line_thickness)
+        return canvas
 
     def _generate_ball_mask_from_msg(self, msg):
         """
@@ -529,7 +528,7 @@ class Evaluator(object):
         """
         mask = np.zeros(self._image_shape, dtype=np.uint8)
         points = [[int(point.x), int(point.y)] for point in msg.polygon.points]
-        points = points + [(self._image_shape[1] - 1, self._image_shape[0] - 0), (0, self._image_shape[0] - 1)]  # extending the points to fill the space below the field_boundary
+        points = points + [(self._label_shape[1] - 1, self._label_shape[0] - 0), (0, self._label_shape[0] - 1)]  # extending the points to fill the space below the field_boundary
         points = np.array(points, dtype=np.int32)
         points = points.reshape((1, -1, 2))
         cv2.fillPoly(mask, points, 1.0)
@@ -544,7 +543,7 @@ class Evaluator(object):
             if obstacle_type == -1 or obstacle.type == obstacle_type:
                 vector = ((int(obstacle.top_left.x), int(obstacle.top_left.y)), (int(obstacle.top_left.x) + obstacle.width, int(obstacle.top_left.y) + obstacle.height))
                 vectors.append(vector)
-        return self._generate_rectangle_mask_from_vectors(vectors)
+        return self._generate_rectangle_mask_from_vectors(vectors, np.zeros(self._image_shape, dtype=np.uint8))
 
     def _generate_goal_post_mask_from_msg(self, msg):
         """
@@ -554,14 +553,14 @@ class Evaluator(object):
         for post in msg.posts:
                 vector = ((int(post.foot_point.x - post.width // 2), int(post.top_point.y)), (int(post.foot_point.x + post.width // 2), int(post.foot_point.y)))
                 vectors.append(vector)
-        return self._generate_rectangle_mask_from_vectors(vectors)
+        return self._generate_rectangle_mask_from_vectors(vectors, np.zeros(self._image_shape, dtype=np.uint8))
 
-    @staticmethod
-    def _match_masks(label_mask, detected_mask):
+    def _match_masks(self, label_mask, detected_mask):
         """
         Calculates a dict of different matching metrics for two different masks
         """
         # matches the masks onto each other to determine multiple measurements.
+        label_mask = cv2.resize(label_mask, tuple(np.flip(self._image_shape)), interpolation=cv2.INTER_AREA)
         label_mask = label_mask.astype(bool)
         detected_mask = detected_mask.astype(bool)
         rates = dict()

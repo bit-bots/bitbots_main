@@ -6,4 +6,7 @@ lines_topic: 'line_mask_in_image'
 goalposts_topic: 'goal_posts_in_image'
 field_boundary_topic: 'field_boundary_in_image'
 
+image_resolution_x: 512
+image_resolution_y: 384
+
 line_thickness: 10
