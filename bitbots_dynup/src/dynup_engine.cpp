@@ -20,6 +20,7 @@ void DynupEngine::reset() {
   r_foot_spline_ = bitbots_splines::PoseSpline();
   l_hand_spline_ = bitbots_splines::PoseSpline();
   r_hand_spline_ = bitbots_splines::PoseSpline();
+  // todo naming is suboptimal. is this the left_foot_spline?
   foot_spline_ = bitbots_splines::PoseSpline();
 }
 

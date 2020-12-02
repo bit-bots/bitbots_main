@@ -3,45 +3,23 @@
 from __future__ import print_function
 import sys
 
-from time import sleep
-import random
 import rospy
 import actionlib
 
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Vector3
 from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
-from visualization_msgs.msg import Marker
-import humanoid_league_msgs.msg
+
 
 showing_feedback = False
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print('Use \'front\' or \'back\' as parameter!')
-        sys.exit(1)
-    if sys.argv[1] == 'front':
-        anim = 'stand_up_front'
-    elif sys.argv[1] == 'back':
-        anim = 'stand_up_back'
-    else:
+    if len(sys.argv) != 2 or not sys.argv[1] in ['front', 'back', 'squat']:
         print('Use \'front\' or \'back\' as parameter!')
         sys.exit(1)
 
     print("[..] Initializing node", end='')
     rospy.init_node('dynup_dummy_client', anonymous=True)
     print("\r[OK] Initializing node")
-
-    anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
-    first_try = anim_client.wait_for_server(
-        rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
-
-    goal = humanoid_league_msgs.msg.PlayAnimationGoal()
-    goal.animation = anim
-    goal.hcm = False
-    print('starting animation...')
-    state = anim_client.send_goal_and_wait(goal)
-    print('animation done.')
 
     def done_cb(state, result):
         print('Action completed: ', end='')
@@ -90,7 +68,7 @@ if __name__ == "__main__":
     print()
 
     goal = DynUpGoal()
-    goal.front = sys.argv[1] == 'front'
+    goal.direction = sys.argv[1]
 
     client.send_goal(goal)
     client.done_cb = done_cb
