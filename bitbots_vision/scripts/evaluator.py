@@ -370,7 +370,7 @@ class Evaluator(object):
         measurement.duration = self._measure_timing(msg.header)
         # Match masks
         measurement.pixel_mask_rates = self._match_masks(
-            self._generate_rectangle_mask_from_vectors(
+            self._generate_polygon_mask_from_vectors(
                 Evaluator._extract_vectors_from_annotations(
                     self._images[int(msg.header.frame_id)]['annotations'],
                     typename='goalpost'
@@ -499,6 +499,13 @@ class Evaluator(object):
                 continue
             cv2.line(mask, tuple(vector[0]), tuple(vector[1]), 1.0, thickness=self._line_thickness)
         return mask
+
+    def _generate_polygon_mask_from_vectors(self, vektors):
+        mask = np.zeros(self._image_shape, dtype=np.uint8)
+        for vektor in vektors:
+            points = np.array(vektor, np.int32).reshape((-1,1,2))
+            cv2.fillPoly(mask, [points], 1.0)
+
 
     def _generate_ball_mask_from_msg(self, msg):
         """
