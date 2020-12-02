@@ -681,7 +681,7 @@ PROTO Wolfgang [
                                             rotation -0.000000 0.000000 1.000000 1.570800
                                             name "r_sole"
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation -0.030000 -0.007000 -0.034000
                                             rotation -0.000000 0.000000 -1.000000 1.570800
                                             children [
@@ -693,7 +693,9 @@ PROTO Wolfgang [
                                                 name "r_cleat_l_back"
                                               }
                                             ]
-                                            name "rlb"
+                                            name "RLB"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation 0.000000 0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -713,7 +715,7 @@ PROTO Wolfgang [
                                               ]
                                             }
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation -0.030000 0.177000 -0.034000
                                             rotation -0.000000 0.000000 -1.000000 1.570800
                                             children [
@@ -725,7 +727,9 @@ PROTO Wolfgang [
                                                 name "r_cleat_l_front"
                                               }
                                             ]
-                                            name "rlf"
+                                            name "RLF"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation 0.000000 0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -745,7 +749,7 @@ PROTO Wolfgang [
                                               ]
                                             }
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation 0.060000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -757,7 +761,9 @@ PROTO Wolfgang [
                                                 name "r_cleat_r_front"
                                               }
                                             ]
-                                            name "rrf"
+                                            name "RRF"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation 0.000000 0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -777,7 +783,7 @@ PROTO Wolfgang [
                                               ]
                                             }
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation 0.060000 -0.007000 -0.034000
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
@@ -789,7 +795,9 @@ PROTO Wolfgang [
                                                 name "r_cleat_r_back"
                                               }
                                             ]
-                                            name "rrb"
+                                            name "RRB"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation 0.000000 0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -1394,7 +1402,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 -0.000000 1.000000 1.570800
                                             name "l_sole"
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation -0.060000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -1406,12 +1414,14 @@ PROTO Wolfgang [
                                                 name "l_cleat_l_back"
                                               }
                                             ]
-                                            name "llb"
+                                            name "LLB"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation 0.000000 -0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
                                               children [
-                                                Box {
+                                                Box{
                                                   size 0.012000 0.012000 0.016000
                                                 }
                                               ]
@@ -1426,7 +1436,7 @@ PROTO Wolfgang [
                                               ]
                                             }
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation -0.060000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -1438,7 +1448,9 @@ PROTO Wolfgang [
                                                 name "l_cleat_l_front"
                                               }
                                             ]
-                                            name "llf"
+                                            name "LLF"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation -0.000000 0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -1458,7 +1470,7 @@ PROTO Wolfgang [
                                               ]
                                             }
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation 0.030000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -1470,7 +1482,9 @@ PROTO Wolfgang [
                                                 name "l_cleat_r_front"
                                               }
                                             ]
-                                            name "lrf"
+                                            name "LRF"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation 0.000000 -0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -1490,7 +1504,7 @@ PROTO Wolfgang [
                                               ]
                                             }
                                           }
-                                          Solid {
+                                          TouchSensor {
                                             translation 0.030000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -1502,7 +1516,9 @@ PROTO Wolfgang [
                                                 name "l_cleat_r_back"
                                               }
                                             ]
-                                            name "lrb"
+                                            name "LRB"
+                                            type        "force-3d"
+                                            resolution  -1
                                             boundingObject Transform {
                                               translation -0.000000 0.000000 -0.008000
                                               rotation 0.000000 1.000000 0.000000 0.000000
@@ -2166,7 +2182,7 @@ PROTO Wolfgang [
         }
       }
     ]
-    name IS name 
+    name IS name
     boundingObject Group {
       children [
         Transform {
