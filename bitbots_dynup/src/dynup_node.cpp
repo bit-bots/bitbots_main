@@ -31,7 +31,7 @@ DynUpNode::DynUpNode() :
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
   cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynUpNode::copCallback, this);
-  joint_state_subscriber_ = node_handle_.subscribe("joint_state", 1, &DynUpNode::jointStateCallback, this);
+  joint_state_subscriber_ = node_handle_.subscribe("not_joint_state", 1, &DynUpNode::jointStateCallback, this);
   server_.start();
 }
 
