@@ -505,6 +505,7 @@ class Evaluator(object):
         for vektor in vektors:
             points = np.array(vektor, np.int32).reshape((-1,1,2))
             cv2.fillPoly(mask, [points], 1.0)
+        return mask
 
 
     def _generate_ball_mask_from_msg(self, msg):
