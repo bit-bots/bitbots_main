@@ -48,6 +48,7 @@ field_color_detector_path: 'basler_f031.pickle'  # Color space for the field col
 field_color_detector_use_hsv: false
 
 dynamic_color_space_active: true  # Turn dynamic color space ON or OFF
+dynamic_color_space_max_fps: 1.0  # Maximum FPS of the dynamic color space node
 dynamic_color_space_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
 dynamic_color_space_threshold: 0.55  # Necessary amount of previously detected color inside the kernel in percentage
 dynamic_color_space_kernel_radius: 1  # Radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
