@@ -222,6 +222,7 @@ class Evaluator(object):
         if self._current_image_counter >= self._image_count:  # iterated through all images
             rospy.loginfo('iterated through all images.')
             self._stop = True
+            return
 
         # Get image name/id
         name = self._get_image_name()
