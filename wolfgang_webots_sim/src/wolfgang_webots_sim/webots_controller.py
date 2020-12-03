@@ -129,7 +129,7 @@ class WebotsController:
                             argv=['clock:=/' + self.namespace + '/clock'])
         self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
         self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
-        self.pub_cam = rospy.Publisher(self.namespace + "/image_raw", Image, queue_size=1)
+        self.pub_cam = rospy.Publisher(self.namespace + "/camera/image_proc", Image, queue_size=1)
         self.pub_pres_left = rospy.Publisher(self.namespace + "/foot_pressure_left/filtered", FootPressure,
                                              queue_size=1)
         self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure,
