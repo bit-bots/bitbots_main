@@ -1,4 +1,4 @@
-image_publish_topic: '/image_raw'
+image_publish_topic: '/camera/image_proc'
 
 balls_topic: 'balls_in_image'
 obstacles_topic: 'obstacles_in_image'
