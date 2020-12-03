@@ -261,7 +261,6 @@ class Evaluator(object):
         msg.header.stamp = rospy.Time.now()
         # The second unforgivable curse. 
         # The tf frame name is abused to store the id of the image
-        # TODO maybe the message sequence could be used here
         msg.header.frame_id = str(self._current_image_counter)
         self._image_pub.publish(msg)
 
@@ -633,7 +632,6 @@ class Evaluator(object):
                     continue  # ignore other classes annotations
                 # We have at least on label for this class in this image
                 found_label[annotation['type']] = True
-                # Hacks stuff for obstacles # TODO redo
                 if annotation['type'] == 'obstacle' or 'robot' in annotation['type']:
                     found_label['obstacle'] = True
                     found_label['robot_red'] = True
