@@ -182,10 +182,10 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
 
    ::
 
-      rosrun bitbots_vision extract_from_rosbag.py -i testdata.bag -o testdataset -t /image_raw -n 3
+      rosrun bitbots_vision extract_from_rosbag.py -i testdata.bag -o testdataset -t /camera/image_proc -n 3
 
    This will extract every third image from the ``testdata.bag`` on the
-   ``/image_raw`` message topic into the folder ``$PWD/testdataset``.
+   ``/camera/image_proc`` message topic into the folder ``$PWD/testdataset``.
 
    This tool provides a help page ``-h`` for further details.
 
@@ -200,6 +200,18 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
    -  ``1`` -> move current image to **Trash** subdirectory
    -  ``2`` -> Move current image to **Balls** subdirectory
    -  ``3`` -> Move current image to **Goals** subdirectory
+
+- ``/scripts/rosbag_remapper.py``
+
+   This script remaps the ``image_raw`` topic in old rosbags to the new ``camera/image_proc``. Input can either be a single
+   bag or a folder containing bags. The new output bag or folder has an ``_updated`` appended to its name.
+
+   Usage:
+
+   ::
+
+    rosrun bitbots_vision rosbag_remapper.py /path/to/rosbag_or_folder
+
 
 
 .. toctree::
@@ -222,5 +234,4 @@ Indices and tables
 * :ref:`genindex`
 * |modindex|
 * :ref:`search`
-
 

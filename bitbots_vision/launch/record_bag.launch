@@ -4,5 +4,5 @@
     <include if="$(arg camera)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
 
     <node pkg="rosbag" type="record" name="rosbag_record_cam"
-        args="-o /tmp/tmpbag.bag image_raw camera_info" />
+        args="-o /tmp/tmpbag.bag camera/image_proc camera_info" />
 </launch>

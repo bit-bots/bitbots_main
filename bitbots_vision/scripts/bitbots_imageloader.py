@@ -16,7 +16,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 
 class LoadImages:
-    def __init__(self, path, frame="/camera_optical_frame", topic="image_raw", fps=10, loop=False, pgbar=False):
+    def __init__(self, path, frame="/camera_optical_frame", topic="camera/image_proc", fps=10, loop=False, pgbar=False):
         rospy.init_node("bitbots_imageloader")
         rospy.loginfo("Started imageloader", logger_name="imageloader")
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-p", "--path", help="Input relative or absolute directory for the images. If none specified, current directory will be assumed", dest="path", type=str)
     parser.add_argument("-fps", "--frames-per-second", help="Playback speed.", default=10, dest="fps", type=int)
-    parser.add_argument("-t", "--topic", help="ROS topic where the images are published to.", default="image_raw",
+    parser.add_argument("-t", "--topic", help="ROS topic where the images are published to.", default="camera/image_proc",
         dest="topic", type=str)
     parser.add_argument("-f", "--frame", help="The tf frame where the image should be published.", default="/camera_optical_frame",
         dest="frame", type=str)
