@@ -1,7 +1,7 @@
 .PHONY : basler build doc doc-meta install repo vision-files update status
 
 basler:
-	test -d basler_drivers || git clone gogs@gogs.mafiasi.de:Bit-Bots/basler_drivers.git
+	test -d basler_drivers || git clone git@git.mafiasi.de:Bit-Bots/basler_drivers.git
 	cd basler_drivers && ./setup.sh
 
 build :
