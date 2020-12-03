@@ -290,7 +290,8 @@ def build_goal_post_msgs(goalposts):
             post_msg.confidence = goalpost.get_rating()
         post_msg.foot_point.x = goalpost.get_center_x()
         post_msg.foot_point.y = goalpost.get_lower_right_y()
-        post_msg.top_point = post_msg.foot_point
+        post_msg.top_point.x = goalpost.get_center_x()
+        post_msg.top_point.y = goalpost.get_upper_left_y()
         message_list.append(post_msg)
     return message_list
 
