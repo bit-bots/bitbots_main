@@ -35,8 +35,7 @@ sub prepare_workspace_location() {
     if (-e $location) {
         # Ask the user how to handle the existing entity at catkin_ws location
         if (-d $location) {
-            if (-e $location . "/devel" && -d $location . "/devel"
-                && -e $location . "/devel/setup.sh") {
+            if (-e $location . "/.catkin_tools" && -d $location . "/.catkin_tools") {
                 print "$location seems to already be a Catkin Workspace.$/";
                 print "Do you want me to remove it and create a new one?$/";
                 print "[Y/n]: ";
@@ -58,20 +57,26 @@ sub prepare_workspace_location() {
             print "Ok. Deleting old location$/";
             rmtree $location;
             unlink $location;
+            print "Creating new Workspace at $location$/";
+            mkdir $location;
+            mkdir $location . "/src";
         } else {
-            print "Not gonna do anything then...$/";
+            print "Not gonna delete it then...$/";
         }
+    } else {
+        print "Creating new Workspace at $location$/";
+        mkdir $location;
+        mkdir $location . "/src";
     }
 }
 
-sub create_catkin_workspace() {
+sub configure_catkin_workspace() {
     my $location = get_location();
 
-    print "Creating new Workspace at $location$/";
-    mkdir $location;
+    print "Configuring workspace at $location$/";
     chdir $location;
-    mkdir $location . "/src";
-    system "bash -c \"source $ROS_WORKSPACE/setup.bash && catkin init && catkin config -DPYTHON_VERSION=3 && catkin build\"";
+    # human_pose_estimation is currently blacklisted because it doesn't build
+    system "bash -c \"source $ROS_WORKSPACE/setup.bash && catkin init && catkin config -DPYTHON_VERSION=3 --blacklist human_pose_estimation_openvino\"";
 }
 
 sub link_bitbots_meta() {
@@ -94,13 +99,18 @@ sub prepare_ros() {
         system "sudo rm /etc/apt/sources.list.d/ros-latest.list"
             and die "Unable to remove old ros source list";
     }
-    if (! -e "/etc/apt/sources.list.d/ros-final.list") {
-        system "echo \"deb http://packages.ros.org/ros/ubuntu \$(lsb_release -sc) main\" | sudo tee /etc/apt/sources.list.d/ros-final.list"
+    if (-e "/etc/apt/sources.list.d/ros-final.list") {
+        system "sudo rm /etc/apt/sources.list.d/ros-final.list"
+            and die "Unable to remove old ros source list";
+    }
+    if (! -e "/etc/apt/sources.list.d/ros.list") {
+        system "sudo sh -c 'echo \"deb http://packages.bit-bots.de bionic main\" > /etc/apt/sources.list.d/ros.list'"
             and die "Unable to add ROS sources";
     }
-    system "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654"
+    system "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 4C4EDF893374591687621C75C2F8DBB6A37B2874"
         or system "sudo apt update"
-        or system "sudo apt install -y python-catkin-tools python-rosdep"
+        or system "sudo apt install -y python3-pip python3-rosdep"
+    or system "sudo pip3 install git+https://github.com/catkin/catkin_tools.git"
         and die "Unable to install rosdep";
     system "sudo apt install -y ros-melodic-desktop-full"
         and die "Unable to install ROS";
@@ -114,16 +124,15 @@ sub install_rosdeps() {
     if (read_yes_no_input()) {
         system "sudo rosdep init";
         system "rosdep update"
-            or system "bash -c \"source $location/devel/setup.bash && rosdep install -i -r -y --from-paths $location/src\""
+            or system "bash -c \"source /opt/ros/melodic/setup.bash && rosdep install -i -r -y --from-paths $location/src\""
             and die "Rosdep initialization failed";
     }
 }
 
 sub install_pip() {
+    print "Installing python dependencies...$/";
     # Formatting: ("package1", "package2")
-    my @python2 = ();
     my @python3 = ("defusedxml");
-    system "pip2 install --user " . join(" ", @python2) and die "pip2 package installation failed";
     system "pip3 install --user " . join(" ", @python3) and die "pip3 package installation failed";
 }
 
@@ -134,36 +143,50 @@ sub first_catkin_build() {
     print "Do you want to execute 'catkin build' now?$/";
     print "[Y/n]: ";
     if (read_yes_no_input()) {
-        system "bash -c \"source $location/devel/setup.bash && catkin build\"";
+        system "bash -c \"source /opt/ros/melodic/setup.bash && catkin build\"";
     }
 }
-
 
 sub clone_internal_repos() {
     # Clone internal bitbots_repos into bitbots_meta
     chdir $start_dir;
 
-    print "Do you want to clone bitbots gogs repos ('ansible_robots', 'doku', 'basler_drivers') now?$/";
+    print "Do you want to clone the private repos ('ansible_robots', 'doku' and 'basler_drivers') now?$/";
     print "[Y/n]: ";
     if (read_yes_no_input()) {
-        system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/ansible_robots.git'
+    if (! -e "ansible") {
+        system 'git clone git@git.mafiasi.de:Bit-Bots/ansible.git'
             and print "Could not clone ansible_robots$/$/";
+    } else {
+        print "ansible is already cloned$/";
+        }
 
-        system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/doku.git'
-            and print "Could not clone doku$/$/";
+    if (! -e "doku") {
+            system 'git clone git@git.mafiasi.de:Bit-Bots/doku.git'
+                and print "Could not clone doku$/$/";
+    } else {
+        print "doku is already cloned$/";
+        }
 
-        system 'git clone gogs@gogs.mafiasi.de:Bit-Bots/basler_drivers.git'
-	    and print "Could not clone basler_drivers$/$/";
+    if (! -e "basler_drivers") {
+            system 'git clone git@git.mafiasi.de:Bit-Bots/basler_drivers.git'
+            and print "Could not clone basler_drivers$/$/";
+    } else {
+        print "basler_drivers is already cloned$/";
+        }
+    print "Installing basler drivers...$/";
+    system 'make basler';
     }
 }
 
 
 prepare_ros();
 prepare_workspace_location();
-create_catkin_workspace();
+configure_catkin_workspace();
 link_bitbots_meta();
 install_rosdeps();
 install_pip();
-first_catkin_build();
 clone_internal_repos();
+first_catkin_build();
 chdir $start_dir;
+print "Congratulations, the installation was successful!$/";
