@@ -15,7 +15,7 @@ python rosbag_remapper.py [input file/directory]
 
 def remap(input_bag_path, output_bag_path):
     """
-    remaps the topics of a single bag
+    Remaps the topics of a single bag
     :param input_bag_path: the bag with the topic that should be renamed
     :param output_bag_path: the path where the output bag should be created
     """
@@ -50,5 +50,4 @@ if __name__ == "__main__":
             input_path,
             output_path
         )
-
 
