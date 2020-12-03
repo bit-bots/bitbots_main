@@ -7,12 +7,13 @@ import os
 from controller import Robot, Node, Supervisor, Field
 
 import rospy
-from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Quaternion, PointStamped
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
+
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.msg import JointCommand, FootPressure
 import math
 from tf.transformations import quaternion_from_euler
 
@@ -47,6 +48,7 @@ class WebotsController:
         self.robot_name = robot
         self.switch_coordinate_system = True
         self.is_wolfgang = False
+        self.pressure_sensors = None
         if robot == 'wolfgang':
             self.is_wolfgang = True
             self.robot_node_name = "Robot"
@@ -59,6 +61,13 @@ class WebotsController:
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
+            pressure_sensor_names = ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]
+            self.pressure_sensors = []
+            for name in pressure_sensor_names:
+                sensor = self.supervisor.getTouchSensor(name)
+                sensor.enable(30)
+                self.pressure_sensors.append(sensor)
+
         elif robot == 'darwin':
             self.robot_node_name = "Darwin"
             self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
@@ -125,9 +134,17 @@ class WebotsController:
                             argv=['clock:=/' + self.namespace + '/clock'])
         self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
         self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
+
         self.pub_imu_head = rospy.Publisher(self.namespace + "/imu_head/data", Imu, queue_size=1)
-        self.pub_cam = rospy.Publisher(self.namespace + "/image_raw", Image, queue_size=1)
+        self.pub_cam = rospy.Publisher(self.namespace + "/camera/image_proc", Image, queue_size=1)
         self.pub_cam_info = rospy.Publisher(self.namespace + "/camera_info", CameraInfo, queue_size=1, latch=True)
+
+        self.pub_pres_left = rospy.Publisher(self.namespace + "/foot_pressure_left/filtered", FootPressure,
+                                             queue_size=1)
+        self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure,
+                                              queue_size=1)
+        self.cop_l_pub_ = rospy.Publisher(self.namespace + "/cop_l", PointStamped, queue_size=1)
+        self.cop_r_pub_ = rospy.Publisher(self.namespace + "/cop_r", PointStamped, queue_size=1)
         self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
         rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
 
@@ -171,6 +188,7 @@ class WebotsController:
             self.publish_imu()
             self.publish_joint_states()
             self.publish_camera()
+            self.publish_pressure()
             self.publish_clock()
 
     def publish_clock(self):
@@ -266,6 +284,68 @@ class WebotsController:
 
     def get_image(self):
         return self.camera.getImage()
+
+    def get_pressure_message(self):
+        current_time = rospy.Time.from_sec(self.time)
+
+        left_pressure = FootPressure()
+        left_pressure.header.stamp = current_time
+        left_pressure.left_back = self.pressure_sensors[0].getValues()[2]
+        left_pressure.left_front = self.pressure_sensors[1].getValues()[2]
+        left_pressure.right_front = self.pressure_sensors[2].getValues()[2]
+        left_pressure.right_back = self.pressure_sensors[3].getValues()[2]
+
+        right_pressure = FootPressure()
+        left_pressure.header.stamp = current_time
+        right_pressure.left_back = self.pressure_sensors[4].getValues()[2]
+        right_pressure.left_front = self.pressure_sensors[5].getValues()[2]
+        right_pressure.right_front = self.pressure_sensors[6].getValues()[2]
+        right_pressure.right_back = self.pressure_sensors[7].getValues()[2]
+
+        # compute center of pressures of the feet
+        pos_x = 0.085
+        pos_y = 0.045
+        # we can take a very small threshold, since simulation gives more accurate values than reality
+        threshold = 1
+
+        cop_l = PointStamped()
+        cop_l.header.frame_id = "l_sole"
+        cop_l.header.stamp = current_time
+        sum = left_pressure.left_back + left_pressure.left_front + left_pressure.right_front + left_pressure.right_back
+        if sum > threshold:
+            cop_l.point.x = (left_pressure.left_front + left_pressure.right_front -
+                             left_pressure.left_back - left_pressure.right_back) * pos_x / sum
+            cop_l.point.x = max(min(cop_l.point.x, pos_x), -pos_x)
+            cop_l.point.y = (left_pressure.left_front + left_pressure.left_back -
+                             left_pressure.right_front - left_pressure.right_back) * pos_y / sum
+            cop_l.point.y = max(min(cop_l.point.x, pos_y), -pos_y)
+        else:
+            cop_l.point.x = 0
+            cop_l.point.y = 0
+
+        cop_r = PointStamped()
+        cop_r.header.frame_id = "r_sole"
+        cop_r.header.stamp = current_time
+        sum = right_pressure.right_back + right_pressure.right_front + right_pressure.right_front + right_pressure.right_back
+        if sum > threshold:
+            cop_r.point.x = (right_pressure.left_front + right_pressure.right_front -
+                             right_pressure.left_back - right_pressure.right_back) * pos_x / sum
+            cop_r.point.x = max(min(cop_r.point.x, pos_x), -pos_x)
+            cop_r.point.y = (right_pressure.left_front + right_pressure.left_back -
+                             right_pressure.right_front - right_pressure.right_back) * pos_y / sum
+            cop_r.point.y = max(min(cop_r.point.x, pos_y), -pos_y)
+        else:
+            cop_r.point.x = 0
+            cop_r.point.y = 0
+
+        return left_pressure, right_pressure, cop_l, cop_r
+
+    def publish_pressure(self):
+        left, right, cop_l, cop_r = self.get_pressure_message()
+        self.pub_pres_left.publish(left)
+        self.pub_pres_right.publish(right)
+        self.cop_l_pub_.publish(cop_l)
+        self.cop_r_pub_.publish(cop_r)
 
     def set_gravity(self, active):
         if active:
