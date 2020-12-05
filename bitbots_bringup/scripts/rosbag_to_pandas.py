@@ -51,7 +51,6 @@ else:
 
 if use_saved:
     topic_selections_str = saved_input["topic_selections_str"]
-    print(topic_selections_str)
 else:
     col_width = max(len(word) for row in [topics, types] for word in row) + 4  #
     for i in range(len(topics)):
@@ -168,7 +167,7 @@ if args.output_folder:
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 else:
-    output_folder = ""
+    output_folder = "."
 
 for i, frame in enumerate(frames):
     print(f"{COLORS.OKBLUE}{selected_topics_list[i]}{COLORS.ENDC}")
