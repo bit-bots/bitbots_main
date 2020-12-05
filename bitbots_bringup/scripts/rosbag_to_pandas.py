@@ -28,6 +28,7 @@ class COLORS:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("bag")
+parser.add_argument("--output-folder", required=False)
 
 args = parser.parse_args()
 
@@ -42,7 +43,7 @@ for key, value in bag.get_type_and_topic_info().topics.items():
 use_saved = False
 if os.path.isfile(FILE_PATH):
     use_saved_input = input("Do you want to extract the same data as last time? [Y|n]")
-    use_saved = use_saved_input in["y", "Y", ""]
+    use_saved = use_saved_input in ["y", "Y", ""]
     if use_saved:
         saved_input = pickle.load(open(FILE_PATH, "rb"))
 else:
@@ -162,10 +163,17 @@ for msg in msg_generator:
             fields[data_selection] = f
     frames[i] = frames[i].append(fields, ignore_index=True)
 
+if args.output_folder:
+    output_folder = args.output_folder
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+else:
+    output_folder = ""
+
 for i, frame in enumerate(frames):
     print(f"{COLORS.OKBLUE}{selected_topics_list[i]}{COLORS.ENDC}")
     print(frame.info())
-    frame.to_pickle(selected_topics_list[i][1:].replace("/", "-") + ".pickle")
+    frame.to_pickle(output_folder + "/" + selected_topics_list[i][1:].replace("/", "-") + ".pickle")
 
 # save user input for next time
 input_to_save = {}
