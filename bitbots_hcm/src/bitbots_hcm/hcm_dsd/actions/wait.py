@@ -34,6 +34,6 @@ class Wait(AbstractActionElement):
 
 class WaitNoReevaluate(Wait):
     def perform(self, reevaluate=False):
-        self.dsd.set_do_not_reevaluate()
+        self._dsd.set_do_not_reevaluate()
         if self.time < rospy.get_time():
             self.pop()
