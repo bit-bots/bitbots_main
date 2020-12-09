@@ -65,7 +65,7 @@ class HeadCapsule:
         :param clip: clip the motor values at the maximum value. This should almost always be true.
         :param current_pan_position: Current pan joint state for better interpolation (only active if both joints are set).
         :param current_tilt_position: Current tilt joint state for better interpolation (only active if both joints are set).
-        :return:
+        :return: False if the target position collides, True otherwise
         """
         rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
@@ -87,11 +87,13 @@ class HeadCapsule:
         self.collision_checker.set_head_motors(pan_position, tilt_position)
         if self.collision_checker.check_collision():
             rospy.logwarn(f"Colliding head position: {pan_position}, {tilt_position}. Not moving.")
+            return False
         else:
             self.pos_msg.positions = pan_position, tilt_position
             self.pos_msg.velocities = [pan_speed, tilt_speed]
             self.pos_msg.header.stamp = rospy.Time.now()
             self.position_publisher.publish(self.pos_msg)
+            return True
 
     def pre_clip(self, pan, tilt):
         """
