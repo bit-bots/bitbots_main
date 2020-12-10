@@ -32,6 +32,23 @@ void DynupEngine::publishDebug() {
     bitbots_dynup::DynupEngineDebug msg;
     msg.header.stamp = ros::Time::now();
 
+    msg.time = time_;
+    if(time_ < params_.time_hands_side){
+        msg.state_number = 0;
+    }else if(time_ < params_.time_hands_side + params_.time_foot_close){
+        msg.state_number = 1;
+    }else if(time_ < params_.time_hands_side + params_.time_foot_close + params_.time_hands_front){
+        msg.state_number = 2;
+    }else if(time_ < params_.time_hands_side + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground){
+        msg.state_number = 3;
+    }else if(time_ < params_.time_hands_side + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45){
+        msg.state_number = 4;
+    }else if(time_ < params_.time_hands_side + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat){
+        msg.state_number = 5;
+    }else {
+        msg.state_number = 6;
+    }
+
     geometry_msgs::Pose l_arm_pose;
     tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
     msg.l_arm_pose = l_arm_pose;
@@ -70,6 +87,7 @@ DynupResponse DynupEngine::update(double dt) {
 }
 
 //TODO: Simplify
+//TODO this method is never used?
 void DynupEngine::initializeSplines(geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose r_foot_pose) {
   double time_start = 0.0;
   double r,p,y;
