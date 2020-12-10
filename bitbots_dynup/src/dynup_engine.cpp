@@ -36,11 +36,11 @@ void DynupEngine::publishDebug() {
     tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
     msg.l_arm_pose = l_arm_pose;
     geometry_msgs::Pose r_arm_pose;
-    msg.r_arm_pose = r_arm_pose;
     tf2::toMsg(goals_.r_hand_goal_pose, r_arm_pose);
+    msg.r_arm_pose = r_arm_pose;
     geometry_msgs::Pose l_leg_pose;
-    msg.l_leg_pose = l_leg_pose;
     tf2::toMsg(goals_.l_foot_goal_pose, l_leg_pose);
+    msg.l_leg_pose = l_leg_pose;
     geometry_msgs::Pose r_leg_pose;
     tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
     msg.r_leg_pose = r_leg_pose;
