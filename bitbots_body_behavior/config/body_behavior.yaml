@@ -81,6 +81,9 @@ behavior:
     # The value describes the offset in meters from the goal line.
     block_position_goal_offset: 0.15
 
+    # this factor defines how extreme the goalie reacts to a ball offset
+    block_position_gradient_factor: 4
+
     # When the ball is closer than `max_kick_distance` meters
     # it is close enough to be kicked
     max_kick_distance: 0.3

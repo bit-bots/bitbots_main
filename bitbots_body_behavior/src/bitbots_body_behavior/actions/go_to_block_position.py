@@ -7,6 +7,7 @@ class GoToBlockPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToBlockPosition, self).__init__(blackboard, dsd, parameters)
         self.block_position_goal_offset = self.blackboard.config['block_position_goal_offset']
+        self.block_position_gradient_factor = self.blackboard.config['block_position_gradient_factor']
 
     def perform(self, reevaluate=False):
         # The block position should be a position between the ball and the center of the goal
@@ -29,15 +30,15 @@ class GoToBlockPosition(AbstractActionElement):
         ball_position = self.blackboard.world_model.get_ball_position_xy()
 
         x_delta = ball_position[0] - goal_position[0]
-        y_delta = ball_position[1] - goal_position[1]
-        gradient = y_delta / x_delta
+        y_delta = ball_position[1]  # goal Y-position is always 0
+        gradient = float(y_delta) / float(x_delta) * self.block_position_gradient_factor
         goalie_y = self.block_position_goal_offset * gradient
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = 'map'
 
-        pose_msg.pose.position.x = -(self.blackboard.world_model.field_width / 2) + self.block_position_goal_offset
+        pose_msg.pose.position.x = -(self.blackboard.world_model.field_length / 2) + self.block_position_goal_offset
         pose_msg.pose.position.y = self._stay_in_front_of_goal(goalie_y)
         pose_msg.pose.orientation.w = 1
 
