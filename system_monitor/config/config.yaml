@@ -6,3 +6,9 @@ update_frequency: 2
 do_cpu: true
 do_memory: true
 do_network: true
+
+# these are the threshold values at which we start going into a warn state
+cpu_load_percentage: 80
+memoroy_load_percentage: 80
+network_rate_received_errors: 10
+network_rate_send_errors: 10

@@ -2,6 +2,7 @@ string hostname
 
 Cpu[] cpus
 int32 running_processes
+float32 cpu_usage_overall
 
 int64 memory_available
 int64 memory_used

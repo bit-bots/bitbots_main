@@ -8,7 +8,7 @@
     <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
     <!-- remaps necessary for other parts of our software -->
-    <remap from="camera/image_raw" to="image_raw"/>
+    <remap from="camera/image_raw" to="camera/image_proc"/>
     <remap from="camera/camera_info" to="camera_info"/>
     <remap from="imu" to="imu/data"/>
 
