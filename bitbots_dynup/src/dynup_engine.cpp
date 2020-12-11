@@ -77,6 +77,14 @@ void DynupEngine::publishDebug() {
     tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
     msg.r_leg_pose = r_leg_pose;
 
+    double r,p,y;
+    tf2::Quaternion q;
+    tf2::convert(r_leg_pose.orientation, q);
+    tf2::Matrix3x3(q).getRPY(r, p, y);
+    msg.foot_roll = r;
+    msg.foot_pitch = p;
+    msg.foot_yaw = y;
+
     pub_engine_debug_.publish(msg);
 }
 

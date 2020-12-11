@@ -27,9 +27,9 @@ dynup:
 
   # Squat
   rise_time: 0.5
-  trunk_height: 0.38
-  trunk_x: 0.0
-  trunk_pitch: 10
+  trunk_height: 0.4
+  trunk_x: -0.05
+  trunk_pitch: 0
 
   # Stabilier
   stabilizing: False
