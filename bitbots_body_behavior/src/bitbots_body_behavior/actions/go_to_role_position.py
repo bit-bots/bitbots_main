@@ -21,8 +21,8 @@ class GoToRolePosition(AbstractActionElement):
 
         # Adapt position to field size
         # TODO know where map frame is located
-        self.role_position = [generalized_role_position[0] * self.blackboard.field_length / 2,
-                              generalized_role_position[1] * self.blackboard.field_width / 2]
+        self.role_position = [generalized_role_position[0] * self.blackboard.world_model.field_length / 2,
+                              generalized_role_position[1] * self.blackboard.world_model.field_width / 2]
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()

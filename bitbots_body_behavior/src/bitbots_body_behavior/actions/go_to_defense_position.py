@@ -25,7 +25,7 @@ class GoToDefensePosition(AbstractActionElement):
         #      +------------------+--------------> x
         #                         0
 
-        goal_position = (-self.blackboard.field_length / 2, 0)  # position of the own goal
+        goal_position = (-self.blackboard.world_model.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
 
         pose_msg = PoseStamped()
