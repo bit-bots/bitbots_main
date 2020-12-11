@@ -81,6 +81,7 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
   engine_.reset();
+  last_ros_update_time_ = 0;
   was_support_foot_published_ = false;
 
   std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
@@ -160,12 +161,36 @@ std::pair<geometry_msgs::Pose, geometry_msgs::Pose> KickNode::getFootPoses() {
   return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
 }
 
+    double KickNode::getTimeDelta() {
+        // compute actual time delta that happened
+        double dt;
+        double current_ros_time = ros::Time::now().toSec();
+
+        // first call needs to be handled specially
+        if (last_ros_update_time_==0){
+            last_ros_update_time_ = current_ros_time;
+            return 0.001;
+        }
+
+        dt = current_ros_time - last_ros_update_time_;
+        // this can happen due to floating point precision
+        if (dt == 0) {
+            ROS_WARN("dt was 0");
+            dt = 0.001;
+        }
+        last_ros_update_time_ = current_ros_time;
+
+        return dt;
+    }
+
 void KickNode::loopEngine() {
   /* Do the loop as long as nothing cancels it */
+      double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    KickPositions positions = engine_.update(1.0 / engine_rate_);
+      dt = getTimeDelta();
+      KickPositions positions = engine_.update(dt);
     // TODO: should positions be an std::optional? how are errors represented?
-    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(1.0 / engine_rate_));
+    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
     bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
 
     bitbots_msgs::KickFeedback feedback;

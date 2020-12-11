@@ -58,6 +58,7 @@ class KickNode {
   Visualizer visualizer_;
   KickIK ik_;
   int engine_rate_;
+  double last_ros_update_time_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
@@ -85,6 +86,13 @@ class KickNode {
   void publishSupportFoot(bool is_left_kick);
 
   /**
+   * Helper method to achieve correctly sampled rate
+   */
+  double getTimeDelta();
+
+
+
+    /**
    * Publish goals to ROS
    */
   void publishGoals(const bitbots_splines::JointGoals &goals);
