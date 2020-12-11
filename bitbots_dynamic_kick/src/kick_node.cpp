@@ -121,7 +121,8 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayTrunkSplines(engine_.getTrunkSplines());
-  loopEngine();
+  ros::Rate loop_rate(engine_rate_);
+  loopEngine(loop_rate);
 
   /* Figure out the reason why loopEngine() returned and act accordingly */
   if (server_.isPreemptRequested()) {
@@ -183,7 +184,7 @@ std::pair<geometry_msgs::Pose, geometry_msgs::Pose> KickNode::getFootPoses() {
         return dt;
     }
 
-void KickNode::loopEngine() {
+void KickNode::loopEngine(ros::Rate loop_rate) {
   /* Do the loop as long as nothing cancels it */
       double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
@@ -208,7 +209,6 @@ void KickNode::loopEngine() {
 
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
-    ros::Rate loop_rate(engine_rate_);
     loop_rate.sleep();
   }
 }

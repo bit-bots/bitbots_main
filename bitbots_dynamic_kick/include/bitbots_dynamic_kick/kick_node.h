@@ -68,7 +68,7 @@ class KickNode {
    * Do main loop in which KickEngine::update() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */
-  void loopEngine();
+  void loopEngine(ros::Rate loop_rate);
 
   /**
    * Retrieve current feet_positions in base_link frame
