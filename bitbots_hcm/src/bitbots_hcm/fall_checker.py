@@ -36,24 +36,22 @@ class FallChecker(BaseEstimator):
         self.thresh_orient_roll = math.radians(config["falling_thresh_orient_roll"])
         return config
 
-    def check_falling(self, not_much_smoothed_gyro, euler):
+    def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
-        # Checks if robot is still
-        bools = [abs(n) < 0.1 for n in not_much_smoothed_gyro]
-        if all(bools):
-            return self.STABLE
+        # Convert quaternion to fused angles
+        fused_roll, fused_pitch, _ = self.fused_from_quat(quaternion)
 
         # setting the fall quantification function
         roll_fall_quantification = self.calc_fall_quantification(
             self.thresh_orient_roll,
             self.thresh_gyro_roll,
-            euler[0],
+            fused_roll,
             not_much_smoothed_gyro[0])
 
         pitch_fall_quantification = self.calc_fall_quantification(
             self.thresh_orient_pitch,
             self.thresh_gyro_pitch,
-            euler[1],
+            fused_pitch,
             not_much_smoothed_gyro[1])
 
         if roll_fall_quantification + pitch_fall_quantification == 0:
@@ -62,14 +60,14 @@ class FallChecker(BaseEstimator):
         # compare quantification functions
         if pitch_fall_quantification > roll_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] < 0:
+            if fused_pitch < 0:
                 return self.BACK
             # detect the falling direction
             else:
                 return self.FRONT
         else:
             # detect the falling direction
-            if not_much_smoothed_gyro[0] < 0:
+            if fused_roll < 0:
                 return self.LEFT
             # detect the falling direction
             else:
@@ -128,3 +126,26 @@ class FallChecker(BaseEstimator):
 
         # If no side is facing downwards, the robot is not fallen yet.
         return None
+
+    def fused_from_quat(self, q):
+        # Fused yaw of Quaternion
+        fused_yaw = 2.0 * math.atan2(q[2], q[3])  # Output of atan2 is [-pi,pi], so this expression is in [-2*pi,2*pi]
+        if fused_yaw > math.pi:
+            fused_yaw -= 2 * math.pi  # fused_yaw is now in[-2 * pi, pi]
+        if fused_yaw <= -math.pi:
+            fused_yaw += 2 * math.pi  # fused_yaw is now in (-pi, pi]
+
+        # Calculate the fused pitch and roll
+        stheta = 2.0 * (q[1] * q[3] - q[0] * q[2])
+        sphi = 2.0 * (q[1] * q[2] + q[0] * q[3])
+        if stheta >= 1.0:  # Coerce stheta to[-1, 1]
+            stheta = 1.0
+        elif stheta <= -1.0:
+            stheta = -1.0
+        if sphi >= 1.0:  # Coerce sphi to[-1, 1]
+            sphi = 1.0
+        elif sphi <= -1.0:
+            sphi = -1.0
+        fused_pitch = math.asin(stheta)
+        fused_roll = math.asin(sphi)
+        return fused_roll, fused_pitch, fused_yaw
