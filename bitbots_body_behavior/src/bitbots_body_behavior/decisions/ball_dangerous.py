@@ -20,11 +20,11 @@ class BallDangerous(AbstractDecisionElement):
         """
 
         # close enough on the x axis
-        if position[0] > -(self.blackboard.field_length / 2) + self.goal_radius:
+        if position[0] > -(self.blackboard.world_model.field_length / 2) + self.goal_radius:
             return False
 
         # in the y-area in front of the goal (respecting the radius
-        if abs(position[1]) <= (self.blackboard.goal_width / 2 + self.goal_radius):
+        if abs(position[1]) <= (self.blackboard.world_model.goal_width / 2 + self.goal_radius):
             return True
         return False
 
