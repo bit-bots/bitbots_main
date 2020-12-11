@@ -21,12 +21,13 @@ dynup:
   # Front
   max_leg_angle: 45
   trunk_overshoot_angle_front: 20
-  time_hands_side: 0.1
-  time_foot_close: 0.5
-  time_hands_front: 0.1
-  time_foot_ground: 0.5
-  time_torso_45: 0.2
-  time_to_squat: 0.5
+  time_hands_side: 1
+  time_hands_rotate: 1
+  time_foot_close: 1
+  time_hands_front: 1
+  time_foot_ground: 1
+  time_torso_45: 1
+  time_to_squat: 1
 
   # Stabilier
   stabilizing: False
