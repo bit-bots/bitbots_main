@@ -45,11 +45,11 @@ void DynupEngine::publishDebug() {
           msg.state_number = 2;
       }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front){
           msg.state_number = 3;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground){
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground_front){
           msg.state_number = 4;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45){
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground_front + params_.time_torso_45){
           msg.state_number = 5;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat){
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat){
           msg.state_number = 6;
       }else {
           msg.state_number = 7;
@@ -57,11 +57,11 @@ void DynupEngine::publishDebug() {
     }else if (direction_ == 0) {
       if(time_ < params_.time_legs_close){
           msg.state_number = 0;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground){
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back){
           msg.state_number = 1;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground + params_.time_squat_push){
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_squat_push){
           msg.state_number = 2;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground + params_.time_squat_push + params_.time_full_squat){
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_squat_push + params_.time_full_squat){
           msg.state_number = 3;
       }else{
           msg.state_number = 4;
@@ -256,7 +256,7 @@ void DynupEngine::calcFrontSplines() {
   /*
    * Foot under body
    */
-  time += params_.time_foot_ground;
+  time += params_.time_foot_ground_front;
   r_foot_spline_.x()->addPoint(time, foot_x -params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, foot_z);
@@ -344,7 +344,7 @@ void DynupEngine::calcBackSplines() {
    * pull legs to body
    */
   double time = params_.time_legs_close;
-  r_foot_spline_.x()->addPoint(time, 0);
+  r_foot_spline_.x()->addPoint(time, -params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
@@ -373,7 +373,7 @@ void DynupEngine::calcBackSplines() {
   /*
    * Foot under body
    */
-  time += params_.time_foot_ground;
+  time += params_.time_foot_ground_back;
     l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
     l_hand_spline_.y()->addPoint(time, 0);
     l_hand_spline_.z()->addPoint(time, 0.28); //TODO: Also hacky hack, forcing elbow angle
@@ -387,7 +387,7 @@ void DynupEngine::calcBackSplines() {
     r_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
     r_hand_spline_.yaw()->addPoint(time, 0);
 
-  r_foot_spline_.x()->addPoint(time, -sin(1.22173) * params_.leg_min_length);
+  r_foot_spline_.x()->addPoint(time, -sin(1.22173) * params_.leg_min_length -params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -cos(1.22173) * params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
@@ -418,7 +418,7 @@ void DynupEngine::calcBackSplines() {
   r_hand_spline_.yaw()->addPoint(time, 0);
 
 
-  r_foot_spline_.x()->addPoint(time, -sin(0.872665) * params_.leg_min_length);
+  r_foot_spline_.x()->addPoint(time, -sin(0.872665) * params_.leg_min_length -params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -cos(0.872665) * params_.leg_min_length);
   r_foot_spline_.roll()->addPoint(time, 0);
@@ -454,7 +454,7 @@ void DynupEngine::calcBackSplines() {
     l_foot_spline_.roll()->addPoint(time + 0.2, 0);
     l_foot_spline_.pitch()->addPoint(time + 0.2, 0);
     l_foot_spline_.yaw()->addPoint(time + 0.2, 0);
-    r_foot_spline_.x()->addPoint(time+0.2, sin(-M_PI * params_.trunk_overshoot_angle_back /180) * -params_.leg_min_length);
+    r_foot_spline_.x()->addPoint(time+0.2, sin(-M_PI * params_.trunk_overshoot_angle_back /180) * -params_.leg_min_length -params_.trunk_x);
     r_foot_spline_.y()->addPoint(time+0.2, -params_.foot_distance / 2);
     r_foot_spline_.z()->addPoint(time+0.2, cos(-M_PI * params_.trunk_overshoot_angle_back /180) * -params_.leg_min_length);
     r_foot_spline_.roll()->addPoint(time+0.2, 0);
@@ -533,7 +533,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                     params_.time_hands_rotate +
                     params_.time_hands_front +
                     params_.time_foot_close +
-                    params_.time_foot_ground +
+                    params_.time_foot_ground_front +
                     params_.time_torso_45 +
                     params_.time_to_squat +
                     params_.wait_in_squat +
@@ -543,7 +543,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   }
   else if(goals.direction == "back"){
      duration_ = params_.time_legs_close +
-                 params_.time_foot_ground +
+                 params_.time_foot_ground_back +
                  params_.time_squat_push +
                  params_.time_full_squat +
                  params_.wait_in_squat +
@@ -566,9 +566,8 @@ int DynupEngine::getPercentDone() const {
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
 bool DynupEngine::isStabilizingNeeded() const {
     return (direction_ == 1 && time_ >= params_.time_hands_side + params_.time_foot_close + params_.time_hands_front +
-                                        params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat) ||
+                                        params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat) ||
            (direction_ == 0 && time_ >= params_.time_legs_close +
-                                        params_.time_hands_down +
                                         params_.time_squat_push +
                                         params_.time_full_squat) ||
             (direction_ == 2);
