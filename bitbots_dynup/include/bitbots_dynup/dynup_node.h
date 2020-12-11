@@ -5,22 +5,36 @@
 #include <optional>
 #include <ros/ros.h>
 #include <ros/console.h>
+
 #include <dynamic_reconfigure/server.h>
-#include <actionlib/server/simple_action_server.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <bitbots_msgs/DynUpAction.h>
-#include <bitbots_msgs/JointCommand.h>
-#include "bitbots_dynup/visualizer.h"
 #include <bitbots_dynup/DynUpConfig.h>
-#include "bitbots_dynup/dynup_engine.h"
-#include "bitbots_dynup/dynup_ik.h"
-#include "bitbots_dynup/dynup_stabilizer.h"
+#include <actionlib/server/simple_action_server.h>
+
 #include <std_msgs/Char.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <bitbots_msgs/DynUpAction.h>
+#include <bitbots_msgs/JointCommand.h>
+
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_eigen/tf2_eigen.h>
+
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/kinematics_base/kinematics_base.h>
+#include <moveit/move_group_interface/move_group_interface.h>
+
+#include "bitbots_dynup/visualizer.h"
+#include "bitbots_dynup/dynup_engine.h"
+#include "bitbots_dynup/dynup_ik.h"
+#include "bitbots_dynup/dynup_stabilizer.h"
 
 namespace bitbots_dynup {
 

@@ -56,6 +56,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   double time_;
   double duration_;
   double arm_max_length_;
+  double shoulder_offset_y_;
   double arm_offset_y_;
   double arm_offset_z_;
   int direction_;

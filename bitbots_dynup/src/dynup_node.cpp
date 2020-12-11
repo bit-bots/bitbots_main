@@ -16,14 +16,21 @@ DynUpNode::DynUpNode() :
     ROS_FATAL("No robot model loaded, killing dynamic up.");
     exit(1);
   }
+  robot_state::RobotStatePtr init_state;
+  init_state.reset(new robot_state::RobotState(kinematic_model));
   double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().y() +
                           kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().y();
-  geometry_msgs::PoseStamped shoulder_origin, shoulder_tf;
-  shoulder_origin.header.frame_id="r_shoulder";
-  tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link",
-                         ros::Duration(0.2));
+  //geometry_msgs::PoseStamped shoulder_origin, shoulder_tf;
+  //shoulder_origin.header.frame_id="r_shoulder";
+  //tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link", ros::Duration(0.2));
+  geometry_msgs::Pose shoulder_origin;
+  tf2::convert(init_state->getGlobalLinkTransform("r_shoulder"), shoulder_origin);
   //arm max length, y offset, z offset from base link
-  engine_.init(0.37, 0.19, 0.19); //TODO: These values are hardcoded for now and should be calculated from the model instead.
+  ROS_WARN_STREAM(shoulder_origin.position.y);
+  ROS_WARN_STREAM(shoulder_origin.position.z);
+  // todo param
+  // we need to take the inverse value of y position, as the engine switched this around
+  engine_.init(0.37, shoulder_origin.position.y *-1, shoulder_origin.position.z); //TODO: These values are hardcoded for now and should be calculated from the model instead. Dont use the buffer but directly the moveit robot state class to compute this
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);

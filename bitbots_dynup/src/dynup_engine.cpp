@@ -8,7 +8,9 @@ DynupEngine::DynupEngine() : listener_(tf_buffer_) {}
 
 void DynupEngine::init(double arm_max_length, double arm_offset_y, double arm_offset_z) {
   arm_max_length_ = arm_max_length;
-  arm_offset_y_ = arm_offset_y; //TODO: there has to be a better way to do this
+  //this are just the offsets to the shoulder, we need to apply some additional offset to prevent collisions
+  shoulder_offset_y_ = arm_offset_y;
+  arm_offset_y_ = shoulder_offset_y_ + params_.arm_side_offset;
   arm_offset_z_ = arm_offset_z;
   ros::NodeHandle nh;
   pub_engine_debug_ = nh.advertise<bitbots_dynup::DynupEngineDebug>("dynup_engine_debug", 1);
@@ -539,6 +541,8 @@ bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
 
 void DynupEngine::setParams(DynUpConfig params) {
   params_ = params;
+  // update this value
+  arm_offset_y_ = shoulder_offset_y_ + params_.arm_side_offset;
 }
 
 }
