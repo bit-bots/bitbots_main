@@ -36,23 +36,38 @@ void DynupEngine::publishDebug() {
     msg.header.stamp = ros::Time::now();
 
     msg.time = time_;
-    //todo this is only true for front up
-    if(time_ < params_.time_hands_side){
-        msg.state_number = 0;
-    }else if(time_ < params_.time_hands_side + params_.time_hands_rotate){
-        msg.state_number = 1;
-    }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close){
-        msg.state_number = 2;
-    }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front){
-        msg.state_number = 3;
-    }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground){
-        msg.state_number = 4;
-    }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45){
-        msg.state_number = 5;
-    }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat){
-        msg.state_number = 6;
-    }else {
-        msg.state_number = 7;
+    if (direction_ == 1){
+      if(time_ < params_.time_hands_side){
+          msg.state_number = 0;
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate){
+          msg.state_number = 1;
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close){
+          msg.state_number = 2;
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front){
+          msg.state_number = 3;
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground){
+          msg.state_number = 4;
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45){
+          msg.state_number = 5;
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_foot_close + params_.time_hands_front + params_.time_foot_ground + params_.time_torso_45 + params_.time_to_squat){
+          msg.state_number = 6;
+      }else {
+          msg.state_number = 7;
+      }
+    }else if (direction_ == 0) {
+      if(time_ < params_.time_legs_close){
+          msg.state_number = 0;
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground){
+          msg.state_number = 1;
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground + params_.time_squat_push){
+          msg.state_number = 2;
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground + params_.time_squat_push + params_.time_full_squat){
+          msg.state_number = 3;
+      }else{
+          msg.state_number = 4;
+      }
+    }else{
+          msg.state_number = -1;
     }
 
     geometry_msgs::Pose l_arm_pose;
