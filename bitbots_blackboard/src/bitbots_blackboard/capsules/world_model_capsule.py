@@ -32,8 +32,7 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, config, field_length, field_width, goal_width):
-        self.config = config
+    def __init__(self):
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
@@ -57,9 +56,14 @@ class WorldModelCapsule:
         self.ball_seen_time = rospy.Time(0)
         self.goal_seen_time = rospy.Time(0)
         self.ball_seen = False
-        self.field_length = field_length
-        self.field_width = field_width
-        self.goal_width = goal_width
+        self.field_length = rospy.get_param('/field_length', None)
+        self.field_width = rospy.get_param('/field_width', None)
+        self.goal_width = rospy.get_param('/goal_width', None)
+
+        self.use_localization = rospy.get_param('/behavior/body/use_localization', None)
+
+        self.pose_precision_threshold = rospy.get_param('/behavior/body/pose_precision_threshold', None)
+        self.pose_lost_time = rospy.get_param('/behavior/body/pose_lost_time', None)
 
         # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
@@ -80,7 +84,7 @@ class WorldModelCapsule:
         return self.ball
 
     def get_ball_position_uv(self):
-        if self.config.get('use_localization') and \
+        if self.use_localization and \
                 self.localization_precision_in_threshold():
             ball = self.ball_map
         else:
@@ -341,15 +345,15 @@ class WorldModelCapsule:
         # get the standard deviation values of the covariance matrix
         precision = self.get_localization_precision()
         # return whether those values are in the threshold
-        return precision[0] < self.config['pose_precision_threshold']['x_sdev'] and \
-               precision[1] < self.config['pose_precision_threshold']['y_sdev'] and \
-               precision[2] < self.config['pose_precision_threshold']['theta_sdev']
+        return precision[0] < self.pose_precision_threshold['x_sdev'] and \
+               precision[1] < self.pose_precision_threshold['y_sdev'] and \
+               precision[2] < self.pose_precision_threshold['theta_sdev']
 
     def localization_pose_current(self) -> bool:
         """
         Returns whether the last localization pose was received in the last pose_lost_time-setting seconds.
         """
-        return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.config['pose_lost_time'])
+        return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.pose_lost_time)
 
 
     #############
