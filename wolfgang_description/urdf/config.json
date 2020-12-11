@@ -97,7 +97,9 @@
         "nuc_usb",
         "nuc_top",
         "torsion_spring_assembly_helper",
-        "hip_z_spacer"
+        "hip_z_spacer",
+        "torsion_spring_sodemann_t105-180-813r",
+        "torsion_spring_sodemann_t105-180-813l"
     ],
     "additionalURDF": "additionalURDF.txt"
 }
