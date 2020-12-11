@@ -76,7 +76,13 @@ class FallChecker(BaseEstimator):
     def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler,
                                  current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
-        if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
+        moving_more_upright = numpy.sign(current_axis_euler) != numpy.sign(current_axis__gyro)
+
+        # Check if the orientation is over the point of no return threshold
+        over_point_of_no_return = abs(current_axis_euler) > falling_threshold_orientation
+
+        # Calculate quantification if we are moving away from our upright position or if we are over the point of no return
+        if not moving_more_upright or over_point_of_no_return:
             # calculatiung the orentation skalar for the threshold
             skalar = max((falling_threshold_orientation - abs(current_axis_euler)) / falling_threshold_orientation, 0)
             # checking if the rotation velocity is lower than the the threshold
