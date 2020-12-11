@@ -478,6 +478,7 @@ void DynupEngine::calcSquatSplines(double time) {
 }
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
+   initializeSplines(goals.l_hand_pose, goals.r_hand_pose, goals.l_foot_pose, goals.r_foot_pose);
     if (goals.direction == "front") {
         duration_ = params_.time_hands_side +
                     params_.time_hands_front +

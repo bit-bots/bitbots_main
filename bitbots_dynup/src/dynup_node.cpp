@@ -30,7 +30,6 @@ DynUpNode::DynUpNode() :
   tf2::convert(init_state->getGlobalLinkTransform("r_wrist"), wrist_origin);
   //compute arm length
   double arm_max_length = shoulder_origin.position.z - wrist_origin.position.z;
-  ROS_WARN_STREAM(arm_max_length);
   //arm max length, y offset, z offset from base link
   // we need to take the inverse value of y position, as the engine switched this around
   engine_.init(arm_max_length, shoulder_origin.position.y *-1, shoulder_origin.position.z);
