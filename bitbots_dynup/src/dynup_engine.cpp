@@ -89,48 +89,45 @@ DynupResponse DynupEngine::update(double dt) {
 }
 
 //TODO: Simplify
-//TODO this method is never used?
 void DynupEngine::initializeSplines(geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose r_foot_pose) {
-  double time_start = 0.0;
   double r,p,y;
   tf2::Quaternion q;
 
-  l_hand_spline_.x()->addPoint(time_start, l_hand_pose.position.x);
-  l_hand_spline_.y()->addPoint(time_start, l_hand_pose.position.y);
-  l_hand_spline_.z()->addPoint(time_start, l_hand_pose.position.z);
+  l_hand_spline_.x()->addPoint(0.0, l_hand_pose.position.x);
+  l_hand_spline_.y()->addPoint(0.0, l_hand_pose.position.y);
+  l_hand_spline_.z()->addPoint(0.0, l_hand_pose.position.z);
   tf2::convert(l_hand_pose.orientation, q);
   tf2::Matrix3x3(q).getRPY(r, p, y);
-  l_hand_spline_.roll()->addPoint(time_start, r);
-  l_hand_spline_.pitch()->addPoint(time_start, p);
-  l_hand_spline_.yaw()->addPoint(time_start, y);
+  l_hand_spline_.roll()->addPoint(0.0, r);
+  l_hand_spline_.pitch()->addPoint(0.0, p);
+  l_hand_spline_.yaw()->addPoint(0.0, y);
 
-  r_hand_spline_.x()->addPoint(time_start, r_hand_pose.position.x);
-  r_hand_spline_.y()->addPoint(time_start, r_hand_pose.position.y);
-  r_hand_spline_.z()->addPoint(time_start, r_hand_pose.position.z);
+  r_hand_spline_.x()->addPoint(0.0, r_hand_pose.position.x);
+  r_hand_spline_.y()->addPoint(0.0, r_hand_pose.position.y);
+  r_hand_spline_.z()->addPoint(0.0, r_hand_pose.position.z);
   tf2::convert(r_hand_pose.orientation, q);
   tf2::Matrix3x3(q).getRPY(r, p, y);
-  r_hand_spline_.roll()->addPoint(time_start, r);
-  r_hand_spline_.pitch()->addPoint(time_start, p);
-  r_hand_spline_.yaw()->addPoint(time_start, y);
+  r_hand_spline_.roll()->addPoint(0.0, r);
+  r_hand_spline_.pitch()->addPoint(0.0, p);
+  r_hand_spline_.yaw()->addPoint(0.0, y);
 
-  foot_spline_.x()->addPoint(time_start, l_foot_pose.position.x);
-  foot_spline_.y()->addPoint(time_start, l_foot_pose.position.y);
-  foot_spline_.z()->addPoint(time_start, l_foot_pose.position.z);
+  foot_spline_.x()->addPoint(0.0, l_foot_pose.position.x);
+  foot_spline_.y()->addPoint(0.0, l_foot_pose.position.y);
+  foot_spline_.z()->addPoint(0.0, l_foot_pose.position.z);
   tf2::convert(l_foot_pose.orientation, q);
   tf2::Matrix3x3(q).getRPY(r, p, y);
-  foot_spline_.roll()->addPoint(time_start, r);
-  foot_spline_.pitch()->addPoint(time_start, p);
-  foot_spline_.yaw()->addPoint(time_start, y);
+  foot_spline_.roll()->addPoint(0.0, r);
+  foot_spline_.pitch()->addPoint(0.0, p);
+  foot_spline_.yaw()->addPoint(0.0, y);
 
-  r_foot_spline_.x()->addPoint(time_start, r_foot_pose.position.x);
-  r_foot_spline_.y()->addPoint(time_start, r_foot_pose.position.y);
-  r_foot_spline_.z()->addPoint(time_start, r_foot_pose.position.z);
+  r_foot_spline_.x()->addPoint(0.0, r_foot_pose.position.x);
+  r_foot_spline_.y()->addPoint(0.0, r_foot_pose.position.y);
+  r_foot_spline_.z()->addPoint(0.0, r_foot_pose.position.z);
   tf2::convert(r_foot_pose.orientation, q);
   tf2::Matrix3x3(q).getRPY(r, p, y);
-  r_foot_spline_.roll()->addPoint(time_start, r);
-  r_foot_spline_.pitch()->addPoint(time_start, p);
-  r_foot_spline_.yaw()->addPoint(time_start, y);
-
+  r_foot_spline_.roll()->addPoint(0.0, r);
+  r_foot_spline_.pitch()->addPoint(0.0, p);
+  r_foot_spline_.yaw()->addPoint(0.0, y);
 }
 
 void DynupEngine::calcFrontSplines() {
