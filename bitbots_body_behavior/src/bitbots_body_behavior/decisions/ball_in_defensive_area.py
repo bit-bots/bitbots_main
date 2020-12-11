@@ -14,7 +14,7 @@ class BallInDefensiveArea(AbstractDecisionElement):
         """
         ball_position = self.blackboard.world_model.get_ball_position_xy()
         # calculate the x value of the boundary of the defensive area
-        defensive_x = (self.defensive_area * self.blackboard.field_length) - (self.blackboard.field_length / 2)
+        defensive_x = (self.defensive_area * self.blackboard.world_model.field_length) - (self.blackboard.world_model.field_length / 2)
         if ball_position[0] <= defensive_x:
             return 'YES'
         return 'NO'

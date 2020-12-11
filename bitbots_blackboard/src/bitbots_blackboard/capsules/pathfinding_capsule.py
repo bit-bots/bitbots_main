@@ -12,8 +12,8 @@ class PathfindingCapsule:
         # Thresholds to determine whether the transmitted goal is a new one
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(2))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.position_threshold = 0.3
-        self.orientation_threshold = 10
+        self.position_threshold = rospy.get_param('/behavior/body/pathfinding_position_threshold')
+        self.orientation_threshold = rospy.get_param('/behavior/body/pathfinding_orientation_threshold')
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.goal = None  # type: PoseStamped

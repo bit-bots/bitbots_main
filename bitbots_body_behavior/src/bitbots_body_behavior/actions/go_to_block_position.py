@@ -26,7 +26,7 @@ class GoToBlockPosition(AbstractActionElement):
         #      +------------------+--------------> x
         #                         0
 
-        goal_position = (-self.blackboard.field_length / 2, 0)  # position of the own goal
+        goal_position = (-self.blackboard.world_model.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
 
         x_delta = ball_position[0] - goal_position[0]
@@ -46,5 +46,5 @@ class GoToBlockPosition(AbstractActionElement):
 
     def _stay_in_front_of_goal(self, y):
         # keeps the y-values of the position in between of the goalposts.
-        # this ensures, that y is in [-self.blackboard.goal_width / 2, self.blackboard.goal_width / 2].
-        return max(-self.blackboard.goal_width / 2, min(self.blackboard.goal_width / 2, y))
+        # this ensures, that y is in [-self.blackboard.world_model.goal_width / 2, self.blackboard.world_model.goal_width / 2].
+        return max(-self.blackboard.world_model.goal_width / 2, min(self.blackboard.world_model.goal_width / 2, y))
