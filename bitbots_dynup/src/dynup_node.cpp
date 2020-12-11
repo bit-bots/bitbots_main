@@ -26,13 +26,12 @@ DynUpNode::DynUpNode() :
   init_state->updateLinkTransforms();
   // get shoulder and wrist pose
   geometry_msgs::Pose shoulder_origin, wrist_origin;
-  tf2::convert(init_state->getGlobalLinkTransform("r_upper_arm"), shoulder_origin);
-  tf2::convert(init_state->getGlobalLinkTransform("r_wrist"), wrist_origin);
+  tf2::convert(init_state->getGlobalLinkTransform("l_upper_arm"), shoulder_origin);
+  tf2::convert(init_state->getGlobalLinkTransform("l_wrist"), wrist_origin);
   //compute arm length
   double arm_max_length = shoulder_origin.position.z - wrist_origin.position.z;
   //arm max length, y offset, z offset from base link
-  // we need to take the inverse value of y position, as the engine switched this around
-  engine_.init(arm_max_length, shoulder_origin.position.y *-1, shoulder_origin.position.z);
+  engine_.init(arm_max_length, shoulder_origin.position.y, shoulder_origin.position.z);
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);
