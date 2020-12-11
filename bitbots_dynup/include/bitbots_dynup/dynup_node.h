@@ -1,6 +1,7 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_NODE_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_NODE_H_
 
+#include <math.h>
 #include <string>
 #include <optional>
 #include <ros/ros.h>

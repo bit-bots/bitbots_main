@@ -8,7 +8,7 @@ dynup:
   trunk_x: 0.0
   trunk_pitch: 10
   leg_min_length: 0.21
-  arm_side_offset: 0.1
+  arm_side_offset: 0.05
 
   # Back
   trunk_overshoot_angle_back: 10

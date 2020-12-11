@@ -18,19 +18,22 @@ DynUpNode::DynUpNode() :
   }
   robot_state::RobotStatePtr init_state;
   init_state.reset(new robot_state::RobotState(kinematic_model));
-  double arm_max_length = kinematic_model->getLinkModel("r_upper_arm")->getShapeExtentsAtOrigin().y() +
-                          kinematic_model->getLinkModel("r_lower_arm")->getShapeExtentsAtOrigin().y();
-  //geometry_msgs::PoseStamped shoulder_origin, shoulder_tf;
-  //shoulder_origin.header.frame_id="r_shoulder";
-  //tf_buffer_.transform(shoulder_origin, shoulder_tf, "base_link", ros::Duration(0.2));
-  geometry_msgs::Pose shoulder_origin;
-  tf2::convert(init_state->getGlobalLinkTransform("r_shoulder"), shoulder_origin);
+  // set elbows to make arms straight, in a stupid way since moveit is annoying
+  std::vector<std::string> names_vec = {"LElbow", "RElbow"};
+  std::vector<double> pos_vec = {-M_PI/2, M_PI/2};
+  init_state->setJointPositions(names_vec[0], &pos_vec[0]);
+  init_state->setJointPositions(names_vec[1], &pos_vec[1]);
+  init_state->updateLinkTransforms();
+  // get shoulder and wrist pose
+  geometry_msgs::Pose shoulder_origin, wrist_origin;
+  tf2::convert(init_state->getGlobalLinkTransform("r_upper_arm"), shoulder_origin);
+  tf2::convert(init_state->getGlobalLinkTransform("r_wrist"), wrist_origin);
+  //compute arm length
+  double arm_max_length = shoulder_origin.position.z - wrist_origin.position.z;
+  ROS_WARN_STREAM(arm_max_length);
   //arm max length, y offset, z offset from base link
-  ROS_WARN_STREAM(shoulder_origin.position.y);
-  ROS_WARN_STREAM(shoulder_origin.position.z);
-  // todo param
   // we need to take the inverse value of y position, as the engine switched this around
-  engine_.init(0.37, shoulder_origin.position.y *-1, shoulder_origin.position.z); //TODO: These values are hardcoded for now and should be calculated from the model instead. Dont use the buffer but directly the moveit robot state class to compute this
+  engine_.init(arm_max_length, shoulder_origin.position.y *-1, shoulder_origin.position.z);
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);
