@@ -42,9 +42,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
         corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
         trunk_goal.setRotation(corrected_orientation);
 
-        tf2::Transform from_trunk_tf;
-        tf2::fromMsg(from_trunk_.transform, from_trunk_tf);
-        right_foot_goal = trunk_goal * from_trunk_tf;
+        right_foot_goal = trunk_goal * to_trunk_tf.inverse() ;
     }
     else {
         right_foot_goal = ik_goals.r_foot_goal_pose;
@@ -76,9 +74,8 @@ void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
   kinematic_model_ = std::move(model);
 }
 
-void Stabilizer::setTransforms(geometry_msgs::TransformStamped to_trunk, geometry_msgs::TransformStamped from_trunk) {
-    to_trunk_ = to_trunk; //todo one of them is just the inverse of the other you dont need both. you can just use .inverse()
-    from_trunk_ = from_trunk;
+void Stabilizer::setTransforms(geometry_msgs::TransformStamped to_trunk) {
+    to_trunk_ = to_trunk;
 }
 
 }

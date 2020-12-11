@@ -142,7 +142,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
     dt = getTimeDelta();
     DynupResponse response = engine_.update(dt);
     stabilizer_.setStabilizeNow(engine_.isStabilizingNeeded()); // todo this information could also be included in the response
-    stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)), tf_buffer_.lookupTransform("base_link", "r_sole", ros::Time(0))); //todo this should not be done based on the tf buffer but on the current open loop goal state
+    stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0))); //todo this should not be done based on the tf buffer but on the current open loop goal state
     DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;

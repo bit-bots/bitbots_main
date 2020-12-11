@@ -63,7 +63,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   tf2::Transform offset_right_;
   int direction_;
 
-  bitbots_splines::PoseSpline foot_spline_;
+  bitbots_splines::PoseSpline l_foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;
   bitbots_splines::PoseSpline r_foot_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;

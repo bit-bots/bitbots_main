@@ -19,7 +19,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void init(moveit::core::RobotModelPtr kinematic_model);
   DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
   void setStabilizeNow(bool now);
-  void setTransforms(geometry_msgs::TransformStamped to_trunk, geometry_msgs::TransformStamped from_trunk);
+  void setTransforms(geometry_msgs::TransformStamped to_trunk);
   void useStabilizing(bool use);
   void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
@@ -31,7 +31,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
 private:
   robot_state::RobotStatePtr goal_state_;
   robot_model::RobotModelPtr kinematic_model_;
-  geometry_msgs::TransformStamped to_trunk_, from_trunk_;
+  geometry_msgs::TransformStamped to_trunk_;
 
   bool stabilize_now_;
 

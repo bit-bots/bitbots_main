@@ -46,8 +46,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   goal_state_->updateLinkTransforms();
 
-  // todo the |= is a bit wise or operator. i think this should be an and here not an or
-  success |= goal_state_->setFromIK(r_leg_joints_group_,
+  success &= goal_state_->setFromIK(r_leg_joints_group_,
                                    right_foot_goal_msg,
                                    0.001,
                                    moveit::core::GroupStateValidityCallbackFn(),
@@ -55,7 +54,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   goal_state_->updateLinkTransforms();
 
-  success |= goal_state_->setFromIK(l_arm_joints_group_,
+  success &= goal_state_->setFromIK(l_arm_joints_group_,
                                    left_hand_goal_msg,
                                    0.001,
                                    moveit::core::GroupStateValidityCallbackFn(),
@@ -63,7 +62,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   goal_state_->updateLinkTransforms();
 
-  success |= goal_state_->setFromIK(r_arm_joints_group_,
+  success &= goal_state_->setFromIK(r_arm_joints_group_,
                                    right_hand_goal_msg,
                                    0.001,
                                    moveit::core::GroupStateValidityCallbackFn(),
@@ -79,7 +78,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     bitbots_splines::JointGoals result;
     result.first = joint_names;
     result.second = joint_goals;
-    //todo add some explaining comment here
+    /* sets head motor positions to 0, as the IK will return random values for those unconstrained motors. */
     for(int i = 0; i  < result.first.size(); i++)
     {
         if(result.first[i] == "HeadPan"||result.first[i] ==  "HeadTilt") {
