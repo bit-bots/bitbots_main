@@ -10,6 +10,9 @@ field_color_detector_upper_values_h: 72  # Upper bound for the field color detec
 field_color_detector_upper_values_s: 255  # Upper bound for the field color detector saturation
 field_color_detector_upper_values_v: 255  # Upper bound for the field color detector value/brightness
 
+field_boundary_detector_roi_height: 1
+field_boundary_detector_green_threshold: 41
+
 # Improve line detection in sim
 white_color_detector_use_color_space: false # Should the white color detector use a color space or a HSV range
 white_color_detector_lower_values_h: 101  # Lower bound for the white color detector hue
@@ -19,5 +22,7 @@ white_color_detector_upper_values_h: 180  # Upper bound for the white color dete
 white_color_detector_upper_values_s: 255  # Upper bound for the white color detector saturation
 white_color_detector_upper_values_v: 255  # Upper bound for the white color detector value/brightness
 line_detector_field_boundary_offset: -15  # Threshold in which we are also searching for lines over the field boundary
+
+line_detector_use_line_mask: true
 
 neural_network_type: 'yolo_opencv'
