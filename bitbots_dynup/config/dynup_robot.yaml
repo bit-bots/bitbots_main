@@ -1,0 +1,56 @@
+dynup:
+  # Engine
+  engine_rate: 500
+  foot_distance: 0.2
+  wait_in_squat: 2.0
+  rise_time: 0.5
+  trunk_height: 0.38
+  trunk_x: 0.0
+  trunk_pitch: 10
+  leg_min_length: 0.21
+  arm_side_offset: 0.1
+
+  # Back
+  trunk_overshoot_angle_back: 10
+  time_legs_close: 0.5
+  time_hands_down: 1.0
+  time_hands_back: 1.0
+  time_squat_push: 1.0
+  time_full_squat: 0.2
+
+  # Front
+  max_leg_angle: 45
+  trunk_overshoot_angle_front: 20
+  time_hands_side: 0.1
+  time_foot_close: 0.5
+  time_hands_front: 0.1
+  time_foot_ground: 0.5
+  time_torso_45: 0.2
+  time_to_squat: 0.5
+
+  # Stabilier
+  stabilizing: False
+  minimal_displacement: False
+
+  # Visualizer
+  spline_smoothness: 100
+  display_debug: True
+
+  pid_trunk_roll:
+    p: 0.76
+    i: 2.0
+    d: 0.02977
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: True
+    publish_state: True
+  pid_trunk_pitch:
+    p: 0.42
+    i: 1.68
+    d: 0.02625
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: True
+    publish_state: True

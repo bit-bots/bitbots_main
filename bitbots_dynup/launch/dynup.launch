@@ -1,4 +1,5 @@
 <launch>
     <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
+    <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
     <node pkg="bitbots_dynup" name="dynup" type="DynupNode" output="screen" />
 </launch>
