@@ -2,7 +2,7 @@ dynup:
   # Engine
   engine_rate: 500
   foot_distance: 0.2
-  wait_in_squat: 2.0
+  wait_in_squat: 1.0
   leg_min_length: 0.2
   arm_side_offset: 0.05
 
@@ -15,15 +15,15 @@ dynup:
   time_full_squat: 0.2
 
   # Front
-  max_leg_angle: 45
-  trunk_overshoot_angle_front: 20
+  max_leg_angle: 60
+  trunk_overshoot_angle_front: -30
   time_hands_side: 0.2
   time_hands_rotate: 0.2
   time_foot_close: 0.0
   time_hands_front: 0.2
   time_foot_ground: 0 # do at same time as time_hands_front
   time_torso_45: 0.25
-  time_to_squat: 0.25
+  time_to_squat: 0.1
 
   # Squat
   rise_time: 0.5
