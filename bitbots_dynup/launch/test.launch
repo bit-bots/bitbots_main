@@ -16,7 +16,8 @@
     <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
   </group>
 
-
+  <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
+  <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
   <node name="dynup" pkg="bitbots_dynup" type="DynupNode" output="screen">
     <remap from="/animation_motor_goals" to="/DynamixelController/command"/>
   </node>

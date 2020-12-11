@@ -3,5 +3,8 @@
   <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
     args="-d $(find wolfgang_description)/config/wolfgang.rviz" />
   <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"  args="--all" />
+
+  <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
+  <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
   <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" />
 </launch>
