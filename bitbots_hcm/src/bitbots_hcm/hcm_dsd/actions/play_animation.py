@@ -180,7 +180,6 @@ class PlayAnimationDynup(AbstractActionElement):
             return
 
         if self.animation_finished():
-            self.blackboard.hacky_sequence_dynup_running = False
             # we are finished playing this animation
             return self.pop()
 

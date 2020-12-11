@@ -346,11 +346,10 @@ class Fallen(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         # check if the robot is currently laying on the ground
-        fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.smooth_accel, self.blackboard.gyro)
+        fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.quaternion, self.blackboard.gyro)
         if self.blackboard.is_stand_up_active and fallen_side is not None:
             self.blackboard.current_state = STATE_FALLEN
             # TODO
-            self.blackboard.hacky_sequence_dynup_running = True
             # we play a stand up animation
             if fallen_side == self.blackboard.fall_checker.FRONT:
                 return "FALLEN_FRONT"
@@ -365,7 +364,7 @@ class Fallen(AbstractDecisionElement):
             return "NOT_FALLEN"
 
     def get_reevaluate(self):
-        return not self.blackboard.hacky_sequence_dynup_running
+        return True 
 
 
 class ExternalAnimation(AbstractDecisionElement):
