@@ -90,9 +90,9 @@ int main(int argc, char *argv[]) {
 
     // publish diagnostic messages each 100 frames
     if (diag_counter % 100 == 0) {
-        // check if we are staying the correct cycle time. warning if more than 10% off
+        // check if we are staying the correct cycle time. warning if we only get half
         array_msg.header.stamp = ros::Time::now();
-        if(rate.cycleTime() < ros::Duration(1/control_loop_hz)*1.1){
+        if(rate.cycleTime() < ros::Duration(1/control_loop_hz)*2){
           status.level = diagnostic_msgs::DiagnosticStatus::OK;
           status.message = "";
         }else{
