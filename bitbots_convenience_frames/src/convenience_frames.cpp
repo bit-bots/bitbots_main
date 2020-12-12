@@ -122,6 +122,16 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
       tf_.transform.translation.z = approach_frame.pose.position.z;
       tf_.transform.rotation = approach_frame.pose.orientation;
       broadcaster_.sendTransform(tf_);
+
+      // publish ball_approach_frame 10 cm in front of approach_frame
+      tf_.header.frame_id = "approach_frame";
+      tf_.child_frame_id = "ball_approach_frame";
+      tf_.transform.translation.x = 0.10;
+      tf_.transform.translation.y = 0;
+      tf_.transform.translation.z = 0;
+      tf2::Quaternion rotation_baf = tf2::Quaternion(0, 0, 0, 1);
+      tf_.transform.rotation = tf2::toMsg(rotation_baf);
+      broadcaster_.sendTransform(tf_);
     } catch (...) {
       continue;
     }
