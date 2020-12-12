@@ -8,20 +8,19 @@
 
 namespace fs = boost::filesystem;
 
-Map::Map(const std::string& file_path, const bl::LocalizationConfig &config) {
+Map::Map(const std::string& name, const std::string& type, const bl::LocalizationConfig &config) {
   // Set config
-   config_ = config;
+  config_ = config;
   //get package path
   std::string package_path = ros::package::getPath("bitbots_localization");
   //make boost path
-  fs::path map_path = fs::path(file_path);
+  fs::path map_path = fs::path("config/fields") / fs::path(name) / fs::path(type);
   //convert to absolute path
   fs::path absolute_map_path = fs::absolute(map_path, package_path);
   //load map
   map = cv::imread(absolute_map_path.string(), cv::IMREAD_GRAYSCALE);
-
   if (!map.data) {
-    printf("No image data '%s'\n", map_path.filename().c_str());
+    ROS_ERROR("No image data '%s'", map_path.c_str());
   }
 }
 

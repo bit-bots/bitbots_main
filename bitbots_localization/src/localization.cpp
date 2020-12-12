@@ -44,17 +44,33 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   t_crossings_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
   crosses_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
-  ros::Duration(1).sleep();
-
   service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
 
   ROS_INFO_STREAM("Setting path to " << config.map_path_lines);
-  lines_.reset(new Map(config.map_path_lines, config));
-  goals_.reset(new Map(config.map_path_goals, config));
-  field_boundary_.reset(new Map(config.map_path_field_boundary, config));
-  corner_.reset(new Map(config.map_path_corners, config));
-  t_crossings_map_.reset(new Map(config.map_path_tcrossings, config));
-  crosses_map_.reset(new Map(config.map_path_crosses, config));
+
+  // Get field name
+  std::string field;
+  nh_.getParam("fieldname", field);
+
+  // Check if mesurement type is used and load the correct map for that
+  if(config.lines_factor) {
+    lines_.reset(new Map(field, "lines.png", config));
+  }
+  if(config.goals_factor){
+    goals_.reset(new Map(field, "goals.png", config));
+  }
+  if(config.field_boundary_factor){
+    field_boundary_.reset(new Map(field, "field_boundary.png", config));
+  }
+  if(config.corners_factor){
+    corner_.reset(new Map(field, "field_boundary.png", config));
+  }
+  if(config.t_crossings_factor){
+    t_crossings_map_.reset(new Map(field, "t_crossings.png", config));
+  }
+  if(config.crosses_factor){
+    crosses_map_.reset(new Map(field, "crosses.png", config));
+  }
 
   line_information_relative_.header.stamp = ros::Time(0);
   line_pointcloud_relative_.header.stamp = ros::Time(0);
