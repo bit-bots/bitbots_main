@@ -1,4 +1,4 @@
-image: lines_feldraum.png
+image: lines.png
 resolution: 0.01
 origin: [-2.82, -2.05, 0.0]
 occupied_thresh: 0.65
