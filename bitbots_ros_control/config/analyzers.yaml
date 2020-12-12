@@ -35,7 +35,7 @@ analyzers:
     type: diagnostic_aggregator/GenericAnalyzer
     path: Bus
     startswith: BUS
-    timeout: 0.1
+    timeout: 0.2
     find_and_remove_prefix: BUS
   System:
     type: diagnostic_aggregator/GenericAnalyzer
