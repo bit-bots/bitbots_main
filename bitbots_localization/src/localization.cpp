@@ -46,8 +46,6 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
 
   service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
 
-  ROS_INFO_STREAM("Setting path to " << config.map_path_lines);
-
   // Get field name
   std::string field;
   nh_.getParam("fieldname", field);
