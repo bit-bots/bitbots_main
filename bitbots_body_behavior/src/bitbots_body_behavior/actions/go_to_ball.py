@@ -21,7 +21,7 @@ class GoToBall(AbstractActionElement):
 
 
     def perform(self, reevaluate=False):
-        ball_position = self.blackboard.world_model.get_ball_position_uv_approach_frame()
+        ball_position = self.blackboard.world_model.get_ball_position_uv_ball_approach_frame()
         if not ball_position:
             return
         ball_u, ball_v, ball_frame = ball_position
@@ -34,10 +34,10 @@ class GoToBall(AbstractActionElement):
                     self.blackboard.world_model.get_map_based_opp_goal_angle())
             )
         elif 'detection_goal' == self.target:
-            x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv_approach_frame()[0] - \
-                     self.blackboard.world_model.get_ball_position_uv_approach_frame()[0]
-            y_dist = self.blackboard.world_model.get_detection_based_goal_position_uv_approach_frame()[1] - \
-                     self.blackboard.world_model.get_ball_position_uv_approach_frame()[1]
+            x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv_ball_approach_frame()[0] - \
+                     self.blackboard.world_model.get_ball_position_uv_ball_approach_frame()[0]
+            y_dist = self.blackboard.world_model.get_detection_based_goal_position_uv_ball_approach_frame()[1] - \
+                     self.blackboard.world_model.get_ball_position_uv_ball_approach_frame()[1]
             angle = math.atan2(y_dist, x_dist)
             ball_point = (ball_u, ball_v, angle)
         elif 'none' == self.target or 'current_orientation' == self.target:
@@ -52,7 +52,8 @@ class GoToBall(AbstractActionElement):
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = ball_frame
+        # we get the ball in the ball_approach_frame, this is the place where we want to place our base_footprint
+        pose_msg.header.frame_id = "base_footprint"
 
         pose_msg.pose.position = Point(point.x, point.y, 0)
 
