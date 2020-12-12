@@ -125,48 +125,19 @@ DynupResponse DynupEngine::update(double dt) {
   return goals_;
 }
 
-//TODO: Simplify
-void DynupEngine::initializeSplines(geometry_msgs::Pose l_hand_pose, geometry_msgs::Pose r_hand_pose, geometry_msgs::Pose l_foot_pose, geometry_msgs::Pose r_foot_pose) {
-  double r,p,y;
-  tf2::Quaternion q;
+void DynupEngine::initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline) {
+    double r,p,y;
+    tf2::Quaternion q;
 
-  l_hand_spline_.x()->addPoint(0.0, l_hand_pose.position.x);
-  // substract offsets to switch the frame
-  l_hand_spline_.y()->addPoint(0.0, l_hand_pose.position.y);
-  l_hand_spline_.z()->addPoint(0.0, l_hand_pose.position.z);
-  tf2::convert(l_hand_pose.orientation, q);
-  tf2::Matrix3x3(q).getRPY(r, p, y);
-  l_hand_spline_.roll()->addPoint(0.0, r);
-  l_hand_spline_.pitch()->addPoint(0.0, p);
-  l_hand_spline_.yaw()->addPoint(0.0, y);
-
-  r_hand_spline_.x()->addPoint(0.0, r_hand_pose.position.x);
-  r_hand_spline_.y()->addPoint(0.0, r_hand_pose.position.y);
-  r_hand_spline_.z()->addPoint(0.0, r_hand_pose.position.z);
-  tf2::convert(r_hand_pose.orientation, q);
-  tf2::Matrix3x3(q).getRPY(r, p, y);
-  r_hand_spline_.roll()->addPoint(0.0, r);
-  r_hand_spline_.pitch()->addPoint(0.0, p);
-  r_hand_spline_.yaw()->addPoint(0.0, y);
-
-  // input is already in the correct frame (r_sole), so we do not need to transform it
-  l_foot_spline_.x()->addPoint(0.0, l_foot_pose.position.x);
-  l_foot_spline_.y()->addPoint(0.0, l_foot_pose.position.y);
-  l_foot_spline_.z()->addPoint(0.0, l_foot_pose.position.z);
-  tf2::convert(l_foot_pose.orientation, q);
-  tf2::Matrix3x3(q).getRPY(r, p, y);
-  l_foot_spline_.roll()->addPoint(0.0, r);
-  l_foot_spline_.pitch()->addPoint(0.0, p);
-  l_foot_spline_.yaw()->addPoint(0.0, y);
-
-  r_foot_spline_.x()->addPoint(0.0, r_foot_pose.position.x);
-  r_foot_spline_.y()->addPoint(0.0, r_foot_pose.position.y);
-  r_foot_spline_.z()->addPoint(0.0, r_foot_pose.position.z);
-  tf2::convert(r_foot_pose.orientation, q);
-  tf2::Matrix3x3(q).getRPY(r, p, y);
-  r_foot_spline_.roll()->addPoint(0.0, r);
-  r_foot_spline_.pitch()->addPoint(0.0, p);
-  r_foot_spline_.yaw()->addPoint(0.0, y);
+    spline.x()->addPoint(0.0, pose.position.x);
+    // substract offsets to switch the frame
+    spline.y()->addPoint(0.0, pose.position.y);
+    spline.z()->addPoint(0.0, pose.position.z);
+    tf2::convert(pose.orientation, q);
+    tf2::Matrix3x3(q).getRPY(r, p, y);
+    spline.roll()->addPoint(0.0, r);
+    spline.pitch()->addPoint(0.0, p);
+    spline.yaw()->addPoint(0.0, y);
 }
 
 void DynupEngine::calcFrontSplines() {
@@ -528,7 +499,10 @@ void DynupEngine::calcSquatSplines(double time) {
 }
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
-   initializeSplines(goals.l_hand_pose, goals.r_hand_pose, goals.l_foot_pose, goals.r_foot_pose);
+    initializeSpline(goals.l_hand_pose, l_hand_spline_);
+    initializeSpline(goals.r_hand_pose, r_hand_spline_);
+    initializeSpline(goals.l_foot_pose, l_foot_spline_);
+    initializeSpline(goals.r_foot_pose, r_foot_spline_);
     if (goals.direction == "front") {
         duration_ = params_.time_hands_side +
                     params_.time_hands_rotate +
