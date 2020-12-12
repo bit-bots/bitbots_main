@@ -7,22 +7,12 @@
     <param name="fieldname" value="$(arg fieldname)"/>
 
     <!-- load localization -->
-    <group unless="$(arg sim)">
-        <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
-            <!-- load base parameters -->
-            <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
-            <!-- load field specific paramters -->
-            <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(arg fieldname)/config.yaml"/>
-        </node>
-    </group>
-    <group if="$(arg sim)">
-        <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
-            <!-- load base parameters -->
-            <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
-            <!-- load field specific paramters -->
-        <rosparam command="load" file="$(find bitbots_localization)/config/fields/webots/config.yaml"/>
-        </node>
-    </group>
+    <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
+        <!-- load base parameters -->
+        <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
+        <!-- load field specific paramters -->
+        <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(arg fieldname)/config.yaml"/>
+    </node>
 
     <!-- load the map for rviz-->
     <node name="field_map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/config/fields/$(arg fieldname)/map_server.yaml">
