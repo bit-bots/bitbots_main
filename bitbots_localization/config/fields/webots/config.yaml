@@ -1,8 +1,8 @@
-############
-# Feldraum #
-############
+##########
+# Webots #
+##########
 
-# Settings override for the f-031 test field
+# Settings override for the webots simulator field
 
 #############################
 # Initial pose of the robot #

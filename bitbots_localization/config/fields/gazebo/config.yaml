@@ -1,8 +1,8 @@
-############
-# Feldraum #
-############
+##########
+# Gazebo #
+##########
 
-# Settings override for the f-031 test field
+# Settings override for the gazebo simulator field
 
 #############################
 # Initial pose of the robot #
