@@ -181,6 +181,10 @@ class WorldModelCapsule:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)
 
+    def get_map_based_opp_goal_angle(self):
+        x, y = self.get_map_based_opp_goal_center_uv()
+        return math.atan2(y, x)
+
     def get_map_based_opp_goal_left_post_uv(self):
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
