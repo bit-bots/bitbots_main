@@ -15,7 +15,8 @@ class AlignedToGoal(AbstractDecisionElement):
         move_base goal.
         """
         current_pose = self.blackboard.pathfinding.get_current_pose()
-        if current_pose is None:
+        current_goal = self.blackboard.pathfinding.get_goal()
+        if current_pose is None or current_goal is None:
             # When move_base did not received a goal yet, no current position on the map is known.
             # In this case it is not know if the robot is aligned correctly to, e.g., the goal and therefore the robot
             # should not be allowed to kick the ball.
@@ -23,7 +24,7 @@ class AlignedToGoal(AbstractDecisionElement):
         current_orientation = current_pose.pose.orientation
         current_orientation = euler_from_quaternion([current_orientation.x, current_orientation.y,
                                                      current_orientation.z, current_orientation.w])
-        goal_orientation = current_pose.pose.orientation
+        goal_orientation = current_goal.pose.orientation
         goal_orientation = euler_from_quaternion([goal_orientation.x, goal_orientation.y, goal_orientation.z,
                                                   goal_orientation.w])
         if math.degrees(abs(current_orientation[2] - goal_orientation[2])) < self.orientation_threshold:
