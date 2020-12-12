@@ -1,6 +1,6 @@
 <launch>
     <!-- define parameters -->
-    <arg name="fieldname" default="webots" doc="Loads field settings, e.g. for the feldraum (f-031)." />
+    <arg name="fieldname" default="feldraum" doc="Loads field settings (feldraum, webots, gazebo)." />
 
     <!-- load localization -->
     <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
