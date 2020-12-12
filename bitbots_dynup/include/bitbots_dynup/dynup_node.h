@@ -64,7 +64,7 @@ class DynUpNode {
    */
   void executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal);
 
-  void copCallback(const sensor_msgs::Imu &cop);
+  void imuCallback(const sensor_msgs::Imu &msg);
 
   void jointStateCallback(const sensor_msgs::JointState &jointstates);
 

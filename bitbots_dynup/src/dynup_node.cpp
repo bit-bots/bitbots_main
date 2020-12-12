@@ -38,7 +38,7 @@ DynUpNode::DynUpNode() :
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
-  cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynUpNode::copCallback, this);
+  cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynUpNode::imuCallback, this);
   joint_state_subscriber_ = node_handle_.subscribe("joint_state", 1, &DynUpNode::jointStateCallback, this);
   server_.start();
 }
@@ -47,15 +47,8 @@ void DynUpNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
     ik_.currentJointStates = jointstates;
 }
 
-void DynUpNode::copCallback(const sensor_msgs::Imu &msg) {
-  tf2::Quaternion quat;
-  tf2::convert(msg.orientation, quat);
-  // the tf2::Quaternion has a method to access roll pitch and yaw
-  double roll, pitch, yaw;
-  tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-  stabilizer_.cop_.x = pitch; //TODO: This should be imu, not cop. Also, change the message type.
-  stabilizer_.cop_.y = roll;
-  stabilizer_.cop_.z = 0;
+void DynUpNode::imuCallback(const sensor_msgs::Imu &msg) {
+    stabilizer_.imu_ = msg;
 }
 
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
@@ -141,7 +134,6 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
     DynupResponse response = engine_.update(dt);
-    stabilizer_.setStabilizeNow(engine_.isStabilizingNeeded()); // todo this information could also be included in the response
     stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0))); //todo this should not be done based on the tf buffer but on the current open loop goal state
     DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);

@@ -28,7 +28,13 @@ void Stabilizer::reset() {
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
     tf2::Transform right_foot_goal;
-    if(use_stabilizing_ && stabilize_now_) {
+    tf2::Quaternion quat;
+    tf2::convert(imu_.orientation, quat);
+    // the tf2::Quaternion has a method to access roll pitch and yaw
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+
+    if(use_stabilizing_ && ik_goals.is_stabilizing_needed) {
         tf2::Transform to_trunk_tf;
         tf2::fromMsg(to_trunk_.transform, to_trunk_tf);
         tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * to_trunk_tf;
@@ -36,8 +42,8 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
         double goal_pitch, goal_roll, goal_yaw;
         tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
         // first adapt trunk pitch value based on PID controller
-        double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - cop_.x, dt);
-        double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - cop_.y, dt);
+        double corrected_pitch = pid_trunk_pitch_.computeCommand(goal_pitch - pitch, dt);
+        double corrected_roll = pid_trunk_roll_.computeCommand(goal_roll - roll, dt);
         tf2::Quaternion corrected_orientation;
         corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
         trunk_goal.setRotation(corrected_orientation);
@@ -63,10 +69,6 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
 
 void Stabilizer::useStabilizing(bool use) {
   use_stabilizing_ = use;
-}
-
-void Stabilizer::setStabilizeNow(bool now) {
-    stabilize_now_ = now;
 }
 
 

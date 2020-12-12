@@ -116,6 +116,7 @@ DynupResponse DynupEngine::update(double dt) {
   goals_.r_foot_goal_pose = r_foot_pose;
   goals_.l_hand_goal_pose = offset_left_ * l_hand_pose;
   goals_.r_hand_goal_pose = offset_right_ * r_hand_pose;
+  goals_.is_stabilizing_needed = isStabilizingNeeded();
 
   publishDebug();
 
