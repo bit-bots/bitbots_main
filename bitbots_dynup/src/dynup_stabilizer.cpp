@@ -1,7 +1,5 @@
 #include "bitbots_dynup/dynup_stabilizer.h"
 
-#include <memory>
-#include <utility>
 #include <bitbots_splines/dynamic_balancing_goal.h>
 
 
