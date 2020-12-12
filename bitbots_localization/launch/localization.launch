@@ -4,7 +4,7 @@
     <arg unless="$(arg sim)" name="fieldname" default="feldraum" doc="Loads field settings (feldraum, webots, gazebo)." />
     <arg if="$(arg sim)" name="fieldname" default="webots" doc="Loads field settings (feldraum, webots, gazebo)." />
 
-    <param name="fieldname" value="$(arg fieldname)"/>
+    <param name="~fieldname" value="$(arg fieldname)"/>
 
     <!-- load localization -->
     <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
