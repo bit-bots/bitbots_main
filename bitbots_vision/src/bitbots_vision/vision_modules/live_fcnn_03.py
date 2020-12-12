@@ -1,6 +1,9 @@
 import os
-import tensorflow as tf
 import rospy
+try:
+    import tensorflow as tf
+except ImportError:
+    rospy.logerr('No tensorflow installed, cannot use fcnn model')
 
 
 class FCNN03:
