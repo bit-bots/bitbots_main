@@ -5,7 +5,6 @@ import numpy
 from sensor_msgs.msg import Imu
 import rospy
 
-# todo hip pitch offset
 from sklearn.base import BaseEstimator
 from sklearn.metrics import accuracy_score
 
