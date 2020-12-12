@@ -176,7 +176,7 @@ double KickNode::getTimeDelta() {
   dt = current_ros_time - last_ros_update_time_;
   // this can happen due to floating point precision
   if (dt == 0) {
-    ROS_WARN("dt was 0");
+    ROS_WARN("dynamic kick: dt was 0");
     dt = 0.001;
   }
   last_ros_update_time_ = current_ros_time;
