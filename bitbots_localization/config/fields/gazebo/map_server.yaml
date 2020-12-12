@@ -1,4 +1,4 @@
-image: lines_rviz.png
+image: lines.png
 resolution: 0.01
 origin: [-5.2, -3.7, 0.0]
 occupied_thresh: 0.65
