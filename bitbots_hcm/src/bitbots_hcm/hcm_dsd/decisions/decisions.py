@@ -364,7 +364,7 @@ class Fallen(AbstractDecisionElement):
             return "NOT_FALLEN"
 
     def get_reevaluate(self):
-        return True 
+        return True
 
 
 class ExternalAnimation(AbstractDecisionElement):
