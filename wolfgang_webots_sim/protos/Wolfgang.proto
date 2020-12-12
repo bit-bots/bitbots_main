@@ -14,6 +14,7 @@ PROTO Wolfgang [
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
   field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
+  field  SFFloat     cameraFOV       1.04
 ]
 {
   Robot {
@@ -2025,7 +2026,7 @@ PROTO Wolfgang [
                     name "camera"
                   }
                   Solid {
-                    translation 0.143200 0.080000 -0.023500
+                    translation 0.025 0.080000 -0.023500
                     rotation 0.707105 -0.000001 0.707108 3.141591
                     children [
                       Accelerometer {
@@ -2043,9 +2044,9 @@ PROTO Wolfgang [
                         children [
                           Camera {
                             name "camera"
-                            fieldOfView 0.570000
-                            width 620
-                            height 480
+                            fieldOfView IS cameraFOV
+                            width 512
+                            height 384
                           }
                         ]
                       }
