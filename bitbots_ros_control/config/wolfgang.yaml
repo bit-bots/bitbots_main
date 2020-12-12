@@ -65,6 +65,12 @@ ros_control:
       Profile_Acceleration: 0 # 0 for infinite
       Profile_Velocity: 0 # 0 for infinite
 
+  imu:
+    do_adaptive_gain: False
+    do_bias_estimation: False
+    bias_alpha: 0.01
+    accel_gain: 0.001
+
   device_info:
     Core:
       id: 42

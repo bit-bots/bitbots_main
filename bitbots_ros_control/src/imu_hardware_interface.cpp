@@ -76,18 +76,26 @@ bool ImuHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   bitbots_msgs::AccelerometerCalibrationRequest req = bitbots_msgs::AccelerometerCalibrationRequest();
   bitbots_msgs::AccelerometerCalibrationResponse resp = bitbots_msgs::AccelerometerCalibrationResponse();
   readAccelCalibration(req, resp);
-  if (driver_->readMultipleRegisters(id_, 102, 14, data_)) {
+  if (driver_->readMultipleRegisters(id_, 102, 16, data_)) {
     gyro_range_ = data_[0];
     accel_range_ = data_[1];
     calibrate_gyro_ = data_[2];
     reset_gyro_calibration_ = data_[3];
-    do_adaptive_gain_ = data_[4];
-    do_bias_estimation_ = data_[5];
-    accel_gain_ = dxlMakeFloat(data_ + 6);
-    bias_alpha_ = dxlMakeFloat(data_ + 10);;
+    do_adaptive_gain_ = data_[6];
+    do_bias_estimation_ = data_[7];
+    accel_gain_ = dxlMakeFloat(data_ + 8);
+    bias_alpha_ = dxlMakeFloat(data_ + 12);
   } else {
     ROS_WARN("Could not read IMU %s config values in init", name_.c_str());
   }
+
+  //set filter values differently if specified in the confi and write them
+  do_adaptive_gain_ = nh.param("imu/do_adaptive_gain", do_adaptive_gain_);
+  do_bias_estimation_ = nh.param("imu/do_bias_estimation", do_bias_estimation_);
+  accel_gain_ = nh.param("imu/accel_gain", accel_gain_);
+  bias_alpha_ = nh.param("imu/accel_gain", bias_alpha_);
+  write_complementary_filter_params_ = true;
+  write(ros::Time(0), ros::Duration(0));
 
   return true;
 }
