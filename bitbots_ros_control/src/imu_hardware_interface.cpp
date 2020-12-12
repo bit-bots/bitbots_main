@@ -277,11 +277,13 @@ void ImuHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
     write_complementary_filter_params_ = false;
   }
   if (calibrate_accel_) {
-    driver_->writeRegister(id_, "Calibrate_Accel", 1);
+    ROS_ERROR("Disabled for normal users for safety reasons, uncomment code to use");
+    //driver_->writeRegister(id_, "Calibrate_Accel", 1);
     calibrate_accel_ = false;
   }
   if (reset_accel_calibration_) {
-    driver_->writeRegister(id_, "Reset_Accel_Calibration", 1);
+    ROS_ERROR("Disabled for normal users for safety reasons, uncomment code to use");
+    //driver_->writeRegister(id_, "Reset_Accel_Calibration", 1);
     reset_accel_calibration_ = false;
   }
   if (set_accel_calib_threshold_) {
