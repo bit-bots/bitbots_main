@@ -30,9 +30,9 @@ class GoToBall(AbstractActionElement):
             ball_point = (
                 ball_u,
                 ball_v,
-                self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
-                - self.blackboard.world_model.get_map_based_opp_goal_angle()
-                          )
+                (self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball() -
+                    self.blackboard.world_model.get_map_based_opp_goal_angle())
+            )
         elif 'detection_goal' == self.target:
             x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv_approach_frame()[0] - \
                      self.blackboard.world_model.get_ball_position_uv_approach_frame()[0]
