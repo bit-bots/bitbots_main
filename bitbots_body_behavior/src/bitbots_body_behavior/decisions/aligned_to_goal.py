@@ -16,7 +16,7 @@ class AlignedToGoal(AbstractDecisionElement):
         """
         current_pose = self.blackboard.pathfinding.get_current_pose()
         current_goal = self.blackboard.pathfinding.get_goal()
-        if current_pose is None or current_pose is None:
+        if current_pose is None or current_goal is None:
             # When move_base did not received a goal yet, no current position on the map is known.
             # In this case it is not know if the robot is aligned correctly to, e.g., the goal and therefore the robot
             # should not be allowed to kick the ball.
