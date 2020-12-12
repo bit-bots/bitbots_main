@@ -90,9 +90,7 @@ class KickNode {
    */
   double getTimeDelta();
 
-
-
-    /**
+  /**
    * Publish goals to ROS
    */
   void publishGoals(const bitbots_splines::JointGoals &goals);
