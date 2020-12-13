@@ -15,13 +15,12 @@ M from_python(const std::string &str_msg) {
 }
 
 CollisionChecker::CollisionChecker() {
-  std::map<std::string, std::string> empty;
-  ros::init(empty, "collision_checker", ros::init_options::AnonymousName);
   robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("/robot_description", false));
   robot_model_ = robot_model_loader_->getModel();
   planning_scene_.reset(new planning_scene::PlanningScene(robot_model_));
   robot_state_.reset(new robot_state::RobotState(robot_model_));
   robot_state_->setToDefaultValues();
+  ROS_INFO("Collision checker setup finished\n");
 }
 
 void CollisionChecker::set_head_motors(double pan, double tilt) {
