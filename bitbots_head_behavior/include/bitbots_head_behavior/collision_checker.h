@@ -8,11 +8,13 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
+#include <sensor_msgs/JointState.h>
 
 class CollisionChecker {
  public:
   CollisionChecker();
   void set_head_motors(double pan, double tilt);
+  void set_joint_states(std::string msg);
   bool check_collision();
 
  private:

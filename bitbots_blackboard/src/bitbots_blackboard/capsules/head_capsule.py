@@ -1,3 +1,4 @@
+from io import BytesIO
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
@@ -114,6 +115,9 @@ class HeadCapsule:
     ##################
 
     def joint_state_callback(self, msg):
+        buf = BytesIO()
+        msg.serialize(buf)
+        self.collision_checker.set_joint_states(buf.getvalue())
         head_pan = msg.position[msg.name.index('HeadPan')]
         head_tilt = msg.position[msg.name.index('HeadTilt')]
         self.current_head_position = [head_pan, head_tilt]
