@@ -317,6 +317,8 @@ class Sitting(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        if self.blackboard.current_joint_state is None:
+            return "NO"
         # simple check is looking at knee joint positions
         # todo can be done more sophisticated
         left_knee = 0
