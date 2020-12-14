@@ -9,8 +9,7 @@ dynup:
   # Back
   hands_behind_back_x: 0.15
   hands_behind_back_z: 0.15
-  trunk_height_first: 0.15
-  trunk_height_second: 0.2
+  trunk_height_back: 0.2
   trunk_forward: 0.07
   foot_angle: 70
   trunk_overshoot_angle_back: 0
