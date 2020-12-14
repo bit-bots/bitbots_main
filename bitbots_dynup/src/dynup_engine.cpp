@@ -353,7 +353,7 @@ void DynupEngine::calcFrontSplines() {
   /*
    * Pose 5: Wait in squat to let instabilities settel
    */
-  time += params_.wait_in_squat;
+  time += params_.wait_in_squat_front;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.foot_distance);
   l_foot_spline_.z()->addPoint(time, 0);
@@ -501,7 +501,7 @@ void DynupEngine::calcBackSplines() {
   /*
    * Pose 5: Wait in squat to let instabilities settel
    */
-  time += params_.wait_in_squat;
+  time += params_.wait_in_squat_back;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.foot_distance);
   l_foot_spline_.z()->addPoint(time, 0);
@@ -616,7 +616,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                     params_.time_foot_ground_front +
                     params_.time_torso_45 +
                     params_.time_to_squat +
-                    params_.wait_in_squat +
+                    params_.wait_in_squat_front +
                     params_.rise_time;
       direction_ = 1;
      calcFrontSplines();
@@ -625,13 +625,12 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                  params_.time_foot_ground_back +
                  params_.time_full_squat_hands +
                  params_.time_full_squat_legs +
-                 params_.wait_in_squat +
+                 params_.wait_in_squat_back +
                  params_.rise_time;
       direction_ = 0;
      calcBackSplines();
   }else if(goals.direction == "rise" || goals.direction == "squat"){ //squat is for legacy reasons
-      duration_ = params_.wait_in_squat +
-                  params_.rise_time;
+      duration_ = params_.rise_time;
       direction_ = 2;
       calcRiseSplines(0);
   }else if(goals.direction == "descend"){
