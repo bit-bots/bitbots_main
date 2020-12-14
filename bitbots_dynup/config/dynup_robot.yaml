@@ -7,6 +7,7 @@ dynup:
   arm_side_offset: 0.05
 
   # Back
+  hands_behind_back: 0.15
   trunk_overshoot_angle_back: 10
   time_legs_close: 0.5
   time_foot_ground_back: 0.5

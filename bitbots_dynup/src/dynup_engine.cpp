@@ -359,7 +359,7 @@ void DynupEngine::calcBackSplines() {
   */
 
   /*
-   * pull legs to body
+   * pull legs to body and hands behind back
    */
   double time = params_.time_legs_close;
   r_foot_spline_.x()->addPoint(time, -params_.trunk_x);
@@ -375,35 +375,35 @@ void DynupEngine::calcBackSplines() {
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
 
-    l_hand_spline_.x()->addPoint(time, -0.15);
-    l_hand_spline_.y()->addPoint(time, 0);
-    l_hand_spline_.z()->addPoint(time, -0.15);//TODO: Hacky hack, not actual position
-    l_hand_spline_.roll()->addPoint(time, 0);
-    l_hand_spline_.pitch()->addPoint(time, M_PI/2);
-    l_hand_spline_.yaw()->addPoint(time, 0);
-    r_hand_spline_.x()->addPoint(time, -0.15);
-    r_hand_spline_.y()->addPoint(time, 0);
-    r_hand_spline_.z()->addPoint(time, -0.1);
-    r_hand_spline_.roll()->addPoint(time, 0);
-    r_hand_spline_.pitch()->addPoint(time, M_PI/2);
-    r_hand_spline_.yaw()->addPoint(time, 0);
+  l_hand_spline_.x()->addPoint(time, -params_.hands_behind_back);
+  l_hand_spline_.y()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, 0);
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, -params_.hands_behind_back);
+  r_hand_spline_.y()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, 0);
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.yaw()->addPoint(time, 0);
 
   /*
    * Foot under body
    */
   time += params_.time_foot_ground_back;
-    l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
-    l_hand_spline_.y()->addPoint(time, 0);
-    l_hand_spline_.z()->addPoint(time, 0.28); //TODO: Also hacky hack, forcing elbow angle
-    l_hand_spline_.roll()->addPoint(time, 0);
-    l_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
-    l_hand_spline_.yaw()->addPoint(time, 0);
-    r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
-    r_hand_spline_.y()->addPoint(time, 0);
-    r_hand_spline_.z()->addPoint(time, 0.28);
-    r_hand_spline_.roll()->addPoint(time, 0);
-    r_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
-    r_hand_spline_.yaw()->addPoint(time, 0);
+  l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
+  l_hand_spline_.y()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, 0.28); //TODO: Also hacky hack, forcing elbow angle
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
+  r_hand_spline_.y()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, 0.28);
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
+  r_hand_spline_.yaw()->addPoint(time, 0);
 
   r_foot_spline_.x()->addPoint(time, -sin(1.22173) * params_.leg_min_length -params_.trunk_x);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
