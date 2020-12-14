@@ -62,14 +62,12 @@ void DynupEngine::publishDebug() {
           msg.state_number = 0;
       }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back){
           msg.state_number = 1;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_squat_push){
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands){
           msg.state_number = 2;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_squat_push + params_.time_full_squat_hands){
-          msg.state_number = 3;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_squat_push + params_.time_full_squat_hands +  params_.time_full_squat_legs){
-        msg.state_number = 4;
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands +  params_.time_full_squat_legs){
+        msg.state_number = 3;
       }else{
-          msg.state_number = 5;
+          msg.state_number = 4;
       }
     }else{
           msg.state_number = -1;
@@ -435,38 +433,6 @@ void DynupEngine::calcBackSplines() {
   l_foot_spline_.yaw()->addPoint(time, 0);
 
   /*
-   * 2: Halfway
-   */
-  // stay same as last point
-  time += params_.time_squat_push;
-  /*l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
-  l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0);
-  l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
-  l_hand_spline_.yaw()->addPoint(time, 0);
-  r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
-  r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0);
-  r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
-  r_hand_spline_.yaw()->addPoint(time, 0);
-
-
-  r_foot_spline_.x()->addPoint(time, -sin(0.872665) * params_.leg_min_length -params_.trunk_x);
-  r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -cos(0.872665) * params_.leg_min_length);
-  r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * 70 /180);//70 degrees
-  r_foot_spline_.yaw()->addPoint(time, 0);
-  l_foot_spline_.x()->addPoint(time, 0);
-  l_foot_spline_.y()->addPoint(time, params_.foot_distance);
-  l_foot_spline_.z()->addPoint(time, 0);
-  l_foot_spline_.roll()->addPoint(time, 0);
-  l_foot_spline_.pitch()->addPoint(time, 0);
-  l_foot_spline_.yaw()->addPoint(time, 0); */
-
-  /*
    * 3: To Squat hands
    */
   // fully extend arms to the back
@@ -589,7 +555,6 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   else if(goals.direction == "back"){
      duration_ = params_.time_legs_close +
                  params_.time_foot_ground_back +
-                 params_.time_squat_push +
                  params_.time_full_squat_hands +
                  params_.time_full_squat_legs +
                  params_.wait_in_squat +
@@ -620,7 +585,6 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_to_squat ) ||
            (direction_ == 0 && time_ >= params_.time_legs_close +
                                         params_.time_foot_ground_back +
-                                        params_.time_squat_push +
                                         params_.time_full_squat_hands +
                                         params_.time_full_squat_legs) ||
             (direction_ == 2);
