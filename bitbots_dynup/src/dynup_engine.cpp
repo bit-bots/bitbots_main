@@ -375,15 +375,15 @@ void DynupEngine::calcBackSplines() {
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
 
-  l_hand_spline_.x()->addPoint(time, -params_.hands_behind_back);
+  l_hand_spline_.x()->addPoint(time, -params_.hands_behind_back_x);
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, -params_.hands_behind_back_z);
   l_hand_spline_.roll()->addPoint(time, 0);
   l_hand_spline_.pitch()->addPoint(time, M_PI/2);
   l_hand_spline_.yaw()->addPoint(time, 0);
-  r_hand_spline_.x()->addPoint(time, -params_.hands_behind_back);
+  r_hand_spline_.x()->addPoint(time, -params_.hands_behind_back_x);
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, -params_.hands_behind_back_z);
   r_hand_spline_.roll()->addPoint(time, 0);
   r_hand_spline_.pitch()->addPoint(time, M_PI/2);
   r_hand_spline_.yaw()->addPoint(time, 0);
@@ -392,17 +392,20 @@ void DynupEngine::calcBackSplines() {
    * Foot under body
    */
   time += params_.time_foot_ground_back;
+  // upper arm == lower arm -> Isosceles triangle with length of one side := arm_max_length_/2
+  // set elbow to 90°, we can get x by Pythagorean theorem
   l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0.28); //TODO: Also hacky hack, forcing elbow angle
+  l_hand_spline_.z()->addPoint(time, 0);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
+  // angle has to be 45° due to arms being a Isosceles triangle with gamma = 90°
+  l_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0.28);
+  r_hand_spline_.z()->addPoint(time, 0);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI*0.6);
+  r_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   r_foot_spline_.x()->addPoint(time, -sin(1.22173) * params_.leg_min_length -params_.trunk_x);
@@ -421,18 +424,18 @@ void DynupEngine::calcBackSplines() {
   /*
    * Halfway
    */
-  time += params_.time_squat_push;
+  // stay same as last point
   l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0.28); //TODO: Also hacky hack, forcing elbow angle
+  l_hand_spline_.z()->addPoint(time, 0);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI*0.9);
+  l_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0.28);
+  r_hand_spline_.z()->addPoint(time, 0);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI*0.9);
+  r_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
 
