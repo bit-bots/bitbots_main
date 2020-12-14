@@ -52,7 +52,17 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   void setParams(DynUpConfig params);
 
   void reset() override;
+
+  void publishArrowMarker(std::string name_space,
+                          std::string frame,
+                          geometry_msgs::Pose pose,
+                          float r,
+                          float g,
+                          float b,
+                          float a);
+
  private:
+  int marker_id_;
   double time_;
   double duration_;
   double arm_max_length_;
@@ -75,6 +85,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   tf2_ros::TransformListener listener_;
 
   ros::Publisher pub_engine_debug_;
+  ros::Publisher pub_debug_marker_;
 
   /*
    * Helper method to extract the current pose of the left foot or the torso from the spline

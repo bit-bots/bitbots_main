@@ -16,6 +16,9 @@ void DynupEngine::init(double arm_max_length, double arm_offset_y, double arm_of
 
   ros::NodeHandle nh;
   pub_engine_debug_ = nh.advertise<bitbots_dynup::DynupEngineDebug>("dynup_engine_debug", 1);
+  pub_debug_marker_ = nh.advertise<visualization_msgs::Marker>("dynup_engine_marker", 1);
+  marker_id_ = 1;
+
 }
 
 void DynupEngine::reset() {
@@ -28,7 +31,7 @@ void DynupEngine::reset() {
 }
 
 void DynupEngine::publishDebug() {
-    if (pub_engine_debug_.getNumSubscribers() == 0) {
+    if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
         return;
     }
 
@@ -73,6 +76,8 @@ void DynupEngine::publishDebug() {
     geometry_msgs::Pose l_arm_pose;
     tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
     msg.l_arm_pose = l_arm_pose;
+    publishArrowMarker("l_arm", "base_link", l_arm_pose, 1, 0, 0, 1);
+
     geometry_msgs::Pose l_arm_from_shoulder;
     tf2::toMsg(l_hand_spline_.getTfTransform(time_), l_arm_from_shoulder);
     msg.l_arm_pose_from_shoulder = l_arm_from_shoulder;
@@ -80,6 +85,8 @@ void DynupEngine::publishDebug() {
     geometry_msgs::Pose r_arm_pose;
     tf2::toMsg(goals_.r_hand_goal_pose, r_arm_pose);
     msg.r_arm_pose = r_arm_pose;
+    publishArrowMarker("r_arm", "base_link", r_arm_pose, 0, 1, 0, 1);
+
     geometry_msgs::Pose r_arm_from_shoulder;
     tf2::toMsg(r_hand_spline_.getTfTransform(time_), r_arm_from_shoulder);
     msg.r_arm_pose_from_shoulder = r_arm_from_shoulder;
@@ -87,9 +94,15 @@ void DynupEngine::publishDebug() {
     geometry_msgs::Pose l_leg_pose;
     tf2::toMsg(goals_.l_foot_goal_pose, l_leg_pose);
     msg.l_leg_pose = l_leg_pose;
+
+    geometry_msgs::Pose l_leg_pose_in_base_link;
+    tf2::toMsg(goals_.r_foot_goal_pose * goals_.l_foot_goal_pose, l_leg_pose_in_base_link);
+    publishArrowMarker("l_leg_pose", "base_link", l_leg_pose_in_base_link, 0, 0, 1, 1);
+
     geometry_msgs::Pose r_leg_pose;
     tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
     msg.r_leg_pose = r_leg_pose;
+    publishArrowMarker("r_leg_pose", "base_link", r_leg_pose, 0, 1, 1, 1);
 
     double r,p,y;
     tf2::Quaternion q;
@@ -100,6 +113,39 @@ void DynupEngine::publishDebug() {
     msg.foot_yaw = y;
 
     pub_engine_debug_.publish(msg);
+}
+
+//TODO this method does also exist in walking. should maybe be refactored and put into splines
+//TODO generally the visualization should maybe be put into the visualizer class
+void DynupEngine::publishArrowMarker(std::string name_space,
+                                        std::string frame,
+                                        geometry_msgs::Pose pose, float r, float g, float b, float a) {
+  visualization_msgs::Marker marker_msg;
+  marker_msg.header.stamp = ros::Time::now();
+  marker_msg.header.frame_id = frame;
+
+  marker_msg.type = marker_msg.ARROW;
+  marker_msg.ns = name_space;
+  marker_msg.action = marker_msg.ADD;
+  marker_msg.pose = pose;
+
+  std_msgs::ColorRGBA color;
+  color.r = r;
+  color.g = g;
+  color.b = b;
+  color.a = a;
+  marker_msg.color = color;
+
+  geometry_msgs::Vector3 scale;
+  scale.x = 0.01;
+  scale.y = 0.003;
+  scale.z = 0.003;
+  marker_msg.scale = scale;
+
+  marker_msg.id = marker_id_;
+  marker_id_++;
+
+  pub_debug_marker_.publish(marker_msg);
 }
 
 DynupResponse DynupEngine::update(double dt) {
