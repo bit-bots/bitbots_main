@@ -5,6 +5,7 @@
 std_msgs/Header header
 
 float64 time
+bool stabilization_active
 int32 state_number
 
 geometry_msgs/Pose l_arm_pose

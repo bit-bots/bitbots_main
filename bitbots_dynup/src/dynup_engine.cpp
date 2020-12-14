@@ -39,6 +39,7 @@ void DynupEngine::publishDebug() {
     msg.header.stamp = ros::Time::now();
 
     msg.time = time_;
+    msg.stabilization_active = isStabilizingNeeded();
     if (direction_ == 1){
       if(time_ < params_.time_hands_side){
           msg.state_number = 0;
@@ -654,7 +655,8 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_hands_front +
                                         params_.time_foot_ground_front +
                                         params_.time_torso_45 +
-                                        params_.time_to_squat ) ||
+                                        params_.time_to_squat +
+                                        params_.wait_in_squat_front) ||
            (direction_ == 0 && time_ >= params_.time_legs_close +
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
