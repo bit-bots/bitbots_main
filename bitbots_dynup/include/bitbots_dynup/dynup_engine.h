@@ -98,7 +98,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   /*
    * Creates starting positions for the splines.
    */
-  void initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline);
+  bitbots_splines::PoseSpline initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline);
 
   /* Calculate the splines to get from lying on the front to squatting:
    * - move arms to frint and pull legs
@@ -117,7 +117,13 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   *  - slowly stand up with stabilization
   *  - move arms in finish position
   */
-  void calcSquatSplines(double time);
+  void calcRiseSplines(double time);
+
+  /*
+   * Calculate the splines to get down to a squatting position:
+  *  - slowly sit down with stabilization
+  */
+  void calcDescendSplines(double time);
 
 
 };

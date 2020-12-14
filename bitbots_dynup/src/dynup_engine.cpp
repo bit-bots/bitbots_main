@@ -150,7 +150,6 @@ void DynupEngine::publishArrowMarker(std::string name_space,
 
 DynupResponse DynupEngine::update(double dt) {
   // TODO what happens when splines for foot and trunk are not present?
-
   /* Get should-be pose from planned splines (every axis) at current time */
   tf2::Transform l_foot_pose = l_foot_spline_.getTfTransform(time_);
   tf2::Transform r_foot_pose = r_foot_spline_.getTfTransform(time_);
@@ -171,7 +170,7 @@ DynupResponse DynupEngine::update(double dt) {
   return goals_;
 }
 
-void DynupEngine::initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline) {
+bitbots_splines::PoseSpline DynupEngine::initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline) {
     double r,p,y;
     tf2::Quaternion q;
 
@@ -184,6 +183,8 @@ void DynupEngine::initializeSpline(geometry_msgs::Pose pose, bitbots_splines::Po
     spline.roll()->addPoint(0.0, r);
     spline.pitch()->addPoint(0.0, p);
     spline.yaw()->addPoint(0.0, y);
+
+    return spline;
 }
 
 void DynupEngine::calcFrontSplines() {
@@ -349,7 +350,37 @@ void DynupEngine::calcFrontSplines() {
   r_foot_spline_.pitch()->addPoint(time, foot_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
-  calcSquatSplines(time);
+  /*
+   * Pose 5: Wait in squat to let instabilities settel
+   */
+  time += params_.wait_in_squat;
+  l_foot_spline_.x()->addPoint(time, 0);
+  l_foot_spline_.y()->addPoint(time, params_.foot_distance);
+  l_foot_spline_.z()->addPoint(time, 0);
+  l_foot_spline_.roll()->addPoint(time, 0);
+  l_foot_spline_.pitch()->addPoint(time, 0);
+  l_foot_spline_.yaw()->addPoint(time, 0);
+  r_foot_spline_.x()->addPoint(time, -params_.trunk_x);
+  r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
+  r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
+  r_foot_spline_.roll()->addPoint(time, 0);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
+  r_foot_spline_.yaw()->addPoint(time, 0);
+
+  l_hand_spline_.x()->addPoint(time, 0);
+  l_hand_spline_.y()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, -arm_max_length_);
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, 0);
+  r_hand_spline_.y()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, -arm_max_length_);
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.yaw()->addPoint(time, 0);
+
+  calcRiseSplines(time);
 }
 
 void DynupEngine::calcBackSplines() {
@@ -467,13 +498,9 @@ void DynupEngine::calcBackSplines() {
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
 
-  calcSquatSplines(time);
-}
-
-void DynupEngine::calcSquatSplines(double time) {
-
-  // all positions relative to right foot
-  // foot_trajectories_ are for left foot
+  /*
+   * Pose 5: Wait in squat to let instabilities settel
+   */
   time += params_.wait_in_squat;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.foot_distance);
@@ -501,6 +528,13 @@ void DynupEngine::calcSquatSplines(double time) {
   r_hand_spline_.pitch()->addPoint(time, M_PI/2);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
+  calcRiseSplines(time);
+}
+
+void DynupEngine::calcRiseSplines(double time) {
+
+  // all positions relative to right foot
+  // foot_trajectories_ are for left foot
   time += params_.rise_time;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.foot_distance);
@@ -530,11 +564,50 @@ void DynupEngine::calcSquatSplines(double time) {
   r_hand_spline_.yaw()->addPoint(time, 0);
 }
 
+void DynupEngine::calcDescendSplines(double time) {
+
+  // all positions relative to right foot
+  // foot_trajectories_ are for left foot
+  time += params_.descend_time;
+  l_foot_spline_.x()->addPoint(time, 0);
+  l_foot_spline_.y()->addPoint(time, params_.foot_distance);
+  l_foot_spline_.z()->addPoint(time, 0);
+  l_foot_spline_.roll()->addPoint(time, 0);
+  l_foot_spline_.pitch()->addPoint(time, 0);
+  l_foot_spline_.yaw()->addPoint(time, 0);
+  r_foot_spline_.x()->addPoint(time, -params_.trunk_x);
+  r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
+  r_foot_spline_.z()->addPoint(time, -params_.leg_min_length);
+  r_foot_spline_.roll()->addPoint(time, 0);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
+  r_foot_spline_.yaw()->addPoint(time, 0);
+
+  l_hand_spline_.x()->addPoint(time, 0);
+  l_hand_spline_.y()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, -arm_max_length_);
+  l_hand_spline_.roll()->addPoint(time, 0);
+  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.yaw()->addPoint(time, 0);
+  r_hand_spline_.x()->addPoint(time, 0);
+  r_hand_spline_.y()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, -arm_max_length_);
+  r_hand_spline_.roll()->addPoint(time, 0);
+  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.yaw()->addPoint(time, 0);
+}
+
 void DynupEngine::setGoals(const DynupRequest &goals) {
-    initializeSpline(goals.l_hand_pose, l_hand_spline_);
-    initializeSpline(goals.r_hand_pose, r_hand_spline_);
-    initializeSpline(goals.l_foot_pose, l_foot_spline_);
-    initializeSpline(goals.r_foot_pose, r_foot_spline_);
+    // we use hand splines from shoulder frame instead of base_link
+    geometry_msgs::Pose l_hand = goals.l_hand_pose;
+    geometry_msgs::Pose r_hand = goals.r_hand_pose;
+    l_hand.position.y -= shoulder_offset_y_;
+    l_hand.position.z -= arm_offset_z_;
+    r_hand.position.y += shoulder_offset_y_;
+    r_hand.position.z -= arm_offset_z_;
+    l_hand_spline_ = initializeSpline(l_hand, l_hand_spline_);
+    r_hand_spline_ = initializeSpline(r_hand, r_hand_spline_);
+    l_foot_spline_ = initializeSpline(goals.l_foot_pose, l_foot_spline_);
+    r_foot_spline_ = initializeSpline(goals.r_foot_pose, r_foot_spline_);
     if (goals.direction == "front") {
         duration_ = params_.time_hands_side +
                     params_.time_hands_rotate +
@@ -547,8 +620,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                     params_.rise_time;
       direction_ = 1;
      calcFrontSplines();
-  }
-  else if(goals.direction == "back"){
+  }else if(goals.direction == "back"){
      duration_ = params_.time_legs_close +
                  params_.time_foot_ground_back +
                  params_.time_full_squat_hands +
@@ -557,12 +629,17 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
                  params_.rise_time;
       direction_ = 0;
      calcBackSplines();
-  }
-  else {
+  }else if(goals.direction == "rise" || goals.direction == "squat"){ //squat is for legacy reasons
       duration_ = params_.wait_in_squat +
                   params_.rise_time;
       direction_ = 2;
-      calcSquatSplines(0);
+      calcRiseSplines(0);
+  }else if(goals.direction == "descend"){
+      duration_ = params_.descend_time;
+      direction_ = 3;
+      calcDescendSplines(0);
+  }else{
+    ROS_ERROR("Provided direction not known");
   }
 }
 
@@ -583,7 +660,7 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
                                         params_.time_full_squat_legs) ||
-            (direction_ == 2);
+            (direction_ == 2) || (direction_ == 3);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {

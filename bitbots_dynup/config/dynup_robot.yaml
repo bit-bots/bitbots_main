@@ -30,11 +30,14 @@ dynup:
   time_torso_45: 0.25
   time_to_squat: 0.1
 
-  # Squat
+  # Rise
   rise_time: 0.5
   trunk_height: 0.4
   trunk_x: -0.05
   trunk_pitch: 0
+
+  # Descend
+  descend_time: 0.5
 
   # Stabilier
   stabilizing: False

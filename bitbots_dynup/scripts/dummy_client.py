@@ -13,8 +13,8 @@ from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
 showing_feedback = False
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or not sys.argv[1] in ['front', 'back', 'squat']:
-        print('Use \'front\' or \'back\' as parameter!')
+    if len(sys.argv) != 2 or not sys.argv[1] in ['front', 'back', 'squat', 'rise', 'descend']:
+        print('Use \'front\', \'back\', \'rise\' or \'descend\' as parameter!')
         sys.exit(1)
 
     print("[..] Initializing node", end='')
