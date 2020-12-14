@@ -9,13 +9,15 @@ dynup:
   # Back
   hands_behind_back_x: 0.15
   hands_behind_back_z: 0.15
-  trunk_overshoot_angle_back: 10
+  trunk_up: 0.15
+  trunk_up2: 0.2
+  trunk_x_forward: 0.07
+  trunk_overshoot_angle_back: 0
   time_legs_close: 0.5
   time_foot_ground_back: 0.5
-  time_hands_down: 1.0
-  time_hands_back: 1.0
-  time_squat_push: 1.0
-  time_full_squat: 0.2
+  time_squat_push: 0.0
+  time_full_squat_hands: 0.2
+  time_full_squat_legs: 0.5
 
   # Front
   max_leg_angle: 60
