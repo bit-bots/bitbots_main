@@ -3,7 +3,7 @@ dynup:
   engine_rate: 500
   foot_distance: 0.2
   wait_in_squat: 1.0
-  leg_min_length: 0.2
+  leg_min_length: 0.21
   arm_side_offset: 0.05
 
   # Back
