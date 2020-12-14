@@ -192,7 +192,7 @@ void DynupEngine::calcFrontSplines() {
   */
   
   /*
-   * hands to the side
+   * Pose 0: Extend hands to the side, for later turning
    */
   double time = params_.time_hands_side;
   l_hand_spline_.x()->addPoint(time, 0);
@@ -209,7 +209,7 @@ void DynupEngine::calcFrontSplines() {
   r_hand_spline_.yaw()->addPoint(time, -M_PI/2);
 
   /*
-   * rotate hands
+   * Pose 1: Rotate hands to the orientation that we will need later
    */
   time += params_.time_hands_rotate;
   l_hand_spline_.x()->addPoint(time, 0);
@@ -226,7 +226,7 @@ void DynupEngine::calcFrontSplines() {
   r_hand_spline_.yaw()->addPoint(time, -M_PI/2);
 
   /*
-   * pull legs to body
+   * Pose 2: Pull legs to body
    */
   // compute foot position while standing up
   double foot_x = sin(M_PI * -params_.max_leg_angle /180) * -params_.leg_min_length;
@@ -248,7 +248,7 @@ void DynupEngine::calcFrontSplines() {
 
 
   /*
-   * hands to the front
+   * Pose 3: Move hands to the front
    */
   time += params_.time_hands_front;
   // we apply a small offset in x direction, to make sure that ShoulderPitch does not go > 180° due to rounding errors
@@ -270,9 +270,8 @@ void DynupEngine::calcFrontSplines() {
   l_hand_spline_.yaw()->addPoint(time, 0);
 
 
-
   /*
-   * Foot under body
+   * Pose 4: Position feet under body
    */
   time += params_.time_foot_ground_front;
   r_foot_spline_.x()->addPoint(time, foot_x -params_.trunk_x);
@@ -289,7 +288,7 @@ void DynupEngine::calcFrontSplines() {
 
 
   /*
-   * Torso 45°
+   * Pose 5: Rotate torso to 45°
    */
   time += params_.time_torso_45;
   r_hand_spline_.x()->addPoint(time, arm_max_length_);
@@ -319,7 +318,7 @@ void DynupEngine::calcFrontSplines() {
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   /*
-   * To Squat
+   * Pose 6: Move to squat position
    */
   time += params_.time_to_squat;
   r_hand_spline_.x()->addPoint(time, 0, -1);
@@ -359,11 +358,11 @@ void DynupEngine::calcBackSplines() {
   */
 
   /*
-   * 0: Pull legs to body and position hands behind back
+   * Pose 0: Pull legs to body and position hands behind back
    */
   double time = params_.time_legs_close;
   // only apply general x offset
-  r_foot_spline_.x()->addPoint(time, -params_.trunk_x - params_.trunk_up);
+  r_foot_spline_.x()->addPoint(time, -params_.trunk_x - params_.trunk_height_first); //todo trunk_height_first == hands_behind_back_z?
   // y is always just related to the foot distance parameter
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   // pull legs as closely as possible
@@ -393,7 +392,7 @@ void DynupEngine::calcBackSplines() {
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   /*
-   * 1: Push torso up with an angle and get feet under body. CoM has to get over support polygon
+   * Pose 1: Push torso up with an angle and get feet under body. CoM has to get over support polygon
    */
   time += params_.time_foot_ground_back;
   // length(upper arm) == length(lower arm) -> Isosceles triangle with length of one side := arm_max_length_/2
@@ -412,16 +411,15 @@ void DynupEngine::calcBackSplines() {
   r_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
-  // 70 degrees //todo parameter
-  double angle_foot =  M_PI * 70 /180;
+  double angle_foot = M_PI * params_.foot_angle /180;
   // trunk needs to be kept height enough to avoid collisions
   // since angle between torso and foot changes, we need to apply sin/cos to compute in relation to feet.
   // this is necessary since it will be the correct frame again after next torso rotation
   // shift torso by general x offset + extra parameter to allow positioning of CoM.
   // keep trunk height enough to avoid collisions
-  r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_.trunk_x - cos(angle_foot) * params_.trunk_x_forward - sin(angle_foot) * params_.trunk_up2);
+  r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_.trunk_x - cos(angle_foot) * params_.trunk_forward - sin(angle_foot) * params_.trunk_height_second);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -sin(angle_foot) * params_.trunk_x - sin(angle_foot) * params_.trunk_x_forward - cos(angle_foot) * params_.trunk_up2);
+  r_foot_spline_.z()->addPoint(time, -sin(angle_foot) * params_.trunk_x - sin(angle_foot) * params_.trunk_forward - cos(angle_foot) * params_.trunk_height_second);
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time,angle_foot);
   r_foot_spline_.yaw()->addPoint(time, 0);
@@ -433,9 +431,8 @@ void DynupEngine::calcBackSplines() {
   l_foot_spline_.yaw()->addPoint(time, 0);
 
   /*
-   * 3: To Squat hands
+   * Pose 3: Fully extend arms to the back, to push torso on the feet
    */
-  // fully extend arms to the back
   time += params_.time_full_squat_hands;
   l_hand_spline_.x()->addPoint(time, -arm_max_length_);
   l_hand_spline_.y()->addPoint(time, 0);
@@ -451,14 +448,15 @@ void DynupEngine::calcBackSplines() {
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   /*
-   * 4: To Squat legs
+   * Pose 4: Turn feet to correct end angle
    */
   time += params_.time_full_squat_legs;
   // angle foot now changed based on different parameter
   angle_foot = -M_PI * params_.trunk_overshoot_angle_back /180;
-  r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_.trunk_x - cos(angle_foot) * params_.trunk_x_forward - sin(angle_foot) * params_.trunk_up2);
+  //todo trunk_overshoot_angle_back really necessary or always 0?
+  r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_.trunk_x - cos(angle_foot) * params_.trunk_forward - sin(angle_foot) * params_.trunk_height_second);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -sin(angle_foot) * params_.trunk_x - sin(angle_foot) * params_.trunk_x_forward - cos(angle_foot) * params_.trunk_up2);
+  r_foot_spline_.z()->addPoint(time, -sin(angle_foot) * params_.trunk_x - sin(angle_foot) * params_.trunk_forward - cos(angle_foot) * params_.trunk_height_second);
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, angle_foot);
   r_foot_spline_.yaw()->addPoint(time, 0);
@@ -469,7 +467,7 @@ void DynupEngine::calcBackSplines() {
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
 
-  calcSquatSplines(time); //todo
+  calcSquatSplines(time);
 }
 
 void DynupEngine::calcSquatSplines(double time) {
