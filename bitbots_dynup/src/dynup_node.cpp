@@ -36,7 +36,7 @@ DynUpNode::DynUpNode() :
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);
 
-  joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("animation_motor_goals", 1);
+  joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
   cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynUpNode::imuCallback, this);
   joint_state_subscriber_ = node_handle_.subscribe("joint_state", 1, &DynUpNode::jointStateCallback, this);
@@ -143,7 +143,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
       failed_tick_counter++;
     }
     if (feedback.percent_done == 100) {
-      ROS_ERROR("Completed dynup with %d failed ticks.", failed_tick_counter);
+      ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
       break;
     }
 
@@ -177,6 +177,7 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   /* Transform all poses into the right foot or base_link frame */
   geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
   try {
+    //todo why the duration of 0.2? why not last possible value
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
                          ros::Duration(0.2));
     tf_buffer_.transform(r_foot_origin, r_foot_transformed, "base_link", ros::Duration(0.2));

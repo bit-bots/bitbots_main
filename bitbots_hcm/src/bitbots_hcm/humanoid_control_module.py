@@ -19,7 +19,7 @@ from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
-    STATE_SHUT_DOWN, STATE_HCM_OFF, STATE_FALLEN, STATE_KICKING
+    STATE_SHUT_DOWN, STATE_HCM_OFF, STATE_FALLEN, STATE_KICKING, STATE_GETTING_UP, STATE_STARTUP
 from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
@@ -66,7 +66,7 @@ class HardwareControlManager:
         rospy.Subscriber("walking_motor_goals", JointCommand, self.walking_goal_callback, queue_size=1,
                          tcp_nodelay=True)
         rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("animation_motor_goals", JointCommand, self.dynup_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("dynup_motor_goals", JointCommand, self.dynup_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("head_motor_goals", JointCommand, self.head_goal_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("record_motor_goals", JointCommand, self.record_goal_callback, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("kick_motor_goals", JointCommand, self.kick_goal_callback, queue_size=1, tcp_nodelay=True)
@@ -128,16 +128,15 @@ class HardwareControlManager:
 
     def walking_goal_callback(self, msg):
         self.blackboard.last_walking_goal_time = rospy.Time.now()
-        if self.blackboard.current_state == STATE_CONTROLLABLE or self.blackboard.current_state == STATE_WALKING:
+        if self.blackboard.current_state in [STATE_CONTROLLABLE, STATE_WALKING]:
             self.joint_goal_publisher.publish(msg)
 
     def dynup_callback(self, msg):
-        # TODO use STATE_GETTING_UP
-        if self.blackboard.current_state == STATE_FALLEN:
+        if self.blackboard.current_state in [STATE_STARTUP, STATE_FALLEN, STATE_GETTING_UP, STATE_CONTROLLABLE]:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
-        if self.blackboard.current_state == STATE_CONTROLLABLE or self.blackboard.current_state == STATE_WALKING:
+        if self.blackboard.current_state in [STATE_CONTROLLABLE, STATE_WALKING]:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
 

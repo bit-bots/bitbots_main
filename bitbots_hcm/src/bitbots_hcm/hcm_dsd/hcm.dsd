@@ -1,11 +1,11 @@
 #ShutDownProcedure
 $PickedUp
     PICKED_UP --> @TurnMotorsOff, @StayShutDown
-    ON_GROUND --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayShutDown
+    ON_GROUND --> @PlayAnimationSitDown, @TurnMotorsOff, @StayShutDown
 
 -->HCM
 $StartHCM
-    NOT_WALKREADY --> @PlayAnimationWalkready
+    NOT_WALKREADY --> @PlayAnimationDynup + direction:rise
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
     SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop
