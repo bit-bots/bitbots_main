@@ -161,6 +161,10 @@ class PlayAnimationDynup(AbstractActionElement):
         self.first_perform = True
 
     def perform(self, reevaluate=False):
+        # deactivate falling since it will be wrongly detected
+        if self.direction in ["front_only", "back_only"]:
+            pass # todo do not reevaluate should not be done for rise
+        self.do_not_reevaluate()
         if self.first_perform:
             # get the animation that should be played
             # defined by implementations of this abstract class

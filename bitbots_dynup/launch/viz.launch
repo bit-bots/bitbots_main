@@ -6,5 +6,5 @@
 
   <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
   <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
-  <node name="DynupNode" pkg="bitbots_dynup" type="DynupNode" output="screen" />
+  <node name="dynup" pkg="bitbots_dynup" type="DynupNode" output="screen" />
 </launch>

@@ -9,15 +9,11 @@
 
   <group unless="$(arg sim)">
     <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
-    <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
+    <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
   </group>
   <group if="$(arg sim)">
-    <include file="$(find wolfgang_pybullet_sim)/launch/simulation.launch" />
-    <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
+    <rosparam file="$(find bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
   </group>
-
-  <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
-  <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
 
   <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
   <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>

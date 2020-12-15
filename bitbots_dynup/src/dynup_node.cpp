@@ -115,7 +115,6 @@ double DynUpNode::getTimeDelta() {
     last_ros_update_time_ = current_ros_time;
     return 0.001;
   }
-
   dt = current_ros_time - last_ros_update_time_;
   // this can happen due to floating point precision
   if (dt == 0) {
@@ -123,7 +122,6 @@ double DynUpNode::getTimeDelta() {
     dt = 0.001;
   }
   last_ros_update_time_ = current_ros_time;
-
   return dt;
 }
 

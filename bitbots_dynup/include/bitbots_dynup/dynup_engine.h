@@ -105,25 +105,25 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    * - get torso into 45°, pull foot under legs
    * - get into crouch position
    */
-  void calcFrontSplines();
+  double calcFrontSplines();
 
   /*
    * Calculate the splines to get from lying on the back to squatting
    */
-  void calcBackSplines();
+  double calcBackSplines();
 
   /*
    * Calculate the splines to get up from a squatting position:
   *  - slowly stand up with stabilization
   *  - move arms in finish position
   */
-  void calcRiseSplines(double time);
+  double calcRiseSplines(double time);
 
   /*
    * Calculate the splines to get down to a squatting position:
   *  - slowly sit down with stabilization
   */
-  void calcDescendSplines(double time);
+  double calcDescendSplines(double time);
 
 
 };

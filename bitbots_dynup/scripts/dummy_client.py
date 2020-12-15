@@ -9,17 +9,18 @@ import actionlib
 from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
 
-
 showing_feedback = False
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or not sys.argv[1] in ['front', 'back', 'squat', 'rise', 'descend']:
-        print('Use \'front\', \'back\', \'rise\' or \'descend\' as parameter!')
+    if len(sys.argv) != 2 or not sys.argv[1] in ['front', 'front_only', 'back', 'back_only', 'squat', 'rise',
+                                                 'descend']:
+        print('Use \'front\', \'front_only\', \'back\', \'back_only\', \'rise\' or \'descend\' as parameter!')
         sys.exit(1)
 
     print("[..] Initializing node", end='')
     rospy.init_node('dynup_dummy_client', anonymous=True)
     print("\r[OK] Initializing node")
+
 
     def done_cb(state, result):
         print('Action completed: ', end='')
