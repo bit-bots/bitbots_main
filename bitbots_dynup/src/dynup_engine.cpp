@@ -551,15 +551,15 @@ void DynupEngine::calcRiseSplines(double time) {
   r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
-  l_hand_spline_.x()->addPoint(time, params_.hand_walkready_x);
+  l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, params_.hand_walkready_z);
+  l_hand_spline_.z()->addPoint(time, 0);
   l_hand_spline_.roll()->addPoint(time, 0);
   l_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
   l_hand_spline_.yaw()->addPoint(time, 0);
-  r_hand_spline_.x()->addPoint(time, params_.hand_walkready_x);
+  r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, params_.hand_walkready_z);
+  r_hand_spline_.z()->addPoint(time, 0);
   r_hand_spline_.roll()->addPoint(time, 0);
   r_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
   r_hand_spline_.yaw()->addPoint(time, 0);

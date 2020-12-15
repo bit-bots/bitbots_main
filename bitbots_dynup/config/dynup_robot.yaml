@@ -5,6 +5,7 @@ dynup:
   leg_min_length: 0.21
   arm_side_offset: 0.05
   trunk_x: -0.05
+  hand_walkready_pitch: -60
 
   # Back
   hands_behind_back_x: 0.15
