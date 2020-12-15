@@ -660,8 +660,9 @@ bool DynupEngine::isStabilizingNeeded() const {
            (direction_ == 0 && time_ >= params_.time_legs_close +
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
-                                        params_.time_full_squat_legs) ||
-            (direction_ == 2) || (direction_ == 3);
+                                        params_.time_full_squat_legs  +
+                                        params_.wait_in_squat_back) ||
+           (direction_ == 2) || (direction_ == 3);
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
