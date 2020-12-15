@@ -157,9 +157,6 @@ class PlayAnimationDynup(AbstractActionElement):
         self.first_perform = True
 
     def perform(self, reevaluate=False):
-        # we never want to leave the action when we play an animation
-        # deactivate the reevaluate
-
         if self.first_perform:
             # get the animation that should be played
             # defined by implementations of this abstract class

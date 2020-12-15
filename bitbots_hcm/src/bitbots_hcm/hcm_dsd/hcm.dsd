@@ -1,7 +1,7 @@
 #ShutDownProcedure
 $PickedUp
     PICKED_UP --> @TurnMotorsOff, @StayShutDown
-    ON_GROUND --> @PlayAnimationMotorOff, @TurnMotorsOff, @StayShutDown
+    ON_GROUND --> @PlayAnimationMotorOff, @PlayAnimationDynup + direction:descend, @StayShutDown
 
 -->HCM
 $StartHCM
@@ -14,7 +14,7 @@ $StartHCM
             FREE --> $CheckMotors
                 MOTORS_NOT_STARTED --> @WaitForMotorStartup
                 PROBLEM --> @WaitForMotors
-                TURN_OFF --> @PlayAnimationSitDown, @TurnMotorsOff, @StayMotorsOff
+                TURN_OFF --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayMotorsOff
                 TURN_ON --> @TurnMotorsOn
                 OKAY --> $CheckIMU
                     IMU_NOT_STARTED --> @WaitForIMUStartup
@@ -25,17 +25,17 @@ $StartHCM
                         OKAY --> $PickedUp
                             PICKED_UP --> @PlayAnimationWalkready, @StayPickedUp
                             ON_GROUND --> $Fallen
-                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationStandUpFront, @Wait + time:1, @PlayAnimationDynup + direction:squat
-                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationStandUpBack, @PlayAnimationDynup + direction:squat
-                                FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationStandUpBack, @PlayAnimationDynup + direction:squat
-                                FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationStandUpBack, @PlayAnimationDynup + direction:squat
+                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + direction:front
+                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + direction:back
+                                FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup + direction:back
+                                FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup + direction:back
                                 NOT_FALLEN --> $Falling
                                     FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
                                     FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
                                     FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
                                     FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
                                     NOT_FALLING --> $Sitting
-                                        YES --> @PlayAnimationWalkready
+                                        YES --> @PlayAnimationDynup + direction:rise
                                         NO --> $ExternalAnimation
                                             ANIMATION_RUNNING --> @StayAnimationRunning
                                             FREE --> $Walking
