@@ -38,5 +38,7 @@
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
     <include if="$(arg dynamic_kick)" file="$(find bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
-    <include file="$(find bitbots_dynup)/launch/dynup.launch"/>
+    <include file="$(find bitbots_dynup)/launch/dynup.launch">
+        <arg name="sim" value="$(arg sim)"/>
+    </include>
 </launch>
