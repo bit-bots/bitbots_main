@@ -1,7 +1,7 @@
 import rospy
 import humanoid_league_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard, STATE_HCM_OFF, STATE_PENALTY
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard, STATE_HCM_OFF, STATE_PENALTY, STATE_CONTROLLABLE
 
 
 class AbstractStay(AbstractActionElement):
@@ -20,7 +20,8 @@ class AbstractStay(AbstractActionElement):
 
 
 class StayControlable(AbstractStay):
-    pass
+    def perform(self):
+        self.blackboard.current_state = STATE_CONTROLLABLE
 
 
 class StayWalking(AbstractStay):
