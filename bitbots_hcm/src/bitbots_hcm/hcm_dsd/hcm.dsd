@@ -5,6 +5,7 @@ $PickedUp
 
 -->HCM
 $StartHCM
+    NOT_WALKREADY --> @PlayAnimationWalkready
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
     SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop
@@ -15,7 +16,7 @@ $StartHCM
                 MOTORS_NOT_STARTED --> @WaitForMotorStartup
                 PROBLEM --> @WaitForMotors
                 TURN_OFF --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayMotorsOff
-                TURN_ON --> @TurnMotorsOn
+                TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:rise
                 OKAY --> $CheckIMU
                     IMU_NOT_STARTED --> @WaitForIMUStartup
                     PROBLEM --> @WaitForIMU
@@ -43,6 +44,4 @@ $StartHCM
                                                 STAY_WALKING --> @StayWalking
                                                 NOT_WALKING --> $Kicking
                                                     KICKING --> @StayKicking
-                                                    NOT_KICKING --> $Controlable
-                                                        NOT_WALKREADY --> @PlayAnimationDynup + direction:rise
-                                                        WALKREADY --> @StayControlable
+                                                    NOT_KICKING --> @StayControlable

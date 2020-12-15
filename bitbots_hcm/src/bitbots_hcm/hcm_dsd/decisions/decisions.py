@@ -24,8 +24,28 @@ class StartHCM(AbstractDecisionElement):
                 return "SHUTDOWN_REQUESTED"
         else:
             if not reevaluate:
+                if not self.is_walkready():
+                    return "NOT_WALKREADY"
                 self.blackboard.current_state = STATE_STARTUP
             return "RUNNING"
+
+    def is_walkready(self):
+        """
+        We check if any joint is has an offset from the walkready pose which is higher than a threshold
+        """
+        if self.blackboard.current_joint_state is None:
+            return False
+        i = 0
+        for joint_name in self.blackboard.current_joint_state.name:
+            if joint_name == "HeadPan" or joint_name == "HeadTilt":
+                # we dont care about the head position
+                i += 1
+                continue
+            if abs(math.degrees(self.blackboard.current_joint_state.position[i]) -
+                   self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
+                return False
+            i += 1
+        return True
 
     def get_reevaluate(self):
         return True
@@ -321,6 +341,8 @@ class Sitting(AbstractDecisionElement):
             return "NO"
         # simple check is looking at knee joint positions
         # todo can be done more sophisticated
+        if self.blackboard.current_joint_state is None:
+            return "NO"
         left_knee = 0
         right_knee = 0
         i = 0
@@ -401,42 +423,6 @@ class Walking(AbstractDecisionElement):
                 return "STAY_WALKING"
         else:
             return "NOT_WALKING"
-
-    def get_reevaluate(self):
-        return True
-
-
-class Controlable(AbstractDecisionElement):
-    """
-    Decides if the robot is currently controlable
-    """
-
-    def perform(self, reevaluate=False):
-        # check if the robot is in a walkready pose
-        if not self.is_walkready():
-            self.blackboard.current_state = STATE_ANIMATION_RUNNING
-            return "NOT_WALKREADY"
-        else:
-            self.blackboard.current_state = STATE_CONTROLLABLE
-            return "WALKREADY"
-
-    def is_walkready(self):
-        """
-        We check if any joint is has an offset from the walkready pose which is higher than a threshold
-        """
-        if self.blackboard.current_joint_state is None:
-            return False
-        i = 0
-        for joint_name in self.blackboard.current_joint_state.name:
-            if joint_name == "HeadPan" or joint_name == "HeadTilt":
-                # we dont care about the head position
-                i += 1
-                continue
-            if abs(math.degrees(self.blackboard.current_joint_state.position[i]) -
-                   self.blackboard.walkready_pose_dict[joint_name]) > self.blackboard.walkready_pose_threshold:
-                return False
-            i += 1
-        return True
 
     def get_reevaluate(self):
         return True
