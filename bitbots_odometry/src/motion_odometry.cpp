@@ -17,14 +17,13 @@ MotionOdometry::MotionOdometry() {
   ros::Subscriber odom_subscriber = n.subscribe("/walk_engine_odometry", 1, &MotionOdometry::odomCallback, this);
 
   ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/motion_odometry", 1);
-  tf2::Transform odometry_to_support_foot = tf2::Transform();
-  // set the origin to the center of the robot which is placed -0.1m next to the right (initial) foot 
-  odometry_to_support_foot.setOrigin({0, -0.1, 0});
-  odometry_to_support_foot.setRotation(tf2::Quaternion(0, 0, 0, 1));
+  odometry_to_support_foot_ = tf2::Transform();
+  // set the origin to 0. will be set correctly on recieving first support state
+  odometry_to_support_foot_.setOrigin({0, 0, 0});
+  odometry_to_support_foot_.setRotation(tf2::Quaternion(0, 0, 0, 1));
 
   static tf2_ros::TransformBroadcaster br;
-  tf2_ros::Buffer tf_buffer;
-  tf2_ros::TransformListener tf_listener(tf_buffer);
+  tf2_ros::TransformListener tf_listener(tf_buffer_);
   // wait till connection with publishers has been established
   // so we do not immediately blast something into the log output
   ros::Duration(0.5).sleep();
@@ -53,18 +52,18 @@ MotionOdometry::MotionOdometry() {
         try {
           // add the transform between current and next support link to the odometry transform
           geometry_msgs::TransformStamped current_to_next_support_msg =
-              tf_buffer.lookupTransform(current_support_link, next_support_link, ros::Time(0));
+              tf_buffer_.lookupTransform(current_support_link, next_support_link, ros::Time(0));
           tf2::Transform current_to_next_support = tf2::Transform();
           tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
           // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
           current_to_next_support.setOrigin({
                                                 current_to_next_support.getOrigin().x(),
                                                 current_to_next_support.getOrigin().y(),
-                                                current_to_next_support.getOrigin().z()});
+                                                0});
           tf2::Quaternion q;
           q.setRPY(0, 0, tf2::getYaw(current_to_next_support.getRotation()));
           current_to_next_support.setRotation(q);
-          odometry_to_support_foot = odometry_to_support_foot * current_to_next_support;
+          odometry_to_support_foot_ = odometry_to_support_foot_ * current_to_next_support;
         } catch (tf2::TransformException &ex) {
           ROS_WARN("%s", ex.what());
           ros::Duration(1.0).sleep();
@@ -81,10 +80,10 @@ MotionOdometry::MotionOdometry() {
       //publish odometry and if wanted transform to base_link
       try {
         geometry_msgs::TransformStamped
-            current_support_to_base_msg = tf_buffer.lookupTransform(current_support_link, "base_link", ros::Time(0));
+            current_support_to_base_msg = tf_buffer_.lookupTransform(current_support_link, "base_link", ros::Time(0));
         tf2::Transform current_support_to_base;
         tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
-        tf2::Transform odom_to_base_link = odometry_to_support_foot * current_support_to_base;
+        tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
         geometry_msgs::TransformStamped odom_to_base_link_msg = geometry_msgs::TransformStamped();
         odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
         odom_to_base_link_msg.header.stamp = ros::Time::now();
@@ -122,12 +121,24 @@ void MotionOdometry::supportCallback(const std_msgs::Char msg) {
 
   // remember if we recieved first support state, only remember left or right
   if (previous_support_state_ == 'n' && current_support_state_ != 'd') {
+    std::string current_support_link;
     if (current_support_state_ == 'l') {
       previous_support_state_ = 'r';
+      current_support_link= "l_sole";
     } else {
       previous_support_state_ = 'l';
+      current_support_link= "r_sole";
     }
-
+    // on receiving first support state we should also set the location in the world correctly
+    // we assume that our baseline is on x=0 and y=0
+    try{
+        geometry_msgs::TransformStamped
+                base_to_current_support_msg = tf_buffer_.lookupTransform("base_link", current_support_link, ros::Time(0), ros::Duration(10.0));
+        odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
+                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
+    }catch (tf2::TransformException ex){
+        ROS_WARN("Could not initialize motion odometry correctly, since there were no transforms available fast enough on startup. Will initialize with 0,0,0");
+    }
   }
 }
 

@@ -5,7 +5,7 @@ hcm:
 
   #Pressure sensors
   pressure_timeout_duration: 0.1 # time without messages from the foot pressure sensors till error is produced [s]
-  pressure_sensors_installed: false
+  pressure_sensors_installed: true
   foot_zero_service: "set_foot_zero"
 
   # Motors
@@ -25,9 +25,9 @@ hcm:
     stand_up_back: "stand_up_back"
     stand_up_left: "turning_back_left"
     stand_up_right: "turning_back_right"
-    sit_down: "walkready"
+    sit_down: "sit"
     penalty: "walkready"
-    motor_off: "walkready"
+    motor_off: "sit"
     init: "init"
     anim_package: "wolfgang_animations"
     walkready_pose_threshold: 5 # [deg]
@@ -37,14 +37,14 @@ hcm:
   falling_active: true # enables the check for falling and coresponding counter meassurements
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  threshold_gyro_y_front: 7 # > gyroY
-  threshold_gyro_x_side: 7 # > gyroX
-  falling_threshold_orientation_left_right: 60 # > Point of no return in degrees
-  falling_threshold_orientation_front_back: 45 # < Point of no return in degrees
-  falling_new_front: 32
-  falling_new_back: -6
-  falling_new_left: -18
-  falling_new_right: 18
+  falling_thresh_gyro_pitch: 7 # > gyroY
+  falling_thresh_gyro_roll: 7 # > gyroX
+  falling_thresh_orient_roll: 60 # > Point of no return in degrees
+  falling_thresh_orient_pitch: 45 # > Point of no return in degrees
+  # smoothing threshold for classifier
+  smooth_threshold: 10
+
+  pick_up_accel_threshold: 7
 
   falling:
 

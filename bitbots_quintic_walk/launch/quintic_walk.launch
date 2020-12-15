@@ -4,6 +4,9 @@
   <arg name="use_game_settings" default="false"/>
   <arg name="no_node" default="false"/>
 
+  <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
   <group if="$(arg sim)">
     <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
         <group if="$(arg use_game_settings)">
@@ -17,6 +20,6 @@
         </group>
   </group>   
   <group unless="$(arg no_node)">
-    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen"/>
+    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen" launch-prefix="$(arg taskset)"/>
   </group>
 </launch>

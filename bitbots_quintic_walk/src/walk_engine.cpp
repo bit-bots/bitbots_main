@@ -38,7 +38,9 @@ WalkEngine::WalkEngine(const std::string ns) :
 
   // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
-  right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
+  right_in_world_.setOrigin(tf2::Vector3{0, -1* params_.foot_distance / 2, 0});
+  // create splines one time to have no empty splines during first idle phase
+  buildStartMovementTrajectories();
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
@@ -237,12 +239,12 @@ void WalkEngine::reset() {
 
   is_left_support_foot_ = false;
   support_to_last_.setIdentity();
+  support_to_next_.setIdentity();
   if (is_left_support_foot_) {
-    support_to_last_.getOrigin()[1] = -params_.foot_distance;
+    support_to_next_.getOrigin()[1] = -params_.foot_distance;
   } else {
-    support_to_last_.getOrigin()[1] = params_.foot_distance;
+    support_to_next_.getOrigin()[1] = params_.foot_distance;
   }
-  support_to_next_ = support_to_last_;
 
   //Reset the trunk saved state
   if (is_left_support_foot_) {

@@ -1,5 +1,9 @@
 <launch>
     <rosparam file="$(find bitbots_dynup)/config/pid_config.yaml" command="load"/>
     <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
-    <node pkg="bitbots_dynup" name="dynup" type="DynupNode" output="screen" />
+
+    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+  <node pkg="bitbots_dynup" name="DynupNode" type="DynupNode" output="screen" launch-prefix="$(arg taskset)"/>
 </launch>

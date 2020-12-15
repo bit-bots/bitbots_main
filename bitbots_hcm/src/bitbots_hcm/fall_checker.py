@@ -1,140 +1,156 @@
 # -*- coding: utf8 -*-
+import array
 import math
 import numpy
-import tf
 from sensor_msgs.msg import Imu
 import rospy
 
-# todo hip pitch offset
+from sklearn.base import BaseEstimator
+from sklearn.metrics import accuracy_score
 
-class FallChecker(object):
-    def __init__(self):
 
-        # will be set by dynamic reconfigure
-        robot_type_name = rospy.get_param("robot_type_name", "wolfgang").lower()
+class FallChecker(BaseEstimator):
 
-        # load config values depending on robot type and lode them into param server to set
-        # start values for dynamic reconfigure
-        # There are no default vaules set in dynamic reconfigure, in order to make it dependable on the robot
-        self.dyn_falling_active = rospy.get_param("hcm/falling/" + robot_type_name + "/dyn_falling_active")
-        rospy.set_param("hcm/dyn_falling_active", self.dyn_falling_active)
-        self.ground_coefficient = rospy.get_param("hcm/falling/" + robot_type_name + "/ground_coefficient")
-        rospy.set_param("hcm/ground_coefficient", self.ground_coefficient)
+    def __init__(self, thresh_gyro_pitch=rospy.get_param("hcm/falling_thresh_gyro_pitch"),
+                 thresh_gyro_roll=rospy.get_param("hcm/falling_thresh_gyro_roll"),
+                 thresh_orient_pitch=math.radians(rospy.get_param("hcm/falling_thresh_orient_pitch")),
+                 thresh_orient_roll=math.radians(rospy.get_param("hcm/falling_thresh_orient_roll"))):
 
-        if not rospy.has_param("ZMPConfig/" + robot_type_name + "/HipPitch"):
-            rospy.logwarn("HipPitch offset from walking was not found on parameter server, will use 0.")
+        self.thresh_gyro_pitch = thresh_gyro_pitch
+        self.thresh_gyro_roll = thresh_gyro_roll
+        self.thresh_orient_pitch = thresh_orient_pitch
+        self.thresh_orient_roll = thresh_orient_roll
 
-        self.falling_threshold_front = rospy.get_param("hcm/threshold_gyro_y_front")
-        # rospy.set_param("hcm/threshold_gyro_y_front", self.falling_threshold_front)
-        self.falling_threshold_side = rospy.get_param("hcm/threshold_gyro_x_side")
-        # rospy.set_param("hcm/threshold_gyro_x_side", self.falling_threshold_side)
-        self.falling_threshold_orientation_front_back = math.radians(rospy.get_param("hcm/falling_threshold_orientation_front_back"))
-        # rospy.set_param("hcm/falling_threshold_orientation_front_back", self.falling_threshold_orientation_front_back)
-        self.falling_threshold_orientation_left_right = math.radians(rospy.get_param("hcm/falling_threshold_orientation_left_right"))
-        # rospy.set_param("hcm/falling_threshold_orientation_left_right", self.falling_threshold_orientation_left_right)
-
-        # Grenzwerte an Untergrund anpassen
-        self.falling_threshold_front *= self.ground_coefficient
-        self.falling_threshold_side *= self.ground_coefficient
-
-        self.FRONT = "FRONT"
-        self.BACK = "BACK"
-        self.LEFT = "LEFT"
-        self.RIGHT = "RIGHT"
-        self.SIDE = "SIDE"
-
+        self.STABLE = 0
+        self.FRONT = 1
+        self.BACK = 2
+        self.LEFT = 3
+        self.RIGHT = 4
 
     def update_reconfigurable_values(self, config, level):
         # Dynamic Reconfigure
-        self.falling_threshold_front = config["threshold_gyro_y_front"]
-        self.falling_threshold_side = config["threshold_gyro_x_side"]
-        self.falling_threshold_orientation_front_back = math.radians(config["falling_threshold_orientation_front_back"])
-        self.falling_threshold_orientation_left_right = math.radians(config["falling_threshold_orientation_left_right"])
+        self.thresh_gyro_pitch = config["falling_thresh_gyro_pitch"]
+        self.thresh_gyro_roll = config["falling_thresh_gyro_roll"]
+        self.thresh_orient_pitch = math.radians(config["falling_thresh_orient_pitch"])
+        self.thresh_orient_roll = math.radians(config["falling_thresh_orient_roll"])
         return config
 
     def check_falling(self, not_much_smoothed_gyro, quaternion):
         """Checks if the robot is currently falling and in which direction. """
-        # Checks if robot is still
-        if all(abs(n) < 0.1 for n in not_much_smoothed_gyro):
-            return
+        # Convert quaternion to fused angles
+        fused_roll, fused_pitch, _ = self.fused_from_quat(quaternion)
 
-        # converting the Quaternion into Euler angles for better understanding
-        euler = tf.transformations.euler_from_quaternion(quaternion)
-        if self.falling_threshold_front == 0 or \
-                self.falling_threshold_side == 0 or \
-                self.falling_threshold_orientation_front_back == 0 or \
-                self.falling_threshold_orientation_left_right == 0:
-            return
         # setting the fall quantification function
-        x_fall_quantification = self.calc_fall_quantification(
-            self.falling_threshold_orientation_left_right,
-            self.falling_threshold_front,
-            euler[0],
+        roll_fall_quantification = self.calc_fall_quantification(
+            self.thresh_orient_roll,
+            self.thresh_gyro_roll,
+            fused_roll,
             not_much_smoothed_gyro[0])
 
-        y_fall_quantification = self.calc_fall_quantification(
-            self.falling_threshold_orientation_front_back,
-            self.falling_threshold_side,
-            euler[1],
+        pitch_fall_quantification = self.calc_fall_quantification(
+            self.thresh_orient_pitch,
+            self.thresh_gyro_pitch,
+            fused_pitch,
             not_much_smoothed_gyro[1])
 
-        if x_fall_quantification + y_fall_quantification == 0:
-            return None
+        if roll_fall_quantification + pitch_fall_quantification == 0:
+            return self.STABLE
 
         # compare quantification functions
-        if y_fall_quantification > x_fall_quantification:
+        if pitch_fall_quantification > roll_fall_quantification:
             # detect the falling direction
-            if not_much_smoothed_gyro[1] < 0:
-                rospy.loginfo("FALLING TO THE BACK")
+            if fused_pitch < 0:
                 return self.BACK
             # detect the falling direction
             else:
-                rospy.loginfo("FALLING TO THE FRONT")
                 return self.FRONT
         else:
             # detect the falling direction
-            if not_much_smoothed_gyro[0] < 0:
-                rospy.loginfo("FALLING TO THE LEFT")
+            if fused_roll < 0:
                 return self.LEFT
             # detect the falling direction
             else:
-                rospy.loginfo("FALLING TO THE RIGHT")
                 return self.RIGHT
-        return None
 
-    def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro):
+    def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler,
+                                 current_axis__gyro):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
-        if numpy.sign(current_axis_euler) == numpy.sign(current_axis__gyro):
+        moving_more_upright = numpy.sign(current_axis_euler) != numpy.sign(current_axis__gyro)
+
+        # Check if the orientation is over the point of no return threshold
+        over_point_of_no_return = abs(current_axis_euler) > falling_threshold_orientation
+
+        # Calculate quantification if we are moving away from our upright position or if we are over the point of no return
+        if not moving_more_upright or over_point_of_no_return:
             # calculatiung the orentation skalar for the threshold
-            skalar = max((falling_threshold_orientation - abs(current_axis_euler))/falling_threshold_orientation,0)
+            skalar = max((falling_threshold_orientation - abs(current_axis_euler)) / falling_threshold_orientation, 0)
             # checking if the rotation velocity is lower than the the threshold
             if falling_threshold_gyro * skalar < abs(current_axis__gyro):
                 # returning the fall quantification function
-                return abs(current_axis__gyro) * (1-skalar)
+                return abs(current_axis__gyro) * (1 - skalar)
         return 0
 
-    def check_fallen(self, smooth_accel, not_much_smoothed_gyro):
+    def fit(self, x, y):
+        # we have to do nothing, as we are not actually fitting any model
+        rospy.logwarn("You can not train this type of classifier")
+        pass
+
+    def score(self, X, y, sample_weight=None):
+        return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
+
+    def predict(self, x):
+        # only take gyro and orientation from data
+        y = []
+        for entry in x:
+            prediction = self.check_falling(entry[3:6], entry[6:9])
+            y.append(prediction)
+        return y
+
+    def check_fallen(self, quaternion, not_much_smoothed_gyro):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
-        # Checks if the robot is still moving.
-        if any(abs(n) >= 0.1 for n in not_much_smoothed_gyro):
-            return None
+
+        # Convert quaternion to fused angles
+        fused_roll, fused_pitch, _ = self.fused_from_quat(quaternion)
 
         # Decides which side is facing downwards.
-        if smooth_accel[0] < -7:
+        if fused_pitch > math.radians(75):
             rospy.loginfo("FALLEN TO THE FRONT")
             return self.FRONT
 
-        if smooth_accel[0] > 7:
+        if fused_pitch < math.radians(-75):
             rospy.loginfo("FALLEN TO THE BACK")
             return self.BACK
 
-        if smooth_accel[1] > 7:
+        if fused_roll > math.radians(75):
             rospy.loginfo("FALLEN TO THE RIGHT")
             return self.RIGHT
 
-        if smooth_accel[1] < -7:
+        if fused_roll < math.radians(-75):
             rospy.loginfo("FALLEN TO THE LEFT")
             return self.LEFT
 
         # If no side is facing downwards, the robot is not fallen yet.
         return None
+
+    def fused_from_quat(self, q):
+        # Fused yaw of Quaternion
+        fused_yaw = 2.0 * math.atan2(q[2], q[3])  # Output of atan2 is [-pi,pi], so this expression is in [-2*pi,2*pi]
+        if fused_yaw > math.pi:
+            fused_yaw -= 2 * math.pi  # fused_yaw is now in[-2 * pi, pi]
+        if fused_yaw <= -math.pi:
+            fused_yaw += 2 * math.pi  # fused_yaw is now in (-pi, pi]
+
+        # Calculate the fused pitch and roll
+        stheta = 2.0 * (q[1] * q[3] - q[0] * q[2])
+        sphi = 2.0 * (q[1] * q[2] + q[0] * q[3])
+        if stheta >= 1.0:  # Coerce stheta to[-1, 1]
+            stheta = 1.0
+        elif stheta <= -1.0:
+            stheta = -1.0
+        if sphi >= 1.0:  # Coerce sphi to[-1, 1]
+            sphi = 1.0
+        elif sphi <= -1.0:
+            sphi = -1.0
+        fused_pitch = math.asin(stheta)
+        fused_roll = math.asin(sphi)
+        return fused_roll, fused_pitch, fused_yaw

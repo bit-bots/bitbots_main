@@ -81,6 +81,7 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
   engine_.reset();
+  last_ros_update_time_ = 0;
   was_support_foot_published_ = false;
 
   std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
@@ -120,7 +121,8 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayTrunkSplines(engine_.getTrunkSplines());
-  loopEngine();
+  ros::Rate loop_rate(engine_rate_);
+  loopEngine(loop_rate);
 
   /* Figure out the reason why loopEngine() returned and act accordingly */
   if (server_.isPreemptRequested()) {
@@ -160,12 +162,36 @@ std::pair<geometry_msgs::Pose, geometry_msgs::Pose> KickNode::getFootPoses() {
   return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
 }
 
-void KickNode::loopEngine() {
+double KickNode::getTimeDelta() {
+  // compute actual time delta that happened
+  double dt;
+  double current_ros_time = ros::Time::now().toSec();
+
+  // first call needs to be handled specially
+  if (last_ros_update_time_ == 0){
+    last_ros_update_time_ = current_ros_time;
+    return 0.001;
+  }
+
+  dt = current_ros_time - last_ros_update_time_;
+  // this can happen due to floating point precision
+  if (dt == 0) {
+    ROS_WARN("dynamic kick: dt was 0");
+    dt = 0.001;
+  }
+  last_ros_update_time_ = current_ros_time;
+
+  return dt;
+}
+
+void KickNode::loopEngine(ros::Rate loop_rate) {
   /* Do the loop as long as nothing cancels it */
+  double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    KickPositions positions = engine_.update(1.0 / engine_rate_);
+    dt = getTimeDelta();
+    KickPositions positions = engine_.update(dt);
     // TODO: should positions be an std::optional? how are errors represented?
-    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(1.0 / engine_rate_));
+    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
     bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
 
     bitbots_msgs::KickFeedback feedback;
@@ -183,7 +209,6 @@ void KickNode::loopEngine() {
 
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
-    ros::Rate loop_rate(engine_rate_);
     loop_rate.sleep();
   }
 }

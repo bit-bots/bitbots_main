@@ -1,7 +1,7 @@
 #ShutDownProcedure
 $PickedUp
     PICKED_UP --> @TurnMotorsOff, @StayShutDown
-    ON_GROUND --> @PlayAnimationMotorOff, @PlayAnimationDynup + direction:descend, @StayShutDown
+    ON_GROUND --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayShutDown
 
 -->HCM
 $StartHCM
