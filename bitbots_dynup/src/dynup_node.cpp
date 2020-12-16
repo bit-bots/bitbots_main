@@ -142,7 +142,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
     if(goals.first.empty()) {
       failed_tick_counter++;
     }
-    if (feedback.percent_done == 100) {
+    if (feedback.percent_done >= 100) {
       ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
       break;
     }

@@ -8,17 +8,17 @@ dynup:
   hand_walkready_pitch: -60
 
   # Back
-  hands_behind_back_x: 0.15
-  hands_behind_back_z: 0.15
-  trunk_height_back: 0.2
-  trunk_forward: 0.07
+  hands_behind_back_x: 0.22
+  hands_behind_back_z: 0.22
+  trunk_height_back: 0.22
+  trunk_forward: 0.05
   foot_angle: 70
   trunk_overshoot_angle_back: 0
   time_legs_close: 0.2
-  time_foot_ground_back: 0.3
-  time_full_squat_hands: 0.2
-  time_full_squat_legs: 0.25
-  wait_in_squat_back: 0
+  time_foot_ground_back: 0.2
+  time_full_squat_hands: 0.5
+  time_full_squat_legs: 0.5
+  wait_in_squat_back: 0.1
 
   # Front
   max_leg_angle: 60
