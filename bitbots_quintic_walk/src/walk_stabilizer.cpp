@@ -3,8 +3,8 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer(const std::string ns) {
-  pid_trunk_fused_pitch_.init(ros::NodeHandle(ns + "/walking/pid_trunk_fused_pitch"), false);
-  pid_trunk_fused_roll_.init(ros::NodeHandle(ns + "/walking/pid_trunk_fused_roll"), false);
+  pid_trunk_fused_pitch_.init(ros::NodeHandle(ns + "walking/pid_trunk_fused_pitch"), false);
+  pid_trunk_fused_roll_.init(ros::NodeHandle(ns + "walking/pid_trunk_fused_roll"), false);
 
   reset();
 }
