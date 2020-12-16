@@ -5,8 +5,8 @@ global_costmap:
   # Set map origin to have the origin in the map center
   origin_x: -7.5
   origin_y: -7.5
-  robot_base_frame: /base_footprint
-  global_frame: /map
+  robot_base_frame: base_footprint
+  global_frame: map
 
   update_frequency: 5.0
   publish_frequency: 5.0

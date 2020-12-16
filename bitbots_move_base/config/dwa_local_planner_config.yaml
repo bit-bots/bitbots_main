@@ -1,4 +1,6 @@
 DWAPlannerROS:
+  global_frame_id: odom
+
   # velocities
   max_vel_trans: 0.1               # The absolute value of the maximum translational velocity for the robot in m/s
   min_vel_trans: 0.00               # The absolute value of the minimum translational velocity for the robot in m/s
