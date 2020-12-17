@@ -200,6 +200,7 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
    -  ``1`` -> move current image to **Trash** subdirectory
    -  ``2`` -> Move current image to **Balls** subdirectory
    -  ``3`` -> Move current image to **Goals** subdirectory
+   - use ``arrow keys`` to navigate through images and keep the current image inside its original directory
 
 - ``/scripts/rosbag_remapper.py``
 
