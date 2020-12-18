@@ -440,7 +440,7 @@ void WorldModel::publish_local_gmm_visualization(gmms::GaussianMixtureModel gmm,
             -(config_.field_width / 2), -(config_.field_height / 2),
             (config_.field_width / 2), (config_.field_height / 2), 100, n_space,
             config_.local_publishing_frame,
-            lifetime));  // TODO: check whether x and y are in the right order
+            lifetime));
 }
 
 void WorldModel::publish_global_gmm_visualization(gmms::GaussianMixtureModel gmm,
@@ -449,12 +449,12 @@ void WorldModel::publish_global_gmm_visualization(gmms::GaussianMixtureModel gmm
             -(config_.field_width / 2), -(config_.field_height / 2),
             (config_.field_width / 2), (config_.field_height / 2), 100, n_space,
             config_.global_publishing_frame,
-            lifetime));  // TODO: check whether x and y are in the right order
+            lifetime));
 }
 
 void WorldModel::exec_local_filter_step() {
     // setting the weights of the particles according to the measurements taken
-    // TODO: do this only when stuff is measured
+
     local_ball_pf_->measure();
     local_mate_pf_->measure();
     local_opponent_pf_->measure();

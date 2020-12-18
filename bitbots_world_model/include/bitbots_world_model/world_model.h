@@ -204,26 +204,78 @@ private:
 
     std::vector<hlm::ObstacleRelative> relative_gmm_to_obstacle_relative(
             gmms::GaussianMixtureModel gmm, unsigned char color);
+
+    /**
+     * Extracts a vector of BallRelative messages from a GaussianMixtureModel
+     * based on the means of the components of the GMM.
+     * The number of messages is the number of components in the GMM.
+     * @param gmm a GaussianMixtureModel, from which a vector of BallRelative
+     * messages is extracted
+     * @return a vector of BallRelative messages based on the means of the
+     * components of the input GMM.
+     */
     std::vector<hlm::BallRelative>
     relative_gmm_to_ball_relative(gmms::GaussianMixtureModel gmm);
 
     void publishing_timer_callback(const ros::TimerEvent&);
+
+    /**
+     * Publishes POINT-Markers representing the particles of the local filters
+     * in different colors (defined in the config) and name spaces.
+     */
     void publish_local_particle_visualization();
+
+    /**
+     * Publishes POINT-Markers representing the particles of the global filters
+     * in different colors (defined in the config) and name spaces.
+     */
     void publish_global_particle_visualization();
+
+
     void publish_local_gmm_visualization(gmms::GaussianMixtureModel gmm,
             std::string n_space, ros::Duration lifetime);
+
     void publish_global_gmm_visualization(gmms::GaussianMixtureModel gmm,
             std::string n_space, ros::Duration lifetime);
+
+    /**
+     * Publishes he frames in which team mates are located in the map frame
+     * accordingly to the global mate filter.
+     * The frames are named in the pattern of "mate_*ID*".
+     */
     void send_mate_transforms();
     geometry_msgs::Pose pose2d_to_pose(const geometry_msgs::Pose2D pose2D);
 
+    /**
+     * Maps a color_id onto std_msgs::ColorRGBA
+     *
+     * 0: White
+     * 1: Black
+     * 2: Yellow
+     * 3: Blue
+     * 4: Red
+     * 5: Green
+     * 6: Orange
+     * 7: Violet
+     *
+     * @param color_id the id of the color
+     * @return the resulting std_msgs::ColorRGBA
+     */
     std_msgs::ColorRGBA get_color_msg(int color_id);
     void set_global_measurements(hlm::TeamData msg);
     void publish_local_results();
     void publish_global_results();
     void exec_local_filter_step();
     void exec_global_filter_step();
+
+    /**
+     * reinitializes all local filters
+     */
     void reset_all_local_filters();
+
+    /**
+     * reinitializes all global filters
+     */
     void reset_all_global_filters();
 };
 

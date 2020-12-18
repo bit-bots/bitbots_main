@@ -15,6 +15,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
+#include <bitbots_world_model/
 
 
 
@@ -43,6 +44,21 @@ public:
     void filter_timer_callback(const ros::TimerEvent&);
 
 private:
+  enum MyFields {
+    LatLon,
+    Altitude,
+    Velocity,
+    Attitude
+};
+
+using MyStateVector = UKF::StateVector<
+    UKF::Field<LatLon, UKF::Vector<2>>,
+    UKF::Field<Altitude, real_t>,
+    UKF::Field<Velocity, UKF::Vector<3>>,
+    UKF::Field<Attitude, UKF::Quaternion>
+>;
+
+
     ros::NodeHandle nh_;
 
     ros::Subscriber ball_subscriber_;
