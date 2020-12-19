@@ -10,9 +10,12 @@ find_package(catkin REQUIRED COMPONENTS
   rosgraph_msgs
   std_msgs
   dynamic_reconfigure
+  bitbots_docs
 )
 
 catkin_python_setup()
+
+enable_bitbots_docs()
 
 generate_dynamic_reconfigure_options(
   cfg/sim.cfg

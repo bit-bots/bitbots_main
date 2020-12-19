@@ -21,6 +21,7 @@
   <depend>nav_msgs</depend>
   <depend>rosgraph_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>bitbots_docs</depend>
 
   <export>
       <bitbots_documentation>
