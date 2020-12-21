@@ -131,22 +131,22 @@ class WebotsController:
 
         if self.ros_active:
             rospy.init_node("webots_ros_interface", anonymous=True,
-                            argv=['clock:=/' + self.namespace + '/clock'])
-        self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
-        self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
+                            argv=['clock:=/clock'])
+        self.pub_js = rospy.Publisher("joint_states", JointState, queue_size=1)
+        self.pub_imu = rospy.Publisher("imu/data", Imu, queue_size=1)
 
-        self.pub_imu_head = rospy.Publisher(self.namespace + "/imu_head/data", Imu, queue_size=1)
-        self.pub_cam = rospy.Publisher(self.namespace + "/camera/image_proc", Image, queue_size=1)
-        self.pub_cam_info = rospy.Publisher(self.namespace + "/camera_info", CameraInfo, queue_size=1, latch=True)
+        self.pub_imu_head = rospy.Publisher("imu_head/data", Imu, queue_size=1)
+        self.pub_cam = rospy.Publisher("camera/image_proc", Image, queue_size=1)
+        self.pub_cam_info = rospy.Publisher("camera_info", CameraInfo, queue_size=1, latch=True)
 
-        self.pub_pres_left = rospy.Publisher(self.namespace + "/foot_pressure_left/filtered", FootPressure,
+        self.pub_pres_left = rospy.Publisher("foot_pressure_left/filtered", FootPressure,
                                              queue_size=1)
-        self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure,
+        self.pub_pres_right = rospy.Publisher("foot_pressure_right/filtered", FootPressure,
                                               queue_size=1)
-        self.cop_l_pub_ = rospy.Publisher(self.namespace + "/cop_l", PointStamped, queue_size=1)
-        self.cop_r_pub_ = rospy.Publisher(self.namespace + "/cop_r", PointStamped, queue_size=1)
-        self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
-        rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
+        self.cop_l_pub_ = rospy.Publisher("cop_l", PointStamped, queue_size=1)
+        self.cop_r_pub_ = rospy.Publisher("cop_r", PointStamped, queue_size=1)
+        self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
+        rospy.Subscriber("DynamixelController/command", JointCommand, self.command_cb)
 
         self.translation_field = self.robot_node.getField("translation")
         self.rotation_field = self.robot_node.getField("rotation")
