@@ -21,7 +21,8 @@ int main(int argc, char **argv) {
 
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   ROS_DEBUG("localization");
-  nh_ = ros::NodeHandle("/bitbots_localization");
+  pnh_ = ros::NodeHandle("bitbots_localization");
+  nh_ = ros::NodeHandle();
 }
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
@@ -33,20 +34,20 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   fieldboundary_in_image_subscriber_ = nh_.subscribe(config.fieldboundary_in_image_topic, 1,
                                                      &Localization::FieldBoundaryInImageCallback, this);
 
-  pose_particles_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(config.particle_publishing_topic.c_str(),
+  pose_particles_publisher_ = pnh_.advertise<visualization_msgs::MarkerArray>(config.particle_publishing_topic.c_str(),
                                                                              1);
-  pose_with_covariance_publisher_ = nh_.advertise<gm::PoseWithCovarianceStamped>("pose_with_covariance", 1);
-  lines_publisher_ = nh_.advertise<visualization_msgs::Marker>("lines", 1);
-  line_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
-  goal_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
-  fieldboundary_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("field_boundary_ratings", 1);
-  corner_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
-  t_crossings_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
-  crosses_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
+  pose_with_covariance_publisher_ = pnh_.advertise<gm::PoseWithCovarianceStamped>("pose_with_covariance", 1);
+  lines_publisher_ = pnh_.advertise<visualization_msgs::Marker>("lines", 1);
+  line_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
+  goal_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
+  fieldboundary_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("field_boundary_ratings", 1);
+  corner_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
+  t_crossings_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
+  crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
   ros::Duration(1).sleep();
 
-  service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+  service_ = pnh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
 
   ROS_INFO_STREAM("Setting path to " << config.map_path_lines);
   lines_.reset(new Map(config.map_path_lines, config));
@@ -132,7 +133,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
     reset_filter(config_.init_mode);
   }
 
-  publishing_timer_ = nh_.createTimer(static_cast<double>(config.publishing_frequency),
+  publishing_timer_ = pnh_.createTimer(static_cast<double>(config.publishing_frequency),
                                       &Localization::run_filter_one_step, this);
 
 }
