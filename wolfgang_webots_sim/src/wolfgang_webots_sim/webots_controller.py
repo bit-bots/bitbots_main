@@ -137,7 +137,7 @@ class WebotsController:
 
         self.pub_imu_head = rospy.Publisher("imu_head/data", Imu, queue_size=1)
         self.pub_cam = rospy.Publisher("camera/image_proc", Image, queue_size=1)
-        self.pub_cam_info = rospy.Publisher("camera_info", CameraInfo, queue_size=1, latch=True)
+        self.pub_cam_info = rospy.Publisher("camera/camera_info", CameraInfo, queue_size=1, latch=True)
 
         self.pub_pres_left = rospy.Publisher("foot_pressure_left/filtered", FootPressure,
                                              queue_size=1)
