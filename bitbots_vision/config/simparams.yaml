@@ -14,7 +14,7 @@ field_boundary_detector_roi_height: 1
 field_boundary_detector_green_threshold: 41
 
 # Improve line detection in sim
-white_color_detector_use_color_lookup_table: false # Should the white color detector use a color space or a HSV range
+white_color_detector_use_color_lookup_table: false # Should the white color detector use a color lookup table or a HSV range
 white_color_detector_lower_values_h: 101  # Lower bound for the white color detector hue
 white_color_detector_lower_values_s: 0  # Lower bound for the white color detector saturation
 white_color_detector_lower_values_v: 158  # Lower bound for the white color detector value/brightness

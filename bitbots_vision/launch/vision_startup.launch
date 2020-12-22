@@ -34,7 +34,7 @@
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 
-    <!-- Start dynamic-color-space node -->
+    <!-- Start dynamic-color-lookup-table node -->
     <node pkg="bitbots_vision" type="dynamic_color_lookup_table.py" name="bitbots_dynamic_color_lookup_table" output="screen"  launch-prefix="$(arg taskset)">
     </node>
 

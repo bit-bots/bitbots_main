@@ -2,7 +2,7 @@
 Colorpicker
 ===========
 
-How to Record a Color Space
+How to Record a color lookup table
 ===========================
 
 Robot Camera
@@ -29,5 +29,5 @@ What's next?
 ============
 1. Move the just saved ``.pickle`` file to ``bitbots_meta/bitbots_vision/bitbots_vision/config/color_lookup_tables``.
 2. Find a usefull name. Normally the files are names like that: ``<camera_type>_<room_or_location>_<special_attributes>.pickle``.
-3. Select the color space via dynamic reconfigure or change the parameter in the visionparams.yaml.
+3. Select the color lookup table via dynamic reconfigure or change the parameter in the visionparams.yaml.
 4. Win the RoboCup.

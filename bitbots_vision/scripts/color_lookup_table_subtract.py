@@ -7,15 +7,15 @@ import pickle
 import argparse
 
 """
-Another small tool for color space enhancement.
+Another small tool for color lookup table enhancement.
 
-This tool is able to subtract color values from one color space file from another.
+This tool is able to subtract color values from one color lookup table file from another.
 """
 
 def init_color_lookup_table(color_path):
     # type: (str) -> None
     """
-    Initialization of color space from .yaml or .pickle file
+    Initialization of color lookup table from .yaml or .pickle file
 
     :param str color_path: path to file containing the accepted colors
     :return: None
@@ -41,12 +41,12 @@ def init_color_lookup_table(color_path):
     length = len(color_values['red'])
     if length == len(color_values['green']) and \
                     length == len(color_values['blue']):
-        # setting colors from yaml file to True in color space
+        # setting colors from yaml file to True in color lookup table
         for x in range(length):
             color_lookup_table[color_values['blue'][x],
                         color_values['green'][x],
                         color_values['red'][x]] = 1
-    print("Imported color space")
+    print("Imported color lookup table")
     return color_lookup_table
 
 def compare(positive_color_lookup_table, negative_color_lookup_table):
@@ -75,28 +75,28 @@ def save(filename, color_lookup_table):
     filename = f'{filename}_{output_type}.pickle'
     with open(filename, 'wb') as outfile:
         pickle.dump(data, outfile, protocol=2)
-        # stores data of ColorLookupTable in file as pickle for efficient loading (yaml is too slow)
+        # stores data of color lookup table in file as pickle for efficient loading (yaml is too slow)
 
     print(f"Output saved to '{filename}'.")
 
 def run(positive_color_lookup_table_path, negative_color_lookup_table_path, output_path):
-    print(f"Load positive color space '{positive_color_lookup_table_path}'")
-    positive_color_lookup_table = init_color_lookup_table(positive_color_space_path)
-    print(np.count_nonzero(positive_color_space))
-    print(f"Load negative color space '{negative_color_space_path}'")
-    negative_color_space = init_color_space(negative_color_space_path)
-    print(np.count_nonzero(negative_color_space))
-    print("Filter color spaces")
-    filtered_color_space = compare(positive_color_space, negative_color_space)
-    print(np.count_nonzero(filtered_color_space))
+    print(f"Load positive color lookup table '{positive_color_lookup_table_path}'")
+    positive_color_lookup_table = init_color_lookup_table(positive_color_lookup_table_path)
+    print(np.count_nonzero(positive_color_lookup_table))
+    print(f"Load negative color lookup table '{negative_color_lookup_table_path}'")
+    negative_color_lookup_table = init_color_lookup_table(negative_color_lookup_table_path)
+    print(np.count_nonzero(negative_color_lookup_table))
+    print("Filter color lookup tables")
+    filtered_color_lookup_table = compare(positive_color_lookup_table, negative_color_lookup_table)
+    print(np.count_nonzero(filtered_color_lookup_table))
     print("Finished filtering")
-    print("Save color space")
-    save(output_path, filtered_color_space)
+    print("Save color lookup table")
+    save(output_path, filtered_color_lookup_table)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--positive", help="Color space where the negative color space is subtracted from.")
-    parser.add_argument("-n", "--negative", help="Color space which is subtracted from the positive color space.")
+    parser.add_argument("-p", "--positive", help="color lookup table where the negative color lookup table is subtracted from.")
+    parser.add_argument("-n", "--negative", help="color lookup table which is subtracted from the positive color lookup table.")
     parser.add_argument("-o", "--output", help="Saves the output in a Pickle file.")
     args = parser.parse_args()
     np.warnings.filterwarnings('ignore')
@@ -108,6 +108,6 @@ if __name__ == "__main__":
             else:
                 print("Output path incorrect!")
         else:
-            print("Negative color space path incorrect!")
+            print("Negative color lookup table path incorrect!")
     else:
-        print("Positive color space path incorrect!")
+        print("Positive color lookup table path incorrect!")

@@ -10,11 +10,11 @@ import math
 from multiprocessing import Process, Manager
 
 """
-A small tool for color space enhancement.
+A small tool for color lookup table enhancement.
 
-This tool is able to find main clusters in the color space, interpolate defined distances,
-add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
-It also visualizes the color space in a browser based 3d graph.
+This tool is able to find main clusters in the color lookup table, interpolate defined distances,
+add brightness thresholds and convert a yaml encoded to an pickle encoded color lookup table.
+It also visualizes the color lookup table in a browser based 3d graph.
 """
 
 def connect(ends):
@@ -76,7 +76,7 @@ class ColorLookupTableTool():
 
     def load_color_lookup_table_from_yaml(self, color_path):
         """
-        Loads yaml color space.
+        Loads yaml color lookup table.
         """
         with open(color_path, 'r') as stream:
             print("Loading file...")
@@ -96,7 +96,7 @@ class ColorLookupTableTool():
 
     def get_value_tuple(self, index):
         """
-        ColorLookupTable color getter.
+        color lookup table color getter.
         """
         return (self.color_lookup_table_points[0][index],
                 self.color_lookup_table_points[1][index],
@@ -104,7 +104,7 @@ class ColorLookupTableTool():
 
     def get_color_lookup_table_points(self, pointlist):
         """
-        ColorLookupTable color getter with index list input.
+        color lookup table color getter with index list input.
         """
         return ([self.color_lookup_table_points[0][x] for x in pointlist],
                 [self.color_lookup_table_points[1][x] for x in pointlist],
@@ -112,7 +112,7 @@ class ColorLookupTableTool():
 
     def all_distances(self):
         """
-        Calculates all distance between all points in the color space.
+        Calculates all distance between all points in the color lookup table.
         """
         points = self.color_lookup_table_points
 
@@ -127,7 +127,7 @@ class ColorLookupTableTool():
 
     def cluster(self):
         """
-        Calculates the main clusters in the color space
+        Calculates the main clusters in the color lookup table
         """
         print("Calculating distances")
         self.all_distances()
@@ -159,7 +159,7 @@ class ColorLookupTableTool():
 
     def interpolate(self):
         """
-        Interpolates between points with a certain distance in the color space.
+        Interpolates between points with a certain distance in the color lookup table.
         """
         print("Interpolating points...")
         interpolated_points = set()
@@ -220,7 +220,7 @@ class ColorLookupTableTool():
 
     def plot_values(self, filename):
         """
-        Creates an interactive 3d plotly graph for the color space.
+        Creates an interactive 3d plotly graph for the color lookup table.
         """
         point_colors = [f'rgb{self.get_value_tuple(index)}' for index in range(self.point_count)]
 
@@ -316,7 +316,7 @@ class ColorLookupTableTool():
 
     def save(self, filename):
         """
-        This saves the enhanced color space in a pickle encoded file.
+        This saves the enhanced color lookup table in a pickle encoded file.
         """
         if len(self.interpolated_points) > 0:
             red, green, blue = zip(*self.interpolated_points)
@@ -345,7 +345,7 @@ class ColorLookupTableTool():
         filename = f'{filename}_{output_type}.pickle'
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile, protocol=2)
-            # stores data of ColorLookupTable in file as pickle for efficient loading (yaml is too slow)
+            # stores data of color lookup table in file as pickle for efficient loading (yaml is too slow)
 
         print(f"Output saved to '{filename}'.")
 
