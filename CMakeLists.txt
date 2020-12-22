@@ -20,7 +20,7 @@ add_action_files(
 
 add_message_files(
   FILES
-  ColorSpace.msg
+  ColorLookupTable.msg
   Config.msg
   Cpu.msg
   FootPressure.msg
