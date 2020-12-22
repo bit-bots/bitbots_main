@@ -12,7 +12,7 @@ Another small tool for color space enhancement.
 This tool is able to subtract color values from one color space file from another.
 """
 
-def init_color_space(color_path):
+def init_color_lookup_table(color_path):
     # type: (str) -> None
     """
     Initialization of color space from .yaml or .pickle file
@@ -20,7 +20,7 @@ def init_color_space(color_path):
     :param str color_path: path to file containing the accepted colors
     :return: None
     """
-    color_space = np.zeros((256, 256, 256), dtype=np.uint8)
+    color_lookup_table = np.zeros((256, 256, 256), dtype=np.uint8)
     if color_path.endswith('.yaml'):
         with open(color_path, 'r') as stream:
             try:
@@ -43,26 +43,26 @@ def init_color_space(color_path):
                     length == len(color_values['blue']):
         # setting colors from yaml file to True in color space
         for x in range(length):
-            color_space[color_values['blue'][x],
+            color_lookup_table[color_values['blue'][x],
                         color_values['green'][x],
                         color_values['red'][x]] = 1
     print("Imported color space")
-    return color_space
+    return color_lookup_table
 
-def compare(positive_color_space, negative_color_space):
-    mask = np.invert(np.array(negative_color_space, dtype=np.bool))
-    binary_color_space = np.logical_and(mask, positive_color_space)
-    return np.array(binary_color_space, dtype=np.uint8)
+def compare(positive_color_lookup_table, negative_color_lookup_table):
+    mask = np.invert(np.array(negative_color_lookup_table, dtype=np.bool))
+    binary_color_lookup_table = np.logical_and(mask, positive_color_lookup_table)
+    return np.array(binary_color_lookup_table, dtype=np.uint8)
 
-def generate_color_lists(color_space):
-    color_space_positions = np.where(color_space == 1)
-    color_lists = ( color_space_positions[0].tolist(),
-                    color_space_positions[1].tolist(),
-                    color_space_positions[2].tolist())
+def generate_color_lists(color_lookup_table):
+    color_lookup_table_positions = np.where(color_lookup_table == 1)
+    color_lists = ( color_lookup_table_positions[0].tolist(),
+                    color_lookup_table_positions[1].tolist(),
+                    color_lookup_table_positions[2].tolist())
     return color_lists
 
-def save(filename, color_space):
-    red, green, blue = generate_color_lists(color_space)
+def save(filename, color_lookup_table):
+    red, green, blue = generate_color_lists(color_lookup_table)
 
     output_type = "negative_filtered"
 
@@ -75,13 +75,13 @@ def save(filename, color_space):
     filename = f'{filename}_{output_type}.pickle'
     with open(filename, 'wb') as outfile:
         pickle.dump(data, outfile, protocol=2)
-        # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
+        # stores data of ColorLookupTable in file as pickle for efficient loading (yaml is too slow)
 
     print(f"Output saved to '{filename}'.")
 
-def run(positive_color_space_path, negative_color_space_path, output_path):
-    print(f"Load positive color space '{positive_color_space_path}'")
-    positive_color_space = init_color_space(positive_color_space_path)
+def run(positive_color_lookup_table_path, negative_color_lookup_table_path, output_path):
+    print(f"Load positive color space '{positive_color_lookup_table_path}'")
+    positive_color_lookup_table = init_color_lookup_table(positive_color_space_path)
     print(np.count_nonzero(positive_color_space))
     print(f"Load negative color space '{negative_color_space_path}'")
     negative_color_space = init_color_space(negative_color_space_path)

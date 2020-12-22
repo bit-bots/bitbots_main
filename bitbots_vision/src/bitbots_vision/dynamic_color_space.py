@@ -8,13 +8,13 @@ import numpy as np
 from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpace, Config
+from bitbots_msgs.msg import ColorLookupTable, Config
 from bitbots_vision.vision_modules import field_boundary, color, ros_utils
 
 
-class DynamicColorSpace:
+class DynamicColorLookupTable:
     """
-    The :class:`.DynamicColorSpace` uses a heuristic to adapt the lookup table of 
+    The :class:`.DynamicColorLookupTable` uses a heuristic to adapt the lookup table of
     the :class:`bitbots_vision.vision_modules.color.DynamicPixelListColorDetector`
     to color changes which happen in the field during a game due to e.g. differing light.
     It only adds colors that only occur under the current field boundary and are surrounded by the current field colors.
@@ -22,12 +22,12 @@ class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
         """
-        DynamicColorSpace is a ROS node, that is used by the vision node to better recognize the field color.
-        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g.
+        DynamicColorLookupTable is a ROS node, that is used by the vision node to better recognize the field color.
+        DynamicColorLookupTable is able to calculate dynamically changing color spaces to accommodate e.g.
         changing lighting conditions or to compensate for not optimized base color space files.
 
         This node subscribes to an Image-message (default: camera/image_proc) and to the 'vision_config'-message.
-        This node publishes ColorSpace-messages.
+        This node publishes ColorLookupTable-messages.
 
         Initiating 'bitbots_dynamic_color_space' node.
 
@@ -90,8 +90,8 @@ class DynamicColorSpace:
             self._max_fps = vision_config['dynamic_color_space_max_fps']
             self._last_time = rospy.get_rostime()
 
-        # Set publisher of ColorSpace-messages
-        self._pub_color_space = ros_utils.create_or_update_publisher(self._vision_config, vision_config, self._pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
+        # Set publisher of ColorLookupTable-messages
+        self._pub_color_space = ros_utils.create_or_update_publisher(self._vision_config, vision_config, self._pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorLookupTable)
 
         # Set Color- and FieldBoundaryDetector
         self._color_detector = color.DynamicPixelListColorDetector(
@@ -244,21 +244,21 @@ class DynamicColorSpace:
     def _publish(self, image_msg):
         # type: (Image) -> None
         """
-        Publishes the current color space via ColorSpace-message.
+        Publishes the current color space via ColorLookupTable-message.
 
         :param Image image_msg: 'camera/image_proc'-message
         :return: None
         """
         # Get color space from queue
         color_space = self._queue_to_color_space(self._color_value_queue)
-        # Create ColorSpace-message
-        color_space_msg = ColorSpace()
+        # Create ColorLookupTable-message
+        color_space_msg = ColorLookupTable()
         color_space_msg.header.frame_id = image_msg.header.frame_id
         color_space_msg.header.stamp = image_msg.header.stamp
         color_space_msg.blue  = color_space[:, 0].tolist()
         color_space_msg.green = color_space[:, 1].tolist()
         color_space_msg.red   = color_space[:, 2].tolist()
-        # Publish ColorSpace-message
+        # Publish ColorLookupTable-message
         self._pub_color_space.publish(color_space_msg)
 
 
@@ -400,4 +400,4 @@ class Heuristic:
 
 
 if __name__ == '__main__':
-    DynamicColorSpace()
+    DynamicColorLookupTable()

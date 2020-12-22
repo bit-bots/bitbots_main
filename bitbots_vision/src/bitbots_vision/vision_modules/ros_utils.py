@@ -167,7 +167,7 @@ def add_model_enums(cfg_type, package_path):
     _change_enum_items(cfg_type, 'yolo_darknet_model_path', yolo_darknet_paths)
     _change_enum_items(cfg_type, 'yolo_openvino_model_path', yolo_openvino_paths)
 
-def add_color_space_enum(cfg_type, package_path):
+def add_color_lookup_table_enum(cfg_type, package_path):
     """
     Add models to dynamic reconfigure enums.
 
@@ -175,15 +175,15 @@ def add_color_space_enum(cfg_type, package_path):
     :param package_path: ROS package path
     """
     # Directory in which the color spaces are saved
-    color_spaces_path = os.path.join(package_path, "config/color_spaces")
+    color_lookup_tables_path = os.path.join(package_path, "config/color_lookup_tables")
     # All color spaces
-    color_spaces = os.listdir(color_spaces_path)
+    color_lookup_tables = os.listdir(color_lookup_tables_path)
     # Sort color spaces alphabetically
-    color_spaces.sort()
+    color_lookup_tables.sort()
     # Get all files in this directory
-    color_space_files = [file for file in color_spaces if os.path.isfile(os.path.join(color_spaces_path, file))]
+    color_lookup_table_files = [file for file in color_lookup_tables if os.path.isfile(os.path.join(color_lookup_tables_path, file))]
     # Create list with a new enum item for each file
-    color_space_enum = [{'name': cs_file, 'value': cs_file, 'description': f'color space {cs_file}'} for cs_file in color_space_files]
+    color_lookup_table_enum = [{'name': cs_file, 'value': cs_file, 'description': f'color space {cs_file}'} for cs_file in color_lookup_table_files]
 
     # Add enums to configuration
     _change_enum_items(cfg_type, 'field_color_detector_path', color_space_enum)

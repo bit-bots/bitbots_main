@@ -224,7 +224,7 @@ class Colorpicker(object):
 
     def _save(self):
         """
-        Saves the current colorspace in a pickle file.
+        Saves the current ColorLookupTable in a pickle file.
         """
         # Get user input
         input_path = input(f"Press ENTER to save color space file to '{self._default_path}'\nor enter output file path: ")

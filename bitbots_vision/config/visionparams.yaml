@@ -13,14 +13,14 @@ ROS_goal_posts_msg_topic: 'goal_posts_in_image'  # ROS topic of the goal posts m
 ROS_obstacle_msg_topic: 'obstacles_in_image'  # ROS topic of the obstacles message
 ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
 ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message
-ROS_dynamic_color_space_msg_topic: 'dynamic_color_space'  # ROS topic of the dynamic color space message
+ROS_dynamic_color_lookup_table_msg_topic: 'dynamic_color_lookup_table'  # ROS topic of the dynamic color space message
 ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
 ROS_debug_fcnn_image_msg_topic: 'fcnn_debug_image'  # ROS topic of the FCNN debug image message
 ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'  # ROS topic of the white HSV color detector mask debug image message
 ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'  # ROS topic of the red HSV color detector mask debug image message
 ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'  # ROS topic of the blue HSV color detector mask debug image message
 ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
-ROS_dynamic_color_space_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS topic of the dynamic color space field mask debug image message
+ROS_dynamic_color_lookup_table_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS topic of the dynamic color space field mask debug image message
 
 fcnn_model_path: '2019_06_timon_basler'  # Name of the ball fcnn model
 yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
@@ -47,14 +47,14 @@ goal_post_field_boundary_y_offset: 10  # Maximum distance between field boundary
 field_color_detector_path: 'basler_f031.pickle'  # Color space for the field color detector
 field_color_detector_use_hsv: false
 
-dynamic_color_space_active: true  # Turn dynamic color space ON or OFF
-dynamic_color_space_max_fps: 1.0  # Maximum FPS of the dynamic color space node
-dynamic_color_space_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
-dynamic_color_space_threshold: 0.55  # Necessary amount of previously detected color inside the kernel in percentage
-dynamic_color_space_kernel_radius: 1  # Radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
-dynamic_color_space_field_boundary_detector_search_method: 'downsampling_reversed'  # Search method for FieldBoundaryFinder used by DynamicColorSpace (iteration, reversed, binary or dynamic)
+dynamic_color_lookup_table_active: true  # Turn dynamic color space ON or OFF
+dynamic_color_lookup_table_max_fps: 1.0  # Maximum FPS of the dynamic color space node
+dynamic_color_lookup_table_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
+dynamic_color_lookup_table_threshold: 0.55  # Necessary amount of previously detected color inside the kernel in percentage
+dynamic_color_lookup_table_kernel_radius: 1  # Radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
+dynamic_color_lookup_table_field_boundary_detector_search_method: 'downsampling_reversed'  # Search method for FieldBoundaryFinder used by DynamicColorLookupTable (iteration, reversed, binary or dynamic)
 
-white_color_detector_color_space_path: 'basler_f031_lines.pickle' # Color space for the line detector
+white_color_detector_color_lookup_table_path: 'basler_f031_lines.pickle' # Color space for the line detector
 white_color_detector_use_color_space: true # Should the white color detector use a color space or a HSV range
 white_color_detector_lower_values_h: 101  # Lower bound for the white color detector hue
 white_color_detector_lower_values_s: 0  # Lower bound for the white color detector saturation

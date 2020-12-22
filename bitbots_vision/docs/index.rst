@@ -43,7 +43,7 @@ Neural network models are stored in the directory ``bitbots_vision/models``.
 These models are not part of this repository.
 
 For the field detection, which is needed for the field boundary and obstacle detection, the vision uses RGB lookup table provided by the ``colorpicker.py`` as in `Additional Scripts`_.
-These color spaces can be improved and converted to a pickle file for faster loading times using the ``colorspace_tool``.
+These color spaces can be improved and converted to a pickle file for faster loading times using the ``ColorLookupTable_tool``.
 The field color space itself can be dynamically adapted in real-time using the dynamic color space heuristic.
 Therefore the vision gets more resistant to natural light conditions.
 
