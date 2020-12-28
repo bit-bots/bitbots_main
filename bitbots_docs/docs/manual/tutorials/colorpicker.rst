@@ -6,7 +6,7 @@ Vorraussetzungen
 ================
 Das Repository  Bit-Bots/wolves_colorpicker ist aus dem Gogs geclont worden.
 
-Aufnehmen eines Colorspaces
+Aufnehmen eines ColorLookupTables
 ===========================
 1. Anschließen einer Kamera an den Computer
 2. Hat der Computer eine eingebaute Kamera, setze in bitbots_meta/wolves_image_provider/config/camera_settings.yaml unter camera_v4l den Configwert device auf /dev/video1
@@ -18,10 +18,10 @@ Aufnehmen eines Colorspaces
 8. Wechsele zurück in die Shell und drücke w zum Speichern
 
 
-Was tun mit dem aufgenommenen Colorspace?
+Was tun mit dem aufgenommenen ColorLookupTable?
 ==========================================
-1. Der Colorspace ist gespeichert in der Datei ~/.ros/yamlColor.yaml
-2. Verschiebe die Datei nach bitbots_meta/bitbots_vision/bitbots_vision/config/color_spaces
+1. Der ColorLookupTable ist gespeichert in der Datei ~/.ros/yamlColor.yaml
+2. Verschiebe die Datei nach bitbots_meta/bitbots_vision/bitbots_vision/config/color_lookup_tables
 3. Benenne die Datei sinnvoll (z.B. Veranstaltungsname)
 4. Interpolation-tool ausführen: ./bitbots_meta/bitbots_vision/bitbots_vision_tools/scripts/colospacetool.py -y path_to_inputfile -o
 5. Passe den Configparameter field_color_detector_path in bitbots_vision/bitbots_vision/config/visionparams.yaml an
