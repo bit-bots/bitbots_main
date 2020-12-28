@@ -1,18 +1,14 @@
-===========
-How to Doku
-===========
+===============
+How to document
+===============
 
-Unter `doku.bit-bots.de <http://doku.bit-bots.de>`_ wird eine automatisch aktualisierte Doku zur Verfügung gestellt.
+Our documentation is published under  `doku.bit-bots.de <http://doku.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_misc/bitbots_docs <https://github.com/bit-bots/bitbots_misc>`_ and deployed by our `Jenkins CI <http://ci.bit-bots.de>`_.
 
-Automatisch aktualisiert bedeutet, dass der Stand der Dokumentation im Paket `bitbots_misc/bitbots_docs
-<https://github.com/bit-bots/bitbots_misc>`_ automatisch von unserer `Jenkins CI <http://ci.bit-bots.de>`_
-gebaut und deployt wird.
+Installation of system dependencies
+===================================
 
-Installation von System Dependencies
-====================================
-
-Die Doku wird von Sphinx mit den Erweiterungen `breathe` und `exhale` gebaut.
-Diese müssen entsprechend in den richtigen Versionen installiert werden.
+We are using `Sphinx <https://www.sphinx-doc.org/>`_ and the following extentions to generate our documentation: `breathe`, `exhale`.
+The correct version of the extentions must be installed.
 
 .. code-block:: bash
 
@@ -21,30 +17,44 @@ Diese müssen entsprechend in den richtigen Versionen installiert werden.
         pip3 install exhale --user
 
 
-Existierende Doku bauen
-=======================
+How to build the documentation
+==============================
 
-Diese allgemeine Dokumentation (die mit Tutorials inklusive dieser Seite) kann mit dem Command
-``catkin build bitbots_docs --no-deps --make-args Documentation`` gebaut werden.
+* To build the general documentation (tutorials etc. including this one), run the following command:
 
-Für ein anderes Paket, bei dem die Doku wie oben beschrieben aktiviert wurde, kann sie mit
-``catkin build <package> --no-deps --make-args Documentation`` gebaut werden.
+  .. code-block:: bash
 
+          catkin build bitbots_docs --no-deps --make-args Documentation
 
-Doku für ein Paket schreiben
-============================
+* To build documentation for another package (with `activated <_activate_docs_for_package>`_ documentation), run the following command by replacing ``<package>`` by your package name:
 
-In jedem Paket, für das Dokumentation aktiviert ist gibt es den Ordner ``docs``.
-In diesem ist sowohl die Konfiguration des Dokusystems (``docs/conf.py``) als auch
-das Root-Dokument der Doku (``docs/index.rst``) zu finden.
+  .. code-block:: bash
 
-Wichtig ist hier nur die ``index.rst``.
-Von dieser Datei aus werden alle anderen Dokumente eingebunden.
-Wie dies passiert ist frei wählbar wobei wir selbst geschriebene Dokumente in dem Ordner ``docs/manual`` legen.
+          catkin build <package> --no-deps --make-args Documentation
 
 
-Doku für ein Paket aktivieren
-=============================
+How to write documentation for a package
+========================================
+
+In every package (with `activated <_activate_docs_for_package>`_ documentation) you can find a directory, called ``docs/`` including the configuration file (``docs/conf.py``) and the root-document (``docs/index.rst``).
+
+Preferably create your ``.rst`` documents in the directory ``docs/manual`, then reference them in the ``docs/index.rst`` as follows:
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+    :caption: Manuals:
+
+    manual/*
+
+
+.. _activate_docs_for_package
+
+Activate documentation for a package
+====================================
+
+
+
 
 Um Dokumentation für ein Paket wie oben beschrieben, schreiben zu können, muss das bauen der Doku für das
 entsprechende Paket aktiviert sein.
