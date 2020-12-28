@@ -2,7 +2,7 @@
 Colorpicker
 ===========
 
-How to Record a color lookup table
+How to Record a Color Lookup Table
 ===========================
 
 Robot Camera
