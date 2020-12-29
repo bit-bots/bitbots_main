@@ -291,7 +291,7 @@ static PyObject* maskImg(PyObject *self, PyObject *args) {
         for (int x = 0; x < image->dimensions[1]; x++) {
             // Get pixel value
             pixel = (unsigned char*) image->data + y * image->strides[0] + x * image->strides[1];
-            // Check if pixel is in color lookup table / color lookup table
+            // Check if pixel is in color lookup table
             if (*(mask->data + pixel[0] * mask->strides[0] + pixel[1] * mask->strides[1] + pixel[2] * mask->strides[2])) {
                 // Set this pixel in the image mask to 255
                 *(maskedImg->data + y * maskedImg->strides[0] + x * maskedImg->strides[1]) = 255;
