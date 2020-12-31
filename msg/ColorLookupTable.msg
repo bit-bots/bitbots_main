@@ -1,4 +1,4 @@
-# A list of colors which describes a color-space.
+# A list of colors which describes a color lookup table.
 
 std_msgs/Header header
 
