@@ -633,7 +633,7 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
             x = int(round(x_step * x_stepsize))  # get x value of step (depends on image size)
             for y_step in range(_y_steps):  # traverse rows
                 y = int(round(y_step * y_stepsize))  # get y value of step (depends on image size)
-                if field_mask[y_step, x_step] > 100:  # when the pixel is in the color space
+                if field_mask[y_step, x_step] > 100:  # when the pixel is in the color lookup table
                     firstgreen = y
                     break
             _field_boundary_points.append((x, firstgreen))
