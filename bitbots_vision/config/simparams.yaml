@@ -2,7 +2,7 @@
 
 # Field
 field_color_detector_use_hsv: true
-dynamic_color_space_active: false
+dynamic_color_lookup_table_active: false
 field_color_detector_lower_values_h: 40  # Lower bound for the field color detector hue
 field_color_detector_lower_values_s: 8  # Lower bound for the field color detector saturation
 field_color_detector_lower_values_v: 20  # Lower bound for the field color detector value/brightness
@@ -14,7 +14,7 @@ field_boundary_detector_roi_height: 1
 field_boundary_detector_green_threshold: 41
 
 # Improve line detection in sim
-white_color_detector_use_color_space: false # Should the white color detector use a color space or a HSV range
+white_color_detector_use_color_lookup_table: false # Should the white color detector use a color lookup table or a HSV range
 white_color_detector_lower_values_h: 101  # Lower bound for the white color detector hue
 white_color_detector_lower_values_s: 0  # Lower bound for the white color detector saturation
 white_color_detector_lower_values_v: 158  # Lower bound for the white color detector value/brightness

@@ -13,8 +13,8 @@ from bitbots_vision.vision_modules import ros_utils
 class ColorDetector(object):
     """
     The abstract class :class:`.ColorDetector` defines a representation of valid colors e.g. the soccer field colors.
-    It is used e.g. to check, if a pixel's color matches the defined color space or to create masked binary images.
-    As many of the modules rely on the color classification of pixels to generate their output, the color detector module matches their color to a given color space.
+    It is used e.g. to check, if a pixel's color matches the defined color lookup table or to create masked binary images.
+    As many of the modules rely on the color classification of pixels to generate their output, the color detector module matches their color to a given color lookup table.
     """
     def __init__(self, config):
         # type: (dict) -> None
@@ -52,10 +52,10 @@ class ColorDetector(object):
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
-        Returns, if bgr pixel is in color space
+        Returns, if bgr pixel is in color lookup table
 
         :param np.array pixel: bgr-pixel
-        :return bool: whether pixel is in color space or not
+        :return bool: whether pixel is in color lookup table or not
         """
 
     def set_image(self, image):
@@ -126,14 +126,14 @@ class ColorDetector(object):
     def match_adjacent(self, image, point, offset=1, threshold=200):
         # type: (np.array, tuple[int, int], int, float) -> bool
         """
-        Returns, if an area is in color space
+        Returns, if an area is in color lookup table
 
         :param np.array image: the full image
         :param tuple[int, int] point: a x-, y-tuple defining coordinates in the image
         :param int offset: the number of pixels to check in the surrounding of the
             point (like a radius but for a square)
         :param float threshold: the mean needed to accept the area to match (0-255)
-        :return bool: whether area is in color space or not
+        :return bool: whether area is in color lookup table or not
         """
         area = image[
                max(0, point[1] - offset):
@@ -146,11 +146,11 @@ class ColorDetector(object):
     def match_area(self, area, threshold=200):
         # type: (np.array, float) -> bool
         """
-        Returns if an area is in color space
+        Returns if an area is in color lookup table
 
         :param np.array area: the image area to check
         :param float threshold: the mean needed to accept the area to match (0-255)
-        :return bool: whether area is in color space or not
+        :return bool: whether area is in color lookup table or not
         """
         return np.mean(self.get_mask_image(area)) > threshold
 
@@ -179,8 +179,8 @@ class ColorDetector(object):
 
 class HsvSpaceColorDetector(ColorDetector):
     """
-    The :class:`.HsvSpaceColorDetector` is based on the HSV-color space.
-    The HSV-color space is adjustable by setting min- and max-values for each hue, saturation and value.
+    The :class:`.HsvSpaceColorDetector` is based on the HSV color space.
+    The HSV color space is adjustable by setting min- and max-values for each hue, saturation and value.
 
     The values of the HSV channels can easily be adjusted by a human before a competition to match
     e.g. the white of the lines and goal or the team colors of the enemy team respectively.
@@ -230,10 +230,10 @@ class HsvSpaceColorDetector(ColorDetector):
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
-        Returns if bgr pixel is in color space
+        Returns if bgr pixel is in color lookup table
 
         :param np.array pixel: bgr-pixel
-        :return bool: whether pixel is in color space or not
+        :return bool: whether pixel is in color lookup table or not
         """
         pixel = self.pixel_bgr2hsv(pixel)
         return (self._max_vals[0] >= pixel[0] >= self._min_vals[0]) and \
@@ -256,10 +256,10 @@ class HsvSpaceColorDetector(ColorDetector):
 class PixelListColorDetector(ColorDetector):
     """
     The :class:`.PixelListColorDetector` is based on a lookup table of color values.
-    The color space is loaded from color-space-file defined in config.
+    The color lookup table is loaded from color-lookup-table-file defined in config.
     """
 
-    def __init__(self, config, package_path, color_space_path_param='field_color_detector_path'):
+    def __init__(self, config, package_path, color_lookup_table_path_param='field_color_detector_path'):
         # type:(dict, str) -> None
         """
         Initialization of PixelListColorDetector.
@@ -270,7 +270,7 @@ class PixelListColorDetector(ColorDetector):
         """
         self._package_path = package_path
 
-        self._color_space_path_param = color_space_path_param
+        self._color_lookup_table_path_param = color_lookup_table_path_param
 
         # Initialization of parent ColorDetector.
         super(PixelListColorDetector, self).__init__(config)
@@ -288,21 +288,21 @@ class PixelListColorDetector(ColorDetector):
 
         super(PixelListColorDetector, self).update_config(config)
 
-        if ros_utils.config_param_change(tmp_config, config, self._color_space_path_param):
-            # concatenate path to file containing the accepted colors of base color space
-            path = os.path.join(self._package_path, 'config', 'color_spaces')
-            color_space_path = os.path.join(path, config[self._color_space_path_param])
-            self._color_space = self._init_color_space(color_space_path)
+        if ros_utils.config_param_change(tmp_config, config, self._color_lookup_table_path_param):
+            # concatenate path to file containing the accepted colors of base color lookup table
+            path = os.path.join(self._package_path, 'config', 'color_lookup_tables')
+            color_lookup_table_path = os.path.join(path, config[self._color_lookup_table_path_param])
+            self._color_lookup_table = self._init_color_lookup_table(color_lookup_table_path)
 
-    def _init_color_space(self, color_path):
+    def _init_color_lookup_table(self, color_path):
         # type: (str) -> None
         """
-        Initialization of color space from .yaml or .pickle file
+        Initialization of color lookup table from .yaml or .pickle file
 
         :param str color_path: path to file containing the accepted colors
         :return: None
         """
-        color_space = np.zeros((256, 256, 256), dtype=np.uint8)
+        color_lookup_table = np.zeros((256, 256, 256), dtype=np.uint8)
         if color_path.endswith('.yaml'):
             with open(color_path, 'r') as stream:
                 try:
@@ -324,20 +324,20 @@ class PixelListColorDetector(ColorDetector):
         length = len(color_values['red'])
         if length == len(color_values['green']) and \
                 length == len(color_values['blue']):
-            # setting colors from yaml file to True in color space
+            # setting colors from yaml file to True in color lookup table
             for x in range(length):
-                color_space[color_values['blue'][x], color_values['green'][x], color_values['red'][x]] = 1
-        return color_space
+                color_lookup_table[color_values['blue'][x], color_values['green'][x], color_values['red'][x]] = 1
+        return color_lookup_table
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
-        Returns, if bgr pixel is in color space
+        Returns, if bgr pixel is in color lookup table
 
         :param np.array pixel: bgr-pixel
-        :return bool: whether pixel is in color space or not
+        :return bool: whether pixel is in color lookup table or not
         """
-        return self._color_space[pixel[0], pixel[1], pixel[2]]
+        return self._color_lookup_table[pixel[0], pixel[1], pixel[2]]
 
     def _mask_image(self, image):
         # type: (np.array) -> np.array
@@ -348,13 +348,13 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: input image
         :return np.array: masked image
         """
-        return VisionExtensions.maskImg(image, self._color_space)
+        return VisionExtensions.maskImg(image, self._color_lookup_table)
 
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
     """
-    The :class:`.DynamicPixelListColorDetector`'s color space is initially loaded from color-space-file defined in config
-    and optionally adjustable to changing color conditions (dynamic color space).
+    The :class:`.DynamicPixelListColorDetector`'s color lookup table is initially loaded from color-lookup-table-file defined in config
+    and optionally adjustable to changing color conditions (dynamic color lookup table).
     """
     def __init__(self, config, package_path):
         # type:(dict, str) -> None
@@ -371,12 +371,12 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         super(DynamicPixelListColorDetector, self).__init__(config, package_path)
 
         # Annotate global variable. The global is needed due to threading issues
-        global _dyn_color_space
-        _dyn_color_space = np.copy(self._color_space)
+        global _dyn_color_lookup_table
+        _dyn_color_lookup_table = np.copy(self._color_lookup_table)
 
         # Annotate global variable. The global is needed due to threading issues
-        global _base_color_space
-        _base_color_space = np.copy(self._color_space)
+        global _base_color_lookup_table
+        _base_color_lookup_table = np.copy(self._color_lookup_table)
 
     def set_image(self, image):
         # type: (np.array) -> None
@@ -393,70 +393,70 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
     def get_static_mask_image(self, optional_image=None):
         # type: (np.array) -> np.array
         """
-        Returns the color mask of the cached (or optional given) image based on the static color space
+        Returns the color mask of the cached (or optional given) image based on the static color lookup table
         (0 for not in color range and 255 for in color range)
 
         :param np.array optional_image: Optional input image
         :return np.array: masked image
         """
-        global _base_color_space
+        global _base_color_lookup_table
 
         if optional_image is not None:
             # Mask of optional image
-            mask = self._mask_image(optional_image, _base_color_space)
+            mask = self._mask_image(optional_image, _base_color_lookup_table)
         else:
             # Mask of default cached image
             mask = self._static_mask
             if mask is None:  # Check for cached static mask
-                mask = self._static_mask = self._mask_image(self._image, _base_color_space)
+                mask = self._static_mask = self._mask_image(self._image, _base_color_lookup_table)
 
         return mask
 
-    def _mask_image(self, image, color_space=None):
+    def _mask_image(self, image, color_lookup_table=None):
         # type: (np.array) -> np.array
         """
-        Returns the color mask of the image based on the dynamic color space unless other is specified
+        Returns the color mask of the image based on the dynamic color lookup table unless other is specified
         (0 for not in color range and 255 for in color range)
 
         :param np.array image: input image
-        :param np.array color_space: Optional color space
+        :param np.array color_lookup_table: Optional color lookup table
         :return np.array: masked image
         """
-        if color_space is None:
-            global _dyn_color_space
-            color_space = _dyn_color_space
+        if color_lookup_table is None:
+            global _dyn_color_lookup_table
+            color_lookup_table = _dyn_color_lookup_table
 
-        return VisionExtensions.maskImg(image, color_space)
+        return VisionExtensions.maskImg(image, color_lookup_table)
 
-    def color_space_callback(self, msg):
-        # type: (ColorSpace) -> None
+    def color_lookup_table_callback(self, msg):
+        # type: (ColorLookupTable) -> None
         """
-        This callback gets called inside the vision node, after subscriber received ColorSpaceMessage from DynamicColorSpace-Node.
+        This callback gets called inside the vision node, after subscriber received ColorLookupTableMessage from DynamicColorLookupTable-Node.
 
-        :param ColorSpaceMessage msg: ColorSpaceMessage
+        :param ColorLookupTableMessage msg: ColorLookupTableMessage
         :return: None
         """
-        self._decode_color_space(msg)
+        self._decode_color_lookup_table(msg)
 
-    def _decode_color_space(self, msg):
-        # type: (ColorSpaceMessage) -> None
+    def _decode_color_lookup_table(self, msg):
+        # type: (ColorLookupTableMessage) -> None
         """
-        Imports new color space from ros msg. This is used to communicate with the DynamicColorSpace-Node.
+        Imports new color lookup table from ros msg. This is used to communicate with the DynamicColorLookupTable-Node.
 
-        :param ColorSpaceMessage msg: ColorSpaceMessage
+        :param ColorLookupTableMessage msg: ColorLookupTableMessage
         :return: None
         """
-        # Create temporary color space
-        # Use the base color space as basis
-        global _base_color_space
-        color_space_temp = np.copy(_base_color_space)
+        # Create temporary color lookup table
+        # Use the base color lookup table as basis
+        global _base_color_lookup_table
+        color_lookup_table_temp = np.copy(_base_color_lookup_table)
 
-        # Adds new colors to that color space
-        color_space_temp[
+        # Adds new colors to that color lookup table
+        color_lookup_table_temp[
             msg.blue,
             msg.green,
             msg.red] = 1
 
-        # Switches the reference to the new color space
-        global _dyn_color_space
-        _dyn_color_space = color_space_temp
+        # Switches the reference to the new color lookup table
+        global _dyn_color_lookup_table
+        _dyn_color_lookup_table = color_lookup_table_temp

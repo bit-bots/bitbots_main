@@ -39,16 +39,16 @@ class Colorpicker(object):
         cv2.setMouseCallback("Colorpicker", self._mouse_callback)
         self._mouse_coord = (0,0)
         self._left_click, self._undo_click = False, False
-        self._default_path = "~/.ros/color_space.pickle"
-        color_space = np.zeros((256, 256, 256), dtype=np.uint8)
+        self._default_path = "~/.ros/color_lookup_table.pickle"
+        color_lookup_table = np.zeros((256, 256, 256), dtype=np.uint8)
 
         # Default box size
         self._box_size = 50
 
         # Init history
-        self._history = [color_space]
+        self._history = [color_lookup_table]
 
-    def _mask_image(self, image, color_space):
+    def _mask_image(self, image, color_lookup_table):
         # type: (np.array, np.array) -> np.array
         """
         Returns the color mask of the image.
@@ -56,11 +56,11 @@ class Colorpicker(object):
         [Taken from https://github.com/bit-bots/bitbots_vision/blob/master/bitbots_vision/src/bitbots_vision/vision_modules/color.py]
 
         :param np.array image: input image
-        :param np.array color_space: color space
+        :param np.array color_lookup_table: color lookup table
         :return np.array: masked image
         """
         image_reshape = image.reshape(-1,3).transpose()
-        mask = color_space[
+        mask = color_lookup_table[
                 image_reshape[0],
                 image_reshape[1],
                 image_reshape[2],
@@ -112,7 +112,7 @@ class Colorpicker(object):
             "Use <shift> and <left click> to remove colors.\n"
             "To undo a step press 'u'.\n"
             "To increase the size of the selection box press '+', to decrease press '-' \n"
-            "To save the color space press 's', then enter the path for the output file in the terminal and confirm with <enter>.\n"
+            "To save the color lookup table press 's', then enter the path for the output file in the terminal and confirm with <enter>.\n"
             "Exit using <esc>.\n\n\n", logger_name="colorpicker")
 
     def _image_callback(self, msg):
@@ -154,32 +154,32 @@ class Colorpicker(object):
                 # Get the unique colors
                 selected_matrix = np.unique(selected_matrix, axis=0)
 
-                # Copy the latest color space
-                color_space = self._history[-1].copy()
+                # Copy the latest color lookup table
+                color_lookup_table = self._history[-1].copy()
 
                 # Check for left click or shift + left click
                 if self._undo_click:
-                    # Remove color values from color space
-                    color_space[
+                    # Remove color values from color lookup table
+                    color_lookup_table[
                         selected_matrix[:,0],
                         selected_matrix[:,1],
                         selected_matrix[:,2]] = 0
                 # Check if we add stuff
                 elif self._left_click:
-                    # Add color values to color space
-                    color_space[
+                    # Add color values to color lookup table
+                    color_lookup_table[
                         selected_matrix[:,0],
                         selected_matrix[:,1],
                         selected_matrix[:,2]] = 1
 
-                # Append new color space to self._history
-                self._history.append(color_space)
+                # Append new color lookup table to self._history
+                self._history.append(color_lookup_table)
 
                 # Reset events
                 self._left_click = False
                 self._undo_click = False
 
-            # Mask the image with the current color space
+            # Mask the image with the current color lookup table
             mask = self._mask_image(self._image, self._history[-1])
 
             # Draw the mask on the canvas
@@ -224,10 +224,10 @@ class Colorpicker(object):
 
     def _save(self):
         """
-        Saves the current colorspace in a pickle file.
+        Saves the current color lookup table in a pickle file.
         """
         # Get user input
-        input_path = input(f"Press ENTER to save color space file to '{self._default_path}'\nor enter output file path: ")
+        input_path = input(f"Press ENTER to save color lookup table file to '{self._default_path}'\nor enter output file path: ")
 
         # Check if the user entered something
         if input_path == "":
