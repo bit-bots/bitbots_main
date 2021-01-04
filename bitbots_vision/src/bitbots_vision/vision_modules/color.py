@@ -179,8 +179,8 @@ class ColorDetector(object):
 
 class HsvSpaceColorDetector(ColorDetector):
     """
-    The :class:`.HsvSpaceColorDetector` is based on the HSV-color-lookup-table.
-    The HSV-color-lookup-table is adjustable by setting min- and max-values for each hue, saturation and value.
+    The :class:`.HsvSpaceColorDetector` is based on the HSV color space.
+    The HSV color space is adjustable by setting min- and max-values for each hue, saturation and value.
 
     The values of the HSV channels can easily be adjusted by a human before a competition to match
     e.g. the white of the lines and goal or the team colors of the enemy team respectively.
