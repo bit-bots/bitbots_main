@@ -20,10 +20,11 @@ How to Record a Color Space
   * Using an **External Basler Camera**:
 
     #. Connect your PC with the Camera using a POE adapter.
-    #. Run ``roslaunch bitbots_bringup basler_camera.launch`` in your local ROS environment.
-    #. Check if too many images are dropped.
-       If this is the case, check your MTU size.
-       .. TODO Write some documentation how to check and how to resolve (maybe in basler_camera_settings?)
+    #. For the first time, you have to setup the pylon camera driver. Run ``make basler`` in the ``bitbots_meta`` directory and then ``catkin build pylon_camera`` in you catkin workspace.
+    #. Start the pylon camera driver with ``roslaunch bitbots_bringup basler_camera.launch`` in your local ROS environment.
+    #. Check if too many images are dropped by the pylon camera driver.
+       If this is the case, check your MTU size using this guide `MTU guide <https://linuxways.net/ubuntu/how-to-change-mtu-size-in-linux/>`_
+       Your MTU size should match the camera's MTU size, specified in `this config <https://git.mafiasi.de/Bit-Bots/basler_drivers/src/branch/master/pylon_camera/config/camera_settings.yaml>`_.
 
   * Using a **rosbag**:
 
@@ -36,6 +37,7 @@ How to Record a Color Space
 
   * Using a another **camera**:
 
+    You can use the ROS package `usb_cam <https://wiki.ros.org/usb_cam>`_ to publish the camera images.
     Make sure your camera's driver publishes images to the ``/camera/image_proc`` topic.
 
 2. Run ``rosrun bitbots_vision colorpicker.py`` on your local computer to run the colorpicker.
