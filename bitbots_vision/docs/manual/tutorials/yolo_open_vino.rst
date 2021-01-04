@@ -2,8 +2,25 @@
 OpenVINO
 =========
 
+We use the OpenVINO toolkit to convert our YOLO or tensorflow models, such that the model can be used in the OpenVINO inference engine, which runs on the CPU, GPU or our Intel Neural Compute Stick2.
+
 Convert Darknet to OpenVINO models
 ==================================
+
+Convert weights to Tensorflow format
+------------------------------------
+1. Clone `GibHub:tensorflow-yolo-v3 <https://github.com/mystic123/tensorflow-yolo-v3>`_ to your PC (no OpenVINO needed).
+2. Checkout commit ``ed60b90`` if you have problems.
+3. Run the command::
+
+    python3 convert_weights_pb.py --class_names <PATH to names.names file> --data_format NHWC --weights_file <PATH_TO_YOUR_CURRENT_YOLO_WEIGHTS_FILE> --tiny
+
+The variables are the following:
+   - The required ``names.names`` file consists of all class names, with each one in its own line.
+   - The ``<PATH_TO_YOUR_CURRENT_YOLO_WEIGHTS_FILE>`` represents the Darknet ``.weights`` file.
+   - The ``--tiny`` setting stands for ``tiny-yolo`` which is the currently used architecture.
+   - The output file will be written to the current folder as a ``frozen_darknet_yolov3_model.pb`` file.
+
 
 Install OpenVINO
 ----------------
@@ -12,21 +29,8 @@ You can skip this step, if you have OpenVINO installed or access to a robot.
 Otherwise visit the `OpenVINO Install Page <https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html>`_ and follow the instructions.
 
 
-.. Tip:: If you do not use Ubuntu, e.g. "Arch Linux", there is also a OpenVINO Docker container provided by Intel.
+.. Tip:: If you do not use Ubuntu, e.g. "Arch Linux", there is also a `OpenVINO Docker container <https://docs.openvinotoolkit.org/latest/openvino_docs_install_guides_installing_openvino_docker_linux.html>`_ provided by Intel.
 
-Convert weights to Tensorflow format
-------------------------------------
-1. Clone `GibHub:tensorflow-yolo-v3 <https://github.com/mystic123/tensorflow-yolo-v3>`_ to your PC (no OpenVINO needed).
-2. Checkout commit ``ed60b90`` if you have problems.
-3. Run the command::
-
-    python3 convert_weights_pb.py --class_names names.names --data_format NHWC --weights_file <PATH_TO_YOUR_CURRENT_YOLO_WEIGHTS_FILE> --tiny
-
-The variables are the following:
-   - The required ``names.names`` file consists of all class names, with each one in its own line.
-   - The ``<PATH_TO_YOUR_CURRENT_YOLO_WEIGHTS_FILE>`` represents the Darknet ``.weights`` file.
-   - The ``--tiny`` setting stands for ``tiny-yolo`` which is the currently used architecture.
-   - The output file will be written to the current folder as a ``frozen_darknet_yolov3_model.pb`` file.
 
 Convert Tensorflow format to OpenVINO
 -------------------------------------
@@ -45,7 +49,7 @@ The variables are the following:
 Example ``.json`` config
 ------------------------
 
-In Darknet these values are located in the ``.cfg`` files.
+In Darknet, these values are located in the ``.cfg`` files.
 
 .. code-block:: json
 
