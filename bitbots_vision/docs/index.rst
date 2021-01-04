@@ -29,7 +29,7 @@ The Bit-Bots vision pipeline architecture is modular allowing easy implementatio
 For ball detection, you can choose between an FCNN or multiple yolo implementations.
 The goalpost detection also runs via yolo or a conventional detection method, which is also used for obstacle and robot detection.
 
-The whole system is embedded in the ROS environment and able to run on many devices including the Nvidia Jetson TX2 or the Intel Neural Compute Stick 2 in our Wolfgang robots.
+The whole system is embedded in the ROS environment and able to run on many devices including the Intel Neural Compute Stick 2 (and the Nvidia Jetson TX2, legacy) in our Wolfgang robots.
 
 In the context of the Hamburg Bit-Bots, the images are provided by a Basler industry grade ethernet camera.
 The camera drivers are not included in this package for licensing reasons, but can be auto launched.
@@ -48,7 +48,7 @@ The field color space itself can be dynamically adapted in real-time using the d
 Therefore the vision gets more resistant to natural light conditions.
 
 Launchscripts
-~~~~~~~~~~~~~
+-------------
 
 To start the vision, use
 
@@ -58,24 +58,24 @@ To start the vision, use
 
 The following parameters are available:
 
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|Param                |Default  |Output                                                                                                                |
-+=====================+=========+======================================================================================================================+
-|``sim``              |``false``|Activate simulation time, switch to simulation color settings and deactivate launching of an image provider           |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``camera``           |``true`` |Deactivate all image providers (e.g. for use with rosbags or in simulation)                                           |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``basler``           |``true`` |Start `wolves_image_provider <https://github.com/bit-bots/wolves_image_provider>`_ instead of the basler camera driver|
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``dummyball``        |``false``|NOT start the ball detection to save resources                                                                        |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``debug``            |``false``|Activate publishing of several debug images which can be inspected in the rqt image view                              |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``use_game_settings``|``false``|Load additional game settings                                                                                         |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|Param                |Default  |Output                                                                                                                     |
++=====================+=========+===========================================================================================================================+
+|``sim``              |``false``|Activate simulation time, switch to simulation color settings and deactivate launching of an image provider                |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``camera``           |``true`` |Deactivate all image providers (e.g. for use with rosbags or in simulation)                                                |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``basler``           |``true`` |Start the basler camera driver instead of the  `wolves_image_provider <https://github.com/bit-bots/wolves_image_provider>`_|
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``dummyball``        |``false``|NOT start the ball detection to save resources                                                                             |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``debug``            |``false``|Activate publishing of several debug images which can be inspected in the rqt image view                                   |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``use_game_settings``|``false``|Load additional game settings                                                                                              |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
 
 Color space files
-~~~~~~~~~~~~~~~~~
+-----------------
 
 The vision depends on the usage of color space files which define color lookup tables primarily to detect the green field color and therefore lines and the field boundary.
 These files are stored in the directory in ``/config/color_spaces/``.
@@ -113,13 +113,13 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
    For large color spaces, loading of such files takes a while.
 
 White Balancer
-~~~~~~~~~~~~~~
+--------------
 
 This repository also includes the ``white_balancer``.
 It is a ROS nodelet that color-corrects incoming images with a predefined light temperature.
 
 Additional Scripts
-~~~~~~~~~~~~~~~~~~
+------------------
 
 In the bitbots_vision package, special tools for debugging/introspection purposes are provided.
 
@@ -235,4 +235,3 @@ Indices and tables
 * :ref:`genindex`
 * |modindex|
 * :ref:`search`
-
