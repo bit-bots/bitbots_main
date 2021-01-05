@@ -2,7 +2,7 @@
 OpenVINO
 =========
 
-We use the OpenVINO toolkit to convert our YOLO or tensorflow models, such that the model can be used in the OpenVINO inference engine, which runs on the CPU, GPU or our Intel Neural Compute Stick2.
+We use the OpenVINO toolkit to run our YOLO models, such that the model can be used in the OpenVINO inference engine, which runs on the CPU, GPU or our Intel Neural Compute Stick2.
 
 Convert Darknet to OpenVINO models
 ==================================
