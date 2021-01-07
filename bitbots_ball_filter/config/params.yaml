@@ -2,3 +2,8 @@
 ball_subscribe_topic: 'ball_relative'
 ball_position_publish_topic: 'ball_relative_filtered'
 ball_movement_publish_topic: 'ball_relative_movement'
+
+# Time interval of filtering steps in Seconds
+filter_time_step: 0.1
+
+process_noise_variance: 0.01
