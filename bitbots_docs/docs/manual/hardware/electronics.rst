@@ -1,17 +1,17 @@
-==========
+===========
 Electronics
-==========
+===========
 
 Powerboard
 ==========
 
 The Powerboard allows to connect either an external power supply or a battery. It has a switch to turn on and off the power to the servos.
 
-* Schematic :download:`pdf <elektronik/wolfgang_power.pdf>`
-* PCB combined :download:`pdf <elektronik/wolfgang_power_pcb.pdf>`
-* PCB Top :download:`pdf <elektronik/wolfgang_power_pcb_top.pdf>`
-* PCB Bottom :download:`pdf <elektronik/wolfgang_power_pcb_bottom.pdf>`
-* PCB Silk :download:`pdf <elektronik/wolfgang_power_pcb_silk.pdf>`
+* Schematic :download:`pdf <electronics/wolfgang_power.pdf>`
+* PCB combined :download:`pdf <electronics/wolfgang_power_pcb.pdf>`
+* PCB Top :download:`pdf <electronics/wolfgang_power_pcb_top.pdf>`
+* PCB Bottom :download:`pdf <electronics/wolfgang_power_pcb_bottom.pdf>`
+* PCB Silk :download:`pdf <electronics/wolfgang_power_pcb_silk.pdf>`
 
 The footprint of the mosfet is currently wrong, but since the Wolfgang Core board integrates the functionality of this board, it will not be changed.
 
@@ -46,5 +46,5 @@ Bit Foot
 
 The Bit Foot is a board to read 4 load cells on the foot of the robot and communicate over the dynamixel bus.
 
-* Schematics :download:`pdf <elektronik/bitfoot.pdf>`
-* PCB :download:`pdf <elektronik/bitfoot_pcb.pdf>`
+* Schematics :download:`pdf <electronics/bitfoot.pdf>`
+* PCB :download:`pdf <electronics/bitfoot_pcb.pdf>`
