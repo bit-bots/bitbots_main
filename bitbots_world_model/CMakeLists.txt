@@ -63,12 +63,11 @@ catkin_package(
 
 include_directories(
   include
-  ukf/include
   ${catkin_INCLUDE_DIRS}
 )
 
 
-add_library(${PROJECT_NAME}_lib src/ObstacleStates.cpp include/${PROJECT_NAME}/ObstacleStates.h src/ObservationModels.cpp include/${PROJECT_NAME}/ObservationModels.h src/MovementModels.cpp include/${PROJECT_NAME}/MovementModels.h src/StateDistributions.cpp include/${PROJECT_NAME}/StateDistributions.h include/${PROJECT_NAME}/Resampling.h ukf/include/UKF/StateVector.h ukf/include/UKF/Config.h ukf/include/UKF/Integrator.h ukf/include/UKF/Core.h ukf/include/UKF/MeasurementVector.h ukf/include/UKF/Types.h)
+add_library(${PROJECT_NAME}_lib src/ObstacleStates.cpp include/${PROJECT_NAME}/ObstacleStates.h src/ObservationModels.cpp include/${PROJECT_NAME}/ObservationModels.h src/MovementModels.cpp include/${PROJECT_NAME}/MovementModels.h src/StateDistributions.cpp include/${PROJECT_NAME}/StateDistributions.h include/${PROJECT_NAME}/Resampling.h)
 add_dependencies(${PROJECT_NAME}_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES})
 
