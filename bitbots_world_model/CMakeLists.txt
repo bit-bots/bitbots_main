@@ -50,7 +50,6 @@ endif (MSVC)
 
 
 generate_dynamic_reconfigure_options(
-  cfg/world_model.cfg
   cfg/local_ball_filter.cfg
 )
 
