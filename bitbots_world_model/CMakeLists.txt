@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_world_model)
 
-
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -51,7 +50,7 @@ endif (MSVC)
 
 
 generate_dynamic_reconfigure_options(
-  cfg/world_model.cfg
+  cfg/local_ball_filter.cfg
 )
 
 catkin_package(
@@ -71,10 +70,10 @@ add_library(${PROJECT_NAME}_lib src/ObstacleStates.cpp include/${PROJECT_NAME}/O
 add_dependencies(${PROJECT_NAME}_lib ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES})
 
-add_executable(world_model src/world_model.cpp)
-target_link_libraries(world_model ${catkin_LIBRARIES} ${PROJECT_NAME}_lib)
-add_dependencies(world_model ${PROJECT_NAME}_gencfg)
-add_dependencies(world_model ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(local_ball_filter src/local_ball_filter.cpp)
+target_link_libraries(local_ball_filter ${catkin_LIBRARIES} ${PROJECT_NAME}_lib)
+add_dependencies(local_ball_filter ${PROJECT_NAME}_gencfg)
+add_dependencies(local_ball_filter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 install(DIRECTORY include/${PROJECT_NAME}/
  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
