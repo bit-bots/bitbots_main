@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="bitbots_ball_filter" type="ball_filter.py" name="ball_filter" output="screen">
+        <rosparam command="load" file="$(find bitbots_ball_filter)/config/params.yaml"/>
+    </node>
+</launch>

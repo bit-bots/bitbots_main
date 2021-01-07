@@ -1,0 +1,4 @@
+# Topics
+ball_subscribe_topic: 'ball_relative'
+ball_position_publish_topic: 'ball_relative_filtered'
+ball_movement_publish_topic: 'ball_relative_movement'
