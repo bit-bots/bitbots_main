@@ -11,7 +11,7 @@
     <!-- defines camera type -->
     <arg name="basler" default="true" doc="Defines the robot camera type"/>
 
-
+    <param name="tf_prefix" value="$(env ROS_NAMESPACE)"/>
 
     <group unless="$(arg wolfgang)">
         <group unless="$(arg davros)">

@@ -1,4 +1,5 @@
 <launch>
+    <arg name="robot_ns" default="robot"/>
     <arg name="sim" default="false"/>
     <arg name="motion" default="true"/>
     <arg name="behave" default="true"/>
@@ -13,16 +14,15 @@
 
     <arg name="use_game_settings" default="true"/>
 
-    <arg name="sim_ns" default="/" />
 
-    <group unless="$(arg gazebo)">
+    <group unless="$(arg gazebo)" ns="$(arg robot_ns)" >
         <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
             <arg name="sim" value="$(arg sim)" />
             <arg name="basler" value="$(arg basler)" />
         </include>
     </group>
 
-    <include file="$(find bitbots_bringup)/launch/highlevel.launch">
+    <include file="$(find bitbots_bringup)/launch/highlevel.launch" ns="$(arg robot_ns)">
         <arg name="basler" value="$(arg basler)" />
         <arg name="sim" value="$(arg sim)" />
         <arg name="behave" value="$(arg behave)" />
@@ -33,9 +33,9 @@
         <arg name="gamecontroller" value="$(arg gamecontroller)" />
     </include>
 
-    <include file="$(find bitbots_bringup)/launch/tools.launch" />
+    <include file="$(find bitbots_bringup)/launch/tools.launch" ns="$(arg robot_ns)"/>
 
-    <group if="$(arg motion)">
+    <group if="$(arg motion)" ns="$(arg robot_ns)">
         <include file="$(find bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(arg sim)"/>
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
