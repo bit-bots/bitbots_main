@@ -14,7 +14,7 @@ import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
-    PlayAnimationAction, RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
+    RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
 from move_base_msgs.msg import MoveBaseActionFeedback
 from actionlib_msgs.msg import GoalID
 
@@ -47,8 +47,6 @@ if __name__ == "__main__":
     rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, D.blackboard.world_model.pose_callback)
     rospy.Subscriber("robot_state", RobotControlState, D.blackboard.blackboard.robot_state_callback)
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
-
-    D.blackboard.animation.server = actionlib.SimpleActionClient("bitbots_animation", PlayAnimationAction)
 
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
