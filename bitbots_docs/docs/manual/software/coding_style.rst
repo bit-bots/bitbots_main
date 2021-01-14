@@ -1,7 +1,7 @@
 Coding Style
 ============
 
-Because we value maintainability and readability of our codebase we have chosen to program according to the following
+Because we value maintainability and readability of our codebase, we have chosen to program according to the following
 style guides.
 
 Python
