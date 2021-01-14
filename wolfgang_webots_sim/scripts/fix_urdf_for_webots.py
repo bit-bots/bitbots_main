@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import xml.etree.ElementTree as ET
 
@@ -24,6 +26,6 @@ for child in root:
             for link_element in child:
                 if link_element.tag == "inertial":
                     child.remove(link_element)
-        if child.
+                    print(f"removed inertial element for link: {child.attrib}")
 
 tree.write(outfile_path)

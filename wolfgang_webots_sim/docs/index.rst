@@ -8,7 +8,7 @@ To generate the webots proto file from a URDF, we use urdf2webots_.
 
 Unfortunately, this script does not handle links with a inertial component
 but without a collision or visual model correctly.
-Pybullet requires an inertial component for each link.
+Pybullet requires an inertial component for each link. To remove these inertial components there is a script.
 
 .. _urdf2webots: https://github.com/cyberbotics/urdf2webots
 
@@ -26,9 +26,8 @@ Firstly clone the urdf2robot repository
 
 .. code-block:: bash
 
-  git clone git@github.com:jgueldenstein/urdf2webots.git
+  git clone git@github.com:cyberbotics/urdf2webots.git
   cd urdf2webots
-  git checkout "fix/rotated_bounding_objects"
 
 Run the script to adapt the urdf to be usable by webots2urdf
 
@@ -41,6 +40,10 @@ Run the converstion script from urdf to proto file
 
 .. code-block:: bash
 
-  python urdf2webots/demo.py --input webots_robot.urdf --output protos --rotation="1 0 0 -1.5708" --multi-file --box-collision --disable-mesh-optimization
+  python urdf2webots/demo.py --input webots_robot.urdf --output protos  --multi-file --box-collision --disable-mesh-optimization
 
 After verifying that the proto file is loaded correctly, you can enable the mesh optimization.
+
+In the future the box collision will be replaced by simplified models of the links.
+
+Currently the camera and IMUs are not placed in the correct frame. This will be fixed with a PR that is currently open.
