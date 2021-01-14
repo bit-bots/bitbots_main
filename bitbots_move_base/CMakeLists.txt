@@ -6,10 +6,13 @@ find_package(catkin REQUIRED COMPONENTS
     humanoid_league_msgs
     rospy
     move_base
-    spatio_temporal_voxel_layer)
+    spatio_temporal_voxel_layer
+    bitbots_docs
+)
 
 
 catkin_python_setup()
 
-catkin_package(
-)
+catkin_package()
+
+enable_bitbots_docs()
