@@ -20,6 +20,7 @@
   <depend>tf</depend>
   <depend>urdf</depend>
   <depend>xacro</depend>
+  <depend>bitbots_docs</depend>
 
 
   <export>
