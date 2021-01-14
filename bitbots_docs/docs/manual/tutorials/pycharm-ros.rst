@@ -37,6 +37,6 @@ This means PyCharm knows just as much as your Shell and can theoretically do the
 Change Launch-files
 ===================
 To test/debug nodes in an efficient way with PyCharm, you can add the argument ``depends_only`` to your launch-file.
-This means, only the node, you want to test, will be started.
+This means, only the node you want to test will be started.
 
 After you have started the node externally, using ``roslaunch``, PyCharm will be able to start this node and you can debug.
