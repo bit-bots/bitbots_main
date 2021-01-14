@@ -1,44 +1,20 @@
-Zeitsynchronisation
-===================
-Alle über ROS miteinander interagierenden Systeme müssen mit einer gemeinsamen Zeit arbeiten, da sonst Messages nicht
-richtig übertragen werden. Auserdem benutzen andere Systeme Timestamps zum Beispiel Transforms.
+Time Synchronization
+====================
+Because our robots rely on having accurate information about when data was generated, they need to have their clocks synchronized.
+This document aims to explain how such synchronization is achieved.
 
+Source-of-truth
+---------------
+All our robots are configured via ansible so for a complete reference check the roles
+`timesync_master <https://git.mafiasi.de/Bit-Bots/ansible/src/branch/master/roles/timesync_master>`_ and
+`timesync_slave <https://git.mafiasi.de/Bit-Bots/ansible/src/branch/master/roles/timesync_slave>`_.
+The configuration directives are explained via comments in their respective config files (see the template folder).
 
-Nuc und Jetson
---------------
-Weil die `Jetson` keine Hardware-Clock besitzt, verliert sie die aktuelle Zeit.
-Um dies zu beheben läuft auf dem `Nuc` ein `chrony` als Zeitserver. Die Jetson holt sich von dort
-ebenfalls mit `chrony` immer eine synchronisierte Zeit.
+In summary, we use chrony on our nuc as a time server.
+It uses *Universität Hamburg* as well as debian for upstream synchronization.
+All other robot computers on the same robot then use the nuc as time servers.
 
-Nuc-Konfiguration
-~~~~~~~~~~~~~~~~~
-Die Konfigurationsdatei ist ``/etc/chrony/chrony.conf``
+.. warning::
+    We don't currently synchronize time between robots.
 
-:code:`local stratum 10` lässt Chrony als NTP-Server mit einem Stratum von 10 (ganz weit weg von Realzeit und nicht zuverlässig) laufen
-
-:code:`allow 192.168.17.0/24` erlaubt Zugriff auf den Server vom gesamten internen Roboternetz (nuc, odroid, jetson)
-
-Jetson-Konfiguration
-~~~~~~~~~~~~~~~~~~~~
-:code:`server nuc iburst` stellt den lokalen Nuc als Server ein (`iburst` erhöht Zuverlässigkeit beim Start)
-
-:code:`makestep x y` erlaubt hartes Setzen der Zeit (ohne  slew), wenn die Differenz > `x` und nur während der ersten `y` Anfragen
-
-Auserdem wird der `chrony` Service auf der Jetson mit Delay gestart, weil die Synchronisierung sonst nicht richtig funktioniert.
-Mit :code:`systemctl edit chrony.service` kann ein Teil der Service-Definition überschrieben werden. Bei uns::
-
-    [Service]
-    ExecStartPre=/bin/sleep 5
-
-
-Zwischen verschiedenen Robotern
--------------------------------
-Es gibt zwar einen `peer`-Modus jedoch verwenden wir auf allen Robotern eine Client-Server Verbindung, da der Peer-Modus
-nicht empfohlen wird.
-
-:code:`keyfile /etc/chrony/chrony.keys` definiert die Keyfile, in der ID-Key Paare definiert werden
-
-:code:`allow w.x.y.z` erlaubt Zugriff des "Peers" auf diesen Server
-
-:code:`server w.x.y.z key 10` setzt den "Peer" auch als eigenen Server. Zusätzlich werden Pakete über den in der Keyfile
-definierten Key 10 authentifizert. Der Server muss den gleichen Key mit der ID 10 haben.
+    While it should be possible to do so via the chrony *peer mode*, we do not yet have it configured.
