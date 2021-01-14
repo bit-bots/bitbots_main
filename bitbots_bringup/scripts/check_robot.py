@@ -118,8 +118,8 @@ if __name__ == '__main__':
     rospy.init_node("checker")
 
     # start subscribers
-    imu_sub = rospy.Subscriber("/imu/data", Imu, imu_callback, tcp_nodelay=True)
-    pwm_sub = rospy.Subscriber("/servo_PWM", JointState, pwm_callback, tcp_nodelay=True)
+    imu_sub = rospy.Subscriber("imu/data", Imu, imu_callback, tcp_nodelay=True)
+    pwm_sub = rospy.Subscriber("servo_PWM", JointState, pwm_callback, tcp_nodelay=True)
 
 
     # start necessary software
@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     # check diagnostic status
     print_info("Will check diagnostic status of robot.\n")
-    diag_sub = rospy.Subscriber("/diagnostics_toplevel_state", DiagnosticStatus, diagnostic_cb, tcp_nodelay=True)
+    diag_sub = rospy.Subscriber("diagnostics_toplevel_state", DiagnosticStatus, diagnostic_cb, tcp_nodelay=True)
     rospy.sleep(3)
 
     if not (had_diag_stale or had_diag_warn or had_diag_error):
@@ -164,9 +164,9 @@ if __name__ == '__main__':
 
     # check publishing frequency of imu, servos, pwm, goals, pressure, robot_state
     # the topics which will be checked with minimal publishing rate
-    topics_to_check = {"/imu/data": 900, "/joint_states": 900, "/robot_state": 900, "/foot_pressure_left/raw": 900,
-                       "/foot_pressure_left/filtered": 900, "/foot_pressure_right/raw": 900,
-                       "/foot_pressure_right/filtered": 900, "/core/vdxl": 9, "/diagnostics_toplevel_state": 9}
+    topics_to_check = {"imu/data": 900, "joint_states": 900, "robot_state": 900, "foot_pressure_left/raw": 900,
+                       "foot_pressure_left/filtered": 900, "foot_pressure_right/raw": 900,
+                       "foot_pressure_right/filtered": 900, "core/vdxl": 9, "diagnostics_toplevel_state": 9}
     rts = []
     for topic in topics_to_check.keys():
         msg_class, real_topic, _ = rostopic.get_topic_class(topic)
@@ -192,9 +192,9 @@ if __name__ == '__main__':
     print_info("\n\n")
     print_info("We will check the foot pressure sensors next\n")
     input_info("Please hold the robot in the air so that the feet don't touch the ground and press enter.")
-    left_pressure_sub = rospy.Subscriber("/foot_pressure_left/filtered", FootPressure, pressure_cb, callback_args=True,
+    left_pressure_sub = rospy.Subscriber("foot_pressure_left/filtered", FootPressure, pressure_cb, callback_args=True,
                                          tcp_nodelay=True)
-    right_pressure_sub = rospy.Subscriber("/foot_pressure_right/filtered", FootPressure, pressure_cb,
+    right_pressure_sub = rospy.Subscriber("foot_pressure_right/filtered", FootPressure, pressure_cb,
                                           callback_args=False,
                                           tcp_nodelay=True)
     rospy.sleep(0.5)
@@ -207,8 +207,8 @@ if __name__ == '__main__':
     if not both_okay:
         print_warn("Pressure not correctly zero. Will try to call zero service.\n")
         # call zero service
-        zero_l = rospy.ServiceProxy("/foot_pressure_left/set_foot_zero", Empty)
-        zero_r = rospy.ServiceProxy("/foot_pressure_right/set_foot_zero", Empty)
+        zero_l = rospy.ServiceProxy("foot_pressure_left/set_foot_zero", Empty)
+        zero_r = rospy.ServiceProxy("foot_pressure_right/set_foot_zero", Empty)
         zero_l()
         zero_r()
         # wait and check again
