@@ -109,4 +109,4 @@ By Count
 
 Layout
 ------
-.. image:: schrauben/schrauben.jpg
+.. image:: screws/screws.jpg
