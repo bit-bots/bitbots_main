@@ -11,8 +11,8 @@ If you use `Source ROS`, this is not necessary.
 1. Settings --> Project:bitbots_meta --> Project Interpreter
 2. Cog at the top right next to the Interpreter --> Show All
 3. Lowest button on the right side ("Show paths for the selected interpreter")
-4. Add --> `/opt/ros/melodic/lib/python2.7/dist-packages`
-5. Add --> `<catkin_ws>/devel/lib/python2.7/dist-packages`
+4. Add --> `/opt/ros/melodic/lib/python3/dist-packages`
+5. Add --> `<catkin_ws>/devel/lib/python3/dist-packages`
 
 `Source ROS`
 ============
