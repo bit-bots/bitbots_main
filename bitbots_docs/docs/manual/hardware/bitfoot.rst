@@ -40,7 +40,7 @@ Dynamixel2Arduino_
 
 After setting the ESP32 Dev Module as the Board, you should be able to compile the software.
 
-For flashing we recommend to use a `Programmer Tool <https://www.ebay.de/itm/Programmer-Tool-ESP32-Adapter-Socket-Kit-For-ESPRESSIF-ESP-WROOM-32-Module-HF-/362767585640?nma=true&si=YCotShVqDQLG1huXmuhzcrdVRTQ%253D&orig_cvip=true&nordt=true&rt=nc&_trksid=p2047675.l2557>`_
+For flashing we recommend to use a `Programmer Tool <https://www.aliexpress.com/i/32980686343.html>`_
 (like this one) before soldering. After soldering there is no connector and U1 on the connector board needs to be desoldered.
 
 With the Programmer Tool the flashing of the device should be simple with the Arduino IDE.
