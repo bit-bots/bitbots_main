@@ -8,7 +8,7 @@ The low level packages are responsible for the motions of the robot.
 For that, different hardware and software components are used; they are described in this article.
 Additionally, common problems and troubleshooting strategies are explained.
 
-The behavior of the low level packages is dominated by the control loop, i.e. a cycle that alternately reads and writes motor positions.
+The behavior of the low level packages is dominated by the control loop, i.e. the cycle that alternately reads and writes motor positions.
 In parallel to this cycle, the new positions are calculated based on the observed values.
 
 To react to problems as fast as possible, e.g. to overload errors in the motors, a faster control loop is desirable.
@@ -16,7 +16,7 @@ Formerly, our loop ran with a frequency of 100Hz, therefore the reaction time to
 
 There are essentially three possibilities to accelerate the control loop:
 
-1. Send the bits faster over the bus, but this is limited by the baud rate of up to four megabaud (Robotis claims to achieve 4.5 MBaud, but this could not be reproduced)
+1. Send the bits faster over the bus, but this is limited by the baud rate of up to four megabaud (Robotis claims to achieve 4.5 MBaud, but we were not able to reproduce this)
 2. Compress the data, e.g. by using special commands to read multiple motors at once (sync read and sync write)
 3. Use more buses, in our case, one bus per limb would make sense
 
@@ -67,7 +67,7 @@ The IMU is also located on the bus and its values are treated the same as the mo
 
 Kernel
 ~~~~~~
-You should adjust the latency timer value. From the version Ubuntu 16.04.2, the default latency timer of the usb serial is '16 msec'. When you are going to use sync / bulk read, the latency timer should be loosen. The lower latency timer value, the faster communication speed.
+You should adjust the latency timer value. For the version Ubuntu 16.04.2 and later, the default latency timer of the usb serial is '16 msec'. When you are going to use sync / bulk read, the latency timer should be loosen. The lower latency timer value, the faster communication speed.
 
 You can check its value by:
 
@@ -76,9 +76,9 @@ You can check its value by:
 
     $ cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
 
-If you think that the communication is too slow, type following after plugging the usb in to change the latency timer
+If you think that the communication is too slow, type the following after plugging the usb in to change the latency timer
 
-Method 1. Type following (you should do this everytime when the usb once was plugged out or the connection was dropped)
+Method 1. Type the following (you should do this everytime when the usb was plugged out or the connection was dropped)
 
 .. code:: bash
 
@@ -95,7 +95,7 @@ Method 2. If you want to set it as be done automatically, and don't want to do a
     $ sudo udevadm trigger --action=add
     $ cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
 
-If you have another good idea that can be an alternatives, Robotis is asking for advice via a github issue:  https://github.com/ROBOTIS-GIT/DynamixelSDK/issues
+If you have another good idea that can be an alternative, Robotis is asking for advice via a Github issue:  https://github.com/ROBOTIS-GIT/DynamixelSDK/issues
 
 
 Dynamixel SDK
@@ -137,7 +137,7 @@ The corresponding ROS node can be launched with `roslaunch bitbots_ros_control r
 
 1. The motors are pinged in alphabetical order. This happens due to the way yaml files are read. This means the HeadPan motor (id 19) is read first, while the RShoulderRoll motor (id 3) is read last.
 2. The values from the config file are written into the RAM and ROM of the motors. These are values like speed or return delay time.
-3. The message "Hardware interface init finished" appears.
+3. The message "Hardware interface init finished" is printed to the terminal.
 4. The control loop starts, alternating between sync read and sync write.
 5. The controllers for ROS control are loaded.
 
@@ -147,7 +147,7 @@ Help, I have a problem!
 Error Opening Serial Port
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you encounter the message "Error opening serial port", no connection between the NUC and the CORE board could be established. Therefore your first instinct should be checking whether the cable is plugged in correctly. If this does not solve the problem, you can check whether the board can be found by using `lsusb` (look at the "leaf" entry). You can further investigate this by using `ls /dev/`. You should find the devices "/dev/ttyUSB0" through "/dev/ttyUSB3", one for each of the four busses. If the names are different, you may have to alter the wolfgang.yaml file or unplug the CORE board and plug it back in, in order to make it use the known names.
+If you encounter the message "Error opening serial port", no connection between the NUC and the CORE board could be established. Therefore your first instinct should be checking whether the cable is plugged in correctly. If this does not solve the problem, you can check whether the board can be found by using `lsusb` (look for the "leaf" entry). You can further investigate this by using `ls /dev/`. You should find the devices "/dev/ttyUSB0" through "/dev/ttyUSB3", one for each of the four busses. If the names are different, you may have to alter the wolfgang.yaml file or unplug the CORE board and plug it back in, in order to make it use the known names.
 
 Motor problems
 ~~~~~~~~~~~~~~
