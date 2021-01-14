@@ -21,8 +21,18 @@
 namespace gm = geometry_msgs;
 namespace bl = bitbots_localization;
 
+
+/**
+* @class Map
+* @brief Stores a map for a messurement class (e.g. a map of the lines)  
+*/
 class Map {
  public:
+
+  /**
+   * @param file_path Path of the map definition.
+   * @param config Config of the localization.
+   */ 
   explicit Map(const std::string& file_path, const bl::LocalizationConfig &config);
 
   cv::Mat map;
