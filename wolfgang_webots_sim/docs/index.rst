@@ -47,3 +47,20 @@ After verifying that the proto file is loaded correctly, you can enable the mesh
 In the future the box collision will be replaced by simplified models of the links.
 
 Currently the camera and IMUs are not placed in the correct frame. This will be fixed with a PR that is currently open.
+
+
+|description|
+
+.. toctree::
+   :maxdepth: 2
+
+   cppapi/library_root
+   pyapi/modules
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* |modindex|
+* :ref:`search`

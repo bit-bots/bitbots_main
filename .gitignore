@@ -1,7 +1,7 @@
 # auto-generated documentation
-**/doc/_build
-**/doc/_generated
-**/doc/manifest.yaml
-**/doc/html
+**/docs/_build
+**/docs/_out
+**/docs/cppapi
+**/docs/pyapi
 
 __pycache__
