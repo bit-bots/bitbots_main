@@ -89,7 +89,7 @@ behavior:
       # time to wait for a dynamic_kick server
       wait_time: 10
       # base topic under which an actionserver listens for KickAction messages
-      topic: "/dynamic_kick"
+      topic: "/dynamic_kick" #ToDo check if namespace necessary
 
     # the maximal allowed standard deviation of the localization pose.
     pose_precision_threshold:
