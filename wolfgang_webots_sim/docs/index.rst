@@ -19,8 +19,8 @@ These instructions assume that you are in the wolfgang_webots_sim package.
 To get there use
 
 .. code-block:: bash
-  roscd wolfgang_webots_sim
 
+  roscd wolfgang_webots_sim
 
 Firstly clone the urdf2robot repository
 
@@ -36,7 +36,7 @@ Run the script to adapt the urdf to be usable by webots2urdf
   roscd wolfgang_webots_sim
   python scripts/fix_urdf_for_webots.py ../wolfgang_description/urdf/robot.urdf webots_robot.urdf
 
-Run the converstion script from urdf to proto file
+Run the conversion script from urdf to proto file
 
 .. code-block:: bash
 
