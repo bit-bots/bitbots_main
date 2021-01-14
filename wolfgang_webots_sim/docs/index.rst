@@ -6,9 +6,9 @@ Description
 
 To generate the webots proto file from a URDF, we use urdf2webots_.
 
-Unfortunately, this script does not handle links with a inertial component
-but without a collision or visual model correctly.
-Pybullet requires an inertial component for each link. To remove these inertial components there is a script.
+Unfortunately, this script does not handle links which contain an inertial element but no collision or visual element correctly.
+Pybullet on the other hand requires an inertial component for each link.
+To remove these inertial components for webots2urdf there is a script which is later explained.
 
 .. _urdf2webots: https://github.com/cyberbotics/urdf2webots
 
