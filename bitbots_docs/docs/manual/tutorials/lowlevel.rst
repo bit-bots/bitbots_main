@@ -91,7 +91,7 @@ Method 1. Type the following (you should do this everytime when the usb was plug
     $ echo 1 | sudo tee /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
     $ cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer    
 
-Method 2. If you want to set it as be done automatically, and don't want to do above everytime, make rules file in /etc/udev/rules.d/. For example,
+Method 2. If you want to set it to be done automatically, and don't want to do the above everytime, make rules file in /etc/udev/rules.d/. For example,
 
 .. code:: bash
 
