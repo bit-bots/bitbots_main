@@ -34,7 +34,7 @@ if __name__ == "__main__":
     rospy.wait_for_service("/bio_ik/get_bio_ik")
     bio_ik = rospy.ServiceProxy('/bio_ik/get_bio_ik', GetIK)
 
-    publish_motor_goals = rospy.Publisher('/head_motor_goals', JointCommand, queue_size=10)
+    publish_motor_goals = rospy.Publisher('head_motor_goals', JointCommand, queue_size=10)
 
     while not rospy.is_shutdown():
         x = float(input('x: '))
