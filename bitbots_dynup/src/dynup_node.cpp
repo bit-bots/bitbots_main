@@ -98,7 +98,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     r.successful = true;
     server_.setSucceeded(r);
   } else {
-    ROS_ERROR_STREAM("Could not determine positions! Aborting standup.");
+    ROS_ERROR("Could not determine positions! Aborting standup.");
     bitbots_msgs::DynUpResult r;
     r.successful = false;
     server_.setAborted(r);
@@ -184,7 +184,8 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
     tf_buffer_.transform(l_hand_origin, l_hand_transformed, "base_link", ros::Duration(0.2));
     tf_buffer_.transform(r_hand_origin, r_hand_transformed, "base_link", ros::Duration(0.2));
     return std::make_tuple(l_foot_transformed.pose, r_foot_transformed.pose, l_hand_transformed.pose, r_hand_transformed.pose);
-  } catch (tf2::TransformException &) {
+  } catch (tf2::TransformException &exc) {
+    std::cerr << exc.what();
     return std::nullopt;
   }
 
