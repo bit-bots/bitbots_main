@@ -14,6 +14,7 @@ PROTO Wolfgang [
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
   field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
+  field  SFFloat     cameraFOV       1.04
 ]
 {
   Robot {
@@ -27,6 +28,12 @@ PROTO Wolfgang [
     selfCollision IS selfCollision
     children [
       Wolfgang_torsoMesh {
+      }
+      Accelerometer {
+        name "imu accelerometer"
+      }
+      Gyro {
+        name "imu gyro"
       }
       Solid {
         translation -0.036975 -0.047461 0.224000
@@ -1979,10 +1986,10 @@ PROTO Wolfgang [
         device [
           RotationalMotor {
             name "HeadPan"
-            maxVelocity 10.33
+            maxVelocity 2.5
             minPosition -2.0944
             maxPosition 2.0944
-            maxTorque 5.43
+            maxTorque 3.0
           }
           PositionSensor {
             name "HeadPan_sensor"
@@ -2004,10 +2011,10 @@ PROTO Wolfgang [
               device [
                 RotationalMotor {
                   name "HeadTilt"
-                  maxVelocity 10.33
+                  maxVelocity 2.5
                   minPosition -1.5708
                   maxPosition 0.523599
-                  maxTorque 5.43
+                  maxTorque 3.0
                 }
                 PositionSensor {
                   name "HeadTilt_sensor"
@@ -2025,17 +2032,14 @@ PROTO Wolfgang [
                     name "camera"
                   }
                   Solid {
-                    translation 0.143200 0.080000 -0.023500
+                    translation 0.025 0.080000 -0.023500
                     rotation 0.707105 -0.000001 0.707108 3.141591
                     children [
                       Accelerometer {
-                        name "imu accelerometer"
+                        name "imu accelerometer 2"
                       }
                       Gyro {
-                        name "imu gyro"
-                      }
-                      Compass {
-                        name "imu compass"
+                        name "imu gyro 2"
                       }
                       Transform {
                         translation 0.00 0.00 0.00
@@ -2043,9 +2047,9 @@ PROTO Wolfgang [
                         children [
                           Camera {
                             name "camera"
-                            fieldOfView 0.570000
-                            width 620
-                            height 480
+                            fieldOfView IS cameraFOV
+                            width 512
+                            height 384
                           }
                         ]
                       }

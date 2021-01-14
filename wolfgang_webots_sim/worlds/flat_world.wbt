@@ -3,16 +3,14 @@ DEF world_info WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation -0.9302766222868623 0.2544698866906709 0.26425457951411874 0.2762592240743233
-  position -0.4223734714277911 1.551030823356228 5.285816594071886
+  orientation -0.1076427790182006 -0.9775573973252464 -0.181092702945009 2.22296690821654
+  position -8.09895488819455 3.834394884095564 -5.466218924095148
 }
 TexturedBackground {
   texture "stadium"
 }
 TexturedBackgroundLight {
   texture "stadium"
-}
-RobotstadiumSoccerField {
 }
 DEF Robot Wolfgang {
   translation -0.967495 0.431123 -8.94502e-07
@@ -21,7 +19,10 @@ DEF Robot Wolfgang {
   supervisor TRUE
 }
 SoccerBall {
-  translation 0.01 0.08 0
+  translation 0 0.08 0
   radius 0.0775
   mass 0.2
+  roll_damping 0.5
+}
+RobotstadiumSoccerFieldHumanoid {
 }

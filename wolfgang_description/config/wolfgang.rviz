@@ -522,7 +522,7 @@ Visualization Manager:
       Value: false
     - Class: rviz/Image
       Enabled: false
-      Image Topic: /image_raw
+      Image Topic: /camera/image_proc
       Max Value: 1
       Median window: 5
       Min Value: 0
