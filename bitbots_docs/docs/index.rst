@@ -37,6 +37,8 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
 
     manual/hardware/*
 
+`Package Documentations <http://doku.bit-bots.de/package/>`_
+
 `Internal Documentation <http://doku.bit-bots.de/private/>`_
 
 .. toctree::
