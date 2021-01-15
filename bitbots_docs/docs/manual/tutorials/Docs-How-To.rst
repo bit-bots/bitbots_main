@@ -40,12 +40,12 @@ In every package (with `activated <_activate_docs_for_package>`_ documentation) 
 
 Preferably create your ``.rst`` documents in the directory ``docs/manual`, then reference them in the ``docs/index.rst`` as follows:
 
-.. toctree::
-    :maxdepth: 1
-    :glob:
-    :caption: Manuals:
+    .. toctree::
+        :maxdepth: 1
+        :glob:
+        :caption: Manuals:
 
-    manual/*
+        manual/*
 
 
 .. _activate_docs_for_package
