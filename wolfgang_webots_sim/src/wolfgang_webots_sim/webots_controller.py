@@ -223,8 +223,6 @@ class WebotsController:
             value = self.sensors[i].getValue()
             js.position.append(value)
             js.effort.append(self.motors[i].getTorqueFeedback())
-        if self.ros_active:
-            self.pub_js.publish(js)
         return js
 
     def publish_joint_states(self):
