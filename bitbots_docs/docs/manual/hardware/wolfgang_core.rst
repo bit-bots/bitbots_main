@@ -25,6 +25,8 @@ Reading of ttyUSB1 without Teensy
 Devices on ttyUSB3 can not be read when the Teensy is not installed or installed and not powered (see :ref:`Jumpers`)
 since the !RE/DE pins of the Teensys transceiver are not pulled down.
 
+.. _Bodge Switch:
+
 Automatic Poweroff-Poweron Routine
 ----------------------------------
 
@@ -89,6 +91,7 @@ A small 9V regulator is also on the board since the network switches we use in o
 | GND | GND | +5V | +9V |
 +-----+-----+-----+-----+
 
+.. _Power:
 
 Power Connectors and Power Source Selection
 ===========================================
@@ -119,7 +122,7 @@ f it is on when the switch is in the off position (to the right), the MOSFET Q1 
 This may happen if there is a short circuit and the MOSFET is weaker than the fuse.
 
 When the power is turned off by software but is on by the switch,
-you can flip the switch off and on and the power should be back on provided the hardware hack for V1.0 is installed (see :ref:`here<Automatic Poweroff-Poweron Routine>`).
+you can flip the switch off and on and the power should be back on provided the hardware hack for V1.0 is installed (see :ref:`Bodge Switch`).
 
 TTL or RS485 and biasing
 ========================
@@ -134,6 +137,7 @@ The transceiver can interpret the incoming signal correctly since the voltage di
 and -0.2V for a 0.
 If only RS485 is used, it is recommended to leave R5-R8 unpopulated.
 
+.. _Jumpers:
 
 Jumpers
 =======
