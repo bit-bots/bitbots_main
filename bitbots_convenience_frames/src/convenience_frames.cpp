@@ -30,6 +30,7 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
                                                                ros::TransportHints().tcpNoDelay());
 
   ros::Rate r(200.0);
+  ros::Time last_published_time;
   while (ros::ok()) {
     ros::spinOnce();
     geometry_msgs::TransformStamped tf_right, // right foot in baselink frame
@@ -113,25 +114,32 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
       rotation.setRPY(roll, pitch, yaw);
       approach_frame.pose.orientation = tf2::toMsg(rotation);
 
-      // set the broadcasted transform to the position and orientation of the base footprint
-      tf_.header.stamp = ros::Time::now();
-      tf_.header.frame_id = "base_link";
-      tf_.child_frame_id = "approach_frame";
-      tf_.transform.translation.x = approach_frame.pose.position.x;
-      tf_.transform.translation.y = approach_frame.pose.position.y;
-      tf_.transform.translation.z = approach_frame.pose.position.z;
-      tf_.transform.rotation = approach_frame.pose.orientation;
-      broadcaster_.sendTransform(tf_);
+      // in simulation, the time does not always advance between loop iteration
+      // in that case, we do not want to republish the transform
+      ros::Time now = ros::Time::now();
+      if (now != last_published_time) {
+        last_published_time = now;
 
-      // publish ball_approach_frame 10 cm in front of approach_frame
-      tf_.header.frame_id = "approach_frame";
-      tf_.child_frame_id = "ball_approach_frame";
-      tf_.transform.translation.x = 0.10;
-      tf_.transform.translation.y = 0;
-      tf_.transform.translation.z = 0;
-      tf2::Quaternion rotation_baf = tf2::Quaternion(0, 0, 0, 1);
-      tf_.transform.rotation = tf2::toMsg(rotation_baf);
-      broadcaster_.sendTransform(tf_);
+        // set the broadcasted transform to the position and orientation of the base footprint
+        tf_.header.stamp = now;
+        tf_.header.frame_id = "base_link";
+        tf_.child_frame_id = "approach_frame";
+        tf_.transform.translation.x = approach_frame.pose.position.x;
+        tf_.transform.translation.y = approach_frame.pose.position.y;
+        tf_.transform.translation.z = approach_frame.pose.position.z;
+        tf_.transform.rotation = approach_frame.pose.orientation;
+        broadcaster_.sendTransform(tf_);
+
+        // publish ball_approach_frame 10 cm in front of approach_frame
+        tf_.header.frame_id = "approach_frame";
+        tf_.child_frame_id = "ball_approach_frame";
+        tf_.transform.translation.x = 0.10;
+        tf_.transform.translation.y = 0;
+        tf_.transform.translation.z = 0;
+        tf2::Quaternion rotation_baf = tf2::Quaternion(0, 0, 0, 1);
+        tf_.transform.rotation = tf2::toMsg(rotation_baf);
+        broadcaster_.sendTransform(tf_);
+      }
     } catch (...) {
       continue;
     }
