@@ -2,6 +2,9 @@
 Wolfgang CORE
 =============
 
+.. image:: core.png
+  :width: 800
+
 Features
 ========
 
