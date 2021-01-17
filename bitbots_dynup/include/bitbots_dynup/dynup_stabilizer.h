@@ -22,12 +22,13 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void useStabilizing(bool use);
   void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
-  sensor_msgs::Imu imu_;
-  control_toolbox::Pid pid_trunk_pitch_;
-  control_toolbox::Pid pid_trunk_roll_;
+  void setImu(sensor_msgs::Imu imu);
 
 
 private:
+  sensor_msgs::Imu imu_;
+  control_toolbox::Pid pid_trunk_pitch_;
+  control_toolbox::Pid pid_trunk_roll_;
   robot_state::RobotStatePtr goal_state_;
   robot_model::RobotModelPtr kinematic_model_;
   geometry_msgs::TransformStamped to_trunk_;

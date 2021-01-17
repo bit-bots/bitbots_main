@@ -5,7 +5,6 @@ namespace bitbots_dynup {
 
 DynUpNode::DynUpNode() :
     server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
-    engine_(),
     visualizer_("debug/dynup"),
     robot_model_loader_("robot_description", false),
     listener_(tf_buffer_) {
@@ -13,7 +12,7 @@ DynUpNode::DynUpNode() :
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
   robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
   if (!kinematic_model) {
-    ROS_FATAL("No robot model loaded, killing dynamic up.");
+    ROS_FATAL("No robot model loaded, killing dynup.");
     exit(1);
   }
   robot_state::RobotStatePtr init_state;
@@ -44,11 +43,11 @@ DynUpNode::DynUpNode() :
 }
 
 void DynUpNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
-    ik_.currentJointStates = jointstates;
+    ik_.setCurrentJointStates(jointstates);
 }
 
 void DynUpNode::imuCallback(const sensor_msgs::Imu &msg) {
-    stabilizer_.imu_ = msg;
+    stabilizer_.setImu(msg);
 }
 
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
@@ -177,15 +176,14 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   /* Transform all poses into the right foot or base_link frame */
   geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
   try {
-    //todo why the duration of 0.2? why not last possible value
-    tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole",
-                         ros::Duration(0.2));
+    //0.2 second timeout for transformations
+    tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
     tf_buffer_.transform(r_foot_origin, r_foot_transformed, "base_link", ros::Duration(0.2));
     tf_buffer_.transform(l_hand_origin, l_hand_transformed, "base_link", ros::Duration(0.2));
     tf_buffer_.transform(r_hand_origin, r_hand_transformed, "base_link", ros::Duration(0.2));
     return std::make_tuple(l_foot_transformed.pose, r_foot_transformed.pose, l_hand_transformed.pose, r_hand_transformed.pose);
   } catch (tf2::TransformException &exc) {
-    std::cerr << exc.what();
+    ROS_ERROR_STREAM(exc.what());
     return std::nullopt;
   }
 

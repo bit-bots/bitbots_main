@@ -10,14 +10,13 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
-  //goal_state_->setToDefaultValues();
 
   const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 }
 
 void DynupIK::reset() {
-  for (int i = 0; i < currentJointStates.name.size(); i++) {
-      goal_state_->setJointPositions(currentJointStates.name[i], &currentJointStates.position[i]);
+  for (int i = 0; i < current_joint_states_.name.size(); i++) {
+      goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
   }
 }
 
@@ -94,4 +93,10 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 void DynupIK::useStabilizing(bool use) {
   use_stabilizing_ = use;
 }
+
+void DynupIK::setCurrentJointStates(sensor_msgs::JointState jointStates) {
+    current_joint_states_ = jointStates;
+}
+
+
 }

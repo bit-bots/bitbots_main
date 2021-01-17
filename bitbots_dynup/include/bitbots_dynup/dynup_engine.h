@@ -101,28 +101,36 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline);
 
   /* Calculate the splines to get from lying on the front to squatting:
-   * - move arms to frint and pull legs
+   * - move arms to front and pull legs
    * - get torso into 45°, pull foot under legs
    * - get into crouch position
+   *
+   * @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
   double calcFrontSplines();
 
   /*
    * Calculate the splines to get from lying on the back to squatting
+   *
+   * @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
   double calcBackSplines();
 
   /*
    * Calculate the splines to get up from a squatting position:
-  *  - slowly stand up with stabilization
-  *  - move arms in finish position
-  */
+   *  - slowly stand up with stabilization
+   *  - move arms in finish position
+   *
+   *  @return the time of the last splinepoint of this function, needed to concat rise or descend
+   */
   double calcRiseSplines(double time);
 
   /*
    * Calculate the splines to get down to a squatting position:
-  *  - slowly sit down with stabilization
-  */
+   *  - slowly sit down with stabilization
+   *
+   *  @return the time of the last splinepoint of this function, needed to concat rise or descend
+   */
   double calcDescendSplines(double time);
 
 

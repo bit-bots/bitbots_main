@@ -1,7 +1,7 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_NODE_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_NODE_H_
 
-#include <math.h>
+#include <cmath>
 #include <string>
 #include <optional>
 #include <ros/ros.h>
@@ -53,7 +53,7 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
 class DynUpNode {
  public:
   DynUpNode();
-  ros::Publisher debug_publisher_;
+
 
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level);
@@ -69,6 +69,7 @@ class DynUpNode {
   void jointStateCallback(const sensor_msgs::JointState &jointstates);
 
  private:
+  ros::Publisher debug_publisher_;
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;
   ros::Publisher support_foot_publisher_;

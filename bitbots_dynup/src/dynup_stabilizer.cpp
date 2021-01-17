@@ -74,8 +74,13 @@ void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
   kinematic_model_ = std::move(model);
 }
 
+void Stabilizer::setImu(sensor_msgs::Imu imu) {
+  imu_ = imu;
+}
+
+
 void Stabilizer::setTransforms(geometry_msgs::TransformStamped to_trunk) {
-    to_trunk_ = to_trunk;
+  to_trunk_ = to_trunk;
 }
 
 }
