@@ -2,6 +2,8 @@
 Wolfgang CORE
 =============
 
+`Github repository <https://github.com/bit-bots/wolfgang_core>`_
+
 .. image:: core.png
   :width: 800
 
