@@ -5,7 +5,6 @@ import cv2
 import rospy
 import rospkg
 import threading
-import time
 from copy import deepcopy
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
@@ -104,6 +103,9 @@ class Vision:
         # Add general params
         ros_utils.set_general_parameters(["caching"])
 
+        # Define the rate of a sleep timer
+        self._rate = rospy.Rate(100)
+
         # Run the vision main loop
         self._main_loop()
 
@@ -133,7 +135,7 @@ class Vision:
                 # Now the first image has been processed
                 self._first_image_callback = False
             else:
-                time.sleep(0.01)
+                self._rate.sleep()
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
@@ -144,7 +146,7 @@ class Vision:
         """
         # Check flag
         while self._transfer_reconfigure_data_read_flag and not rospy.is_shutdown():
-            time.sleep(0.01)
+            self._rate.sleep()
         # Set data
         self._transfer_reconfigure_data = (config, level)
 
