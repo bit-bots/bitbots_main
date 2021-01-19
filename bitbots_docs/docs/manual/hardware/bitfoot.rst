@@ -46,7 +46,15 @@ This includes a hardware interface for the BitFoot. It can be found `here <https
 Strain Gauge Connection
 =======================
 
-P1: Back Right P2: Back Left P3: Front Right P4: Front Left
+The strain gages should be connected as follows when using our ros_control based software:
+
+* P1: Back Right
+* P2: Back Left
+* P3: Front Right
+* P4: Front Left
+
+
+.. _Calibrating the Sensors:
 
 Calibrating the Sensors
 =======================
@@ -64,6 +72,21 @@ The node will guide you through the process of calibrating the cleats.
 Register Table
 ==============
 
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| Adress | Length | Name                     | Access | Default | Type    | Persistent? |
++========+========+==========================+========+=========+=========+=============+
+| 7      | 1      | :ref:`id<DXL>`           | rw     | 101     | int8    | yes         |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 8      | 1      | :ref:`baud<DXL>`         | rw     | 4       | int8    | yes         |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 36     | 4      | :ref:`sensor_0<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 40     | 4      | :ref:`sensor_1<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 44     | 4      | :ref:`sensor_2<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 48     | 4      | :ref:`sensor_3<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
 
 .. _DXL:
 
@@ -96,3 +119,14 @@ DXL
 
 We are reasonably certain that the other baud rates work as well since the ESP32 supports them.
 
+.. _Sensors:
+
+Sensors
+-------
+
+**sensor_{0..3}**: Raw reading of the sensors differential voltage. Must be :ref:`calibrated<Calibrating the Sensors>` to give a meaningful reading.
+
+* sensor_0 = P4
+* sensor_1 = P3
+* sensor_2 = P2
+* sensor_3 = P1
