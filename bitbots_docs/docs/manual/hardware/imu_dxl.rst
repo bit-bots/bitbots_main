@@ -5,8 +5,7 @@ Bitbots IMU DXL Module
 `Github repository <https://github.com/bit-bots/bitbots_imu_dxl>`_
 
 
-todo picture
-
+<picture>
 
 
 Features
@@ -22,18 +21,54 @@ Features
 * WS2812b RGB LEDs
 * 3 Buttons
 
-
-Firmware
+Software
 ========
 
+The software consists of two parts. Firstly the firmware which is installed on the ESP32 and
+secondly (at least for us) the ros_control based diver to communicate with the board.
+You can communicate to the board using the standard Dynamixel protocol 2.0 (version 1 may work but we did not test it)
+if you wish to write your own harware interface for it.
 
+Firmware
+--------
+
+The firmware is uses the Arduino framework. We usually install it using the Arduino IDE.
+The required libraries are:
+
+* `FastLED <https://github.com/FastLED/FastLED>`_
+* `MPU9250/MPU6500 <https://github.com/bit-bots/MPU9250>`_ on branch MPU6500
+* `Dynamixel2Arduino <https://github.com/ROBOTIS-GIT/Dynamixel2Arduino>`_
+
+For installing the build tools for the ESP32 refer to `espressif's documentation <https://github.com/espressif/arduino-esp32#installation-instructions>`_.
+
+For flashing a ESP32 Wroom (without development board) we recommend a `programming socket <https://www.aliexpress.com/i/32980686343.html>`_.
+
+If the board is already soldered, the programming header can be used. The square pin is pin 1 (+3V3).
+Please refer to the schematic for the pinout. There is a :ref:`known issue<Known Issues>` with this.
 
 ROS Control
-===========
+-----------
+
+We developed a hardware interface that complies with the ros_control standard for the Wolfgang robot platform.
+This includes a hardware interface for the IMU. It can be found `here <https://github.com/bit-bots/bitbots_lowlevel/tree/master/bitbots_ros_control>`_.
 
 
+.. _Known Issues:
+
+Known Issues
+============
+
+* The ESP32's UART1 is connected to the Dynamixel bus. It is also normally used for programming.
+If the level shifter (U4) is installed, programming is not possible even with the programming header.
+* Soldering the MPU6500 module on the IMU module is quite difficult.
+We have used hot air and destroyed some modules with it.
 
 
+RS485/TTL selection
+===================
+
+R1 and R2 should not be populated if RS485 is used to communicate with the board.
+They must be installed if TTL is used.
 
 
 Register Table
@@ -128,7 +163,7 @@ DXL
 +=======+=========+========+
 | 0     | 9,600   | no     |
 +-------+---------+--------+
-| 1     | 57,600  | ?      |
+| 1     | 57,600  | no     |
 +-------+---------+--------+
 | 2     | 115,200 | no     |
 +-------+---------+--------+
@@ -143,6 +178,7 @@ DXL
 | 7     | 4.5M    | no     |
 +-------+---------+--------+
 
+We are reasonably certain that the other baud rates work as well since the ESP32 supports them.
 
 
 .. _LEDs:
@@ -150,7 +186,7 @@ DXL
 LEDs
 ----
 
-**led{0,1,2}**: byte order: RGB
+**led{0,1,2}**: Byte order: RGB, 4th byte is ignored but reserved.
 
 
 .. _IMU:
@@ -250,4 +286,20 @@ Complementary Filter
 Accelerometer Calibration
 =========================
 
-todo
+It is necessary to calibrate the accelerometer once before using it.
+For this the accelerometer must be placed with the x,y, and z-axis pointing downwards and upwards once.
+We have designed the 3D printed case for the board in such a way that this is relatively easy.
+
+Before starting the calibration, you should check the accelerometer measurements.
+For each of the axes pointing downwards or upwards the value should be at least 7.5 m/s^2.
+If this is not the case, you need to lower the **accel_calibration_threshold**.
+
+To perform the calibration procedure follow this procedure:
+
+1. Place the IMU on one of the 6 sides
+2. Set a 1 to the **calibrate_accel** register (rosservice call /imu/calibrate_accel if you are using our software)
+3. Wait until the IMU responds to reads again (or around 5 seconds)
+4. repeat for remaining 5 sides
+
+After the procedure you should check the values in the **accel_scale** and **accel_bias** registers.
+Scale should be really close to 1 and bias can, in our experience, deviate by 1-2 m/s^2.
