@@ -87,7 +87,7 @@ The red round LED next to the manual switch indicated that the board is powered.
 
 The green round LED next to it indicates if the motors and other devices on the Dynamixel bus are powered.
 
-The tree RGB LEDs are set by software.
+The three RGB LEDs are set by software.
 
 
 Power over Ethernet
@@ -99,7 +99,7 @@ It basically works like a PoE injector which are widely available but in a much 
 
 The powered device should be plugged into the RJ45 port pointing to the top and the other device into the port pointing to the bottom.
 
-PoE works with 48V which means you should not lick it.
+PoE works with 48V which means you should not lick it 😜.
 
 Power Regulation
 ================
@@ -129,7 +129,7 @@ They are located on the right above the Molex SPOX Mini connectors.
 They are labeled as VBAT+ and VBAT- for the battery and VEXT+ and VEXT- for the external supply. While technically they are treated the same,
 it is recommended to connect them in the correct order since only VEXT is measured and VBAT should be the same as the one connected to the balancer connector.
 The batteries balancer connector should be connected to P2. Be careful when soldering P2 since it needs to be oriented correctly.
-The GND pin is a the very bottom. If it is plugged in the other way, the Teensy will probably blow up.
+The GND pin is at the very bottom. If it is plugged in the other way, the Teensy will probably blow up 🤯.
 
 Both, a battery and a power supply, can be safely connected at the same time.
 No energy is transfered from one to the other since there is a double Schottky diode (D2 on the bottom side) between them.
@@ -142,14 +142,14 @@ Switching of power to Motors
 ============================
 
 Power on the Dynamixel bus can be switched on and off using either the manual switch or through software.
-If the manual switch is to the right, the power if off. If it is to the right, the power is on (if the software agrees).
+If the manual switch is to the right, the power is off. If it is to the right, the power is on (if the software agrees).
 The manual switch is an override, meaning when it is off, the teensy can not enable it.
-If there is power on the Dynamixel bus the green 3mm round LED will be on. I
-f it is on when the switch is in the off position (to the right), the MOSFET Q1 is probably blown and needs replacement.
+If there is power on the Dynamixel bus the green round LED will be on.
+If it is on when the switch is in the off position (to the right), the MOSFET Q1 is probably blown and needs replacement.
 This may happen if there is a short circuit and the MOSFET is weaker than the fuse.
 
-When the power is turned off by software but is on by the switch,
-you can flip the switch off and on and the power should be back on provided the hardware hack for V1.0 is installed (see :ref:`Bodge Switch`).
+When the power is turned off by software, but is on by the switch,
+you can flip the switch off and on and the power should be back on, provided the hardware hack for V1.0 is installed (see :ref:`Bodge Switch`).
 
 TTL or RS485 and biasing
 ========================
@@ -174,6 +174,7 @@ Two jumpers exist on the Wolfgang CORE.
 P1: Enables the Teensy 4.0 to switch on and off the motor power.
 
 P2: Enables the power supply to the Teensy 4.0. **Do not use together with a USB cable plugged into the Teensy!!**
+
 
 
 Register Table
@@ -310,3 +311,4 @@ It has to be scaled by the conversion factor from analog reading to voltage mult
 Furthermore, the reading is offset by 2.5V since the sensor can measure positive and negative currents.
 
 **current**: Raw reading of the current sensor. Scale factor: (3.3 / 1024)) - 2.5) / -0.066
+
