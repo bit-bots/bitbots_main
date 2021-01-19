@@ -19,6 +19,28 @@ Features
 * Voltage (including Cell voltage for LiPos) and Current monitoring
 * 3 RGB LEDS!!!
 
+
+Software
+========
+
+
+Firmware
+--------
+
+Required Libraries:
+
+* `Dynamixel2Arduino <https://github.com/ROBOTIS-GIT/Dynamixel2Arduino>`_
+* `FastLED <https://github.com/FastLED/FastLED>`_
+
+Installation instructions for the Teensy 4.0 for the Arduino IDE can be found `here <https://www.pjrc.com/teensy/td_download.html>`_.
+
+ROS Control
+-----------
+
+We have written a ros_control hardware interface for the board.
+You can use it or use it as a reference for your own hardware abstraction.
+It can be found `in this git <https://github.com/bit-bots/bitbots_lowlevel/tree/master/bitbots_ros_control>`_.
+
 Problems and Solutions
 ======================
 
@@ -153,3 +175,138 @@ P1: Enables the Teensy 4.0 to switch on and off the motor power.
 
 P2: Enables the power supply to the Teensy 4.0. **Do not use together with a USB cable plugged into the Teensy!!**
 
+
+Register Table
+==============
+
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| Adress | Length | Name                                  | Access | Default | Type    | Persistent? |
++========+========+=======================================+========+=========+=========+=============+
+| 7      | 1      | :ref:`id<DXL>`                        | rw     | 241     | int8    | yes         |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 8      | 1      | :ref:`baud<DXL>`                      | rw     | 4       | int8    | yes         |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 10     | 4      | :ref:`led0<LEDs>`                     | rw     | 0       | int8[4] | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 14     | 4      | :ref:`led1<LEDs>`                     | rw     | 0       | int8[4] | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 18     | 4      | :ref:`led2<LEDs>`                     | rw     | 0       | int8[4] | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 22     | 1      | :ref:`teensy_led<LEDs>`               | rw     | 0       | int8    | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 23     | 1      | :ref:`power_control<Power Control>`   | rw     | 1       | int8    | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 28     | 2      | :ref:`VEXT<Voltage Sensing>`          | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 30     | 2      | :ref:`VCC<Voltage Sensing>`           | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 32     | 2      | :ref:`VDXL<Voltage Sensing>`          | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 34     | 2      | :ref:`current<Current Sensing>`       | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 36     | 1      | :ref:`manual_power_on<Power Control>` | r      |         | int8    | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 38     | 2      | :ref:`VBAT_0<Voltage Sensing>`        | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 40     | 2      | :ref:`VBAT_1<Voltage Sensing>`        | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 42     | 2      | :ref:`VBAT_2<Voltage Sensing>`        | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 44     | 2      | :ref:`VBAT_3<Voltage Sensing>`        | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 46     | 2      | :ref:`VBAT_4<Voltage Sensing>`        | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+| 48     | 2      | :ref:`VBAT_5<Voltage Sensing>`        | r      |         | int16   | no          |
++--------+--------+---------------------------------------+--------+---------+---------+-------------+
+
+.. _DXL:
+
+DXL
+---
+
+**id**: Can be a value between 1 and 252. it is used to talk to the device over the Dynamixel bus.
+
+**baud**: Can be a value between 0 and 7
+
++-------+---------+--------+
+| value | baud    | Tested |
++=======+=========+========+
+| 0     | 9,600   | no     |
++-------+---------+--------+
+| 1     | 57,600  | no     |
++-------+---------+--------+
+| 2     | 115,200 | no     |
++-------+---------+--------+
+| 3     | 1M      | no     |
++-------+---------+--------+
+| 4     | 2M      | yes    |
++-------+---------+--------+
+| 5     | 3M      | no     |
++-------+---------+--------+
+| 6     | 4M      | yes    |
++-------+---------+--------+
+| 7     | 4.5M    | no     |
++-------+---------+--------+
+
+We are reasonably certain that the other baud rates work as well since the Teensy supports them.
+
+
+.. _LEDs:
+
+LEDs
+----
+
+**led{0,1,2}**: Byte order: RGB, 4th byte is ignored but reserved.
+
+
+.. _Power Control:
+
+Power Control
+-------------
+
+**power_control**: Used to turn on and off the power (0 off, 1 on). Will be overwritten by manual switch if toggled.
+
+**manual_power_on**: Indicates whether the manual power switch is on. Requires :ref:`Bodge Switch`
+
+.. _Voltage Sensing:
+
+Voltage Sensing
+---------------
+
+Voltages are scaled down using a voltage divider to be read by the microcontroller.
+Multiplying by the given scale factor returns the actual voltage on the voltage rail.
+The scale factor is given as the conversion factor from analog reading to voltage multiplied by the factor of the voltage divider.
+The factor of the voltage divider is given as (top_resistor/(top_resistor+bottom_resistor)).
+It is recommended to use ±0.1% or ±1% resistors for the voltage dividers.
+
+**VEXT**: Raw reading of the external power supply voltage. Scale factor: (3.3 / 1024) * (2.0/(2.0+10.0))
+
+**VCC**: Raw reading of the main voltage rail. Scale factor: (3.3 / 1024) * (2.0/(2.0+10.0))
+
+**VDXL**: Raw reading of the voltage applied to the Dynamixel bus. Scale factor: (3.3 / 1024) * (2.0/(2.0+10.0))
+
+**VBAT_{0..5}**: Raw reading of the voltage between ground and cell {0..5}.
+
+**VBAT_0**: Scale factor: (3.3 / 1024) * (3.3/(1.2+3.3))
+
+**VBAT_1**: Scale factor: (3.3 / 1024) * (3.6/(6.2+3.6))
+
+**VBAT_2**: Scale factor: (3.3 / 1024) * (2.2/(6.8+2.2))
+
+**VBAT_3**: Scale factor: (3.3 / 1024) * (3.6/(16.0+3.6))
+
+**VBAT_4**: Scale factor: (3.3 / 1024) * (6.2/(36.0+6.2))
+
+**VBAT_5**: Scale factor: (3.3 / 1024) * (1.8/(13.0+1.8))
+
+
+.. _Current Sensing:
+
+Current Sensing
+---------------
+
+Current is sensed using a Hall effect sensor (ACS712ELCTR-30A-T to be exact).
+It has to be scaled by the conversion factor from analog reading to voltage multiplied by the amperes per volt to get the actual current.
+Furthermore, the reading is offset by 2.5V since the sensor can measure positive and negative currents.
+
+**current**: Raw reading of the current sensor. Scale factor: (3.3 / 1024)) - 2.5) / -0.066
