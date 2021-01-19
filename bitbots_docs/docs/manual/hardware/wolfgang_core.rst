@@ -225,7 +225,7 @@ Register Table
 DXL
 ---
 
-**id**: Can be a value between 1 and 252. it is used to talk to the device over the Dynamixel bus.
+**id**: Can be a value between 1 and 252. It is used to talk to the device over the Dynamixel bus.
 
 **baud**: Can be a value between 0 and 7
 
@@ -311,4 +311,3 @@ It has to be scaled by the conversion factor from analog reading to voltage mult
 Furthermore, the reading is offset by 2.5V since the sensor can measure positive and negative currents.
 
 **current**: Raw reading of the current sensor. Scale factor: (3.3 / 1024)) - 2.5) / -0.066
-
