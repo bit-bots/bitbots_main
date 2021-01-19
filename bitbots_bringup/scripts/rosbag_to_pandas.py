@@ -79,8 +79,9 @@ else:
         print(
             f"{COLORS.BOLD}{COLORS.OKGREEN}Available Fields from {COLORS.OKBLUE}{topics[topic_selection]}{COLORS.ENDC}")
         print(rosmsg.get_msg_text(types[topic_selection]))
-        single_topic_data_selection = input("Specify which fields you want seperated with spaces. Header stamp and seq "
-                                            "are included automatically.\n")
+        single_topic_data_selection = input("Specify which fields you want seperated with spaces. "
+                                            "You can also use a semantic like \"orientation.x\" to access internal fields."
+                                            "Header stamp and seq are included automatically.\n")
         data_selections.append(single_topic_data_selection.split())
 
 
@@ -112,7 +113,7 @@ if use_saved:
 else:
     remove_remove_time_offset_input = input("Do you want the time to start at 0 (remove time offset)? [Y|n]")
 remove_time_offset = remove_remove_time_offset_input in ["y", "Y", ""]
-if seperate:
+if remove_time_offset:
     print("Will remove offset\n")
 else:
     print("Will not remove offset\n")
