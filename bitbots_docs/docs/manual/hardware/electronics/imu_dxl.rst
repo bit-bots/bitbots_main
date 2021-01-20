@@ -64,9 +64,9 @@ Known Issues
 ============
 
 * The ESP32's UART1 is connected to the Dynamixel bus. It is also normally used for programming.
-If the level shifter (U4) is installed, programming is not possible even with the programming header.
+  If the level shifter (U4) is installed, programming is not possible even with the programming header.
 * Soldering the MPU6500 module on the IMU module is quite difficult.
-We have used hot air and destroyed some modules with it.
+  We have used hot air and destroyed some modules with it.
 
 
 RS485/TTL selection
