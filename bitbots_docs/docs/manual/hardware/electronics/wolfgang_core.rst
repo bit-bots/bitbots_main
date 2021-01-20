@@ -4,7 +4,7 @@ Wolfgang CORE
 
 `Github repository <https://github.com/bit-bots/wolfgang_core>`_
 
-.. image:: core.png
+.. image:: img/core.png
   :width: 800
 
 Features
@@ -63,7 +63,7 @@ To accomplish this, the Teensy has to read the power state of the manual switch.
 To achieve this the trace marked in red has to be cut (for example with an x-acto knife, make sure there is really no connection)
 and a wire marked in green needs to be soldered.
 
-.. image:: core_bodge.png
+.. image:: img/core_bodge.png
   :width: 800
 
 Numbering of Dynamixel Buses

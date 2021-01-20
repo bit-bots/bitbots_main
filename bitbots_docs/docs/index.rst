@@ -30,12 +30,29 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
 
     manual/software/*
 
+
+Hardware
+--------
+
+
+Electronics
+^^^^^^^^^^^
+
 .. toctree::
     :maxdepth: 1
     :glob:
-    :caption: Hardware:
 
-    manual/hardware/*
+    manual/hardware/electronics/*
+
+
+Mechanics
+^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    manual/hardware/mechanics/*
 
 `Package Documentations <http://doku.bit-bots.de/package/>`_
 
