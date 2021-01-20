@@ -4,7 +4,7 @@
 
 namespace bitbots_dynamic_kick {
 
-KickNode::KickNode() :
+KickNode::KickNode(const std::string &ns) :
     server_(node_handle_, "dynamic_kick", boost::bind(&KickNode::executeCb, this, _1), false),
     listener_(tf_buffer_),
     engine_(),
@@ -75,43 +75,36 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   visualizer_.setParams(viz_params);
 }
 
-void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
-  // TODO: maybe switch to goal callback to be able to reject goals properly
-  ROS_INFO("Accepted new goal");
+bool KickNode::init(const bitbots_msgs::KickGoal &goal, std::string &error_string) {
   engine_.reset();
   last_ros_update_time_ = 0;
   was_support_foot_published_ = false;
-
   std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
   try {
     foot_poses = getFootPoses();
   } catch (tf2::TransformException &e) {
     ROS_ERROR("Could not process goal because current feet positions could not be transformed into base_link");
-    bitbots_msgs::KickResult result;
-    result.result = bitbots_msgs::KickResult::REJECTED;
-    server_.setAborted(result, "Transformation of feet into base_link not possible");
+    error_string = "Transformation of feet into base_link not possible";
+    return false;
   }
-
   visualizer_.displayReceivedGoal(goal);
 
   /* Set engines goal and start calculating */
   KickGoals goals;
-  goals.ball_position = goal->ball_position;
-  goals.header = goal->header;
-  goals.kick_direction = goal->kick_direction;
-  goals.kick_speed = goal->kick_speed;
+  goals.ball_position = goal.ball_position;
+  goals.header = goal.header;
+  goals.kick_direction = goal.kick_direction;
+  goals.kick_speed = goal.kick_speed;
   goals.r_foot_pose = foot_poses.first;
   goals.l_foot_pose = foot_poses.second;
 
   try {
     engine_.setGoals(goals);
-  }
-  catch (tf2::TransformException &e) {
+  } catch (tf2::TransformException &e) {
+    ROS_ERROR_STREAM(e.what());
     ROS_ERROR_STREAM("Could not transform goal to needed tf frames: " << e.what());
-    bitbots_msgs::KickResult result;
-    result.result = bitbots_msgs::KickResult::REJECTED;
-    server_.setAborted(result, "Could not transform goal to needed tf frames");
-    return;
+    error_string = "Could not transform goal to needed tf frames";
+    return false;
   }
 
   stabilizer_.reset();
@@ -119,6 +112,20 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayTrunkSplines(engine_.getTrunkSplines());
+  return true;
+}
+
+void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
+  // TODO: maybe switch to goal callback to be able to reject goals properly
+  ROS_INFO("Accepted new goal");
+  std::string error_string;
+  bool success = init(*goal, error_string);
+  if (!success) {
+    bitbots_msgs::KickResult result;
+    result.result = bitbots_msgs::KickResult::REJECTED;
+    server_.setAborted(result, error_string);
+  }
+
   ros::Rate loop_rate(engine_rate_);
   loopEngine(loop_rate);
 
@@ -187,29 +194,19 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
   double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
-    KickPositions positions = engine_.update(dt);
-    // TODO: should positions be an std::optional? how are errors represented?
-    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
-    bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
+    std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
 
-    /* visualization of the values calculated above */
-    for (int i = 0; i < motor_goals.first.size(); ++i) {
-      current_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
-    }
-    visualizer_.publishGoals(positions, stabilized_positions, current_state_);
-
+    /* Publish feedback to the client */
     bitbots_msgs::KickFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
     feedback.chosen_foot = engine_.isLeftKick() ?
                            bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
     server_.publishFeedback(feedback);
-    publishGoals(motor_goals);
-
-    publishSupportFoot(engine_.isLeftKick());
 
     if (feedback.percent_done == 100) {
       break;
     }
+    joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
 
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
@@ -217,7 +214,23 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
   }
 }
 
-void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
+bitbots_splines::JointGoals KickNode::kickStep(double dt) {
+  KickPositions positions = engine_.update(dt);
+  // TODO: should positions be an std::optional? how are errors represented?
+  KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
+  bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
+
+  /* visualization of the values calculated above */
+  for (int i = 0; i < motor_goals.first.size(); ++i) {
+    current_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
+  }
+  visualizer_.publishGoals(positions, stabilized_positions, current_state_);
+  publishSupportFoot(engine_.isLeftKick());
+
+  return motor_goals;
+}
+
+bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -239,7 +252,7 @@ void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   command.accelerations = accs;
   command.max_currents = pwms;
 
-  joint_goal_publisher_.publish(command);
+  return command;
 }
 
 void KickNode::publishSupportFoot(bool is_left_kick) {
@@ -250,6 +263,20 @@ void KickNode::publishSupportFoot(bool is_left_kick) {
     support_foot_publisher_.publish(msg);
     was_support_foot_published_ = true;
   }
+}
+
+bitbots_msgs::JointCommand KickNode::stepWrapper(double dt) {
+  /* with stabilizing, we can call some callbacks here */
+  bitbots_splines::JointGoals goals = kickStep(dt);
+  if (engine_.getPercentDone() < 100) {
+    return getJointCommand(goals);
+  } else {
+    return {};
+  }
+}
+
+double KickNode::getProgress() {
+  return engine_.getPercentDone() / 100.0;
 }
 
 }

@@ -22,6 +22,16 @@ find_package(catkin REQUIRED COMPONENTS
         message_runtime
 )
 
+catkin_python_setup()
+
+find_package(PythonLibs)
+if(PYTHONLIBS_VERSION_STRING VERSION_LESS "3.8")
+    find_package(Boost REQUIRED COMPONENTS python3)
+else()
+    find_package(Boost REQUIRED COMPONENTS python)
+endif()
+find_package (PythonLibs COMPONENTS Interpreter Development)
+
 generate_dynamic_reconfigure_options(
         cfg/bitbots_dynamic_kick_params.cfg
 )
@@ -46,6 +56,8 @@ enable_bitbots_docs()
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_DIRS}
 )
 
 set(SOURCES
@@ -60,3 +72,15 @@ add_executable(KickNode ${SOURCES})
 add_dependencies(KickNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages)
 
 target_link_libraries(KickNode ${catkin_LIBRARIES})
+
+# create the kick python wrapper
+add_library(py_dynamic_kick SHARED src/kick_pywrapper.cpp ${SOURCES})
+add_dependencies(py_dynamic_kick ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+
+# link
+target_link_libraries(py_dynamic_kick ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${CODE_LIBRARIES})
+
+set_target_properties(py_dynamic_kick PROPERTIES
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)

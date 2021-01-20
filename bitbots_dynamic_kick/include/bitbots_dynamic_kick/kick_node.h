@@ -35,7 +35,7 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
  */
 class KickNode {
  public:
-  KickNode();
+  explicit KickNode(const std::string &ns = std::string());
 
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level);
@@ -45,6 +45,26 @@ class KickNode {
    * @param goal New goal to process
    */
   void executeCb(const bitbots_msgs::KickGoalConstPtr &goal);
+
+  /**
+   * This wrapper is used in the python wrapper for a single step of the kick
+   * @param dt the time difference since the last call of this method
+   * @return the JointCommand representing the next step or an empty JointCommand if the kick is done
+   */
+  bitbots_msgs::JointCommand stepWrapper(double dt);
+
+  /**
+   * Get the current progress of the kick, from 0 to 1
+   */
+  double getProgress();
+
+  /**
+   * Initialize the node
+   * @param goal The goal of the kick
+   * @param error_string when the return value is false, this will contain details about the error
+   * @return whether the setup was successful
+   */
+  bool init(const bitbots_msgs::KickGoal &goal, std::string& error_string);
 
  private:
   ros::NodeHandle node_handle_;
@@ -72,6 +92,12 @@ class KickNode {
   void loopEngine(ros::Rate loop_rate);
 
   /**
+   * Execute one step of engine-stabilize-ik
+   * @return the motor goals
+   */
+  bitbots_splines::JointGoals kickStep(double dt);
+
+  /**
    * Retrieve current feet_positions in base_link frame
    *
    * @return The pair of (right foot, left foot) poses if transformation was successfull
@@ -92,9 +118,9 @@ class KickNode {
   double getTimeDelta();
 
   /**
-   * Publish goals to ROS
+   * Get JointCommand message for JointGoals
    */
-  void publishGoals(const bitbots_splines::JointGoals &goals);
+  bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);
 };

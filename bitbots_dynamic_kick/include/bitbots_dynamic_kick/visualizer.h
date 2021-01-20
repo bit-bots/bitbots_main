@@ -39,7 +39,7 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void setParams(VisualizationParams params);
 
-  void displayReceivedGoal(const bitbots_msgs::KickGoalConstPtr &goal);
+  void displayReceivedGoal(const bitbots_msgs::KickGoal &goal);
 
   void displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
 

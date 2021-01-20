@@ -49,19 +49,19 @@ void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines) {
   trunk_spline_publisher_.publish(path);
 }
 
-void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoalConstPtr &goal) {
+void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoal &goal) {
   if (goal_publisher_.getNumSubscribers() == 0)
     return;
 
   visualization_msgs::Marker
-      marker = getMarker({goal->ball_position.x, goal->ball_position.y, goal->ball_position.z}, goal->header.frame_id);
+      marker = getMarker({goal.ball_position.x, goal.ball_position.y, goal.ball_position.z}, goal.header.frame_id);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
   marker.type = visualization_msgs::Marker::ARROW;
-  marker.header.stamp = goal->header.stamp;
-  marker.pose.orientation = goal->kick_direction;
-  marker.scale.x = 0.08 + (goal->kick_speed / 3);
+  marker.header.stamp = goal.header.stamp;
+  marker.pose.orientation = goal.kick_direction;
+  marker.scale.x = 0.08 + (goal.kick_speed / 3);
   marker.color.r = 1;
 
   goal_publisher_.publish(marker);
