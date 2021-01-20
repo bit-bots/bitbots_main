@@ -31,10 +31,6 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
     manual/software/*
 
 
-Hardware
-========
-
-
 .. toctree::
     :maxdepth: 1
     :glob:
