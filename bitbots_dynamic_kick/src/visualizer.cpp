@@ -83,6 +83,11 @@ void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const
 void Visualizer::publishGoals(const KickPositions &positions,
                               const KickPositions &stabilized_positions,
                               const robot_state::RobotStatePtr &robot_state) {
+  /* only calculate the debug information if someone is subscribing */
+  if (debug_publisher_.getNumSubscribers() == 0) {
+    return;
+  }
+
   std::string support_foot_frame, flying_foot_frame;
   if (positions.is_left_kick) {
     support_foot_frame = "r_sole";
