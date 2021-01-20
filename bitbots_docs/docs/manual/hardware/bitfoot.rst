@@ -19,36 +19,42 @@ Because we did not want to redesign the analog part of the board, we designed an
 .. _ForceFoot: https://www.github.com/Rhoban/ForceFoot
 .. _repository: https://www.github.com/bit-bots/bit_foot
 
-Flashing the Device
-===================
+Software
+========
 
-The software is written using the Arduino framework.
-To compile the software, two libraries and the ESP32 toolchain for Arduino are required.
+Firmware
+--------
 
+The firmware is uses the Arduino framework. We usually install it using the Arduino IDE.
+The required libraries are:
 
-The toolchain can be installed using the Boards Manager in the `Arduino IDE <https://www.arduino.cc/en/software>`_.
+* `ADS126X <https://github.com/Molorius/ADS126X>`_
+* `Dynamixel2Arduino <https://github.com/ROBOTIS-GIT/Dynamixel2Arduino>`_
 
-Libraries to be installed in the libraries folder of the Arduino IDE (normally "~/Arduino/libraries" on Linux):
+For installing the build tools for the ESP32 refer to `espressif's documentation <https://github.com/espressif/arduino-esp32#installation-instructions>`_.
 
-ADS126X_
+For flashing a ESP32 Wroom (without development board) we recommend a `programming socket <https://www.aliexpress.com/i/32980686343.html>`_.
 
-Dynamixel2Arduino_
+Flash the board before soldering!
 
+ROS Control
+-----------
 
-.. _ADS126X: https://github.com/Molorius/ADS126X
-.. _Dynamixel2Arduino: https://github.com/ROBOTIS-GIT/Dynamixel2Arduino
-
-After setting the ESP32 Dev Module as the board, you should be able to compile the software.
-
-For flashing we recommend to use a `Programmer Tool <https://www.aliexpress.com/i/32980686343.html>`_
-(like this one) before soldering. After soldering there is no connector and U1 on the connector board needs to be desoldered.
-
-With the Programmer Tool the flashing of the device should be simple with the Arduino IDE.
+We developed a hardware interface that complies with the ros_control standard for the Wolfgang robot platform.
+This includes a hardware interface for the BitFoot. It can be found `here <https://github.com/bit-bots/bitbots_lowlevel/tree/master/bitbots_ros_control>`_.
 
 Strain Gauge Connection
 =======================
 
-P1: Back Right P2: Back Left P3: Front Right P4: Front Left
+The strain gages should be connected as follows when using our ros_control based software:
+
+* P1: Back Right
+* P2: Back Left
+* P3: Front Right
+* P4: Front Left
+
+
+.. _Calibrating the Sensors:
 
 Calibrating the Sensors
 =======================
@@ -62,3 +68,65 @@ Then run the calibration node:
 :code:`rosrun bitbots_ros_control pressure_calibration.py`
 
 The node will guide you through the process of calibrating the cleats.
+
+Register Table
+==============
+
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| Adress | Length | Name                     | Access | Default | Type    | Persistent? |
++========+========+==========================+========+=========+=========+=============+
+| 7      | 1      | :ref:`id<DXL>`           | rw     | 101     | int8    | yes         |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 8      | 1      | :ref:`baud<DXL>`         | rw     | 4       | int8    | yes         |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 36     | 4      | :ref:`sensor_0<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 40     | 4      | :ref:`sensor_1<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 44     | 4      | :ref:`sensor_2<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+| 48     | 4      | :ref:`sensor_3<Sensors>` | r      |         | float32 |             |
++--------+--------+--------------------------+--------+---------+---------+-------------+
+
+.. _DXL:
+
+DXL
+---
+
+**id**: Can be a value between 1 and 252. it is used to talk to the device over the Dynamixel bus.
+
+**baud**: Can be a value between 0 and 7
+
++-------+---------+--------+
+| value | baud    | Tested |
++=======+=========+========+
+| 0     | 9,600   | no     |
++-------+---------+--------+
+| 1     | 57,600  | no     |
++-------+---------+--------+
+| 2     | 115,200 | no     |
++-------+---------+--------+
+| 3     | 1M      | no     |
++-------+---------+--------+
+| 4     | 2M      | yes    |
++-------+---------+--------+
+| 5     | 3M      | no     |
++-------+---------+--------+
+| 6     | 4M      | yes    |
++-------+---------+--------+
+| 7     | 4.5M    | no     |
++-------+---------+--------+
+
+We are reasonably certain that the other baud rates work as well since the ESP32 supports them.
+
+.. _Sensors:
+
+Sensors
+-------
+
+**sensor_{0..3}**: Raw reading of the sensors differential voltage. Must be :ref:`calibrated<Calibrating the Sensors>` to give a meaningful reading.
+
+* sensor_0 = P4
+* sensor_1 = P3
+* sensor_2 = P2
+* sensor_3 = P1
