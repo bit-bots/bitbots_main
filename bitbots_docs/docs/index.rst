@@ -32,25 +32,21 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
 
 
 Hardware
---------
+========
 
-
-Electronics
-^^^^^^^^^^^
 
 .. toctree::
     :maxdepth: 1
     :glob:
+    :caption: Electronics
 
     manual/hardware/electronics/*
 
 
-Mechanics
-^^^^^^^^^
-
 .. toctree::
     :maxdepth: 1
     :glob:
+    :caption: Mechanics
 
     manual/hardware/mechanics/*
 
