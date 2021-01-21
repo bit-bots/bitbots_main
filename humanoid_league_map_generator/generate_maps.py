@@ -27,6 +27,9 @@ tcrossings = False
 tcrossings_blobs = False
 crosses_blobs = False
 
+penalty_mark = False
+center_point = False
+
 # 2019 field WM
 field_length = 900
 field_width = 600
@@ -156,18 +159,20 @@ if lines:
     img_lines = cv2.circle(img_lines, middle_point, center_circle_diameter // 2, color, line_width)
 
     # Draw center mark
-    if mark_type == 'point':
-        img_lines = cv2.circle(img_lines, middle_point, line_width * 2, color, -1)
-    else:
-        drawCross(img_lines, middle_point)
+    if center_point:
+        if mark_type == 'point':
+            img_lines = cv2.circle(img_lines, middle_point, line_width * 2, color, -1)
+        else:
+            drawCross(img_lines, middle_point)
 
     # Draw penalty marks
-    if mark_type == 'point':
-        img_lines = cv2.circle(img_lines, penalty_mark_left, line_width * 2, color, -1)
-        img_lines = cv2.circle(img_lines, penalty_mark_right, line_width * 2, color, -1)
-    else:
-        drawCross(img_lines, penalty_mark_left)
-        drawCross(img_lines, penalty_mark_right)
+    if penalty_mark:
+        if mark_type == 'point':
+            img_lines = cv2.circle(img_lines, penalty_mark_left, line_width * 2, color, -1)
+            img_lines = cv2.circle(img_lines, penalty_mark_right, line_width * 2, color, -1)
+        else:
+            drawCross(img_lines, penalty_mark_left)
+            drawCross(img_lines, penalty_mark_right)
 
     # Draw goal area
     img_lines = cv2.rectangle(img_lines, goal_area_left_start, goal_area_left_end, color, line_width)
