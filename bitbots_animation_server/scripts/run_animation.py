@@ -11,8 +11,6 @@ import humanoid_league_msgs.msg
 def anim_run(anim=None, hcm=False):
     anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
     rospy.init_node('anim_sender', anonymous=True)
-    if anim is None:
-        anim = rospy.get_param("~anim")
     if anim is None or anim == "":
         rospy.logwarn("Tried to play an animation with an empty name!")
         return False

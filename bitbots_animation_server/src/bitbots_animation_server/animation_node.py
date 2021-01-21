@@ -56,8 +56,8 @@ class PlayAnimationAction(object):
         self.traj_msg = JointTrajectory()
         self.traj_point = JointTrajectoryPoint()
 
-        rospy.Subscriber("/joint_states", JointState, self.update_current_pose, queue_size=1)
-        rospy.Subscriber("/robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
+        rospy.Subscriber("joint_states", JointState, self.update_current_pose, queue_size=1)
+        rospy.Subscriber("robot_state", RobotControlState, self.update_hcm_state, queue_size=1)
         self.hcm_publisher = rospy.Publisher("animation", AnimationMsg, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(self.action_name, PlayAction,
