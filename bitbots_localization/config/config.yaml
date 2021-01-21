@@ -3,7 +3,7 @@
   # MISC #
   ########
 
-  init_mode: 0
+  init_mode: 1
 
   field_boundary_interpolation_steps: 1
 
@@ -36,8 +36,8 @@
   ###################
 
 
-  particle_number: 50
-  resampling_interval: 100
+  particle_number: 500
+  resampling_interval: 25
 
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
