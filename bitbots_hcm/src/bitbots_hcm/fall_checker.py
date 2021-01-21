@@ -83,10 +83,10 @@ class FallChecker(BaseEstimator):
                 if self.counter > self.smoothing:
                     result = result
                 else:
-                    result = 0
+                    result = self.STABLE
             else:
                 self.counter = 0
-                result = 0
+                result = self.STABLE
             self.last_result = result
 
         return result
