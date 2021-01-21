@@ -12,8 +12,13 @@
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <moveit/robot_state/robot_state.h>
 #include <tf2/LinearMath/Vector3.h>
+#include <tf2/convert.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <bitbots_splines/abstract_visualizer.h>
+#include <bitbots_dynamic_kick/kick_utils.h>
+#include <bitbots_dynamic_kick/KickDebug.h>
 
 namespace bitbots_dynamic_kick {
 
@@ -42,12 +47,15 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame);
 
+  void publishGoals(const KickPositions &positions, const KickPositions &stabilized_positions, const robot_state::RobotStatePtr& robot_state);
+
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher goal_publisher_;
   ros::Publisher foot_spline_publisher_;
   ros::Publisher trunk_spline_publisher_;
   ros::Publisher windup_publisher_;
+  ros::Publisher debug_publisher_;
   std::string base_topic_;
   const std::string marker_ns_ = "bitbots_dynamic_kick";
   VisualizationParams params_;
