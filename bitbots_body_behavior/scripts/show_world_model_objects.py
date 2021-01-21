@@ -17,7 +17,7 @@ class ShowWorldModelObjects:
     """
     def __init__(self):
         rospy.init_node("show_world_model_objects")
-        self.marker_publisher = rospy.Publisher("/visualization_world_model_markers", Marker, queue_size=10)
+        self.marker_publisher = rospy.Publisher("visualization_world_model_markers", Marker, queue_size=10)
 
         # object properties
         self.ball_diameter = 0.17
@@ -104,9 +104,9 @@ class ShowWorldModelObjects:
         self.marker_kick_area_left.pose.orientation.w = 1.0
 
         # init subscribers
-        rospy.Subscriber("/debug/viz_ball", PointStamped, self.ball_cb, queue_size=10)
-        rospy.Subscriber("/debug/viz_goal", PoseWithCertaintyArray, self.goal_cb, queue_size=10)
-        rospy.Subscriber("/debug/viz_ball_kick_area", String, self.kick_area_cb, queue_size=10)
+        rospy.Subscriber("debug/viz_ball", PointStamped, self.ball_cb, queue_size=10)
+        rospy.Subscriber("debug/viz_goal", PoseWithCertaintyArray, self.goal_cb, queue_size=10)
+        rospy.Subscriber("debug/viz_ball_kick_area", String, self.kick_area_cb, queue_size=10)
 
         # load kick area info
         kick_right_max_x = rospy.get_param('behavior/body/right_kick_max_x')

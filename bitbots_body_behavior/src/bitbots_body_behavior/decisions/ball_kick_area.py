@@ -16,7 +16,7 @@ class BallKickArea(AbstractDecisionElement):
         self.left_kick_min_y = self.blackboard.config['left_kick_min_y']
         self.left_kick_max_x = self.blackboard.config['left_kick_max_x']
         self.left_kick_max_y = self.blackboard.config['left_kick_max_y']
-        self.viz_publisher = rospy.Publisher('/debug/viz_ball_kick_area', String, queue_size=1)
+        self.viz_publisher = rospy.Publisher('debug/viz_ball_kick_area', String, queue_size=1)
 
     def perform(self, reevaluate=False):
         """

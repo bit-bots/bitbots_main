@@ -60,14 +60,14 @@ class WorldModelCapsule:
         self.field_width = rospy.get_param('/field_width', None)
         self.goal_width = rospy.get_param('/goal_width', None)
 
-        self.use_localization = rospy.get_param('/behavior/body/use_localization', None)
+        self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
-        self.pose_precision_threshold = rospy.get_param('/behavior/body/pose_precision_threshold', None)
-        self.pose_lost_time = rospy.get_param('/behavior/body/pose_lost_time', None)
+        self.pose_precision_threshold = rospy.get_param('behavior/body/pose_precision_threshold', None)
+        self.pose_lost_time = rospy.get_param('behavior/body/pose_lost_time', None)
 
         # Publisher for visualization in RViZ
-        self.ball_publisher = rospy.Publisher('/debug/viz_ball', PointStamped, queue_size=1)
-        self.goal_publisher = rospy.Publisher('/debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
+        self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
+        self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
 
     ############
     ### Ball ###
