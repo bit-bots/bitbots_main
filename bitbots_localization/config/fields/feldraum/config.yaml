@@ -22,18 +22,6 @@ initial_robot_x: -2.0
 initial_robot_y: 0
 initial_robot_t: 0
 
-########
-# Maps #
-########
-
-map_path_lines: 'models/lines_feldraum.png'
-# TODO create feldraum maps for the following ones
-map_path_goals: 'models/posts.png'
-map_path_field_boundary: 'models/fieldboundary.png'
-map_path_corners: 'models/corners.png'
-map_path_crosses: 'models/crosses_simulator.png'
-map_path_tcrossings: 'models/tcrossings.png'
-
 ##################
 # Field settings #
 ##################

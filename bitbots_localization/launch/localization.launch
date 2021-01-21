@@ -1,16 +1,23 @@
 <launch>
     <!-- define parameters -->
-    <arg name="fieldname" default="feldraum" doc="Loads field settings, e.g. for the feldraum (f-031)." />
+    <arg name="sim" default="false" doc="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg unless="$(arg sim)" name="fieldname" default="feldraum" doc="Loads field settings (feldraum, webots, gazebo)." />
+    <arg if="$(arg sim)" name="fieldname" default="webots" doc="Loads field settings (feldraum, webots, gazebo)." />
+
+    <param name="~fieldname" value="$(arg fieldname)"/>
 
     <!-- load localization -->
     <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
         <!-- load base parameters -->
         <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
         <!-- load field specific paramters -->
-        <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(arg fieldname).yaml"/>
+        <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(arg fieldname)/config.yaml"/>
     </node>
+
     <!-- load the map for rviz-->
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/lines_$(arg fieldname).yaml">
+    <node name="field_map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/config/fields/$(arg fieldname)/map_server.yaml">
         <param name="frame_id" value="map" />
+        <remap from="/map" to="/field/map"/>
+        <remap from="/map_metadata" to="/field/map_metadata"/>
     </node>
 </launch>

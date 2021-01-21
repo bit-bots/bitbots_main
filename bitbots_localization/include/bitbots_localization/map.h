@@ -30,10 +30,12 @@ class Map {
  public:
 
   /**
-   * @param file_path Path of the map definition.
+   * @param name of the environment. (E.g. webots)
+   * @param type of the map. (E.g. lines)
    * @param config Config of the localization.
    */ 
   explicit Map(const std::string& file_path, const bl::LocalizationConfig &config);
+  explicit Map(const std::string& name, const std::string& type, const bl::LocalizationConfig &config);
 
   cv::Mat map;
 
