@@ -32,7 +32,7 @@ initial_robot_t: 0
 
 # Field size
 field_x: 9
-field_y: 5
+field_y: 6
 
 # Padding
 field_padding: 0.7 #0.1
