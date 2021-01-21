@@ -13,19 +13,18 @@
 #include <bitbots_localization/tools.h>
 
 /**
-* @class CarState
-* @brief Sample state for a particle filter that simulates a car.
-*
-* This state has the following parameters:
-* @li <b>xpos</b> the x-Position of the car
-* @li <b>ypos</b> the y-Position of the car
-* @li <b>theta</b> the orientation of the car (in radiants)
-* @li <b>speed</b> the forward speed of the car
-* @li <b>rotationSpeed</b> the speed with which the car rotates.
+* @class RobotState
+* @brief Sample state for a particle filter that localizes the Robot.
 */
 class RobotState {
  public:
   RobotState();
+  
+  /**
+   * @param x Position of the robot.
+   * @param y Position of the robot.
+   * @param T Orientaion of the robot in radians.
+   */ 
   RobotState(double x, double y, double T);
 
   RobotState operator*(float factor) const;
