@@ -1,6 +1,6 @@
 image: lines.png
 resolution: 0.01
-origin: [-5.2, -3.7, 0.0]
+origin: [-5.5, -4., 0.0]
 occupied_thresh: 0.99
 free_thresh: 0.196
 negate: 0
