@@ -33,9 +33,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
     tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
     if(use_stabilizing_ && ik_goals.is_stabilizing_needed) {
-        tf2::Transform to_trunk_tf;
-        tf2::fromMsg(to_trunk_.transform, to_trunk_tf);
-        tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * to_trunk_tf;
+        tf2::Transform r_sole_to_trunk_tf;
+        tf2::fromMsg(r_sole_to_trunk_.transform, r_sole_to_trunk_tf);
+        tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * r_sole_to_trunk_tf;
 
         double goal_pitch, goal_roll, goal_yaw;
         tf2::Matrix3x3(trunk_goal.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
@@ -45,8 +45,8 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
         tf2::Quaternion corrected_orientation;
         corrected_orientation.setRPY(goal_roll + corrected_roll, goal_pitch + corrected_pitch, goal_yaw);
         trunk_goal.setRotation(corrected_orientation);
-
-        right_foot_goal = trunk_goal * to_trunk_tf.inverse() ;
+        // then calculate how the foot should be placed to reach that trunk pose
+        right_foot_goal = trunk_goal * r_sole_to_trunk_tf.inverse() ;
     }
     else {
         right_foot_goal = ik_goals.r_foot_goal_pose;
@@ -79,8 +79,8 @@ void Stabilizer::setImu(sensor_msgs::Imu imu) {
 }
 
 
-void Stabilizer::setTransforms(geometry_msgs::TransformStamped to_trunk) {
-  to_trunk_ = to_trunk;
+void Stabilizer::setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk) {
+  r_sole_to_trunk_ = r_sole_to_trunk;
 }
 
 }

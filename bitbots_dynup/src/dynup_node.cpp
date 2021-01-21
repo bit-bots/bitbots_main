@@ -131,7 +131,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
     DynupResponse response = engine_.update(dt);
-    stabilizer_.setTransforms(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0))); //todo this should not be done based on the tf buffer but on the current open loop goal state
+    stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)));
     DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;
@@ -173,7 +173,7 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   r_hand_origin.pose.orientation.w = 1;
   r_hand_origin.header.stamp = time;
 
-  /* Transform all poses into the right foot or base_link frame */
+  /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
   geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
   try {
     //0.2 second timeout for transformations
@@ -212,9 +212,6 @@ void DynUpNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   command.max_currents = pwms;
 
   joint_goal_publisher_.publish(command);
-}
-void DynUpNode::publishSupportFoot(bool is_left_dyn_up) {
-  //TODO: Currently not implemented
 }
 
 }

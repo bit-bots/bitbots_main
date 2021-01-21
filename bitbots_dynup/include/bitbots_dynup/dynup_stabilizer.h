@@ -18,7 +18,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
   void init(moveit::core::RobotModelPtr kinematic_model);
   DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
-  void setTransforms(geometry_msgs::TransformStamped to_trunk);
+  void setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk);
   void useStabilizing(bool use);
   void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
@@ -31,7 +31,8 @@ private:
   control_toolbox::Pid pid_trunk_roll_;
   robot_state::RobotStatePtr goal_state_;
   robot_model::RobotModelPtr kinematic_model_;
-  geometry_msgs::TransformStamped to_trunk_;
+  //Transform from r_sole frame to base_link frame, as we want to stabilize the base link.
+  geometry_msgs::TransformStamped r_sole_to_trunk_;
 
   bool stabilize_now_;
 

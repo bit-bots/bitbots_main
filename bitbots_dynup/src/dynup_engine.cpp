@@ -11,7 +11,6 @@ void DynupEngine::init(double arm_max_length, double arm_offset_y, double arm_of
   //this are just the offsets to the shoulder, we need to apply some additional offset to prevent collisions
   shoulder_offset_y_ = arm_offset_y;
   arm_offset_z_ = arm_offset_z;
-  // call this to initialize some values
   setParams(params_);
 
   ros::NodeHandle nh;
@@ -116,8 +115,6 @@ void DynupEngine::publishDebug() {
     pub_engine_debug_.publish(msg);
 }
 
-//TODO this method does also exist in walking. should maybe be refactored and put into splines
-//TODO generally the visualization should maybe be put into the visualizer class
 void DynupEngine::publishArrowMarker(std::string name_space,
                                         std::string frame,
                                         geometry_msgs::Pose pose, float r, float g, float b, float a) {
@@ -176,7 +173,6 @@ bitbots_splines::PoseSpline DynupEngine::initializeSpline(geometry_msgs::Pose po
     tf2::Quaternion q;
 
     spline.x()->addPoint(0.0, pose.position.x);
-    // substract offsets to switch the frame
     spline.y()->addPoint(0.0, pose.position.y);
     spline.z()->addPoint(0.0, pose.position.z);
     tf2::convert(pose.orientation, q);
@@ -443,11 +439,10 @@ double DynupEngine::calcBackSplines() {
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   double angle_foot = M_PI * params_.foot_angle /180;
-  // trunk needs to be kept height enough to avoid collisions
+  // trunk needs to be kept high enough to avoid collisions
   // since angle between torso and foot changes, we need to apply sin/cos to compute in relation to feet.
   // this is necessary since it will be the correct frame again after next torso rotation
   // shift torso by general x offset + extra parameter to allow positioning of CoM.
-  // keep trunk height enough to avoid collisions
   r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_.trunk_x - cos(angle_foot) * params_.trunk_forward - sin(angle_foot) * params_.trunk_height_back);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -sin(angle_foot) * params_.trunk_x - sin(angle_foot) * params_.trunk_forward - cos(angle_foot) * params_.trunk_height_back);
@@ -607,6 +602,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   l_hand.position.z -= arm_offset_z_;
   r_hand.position.y += shoulder_offset_y_;
   r_hand.position.z -= arm_offset_z_;
+  //l_foot_spline_ is defined relative to r_foot_spline_, while all others are relative to base_link
   l_hand_spline_ = initializeSpline(l_hand, l_hand_spline_);
   r_hand_spline_ = initializeSpline(r_hand, r_hand_spline_);
   l_foot_spline_ = initializeSpline(goals.l_foot_pose, l_foot_spline_);
@@ -678,7 +674,6 @@ bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
 
 void DynupEngine::setParams(DynUpConfig params) {
   params_ = params;
-  // update this values
   arm_offset_y_ = shoulder_offset_y_ + params_.arm_side_offset;
   offset_left_ = tf2::Transform(tf2::Quaternion(0,0,0,1), {0, arm_offset_y_, arm_offset_z_});
   offset_right_ = tf2::Transform(tf2::Quaternion(0,0,0,1), {0, -arm_offset_y_, arm_offset_z_});
