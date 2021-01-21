@@ -9,3 +9,5 @@ Onshape CAD model: https://cad.onshape.com/documents/8c6aa9a8917f764cb7039c2d/w/
 CORE electronics: https://github.com/bit-bots/wolfgang_core
 
 IMU hardware and firmware: https://github.com/bit-bots/bitbots_imu_dxl
+
+BitFoot hardware and firmware: https://github.com/bit-bots/bit_foot
