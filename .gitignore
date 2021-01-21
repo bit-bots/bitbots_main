@@ -9,6 +9,12 @@
 **/doc/manifest.yaml
 **/doc/html
 
+# auto-generated documentation
+**/docs/_build
+**/docs/_out
+**/docs/cppapi
+**/docs/pyapi
+
 # User-specific stuff:
 .idea/workspace.xml
 .idea/tasks.xml
