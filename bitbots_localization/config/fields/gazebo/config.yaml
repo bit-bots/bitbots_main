@@ -35,4 +35,4 @@ field_x: 9
 field_y: 6
 
 # Padding
-field_padding: 0.7 #0.1
+field_padding: 1.0
