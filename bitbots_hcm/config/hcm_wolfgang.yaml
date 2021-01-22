@@ -42,7 +42,7 @@ hcm:
   falling_thresh_orient_roll: 60 # > Point of no return in degrees
   falling_thresh_orient_pitch: 45 # > Point of no return in degrees
   # smoothing threshold for classifier
-  smooth_threshold: 10
+  smooth_threshold: 20
 
   pick_up_accel_threshold: 7
 
