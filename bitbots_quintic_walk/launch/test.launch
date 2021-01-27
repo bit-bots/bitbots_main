@@ -9,7 +9,9 @@
     <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
   </group>
 
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
+        <arg name="sim" value="$(arg sim)"/>
+    </include>
 
     <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
 

@@ -10,7 +10,7 @@ imu (rX, rY)
 // TODO Doku
 
 OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
-  ros::NodeHandle n("~");
+  ros::NodeHandle n("");
   current_support_state_ = 'n';
 
   tf2::Quaternion dummy_orientation;
@@ -19,11 +19,11 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   _odom_data.pose.pose.position = geometry_msgs::Point();
   _imu_data.orientation = tf2::toMsg(dummy_orientation);
 
-  ros::Subscriber imu_subscriber = n.subscribe("/imu/data", 1, &OdometryFuser::imuCallback, this);
-  ros::Subscriber odom_subscriber = n.subscribe("/motion_odometry", 1, &OdometryFuser::odomCallback, this);
-  ros::Subscriber walk_support_state_sub = n.subscribe("/walk_support_state", 1, &OdometryFuser::supportCallback,
+  ros::Subscriber imu_subscriber = n.subscribe("imu/data", 1, &OdometryFuser::imuCallback, this);
+  ros::Subscriber odom_subscriber = n.subscribe("motion_odometry", 1, &OdometryFuser::odomCallback, this);
+  ros::Subscriber walk_support_state_sub = n.subscribe("walk_support_state", 1, &OdometryFuser::supportCallback,
                                                        this, ros::TransportHints().tcpNoDelay());
-  ros::Subscriber kick_support_state_sub = n.subscribe("/dynamic_kick_support_state", 1,
+  ros::Subscriber kick_support_state_sub = n.subscribe("dynamic_kick_support_state", 1,
                                                        &OdometryFuser::supportCallback, this,
                                                        ros::TransportHints().tcpNoDelay());
 
