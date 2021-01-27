@@ -15,6 +15,7 @@ class PyKickWrapper {
   moveit::py_bindings_tools::ByteString step(double dt);
   bool init(const std::string &goal);
   double get_progress();
+  void set_params(const boost::python::object params);
 
  private:
   std::shared_ptr<bitbots_dynamic_kick::KickNode> kick_node_;

@@ -54,3 +54,6 @@ class PyKick():
 
     def get_progress(self):
         return self.py_kick_wrapper.get_progress()
+
+    def set_params(self, params_dict):
+        self.py_kick_wrapper.set_params(params_dict)
