@@ -10,8 +10,6 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
-
-  const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
 }
 
 void DynupIK::reset() {

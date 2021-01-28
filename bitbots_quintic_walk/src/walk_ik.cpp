@@ -12,6 +12,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
   reset();
+
 }
 
 bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
