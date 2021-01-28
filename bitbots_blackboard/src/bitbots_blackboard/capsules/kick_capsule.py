@@ -42,7 +42,11 @@ class KickCapsule():
         :raises RuntimeError: when not connected to dynamic_kick server
         """
         if not self.__connected:
-            raise RuntimeError("Not connected to any dynamic_kick server")
+            # try to connect again
+            self.__connected = self.__action_client.wait_for_server(
+                rospy.Duration(self.__blackboard.config["dynamic_kick"]["wait_time"]))
+            if not self.__connected:
+                raise RuntimeError("Not connected to any dynamic_kick server")
 
         self.__action_client.send_goal(goal, self.__done_cb, self.__active_cb, self.__feedback_cb)
         self.last_goal = goal
