@@ -83,9 +83,8 @@ void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelati
 
 
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::PointCloud2 measurement){
-  sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x");
   int counter = 0;
-  for (; iter_xyz != iter_xyz.end(); ++iter_xyz)
+  for (sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x"); iter_xyz != iter_xyz.end(); ++iter_xyz)
   {
     counter ++;
     if (counter % 10 != 0 )
