@@ -117,6 +117,7 @@ Dynamixel Workbench
 The Dynamixel Workbench provides higher level functions than the Dynamixel SDK.
 For example, the motor positions in the SDK are given as values between 0 and 4096 (2 Byte) which is converted to radians by the Dynamixel Workbench.
 Thereby, the Workbench eases the work with the motors on a more abstract level.
+We use `a fork <https://github.com/bit-bots/dynamixel-workbench>`_ which specifies our custom devices.
 
 ROS Control Framework
 ~~~~~~~~~~~~~~~~~~~~~
