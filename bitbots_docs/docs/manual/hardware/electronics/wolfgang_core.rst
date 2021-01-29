@@ -39,7 +39,7 @@ ROS Control
 
 We have written a ros_control hardware interface for the board.
 You can use it or use it as a reference for your own hardware abstraction.
-It can be found `in this git <https://github.com/bit-bots/bitbots_lowlevel/tree/master/bitbots_ros_control>`_.
+Documentation for it can be found here: :doc:`../../tutorials/lowlevel`
 
 Problems and Solutions
 ======================
