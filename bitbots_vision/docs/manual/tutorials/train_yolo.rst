@@ -62,3 +62,11 @@ In the end you will find a trained yolo in the backup folder of your darknet dir
 If you want to use the OpenVINO toolkit to execute the YOLO on the Intel Neural Compute Stick2 like we do, you should have a look at
 :doc:`OpenVINO <../yolo_open_vino.rst>`
 Congrats, you have successfully trained a YOLO for the RoboCup Soccer context.
+
+Troubleshooting
+---------------
+
+If there is an error when you start the training, you might have to specify you want to use CUDA-10.
+This can be done with: ``export PATH=/usr/local/cuda-10.0/bin:$PATH``
+
+If you want to use multiple GPUs, you can use ``-gpus 0,1`` to use both gpus or e.g. ``-gpus 1`` if you only want to use the gpu with ID 1.
