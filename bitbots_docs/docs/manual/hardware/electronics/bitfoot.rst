@@ -41,7 +41,7 @@ ROS Control
 -----------
 
 We developed a hardware interface that complies with the ros_control standard for the Wolfgang robot platform.
-This includes a hardware interface for the BitFoot. It can be found `here <https://github.com/bit-bots/bitbots_lowlevel/tree/master/bitbots_ros_control>`_.
+This includes a hardware interface for the BitFoot. Documentation for it can be found here: :doc:`../../tutorials/lowlevel`
 
 Strain Gauge Connection
 =======================

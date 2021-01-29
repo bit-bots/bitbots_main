@@ -1,6 +1,8 @@
 Bitbots Lowlevel
 ================
 
+`Github repository <https://github.com/bit-bots/bitbots_lowlevel>`_
+
 What do the low level packages do?
 ----------------------------------
 
