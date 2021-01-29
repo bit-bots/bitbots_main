@@ -2,7 +2,6 @@
 Launchskripte
 =============
 
-Um etwas über die Benutzung von Launchfiles zu erfahren siehe :doc:`software-overview`.
 Im Folgenden sind die Übergreifenden Launchfiles und danach die Launchfiles der einzelnen Packete aufgelistet, sowie die Parameter die angegeben werden können. Dabei werden die Defaultwerte verwendet, außer man gibt mittel parameter:=true/false an, auf was man den Parameter setzen möchte.
 Allgemein gilt für alle Launchfiles, dass sie das Load_robot_description Launchfile mit starten, wenn der Dateiname xy_standalone.launch lauetet. Das load_robot_description Launchfile lädt das URDF und sorgt dafür, dass der TF Tree gebaut wird. Startet man mehrere Launchfiles und will man besagtes Launchfile benutzen, darf nur eines der Launchfiles als standalone gestartete werden.
 

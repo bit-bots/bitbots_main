@@ -26,7 +26,7 @@ How to build the documentation
 
           catkin build bitbots_docs --no-deps --make-args Documentation
 
-* To build documentation for another package (with `activated <_activate_docs_for_package>`_ documentation), run the following command by replacing ``<package>`` by your package name:
+* To build documentation for another package (with :ref:`activated<activate_docs_for_package>` documentation), run the following command by replacing ``<package>`` by your package name:
 
   .. code-block:: bash
 
@@ -36,9 +36,9 @@ How to build the documentation
 How to write documentation for a package
 ========================================
 
-In every package (with `activated <_activate_docs_for_package>`_ documentation) you can find a directory, called ``docs/`` including the configuration file (``docs/conf.py``) and the root-document (``docs/index.rst``).
+In every package (with :ref:`activated<activate_docs_for_package>` documentation) you can find a directory, called ``docs/`` including the configuration file (``docs/conf.py``) and the root-document (``docs/index.rst``).
 
-Preferably create your ``.rst`` documents in the directory ``docs/manual`, then reference them in the ``docs/index.rst`` as follows:
+Preferably create your ``.rst`` documents in the directory ``docs/manual``, then reference them in the ``docs/index.rst`` as follows::
 
     .. toctree::
         :maxdepth: 1
@@ -47,8 +47,7 @@ Preferably create your ``.rst`` documents in the directory ``docs/manual`, then 
 
         manual/*
 
-
-.. _activate_docs_for_package
+.. _activate_docs_for_package:
 
 Activate documentation for a package
 ====================================
