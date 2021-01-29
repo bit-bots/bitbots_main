@@ -151,31 +151,31 @@ sub clone_internal_repos() {
     # Clone internal bitbots_repos into bitbots_meta
     chdir $start_dir;
 
-    print "Do you want to clone the private repos ('ansible_robots', 'doku' and 'basler_drivers') now?$/";
+    print "Do you want to clone the private repos ('ansible', 'doku' and 'basler_drivers') now?$/";
     print "[Y/n]: ";
     if (read_yes_no_input()) {
-    if (! -e "ansible") {
-        system 'git clone git@git.mafiasi.de:Bit-Bots/ansible.git'
-            and print "Could not clone ansible_robots$/$/";
-    } else {
-        print "ansible is already cloned$/";
+        if (! -e "ansible") {
+            system 'git clone git@git.mafiasi.de:Bit-Bots/ansible.git bitbots_tools/ansible'
+                and print "Could not clone ansible_robots$/$/";
+        } else {
+            print "ansible is already cloned$/";
         }
 
-    if (! -e "doku") {
-            system 'git clone git@git.mafiasi.de:Bit-Bots/doku.git'
+        if (! -e "doku") {
+            system 'git clone git@git.mafiasi.de:Bit-Bots/doku.git bitbots_tools/bitbots_docs_internal'
                 and print "Could not clone doku$/$/";
-    } else {
-        print "doku is already cloned$/";
+        } else {
+            print "doku is already cloned$/";
         }
 
-    if (! -e "basler_drivers") {
+        if (! -e "basler_drivers") {
             system 'git clone git@git.mafiasi.de:Bit-Bots/basler_drivers.git'
-            and print "Could not clone basler_drivers$/$/";
-    } else {
-        print "basler_drivers is already cloned$/";
+                and print "Could not clone basler_drivers$/$/";
+        } else {
+            print "basler_drivers is already cloned$/";
         }
-    print "Installing basler drivers...$/";
-    system 'make basler';
+        print "Installing basler drivers...$/";
+        system 'make basler';
     }
 }
 
