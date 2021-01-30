@@ -3,22 +3,24 @@
 
 #include <string>
 #include <optional>
+#include <Eigen/Geometry>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <actionlib/server/simple_action_server.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <sensor_msgs/JointState.h>
+#include <std_msgs/Char.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <tf2/convert.h>
 #include <bitbots_msgs/KickAction.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
-#include <std_msgs/Char.h>
-#include "bitbots_dynamic_kick/kick_engine.h"
-#include "bitbots_dynamic_kick/visualizer.h"
-#include "bitbots_dynamic_kick/kick_ik.h"
+#include <bitbots_dynamic_kick/kick_engine.h>
+#include <bitbots_dynamic_kick/visualizer.h>
+#include <bitbots_dynamic_kick/kick_ik.h>
+#include <bitbots_dynamic_kick/kick_utils.h>
 
 namespace bitbots_dynamic_kick {
 
@@ -60,11 +62,12 @@ class KickNode {
 
   /**
    * Initialize the node
-   * @param goal The goal of the kick
+   * @param goal_msg The goal_msg of the kick
    * @param error_string when the return value is false, this will contain details about the error
+   * @param trunk_to_base_footprint transform from trunk to base_footprint
    * @return whether the setup was successful
    */
-  bool init(const bitbots_msgs::KickGoal &goal, std::string& error_string);
+  bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string, Eigen::Isometry3d &trunk_to_base_footprint);
 
  private:
   ros::NodeHandle node_handle_;
@@ -72,6 +75,7 @@ class KickNode {
   ros::Publisher support_foot_publisher_;
   ros::Subscriber cop_l_subscriber_;
   ros::Subscriber cop_r_subscriber_;
+  ros::Subscriber joint_state_subscriber_;
   ActionServer server_;
   KickEngine engine_;
   Stabilizer stabilizer_;
@@ -83,6 +87,7 @@ class KickNode {
   tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
   bool was_support_foot_published_;
+  robot_state::RobotStatePtr goal_state_;
   robot_state::RobotStatePtr current_state_;
 
   /**
@@ -96,15 +101,6 @@ class KickNode {
    * @return the motor goals
    */
   bitbots_splines::JointGoals kickStep(double dt);
-
-  /**
-   * Retrieve current feet_positions in base_link frame
-   *
-   * @return The pair of (right foot, left foot) poses if transformation was successfull
-   *
-   * @throws tf2::TransformException if feet positions cannot be retrieved
-   */
-  std::pair<geometry_msgs::Pose, geometry_msgs::Pose> getFootPoses();
 
   /**
    * Publish the current support_foot so that a correct base_footprint can be calculated
@@ -123,6 +119,7 @@ class KickNode {
   bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);
+  void jointStateCallback(const sensor_msgs::JointState &joint_states);
 };
 }
 

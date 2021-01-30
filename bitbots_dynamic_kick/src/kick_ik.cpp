@@ -29,38 +29,32 @@ void KickIK::reset() {
 
 bitbots_splines::JointGoals KickIK::calculate(const KickPositions &positions) {
   // change goals from support foot based coordinate system to trunk based coordinate system
-  tf2::Transform trunk_to_support_foot_goal = positions.trunk_pose.inverse();
-  tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * positions.flying_foot_pose;
-
-  // make pose msg for calling IK
-  geometry_msgs::Pose left_foot_goal_msg;
-  geometry_msgs::Pose right_foot_goal_msg;
+  Eigen::Isometry3d trunk_to_support_foot_goal = positions.trunk_pose.inverse();
+  Eigen::Isometry3d trunk_to_flying_foot_goal = trunk_to_support_foot_goal * positions.flying_foot_pose;
 
   // decide which foot is which
+  robot_model::JointModelGroup *support_foot_group, *flying_foot_group;
   if (positions.is_left_kick) {
-    tf2::toMsg(trunk_to_support_foot_goal, right_foot_goal_msg);
-    tf2::toMsg(trunk_to_flying_foot_goal, left_foot_goal_msg);
+    support_foot_group = right_leg_joints_group_;
+    flying_foot_group = left_leg_joints_group_;
   } else {
-    tf2::toMsg(trunk_to_support_foot_goal, left_foot_goal_msg);
-    tf2::toMsg(trunk_to_flying_foot_goal, right_foot_goal_msg);
+    support_foot_group = left_leg_joints_group_;
+    flying_foot_group = right_leg_joints_group_;
   }
-
-  // call IK two times, since we have two legs
-  bool success;
 
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(left_leg_joints_group_,
-                                   left_foot_goal_msg,
-                                   0.01,
-                                   moveit::core::GroupStateValidityCallbackFn());
+  // call IK two times, since we have two legs
+  // we don't listen to the return value since BioIK always returns true
+  goal_state_->setFromIK(support_foot_group,
+                         trunk_to_support_foot_goal,
+                         0.01);
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(right_leg_joints_group_,
-                                    right_foot_goal_msg,
-                                    0.01,
-                                    moveit::core::GroupStateValidityCallbackFn());
+  goal_state_->setFromIK(flying_foot_group,
+                         trunk_to_flying_foot_goal,
+                         0.01);
 
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;

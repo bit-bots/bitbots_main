@@ -67,11 +67,13 @@ void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoal &goal) {
   goal_publisher_.publish(marker);
 }
 
-void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame) {
+void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame) {
   if (windup_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::Marker marker = getMarker(kick_windup_point, support_foot_frame);
+  tf2::Vector3 tf_kick_windup_point;
+  tf2::convert(kick_windup_point, tf_kick_windup_point);
+  visualization_msgs::Marker marker = getMarker(tf_kick_windup_point, support_foot_frame);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
@@ -98,19 +100,15 @@ void Visualizer::publishGoals(const KickPositions &positions,
   }
 
   /* Derive positions from robot state */
-  Eigen::Isometry3d eigen_trunk_pose_ik_result =
-      robot_state->getGlobalLinkTransform(support_foot_frame).inverse();
-  Eigen::Isometry3d eigen_flying_foot_pose_ik_result =
-      eigen_trunk_pose_ik_result * robot_state->getGlobalLinkTransform(flying_foot_frame);
-  tf2::Transform trunk_pose_ik_result, flying_foot_pose_ik_result;
-  tf2::convert(eigen_trunk_pose_ik_result, trunk_pose_ik_result);
-  tf2::convert(eigen_flying_foot_pose_ik_result, flying_foot_pose_ik_result);
+  Eigen::Isometry3d trunk_pose_ik_result = robot_state->getGlobalLinkTransform(support_foot_frame).inverse();
+  Eigen::Isometry3d
+      flying_foot_pose_ik_result = trunk_pose_ik_result * robot_state->getGlobalLinkTransform(flying_foot_frame);
 
   /* Calculate offsets */
-  tf2::Vector3
-      trunk_position_ik_offset = trunk_pose_ik_result.getOrigin() - stabilized_positions.trunk_pose.getOrigin();
-  tf2::Vector3 flying_foot_position_ik_offset =
-      flying_foot_pose_ik_result.getOrigin() - stabilized_positions.flying_foot_pose.getOrigin();
+  Eigen::Vector3d
+      trunk_position_ik_offset = trunk_pose_ik_result.translation() - stabilized_positions.trunk_pose.translation();
+  Eigen::Vector3d flying_foot_position_ik_offset =
+      flying_foot_pose_ik_result.translation() - stabilized_positions.flying_foot_pose.translation();
 
   KickDebug msg;
   msg.header.stamp = ros::Time::now();

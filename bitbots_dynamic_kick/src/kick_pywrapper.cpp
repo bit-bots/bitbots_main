@@ -89,7 +89,8 @@ void PyKickWrapper::set_params(const boost::python::object params) {
 bool PyKickWrapper::init(const std::string &goal_str) {
   auto goal = from_python<bitbots_msgs::KickGoal>(goal_str);
   std::string error_string;
-  return kick_node_->init(goal, error_string);
+  Eigen::Isometry3d trunk_to_base_footprint;
+  return kick_node_->init(goal, error_string, trunk_to_base_footprint);
 }
 
 double PyKickWrapper::get_progress() {

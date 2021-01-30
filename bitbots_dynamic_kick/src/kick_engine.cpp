@@ -1,9 +1,10 @@
 #include "bitbots_dynamic_kick/kick_engine.h"
 
+#include <utility>
+
 namespace bitbots_dynamic_kick {
 
-KickEngine::KickEngine() :
-    listener_(tf_buffer_) {
+KickEngine::KickEngine() {
 }
 
 void KickEngine::reset() {
@@ -13,31 +14,32 @@ void KickEngine::reset() {
 }
 
 void KickEngine::setGoals(const KickGoals &goals) {
-  is_left_kick_ = calcIsLeftFootKicking(goals.header,
-                                        goals.ball_position,
-                                        goals.kick_direction);
+  is_left_kick_ = calcIsLeftFootKicking(goals.ball_position, goals.kick_direction);
   // TODO Internal state is dirty when goal transformation fails
 
   /* Save given goals because we reuse them later */
   auto transformed_goal = transformGoal((is_left_kick_) ? "r_sole" : "l_sole",
-                                        goals.header, goals.ball_position, goals.kick_direction);
-  tf2::convert(transformed_goal.first, ball_position_);
-  tf2::convert(transformed_goal.second, kick_direction_);
+                                        goals.trunk_to_base_footprint, goals.ball_position, goals.kick_direction);
+  ball_position_ = transformed_goal.first;
+  kick_direction_ = transformed_goal.second;
   kick_direction_.normalize();
   kick_speed_ = goals.kick_speed;
 
   time_ = 0;
 
+  Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_sole" : "r_sole");
+  Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_sole" : "l_sole");
+
   /* Plan new splines according to new goal */
-  calcSplines(is_left_kick_ ? goals.l_foot_pose : goals.r_foot_pose, getTrunkPose());
+  calcSplines(trunk_to_support_foot.inverse() * trunk_to_flying_foot, getTrunkPose());
 }
 
 KickPositions KickEngine::update(double dt) {
   /* Only do an actual update when splines are present */
   KickPositions positions;
   /* Get should-be pose from planned splines (every axis) at current time */
-  positions.trunk_pose = trunk_spline_.getTfTransform(time_);
-  positions.flying_foot_pose = flying_foot_spline_.getTfTransform(time_);
+  positions.trunk_pose = tf2::transformToEigen(tf2::toMsg(trunk_spline_.getTfTransform(time_)));
+  positions.flying_foot_pose = tf2::transformToEigen(tf2::toMsg(flying_foot_spline_.getTfTransform(time_)));
   positions.is_left_kick = is_left_kick_;
   positions.engine_time = time_;
 
@@ -57,17 +59,17 @@ KickPositions KickEngine::update(double dt) {
   return positions;
 }
 
-geometry_msgs::Transform KickEngine::getTrunkPose() {
-  geometry_msgs::TransformStamped trunk_frame;
+Eigen::Isometry3d KickEngine::getTrunkPose() {
+  Eigen::Isometry3d trunk_frame;
   if (is_left_kick_) {
-    trunk_frame = tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0));
+    trunk_frame = current_state_->getGlobalLinkTransform("r_sole").inverse();
   } else {
-    trunk_frame = tf_buffer_.lookupTransform("l_sole", "base_link", ros::Time(0));
+    trunk_frame = current_state_->getGlobalLinkTransform("l_sole").inverse();
   }
-  return trunk_frame.transform;
+  return trunk_frame;
 }
 
-void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const geometry_msgs::Transform &trunk_pose) {
+void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Eigen::Isometry3d &trunk_pose) {
   /*
    * Add current position, target position and current position to splines so that they describe a smooth
    * curve to the ball and back
@@ -79,7 +81,7 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
    * - kick
    * - move foot back
    * - lower foot
-   *  - move trunk back
+   * - move trunk back
    */
 
   /* calculate timings for this kick */
@@ -101,11 +103,11 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   windup_point_ = calcKickWindupPoint();
 
   /* build vector of speeds in each direction */
-  double speed_yaw = tf2::getYaw(kick_direction_);
-  tf2::Vector3 speed_vector(cos(speed_yaw), sin(speed_yaw), 0);
+  double speed_yaw = rot_conv::EYawOfQuat(kick_direction_);
+  Eigen::Vector3d speed_vector(cos(speed_yaw), sin(speed_yaw), 0);
 
   /* Flying foot position */
-  flying_foot_spline_.x()->addPoint(0, flying_foot_pose.position.x);
+  flying_foot_spline_.x()->addPoint(0, flying_foot_pose.translation().x());
   flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk, 0);
   flying_foot_spline_.x()->addPoint(phase_timings_.raise_foot, 0);
   flying_foot_spline_.x()->addPoint(phase_timings_.windup, windup_point_.x(), 0, 0);
@@ -115,7 +117,7 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   flying_foot_spline_.x()->addPoint(phase_timings_.lower_foot, 0);
   flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk_back, 0);
 
-  flying_foot_spline_.y()->addPoint(0, flying_foot_pose.position.y);
+  flying_foot_spline_.y()->addPoint(0, flying_foot_pose.translation().y());
   flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk, kick_foot_sign * params_.foot_distance);
   flying_foot_spline_.y()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.foot_distance);
   flying_foot_spline_.y()->addPoint(phase_timings_.windup, windup_point_.y(), 0, 0);
@@ -125,7 +127,7 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   flying_foot_spline_.y()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.foot_distance);
   flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk_back, kick_foot_sign * params_.foot_distance);
 
-  flying_foot_spline_.z()->addPoint(0, flying_foot_pose.position.z);
+  flying_foot_spline_.z()->addPoint(0, flying_foot_pose.translation().z());
   flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk, 0);
   flying_foot_spline_.z()->addPoint(phase_timings_.raise_foot, params_.foot_rise);
   flying_foot_spline_.z()->addPoint(phase_timings_.windup, params_.foot_rise);
@@ -135,19 +137,11 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk_back, 0);
 
   /* Flying foot orientation */
-  /* Construct a start_rotation as quaternion from Pose msg */
-  tf2::Quaternion start_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
-                                 flying_foot_pose.orientation.z, flying_foot_pose.orientation.w);
+  /* Get euler angles for foot rotation */
   double start_r, start_p, start_y;
-  tf2::Matrix3x3(start_rotation).getRPY(start_r, start_p, start_y);
-
-  /* Also construct one for the target */
-  tf2::Quaternion target_rotation(flying_foot_pose.orientation.x, flying_foot_pose.orientation.y,
-                                  flying_foot_pose.orientation.z, flying_foot_pose.orientation.w);
-  double target_r, target_p, target_y;
-  tf2::Matrix3x3(target_rotation).getRPY(target_r, target_p, target_y);
-
-  target_y = calcKickFootYaw();
+  Eigen::Quaterniond flying_foot_rotation(flying_foot_pose.rotation());
+  rot_conv::EulerFromQuat(flying_foot_rotation, start_y, start_p, start_r);
+  double target_y = calcKickFootYaw();
 
   /* Add these quaternions in the same fashion as before to our splines (current, target, current) */
   flying_foot_spline_.roll()->addPoint(0, start_r);
@@ -189,16 +183,15 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   trunk_spline_.y()
       ->addPoint(phase_timings_.move_trunk_back, kick_foot_sign * (params_.foot_distance / 2.0));
 
-  trunk_spline_.z()->addPoint(0, trunk_pose.translation.z);
+  trunk_spline_.z()->addPoint(0, trunk_pose.translation().z());
   trunk_spline_.z()->addPoint(phase_timings_.move_trunk, params_.trunk_height);
   trunk_spline_.z()->addPoint(phase_timings_.lower_foot, params_.trunk_height);
-  trunk_spline_.z()->addPoint(phase_timings_.move_trunk_back, trunk_pose.translation.z);
+  trunk_spline_.z()->addPoint(phase_timings_.move_trunk_back, trunk_pose.translation().z());
 
-  /* Construct quaternion for trunk rotation */
-  tf2::Quaternion trunk_rotation(trunk_pose.rotation.x, trunk_pose.rotation.y,
-                                 trunk_pose.rotation.z, trunk_pose.rotation.w);
+  /* Get euler angles for trunk rotation */
   double trunk_r, trunk_p, trunk_y;
-  tf2::Matrix3x3(trunk_rotation).getRPY(trunk_r, trunk_p, trunk_y);
+  Eigen::Quaterniond trunk_rotation(trunk_pose.rotation());
+  rot_conv::EulerFromQuat(flying_foot_rotation, trunk_y, trunk_p, trunk_r);
 
   trunk_spline_.roll()->addPoint(0, trunk_r);
   trunk_spline_.roll()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.trunk_roll);
@@ -214,41 +207,28 @@ void KickEngine::calcSplines(const geometry_msgs::Pose &flying_foot_pose, const 
   trunk_spline_.yaw()->addPoint(phase_timings_.move_trunk_back, trunk_y);
 }
 
-std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> KickEngine::transformGoal(
+std::pair<Eigen::Vector3d, Eigen::Quaterniond> KickEngine::transformGoal(
     const std::string &support_foot_frame,
-    const std_msgs::Header &header,
-    const geometry_msgs::Vector3 &ball_position,
-    const geometry_msgs::Quaternion &kick_direction) {
-  /* construct stamped goals so that they can be transformed */ // TODO Extract this into own function because we do it multiple times
-  geometry_msgs::PointStamped
-      stamped_position;       // TODO Make KickGoal a point as well so we dont have to do transformations here
-  stamped_position.point.x = ball_position.x;
-  stamped_position.point.y = ball_position.y;
-  stamped_position.point.z = ball_position.z;
-  stamped_position.header = header;
-  //stamped_position.vector = ball_position;
-  geometry_msgs::QuaternionStamped stamped_direction;
-  stamped_direction.header = header;
-  stamped_direction.quaternion = kick_direction;
-
-  /* do transform into support_foot frame */
-  geometry_msgs::PointStamped transformed_position;
-  geometry_msgs::QuaternionStamped transformed_direction;
-
-  tf_buffer_.transform(stamped_position, transformed_position, support_foot_frame, ros::Duration(0.2));
-  tf_buffer_.transform(stamped_direction, transformed_direction, support_foot_frame, ros::Duration(0.2));
-
-  auto x = tf_buffer_.lookupTransform(support_foot_frame, header.frame_id, header.stamp, ros::Duration(0.2));
-
-  return std::pair(transformed_position.point, transformed_direction.quaternion);
+    const Eigen::Isometry3d &trunk_to_base_footprint,
+    const Eigen::Vector3d &ball_position,
+    const Eigen::Quaterniond &kick_direction) {
+  /* ball_position and kick_direction are currently in base_footprint, we want them in support foot frame */
+  /* first, get transform from base_footprint to support foot */
+  Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(support_foot_frame);
+  Eigen::Isometry3d base_footprint_to_support_foot = trunk_to_base_footprint.inverse() * trunk_to_support_foot;
+  /* now, apply the transforms. Because of eigen, the transform has to be on the left hand side, therefore it must be inversed */
+  Eigen::Vector3d ball_transformed = base_footprint_to_support_foot.inverse() * ball_position;
+  Eigen::Matrix3d kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
+  Eigen::Quaterniond kick_direction_transformed(kick_direction_transformed_matrix);
+  return std::make_pair(ball_transformed, kick_direction_transformed);
 }
 
-tf2::Vector3 KickEngine::calcKickWindupPoint() {
+Eigen::Vector3d KickEngine::calcKickWindupPoint() {
   /* retrieve yaw from kick_direction_ */
-  double yaw = tf2::getYaw(kick_direction_);
+  double yaw = rot_conv::EYawOfQuat(kick_direction_);
 
   /* create a vector which points in the negative direction of kick_direction_ */
-  tf2::Vector3 vec(cos(yaw), sin(yaw), 0);
+  Eigen::Vector3d vec(cos(yaw), sin(yaw), 0);
   vec.normalize();
 
   /* take windup distance into account */
@@ -257,46 +237,33 @@ tf2::Vector3 KickEngine::calcKickWindupPoint() {
   /* add the ball position because the windup point is in support_foot_frame and not ball_frame */
   vec += ball_position_;
 
-  vec.setZ(params_.foot_rise);
+  vec.z() = params_.foot_rise;
 
   return vec;
 }
 
-bool KickEngine::calcIsLeftFootKicking(const std_msgs::Header &header,
-                                       const geometry_msgs::Vector3 &ball_position,
-                                       const geometry_msgs::Quaternion &kick_direction) {
-  /* prepare variables with stamps */
-  geometry_msgs::Vector3Stamped stamped_position;
-  stamped_position.header = header;
-  stamped_position.vector = ball_position;
-  geometry_msgs::QuaternionStamped stamped_direction;
-  stamped_direction.header = header;
-  stamped_direction.quaternion = kick_direction;
-
-  /* transform ball data into frame where we want to apply it */
-  tf2::Stamped<tf2::Vector3> transformed_ball_position;
-  tf_buffer_.transform(stamped_position, transformed_ball_position, "base_footprint", ros::Duration(0.2));
-  tf2::Stamped<tf2::Quaternion> transformed_direction;
-  tf_buffer_.transform(stamped_direction, transformed_direction, "base_footprint", ros::Duration(0.2));
+bool KickEngine::calcIsLeftFootKicking(const Eigen::Vector3d &ball_position,
+                                       const Eigen::Quaterniond &kick_direction) {
+  /* it is important that everything is in base_footprint frame! */
 
   /*
    * check if ball is outside of an imaginary corridor
    * if it is not, we use a more fined grained criterion which takes kick_direction into account
    */
-  if (transformed_ball_position.y() > params_.choose_foot_corridor_width / 2)
+  if (ball_position.y() > params_.choose_foot_corridor_width / 2) {
     return true;
-  else if (transformed_ball_position.y() < -params_.choose_foot_corridor_width / 2)
+  } else if (ball_position.y() < -params_.choose_foot_corridor_width / 2) {
     return false;
+  }
 
   /* use the more fine grained angle based criterion
-   * angle_1 = angle between "forward" and "origin-to-ball-position"
+   * angle_1 = angle between "forward" and "ball position"
    * angle_2 = yaw of kick_direction
-   * angle_diff = difference between the two on which the decision happens
+   * angle_diff = difference between the two based on which the decision happens
    */
-  double angle_1 = transformed_ball_position.angle({1, 0, 0});
-  angle_1 *= transformed_ball_position.y() < 0 ? -1 : 1;
+  double angle_1 = std::atan2(ball_position.y(), ball_position.x());
 
-  double angle_2 = tf2::getYaw(transformed_direction);
+  double angle_2 = rot_conv::EYawOfQuat(kick_direction);
   double angle_diff = angle_2 - angle_1;
 
   ROS_INFO_STREAM("Choosing " << ((angle_diff < 0) ? "left" : "right") << " foot to kick");
@@ -305,8 +272,7 @@ bool KickEngine::calcIsLeftFootKicking(const std_msgs::Header &header,
 }
 
 double KickEngine::calcKickFootYaw() {
-  double kick_roll_angle, kick_pitch_angle, kick_yaw_angle;
-  tf2::Matrix3x3(kick_direction_).getRPY(kick_roll_angle, kick_pitch_angle, kick_yaw_angle);
+  double kick_yaw_angle = rot_conv::EYawOfQuat(kick_direction_);
 
   if (kick_yaw_angle > M_PI_4) {
     return kick_yaw_angle - M_PI_2;
@@ -315,7 +281,6 @@ double KickEngine::calcKickFootYaw() {
   } else {
     return kick_yaw_angle;
   }
-
 }
 
 bool KickEngine::isLeftKick() {
@@ -359,8 +324,12 @@ void KickEngine::setParams(KickParams params) {
   params_ = params;
 }
 
-tf2::Vector3 KickEngine::getWindupPoint() {
+Eigen::Vector3d KickEngine::getWindupPoint() {
   return windup_point_;
+}
+
+void KickEngine::setRobotState(robot_state::RobotStatePtr current_state) {
+  current_state_ = current_state;
 }
 
 }
