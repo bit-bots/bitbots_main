@@ -43,11 +43,15 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
 
-  void displayTrunkSplines(bitbots_splines::PoseSpline splines);
+  void displayTrunkSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
 
   void displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame);
 
-  void publishGoals(const KickPositions &positions, const KickPositions &stabilized_positions, const robot_state::RobotStatePtr& robot_state);
+  void publishGoals(const KickPositions &positions,
+                    const KickPositions &stabilized_positions,
+                    const robot_state::RobotStatePtr &robot_state,
+                    double engine_time,
+                    KickPhase engine_phase);
 
  private:
   ros::NodeHandle node_handle_;

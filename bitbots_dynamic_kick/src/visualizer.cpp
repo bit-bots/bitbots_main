@@ -39,11 +39,12 @@ void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
   foot_spline_publisher_.publish(path);
 }
 
-void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines) {
+void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines,
+                                     const std::string &support_foot_frame) {
   if (trunk_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::MarkerArray path = getPath(splines, "base_link", params_.spline_smoothness);
+  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
   path.markers[0].color.g = 1;
 
   trunk_spline_publisher_.publish(path);
@@ -84,7 +85,9 @@ void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, co
 
 void Visualizer::publishGoals(const KickPositions &positions,
                               const KickPositions &stabilized_positions,
-                              const robot_state::RobotStatePtr &robot_state) {
+                              const robot_state::RobotStatePtr &robot_state,
+                              double engine_time,
+                              KickPhase engine_phase) {
   /* only calculate the debug information if someone is subscribing */
   if (debug_publisher_.getNumSubscribers() == 0) {
     return;
@@ -113,6 +116,8 @@ void Visualizer::publishGoals(const KickPositions &positions,
   KickDebug msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = support_foot_frame;
+  msg.engine_phase = engine_phase;
+  msg.engine_time = engine_time;
   msg.engine_time = positions.engine_time;
   msg.trunk_pose_goal = tf2::toMsg(positions.trunk_pose);
   msg.trunk_pose_stabilized_goal = tf2::toMsg(stabilized_positions.trunk_pose);

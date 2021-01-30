@@ -320,6 +320,10 @@ KickPhase KickEngine::getPhase() const {
     return KickPhase::DONE;
 }
 
+double KickEngine::getTime() const {
+  return time_;
+}
+
 void KickEngine::setParams(KickParams params) {
   params_ = params;
 }

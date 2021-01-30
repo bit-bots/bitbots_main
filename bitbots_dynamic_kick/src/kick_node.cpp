@@ -111,7 +111,7 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   visualizer_.displayReceivedGoal(goal_msg);
   visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
   visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
-  visualizer_.displayTrunkSplines(engine_.getTrunkSplines());
+  visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? "r_sole" : "l_sole"));
 
   return true;
 }
@@ -122,7 +122,7 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
 
   /* get transform to base_footprint */
   geometry_msgs::TransformStamped
-      tf_trunk_to_base_footprint = tf_buffer_.lookupTransform("base_footprint", "base_link", ros::Time(0));
+      tf_trunk_to_base_footprint = tf_buffer_.lookupTransform("base_link", "base_footprint", ros::Time(0));
   Eigen::Isometry3d trunk_to_base_footprint = tf2::transformToEigen(tf_trunk_to_base_footprint);
 
   /* pass everything to the init function */
@@ -212,7 +212,7 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   for (int i = 0; i < motor_goals.first.size(); ++i) {
     goal_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
   }
-  visualizer_.publishGoals(positions, stabilized_positions, goal_state_);
+  visualizer_.publishGoals(positions, stabilized_positions, goal_state_, engine_.getTime(), engine_.getPhase());
   publishSupportFoot(engine_.isLeftKick());
 
   return motor_goals;

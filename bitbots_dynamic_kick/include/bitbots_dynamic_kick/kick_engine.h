@@ -44,18 +44,6 @@ struct KickParams {
   double choose_foot_corridor_width;
 };
 
-enum KickPhase {
-  INITIAL,
-  MOVE_TRUNK,
-  RAISE_FOOT,
-  WINDUP,
-  KICK,
-  MOVE_BACK,
-  LOWER_FOOT,
-  MOVE_TRUNK_BACK,
-  DONE
-};
-
 /**
  * An instance of this class describes after which time a KickPhase is done
  */
@@ -124,7 +112,15 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   void setParams(KickParams params);
 
+  /**
+   * Get the current phase of the engine
+   */
   KickPhase getPhase() const;
+
+  /**
+   * Get the current time of the engine (0 is start of kick) in seconds
+   */
+  double getTime() const;
 
   Eigen::Vector3d getWindupPoint();
 
