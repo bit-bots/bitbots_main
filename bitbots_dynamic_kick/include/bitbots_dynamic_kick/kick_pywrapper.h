@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <Python.h>
+#include <Eigen/Geometry>
 #include <boost/python.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
@@ -14,7 +15,7 @@ class PyKickWrapper {
  public:
   explicit PyKickWrapper(std::string ns);
   moveit::py_bindings_tools::ByteString step(double dt, const std::string &joint_state_str);
-  bool init(const std::string &goal);
+  bool set_goal(const std::string &goal_str, const std::string &trunk_to_base_footprint_str);
   double get_progress();
   void set_params(boost::python::object params);
 

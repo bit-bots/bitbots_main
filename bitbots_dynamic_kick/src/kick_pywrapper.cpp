@@ -38,7 +38,7 @@ PyKickWrapper::PyKickWrapper(const std::string ns) {
 }
 
 moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt, const std::string &joint_state_str) {
-  sensor_msgs::JointState joint_state = from_python<sensor_msgs::JointState>(joint_state_str);
+  auto joint_state = from_python<sensor_msgs::JointState>(joint_state_str);
   kick_node_->jointStateCallback(joint_state);
   std::string result = to_python<bitbots_msgs::JointCommand>(kick_node_->stepWrapper(dt));
   return moveit::py_bindings_tools::serializeMsg(result);
@@ -88,10 +88,11 @@ void PyKickWrapper::set_params(const boost::python::object params) {
   kick_node_->reconfigureCallback(conf, 0xff);
 }
 
-bool PyKickWrapper::init(const std::string &goal_str) {
+bool PyKickWrapper::set_goal(const std::string &goal_str, const std::string &trunk_to_base_footprint_str) {
   auto goal = from_python<bitbots_msgs::KickGoal>(goal_str);
+  auto trunk_to_base_footprint_msg = from_python<geometry_msgs::Transform>(trunk_to_base_footprint_str);
+  Eigen::Isometry3d trunk_to_base_footprint = tf2::transformToEigen(trunk_to_base_footprint_msg);
   std::string error_string;
-  Eigen::Isometry3d trunk_to_base_footprint;
   return kick_node_->init(goal, error_string, trunk_to_base_footprint);
 }
 
@@ -104,7 +105,7 @@ BOOST_PYTHON_MODULE (py_dynamic_kick) {
   using namespace bitbots_dynamic_kick;
 
   class_<PyKickWrapper>("PyKickWrapper", init<std::string>())
-      .def("init", &PyKickWrapper::init)
+      .def("set_goal", &PyKickWrapper::set_goal)
       .def("step", &PyKickWrapper::step)
       .def("get_progress", &PyKickWrapper::get_progress)
       .def("set_params", &PyKickWrapper::set_params);

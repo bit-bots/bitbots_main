@@ -2,6 +2,7 @@ from io import BytesIO
 
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Transform
 from bitbots_dynamic_kick.py_dynamic_kick import PyKickWrapper
 from bitbots_msgs.msg import JointCommand, KickGoal
 
@@ -32,8 +33,20 @@ def from_cpp(str_msg, cls):
     return result
 
 
-class PyKick():
+class PyKick:
+    """
+    This class is a wrapper around the dynamic kick. When an instance is created, a roscore must be running and
+    the robot description must be loaded to the parameter server. To use the wrapper, call set_params to set a
+    dictionary of parameters. A list of parameters can be found in the dynamic reconfigure file, the pid controllers are
+    not supported yet. Then, set the kick goal by calling init. After that, repeatedly call step with the passed time
+    and the current motor positions of the robot. It will return the new motor commands.
+    """
     def __init__(self, namespace=""):
+        """
+        Initialize the kick, needs a roscore and the robot description
+
+        :param namespace: The namespace where the kick node is launched
+        """
         roscpp_init('py_kick', [])
         # make namespace end with a /
         if namespace != "" and namespace[-1] != '/':
@@ -43,10 +56,24 @@ class PyKick():
     def __del__(self):
         roscpp_shutdown()
 
-    def init(self, msg: KickGoal):
-        return self.py_kick_wrapper.init(to_cpp(msg))
+    def set_goal(self, msg: KickGoal, trunk_to_base_footprint: Transform):
+        """
+        Set a goal for the kick.
+
+        :param msg: The goal, instance of bitbots_msgs/KickGoal
+        :param trunk_to_base_footprint: Transform from trunk to base_footprint, needed to convert the ball position
+        :return: whether the goal was set successfully
+        """
+        return self.py_kick_wrapper.set_goal(to_cpp(msg))
 
     def step(self, dt: float, joint_state: JointState):
+        """
+        Perform a step of the kick engine, must be repeatedly called to perform the full kick.
+
+        :param dt: the time passed since the last call of step (in seconds)
+        :param joint_state: the current motor positions of the robot
+        :return: Returns the joint command for the next position of the kick. Empty JointCommand if finished.
+        """
         if dt == 0.0:
             # preventing weird spline interpolation errors on edge case
             dt = 0.001
@@ -54,7 +81,12 @@ class PyKick():
         return from_cpp(step, JointCommand)
 
     def get_progress(self):
+        """Returns the progress of the kick, between 0 and 1 where 1 is finished."""
         return self.py_kick_wrapper.get_progress()
 
     def set_params(self, params_dict):
+        """
+        Set the (dynamic reconfigurable) parameters of the kick.
+        :param params_dict: dict where the key is the name of the parameter (str). Does not have to contain all params.
+        """
         self.py_kick_wrapper.set_params(params_dict)
