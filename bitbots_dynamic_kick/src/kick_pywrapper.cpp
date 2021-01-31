@@ -37,7 +37,9 @@ PyKickWrapper::PyKickWrapper(const std::string ns) {
   kick_node_ = std::make_shared<bitbots_dynamic_kick::KickNode>(ns);
 }
 
-moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt) {
+moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt, const std::string &joint_state_str) {
+  sensor_msgs::JointState joint_state = from_python<sensor_msgs::JointState>(joint_state_str);
+  kick_node_->jointStateCallback(joint_state);
   std::string result = to_python<bitbots_msgs::JointCommand>(kick_node_->stepWrapper(dt));
   return moveit::py_bindings_tools::serializeMsg(result);
 }

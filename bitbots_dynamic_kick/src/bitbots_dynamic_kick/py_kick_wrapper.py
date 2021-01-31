@@ -1,11 +1,12 @@
 from io import BytesIO
 
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
+from sensor_msgs.msg import JointState
 from bitbots_dynamic_kick.py_dynamic_kick import PyKickWrapper
 from bitbots_msgs.msg import JointCommand, KickGoal
 
 
-def _to_cpp(msg):
+def to_cpp(msg):
     """Return a serialized string from a ROS message
 
     Parameters
@@ -18,7 +19,7 @@ def _to_cpp(msg):
     return value
 
 
-def _from_cpp(str_msg, cls):
+def from_cpp(str_msg, cls):
     """Return a ROS message from a serialized string
 
     Parameters
@@ -43,14 +44,14 @@ class PyKick():
         roscpp_shutdown()
 
     def init(self, msg: KickGoal):
-        return self.py_kick_wrapper.init(_to_cpp(msg))
+        return self.py_kick_wrapper.init(to_cpp(msg))
 
-    def step(self, dt: float):
+    def step(self, dt: float, joint_state: JointState):
         if dt == 0.0:
             # preventing weird spline interpolation errors on edge case
             dt = 0.001
-        step = self.py_kick_wrapper.step(dt)
-        return _from_cpp(step, JointCommand)
+        step = self.py_kick_wrapper.step(dt, to_cpp(joint_state))
+        return from_cpp(step, JointCommand)
 
     def get_progress(self):
         return self.py_kick_wrapper.get_progress()

@@ -69,6 +69,10 @@ class KickNode {
    */
   bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string, Eigen::Isometry3d &trunk_to_base_footprint);
 
+  /**
+   * Set the current joint state of the robot
+   */
+  void jointStateCallback(const sensor_msgs::JointState &joint_states);
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;
@@ -119,7 +123,6 @@ class KickNode {
   bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);
-  void jointStateCallback(const sensor_msgs::JointState &joint_states);
 };
 }
 

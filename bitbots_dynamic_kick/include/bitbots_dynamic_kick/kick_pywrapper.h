@@ -6,16 +6,17 @@
 #include <Python.h>
 #include <boost/python.hpp>
 #include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <bitbots_dynamic_kick/kick_node.h>
 
 class PyKickWrapper {
  public:
-  PyKickWrapper(const std::string ns);
-  moveit::py_bindings_tools::ByteString step(double dt);
+  explicit PyKickWrapper(std::string ns);
+  moveit::py_bindings_tools::ByteString step(double dt, const std::string &joint_state_str);
   bool init(const std::string &goal);
   double get_progress();
-  void set_params(const boost::python::object params);
+  void set_params(boost::python::object params);
 
  private:
   std::shared_ptr<bitbots_dynamic_kick::KickNode> kick_node_;
