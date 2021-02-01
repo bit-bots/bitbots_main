@@ -117,11 +117,6 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    */
   KickPhase getPhase() const;
 
-  /**
-   * Get the current time of the engine (0 is start of kick) in seconds
-   */
-  double getTime() const;
-
   Eigen::Vector3d getWindupPoint();
 
   /**

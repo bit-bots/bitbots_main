@@ -212,7 +212,7 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   for (int i = 0; i < motor_goals.first.size(); ++i) {
     goal_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
   }
-  visualizer_.publishGoals(positions, stabilized_positions, goal_state_, engine_.getTime(), engine_.getPhase());
+  visualizer_.publishGoals(positions, stabilized_positions, goal_state_, engine_.getPhase());
   publishSupportFoot(engine_.isLeftKick());
 
   return motor_goals;

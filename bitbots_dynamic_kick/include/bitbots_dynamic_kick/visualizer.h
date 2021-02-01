@@ -50,7 +50,6 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
   void publishGoals(const KickPositions &positions,
                     const KickPositions &stabilized_positions,
                     const robot_state::RobotStatePtr &robot_state,
-                    double engine_time,
                     KickPhase engine_phase);
 
  private:
