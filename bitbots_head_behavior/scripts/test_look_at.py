@@ -11,7 +11,12 @@ from tf2_geometry_msgs import PointStamped
 
 if __name__ == "__main__":
     rospy.init_node('test_look_at')
-    head_tf_frame = "base_link"
+
+    base_footprint_frame = rospy.get_param('base_footprint_frame')
+    camera_frame = rospy.get_param('camera_frame')
+    base_link_frame = rospy.get_param('base_link_frame')
+
+    head_tf_frame = base_link_frame
     tf_buffer = tf2.Buffer(rospy.Duration(5))
     tf_listener = tf2.TransformListener(tf_buffer)
 
@@ -20,7 +25,7 @@ if __name__ == "__main__":
     request.timeout.secs = 1
     request.approximate = True
     request.look_at_goals.append(LookAtGoal())
-    request.look_at_goals[0].link_name = "camera"
+    request.look_at_goals[0].link_name = camera_frame
     request.look_at_goals[0].weight = 1
     request.look_at_goals[0].axis.x = 1
 
@@ -31,8 +36,8 @@ if __name__ == "__main__":
     pos_msg.accelerations = [-1, -1]
     pos_msg.max_currents = [-1, -1]
 
-    rospy.wait_for_service("/bio_ik/get_bio_ik")
-    bio_ik = rospy.ServiceProxy('/bio_ik/get_bio_ik', GetIK)
+    rospy.wait_for_service("bio_ik/get_bio_ik")
+    bio_ik = rospy.ServiceProxy('bio_ik/get_bio_ik', GetIK)
 
     publish_motor_goals = rospy.Publisher('head_motor_goals', JointCommand, queue_size=10)
 
@@ -41,7 +46,7 @@ if __name__ == "__main__":
         y = float(input('y: '))
         point = PointStamped()
         point.header.stamp = rospy.Time.now()
-        point.header.frame_id = 'base_footprint'
+        point.header.frame_id = base_footprint_frame
         point.point.x = x
         point.point.y = y
         point.point.z = 0
@@ -68,14 +73,14 @@ if __name__ == "__main__":
         # Get line of camera
         camera_origin = PointStamped()
         camera_origin.header.stamp = rospy.Time.now()
-        camera_origin.header.frame_id = 'camera'
+        camera_origin.header.frame_id = camera_frame
         camera_origin.point = Point(0, 0, 0)
         camera_one = PointStamped()
         camera_one.header.stamp = rospy.Time.now()
-        camera_one.header.frame_id = 'camera'
+        camera_one.header.frame_id = camera_frame
         camera_one.point = Point(1, 0, 0)
-        camera_origin_bf = tf_buffer.transform(camera_origin, 'base_footprint', timeout=rospy.Duration(0.3)).point
-        camera_one_bf = tf_buffer.transform(camera_one, 'base_footprint', timeout=rospy.Duration(0.3)).point
+        camera_origin_bf = tf_buffer.transform(camera_origin, base_footprint_frame, timeout=rospy.Duration(0.3)).point
+        camera_one_bf = tf_buffer.transform(camera_one, base_footprint_frame, timeout=rospy.Duration(0.3)).point
         line_vector = Point(camera_one_bf.x - camera_origin_bf.x,
                             camera_one_bf.y - camera_origin_bf.y,
                             camera_one_bf.z - camera_origin_bf.z)
