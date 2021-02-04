@@ -38,27 +38,32 @@ class WorldModelCapsule:
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
+        self.odom_frame = rospy.get_param('odom_frame')
+        self.map_frame = rospy.get_param('map_frame')
+        self.ball_frame = rospy.get_param('ball_frame')
+        self.ball_approach_frame = rospy.get_param('ball_approach_frame')
+
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
         self.ball_odom.header.stamp = rospy.Time.now()
-        self.ball_odom.header.frame_id = 'odom'
+        self.ball_odom.header.frame_id = self.odom_frame
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
         self.ball_map.header.stamp = rospy.Time.now()
-        self.ball_map.header.frame_id = 'map'
+        self.ball_map.header.frame_id = self.map_frame
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
         self.goal_odom.header.stamp = rospy.Time.now()
-        self.goal_odom.header.frame_id = 'odom'
+        self.goal_odom.header.frame_id = self.odom_frame
 
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
         self.goal_seen_time = rospy.Time(0)
         self.ball_seen = False
-        self.field_length = rospy.get_param('/field_length', None)
-        self.field_width = rospy.get_param('/field_width', None)
-        self.goal_width = rospy.get_param('/goal_width', None)
+        self.field_length = rospy.get_param('field_length', None)
+        self.field_width = rospy.get_param('field_width', None)
+        self.goal_width = rospy.get_param('goal_width', None)
 
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
@@ -90,7 +95,7 @@ class WorldModelCapsule:
         else:
             ball = self.ball_odom
         try:
-            ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
+            ball_bfp = self.tf_buffer.transform(ball, rospy.param('base_footprint_frame'), timeout=rospy.Duration(0.2)).point
         except (tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             rospy.logerr('Severe transformation problem concerning the ball!')

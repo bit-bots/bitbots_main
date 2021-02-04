@@ -34,7 +34,7 @@ class PathfindingCapsule:
         else:
             try:
                 msg.header.stamp = rospy.Time(0)
-                map_goal = self.tf_buffer.transform(msg, 'map', timeout=rospy.Duration(0.5))
+                map_goal = self.tf_buffer.transform(msg, rospy.param("map_frame"), timeout=rospy.Duration(0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))
                 q = quaternion_from_euler(0, 0, e[2])
