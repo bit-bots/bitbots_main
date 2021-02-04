@@ -16,7 +16,7 @@ debug_params = [
     'vision_publish_debug_image',
     'vision_publish_field_mask_image',
     'vision_publish_HSV_mask_image',
-    'dynamic_color_space_publish_field_mask_image',
+    'dynamic_color_lookup_table_publish_field_mask_image',
 ]
 
 # Compatibility
