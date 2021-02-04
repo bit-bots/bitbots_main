@@ -59,7 +59,7 @@ The most important instructions are ping, read, write and status as well as sync
 
 Every motor has a fixed id by which it can be addressed.
 The id of a new / reset motor is 1 but can be changed using a write instruction to a special register. We can do this for example using the `dynamixel wizard <https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/>`_.
-A reference to the ids we use in our robot can be found here: :doc:`../hardware/servo_numbers`
+A reference to the ids we use in our robot can be found here: :doc:`../hardware/mechanics/servo_numbers`
 
 Two motors with the same id should not be connected to the same bus because of the resulting communication problems.
 

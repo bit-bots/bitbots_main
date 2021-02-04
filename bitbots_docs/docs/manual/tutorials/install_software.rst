@@ -6,7 +6,9 @@ machine.
 
 Next, install our version of ROS packages from ``packages.bit-bots.de``. Just follow the
 instructions on the website (if you never used ROS before, you do not have to execute the first two
-commands). Then, install the required ROS packages::
+commands). Then, install the required ROS packages:
+
+.. code-block:: bash
 
     sudo apt install ros-melodic-amcl ros-melodic-controller-interface ros-melodic-controller-manager ros-melodic-controller-manager-msgs ros-melodic-desktop-full ros-melodic-gazebo-ros-control ros-melodic-hector-gazebo ros-melodic-hector-gazebo-plugins ros-melodic-imu-sensor-controller ros-melodic-joint-state-controller ros-melodic-joint-trajectory-controller ros-melodic-map-server ros-melodic-move-base ros-melodic-moveit ros-melodic-moveit-core ros-melodic-moveit-resources ros-melodic-moveit-ros-planning ros-melodic-moveit-ros-planning-interface ros-melodic-plotjuggler ros-melodic-pointcloud-to-laserscan ros-melodic-robot-controllers ros-melodic-robot-controllers-interface ros-melodic-robot-controllers-msgs ros-melodic-robot-localization ros-melodic-ros-control ros-melodic-ros-controllers ros-melodic-rqt-controller-manager ros-melodic-rqt-joint-trajectory-controller ros-melodic-yocs-velocity-smoother ros-melodic-spatio-temporal-voxel-layer ros-melodic-rviz-imu-plugin
 
@@ -29,7 +31,9 @@ version. Now, execute ``ln -s ~/bitbots_meta src`` to link the source directory.
 software with ``catkin build -c``.
 
 To make the changes persistent, open your bashrc with ``nano ~/.bashrc`` and paste the following
-three lines::
+three lines:
+
+.. code-block:: bash
 
     export PATH=$PATH:$HOME/.local/bin
     source /opt/ros/melodic/setup.bash
