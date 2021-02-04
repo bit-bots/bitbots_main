@@ -99,43 +99,63 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
                            config.diffusion_t_std_dev,
                            config.diffusion_multiplicator,
                            drift_cov));
-  robot_state_distribution_start_left_.reset(new RobotStateDistributionStartLeft(random_number_generator_,
-                                                                                 std::make_pair(config.initial_robot_x1,
-                                                                                                config
-                                                                                                    .initial_robot_y1),
-                                                                                 config.initial_robot_t1,
-                                                                                 std::make_pair(config.initial_robot_x2,
-                                                                                                config
-                                                                                                    .initial_robot_y2),
-                                                                                 config.initial_robot_t2,
-                                                                                 std::make_pair(config.field_x,
-                                                                                                config.field_y)));
-  robot_state_distribution_start_right_.reset(new RobotStateDistributionStartRight(random_number_generator_,
-                                                                                   std::make_pair(config
-                                                                                                      .initial_robot_x1,
-                                                                                                  config
-                                                                                                      .initial_robot_y1),
-                                                                                   config.initial_robot_t1,
-                                                                                   std::make_pair(config
-                                                                                                      .initial_robot_x2,
-                                                                                                  config
-                                                                                                      .initial_robot_y2),
-                                                                                   config.initial_robot_t2,
-                                                                                   std::make_pair(config.field_x,
-                                                                                                  config.field_y)));
-  robot_state_distribution_left_half_.reset(new RobotStateDistributionLeftHalf(random_number_generator_,
-                                                                               std::make_pair(config.field_x,
-                                                                                              config.field_y)));
-  robot_state_distribution_right_half_.reset(new RobotStateDistributionRightHalf(random_number_generator_,
-                                                                                 std::make_pair(config.field_x,
-                                                                                                config.field_y)));
-  robot_state_distribution_position_.reset(new RobotStateDistributionPosition(random_number_generator_,
-                                                                              config.initial_robot_x,
-                                                                              config.initial_robot_y));
-  robot_state_distribution_pose_.reset(new RobotStateDistributionPose(random_number_generator_,
-                                                                      config.initial_robot_x,
-                                                                      config.initial_robot_y,
-                                                                      config.initial_robot_t));
+
+  robot_state_distribution_start_left_.reset(
+    new RobotStateDistributionStartLeft(
+      random_number_generator_,
+      std::make_pair(
+        config.initial_robot_x1,
+        config.initial_robot_y1),
+      config.initial_robot_t1,
+      std::make_pair(
+        config.initial_robot_x2,
+        config.initial_robot_y2),
+      config.initial_robot_t2,
+      std::make_pair(
+        config.field_x,
+        config.field_y)));
+
+  robot_state_distribution_start_right_.reset(
+    new RobotStateDistributionStartRight(
+      random_number_generator_,
+      std::make_pair(
+        config.initial_robot_x1,
+        config.initial_robot_y1),
+      config.initial_robot_t1,
+      std::make_pair(
+        config.initial_robot_x2,
+        config.initial_robot_y2),
+      config.initial_robot_t2,
+      std::make_pair(
+        config.field_x,
+        config.field_y)));
+
+  robot_state_distribution_left_half_.reset(
+    new RobotStateDistributionLeftHalf(
+      random_number_generator_,
+      std::make_pair(
+        config.field_x,
+        config.field_y)));
+
+  robot_state_distribution_right_half_.reset(
+    new RobotStateDistributionRightHalf(
+      random_number_generator_,
+      std::make_pair(
+        config.field_x,
+        config.field_y)));
+
+  robot_state_distribution_position_.reset(
+    new RobotStateDistributionPosition(
+      random_number_generator_,
+      config.initial_robot_x,
+      config.initial_robot_y));
+
+  robot_state_distribution_pose_.reset(
+    new RobotStateDistributionPose(
+      random_number_generator_,
+      config.initial_robot_x,
+      config.initial_robot_y,
+      config.initial_robot_t));
 
   resampling_.reset(new pf::ImportanceResampling<RobotState>());
 

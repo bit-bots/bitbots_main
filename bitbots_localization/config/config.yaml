@@ -37,7 +37,7 @@
 
 
   particle_number: 500
-  resampling_interval: 25
+  resampling_interval: 5
 
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
