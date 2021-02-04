@@ -9,11 +9,12 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 class PathfindingCapsule:
     def __init__(self):
+        self.map_frame = rospy.get_param('map_frame')
         # Thresholds to determine whether the transmitted goal is a new one
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(2))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.position_threshold = rospy.get_param('/behavior/body/pathfinding_position_threshold')
-        self.orientation_threshold = rospy.get_param('/behavior/body/pathfinding_orientation_threshold')
+        self.position_threshold = rospy.get_param('behavior/body/pathfinding_position_threshold')
+        self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.goal = None  # type: PoseStamped
@@ -34,7 +35,7 @@ class PathfindingCapsule:
         else:
             try:
                 msg.header.stamp = rospy.Time(0)
-                map_goal = self.tf_buffer.transform(msg, rospy.param("map_frame"), timeout=rospy.Duration(0.5))
+                map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=rospy.Duration(0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))
                 q = quaternion_from_euler(0, 0, e[2])
