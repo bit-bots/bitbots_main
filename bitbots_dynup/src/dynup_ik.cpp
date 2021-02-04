@@ -18,6 +18,10 @@ void DynupIK::reset() {
   }
 }
 
+void DynupIK::setDirection(std::string direction) {
+    direction_ = direction;
+}
+
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
@@ -78,8 +82,22 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     /* sets head motor positions to 0, as the IK will return random values for those unconstrained motors. */
     for(int i = 0; i  < result.first.size(); i++)
     {
-        if(result.first[i] == "HeadPan"||result.first[i] ==  "HeadTilt") {
+        if(result.first[i] == "HeadPan") {
             result.second[i] = 0;
+        }
+        else if(result.first[i] ==  "HeadTilt") {
+            if (direction_ == "front")
+            {
+                result.second[i] = 45;
+            }
+            else if (direction_ == "back")
+            {
+                result.second[i] = -45;
+            }
+            else
+            {
+                result.second[i] = 0;
+            }
         }
     }
     return result;

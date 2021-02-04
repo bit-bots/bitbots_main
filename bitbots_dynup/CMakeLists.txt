@@ -16,7 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     visualization_msgs
     control_toolbox
+    bitbots_docs
 )
+
+enable_bitbots_docs()
 
 generate_dynamic_reconfigure_options(
     cfg/bitbots_dynup_params.cfg

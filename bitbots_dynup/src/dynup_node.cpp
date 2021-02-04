@@ -78,6 +78,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
     request.direction = goal->direction;
+    ik_.setDirection(request.direction);
     request.r_foot_pose = std::get<1>(poses.value());
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
