@@ -29,8 +29,7 @@ RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
         std::pair<double, double> initial_robot_pose1,
         double initial_theta1,
         std::pair<double, double> initial_robot_pose2,
-        double initial_theta2,
-        std::pair<double, double> field_size) {
+        double initial_theta2) {
 
     initial_robot_pose_1 = initial_robot_pose1;
     initial_robot_pose_2 = initial_robot_pose2;
@@ -56,8 +55,7 @@ RobotStateDistributionStartRight::RobotStateDistributionStartRight(
         std::pair<double, double> initial_robot_pose1,
         double initial_theta1,
         std::pair<double, double> initial_robot_pose2,
-        double initial_theta2,
-        std::pair<double, double> field_size) {
+        double initial_theta2) {
 
     initial_robot_pose_1 = initial_robot_pose1;
     initial_robot_pose_2 = initial_robot_pose2;

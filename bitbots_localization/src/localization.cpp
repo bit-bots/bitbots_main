@@ -112,10 +112,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       std::make_pair(
         config.initial_robot_x2,
         config.initial_robot_y2),
-      config.initial_robot_t2,
-      std::make_pair(
-        config.field_x,
-        config.field_y)));
+      config.initial_robot_t2));
 
   robot_state_distribution_start_right_.reset(
     new RobotStateDistributionStartRight(
@@ -127,10 +124,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       std::make_pair(
         config.initial_robot_x2,
         config.initial_robot_y2),
-      config.initial_robot_t2,
-      std::make_pair(
-        config.field_x,
-        config.field_y)));
+      config.initial_robot_t2));
 
   robot_state_distribution_left_half_.reset(
     new RobotStateDistributionLeftHalf(
