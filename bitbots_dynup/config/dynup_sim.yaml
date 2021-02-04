@@ -1,6 +1,6 @@
 dynup:
   # Engine
-  engine_rate: 100
+  engine_rate: 240
   foot_distance: 0.2
   leg_min_length: 0.21
   arm_side_offset: 0.05

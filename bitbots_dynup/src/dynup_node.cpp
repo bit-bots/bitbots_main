@@ -95,7 +95,11 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     ros::Rate loop_rate(engine_rate_);
     loopEngine(loop_rate);
     bitbots_msgs::DynUpResult r;
-    r.successful = true;
+    if(server_.isPreemptRequested()){
+      r.successful = false;
+    }else{
+      r.successful = true;
+    }
     server_.setSucceeded(r);
   } else {
     ROS_ERROR("Could not determine positions! Aborting standup.");
