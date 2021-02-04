@@ -1,5 +1,14 @@
 int64 init_mode
 int64 x
 int64 y
+
+# Constants
+int64 START_RIGHT=0
+int64 LEFT_HALF=1
+int64 RIGHT_HALF=2
+int64 POSITION=3
+int64 POSE=4
+
 ---
 bool success
+

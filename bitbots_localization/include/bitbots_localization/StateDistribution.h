@@ -35,8 +35,7 @@ class RobotStateDistributionStartLeft : public particle_filter::StateDistributio
                                   std::pair<double, double> initial_robot_pose1,
                                   double initial_theta1,
                                   std::pair<double, double> initial_robot_pose2,
-                                  double initial_theta2,
-                                  std::pair<double, double> field_size);
+                                  double initial_theta2);
 
   const RobotState draw() const override;
 
@@ -55,8 +54,7 @@ class RobotStateDistributionStartRight : public particle_filter::StateDistributi
                                    std::pair<double, double> initial_robot_pose1,
                                    double initial_theta1,
                                    std::pair<double, double> initial_robot_pose2,
-                                   double initial_theta2,
-                                   std::pair<double, double> field_size);
+                                   double initial_theta2);
 
   const RobotState draw() const override;
 

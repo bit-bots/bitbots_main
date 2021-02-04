@@ -57,6 +57,7 @@
 #include <bitbots_localization/RobotState.h>
 
 #include <bitbots_localization/reset_filter.h>
+#include <bitbots_localization/set_paused.h>
 #include <bitbots_localization/tools.h>
 
 #include <cv_bridge/cv_bridge.h>
@@ -79,6 +80,14 @@ class Localization {
 
  public:
   Localization();
+
+  /**
+   * Callback for the pause service
+   * @param req Request.
+   * @param res Response.
+   */ 
+  bool set_paused_callback( bl::set_paused::Request &req,
+                            bl::set_paused::Response &res);
 
   /**
    * Callback for the filter reset service
@@ -162,7 +171,8 @@ class Localization {
   ros::Publisher t_crossings_ratings_publisher_;
   ros::Publisher crosses_ratings_publisher_;
 
-  ros::ServiceServer service_;
+  ros::ServiceServer reset_service_;
+  ros::ServiceServer pause_service_;
   ros::Timer publishing_timer_;
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener;

@@ -44,7 +44,9 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   t_crossings_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
   crosses_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
-  service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+  reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+
+  pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
 
   // Get field name
   std::string field;
@@ -110,10 +112,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       std::make_pair(
         config.initial_robot_x2,
         config.initial_robot_y2),
-      config.initial_robot_t2,
-      std::make_pair(
-        config.field_x,
-        config.field_y)));
+      config.initial_robot_t2));
 
   robot_state_distribution_start_right_.reset(
     new RobotStateDistributionStartRight(
@@ -125,10 +124,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       std::make_pair(
         config.initial_robot_x2,
         config.initial_robot_y2),
-      config.initial_robot_t2,
-      std::make_pair(
-        config.field_x,
-        config.field_y)));
+      config.initial_robot_t2));
 
   robot_state_distribution_left_half_.reset(
     new RobotStateDistributionLeftHalf(
@@ -267,6 +263,17 @@ std::vector<gm::Point32> Localization::interpolateFieldboundaryPoints(gm::Point3
   }
 
   return pointsInterpolated;
+}
+
+bool Localization::set_paused_callback(bl::set_paused::Request &req,
+                                       bl::set_paused::Response &res) {
+  if(req.paused) {
+    publishing_timer_.stop();
+  } else {
+    publishing_timer_.start();
+  }
+  res.success = true;
+  return true;
 }
 
 bool Localization::reset_filter_callback(bl::reset_filter::Request &req,
