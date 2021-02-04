@@ -95,6 +95,7 @@ class Localization {
   void reset_filter(int distribution, double x, double y);
 
   ros::NodeHandle nh_;
+  ros::NodeHandle pnh_;
 
  private:
   ros::Subscriber line_subscriber_;
