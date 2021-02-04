@@ -34,6 +34,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 add_service_files(
    FILES
    reset_filter.srv
+   set_paused.srv
  )
 
 ## Generate added messages and services with any dependencies listed here
