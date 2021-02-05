@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import rospy
 
-from profilehooks import profile
-
 from humanoid_league_msgs.msg import GameState, RobotControlState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
@@ -56,7 +54,6 @@ class LocalizationHandler(object):
     def _callback_robot_control_state(self, msg):
         self.blackboard.robot_control_state = msg.state
 
-    @profile
     def main_loop(self):
         """  """
         rate = rospy.Rate(25)
