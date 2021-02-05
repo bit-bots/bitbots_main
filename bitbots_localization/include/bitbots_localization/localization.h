@@ -190,6 +190,7 @@ class Localization {
   std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
   std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
   RobotState estimate_;
+  std::vector<double> estimate_cov_;
 
   bool resampled_ = false;
 
