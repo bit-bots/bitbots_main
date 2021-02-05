@@ -14,6 +14,9 @@
         <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(arg fieldname)/config.yaml"/>
     </node>
 
+    <node pkg="bitbots_localization" type="localization_handler.py" name="bitbots_localization_handler" output="screen">
+    </node>
+
     <!-- load the map for rviz-->
     <node name="field_map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/config/fields/$(arg fieldname)/map_server.yaml">
         <param name="frame_id" value="map" />
