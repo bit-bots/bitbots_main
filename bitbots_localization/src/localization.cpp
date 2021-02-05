@@ -408,7 +408,7 @@ void Localization::publish_transforms() {
 
   //get estimate and covariance
   estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  std::vector<double> estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
+  estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
 
   //calculate quaternion
   tf2::Quaternion q;
@@ -458,22 +458,24 @@ void Localization::publish_transforms() {
 }
 
 void Localization::publish_pose_with_covariance() {
-
-  std::vector<double> cov_mat = robot_pf_->getCovariance(config_.percentage_best_particles);
+  //calculate quaternion
+  tf2::Quaternion q;
+  q.setRPY(0, 0, estimate_.getTheta());
+  q.normalize();
 
   gm::PoseWithCovarianceStamped estimateMsg;
 
-  estimateMsg.pose.pose.orientation.w = 1;
-  estimateMsg.pose.pose.orientation.x = 0;
-  estimateMsg.pose.pose.orientation.y = 0;
-  estimateMsg.pose.pose.orientation.z = 0;
-  estimateMsg.pose.pose.position.x = 0;
-  estimateMsg.pose.pose.position.y = 0;
+  estimateMsg.pose.pose.orientation.w = q.x();
+  estimateMsg.pose.pose.orientation.x = q.y();
+  estimateMsg.pose.pose.orientation.y = q.z();
+  estimateMsg.pose.pose.orientation.z = q.w();
+  estimateMsg.pose.pose.position.x = estimate_.getXPos();
+  estimateMsg.pose.pose.position.y = estimate_.getYPos();
 
   std::vector<double> covariance;
 
   for (int i = 0; i < 36; i++) {
-    estimateMsg.pose.covariance[i] = cov_mat[i];
+    estimateMsg.pose.covariance[i] = estimate_cov_[i];
   }
 
   estimateMsg.header.frame_id = config_.publishing_frame;
