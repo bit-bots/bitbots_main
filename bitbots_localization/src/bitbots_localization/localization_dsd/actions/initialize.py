@@ -1,78 +1,81 @@
 import rospy
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from humanoid_league_localization.srv import reset_filter
+from bitbots_localization.srv import reset_filter
 
 
 class AbstractInitialize(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractInitialize, self).__init__(blackboard, dsd, parameters=None)
-        rospy.wait_for_service('reset_filter')
 
         self.called = False
         self.last_service_call = 0
         self.time_between_calls = 2  # [s]
+
+        self.first_perform = True
 
     def perform(self, reevaluate=False):
         raise NotImplementedError
 
 class DoNothing(AbstractInitialize):
     def perform(self, reevaluate=False):
-        rospy.loginfo("doing nothing")
+        rospy.logdebug("doing nothing")
         return
 
 class InitPose(AbstractInitialize):
     def perform(self, reevaluate=False):
-        rospy.loginfo("initializing pose")
-        rospy.wait_for_service('reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('reset_filter', reset_filter)
+        rospy.logdebug("initializing pose")
+        rospy.wait_for_service('bitbots_localization/reset_filter')
+        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
             resp = reset_filter_prox(0, None, None)
             return resp.success
         except rospy.ServiceException as e:
-            print
-            "Service call failed: %s" % e
+            print(f"Service call failed: {e}")
 
 
 class InitLeftHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
-        rospy.loginfo("initializing left half")
-        rospy.wait_for_service('reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('reset_filter', reset_filter)
+        rospy.logdebug("initializing left half")
+        rospy.wait_for_service('bitbots_localization/reset_filter')
+        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
             resp = reset_filter_prox(1, None, None)
             return resp.success
         except rospy.ServiceException as e:
-            print
-            "Service call failed: %s" % e
+            print(f"Service call failed: {e}")
 
 
 class InitRightHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
-        rospy.loginfo("initializing right half")
+        rospy.logdebug("initializing right half")
 
-        rospy.wait_for_service('reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('reset_filter', reset_filter)
+        rospy.wait_for_service('bitbots_localization/reset_filter')
+        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
             resp = reset_filter_prox(2, None, None)
             return resp.success
         except rospy.ServiceException as e:
-            print
-            "Service call failed: %s" % e
+            print(f"Service call failed: {e}")
 
 
 class InitPosition(AbstractInitialize):
     def perform(self, reevaluate=False):
-        rospy.loginfo("initializing position")
+        self.do_not_reevaluate()
+        rospy.logdebug("initializing position")
 
-        rospy.wait_for_service('reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('reset_filter', reset_filter)
+        rospy.wait_for_service('bitbots_localization/reset_filter')
+        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        print(  self.blackboard.poseX,
+                self.blackboard.poseY)
         try:
-            resp = reset_filter_prox(3, 0, 0)
-            return resp.success
+            resp = reset_filter_prox(
+                3, 
+                self.blackboard.poseX,
+                self.blackboard.poseY)
         except rospy.ServiceException as e:
-            print
-            "Service call failed: %s" % e
+            print(f"Service call failed: {e}")
+        return self.pop()
 
 class InitSet(AbstractActionElement):
     def perform(self, reevaluate=False):
@@ -80,8 +83,8 @@ class InitSet(AbstractActionElement):
 
 class InitPlaying(AbstractActionElement):
 
-        def perform(self, reevaluate=False):
-            return NotImplementedError
+    def perform(self, reevaluate=False):
+        return NotImplementedError
 
 class InitPenalty(AbstractActionElement):
     def perform(self, reevaluate=False):

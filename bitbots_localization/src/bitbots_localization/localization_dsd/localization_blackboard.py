@@ -1,5 +1,6 @@
 import rospy
 import numpy
+from humanoid_league_msgs.msg import GameState, RobotControlState
 
 STATE_SHUT_DOWN = 0
 STATE_STARTUP = 1

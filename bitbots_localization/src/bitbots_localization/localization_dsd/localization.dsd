@@ -1,0 +1,25 @@
+-->Localization
+$StartLocalization
+    STARTUP --> $CheckFallen
+        FALLEN --> @LocalizationStop
+        NOT_FALLEN --> $CheckFalling
+            FALLING --> @LocalizationStop
+            NOT_FALLING --> $GotUpJustNow
+                YES --> @InitPosition, @LocalizationStart
+                NO --> $CheckGettingUp
+                    GETTING_UP --> @LocalizationStop
+                    NOT_GETTING_UP --> $CheckGameStateReceived
+                        NO_GAMESTATE_INIT --> @InitLeftHalf
+                        DO_NOTHING --> @DoNothing
+                        GAMESTATE_RECEIVED --> $CheckGameState
+                            INIT --> $CheckInit
+                                INIT --> @InitPose
+                                DO_NOTHING --> @DoNothing
+                            SET --> $CheckSet
+                                SET --> @InitSet
+                                DO_NOTHING --> @DoNothing
+                            PLAYING --> $CheckPlaying
+                                PLAYING --> @InitPlaying
+                                DO_NOTHING --> @DoNothing
+                            PENALTY --> @DoNothing // or stop localization?
+

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import rospy
 
+from profilehooks import profile
+
 from humanoid_league_msgs.msg import GameState, RobotControlState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
 from dynamic_stack_decider.dsd import DSD
-from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
+from bitbots_localization.localization_dsd.localization_blackboard import LocalizationBlackboard
 import os
 
 
@@ -27,9 +29,9 @@ class LocalizationHandler(object):
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'localization.dsd'))
 
-        rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
+        rospy.Subscriber("bitbots_localization/pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
         rospy.Subscriber("game_state", GameState, self._callback_game_state, queue_size=1)
-        rospy.Subscriber("robot_control_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
+        rospy.Subscriber("robot_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
 
         self.main_loop()
 
@@ -54,13 +56,14 @@ class LocalizationHandler(object):
     def _callback_robot_control_state(self, msg):
         self.blackboard.robot_control_state = msg.state
 
+    @profile
     def main_loop(self):
         """  """
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(25)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
-            self.dsd.update()
+            self.dsd.update() 
             try:
                 # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()

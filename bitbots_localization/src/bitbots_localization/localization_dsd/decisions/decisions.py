@@ -1,6 +1,7 @@
 import rospy
+from humanoid_league_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from bitbots_localization_handler.localization_dsd.localization_blackboard import STATE_SHUT_DOWN, STATE_STARTUP, STATE_FALLEN, STATE_NOTFALLEN, STATE_NONGAME, STATE_INGAME, STATE_INIT, STATE_SET, STATE_PLAYING, STATE_PENALTY
+from bitbots_localization.localization_dsd.localization_blackboard import STATE_SHUT_DOWN, STATE_STARTUP, STATE_FALLEN, STATE_NOTFALLEN, STATE_NONGAME, STATE_INGAME, STATE_INIT, STATE_SET, STATE_PLAYING, STATE_PENALTY
 
 class StartLocalization(AbstractDecisionElement):
     """
@@ -27,9 +28,64 @@ class CheckFallen(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         self.clear_debug_data()
 
-        if self.blackboard.robot_control_state == 2: #fallen
+        if self.blackboard.robot_control_state == RobotControlState.FALLEN:
             return "FALLEN"
         return "NOT_FALLEN"
+
+    def get_reevaluate(self):
+        return True
+
+
+class CheckFalling(AbstractDecisionElement):
+    """
+    Checks if robot is falling
+    """
+
+    def perform(self, reevaluate=False):
+        self.clear_debug_data()
+
+        if self.blackboard.robot_control_state == RobotControlState.FALLING:
+            return "FALLING"
+        return "NOT_FALLING"
+
+    def get_reevaluate(self):
+        return True
+
+
+class CheckGettingUp(AbstractDecisionElement):
+    """
+    Checks if robot is getting up
+    """
+
+    def perform(self, reevaluate=False):
+        self.clear_debug_data()
+
+        if self.blackboard.robot_control_state == RobotControlState.GETTING_UP:
+            return "GETTING_UP"
+        return "NOT_GETTING_UP"
+
+    def get_reevaluate(self):
+        return True
+
+
+class GotUpJustNow(AbstractDecisionElement):
+    """
+    Checks if robot state changed from getting up to something different since the last tick
+    """
+    
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(GotUpJustNow, self).__init__(blackboard, dsd, parameters)
+        self.last_state_stand_up = False
+
+    def perform(self, reevaluate=False):
+        if self.last_state_stand_up and self.blackboard.robot_control_state != RobotControlState.GETTING_UP:
+            self.last_state_stand_up = False
+            return "YES"
+
+        if self.blackboard.robot_control_state == RobotControlState.GETTING_UP:
+            self.last_state_stand_up = True
+            
+        return "NO"
 
     def get_reevaluate(self):
         return True
