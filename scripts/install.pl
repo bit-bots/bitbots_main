@@ -76,7 +76,7 @@ sub configure_catkin_workspace() {
     print "Configuring workspace at $location$/";
     chdir $location;
     # human_pose_estimation is currently blacklisted because it doesn't build
-    system "bash -c \"source $ROS_WORKSPACE/setup.bash && catkin init && catkin config -DPYTHON_VERSION=3 --blacklist human_pose_estimation_openvino\"";
+    system "bash -c \"source $ROS_WORKSPACE/setup.bash && catkin config --init -DPYTHON_VERSION=3 --blacklist human_pose_estimation_openvino\"";
 }
 
 sub link_bitbots_meta() {
