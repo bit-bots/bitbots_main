@@ -1,17 +1,11 @@
-.PHONY : basler build doc doc-meta install repo vision-files update status
+.PHONY : basler doc install update pull-all pull-init vision-files status
 
 basler:
 	test -d basler_drivers || git clone git@git.mafiasi.de:Bit-Bots/basler_drivers.git
 	cd basler_drivers && ./setup.sh
 
-build :
-	scripts/build.sh repo vision-file
-	scripts/install_py_extensions.bash
-	scripts/repair.sh
-
-doc :
+doc:
 	scripts/build-doc.py
-
 
 install: pull-init
 	scripts/install.pl
