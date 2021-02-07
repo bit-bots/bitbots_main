@@ -1,6 +1,15 @@
 <launch>
+    <arg name="sim" default="false"/>
+
+      <group unless="$(arg sim)">
+            <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
+      </group>
+      <group if="$(arg sim)">
+            <rosparam file="$(find bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
+      </group>
+
     <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
     <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
 
-  <node pkg="bitbots_dynup" name="DynupNode" type="DynupNode" output="screen" launch-prefix="$(arg taskset)"/>
+  <node pkg="bitbots_dynup" name="dynup" type="DynupNode" output="screen" launch-prefix="$(arg taskset)"/>
 </launch>

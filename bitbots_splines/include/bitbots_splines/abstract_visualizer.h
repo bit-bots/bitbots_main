@@ -10,6 +10,7 @@ namespace bitbots_splines {
 
 class AbstractVisualizer {
  protected:
+  int id = 0;
   /**
    * Utility function to create a visualization marker for a position with default properties.
    * @param position The position of the marker
@@ -57,7 +58,6 @@ class AbstractVisualizer {
     base_marker.header.stamp = ros::Time::now();
     base_marker.pose.orientation.w = 1;
     base_marker.color.a = 1;
-    int id = 0;
 
     // Marker for spline path
     visualization_msgs::Marker path_marker = base_marker;
