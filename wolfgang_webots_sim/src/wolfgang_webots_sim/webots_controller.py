@@ -373,7 +373,7 @@ class WebotsController:
 
     def set_robot_pose_rpy(self, pos, rpy):
         if self.switch_coordinate_system:
-            self.translation_field.setSFVec3f(pos_ros_to_webots(pos))
+            self.translation_field.setSFVec3f(list(pos))
             self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
         else:
             self.translation_field.setSFVec3f([pos[0], pos[1], pos[2]])
@@ -393,23 +393,11 @@ class WebotsController:
         if self.is_wolfgang:
             rpy = (rpy[0] + math.pi / 2, -rpy[1], rpy[2])
         if self.switch_coordinate_system:
-            return pos_webots_to_ros(pos), rpy
+            return pos, rpy
         else:
             return pos, (rpy[2], rpy[0], rpy[1])
 
 
-def pos_webots_to_ros(pos):
-    x = pos[2]
-    y = pos[0]
-    z = pos[1]
-    return [x, y, z]
-
-
-def pos_ros_to_webots(pos):
-    z = pos[0]
-    x = pos[1]
-    y = pos[2]
-    return [x, y, z]
 
 
 def rpy_to_axis(z_e, x_e, y_e, normalize=True):
