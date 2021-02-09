@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
     visualization_msgs
     control_toolbox
     bitbots_docs
+    rotconv
 )
 
 enable_bitbots_docs()
@@ -38,6 +39,7 @@ generate_messages(
 
 catkin_package(
     INCLUDE_DIRS include
+    CATKIN_DEPENDS rotconv
 )
 
 include_directories(
