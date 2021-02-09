@@ -56,15 +56,15 @@ class PyKick:
     def __del__(self):
         roscpp_shutdown()
 
-    def set_goal(self, msg: KickGoal, trunk_to_base_footprint: Transform):
+    def set_goal(self, msg: KickGoal, joint_state: JointState):
         """
         Set a goal for the kick.
 
         :param msg: The goal, instance of bitbots_msgs/KickGoal
-        :param trunk_to_base_footprint: Transform from trunk to base_footprint, needed to convert the ball position
+        :param joint_state: The current motor positions of the robot
         :return: whether the goal was set successfully
         """
-        return self.py_kick_wrapper.set_goal(to_cpp(msg))
+        return self.py_kick_wrapper.set_goal(to_cpp(msg), to_cpp(joint_state))
 
     def step(self, dt: float, joint_state: JointState):
         """
