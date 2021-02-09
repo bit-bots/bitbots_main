@@ -1,7 +1,6 @@
 import subprocess
 import time
 
-import tf
 import os
 
 from controller import Robot, Node, Supervisor, Field
@@ -15,7 +14,7 @@ from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand, FootPressure
 import math
-from tf.transformations import quaternion_from_euler
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 G = 9.81
 
@@ -354,7 +353,7 @@ class WebotsController:
             self.world_info.getField("gravity").setSFFloat(0)
 
     def reset_robot_pose(self, pos, quat):
-        rpy = tf.transformations.euler_from_quaternion(quat)
+        rpy = euler_from_quaternion(quat)
         self.set_robot_pose_rpy(pos, rpy)
         self.robot_node.resetPhysics()
 
@@ -389,9 +388,6 @@ class WebotsController:
         pos = self.translation_field.getSFVec3f()
         rot = self.rotation_field.getSFRotation()
         rpy = axis_to_rpy(*rot)
-        # webots cordinate system is left-handed and depends on the robot. these values were found experimentally
-        if self.is_wolfgang:
-            rpy = (rpy[0] + math.pi / 2, -rpy[1], rpy[2])
         if self.switch_coordinate_system:
             return pos, rpy
         else:
