@@ -1,1 +1,2 @@
-protos/Wolfgang_meshes/*.cache
+protos/**/*.cache
+worlds/.*.wbproj
