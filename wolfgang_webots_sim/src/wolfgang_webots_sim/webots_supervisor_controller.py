@@ -118,6 +118,12 @@ class SupervisorController:
         self.ball.getField("rotation").setSFRotation([0,0,1,0])
         self.ball.resetPhysics()
 
+    def set_ball_pose(self, pos):
+        self.ball.getField("translation").setSFVec3f(list(pos))
+
+    def get_ball_pose(self):
+        return self.ball.getField("translation").getSFVec3f()
+
     def node(self):
         s = self.supervisor.getSelected()
         if s is not None:

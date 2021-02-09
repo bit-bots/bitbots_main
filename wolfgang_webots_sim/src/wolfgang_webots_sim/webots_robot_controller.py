@@ -122,7 +122,6 @@ class RobotController:
             self.cop_r_pub_ = rospy.Publisher("cop_r", PointStamped, queue_size=1)
             rospy.Subscriber("DynamixelController/command", JointCommand, self.command_cb)
 
-
         # publish camera info once, it will be latched
         self.cam_info = CameraInfo()
         self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
