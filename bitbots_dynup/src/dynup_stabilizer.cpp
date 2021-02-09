@@ -43,9 +43,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
         tf2::convert(trunk_goal.getRotation(), goal_orientation_eigen);
         rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
-        // first adapt trunk pitch value based on PID controller
-        goal_fused.fusedPitch = pid_trunk_pitch_.computeCommand(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
-        goal_fused.fusedRoll = pid_trunk_roll_.computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
+        // adapt trunk based on PID controller
+        goal_fused.fusedPitch += pid_trunk_pitch_.computeCommand(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
+        goal_fused.fusedRoll += pid_trunk_roll_.computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
 
         tf2::Quaternion corrected_orientation;
         Eigen::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
