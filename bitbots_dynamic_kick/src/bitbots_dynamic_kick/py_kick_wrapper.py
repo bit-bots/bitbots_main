@@ -77,6 +77,8 @@ class PyKick:
         if dt == 0.0:
             # preventing weird spline interpolation errors on edge case
             dt = 0.001
+        elif dt > 1:
+            print('dt is very large, maybe forgot to reset?')
         step = self.py_kick_wrapper.step(dt, to_cpp(joint_state))
         return from_cpp(step, JointCommand)
 
