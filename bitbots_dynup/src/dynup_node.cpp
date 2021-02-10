@@ -122,7 +122,7 @@ double DynUpNode::getTimeDelta() {
   dt = current_ros_time - last_ros_update_time_;
   // this can happen due to floating point precision
   if (dt == 0) {
-    ROS_WARN("dt was 0. this can happen in simulation if your update rate is higher than the simulators.");
+    ROS_WARN_ONCE("dt was 0. this can happen in simulation if your update rate is higher than the simulators. This warning is only displayed once!");
     dt = 0.001;
   }
   last_ros_update_time_ = current_ros_time;
