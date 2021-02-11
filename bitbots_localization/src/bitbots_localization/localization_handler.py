@@ -43,7 +43,7 @@ class LocalizationHandler(object):
         self.blackboard.covariance = msg.pose.covariance
 
     def _callback_game_state(self, msg):
-        self.blackboard.last_gamestate_update_time = msg.header.stamp
+        self.blackboard.game_state_recived = True
         self.blackboard.game_state = msg.gameState
         self.blackboard.secondary_state = msg.secondaryState
         self.blackboard.first_half = msg.firstHalf
