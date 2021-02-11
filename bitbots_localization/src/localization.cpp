@@ -44,10 +44,6 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   t_crossings_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
   crosses_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
-  reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
-
-  pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
-
   // Get field name
   std::string field;
   nh_.getParam("fieldname", field);
@@ -97,7 +93,9 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   drift_cov.col(1) *= (1 / (config.max_rotation / config.publishing_frequency));
 
   robot_motion_model_.reset(
-      new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
+      new RobotMotionModel(random_number_generator_, 
+                           config.diffusion_x_std_dev, 
+                           config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
                            config.diffusion_multiplicator,
                            drift_cov));
@@ -156,10 +154,15 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   resampling_.reset(new pf::ImportanceResampling<RobotState>());
 
   config_ = config;
+
+  ROS_INFO("Trying to initialize particle filter...");
+  reset_filter(config.init_mode);
+
   if (first_configuration_) {
     first_configuration_ = false;
-    ROS_INFO("Trying to initialize particle filter...");
-    reset_filter(config_.init_mode);
+  
+    reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+    pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
   }
 
   publishing_timer_ = nh_.createTimer(static_cast<double>(config.publishing_frequency),
@@ -294,7 +297,6 @@ void Localization::reset_filter(int distribution) {
       config_.particle_number, robot_pose_observation_model_, robot_motion_model_));
 
   robot_pf_->setResamplingStrategy(resampling_);
-
   if (distribution == 0) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_start_right_);
   } else if (distribution == 1) {
@@ -306,7 +308,6 @@ void Localization::reset_filter(int distribution) {
   } else {
     return;
   }
-
 }
 
 void Localization::reset_filter(int distribution, double x, double y) {
