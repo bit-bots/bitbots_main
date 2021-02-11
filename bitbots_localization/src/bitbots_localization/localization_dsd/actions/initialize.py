@@ -77,16 +77,16 @@ class InitPosition(AbstractInitialize):
             print(f"Service call failed: {e}")
         return self.pop()
 
-class InitSet(AbstractActionElement):
+
+class InitSide(AbstractInitialize):
     def perform(self, reevaluate=False):
-        return NotImplementedError
+        self.do_not_reevaluate()
+        rospy.logdebug("initializing on the side line of our half")
 
-class InitPlaying(AbstractActionElement):
-
-    def perform(self, reevaluate=False):
-        return NotImplementedError
-
-class InitPenalty(AbstractActionElement):
-    def perform(self, reevaluate=False):
-        return NotImplementedError
-
+        rospy.wait_for_service('bitbots_localization/reset_filter')
+        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        try:
+            resp = reset_filter_prox(0, None, None)
+        except rospy.ServiceException as e:
+            print(f"Service call failed: {e}")
+        return self.pop()
