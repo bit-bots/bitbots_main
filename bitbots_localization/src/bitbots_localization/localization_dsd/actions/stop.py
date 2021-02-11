@@ -6,7 +6,7 @@ from bitbots_localization.srv import set_paused
 class AbstractLocalizationPause(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AbstractLocalizationPause, self).__init__(blackboard, dsd, parameters=None)
+        super(AbstractLocalizationPause, self).__init__(blackboard, dsd, parameters=parameters)
         self.stop_filter_prox = rospy.ServiceProxy('bitbots_localization/pause_filter', set_paused)
 
     def set_paused(self, paused):
@@ -20,7 +20,7 @@ class AbstractLocalizationPause(AbstractActionElement):
 
 class LocalizationStop(AbstractLocalizationPause):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(LocalizationStop, self).__init__(blackboard, dsd, parameters=None)
+        super(LocalizationStop, self).__init__(blackboard, dsd, parameters=parameters)
     
     def perform(self, reevaluate=False):
         rospy.logdebug("Stop localization")
@@ -30,7 +30,7 @@ class LocalizationStop(AbstractLocalizationPause):
 
 class LocalizationStart(AbstractLocalizationPause):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(LocalizationStart, self).__init__(blackboard, dsd, parameters=None)
+        super(LocalizationStart, self).__init__(blackboard, dsd, parameters=parameters)
         
     def perform(self, reevaluate=False):
         rospy.logdebug("Start localization")
