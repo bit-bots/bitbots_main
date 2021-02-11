@@ -51,6 +51,28 @@ class CheckGettingUp(AbstractDecisionElement):
         return True
 
 
+class CheckPickup(AbstractDecisionElement):
+    """
+    Checks if robot is picked up
+    """
+
+    def perform(self, reevaluate=False):
+        self.clear_debug_data()
+
+        if self.blackboard.robot_control_state == RobotControlState.PICKED_UP:
+            self.blackboard.last_state_pickup = True
+            return "UP"
+        else:
+            if self.blackboard.last_state_pickup:
+                self.blackboard.last_state_pickup = False
+                return "JUST_DOWN"
+
+        return "DOWN"
+
+    def get_reevaluate(self):
+        return True
+
+
 class GettingUpState(AbstractDecisionElement):
     """
     Checks if the robot falls, stands up or is freshly standing
