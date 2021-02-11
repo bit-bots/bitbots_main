@@ -51,23 +51,29 @@ class CheckGettingUp(AbstractDecisionElement):
         return True
 
 
-class GotUpJustNow(AbstractDecisionElement):
+class GettingUpState(AbstractDecisionElement):
     """
-    Checks if robot state changed from getting up to something different since the last tick
+    Checks if the robot falls, stands up or is freshly standing
     """
     
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GotUpJustNow, self).__init__(blackboard, dsd, parameters)
-        self.last_state_stand_up = False
+        super(GettingUpState, self).__init__(blackboard, dsd, parameters)
+        self.get_up_states = [
+            RobotControlState.FALLING, 
+            RobotControlState.FALLEN, 
+            RobotControlState.GETTING_UP]
 
     def perform(self, reevaluate=False):
-        if self.last_state_stand_up and self.blackboard.robot_control_state != RobotControlState.GETTING_UP:
-            self.last_state_stand_up = False
-            return "YES"
+        self.clear_debug_data()
 
-        if self.blackboard.robot_control_state == RobotControlState.GETTING_UP:
-            self.last_state_stand_up = True
-            
+        if self.blackboard.robot_control_state in self.get_up_states:
+            self.blackboard.last_state_get_up = True
+            return "YES"
+        else:
+            if self.blackboard.last_state_get_up:
+                self.blackboard.last_state_get_up = False
+                return "GOTUP"
+
         return "NO"
 
     def get_reevaluate(self):

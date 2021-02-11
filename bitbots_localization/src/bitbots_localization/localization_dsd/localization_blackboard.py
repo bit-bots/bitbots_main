@@ -31,4 +31,9 @@ class LocalizationBlackboard:
         self.robot_control_state = None
         self.last_robot_control_state = None
 
+        #Get up
+        self.last_state_get_up = False
 
+        #Picked up
+        self.last_state_pickup = False
+        
