@@ -31,7 +31,7 @@ class InitPose(AbstractInitialize):
             resp = reset_filter_prox(0, None, None)
             return resp.success
         except rospy.ServiceException as e:
-            print(f"Service call failed: {e}")
+            rospy.logerr(f"Service call failed: {e}")
 
 
 class InitLeftHalf(AbstractInitialize):
@@ -43,7 +43,7 @@ class InitLeftHalf(AbstractInitialize):
             resp = reset_filter_prox(1, None, None)
             return resp.success
         except rospy.ServiceException as e:
-            print(f"Service call failed: {e}")
+            rospy.logerr(f"Service call failed: {e}")
 
 
 class InitRightHalf(AbstractInitialize):
@@ -56,7 +56,7 @@ class InitRightHalf(AbstractInitialize):
             resp = reset_filter_prox(2, None, None)
             return resp.success
         except rospy.ServiceException as e:
-            print(f"Service call failed: {e}")
+            rospy.logerr(f"Service call failed: {e}")
 
 
 class InitPosition(AbstractInitialize):
@@ -72,7 +72,7 @@ class InitPosition(AbstractInitialize):
                 self.blackboard.poseX,
                 self.blackboard.poseY)
         except rospy.ServiceException as e:
-            print(f"Service call failed: {e}")
+            rospy.logerr(f"Service call failed: {e}")
         return self.pop()
 
 
@@ -86,5 +86,5 @@ class InitSide(AbstractInitialize):
         try:
             resp = reset_filter_prox(0, None, None)
         except rospy.ServiceException as e:
-            print(f"Service call failed: {e}")
+            rospy.logerr(f"Service call failed: {e}")
         return self.pop()

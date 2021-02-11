@@ -15,7 +15,7 @@ class AbstractLocalizationPause(AbstractActionElement):
         try:
             resp = self.stop_filter_prox(paused)
         except rospy.ServiceException as e:
-            print(f"Service call failed: {e}")
+            rospy.logerr(f"Service call failed: {e}")
 
 
 class LocalizationStop(AbstractLocalizationPause):
