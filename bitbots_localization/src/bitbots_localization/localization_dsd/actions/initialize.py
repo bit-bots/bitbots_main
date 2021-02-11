@@ -26,9 +26,9 @@ class InitPose(AbstractInitialize):
     def perform(self, reevaluate=False):
         rospy.logdebug("initializing pose")
         rospy.wait_for_service('bitbots_localization/reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
-            resp = reset_filter_prox(0, None, None)
+            resp = reset_filter_proxy(0, None, None)
             return resp.success
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
@@ -38,9 +38,9 @@ class InitLeftHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
         rospy.logdebug("initializing left half")
         rospy.wait_for_service('bitbots_localization/reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
-            resp = reset_filter_prox(1, None, None)
+            resp = reset_filter_proxy(1, None, None)
             return resp.success
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
@@ -51,9 +51,9 @@ class InitRightHalf(AbstractInitialize):
         rospy.logdebug("initializing right half")
 
         rospy.wait_for_service('bitbots_localization/reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
-            resp = reset_filter_prox(2, None, None)
+            resp = reset_filter_proxy(2, None, None)
             return resp.success
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
@@ -65,9 +65,9 @@ class InitPosition(AbstractInitialize):
         rospy.logdebug("initializing position")
 
         rospy.wait_for_service('bitbots_localization/reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
-            resp = reset_filter_prox(
+            resp = reset_filter_proxy(
                 3, 
                 self.blackboard.poseX,
                 self.blackboard.poseY)
@@ -82,9 +82,9 @@ class InitSide(AbstractInitialize):
         rospy.logdebug("initializing on the side line of our half")
 
         rospy.wait_for_service('bitbots_localization/reset_filter')
-        reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
         try:
-            resp = reset_filter_prox(0, None, None)
+            resp = reset_filter_proxy(0, None, None)
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
         return self.pop()
