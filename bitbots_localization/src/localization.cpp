@@ -465,10 +465,10 @@ void Localization::publish_pose_with_covariance() {
 
   gm::PoseWithCovarianceStamped estimateMsg;
 
-  estimateMsg.pose.pose.orientation.w = q.x();
-  estimateMsg.pose.pose.orientation.x = q.y();
-  estimateMsg.pose.pose.orientation.y = q.z();
-  estimateMsg.pose.pose.orientation.z = q.w();
+  estimateMsg.pose.pose.orientation.w = q.w();
+  estimateMsg.pose.pose.orientation.x = q.x();
+  estimateMsg.pose.pose.orientation.y = q.y();
+  estimateMsg.pose.pose.orientation.z = q.z();
   estimateMsg.pose.pose.position.x = estimate_.getXPos();
   estimateMsg.pose.pose.position.y = estimate_.getYPos();
 
