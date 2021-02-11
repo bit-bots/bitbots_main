@@ -66,8 +66,6 @@ class InitPosition(AbstractInitialize):
 
         rospy.wait_for_service('bitbots_localization/reset_filter')
         reset_filter_prox = rospy.ServiceProxy('bitbots_localization/reset_filter', reset_filter)
-        print(  self.blackboard.poseX,
-                self.blackboard.poseY)
         try:
             resp = reset_filter_prox(
                 3, 
