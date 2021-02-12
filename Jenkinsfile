@@ -30,6 +30,8 @@ spec:
         stage("Update containers") {
             steps {
                 script {
+                    println "env ${env}"
+                    println "env.CHANGE_ID ${env.CHANGE_ID}"
                     def parallels = [:]
                     images.each{ folder, image_name ->
                             parallels[folder] = {
@@ -47,11 +49,12 @@ spec:
                                         }
                                     }
                                 }
-                                stage("Upload $folder Image") {
-                                    when(not(changeRequest()))
-                                    dir(folder) {
-                                        container("podman") {
-                                            sh "podman push $image_name"
+                                if (env.CHANGE_ID == null) {
+                                    stage("Upload $folder Image") {
+                                        dir(folder) {
+                                            container("podman") {
+                                                sh "podman push $image_name"
+                                            }
                                         }
                                     }
                                 }
