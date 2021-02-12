@@ -2,6 +2,7 @@
 
 def images = [
     "jenkins": "registry.bit-bots.de/jenkins",
+    "bitbots_builder": "registry.bit-bots.de/bitbots_builder"
 ]
 
 pipeline {
