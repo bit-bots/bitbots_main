@@ -34,13 +34,21 @@ spec:
                     images.each{ folder, image_name ->
                             parallels[folder] = {
                                 stage("Build $folder Image") {
-                                    dir(folder) {
-                                        container("podman") {
-                                            sh "podman build -t $image_name ."
+                                    gitStatusWrapper(
+                                        credentialsId: "github-credentials",
+                                        description: "building $folder container",
+                                        failureDescription: "could not build $folder container",
+                                        successDescription: "$folder container successfully built",
+                                        gitHubContext: "$folder") {
+                                        dir(folder) {
+                                            container("podman") {
+                                                sh "podman build -t $image_name ."
+                                            }
                                         }
                                     }
                                 }
                                 stage("Upload $folder Image") {
+                                    when(not(changeRequest()))
                                     dir(folder) {
                                         container("podman") {
                                             sh "podman push $image_name"
