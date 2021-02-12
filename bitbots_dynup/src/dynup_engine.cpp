@@ -646,13 +646,11 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_hands_front +
                                         params_.time_foot_ground_front +
                                         params_.time_torso_45 +
-                                        params_.time_to_squat +
-                                        params_.wait_in_squat_front) ||
+                                        params_.time_to_squat) ||
            (direction_ == 0 && time_ >= params_.time_legs_close +
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
-                                        params_.time_full_squat_legs  +
-                                        params_.wait_in_squat_back) ||
+                                        params_.time_full_squat_legs) ||
            (direction_ == 2) || (direction_ == 3);
 }
 

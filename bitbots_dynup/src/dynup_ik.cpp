@@ -41,7 +41,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   success = goal_state_->setFromIK(l_leg_joints_group_,
                                    left_foot_goal_msg,
-                                   0.001,
+                                   0.005,
                                    moveit::core::GroupStateValidityCallbackFn(),
                                    ik_options);
 
@@ -49,7 +49,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   success &= goal_state_->setFromIK(r_leg_joints_group_,
                                    right_foot_goal_msg,
-                                   0.001,
+                                   0.005,
                                    moveit::core::GroupStateValidityCallbackFn(),
                                    ik_options);
 
@@ -57,7 +57,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   success &= goal_state_->setFromIK(l_arm_joints_group_,
                                    left_hand_goal_msg,
-                                   0.001,
+                                   0.005,
                                    moveit::core::GroupStateValidityCallbackFn(),
                                    ik_options);
 
@@ -65,10 +65,9 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
   success &= goal_state_->setFromIK(r_arm_joints_group_,
                                    right_hand_goal_msg,
-                                   0.001,
+                                   0.005,
                                    moveit::core::GroupStateValidityCallbackFn(),
                                    ik_options);
-
   if (success) {
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = all_joints_group_->getActiveJointModelNames();
