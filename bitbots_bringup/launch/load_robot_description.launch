@@ -1,84 +1,33 @@
 <?xml version="1.0"?>
 <launch>
-    
-    <arg name="wolfgang" default="true"/>
-    <arg name="davros" default="false"/>
     <arg name="sim" default="false"/>
-    <arg name="sim_ns" default="sim_robot" />
-    <arg name="davros_length" default="0" />
-    <!-- fake walk controller for gazebo -->
-    <arg name="use_fake_walk" default="False" />
-    <!-- defines camera type -->
-    <arg name="basler" default="true" doc="Defines the robot camera type"/>
+    <arg name="sim_ns" default="/" doc="namespace for gazebo plugins" />
+    <arg name="fake_walk" default="False" doc="fake walk controller for simulation" />
 
-
-
-    <group unless="$(arg wolfgang)">
-        <group unless="$(arg davros)">
-            <node pkg="bitbots_bringup" type="launch_warning.py" name="warning">
-            </node>
-        </group>
+    <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/robot.urdf use_fake_walk:=$(arg fake_walk) sim_ns:=$(arg sim_ns)" />
+    <param name="urdf" value="$(find wolfgang_description)/urdf/robot.urdf" />
+    <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
+    <param name="robot_type_name" value="Wolfgang"/>
+    <!-- Load updated joint limits (override information from URDF) -->
+    <group ns="robot_description_planning">
+        <rosparam command="load" file="$(find wolfgang_moveit_config)/config/joint_limits.yaml"/>
     </group>
 
-
-    <group if="$(arg wolfgang)">
-        <group unless="$(arg basler)">
-            <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/wolfgang_logitech.urdf.xacro use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />                
-            <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_logitech.urdf.xacro" />
-        </group>
-        <group if="$(arg basler)">
-            <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/robot.urdf use_fake_walk:=$(arg use_fake_walk) sim_ns:=$(arg sim_ns) --inorder" />
-            <param name="urdf" value="$(find wolfgang_description)/urdf/wolfgang_basler.urdf.xacro" />
-        </group>
-        <param name="robot_description_semantic" textfile="$(find wolfgang_moveit_config)/config/wolfgang.srdf" />
-        <param name="robot_type_name" value="Wolfgang"/>
-        <!-- Load updated joint limits (override information from URDF) -->
-        <group ns="robot_description_planning">
-            <rosparam command="load" file="$(find wolfgang_moveit_config)/config/joint_limits.yaml"/>
-        </group>
-
-        <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
-        <group ns="robot_description_kinematics">
-            <rosparam command="load" file="$(find wolfgang_moveit_config)/config/kinematics.yaml"/>
-        </group>
+    <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+    <group ns="robot_description_kinematics">
+        <rosparam command="load" file="$(find wolfgang_moveit_config)/config/kinematics.yaml"/>
     </group>
-
-    <group if="$(arg davros)">
-        <param name="robot_description" command="$(find xacro)/xacro $(find davros_description)/urdf/davros.urdf.xacro sim_ns:=$(arg sim_ns) length:=$(arg davros_length) --inorder" />                
-        <param name="urdf" value="$(find davros_description)/urdf/davros.urdf.xacro" />
-        <param name="robot_description_semantic" textfile="$(find davros_moveit_config)/config/davros.srdf" />
-        <param name="robot_type_name" value="Davros"/>
-        <!-- Load updated joint limits (override information from URDF) -->
-        <group ns="robot_description_planning">
-            <rosparam command="load" file="$(find davros_moveit_config)/config/joint_limits.yaml"/>
-        </group>
-
-        <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
-        <group ns="robot_description_kinematics">
-            <rosparam command="load" file="$(find davros_moveit_config)/config/kinematics.yaml"/>
-        </group>
-    </group>
-
 
     <!-- publish tfs, change topic depending if the simulation is used -->
-    <group if="$(arg sim)">
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
-            <remap from="/joint_states" to="joint_states" />    
-        </node>
-        <param name="/simulation_active" value="true"/>
-        <param name="/use_sim_time" value="true"/>
-    </group>
-
-    <group unless="$(arg sim)">
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">        
-        </node>
-        <param name="/simulation_active" value="false"/>
-        <param name="/use_sim_time" value="false"/>
-    </group>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+        <remap if="$(arg sim)" from="/joint_states" to="joint_states" />
+    </node>
+    <param name="/simulation_active" value="$(arg sim)"/>
+    <param name="/use_sim_time" value="$(arg sim)"/>
 
     <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
 
-    <group unless="$(arg use_fake_walk)">
+    <group unless="$(arg fake_walk)">
         <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
     </group>
 
