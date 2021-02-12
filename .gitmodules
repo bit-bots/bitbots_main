@@ -1,6 +1,8 @@
 [submodule "bitbots_jenkins_library"]
 	path = bitbots_jenkins_library
 	url = git@github.com:bit-bots/bitbots_jenkins_library.git
+    branch = master
 [submodule "containers"]
 	path = containers
-	url = git@github.com:bit-bots/containers.git
+    url = git@github.com:bit-bots/containers.git
+    branch = main
