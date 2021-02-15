@@ -30,19 +30,19 @@ hcm:
     motor_off: "sit"
     init: "init"
     anim_package: "wolfgang_animations"
-    walkready_pose_threshold: 5 # [deg]
+    walkready_pose_threshold: 10 # [deg]
 
   # Falling
   stand_up_active: true # enables the robot to stand up automatically
   falling_active: true # enables the check for falling and coresponding counter meassurements
   #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
   #Grenzwerte sanfter --> zu spaete Raktion
-  falling_thresh_gyro_pitch: 7 # > gyroY
+  falling_thresh_gyro_pitch: 1 # > gyroY
   falling_thresh_gyro_roll: 7 # > gyroX
   falling_thresh_orient_roll: 60 # > Point of no return in degrees
   falling_thresh_orient_pitch: 45 # > Point of no return in degrees
   # smoothing threshold for classifier
-  smooth_threshold: 20
+  smooth_threshold: 0
 
   pick_up_accel_threshold: 7
 

@@ -23,7 +23,7 @@ class StartHCM(AbstractDecisionElement):
                 self.blackboard.current_state = STATE_SHUT_DOWN
                 return "SHUTDOWN_REQUESTED"
         else:
-            if not reevaluate:
+            if not reevaluate and False: #todo hack, walkready seems not to be correct anymore
                 if not self.is_walkready():
                     return "NOT_WALKREADY"
                 self.blackboard.current_state = STATE_STARTUP
