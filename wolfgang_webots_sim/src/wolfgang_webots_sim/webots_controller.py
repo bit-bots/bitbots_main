@@ -1,7 +1,6 @@
 import subprocess
 import time
 
-import tf
 import os
 
 from controller import Robot, Node, Supervisor, Field
@@ -15,7 +14,9 @@ from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand, FootPressure
 import math
-from tf.transformations import quaternion_from_euler
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+import transforms3d
+import numpy as np
 
 G = 9.81
 
@@ -132,45 +133,48 @@ class WebotsController:
         if self.ros_active:
             rospy.init_node("webots_ros_interface", anonymous=True,
                             argv=['clock:=/' + self.namespace + '/clock'])
-        self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
-        self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
+            self.pub_js = rospy.Publisher(self.namespace + "/joint_states", JointState, queue_size=1)
+            self.pub_imu = rospy.Publisher(self.namespace + "/imu/data", Imu, queue_size=1)
 
-        self.pub_imu_head = rospy.Publisher(self.namespace + "/imu_head/data", Imu, queue_size=1)
-        self.pub_cam = rospy.Publisher(self.namespace + "/camera/image_proc", Image, queue_size=1)
-        self.pub_cam_info = rospy.Publisher(self.namespace + "/camera_info", CameraInfo, queue_size=1, latch=True)
+            self.pub_imu_head = rospy.Publisher(self.namespace + "/imu_head/data", Imu, queue_size=1)
+            self.pub_cam = rospy.Publisher(self.namespace + "/camera/image_proc", Image, queue_size=1)
+            self.pub_cam_info = rospy.Publisher(self.namespace + "/camera_info", CameraInfo, queue_size=1, latch=True)
 
-        self.pub_pres_left = rospy.Publisher(self.namespace + "/foot_pressure_left/filtered", FootPressure,
-                                             queue_size=1)
-        self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure,
-                                              queue_size=1)
-        self.cop_l_pub_ = rospy.Publisher(self.namespace + "/cop_l", PointStamped, queue_size=1)
-        self.cop_r_pub_ = rospy.Publisher(self.namespace + "/cop_r", PointStamped, queue_size=1)
-        self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
-        rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
+            self.pub_pres_left = rospy.Publisher(self.namespace + "/foot_pressure_left/filtered", FootPressure,
+                                                queue_size=1)
+            self.pub_pres_right = rospy.Publisher(self.namespace + "/foot_pressure_right/filtered", FootPressure,
+                                                queue_size=1)
+            self.cop_l_pub_ = rospy.Publisher(self.namespace + "/cop_l", PointStamped, queue_size=1)
+            self.cop_r_pub_ = rospy.Publisher(self.namespace + "/cop_r", PointStamped, queue_size=1)
+            self.clock_publisher = rospy.Publisher(self.namespace + "/clock", Clock, queue_size=1)
+            rospy.Subscriber(self.namespace + "/DynamixelController/command", JointCommand, self.command_cb)
+
+            self.reset_service = rospy.Service("reset", Empty, self.reset)
 
         self.translation_field = self.robot_node.getField("translation")
         self.rotation_field = self.robot_node.getField("rotation")
         self.world_info = self.supervisor.getFromDef("world_info")
 
-        self.reset_service = rospy.Service("reset", Empty, self.reset)
 
         # publish camera info once, it will be latched
-        cam_info = CameraInfo()
-        cam_info.header.stamp = rospy.Time.from_seconds(self.time)
-        cam_info.header.frame_id = 'camera_optical_frame'
-        cam_info.height = self.camera.getHeight()
-        cam_info.width = self.camera.getWidth()
+        self.cam_info = CameraInfo()
+        self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
+        self.cam_info.header.frame_id = 'camera_optical_frame'
+        self.cam_info.height = self.camera.getHeight()
+        self.cam_info.width = self.camera.getWidth()
         f_y = self.mat_from_fov_and_resolution(
-            self.h_fov_to_v_fov(self.camera.getFov(), cam_info.height, cam_info.width), 
-            cam_info.height)
-        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), cam_info.width)
-        cam_info.K = [f_x, 0  , cam_info.width / 2,
-                      0  , f_x, cam_info.height / 2,
+            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width), 
+            self.cam_info.height)
+        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
+        self.cam_info.K = [f_x, 0  , self.cam_info.width / 2,
+                      0  , f_x, self.cam_info.height / 2,
                       0  , 0  , 1]
-        cam_info.P = [f_x, 0  , cam_info.width / 2  , 0,
-                      0  , f_x, cam_info.height / 2 , 0,
+        self.cam_info.P = [f_x, 0, self.cam_info.width / 2  , 0,
+                      0  , f_x, self.cam_info.height / 2 , 0,
                       0  , 0  , 1                   , 0]
-        self.pub_cam_info.publish(cam_info)
+        if self.ros_active:
+            self.pub_cam_info.publish(self.cam_info)
+        
 
     def mat_from_fov_and_resolution(self, fov, res):
         return 0.5 * res * ( math.cos((fov/2)) / math.sin((fov/2)))
@@ -354,8 +358,7 @@ class WebotsController:
             self.world_info.getField("gravity").setSFFloat(0)
 
     def reset_robot_pose(self, pos, quat):
-        rpy = tf.transformations.euler_from_quaternion(quat)
-        self.set_robot_pose_rpy(pos, rpy)
+        self.set_robot_pose_quat(pos, quat)
         self.robot_node.resetPhysics()
 
     def reset_robot_pose_rpy(self, pos, rpy):
@@ -371,105 +374,47 @@ class WebotsController:
         if s is not None:
             print(f"id: {s.getId()}, type: {s.getType()}, def: {s.getDef()}")
 
-    def set_robot_pose_rpy(self, pos, rpy):
-        if self.switch_coordinate_system:
-            self.translation_field.setSFVec3f(pos_ros_to_webots(pos))
-            self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
-        else:
-            self.translation_field.setSFVec3f([pos[0], pos[1], pos[2]])
-            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
+    def set_robot_axis_angle(self, axis, angle):
+        self.rotation_field.setSFRotation(list(np.append(axis,angle)))
 
     def set_robot_rpy(self, rpy):
-        if self.switch_coordinate_system:
-            self.rotation_field.setSFRotation(rpy_to_axis(*rpy))
-        else:
-            self.rotation_field.setSFRotation(rpy_to_axis(rpy[1], rpy[2], rpy[0]))
+        axis, angle = transforms3d.euler.euler2axangle(rpy[0], rpy[1], rpy[2], axes='sxyz')
+        self.set_robot_axis_angle(axis,angle)
+
+    def set_robot_quat(self, quat):
+        axis, angle = transforms3d.quaternions.quat2axangle([quat[3], quat[0], quat[1], quat[2]])
+        self.set_robot_axis_angle(axis, angle)
+
+    def set_robot_position(self, pos):
+        self.translation_field.setSFVec3f(list(pos))
+
+    def set_robot_pose_rpy(self, pos, rpy):
+        self.set_robot_position(pos)
+        self.set_robot_rpy(rpy)
+
+    def set_robot_pose_quat(self, pos, quat):
+        self.set_robot_position(pos)
+        self.set_robot_quat(quat)
+
+    def get_robot_position(self):
+        return self.translation_field.getSFVec3f()
+    
+    def get_robot_orientation_axangles(self):
+        return self.rotation_field.getSFRotation()
+
+    def get_robot_orientation_rpy(self):
+        ax_angle = self.get_robot_orientation_axangles()
+        return list(transforms3d.euler.axangle2euler(ax_angle[:3], ax_angle[3], axes='sxyz'))
+    
+    def get_robot_orientation_quat(self):
+        ax_angle = self.get_robot_orientation_axangles()
+        # transforms 3d uses scalar (i.e. the w part in the quaternion) first notation of quaternions, ros uses scalar last
+        quat_scalar_first = transforms3d.quaternions.axangle2quat(ax_angle[:3], ax_angle[3])
+        quat_scalar_last = np.append(quat_scalar_first[1:], quat_scalar_first[0])
+        return list(quat_scalar_last)
 
     def get_robot_pose_rpy(self):
-        pos = self.translation_field.getSFVec3f()
-        rot = self.rotation_field.getSFRotation()
-        rpy = axis_to_rpy(*rot)
-        # webots cordinate system is left-handed and depends on the robot. these values were found experimentally
-        if self.is_wolfgang:
-            rpy = (rpy[0] + math.pi / 2, -rpy[1], rpy[2])
-        if self.switch_coordinate_system:
-            return pos_webots_to_ros(pos), rpy
-        else:
-            return pos, (rpy[2], rpy[0], rpy[1])
+        return self.get_robot_position, self.get_robot_orientation_rpy
 
-
-def pos_webots_to_ros(pos):
-    x = pos[2]
-    y = pos[0]
-    z = pos[1]
-    return [x, y, z]
-
-
-def pos_ros_to_webots(pos):
-    z = pos[0]
-    x = pos[1]
-    y = pos[2]
-    return [x, y, z]
-
-
-def rpy_to_axis(z_e, x_e, y_e, normalize=True):
-    # Assuming the angles are in radians.
-    c1 = math.cos(z_e / 2)
-    s1 = math.sin(z_e / 2)
-    c2 = math.cos(x_e / 2)
-    s2 = math.sin(x_e / 2)
-    c3 = math.cos(y_e / 2)
-    s3 = math.sin(y_e / 2)
-    c1c2 = c1 * c2
-    s1s2 = s1 * s2
-    w = c1c2 * c3 - s1s2 * s3
-    x = c1c2 * s3 + s1s2 * c3
-    y = s1 * c2 * c3 + c1 * s2 * s3
-    z = c1 * s2 * c3 - s1 * c2 * s3
-    angle = 2 * math.acos(w)
-    if normalize:
-        norm = x * x + y * y + z * z
-        if norm < 0.001:
-            # when all euler angles are zero angle =0 so
-            # we can set axis to anything to avoid divide by zero
-            x = 1
-            y = 0
-            z = 0
-        else:
-            norm = math.sqrt(norm)
-            x /= norm
-            y /= norm
-            z /= norm
-    return [z, x, y, angle]
-
-
-def axis_to_rpy(x, y, z, angle):
-    s = math.sin(angle)
-    c = math.cos(angle)
-    t = 1 - c
-
-    magnitude = math.sqrt(x * x + y * y + z * z)
-    if magnitude == 0:
-        raise AssertionError
-    x /= magnitude
-    y /= magnitude
-    z /= magnitude
-    # north pole singularity
-    if (x * y * t + z * s) > 0.998:
-        yaw = 2 * math.atan2(x * math.sin(angle / 2), math.cos(angle / 2))
-        pitch = math.pi / 2
-        roll = 0
-        return roll, pitch, yaw
-
-    # south pole singularity
-    if (x * y * t + z * s) < -0.998:
-        yaw = -2 * math.atan2(x * math.sin(angle / 2), math.cos(angle / 2))
-        pitch = -math.pi / 2
-        roll = 0
-        return roll, pitch, yaw
-
-    yaw = math.atan2(y * s - x * z * t, 1 - (y * y + z * z) * t)
-    pitch = math.asin(x * y * t + z * s)
-    roll = math.atan2(x * s - y * z * t, 1 - (x * x + z * z) * t)
-
-    return roll, pitch, yaw
+    def get_robot_pose_quat(self):
+        return self.get_robot_position, self.get_robot_orientation_quat
