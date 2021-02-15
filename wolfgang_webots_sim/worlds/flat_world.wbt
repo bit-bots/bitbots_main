@@ -13,6 +13,7 @@ TexturedBackgroundLight {
 }
 DEF Robot Wolfgang {
   translation -0.967495 0.0 0.431123
+  rotation 0 1 0 0.24
   controller "<extern>"
   supervisor TRUE
 }
