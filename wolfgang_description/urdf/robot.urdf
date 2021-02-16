@@ -2004,7 +2004,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="r_hip_2"/>
     <child link="r_upper_leg"/>
-    <limit effort="7.57" lower="-1.5708" upper="0.785398" velocity="8.22"/>
+    <limit effort="7.57" lower="-2.0944" upper="1.91986" velocity="8.22"/>
     <dynamics damping="0.92" friction="0.0"/>
   </joint>
   <joint name="RHipRoll" type="revolute">
@@ -2862,7 +2862,7 @@
     <axis xyz="7.95491e-17 -3.00167e-16 -1.0"/>
     <parent link="l_hip_2"/>
     <child link="l_upper_leg"/>
-    <limit effort="7.57" lower="-0.785398" upper="1.5708" velocity="8.22"/>
+    <limit effort="7.57" lower="-1.91986" upper="2.0944" velocity="8.22"/>
     <dynamics damping="0.92" friction="0.0"/>
   </joint>
   <joint name="LHipRoll" type="revolute">
@@ -3080,7 +3080,7 @@
     <axis xyz="-0.0 -0.0 1.0"/>
     <parent link="neck"/>
     <child link="head"/>
-    <limit effort="5.43" lower="-1.5708" upper="0.523599" velocity="10.33"/>
+    <limit effort="5.43" lower="-1.5708" upper="1.0472" velocity="10.33"/>
     <dynamics damping="0.53" friction="0.0"/>
   </joint>
   <joint name="HeadPan" type="revolute">
@@ -3348,7 +3348,7 @@
       <pose>0 0 0 0 0 0</pose>
     </sensor>
   </gazebo>
-  <gazebo reference="head">
+  <gazebo reference="imu_frame_2">
     <gravity>true</gravity>
     <sensor name="imu_head" type="imu">
       <always_on>true</always_on>

@@ -282,12 +282,6 @@ PROTO Wolfgang [
           }
         ]
       }
-      Accelerometer {
-        name "imu accelerometer"
-      }
-      Gyro {
-        name "imu gyro"
-      }
       Transform {
         translation -0.037500 -0.009250 0.029500
         rotation 0.000000 0.000000 1.000000 1.570800
@@ -298,8 +292,22 @@ PROTO Wolfgang [
       }
       DEF imu_frame Solid {
         translation -0.036975 -0.047461 0.224000
-        rotation 0.000000 1.000000 0.000000 0.000000
+        rotation 0.000000 1.000000 0.000000 0.000000    
+        physics Physics {
+        }
+        boundingObject Box {
+        size 0.01 0.01 0.01
+        }
         children [
+          Accelerometer {
+            name "imu accelerometer"
+          }
+          Gyro {
+            name "imu gyro"
+          }
+          Compass {
+            name "imu compass"
+          }
         ]
         name "imu_frame"
       }
@@ -1312,8 +1320,8 @@ PROTO Wolfgang [
                       RotationalMotor {
                         name "RHipPitch"
                         maxVelocity 8.22
-                        minPosition -1.5708
-                        maxPosition 0.785398
+                        minPosition -2.0944
+                        maxPosition 1.91986
                         maxTorque 7.57
                       }
                       PositionSensor {
@@ -2390,8 +2398,8 @@ PROTO Wolfgang [
                       RotationalMotor {
                         name "LHipPitch"
                         maxVelocity 8.22
-                        minPosition -0.785398
-                        maxPosition 1.5708
+                        minPosition -1.91986
+                        maxPosition 2.0944
                         maxTorque 7.57
                       }
                       PositionSensor {
@@ -3414,7 +3422,7 @@ PROTO Wolfgang [
                   name "HeadTilt"
                   maxVelocity 10.33
                   minPosition -1.5708
-                  maxPosition 0.523599
+                  maxPosition 1.0472
                   maxTorque 5.43
                 }
                 PositionSensor {
@@ -3481,15 +3489,6 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  Accelerometer {
-                    name "imu_head accelerometer"
-                  }
-                  Gyro {
-                    name "imu_head gyro"
-                  }
-                  Compass {
-                    name "imu_head compass"
-                  }
                   DEF camera Solid {
                     translation 0.043700 0.079500 -0.023500
                     rotation -1.000000 -0.000000 -0.000000 1.570800
@@ -3511,7 +3510,23 @@ PROTO Wolfgang [
                   }
                   DEF imu_frame_2 Solid {
                     translation -0.025450 0.053500 -0.023500
-                    rotation -1.000000 -0.000000 -0.000000 1.570800
+                    rotation -1.000000 -0.000000 -0.000000 1.570800        
+                    physics Physics {
+                    }
+                    boundingObject Box {
+                    size 0.01 0.01 0.01
+                    }
+                    children [
+                      Accelerometer {
+                        name "imu_head accelerometer"
+                      }
+                      Gyro {
+                        name "imu_head gyro"
+                      }
+                      Compass {
+                        name "imu_head compass"
+                      }
+                    ]
                     name "imu_frame_2"
                   }
                 ]

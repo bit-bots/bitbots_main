@@ -231,7 +231,7 @@
 </gazebo>
 
 <!-- camera sensor -->
-<gazebo reference="camera">
+<gazebo reference="camera_optical_frame">
     <sensor name='camera' type='camera'>
       <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
       <camera name='__default__'>
@@ -286,7 +286,7 @@
         <pose>0 0 0 0 0 0</pose>
     </sensor>
 </gazebo>
-<gazebo reference="head">
+<gazebo reference="imu_frame_2">
   <gravity>true</gravity>
   <sensor name="imu_head" type="imu">
     <always_on>true</always_on>
