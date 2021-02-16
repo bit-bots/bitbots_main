@@ -29,9 +29,6 @@ class SearchRecentBall(AbstractLookAt):
         self._recent_ball_motor_goals = self._get_head_goals_for_recent_ball()
 
         self.first_perform = True
-
-        self.head_tf_frame = 
-
         # Init pattern index
         self.index = 0
 

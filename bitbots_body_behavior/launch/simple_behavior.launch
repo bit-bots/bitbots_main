@@ -1,3 +1,6 @@
 <launch>
-  <node name="simple_behavior" pkg="bitbots_body_behavior" type="backup_backup_behavior.py"  output="screen" />
+  <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+  <node name="simple_behavior" pkg="bitbots_body_behavior" type="backup_backup_behavior.py"  output="screen">
+    <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
+  </node>
 </launch>

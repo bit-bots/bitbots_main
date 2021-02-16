@@ -1,7 +1,7 @@
 <launch>
+    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
     <arg name="duty" default="TeamPlayer"/>
     <arg name="use_game_settings" default="false"/>
-
     <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml"/>
     <rosparam command="load" file="$(find bitbots_body_behavior)/config/animations.yaml"/>
     <group if="$(arg use_game_settings)">
@@ -10,6 +10,10 @@
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
     <node name="body_behavior" pkg="bitbots_body_behavior" type="body_behavior.py"   output="screen">
-        <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml"/>
+        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+        <param name="map_frame" value="$(arg tf_prefix)map"/>
+        <param name="ball_frame" value="$(arg tf_prefix)ball"/>
+        <param name="ball_approach_frame" value="$(arg tf_prefix)ball_approach_frame"/>
+        <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
     </node>
 </launch>

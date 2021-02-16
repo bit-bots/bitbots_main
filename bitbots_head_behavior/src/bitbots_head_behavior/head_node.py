@@ -46,11 +46,11 @@ def init():
     rospy.Subscriber("balls_relative", PoseWithCertaintyArray, blackboard.world_model.balls_callback)
     rospy.Subscriber('joint_states', JointState, blackboard.head_capsule.joint_state_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
-    blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher( blackboard.config['visual_compass_trigger_topic'], Header, queue_size=5)
+    blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher(blackboard.config['visual_compass_trigger_topic'], Header, queue_size=5)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
-    dsd = DSD(blackboard, '/debug/dsd/head_behavior')
+    dsd = DSD(blackboard, 'debug/dsd/head_behavior')
     dsd.register_actions(os.path.join(dirname, 'actions'))
     dsd.register_decisions(os.path.join(dirname, 'decisions'))
     dsd.load_behavior(os.path.join(dirname, 'head_behavior.dsd'))

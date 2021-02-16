@@ -28,5 +28,5 @@ class HeadBlackboard:
         self.config = rospy.get_param("behavior/head")
         self.head_capsule = HeadCapsule(self)
         self.world_model = WorldModelCapsule()
-        rospy.wait_for_service('/bio_ik/get_bio_ik')
-        self.bio_ik = rospy.ServiceProxy('/bio_ik/get_bio_ik', GetIK)
+        rospy.wait_for_service('bio_ik/get_bio_ik')
+        self.bio_ik = rospy.ServiceProxy('bio_ik/get_bio_ik', GetIK)
