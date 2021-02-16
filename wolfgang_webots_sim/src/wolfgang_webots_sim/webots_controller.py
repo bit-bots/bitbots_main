@@ -62,7 +62,7 @@ class WebotsController:
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
-            pressure_sensor_names = ["LLB", "LLF", "LRF", "LRB", "RLB", "RLF", "RRF", "RRB"]
+            pressure_sensor_names = ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
             for name in pressure_sensor_names:
                 sensor = self.supervisor.getTouchSensor(name)
@@ -123,9 +123,9 @@ class WebotsController:
         self.gyro = self.supervisor.getGyro(gyro_name)
         self.gyro.enable(self.timestep)
         if self.is_wolfgang:
-            self.accel_head = self.supervisor.getAccelerometer(accel_name+" 2")
+            self.accel_head = self.supervisor.getAccelerometer("imu_head accelerometer")
             self.accel_head.enable(self.timestep)
-            self.gyro_head = self.supervisor.getGyro(gyro_name+" 2")
+            self.gyro_head = self.supervisor.getGyro("imu_head gyro")
             self.gyro_head.enable(self.timestep)
         self.camera = self.supervisor.getCamera(camera_name)
         self.camera.enable(self.timestep)
@@ -414,7 +414,7 @@ class WebotsController:
         return list(quat_scalar_last)
 
     def get_robot_pose_rpy(self):
-        return self.get_robot_position, self.get_robot_orientation_rpy
+        return self.get_robot_position(), self.get_robot_orientation_rpy()
 
     def get_robot_pose_quat(self):
-        return self.get_robot_position, self.get_robot_orientation_quat
+        return self.get_robot_position(), self.get_robot_orientation_quat()
