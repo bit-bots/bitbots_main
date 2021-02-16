@@ -13,6 +13,7 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>bitbots_docs</depend>
 
   <export>
     <bitbots_documentation>
