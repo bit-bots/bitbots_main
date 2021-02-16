@@ -21,7 +21,7 @@
 
     <!-- publish tfs, change topic depending if the simulation is used -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
-        <remap if="$(arg sim)" from="/joint_states" to="joint_states" />
+        <param name="tf_prefix" value="$(optenv ROS_NAMESPACE)"/>
     </node>
     <param name="/simulation_active" value="$(arg sim)"/>
     <param name="/use_sim_time" value="$(arg sim)"/>
