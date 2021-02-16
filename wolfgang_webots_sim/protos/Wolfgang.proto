@@ -14,6 +14,7 @@ PROTO Wolfgang [
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
   field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
+  field  SFFloat     cameraFOV       1.04
 ]
 {
   Robot {
@@ -3501,7 +3502,7 @@ PROTO Wolfgang [
                       Camera {
                         rotation 1.0 0.0 0.0 3.141591
                         name "camera"
-                        fieldOfView 0.570000
+                        fieldOfView IS cameraFOV
                         width 620
                         height 480
                       }
