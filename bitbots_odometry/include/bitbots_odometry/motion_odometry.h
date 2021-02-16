@@ -19,6 +19,7 @@ class MotionOdometry {
   nav_msgs::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
   tf2_ros::Buffer tf_buffer_;
+  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
 
   void supportCallback(std_msgs::Char msg);
   void jointStateCb(const sensor_msgs::JointState &msg);
