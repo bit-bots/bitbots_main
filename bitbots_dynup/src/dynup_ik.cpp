@@ -87,11 +87,11 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
         else if(result.first[i] ==  "HeadTilt") {
             if (direction_ == "front")
             {
-                result.second[i] = 45;
+                result.second[i] = 0.785398;
             }
             else if (direction_ == "back")
             {
-                result.second[i] = -45;
+                result.second[i] = -0.785398;
             }
             else
             {
