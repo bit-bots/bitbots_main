@@ -1,38 +1,41 @@
+<?xml version="1.0"?>
 <launch>
     <arg name="robot_ns" default="robot"/>
     <arg name="sim" default="false"/>
-    <arg name="motion" default="true"/>
-    <arg name="behave" default="true"/>
-    <arg name="vision" default="true"/>
-    <arg name="teamcom" default="false"/>
-    <arg name="localization" default="false"/>
-    <arg name="simple" default="false"/>  <!-- whether to use the simple behavior -->
-    <arg name="gazebo" default="false"/>
-    <!-- defines camera type -->
-    <arg name="basler" default="true" doc="Defines the robot camera type"/>
-    <arg name="gamecontroller" default="true" doc="Sets whether the Gamecontroller should be started"/>
-
     <arg name="use_game_settings" default="true"/>
+    <arg name="motion" default="true"/>
+    <arg name="behavior" default="true"/>
+    <arg name="simple" default="false" doc="whether to use the simple behavior" />
+    <arg name="game_controller" default="true" doc="Sets whether the Gamecontroller should be started"/>
+    <arg name="localization" default="false"/>
+    <arg name="teamcom" default="false"/>
+    <arg name="vision" default="true"/>
 
+    <!-- load the robot description -->
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
+        <arg name="sim" value="$(arg sim)" />
+    </include>
 
-    <group unless="$(arg gazebo)" ns="$(arg robot_ns)" >
-        <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
-            <arg name="sim" value="$(arg sim)" />
-            <arg name="basler" value="$(arg basler)" />
+    <!-- load the motion -->
+    <group if="$(arg motion)">
+        <include file="$(find bitbots_bringup)/launch/motion.launch">
+            <arg name="sim" value="$(arg sim)"/>
+            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
     </group>
 
-    <include file="$(find bitbots_bringup)/launch/highlevel.launch" ns="$(arg robot_ns)">
-        <arg name="basler" value="$(arg basler)" />
-        <arg name="sim" value="$(arg sim)" />
-        <arg name="behave" value="$(arg behave)" />
-        <arg name="vision" value="$(arg vision)" />
-        <arg name="teamcom" value="$(arg teamcom)" />
+    <!-- load the highlevel stuff -->
+    <include file="$(find bitbots_bringup)/launch/highlevel.launch">
+        <arg name="behavior" value="$(arg behavior)" />
+        <arg name="game_controller" value="$(arg game_controller)" />
         <arg name="localization" value="$(arg localization)" />
+        <arg name="sim" value="$(arg sim)" />
         <arg name="simple" value="$(arg simple)" />
-        <arg name="gamecontroller" value="$(arg gamecontroller)" />
+        <arg name="teamcom" value="$(arg teamcom)" />
+        <arg name="vision" value="$(arg vision)" />
     </include>
 
+<<<<<<< HEAD
     <include file="$(find bitbots_bringup)/launch/tools.launch" ns="$(arg robot_ns)"/>
 
     <group if="$(arg motion)" ns="$(arg robot_ns)">
@@ -41,4 +44,8 @@
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
     </group>
+=======
+    <!-- load some monitoring tools -->
+    <include file="$(find bitbots_bringup)/launch/tools.launch" />
+>>>>>>> master
 </launch>
