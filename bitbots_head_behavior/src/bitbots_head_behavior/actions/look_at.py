@@ -13,7 +13,8 @@ class AbstractLookAt(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
-        self.head_tf_frame = 'base_link'  # base_link is required by bio_ik
+        self.head_tf_frame = rospy.get_param('~base_link_frame', 'base_link')  # base_link is required by bio_ik
+        self.camera_frame = rospy.get_param('~camera_frame', 'camera')
         self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
@@ -22,7 +23,7 @@ class AbstractLookAt(AbstractActionElement):
         self.request.timeout.secs = 1
         self.request.approximate = True
         self.request.look_at_goals.append(LookAtGoal())
-        self.request.look_at_goals[0].link_name = "camera"
+        self.request.look_at_goals[0].link_name = self.camera_frame
         self.request.look_at_goals[0].weight = 1
         self.request.look_at_goals[0].axis.x = 1
 

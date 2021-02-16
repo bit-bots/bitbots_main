@@ -12,9 +12,9 @@ from tf2_geometry_msgs import PointStamped
 if __name__ == "__main__":
     rospy.init_node('test_look_at')
 
-    base_footprint_frame = rospy.get_param('base_footprint_frame')
-    camera_frame = rospy.get_param('camera_frame')
-    base_link_frame = rospy.get_param('base_link_frame')
+    base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
+    camera_frame = rospy.get_param('~camera_frame', 'camera')
+    base_link_frame = rospy.get_param('~base_link_frame', 'base_link')
 
     head_tf_frame = base_link_frame
     tf_buffer = tf2.Buffer(rospy.Duration(5))

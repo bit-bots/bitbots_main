@@ -1,4 +1,5 @@
 <launch>
+    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
     <arg name="depends_only" default="false" />
     <arg name="use_game_settings" default="false"/>
 
@@ -10,5 +11,8 @@
 
     <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service"  output="screen"/>
 
-    <node unless="$(arg depends_only)" name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py"  output="screen"/>
+    <node unless="$(arg depends_only)" name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py"  output="screen">
+        <param name="camera_frame" value="$(arg tf_prefix)camera"/>
+        <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
+    </node>
 </launch>

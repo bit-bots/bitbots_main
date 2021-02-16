@@ -9,5 +9,7 @@
     </group>
     <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
     <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
-    <node name="body_behavior" pkg="bitbots_body_behavior" type="body_behavior.py"   output="screen" />
+    <node name="body_behavior" pkg="bitbots_body_behavior" type="body_behavior.py"   output="screen">
+        <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml"/>
+    </node>
 </launch>

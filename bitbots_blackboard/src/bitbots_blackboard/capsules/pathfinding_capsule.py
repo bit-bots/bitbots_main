@@ -9,7 +9,7 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 class PathfindingCapsule:
     def __init__(self):
-        self.map_frame = rospy.get_param('map_frame')
+        self.map_frame = rospy.get_param('~map_frame', 'map')
         # Thresholds to determine whether the transmitted goal is a new one
         self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(2))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)

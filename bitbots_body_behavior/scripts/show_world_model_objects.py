@@ -35,6 +35,8 @@ class ShowWorldModelObjects:
         position.orientation.y = 0.0
         position.orientation.z = 0.0
 
+        self.base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
+
         # init ball marker
         self.marker_ball = Marker()  # type: Marker
         self.marker_ball.id = 0
@@ -139,17 +141,16 @@ class ShowWorldModelObjects:
         while not rospy.is_shutdown():
             # This is right now not necessary as the ball_kick_area is defined relative to the base_footprint.
             try:
-                current_base_link_pose = self.tfBuffer.lookup_transform('base_footprint', 'base_footprint',
+                current_base_link_pose = self.tfBuffer.lookup_transform(self.base_footprint_frame, self.base_footprint_frame,
                                                                         rospy.Time())
             except (tf2_ros.LookupException, tf2_ros.ExtrapolationException, tf2_ros.ConnectivityException):
                 continue
 
             # set stamp and frame_id
             self.marker_kick_area_right.header.stamp = rospy.Time.now()
-            self.marker_kick_area_right.header.frame_id = 'base_footprint'
+            self.marker_kick_area_right.header.frame_id = self.base_footprint_frame
             self.marker_kick_area_left.header.stamp = rospy.Time.now()
-            self.marker_kick_area_left.header.frame_id = 'base_footprint'
-
+            self.marker_kick_area_left.header.frame_id = self.base_footprint_frame
             # set corners of the two square markers
             kick_areas = []
             for i in range(2):

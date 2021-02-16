@@ -30,6 +30,8 @@ class SearchRecentBall(AbstractLookAt):
 
         self.first_perform = True
 
+        self.head_tf_frame = 
+
         # Init pattern index
         self.index = 0
 

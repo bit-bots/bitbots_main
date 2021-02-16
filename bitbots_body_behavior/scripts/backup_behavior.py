@@ -43,6 +43,8 @@ class Behavior(object):
         self.kick_behavior = True
         # Turn torwards the goal
         self.goal_behavior = True
+
+        self.base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
         
         rospy.init_node('backup_backup_behavior')
 
@@ -160,7 +162,7 @@ class Behavior(object):
     def get_ball_position_uv(self, ball):
         # Transforms to the base_footprint
         try:
-            ball = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.3))
+            ball = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=rospy.Duration(0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return None

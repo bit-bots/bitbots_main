@@ -38,11 +38,11 @@ class WorldModelCapsule:
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
-        self.odom_frame = rospy.get_param('odom_frame')
-        self.map_frame = rospy.get_param('map_frame')
-        self.ball_frame = rospy.get_param('ball_frame')
-        self.ball_approach_frame = rospy.get_param('ball_approach_frame')
-        self.base_footprint_frame = rospy.get_param('base_footprint_frame')
+        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
+        self.map_frame = rospy.get_param('~map_frame', 'map')
+        self.ball_frame = rospy.get_param('~ball_frame', 'ball')
+        self.ball_approach_frame = rospy.get_param('~ball_approach_frame', 'ball_approach_frame')
+        self.base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
 
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
