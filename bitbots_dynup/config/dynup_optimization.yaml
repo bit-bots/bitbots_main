@@ -2,28 +2,26 @@ dynup:
   # necessary to provide
   engine_rate: 240
 
-
-  "arm_side_offset": 0.09
-  "leg_min_length": 0.209
-  "max_leg_angle": 25.21
-  "rise_time": 1.012
-  "time_foot_close": 0.02
-  "time_foot_ground_front": 0.136
-  "time_hands_front": 0.204
-  "time_hands_rotate": 0.104
-  "time_hands_side": 0.176
-  "time_to_squat": 0.64
+  "arm_side_offset": 0.107
+  "leg_min_length": 0.233
+  "max_leg_angle": 34.32
+  "rise_time": 0.684
+  "time_foot_close": 0.124
+  "time_foot_ground_front": 0.08
+  "time_hands_front": 0.316
+  "time_hands_rotate": 0.26
+  "time_hands_side": 0.136
+  "time_to_squat": 0.496
   "time_torso_45": 0.052
-  "trunk_overshoot_angle_front": -47.99
-  "trunk_x_front": -0.005
-  "wait_in_squat_front": 0.412
+  "trunk_overshoot_angle_front": -20.77
+  "trunk_x_front": 0.1
+  "wait_in_squat_front": 0.036
   "foot_distance": 0.2
   "hand_walkready_pitch": -60
   "stabilizing": False
   "trunk_height": 0.4
   "trunk_pitch": 0
   "trunk_x_final": 0
-
 
   pid_trunk_roll:
     p: 0.0

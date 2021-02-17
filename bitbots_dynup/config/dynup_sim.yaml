@@ -2,9 +2,9 @@ dynup:
   # Engine
   engine_rate: 240
   foot_distance: 0.2
-  leg_min_length: 0.21
-  arm_side_offset: 0.05
-  trunk_x: -0.05
+  leg_min_length: 0.22
+  arm_side_offset: 0.12
+  trunk_x_final: 0
   hand_walkready_pitch: -60
 
   # Back
@@ -21,19 +21,21 @@ dynup:
   wait_in_squat_back: 0.1
 
   # Front
-  max_leg_angle: 60
-  trunk_overshoot_angle_front: -30
-  time_hands_side: 0.2
-  time_hands_rotate: 0.2
-  time_foot_close: 0.0
-  time_hands_front: 0.2
-  time_foot_ground_front: 0 # do at same time as time_hands_front
-  time_torso_45: 0.25
-  time_to_squat: 0.1
+  trunk_x_front: 0.0
+  max_leg_angle: 70
+  trunk_overshoot_angle_front: 10
+  hands_pitch: -45
+  time_hands_side: 1
+  time_hands_rotate: 1
+  time_foot_close: 1
+  time_hands_front: 1
+  time_foot_ground_front: 1 # do at same time as time_hands_front
+  time_torso_45: 1
+  time_to_squat: 1
   wait_in_squat_front: 1
 
   # Rise
-  rise_time: 0.5
+  rise_time: 1
   trunk_height: 0.4
   trunk_pitch: 0
 
