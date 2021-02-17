@@ -6,6 +6,11 @@ Description
 
 |description|
 
+Particle out of map decay
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The weight of pose_particles outside of the field is decreased because the robot should never expect to be there.
+
 .. toctree::
    :maxdepth: 2
 
