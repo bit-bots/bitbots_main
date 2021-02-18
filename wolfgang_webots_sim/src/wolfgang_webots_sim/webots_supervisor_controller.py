@@ -53,16 +53,18 @@ class SupervisorController:
 
         # check if None
         for name in self.robot_names:
-            self.robot_nodes[name] = self.supervisor.getFromDef(name)
-            if self.robot_nodes[name] is not None:
-                self.translation_fields[name] = self.robot_nodes[name].getField("translation")
-                self.rotation_fields[name] = self.robot_nodes[name].getField("rotation")
+            node = self.supervisor.getFromDef(name)
+            if node is not None:
+                self.robot_nodes[name] = node
+                self.translation_fields[name] = node.getField("translation")
+                self.rotation_fields[name] = node.getField("rotation")
 
         if self.ros_active:
             rospy.init_node("webots_ros_supervisor", anonymous=True,
                             argv=['clock:=/clock'])
             self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
             self.reset_service = rospy.Service("reset", Empty, self.reset)
+            self.initial_poses_service = rospy.Service("initial_pose", Empty, self.set_initial_poses)
 
         self.world_info = self.supervisor.getFromDef("world_info")
 
@@ -88,18 +90,26 @@ class SupervisorController:
             self.world_info.getField("gravity").setSFFloat(0)
 
     def reset_robot_pose(self, pos, quat, name="amy"):
-        self.set_robot_pose_quat(pos, quat)
+        self.set_robot_pose_quat(pos, quat, name)
         if name in self.robot_nodes:
             self.robot_nodes[name].resetPhysics()
 
     def reset_robot_pose_rpy(self, pos, rpy, name="amy"):
-        self.set_robot_pose_rpy(pos, rpy)
+        self.set_robot_pose_rpy(pos, rpy, name)
         if name in self.robot_nodes:
             self.robot_nodes[name].resetPhysics()
 
     def reset(self, req=None):
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
+
+    def set_initial_poses(self, req=None):
+        print(self.robot_nodes)
+        self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
+        self.reset_robot_pose_rpy([-1, -3, 0.42], [0, 0.24, 1.57], name="rory")
+        self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
+        self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
+        self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
 
     def node(self):
         s = self.supervisor.getSelected()
