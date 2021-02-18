@@ -41,12 +41,8 @@ for i in range(2):
     print("python3 " + os.path.dirname(sys.argv[0]) + "/single_robot.py --robot_name " + robot_names[i])
     sub_processes = subprocess.Popen(["python3", os.path.dirname(sys.argv[0]) + "/single_robot.py", "--robot_name", robot_names[i]])
 
-print("subcontrollers started")
 os.environ["WEBOTS_ROBOT_NAME"] = "supervisor_robot"
-os.environ["ROS_NAMESPACE"] = "supervisor_robot"
 supervisor_controller = SupervisorController(True)
-print("supervisor controllers started")
 
 while not rospy.is_shutdown():
     supervisor_controller.step()
-
