@@ -9,7 +9,7 @@ else()
     find_package(Boost REQUIRED COMPONENTS python)
 endif()
 
-find_package (PythonLibs COMPONENTS Interpreter Development)
+find_package(PythonLibs COMPONENTS Interpreter Development)
 find_package(catkin REQUIRED COMPONENTS std_msgs bitbots_docs moveit_core moveit_ros_robot_interaction moveit_ros_move_group)
 
 catkin_python_setup()

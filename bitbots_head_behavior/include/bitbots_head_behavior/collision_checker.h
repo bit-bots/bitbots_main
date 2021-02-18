@@ -1,4 +1,3 @@
-
 #include <Python.h>
 #include <boost/python.hpp>
 #include <ros/ros.h>
