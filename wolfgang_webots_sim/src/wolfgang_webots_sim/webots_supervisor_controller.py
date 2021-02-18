@@ -1,5 +1,6 @@
 from controller import Robot, Node, Supervisor, Field
 
+import os
 import rospy
 from geometry_msgs.msg import Quaternion, PointStamped
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
@@ -25,9 +26,10 @@ class SupervisorController:
         self.supervisor = Supervisor()
         self.amy_node = self.supervisor.getFromDef("amy")
         self.rory_node = self.supervisor.getFromDef("rory")
-        #self.jack_node = self.supervisor.getFromDef("jack")
-        #self.donna_node = self.supervisor.getFromDef("donna")
-        #self.melody_node = self.supervisor.getFromDef("melody")
+        self.jack_node = self.supervisor.getFromDef("jack")
+        self.donna_node = self.supervisor.getFromDef("donna")
+        self.melody_node = self.supervisor.getFromDef("melody")
+
         if mode == 'normal':
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
         elif mode == 'paused':
@@ -43,6 +45,9 @@ class SupervisorController:
         self.sensors = []
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
+        # resolve the node for corresponding name
+        self.robot_nodes = {"amy": self.amy_node, "rory": self.rory_node, "jack": self.jack_node, "donna": self.donna_node, "melody": self.melody_node}
+
         self.robot_name = robot_name
         self.switch_coordinate_system = True
         self.is_wolfgang = False
@@ -54,13 +59,17 @@ class SupervisorController:
             self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
             self.reset_service = rospy.Service("reset", Empty, self.reset)
 
-        self.translation_field = self.robot_node.getField("translation")
-        self.rotation_field = self.robot_node.getField("rotation")
+        self.translation_field = self.name_to_node().getField("translation")
+        self.rotation_field = self.name_to_node().getField("rotation")
         self.world_info = self.supervisor.getFromDef("world_info")
+
+    def name_to_node(self):
+        return self.robot_nodes[os.environ["WEBOTS_ROBOT_NAME"]]
+
 
     def step_sim(self):
         self.time += self.timestep / 1000
-        self.robot_node.step(self.timestep)
+        self.name_to_node().step(self.timestep)
 
     def step(self):
         self.step_sim()
@@ -81,11 +90,11 @@ class SupervisorController:
 
     def reset_robot_pose(self, pos, quat):
         self.set_robot_pose_quat(pos, quat)
-        self.robot_node.resetPhysics()
+        self.name_to_node().resetPhysics()
 
     def reset_robot_pose_rpy(self, pos, rpy):
         self.set_robot_pose_rpy(pos, rpy)
-        self.robot_node.resetPhysics()
+        self.name_to_node().resetPhysics()
 
     def reset(self, req=None):
         self.supervisor.simulationReset()
