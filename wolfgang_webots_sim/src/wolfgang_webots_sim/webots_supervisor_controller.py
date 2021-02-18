@@ -16,7 +16,7 @@ G = 9.81
 
 
 class SupervisorController:
-    def __init__(self, robot_name='', ros_active=False, mode='normal', robot='wolfgang'):
+    def __init__(self, ros_active=False, mode='normal'):
         # requires WEBOTS_ROBOT_NAME to be set to "amy" or "rory"
         self.ros_active = ros_active
         self.time = 0
@@ -43,24 +43,19 @@ class SupervisorController:
         self.sensors = []
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
-        self.robot_name = robot_name
-        self.switch_coordinate_system = True
-        self.is_wolfgang = False
-        self.pressure_sensors = None
-
         if self.ros_active:
             rospy.init_node("webots_ros_supervisor", anonymous=True,
                             argv=['clock:=/clock'])
             self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
             self.reset_service = rospy.Service("reset", Empty, self.reset)
 
-        self.translation_field = self.robot_node.getField("translation")
-        self.rotation_field = self.robot_node.getField("rotation")
-        self.world_info = self.supervisor.getFromDef("world_info")
+        #self.translation_field = self.robot_node.getField("translation")
+        #self.rotation_field = self.robot_node.getField("rotation")
+        #self.world_info = self.supervisor.getFromDef("world_info")
 
     def step_sim(self):
         self.time += self.timestep / 1000
-        self.robot_node.step(self.timestep)
+        self.supervisor.step(self.timestep)
 
     def step(self):
         self.step_sim()
