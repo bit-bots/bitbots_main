@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 
 import rospkg
 import rospy
@@ -10,6 +11,8 @@ import argparse
 
 from wolfgang_webots_sim.utils import fix_webots_folder
 from wolfgang_webots_sim.webots_controller import WebotsController
+from wolfgang_webots_sim.webots_robot_controller import RobotController
+from wolfgang_webots_sim.webots_supervisor_controller import SupervisorController
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--nogui', help="Deactivate gui", action='store_true')
@@ -33,7 +36,17 @@ sim_proc = subprocess.Popen(arguments)
 os.environ["WEBOTS_PID"] = str(sim_proc.pid)
 fix_webots_folder(sim_proc.pid)
 
-robot_controller = WebotsController('', True, mode=mode)
+robot_names = ["amy", "rory", "jack", "donna", "melody"]
+for i in range(2):
+    print("python3 " + os.path.dirname(sys.argv[0]) + "/single_robot.py --robot_name " + robot_names[i])
+    sub_processes = subprocess.Popen(["python3", os.path.dirname(sys.argv[0]) + "/single_robot.py", "--robot_name", robot_names[i]])
+
+print("subcontrollers started")
+os.environ["WEBOTS_ROBOT_NAME"] = "supervisor_robot"
+os.environ["ROS_NAMESPACE"] = "supervisor_robot"
+supervisor_controller = SupervisorController(True)
+print("supervisor controllers started")
 
 while not rospy.is_shutdown():
-    robot_controller.step()
+    supervisor_controller.step()
+

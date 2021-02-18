@@ -1,42 +1,30 @@
-from controller import Robot, Node, Supervisor, Field
+from controller import Robot, Node, Field
 
 import rospy
-from geometry_msgs.msg import Quaternion, PointStamped
+from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
-
-from rosgraph_msgs.msg import Clock
-from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand, FootPressure
 import math
-import transforms3d
-import numpy as np
-
-G = 9.81
 
 
-class WebotsController:
-    def __init__(self, robot_name='', ros_active=False, mode='normal', robot='wolfgang'):
+class RobotController:
+    def __init__(self, ros_active=False, robot='wolfgang'):
         # requires WEBOTS_ROBOT_NAME to be set to "amy" or "rory"
         self.ros_active = ros_active
-        self.time = 0
-        self.clock_msg = Clock()
-        #self.supervisor = Supervisor()
         self.robot_node = Robot()
         self.walkready = [0] * 20
+        self.time = 0
 
         self.motors = []
         self.sensors = []
         self.timestep = int(self.robot_node.getBasicTimeStep())
 
-
-        self.robot_name = robot_name
         self.switch_coordinate_system = True
         self.is_wolfgang = False
         self.pressure_sensors = None
         if robot == 'wolfgang':
             self.is_wolfgang = True
-            self.robot_node_name = robot_name
             self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
                                 "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch",
                                 "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan",
@@ -54,7 +42,6 @@ class WebotsController:
                 self.pressure_sensors.append(sensor)
 
         elif robot == 'darwin':
-            self.robot_node_name = "Darwin"
             self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                 "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
                                 "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
@@ -67,7 +54,6 @@ class WebotsController:
             gyro_name = "Gyro"
             camera_name = "Camera"
         elif robot == 'nao':
-            self.robot_node_name = "Robot"
             self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbowYaw",
                                 "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch",
                                 "LHipPitch",
@@ -81,7 +67,6 @@ class WebotsController:
             camera_name = "CameraTop"
             self.switch_coordinate_system = False
         elif robot == 'op3':
-            self.robot_node_name = "Robot"
             self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                 "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
                                 "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
@@ -95,7 +80,7 @@ class WebotsController:
             camera_name = "Camera"
             self.switch_coordinate_system = False
 
-        #self.robot_node = self.supervisor.getFromDef(self.robot_node_name)
+        # self.robot_node = self.supervisor.getFromDef(self.robot_node_name)
         for motor_name in self.motor_names:
             self.motors.append(self.robot_node.getMotor(motor_name))
             self.motors[-1].enableTorqueFeedback(self.timestep)
@@ -130,13 +115,7 @@ class WebotsController:
                                                   queue_size=1)
             self.cop_l_pub_ = rospy.Publisher("cop_l", PointStamped, queue_size=1)
             self.cop_r_pub_ = rospy.Publisher("cop_r", PointStamped, queue_size=1)
-            self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
             rospy.Subscriber("DynamixelController/command", JointCommand, self.command_cb)
-            self.reset_service = rospy.Service("reset", Empty, self.reset)
-
-        #self.translation_field = self.robot_node.getField("translation")
-        #self.rotation_field = self.robot_node.getField("rotation")
-        #self.world_info = self.supervisor.getFromDef("world_info")
 
 
         # publish camera info once, it will be latched
@@ -146,21 +125,20 @@ class WebotsController:
         self.cam_info.height = self.camera.getHeight()
         self.cam_info.width = self.camera.getWidth()
         f_y = self.mat_from_fov_and_resolution(
-            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width), 
+            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
             self.cam_info.height)
         f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-        self.cam_info.K = [f_x, 0  , self.cam_info.width / 2,
-                      0  , f_x, self.cam_info.height / 2,
-                      0  , 0  , 1]
-        self.cam_info.P = [f_x, 0, self.cam_info.width / 2  , 0,
-                      0  , f_x, self.cam_info.height / 2 , 0,
-                      0  , 0  , 1                   , 0]
+        self.cam_info.K = [f_x, 0, self.cam_info.width / 2,
+                           0, f_y, self.cam_info.height / 2,
+                           0, 0, 1]
+        self.cam_info.P = [f_x, 0, self.cam_info.width / 2, 0,
+                           0, f_y, self.cam_info.height / 2, 0,
+                           0, 0, 1, 0]
         if self.ros_active:
             self.pub_cam_info.publish(self.cam_info)
-        
 
     def mat_from_fov_and_resolution(self, fov, res):
-        return 0.5 * res * ( math.cos((fov/2)) / math.sin((fov/2)))
+        return 0.5 * res * (math.cos((fov / 2)) / math.sin((fov / 2)))
 
     def h_fov_to_v_fov(self, h_fov, height, width):
         return 2 * math.atan(math.tan(h_fov * 0.5) * (height / width))
@@ -176,11 +154,6 @@ class WebotsController:
             self.publish_joint_states()
             self.publish_camera()
             self.publish_pressure()
-            self.publish_clock()
-
-    def publish_clock(self):
-        self.clock_msg.clock = rospy.Time.from_seconds(self.time)
-        self.clock_publisher.publish(self.clock_msg)
 
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
@@ -245,10 +218,6 @@ class WebotsController:
             msg.angular_velocity.x = gyro_vels[0]
             msg.angular_velocity.y = gyro_vels[1]
             msg.angular_velocity.z = gyro_vels[2]
-
-        #pos, rpy = self.get_robot_pose_rpy()
-        #quat_tf = quaternion_from_euler(*rpy)
-        #msg.orientation = Quaternion(quat_tf[0], quat_tf[1], quat_tf[2], quat_tf[3])
         return msg
 
     def publish_imu(self):
@@ -331,73 +300,3 @@ class WebotsController:
         self.pub_pres_right.publish(right)
         self.cop_l_pub_.publish(cop_l)
         self.cop_r_pub_.publish(cop_r)
-
-    def set_gravity(self, active):
-        if active:
-            self.world_info.getField("gravity").setSFVec3f([0.0, -9.81, 0.0])
-            self.world_info.getField("gravity").setSFFloat(9.81)
-        else:
-            self.world_info.getField("gravity").setSFVec3f([0.0, 0.0, 0.0])
-            self.world_info.getField("gravity").setSFFloat(0)
-
-    def reset_robot_pose(self, pos, quat):
-        self.set_robot_pose_quat(pos, quat)
-        self.robot_node.resetPhysics()
-
-    def reset_robot_pose_rpy(self, pos, rpy):
-        self.set_robot_pose_rpy(pos, rpy)
-        self.robot_node.resetPhysics()
-
-    def reset(self, req=None):
-        self.supervisor.simulationReset()
-        self.supervisor.simulationResetPhysics()
-
-    def node(self):
-        s = self.supervisor.getSelected()
-        if s is not None:
-            print(f"id: {s.getId()}, type: {s.getType()}, def: {s.getDef()}")
-
-    def set_robot_axis_angle(self, axis, angle):
-        self.rotation_field.setSFRotation(list(np.append(axis,angle)))
-
-    def set_robot_rpy(self, rpy):
-        axis, angle = transforms3d.euler.euler2axangle(rpy[0], rpy[1], rpy[2], axes='sxyz')
-        self.set_robot_axis_angle(axis,angle)
-
-    def set_robot_quat(self, quat):
-        axis, angle = transforms3d.quaternions.quat2axangle([quat[3], quat[0], quat[1], quat[2]])
-        self.set_robot_axis_angle(axis, angle)
-
-    def set_robot_position(self, pos):
-        self.translation_field.setSFVec3f(list(pos))
-
-    def set_robot_pose_rpy(self, pos, rpy):
-        self.set_robot_position(pos)
-        self.set_robot_rpy(rpy)
-
-    def set_robot_pose_quat(self, pos, quat):
-        self.set_robot_position(pos)
-        self.set_robot_quat(quat)
-
-    def get_robot_position(self):
-        return self.translation_field.getSFVec3f()
-    
-    def get_robot_orientation_axangles(self):
-        return self.rotation_field.getSFRotation()
-
-    def get_robot_orientation_rpy(self):
-        ax_angle = self.get_robot_orientation_axangles()
-        return list(transforms3d.euler.axangle2euler(ax_angle[:3], ax_angle[3], axes='sxyz'))
-    
-    def get_robot_orientation_quat(self):
-        ax_angle = self.get_robot_orientation_axangles()
-        # transforms 3d uses scalar (i.e. the w part in the quaternion) first notation of quaternions, ros uses scalar last
-        quat_scalar_first = transforms3d.quaternions.axangle2quat(ax_angle[:3], ax_angle[3])
-        quat_scalar_last = np.append(quat_scalar_first[1:], quat_scalar_first[0])
-        return list(quat_scalar_last)
-
-    def get_robot_pose_rpy(self):
-        return self.get_robot_position(), self.get_robot_orientation_rpy()
-
-    def get_robot_pose_quat(self):
-        return self.get_robot_position(), self.get_robot_orientation_quat()

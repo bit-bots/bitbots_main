@@ -2,8 +2,8 @@
 DEF world_info WorldInfo {
 }
 Viewpoint {
-  orientation 0.325 -0.528 -0.785 2.24
-  position -11.2 5.73 5.22
+  orientation 0.12405617977857142 -0.5032960168059002 -0.8551626650679166 2.724402513989599
+  position -4.282992034117703 6.05921969320652 3.885079792200722
 }
 TexturedBackground {
   texture "stadium"
@@ -11,17 +11,28 @@ TexturedBackground {
 TexturedBackgroundLight {
   texture "stadium"
 }
-DEF Robot Wolfgang {
-  translation -0.967495 0.0 0.431123
-  rotation 0 1 0 0.24
+DEF amy Wolfgang {
+  translation -0.9614330703749742 0.8232338780830882 0.4274669455428817
+  rotation -0.02875343127075481 0.9995669078881173 -0.0062639320834369135 0.2541546436664793
+  name "amy"
   controller "<extern>"
-  supervisor TRUE
+}
+DEF rory Wolfgang {
+  translation -0.8742475863237795 -0.3483908428765195 0.4272675745267591
+  rotation -0.02519339660471583 0.9992024289063839 0.030980620314966338 0.2551981602679657
+  name "rory"
+  controller "<extern>"
 }
 SoccerBall {
-  translation 0 0 0.08
+  translation 0 -1.4412798545624343e-05 0.0771848567292142
+  rotation 0.9999999999999999 0 0 0.0001856286464131571
   radius 0.0775
   mass 0.2
   roll_damping 0.5
 }
 RobotstadiumSoccerFieldHumanoid {
+}
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
 }
