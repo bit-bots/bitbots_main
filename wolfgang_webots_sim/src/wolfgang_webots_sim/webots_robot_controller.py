@@ -103,7 +103,7 @@ class RobotController:
             rospy.init_node("webots_ros_interface", anonymous=True,
                             argv=['clock:=/clock'])
             self.pub_js = rospy.Publisher("joint_states", JointState, queue_size=1)
-            self.pub_imu = rospy.Publisher("imu/data", Imu, queue_size=1)
+            self.pub_imu = rospy.Publisher("imu/data_raw", Imu, queue_size=1)
 
             self.pub_imu_head = rospy.Publisher("imu_head/data", Imu, queue_size=1)
             self.pub_cam = rospy.Publisher("camera/image_proc", Image, queue_size=1)
