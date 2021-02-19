@@ -13,9 +13,10 @@ dynup:
   trunk_height_back_1: 0.22
   trunk_height_back_2: 0.22
   com_shift_1: 0.15
-  com_shift_2: -0.05
+  com_shift_2: 0.05
   foot_angle: 80
-  trunk_overshoot_angle_back: 0
+  arms_angle_back: 135
+  trunk_overshoot_angle_back: 25
   time_legs_close: 0.5
   time_foot_ground_back: 0.5
   time_full_squat_hands: 0.5
@@ -55,18 +56,18 @@ dynup:
   display_debug: True
 
   pid_trunk_roll:
-    p: 0.76
-    i: 2.0
-    d: 0.02977
+    p: 0.36
+    i: 0.8674
+    d: 0.03735
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
     publish_state: True
   pid_trunk_pitch:
-    p: 0.42
-    i: 1.68
-    d: 0.02625
+    p: -0.42
+    i: -5.31646
+    d: -0.008295
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0

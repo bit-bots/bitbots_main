@@ -48,7 +48,7 @@ dynup:
   descend_time: 0.25
 
   # Stabilier
-  stabilizing: False
+  stabilizing: True
   minimal_displacement: False
 
   # Visualizer
@@ -56,18 +56,18 @@ dynup:
   display_debug: True
 
   pid_trunk_roll:
-    p: 0.76
-    i: 2.0
-    d: 0.02977
+    p: 0.36
+    i: 0.8674
+    d: 0.03735
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
     publish_state: True
   pid_trunk_pitch:
-    p: 0.42
-    i: 1.68
-    d: 0.02625
+    p: -0.42
+    i: -5.31646
+    d: -0.008295
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
