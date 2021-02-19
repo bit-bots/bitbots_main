@@ -39,39 +39,42 @@ void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
   foot_spline_publisher_.publish(path);
 }
 
-void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines) {
+void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines,
+                                     const std::string &support_foot_frame) {
   if (trunk_spline_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::MarkerArray path = getPath(splines, "base_link", params_.spline_smoothness);
+  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
   path.markers[0].color.g = 1;
 
   trunk_spline_publisher_.publish(path);
 }
 
-void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoalConstPtr &goal) {
+void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoal &goal) {
   if (goal_publisher_.getNumSubscribers() == 0)
     return;
 
   visualization_msgs::Marker
-      marker = getMarker({goal->ball_position.x, goal->ball_position.y, goal->ball_position.z}, goal->header.frame_id);
+      marker = getMarker({goal.ball_position.x, goal.ball_position.y, goal.ball_position.z}, goal.header.frame_id);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
   marker.type = visualization_msgs::Marker::ARROW;
-  marker.header.stamp = goal->header.stamp;
-  marker.pose.orientation = goal->kick_direction;
-  marker.scale.x = 0.08 + (goal->kick_speed / 3);
+  marker.header.stamp = goal.header.stamp;
+  marker.pose.orientation = goal.kick_direction;
+  marker.scale.x = 0.08 + (goal.kick_speed / 3);
   marker.color.r = 1;
 
   goal_publisher_.publish(marker);
 }
 
-void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const std::string &support_foot_frame) {
+void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame) {
   if (windup_publisher_.getNumSubscribers() == 0)
     return;
 
-  visualization_msgs::Marker marker = getMarker(kick_windup_point, support_foot_frame);
+  tf2::Vector3 tf_kick_windup_point;
+  tf2::convert(kick_windup_point, tf_kick_windup_point);
+  visualization_msgs::Marker marker = getMarker(tf_kick_windup_point, support_foot_frame);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
@@ -82,7 +85,8 @@ void Visualizer::displayWindupPoint(const tf2::Vector3 &kick_windup_point, const
 
 void Visualizer::publishGoals(const KickPositions &positions,
                               const KickPositions &stabilized_positions,
-                              const robot_state::RobotStatePtr &robot_state) {
+                              const robot_state::RobotStatePtr &robot_state,
+                              KickPhase engine_phase) {
   /* only calculate the debug information if someone is subscribing */
   if (debug_publisher_.getNumSubscribers() == 0) {
     return;
@@ -98,23 +102,20 @@ void Visualizer::publishGoals(const KickPositions &positions,
   }
 
   /* Derive positions from robot state */
-  Eigen::Isometry3d eigen_trunk_pose_ik_result =
-      robot_state->getGlobalLinkTransform(support_foot_frame).inverse();
-  Eigen::Isometry3d eigen_flying_foot_pose_ik_result =
-      eigen_trunk_pose_ik_result * robot_state->getGlobalLinkTransform(flying_foot_frame);
-  tf2::Transform trunk_pose_ik_result, flying_foot_pose_ik_result;
-  tf2::convert(eigen_trunk_pose_ik_result, trunk_pose_ik_result);
-  tf2::convert(eigen_flying_foot_pose_ik_result, flying_foot_pose_ik_result);
+  Eigen::Isometry3d trunk_pose_ik_result = robot_state->getGlobalLinkTransform(support_foot_frame).inverse();
+  Eigen::Isometry3d
+      flying_foot_pose_ik_result = trunk_pose_ik_result * robot_state->getGlobalLinkTransform(flying_foot_frame);
 
   /* Calculate offsets */
-  tf2::Vector3
-      trunk_position_ik_offset = trunk_pose_ik_result.getOrigin() - stabilized_positions.trunk_pose.getOrigin();
-  tf2::Vector3 flying_foot_position_ik_offset =
-      flying_foot_pose_ik_result.getOrigin() - stabilized_positions.flying_foot_pose.getOrigin();
+  Eigen::Vector3d
+      trunk_position_ik_offset = trunk_pose_ik_result.translation() - stabilized_positions.trunk_pose.translation();
+  Eigen::Vector3d flying_foot_position_ik_offset =
+      flying_foot_pose_ik_result.translation() - stabilized_positions.flying_foot_pose.translation();
 
   KickDebug msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = support_foot_frame;
+  msg.engine_phase = engine_phase;
   msg.engine_time = positions.engine_time;
   msg.trunk_pose_goal = tf2::toMsg(positions.trunk_pose);
   msg.trunk_pose_stabilized_goal = tf2::toMsg(stabilized_positions.trunk_pose);

@@ -1,13 +1,16 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H_
 
+#include <cmath>
 #include <optional>
-#include <std_msgs/Header.h>
+#include <Eigen/Geometry>
+#include <rot_conv/rot_conv.h>
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/position_spline.h>
 #include <bitbots_splines/abstract_engine.h>
 #include <bitbots_msgs/KickGoal.h>
 #include <bitbots_msgs/KickFeedback.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
@@ -39,18 +42,6 @@ struct KickParams {
   double stabilizing_point_y;
 
   double choose_foot_corridor_width;
-};
-
-enum KickPhase {
-  INITIAL,
-  MOVE_TRUNK,
-  RAISE_FOOT,
-  WINDUP,
-  KICK,
-  MOVE_BACK,
-  LOWER_FOOT,
-  MOVE_TRUNK_BACK,
-  DONE
 };
 
 /**
@@ -121,35 +112,42 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   void setParams(KickParams params);
 
+  /**
+   * Get the current phase of the engine
+   */
   KickPhase getPhase() const;
 
-  tf2::Vector3 getWindupPoint();
+  Eigen::Vector3d getWindupPoint();
+
+  /**
+   * Set a pointer to the current state of the robot, updated from joint states
+   */
+  void setRobotState(robot_state::RobotStatePtr current_state);
 
  private:
   double time_;
-  tf2::Vector3 ball_position_;
-  tf2::Quaternion kick_direction_;
-  float kick_speed_;
+  Eigen::Vector3d ball_position_;
+  Eigen::Quaterniond kick_direction_;
+  double kick_speed_;
   bool is_left_kick_;
   bitbots_splines::PoseSpline flying_foot_spline_, trunk_spline_;
   KickParams params_;
   PhaseTimings phase_timings_;
-  tf2::Vector3 windup_point_;
-
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener listener_;
+  Eigen::Vector3d windup_point_;
+  robot_state::RobotStatePtr current_state_;
 
   /**
    *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly
    *
-   *  @param flying_foot_pose Current pose of the foot which is supposed to be the flying/kicking one
+   *  @param flying_foot_pose Current pose of the flying foot relative to the support foot
+   *  @param trunk_pose Current pose of the trunk relative to the support foot
    */
-  void calcSplines(const geometry_msgs::Pose &flying_foot_pose, const geometry_msgs::Transform &trunk_pose);
+  void calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Eigen::Isometry3d &trunk_pose);
 
   /**
    *  Calculate the point from which to perform the final kicking movement
    */
-  tf2::Vector3 calcKickWindupPoint();
+  Eigen::Vector3d calcKickWindupPoint();
 
   /**
    * Choose with which foot the kick should be performed
@@ -158,18 +156,19 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    * If it is, the foot on that side will be chosen as the kicking foot.
    * If not, a more fine grained angle based criterion is used.     *
    *
-   * @param header Definition of frame and time in which the goals were published
    * @param ball_position Position where the ball is currently located
    * @param kick_direction Direction into which the ball should be kicked
    * @return Whether the resulting kick should be performed with the left foot
    *
    * @throws tf2::TransformException when ball_position and kick_direction cannot be converted into base_footprint frame
    */
-  bool calcIsLeftFootKicking(const std_msgs::Header &header,
-                             const geometry_msgs::Vector3 &ball_position,
-                             const geometry_msgs::Quaternion &kick_direction);
+  bool calcIsLeftFootKicking(const Eigen::Vector3d &ball_position,
+                             const Eigen::Quaterniond &kick_direction);
 
-  geometry_msgs::Transform getTrunkPose();
+  /**
+   * Get the current position of the trunk relative to the support foot
+   */
+  Eigen::Isometry3d getTrunkPose();
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned
@@ -180,18 +179,18 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   /**
    * Transform then goal into our support_foots frame
    * @param support_foot_frame Name of the support foots frame, meaning where to transform to
-   * @param header Frame and time in which the goals were published
+   * @param trunk_to_base_footprint Pose of the base_footprint relative to the trunk
    * @param ball_position Position of the ball
    * @param kick_direction Direction in which to kick the ball
    * @return pair of (transformed_pose, transformed_direction)
    *
    * @throws tf2::TransformException when goal cannot be transformed into support_foot_frame
    */
-  std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> transformGoal(
+  std::pair<Eigen::Vector3d, Eigen::Quaterniond> transformGoal(
       const std::string &support_foot_frame,
-      const std_msgs::Header &header,
-      const geometry_msgs::Vector3 &ball_position,
-      const geometry_msgs::Quaternion &kick_direction);
+      const Eigen::Isometry3d &trunk_to_base_footprint,
+      const Eigen::Vector3d &ball_position,
+      const Eigen::Quaterniond &kick_direction);
 };
 }
 

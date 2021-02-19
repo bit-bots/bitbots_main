@@ -2,64 +2,117 @@
 namespace bitbots_dynup {
 void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   /* Extract joint groups from kinematics model */
-  legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
-  left_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
-  right_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
+  l_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
+  r_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
+  l_arm_joints_group_ = kinematic_model->getJointModelGroup("LeftArm");
+  r_arm_joints_group_ = kinematic_model->getJointModelGroup("RightArm");
+  all_joints_group_ = kinematic_model->getJointModelGroup("All");
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
-  goal_state_->setToDefaultValues();
 }
 
 void DynupIK::reset() {
-  /* We have to set some good initial position in the goal state,
-   * since we are using a gradient based method. Otherwise, the
-   * first step will be not correct */
-  std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
-  std::vector<double> pos_vec = {0.7, 1.0, -0.4, -0.7, -1.0, 0.4};
-  for (int i = 0; i < names_vec.size(); ++i) {
-    goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
+  for (int i = 0; i < current_joint_states_.name.size(); i++) {
+      goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
   }
 }
 
-bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &positions) {
-  // change goals from support foot based coordinate system to trunk based coordinate system
-  tf2::Transform trunk_to_r_foot = positions.trunk_pose.inverse();
-  tf2::Transform trunk_to_l_foot = trunk_to_r_foot * positions.l_foot_pose;
-
-  // make pose msg for calling IK
-  geometry_msgs::Pose left_foot_goal_msg;
-  geometry_msgs::Pose right_foot_goal_msg;
-
-  tf2::toMsg(trunk_to_r_foot, right_foot_goal_msg);
-  tf2::toMsg(trunk_to_l_foot, left_foot_goal_msg);
-
-  // call IK two times, since we have two legs
-  bool success;
-
-  // we have to do this otherwise there is an error
-  goal_state_->updateLinkTransforms();
-
-  success = goal_state_->setFromIK(left_leg_joints_group_,
-                                   left_foot_goal_msg,
-                                   0.01,
-                                   moveit::core::GroupStateValidityCallbackFn());
-  goal_state_->updateLinkTransforms();
-
-  success &= goal_state_->setFromIK(right_leg_joints_group_,
-                                    right_foot_goal_msg,
-                                    0.01,
-                                    moveit::core::GroupStateValidityCallbackFn());
-
-  std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
-  std::vector<double> joint_goals;
-  goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
-
-  /* construct result object */
-  bitbots_splines::JointGoals result;
-  result.first = joint_names;
-  result.second = joint_goals;
-  return result;
+void DynupIK::setDirection(std::string direction) {
+    direction_ = direction;
 }
+
+bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
+
+  /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
+  auto ik_options = kinematics::KinematicsQueryOptions();
+  ik_options.return_approximate_solution = true;
+
+  geometry_msgs::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
+  
+  tf2::toMsg(ik_goals.r_foot_goal_pose, right_foot_goal_msg);
+  tf2::toMsg(ik_goals.l_foot_goal_pose, left_foot_goal_msg);
+  tf2::toMsg(ik_goals.r_hand_goal_pose, right_hand_goal_msg);
+  tf2::toMsg(ik_goals.l_hand_goal_pose, left_hand_goal_msg);
+
+
+  bool success;
+  goal_state_->updateLinkTransforms();
+
+  success = goal_state_->setFromIK(l_leg_joints_group_,
+                                   left_foot_goal_msg,
+                                   0.001,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
+
+  goal_state_->updateLinkTransforms();
+
+  success &= goal_state_->setFromIK(r_leg_joints_group_,
+                                   right_foot_goal_msg,
+                                   0.001,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
+
+  goal_state_->updateLinkTransforms();
+
+  success &= goal_state_->setFromIK(l_arm_joints_group_,
+                                   left_hand_goal_msg,
+                                   0.001,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
+
+  goal_state_->updateLinkTransforms();
+
+  success &= goal_state_->setFromIK(r_arm_joints_group_,
+                                   right_hand_goal_msg,
+                                   0.001,
+                                   moveit::core::GroupStateValidityCallbackFn(),
+                                   ik_options);
+
+  if (success) {
+    /* retrieve joint names and associated positions from  */
+    std::vector<std::string> joint_names = all_joints_group_->getActiveJointModelNames();
+    std::vector<double> joint_goals;
+    goal_state_->copyJointGroupPositions(all_joints_group_, joint_goals);
+
+    /* construct result object */
+    bitbots_splines::JointGoals result;
+    result.first = joint_names;
+    result.second = joint_goals;
+    /* sets head motor positions to 0, as the IK will return random values for those unconstrained motors. */
+    for(int i = 0; i  < result.first.size(); i++)
+    {
+        if(result.first[i] == "HeadPan") {
+            result.second[i] = 0;
+        }
+        else if(result.first[i] ==  "HeadTilt") {
+            if (direction_ == "front")
+            {
+                result.second[i] = 45;
+            }
+            else if (direction_ == "back")
+            {
+                result.second[i] = -45;
+            }
+            else
+            {
+                result.second[i] = 0;
+            }
+        }
+    }
+    return result;
+  } else {
+    // node will count this as a missing tick and provide warning
+    return {};
+  }
+}
+void DynupIK::useStabilizing(bool use) {
+  use_stabilizing_ = use;
+}
+
+void DynupIK::setCurrentJointStates(sensor_msgs::JointState jointStates) {
+    current_joint_states_ = jointStates;
+}
+
 
 }

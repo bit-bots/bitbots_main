@@ -31,7 +31,7 @@ WalkEngine::WalkEngine(const std::string ns) :
   dyn_reconf_server_ =
       new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
           ns +
-              "/walking/engine"));
+              "walking/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);

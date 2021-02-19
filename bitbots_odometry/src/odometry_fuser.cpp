@@ -10,7 +10,6 @@ imu (rX, rY)
 // TODO Doku
 
 OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
-
   ros::NodeHandle n("");
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");

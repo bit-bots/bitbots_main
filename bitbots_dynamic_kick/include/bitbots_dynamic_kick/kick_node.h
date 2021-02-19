@@ -3,22 +3,24 @@
 
 #include <string>
 #include <optional>
+#include <Eigen/Geometry>
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <actionlib/server/simple_action_server.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <sensor_msgs/JointState.h>
+#include <std_msgs/Char.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <tf2/convert.h>
 #include <bitbots_msgs/KickAction.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynamic_kick/DynamicKickConfig.h>
-#include <std_msgs/Char.h>
-#include "bitbots_dynamic_kick/kick_engine.h"
-#include "bitbots_dynamic_kick/visualizer.h"
-#include "bitbots_dynamic_kick/kick_ik.h"
+#include <bitbots_dynamic_kick/kick_engine.h>
+#include <bitbots_dynamic_kick/visualizer.h>
+#include <bitbots_dynamic_kick/kick_ik.h>
+#include <bitbots_dynamic_kick/kick_utils.h>
 
 namespace bitbots_dynamic_kick {
 
@@ -35,7 +37,7 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::KickAction> ActionServer;
  */
 class KickNode {
  public:
-  KickNode();
+  explicit KickNode(const std::string &ns = std::string());
 
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level);
@@ -46,12 +48,38 @@ class KickNode {
    */
   void executeCb(const bitbots_msgs::KickGoalConstPtr &goal);
 
+  /**
+   * This wrapper is used in the python wrapper for a single step of the kick
+   * @param dt the time difference since the last call of this method
+   * @return the JointCommand representing the next step or an empty JointCommand if the kick is done
+   */
+  bitbots_msgs::JointCommand stepWrapper(double dt);
+
+  /**
+   * Get the current progress of the kick, from 0 to 1
+   */
+  double getProgress();
+
+  /**
+   * Initialize the node
+   * @param goal_msg The goal_msg of the kick
+   * @param error_string when the return value is false, this will contain details about the error
+   * @param trunk_to_base_footprint transform from trunk to base_footprint
+   * @return whether the setup was successful
+   */
+  bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string, Eigen::Isometry3d &trunk_to_base_footprint);
+
+  /**
+   * Set the current joint state of the robot
+   */
+  void jointStateCallback(const sensor_msgs::JointState &joint_states);
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;
   ros::Publisher support_foot_publisher_;
   ros::Subscriber cop_l_subscriber_;
   ros::Subscriber cop_r_subscriber_;
+  ros::Subscriber joint_state_subscriber_;
   ActionServer server_;
   KickEngine engine_;
   Stabilizer stabilizer_;
@@ -63,6 +91,7 @@ class KickNode {
   tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
   bool was_support_foot_published_;
+  robot_state::RobotStatePtr goal_state_;
   robot_state::RobotStatePtr current_state_;
 
   /**
@@ -72,13 +101,10 @@ class KickNode {
   void loopEngine(ros::Rate loop_rate);
 
   /**
-   * Retrieve current feet_positions in base_link frame
-   *
-   * @return The pair of (right foot, left foot) poses if transformation was successfull
-   *
-   * @throws tf2::TransformException if feet positions cannot be retrieved
+   * Execute one step of engine-stabilize-ik
+   * @return the motor goals
    */
-  std::pair<geometry_msgs::Pose, geometry_msgs::Pose> getFootPoses();
+  bitbots_splines::JointGoals kickStep(double dt);
 
   /**
    * Publish the current support_foot so that a correct base_footprint can be calculated
@@ -92,9 +118,9 @@ class KickNode {
   double getTimeDelta();
 
   /**
-   * Publish goals to ROS
+   * Get JointCommand message for JointGoals
    */
-  void publishGoals(const bitbots_splines::JointGoals &goals);
+  bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);
 };

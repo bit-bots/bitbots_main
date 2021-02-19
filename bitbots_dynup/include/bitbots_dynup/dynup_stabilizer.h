@@ -4,10 +4,13 @@
 #include <optional>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
-#include <geometry_msgs/Pose.h>
+#include <sensor_msgs/Imu.h>
 #include <tf2_ros/transform_listener.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "dynup_utils.h"
+#include <moveit/robot_state/robot_state.h>
+#include <tf2_ros/transform_listener.h>
+#include <control_toolbox/pid.h>
 
 namespace bitbots_dynup {
 
@@ -15,19 +18,25 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
   void init(moveit::core::RobotModelPtr kinematic_model);
   DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
+  void setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk);
   void useStabilizing(bool use);
-  void useMinimalDisplacement(bool use);
-  void setStabilizingWeight(double weight);
+  void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
- private:
-  robot_state::RobotStatePtr goal_state_;
+  void setImu(sensor_msgs::Imu imu);
 
+
+private:
+  sensor_msgs::Imu imu_;
+  control_toolbox::Pid pid_trunk_pitch_;
+  control_toolbox::Pid pid_trunk_roll_;
+  robot_state::RobotStatePtr goal_state_;
   robot_model::RobotModelPtr kinematic_model_;
-  moveit::core::JointModelGroup *legs_joints_group_;
+  //Transform from r_sole frame to base_link frame, as we want to stabilize the base link.
+  geometry_msgs::TransformStamped r_sole_to_trunk_;
+
+  bool stabilize_now_;
 
   bool use_stabilizing_;
-  bool use_minimal_displacement_;
-  double stabilizing_weight_;
 };
 
 }

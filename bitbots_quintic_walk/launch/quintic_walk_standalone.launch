@@ -4,7 +4,7 @@
 
     <arg name="no_node" default="false"/>
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
- 
+        <arg name="sim" value="$(arg sim)"/>
     </include>
 
     <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">

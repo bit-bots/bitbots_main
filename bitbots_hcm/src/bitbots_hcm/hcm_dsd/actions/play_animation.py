@@ -157,14 +157,12 @@ class PlayAnimationMotorOff(AbstractPlayAnimation):
 class PlayAnimationDynup(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(PlayAnimationDynup, self).__init__(blackboard, dsd, parameters=None)
-
+        self.direction = parameters.get('direction')
         self.first_perform = True
 
     def perform(self, reevaluate=False):
-        # we never want to leave the action when we play an animation
-        # deactivate the reevaluate
+        # deactivate falling since it will be wrongly detected
         self.do_not_reevaluate()
-
         if self.first_perform:
             # get the animation that should be played
             # defined by implementations of this abstract class
@@ -206,7 +204,7 @@ class PlayAnimationDynup(AbstractActionElement):
                 rospy.logwarn("Dynup server did not start.")
                 return False
         goal = bitbots_msgs.msg.DynUpGoal()
-        goal.front = True  # is currently ignored
+        goal.direction = self.direction
         self.blackboard.dynup_action_client.send_goal(goal)
         return True
 

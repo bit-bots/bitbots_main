@@ -1,13 +1,10 @@
 #include "bitbots_dynamic_kick/kick_node.h"
 
-#include <memory>
-
 namespace bitbots_dynamic_kick {
 
-KickNode::KickNode() :
+KickNode::KickNode(const std::string &ns) :
     server_(node_handle_, "dynamic_kick", boost::bind(&KickNode::executeCb, this, _1), false),
     listener_(tf_buffer_),
-    engine_(),
     visualizer_("/debug/dynamic_kick"),
     robot_model_loader_("/robot_description", false) {
 
@@ -21,13 +18,17 @@ KickNode::KickNode() :
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
 
-  /* this debug variable represents the current state of the robot */
+  /* this debug variable represents the goal state of the robot, i.e. what the ik goals are */
+  goal_state_.reset(new robot_state::RobotState(kinematic_model));
+  /* this variable represents the current state of the robot, retrieved from joint states */
   current_state_.reset(new robot_state::RobotState(kinematic_model));
+  engine_.setRobotState(current_state_);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
   support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
+  joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &KickNode::jointStateCallback, this);
   server_.start();
 }
 
@@ -43,6 +44,12 @@ void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
     ROS_ERROR_STREAM("cop_r not in r_sole frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
+}
+
+void KickNode::jointStateCallback(const sensor_msgs::JointState &joint_states) {
+  for (int i = 0; i < joint_states.name.size(); ++i) {
+    current_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
+  }
 }
 
 void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t /* level */) {
@@ -75,50 +82,60 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
   visualizer_.setParams(viz_params);
 }
 
+bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
+                    std::string &error_string,
+                    Eigen::Isometry3d &trunk_to_base_footprint) {
+  /* currently, the ball must always be in the base_footprint frame */
+  if (goal_msg.header.frame_id != "base_footprint") {
+    ROS_ERROR_STREAM("Goal should be in base_footprint frame");
+    error_string = "Goal should be in base_footprint frame";
+    return false;
+  }
+
+  /* reset the current state */
+  last_ros_update_time_ = 0;
+  was_support_foot_published_ = false;
+  engine_.reset();
+  stabilizer_.reset();
+  ik_.reset();
+
+  /* Set engines goal_msg and start calculating */
+  KickGoals goals;
+  tf2::convert(goal_msg.ball_position, goals.ball_position);
+  tf2::convert(goal_msg.kick_direction, goals.kick_direction);
+  goals.kick_speed = goal_msg.kick_speed;
+  goals.trunk_to_base_footprint = trunk_to_base_footprint;
+  engine_.setGoals(goals);
+
+  /* visualization */
+  visualizer_.displayReceivedGoal(goal_msg);
+  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
+  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
+  visualizer_.displayTrunkSplines(engine_.getTrunkSplines(), (engine_.isLeftKick() ? "r_sole" : "l_sole"));
+
+  return true;
+}
+
 void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Accepted new goal");
-  engine_.reset();
-  last_ros_update_time_ = 0;
-  was_support_foot_published_ = false;
 
-  std::pair<geometry_msgs::Pose, geometry_msgs::Pose> foot_poses;
-  try {
-    foot_poses = getFootPoses();
-  } catch (tf2::TransformException &e) {
-    ROS_ERROR("Could not process goal because current feet positions could not be transformed into base_link");
+  /* get transform to base_footprint */
+  geometry_msgs::TransformStamped
+      tf_trunk_to_base_footprint = tf_buffer_.lookupTransform("base_link", "base_footprint", ros::Time(0));
+  Eigen::Isometry3d trunk_to_base_footprint = tf2::transformToEigen(tf_trunk_to_base_footprint);
+
+  /* pass everything to the init function */
+  std::string error_string;
+  bool success = init(*goal, error_string, trunk_to_base_footprint);
+  /* there was an error, abort the kick */
+  if (!success) {
     bitbots_msgs::KickResult result;
     result.result = bitbots_msgs::KickResult::REJECTED;
-    server_.setAborted(result, "Transformation of feet into base_link not possible");
+    server_.setAborted(result, error_string);
   }
 
-  visualizer_.displayReceivedGoal(goal);
-
-  /* Set engines goal and start calculating */
-  KickGoals goals;
-  goals.ball_position = goal->ball_position;
-  goals.header = goal->header;
-  goals.kick_direction = goal->kick_direction;
-  goals.kick_speed = goal->kick_speed;
-  goals.r_foot_pose = foot_poses.first;
-  goals.l_foot_pose = foot_poses.second;
-
-  try {
-    engine_.setGoals(goals);
-  }
-  catch (tf2::TransformException &e) {
-    ROS_ERROR_STREAM("Could not transform goal to needed tf frames: " << e.what());
-    bitbots_msgs::KickResult result;
-    result.result = bitbots_msgs::KickResult::REJECTED;
-    server_.setAborted(result, "Could not transform goal to needed tf frames");
-    return;
-  }
-
-  stabilizer_.reset();
-  ik_.reset();
-  visualizer_.displayWindupPoint(engine_.getWindupPoint(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
-  visualizer_.displayFlyingSplines(engine_.getFlyingSplines(), (engine_.isLeftKick()) ? "r_sole" : "l_sole");
-  visualizer_.displayTrunkSplines(engine_.getTrunkSplines());
+  /* everything is set up, start calculating now until the kick is finished or an error occurs */
   ros::Rate loop_rate(engine_rate_);
   loopEngine(loop_rate);
 
@@ -138,41 +155,19 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   }
 }
 
-std::pair<geometry_msgs::Pose, geometry_msgs::Pose> KickNode::getFootPoses() {
-  ros::Time time = ros::Time::now();
-
-  /* Construct zero-positions for both feet in their respective local frames */
-  geometry_msgs::PoseStamped r_foot_origin, l_foot_origin;
-  r_foot_origin.header.frame_id = "r_sole";
-  r_foot_origin.pose.orientation.w = 1;
-  r_foot_origin.header.stamp = time;
-
-  l_foot_origin.header.frame_id = "l_sole";
-  l_foot_origin.pose.orientation.w = 1;
-  l_foot_origin.header.stamp = time;
-
-  /* Transform both feet poses into the other foot's frame */
-  geometry_msgs::PoseStamped r_foot_transformed, l_foot_transformed;
-  tf_buffer_.transform(r_foot_origin, r_foot_transformed, "l_sole",
-                       ros::Duration(0.2));
-  tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
-
-  return std::pair(r_foot_transformed.pose, l_foot_transformed.pose);
-}
-
 double KickNode::getTimeDelta() {
   // compute actual time delta that happened
   double dt;
   double current_ros_time = ros::Time::now().toSec();
 
   // first call needs to be handled specially
-  if (last_ros_update_time_ == 0){
+  if (last_ros_update_time_ == 0) {
     last_ros_update_time_ = current_ros_time;
     return 0.001;
   }
 
   dt = current_ros_time - last_ros_update_time_;
-  // this can happen due to floating point precision
+  // this can happen due to floating point precision or in simulation
   if (dt == 0) {
     ROS_WARN("dynamic kick: dt was 0");
     dt = 0.001;
@@ -187,29 +182,19 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
   double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
-    KickPositions positions = engine_.update(dt);
-    // TODO: should positions be an std::optional? how are errors represented?
-    KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
-    bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
+    std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
 
-    /* visualization of the values calculated above */
-    for (int i = 0; i < motor_goals.first.size(); ++i) {
-      current_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
-    }
-    visualizer_.publishGoals(positions, stabilized_positions, current_state_);
-
+    /* Publish feedback to the client */
     bitbots_msgs::KickFeedback feedback;
     feedback.percent_done = engine_.getPercentDone();
     feedback.chosen_foot = engine_.isLeftKick() ?
                            bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
     server_.publishFeedback(feedback);
-    publishGoals(motor_goals);
-
-    publishSupportFoot(engine_.isLeftKick());
 
     if (feedback.percent_done == 100) {
       break;
     }
+    joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
 
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
@@ -217,7 +202,23 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
   }
 }
 
-void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
+bitbots_splines::JointGoals KickNode::kickStep(double dt) {
+  KickPositions positions = engine_.update(dt);
+  // TODO: should positions be an std::optional? how are errors represented?
+  KickPositions stabilized_positions = stabilizer_.stabilize(positions, ros::Duration(dt));
+  bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
+
+  /* visualization of the values calculated above */
+  for (int i = 0; i < motor_goals.first.size(); ++i) {
+    goal_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
+  }
+  visualizer_.publishGoals(positions, stabilized_positions, goal_state_, engine_.getPhase());
+  publishSupportFoot(engine_.isLeftKick());
+
+  return motor_goals;
+}
+
+bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -239,17 +240,31 @@ void KickNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   command.accelerations = accs;
   command.max_currents = pwms;
 
-  joint_goal_publisher_.publish(command);
+  return command;
 }
 
 void KickNode::publishSupportFoot(bool is_left_kick) {
   std_msgs::Char msg;
-  msg.data = !is_left_kick ? 'l' : 'r';
+  msg.data = is_left_kick ? 'r' : 'l';
   // only publish one time per kick
-  if(!was_support_foot_published_){
+  if (!was_support_foot_published_) {
     support_foot_publisher_.publish(msg);
     was_support_foot_published_ = true;
   }
+}
+
+bitbots_msgs::JointCommand KickNode::stepWrapper(double dt) {
+  /* with stabilizing, we can call some callbacks here */
+  bitbots_splines::JointGoals goals = kickStep(dt);
+  if (engine_.getPercentDone() < 100) {
+    return getJointCommand(goals);
+  } else {
+    return {};
+  }
+}
+
+double KickNode::getProgress() {
+  return engine_.getPercentDone() / 100.0;
 }
 
 }

@@ -11,10 +11,8 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   goal_state_.reset(new robot_state::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
-  //without this magic line, IK will not work
-  const Eigen::Isometry3d &end_effector_state = goal_state_->getGlobalLinkTransform("r_sole");
-
   reset();
+
 }
 
 bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
