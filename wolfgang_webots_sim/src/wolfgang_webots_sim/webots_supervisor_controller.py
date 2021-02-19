@@ -120,6 +120,7 @@ class SupervisorController:
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))
+        self.ball.resetPhysics()
 
     def get_ball_pose(self):
         return self.ball.getField("translation").getSFVec3f()
