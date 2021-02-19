@@ -44,6 +44,6 @@ ENV DEBIAN_FRONTEND=readline
 ENV ROS_PYTHON_VERSION=3
 VOLUME ["/srv/catkin_install"]
 USER builder:builder
-COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+COPY entrypoint.sh /usr/local/bin/entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD ["bash"]
