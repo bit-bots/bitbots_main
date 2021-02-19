@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
         roscpp
-        bio_ik
         bitbots_msgs
         bitbots_splines
         dynamic_reconfigure
@@ -21,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
         message_generation
         message_runtime
         rotconv
+        moveit_ros_planning
 )
 
 catkin_python_setup()
