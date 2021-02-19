@@ -436,18 +436,18 @@ double DynupEngine::calcBackSplines() {
   time += params_.time_foot_ground_back;
   // length(upper arm) == length(lower arm) -> Isosceles triangle with length of one side := arm_max_length_/2
   // set elbow to 90°, we can get x by Pythagorean theorem
-  l_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
+  l_hand_spline_.x()->addPoint(time, sin(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(arm_max_length_/2, 2)));
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, cos(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(arm_max_length_/2, 2)));
   l_hand_spline_.roll()->addPoint(time, 0);
   // angle has to be 45° due to arms being a Isosceles triangle with gamma = 90°
-  l_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
+  l_hand_spline_.pitch()->addPoint(time, params_.arms_angle_back*M_PI/180);
   l_hand_spline_.yaw()->addPoint(time, 0);
-  r_hand_spline_.x()->addPoint(time, -sqrt(2* pow(arm_max_length_/2, 2)));
+  r_hand_spline_.x()->addPoint(time, sin(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(arm_max_length_/2, 2)));
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, cos(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(arm_max_length_/2, 2)));
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI*0.5);
+  r_hand_spline_.pitch()->addPoint(time, params_.arms_angle_back*M_PI/180);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   double angle_foot = M_PI * params_.foot_angle /180;
