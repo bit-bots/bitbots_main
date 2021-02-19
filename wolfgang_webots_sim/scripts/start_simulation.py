@@ -38,7 +38,6 @@ fix_webots_folder(sim_proc.pid)
 
 robot_names = ["amy", "rory", "jack", "donna", "melody"]
 for i in range(2):
-    print("python3 " + os.path.dirname(sys.argv[0]) + "/single_robot.py --robot_name " + robot_names[i])
     sub_processes = subprocess.Popen(["python3", os.path.dirname(sys.argv[0]) + "/single_robot.py", "--robot_name", robot_names[i]])
 
 os.environ["WEBOTS_ROBOT_NAME"] = "supervisor_robot"

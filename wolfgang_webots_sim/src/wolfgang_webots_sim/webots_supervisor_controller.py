@@ -2,14 +2,13 @@ from controller import Robot, Node, Supervisor, Field
 
 import os
 import rospy
-from geometry_msgs.msg import Quaternion, PointStamped
-from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
+from geometry_msgs.msg import Quaternion, PointStamped, Pose, Point, Twist
+from gazebo_msgs.msg import ModelStates
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-from bitbots_msgs.msg import JointCommand, FootPressure
-import math
+
 import transforms3d
 import numpy as np
 
@@ -63,6 +62,7 @@ class SupervisorController:
             rospy.init_node("webots_ros_supervisor", anonymous=True,
                             argv=['clock:=/clock'])
             self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
+            self.model_state_publisher = rospy.Publisher("/model_states", ModelStates, queue_size=1)
             self.reset_service = rospy.Service("reset", Empty, self.reset)
             self.initial_poses_service = rospy.Service("initial_pose", Empty, self.set_initial_poses)
 
@@ -76,6 +76,7 @@ class SupervisorController:
         self.step_sim()
         if self.ros_active:
             self.publish_clock()
+            self.publish_model_states()
 
     def publish_clock(self):
         self.clock_msg.clock = rospy.Time.from_seconds(self.time)
@@ -104,7 +105,6 @@ class SupervisorController:
         self.supervisor.simulationResetPhysics()
 
     def set_initial_poses(self, req=None):
-        print(self.robot_nodes)
         self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
         self.reset_robot_pose_rpy([-1, -3, 0.42], [0, 0.24, 1.57], name="rory")
         self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
@@ -164,3 +164,15 @@ class SupervisorController:
 
     def get_robot_pose_quat(self, name="amy"):
         return self.get_robot_position(name), self.get_robot_orientation_quat(name)
+
+    def publish_model_states(self):
+        msg = ModelStates()
+        for robot_name, _ in self.robot_nodes.items():
+            msg.name.append(robot_name)
+            position, orientation = self.get_robot_pose_quat(name=robot_name)
+            robot_pose = Pose()
+            robot_pose.position = Point(*position)
+            robot_pose.orientation = Quaternion(*orientation)
+            msg.pose.append(robot_pose)
+        self.model_state_publisher.publish(msg)
+

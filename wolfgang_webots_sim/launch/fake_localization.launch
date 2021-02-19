@@ -1,0 +1,9 @@
+<launch>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="amy_map" args="0 0 0 0 0 0 1 map amy/map" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="rory_map" args="0 0 0 0 0 0 1 map rory/map" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="jack_map" args="0 0 0 0 0 0 1 map jack/map" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="donna_map" args="0 0 0 0 0 0 1 map donna/map" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="melody_map" args="0 0 0 0 0 0 1 map melody/map" />
+
+    <node pkg="wolfgang_webots_sim" type="localization_faker.py" name="localization_faker"/>
+</launch>
