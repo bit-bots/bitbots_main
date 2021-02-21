@@ -100,8 +100,12 @@ class RobotController:
         self.camera.enable(self.timestep)
 
         if self.ros_active:
-            rospy.init_node("webots_ros_interface", anonymous=True,
-                            argv=['clock:=/clock'])
+            rospy.init_node("webots_ros_interface", argv=['clock:=/clock'])
+            self.l_sole_frame = rospy.get_param("~l_sole_frame", "l_sole")
+            self.r_sole_frame = rospy.get_param("~r_sole_frame", "r_sole")
+            self.camera_optical_frame = rospy.get_param("~camera_optical_frame", "camera_optical_frame")
+            self.head_imu_frame = rospy.get_param("~head_imu_frame", "imu_frame_2")
+            self.imu_frame = rospy.get_param("~imu_frame", "imu_frame")
             self.pub_js = rospy.Publisher("joint_states", JointState, queue_size=1)
             self.pub_imu = rospy.Publisher("imu/data_raw", Imu, queue_size=1)
 
@@ -121,7 +125,7 @@ class RobotController:
         # publish camera info once, it will be latched
         self.cam_info = CameraInfo()
         self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
-        self.cam_info.header.frame_id = 'camera_optical_frame'
+        self.cam_info.header.frame_id = self.camera_optical_frame
         self.cam_info.height = self.camera.getHeight()
         self.cam_info.width = self.camera.getWidth()
         f_y = self.mat_from_fov_and_resolution(
@@ -192,9 +196,9 @@ class RobotController:
         msg = Imu()
         msg.header.stamp = rospy.Time.from_seconds(self.time)
         if head:
-            msg.header.frame_id = "imu_frame_2"
+            msg.header.frame_id = self.head_imu_frame
         else:
-            msg.header.frame_id = "imu_frame"
+            msg.header.frame_id = self.imu_frame
 
         # change order because webots has different axis
         if head:
@@ -227,7 +231,7 @@ class RobotController:
     def publish_camera(self):
         img_msg = Image()
         img_msg.header.stamp = rospy.Time.from_seconds(self.time)
-        img_msg.header.frame_id = "camera_optical_frame"
+        img_msg.header.frame_id = self.camera_optical_frame
         img_msg.height = self.camera.getHeight()
         img_msg.width = self.camera.getWidth()
         img_msg.encoding = "bgra8"
@@ -263,7 +267,7 @@ class RobotController:
         threshold = 1
 
         cop_l = PointStamped()
-        cop_l.header.frame_id = "l_sole"
+        cop_l.header.frame_id = self.l_sole_frame
         cop_l.header.stamp = current_time
         sum = left_pressure.left_back + left_pressure.left_front + left_pressure.right_front + left_pressure.right_back
         if sum > threshold:
@@ -278,7 +282,7 @@ class RobotController:
             cop_l.point.y = 0
 
         cop_r = PointStamped()
-        cop_r.header.frame_id = "r_sole"
+        cop_r.header.frame_id = self.r_sole_frame
         cop_r.header.stamp = current_time
         sum = right_pressure.right_back + right_pressure.right_front + right_pressure.right_front + right_pressure.right_back
         if sum > threshold:

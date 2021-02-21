@@ -13,6 +13,50 @@
         <node pkg="wolfgang_webots_sim" type="start.sh" name="webots_sim" output="screen" required="true" args="--nogui">
         </node>
     </group>
+    <group ns="amy/webots_ros_interface">
+        <param name="base_link_frame" value="amy/base_link"/>
+        <param name="r_sole_frame" value="amy/r_sole"/>
+        <param name="l_sole_frame" value="amy/l_sole"/>
+        <param name="camera_optical_frame" value="amy/camera_optical_frame"/>
+        <param name="head_imu_frame" value="amy/imu_frame_2"/>
+        <param name="imu_frame" value="amy/imu_frame"/>
+    </group>
+
+    <group ns="rory/webots_ros_interface">
+        <param name="base_link_frame" value="rory/base_link"/>
+        <param name="r_sole_frame" value="rory/r_sole"/>
+        <param name="l_sole_frame" value="rory/l_sole"/>
+        <param name="camera_optical_frame" value="rory/camera_optical_frame"/>
+        <param name="head_imu_frame" value="rory/imu_frame_2"/>
+        <param name="imu_frame" value="rory/imu_frame"/>
+    </group>
+
+    <group ns="jack/webots_ros_interface">
+        <param name="base_link_frame" value="jack/base_link"/>
+        <param name="r_sole_frame" value="jack/r_sole"/>
+        <param name="l_sole_frame" value="jack/l_sole"/>
+        <param name="camera_optical_frame" value="jack/camera_optical_frame"/>
+        <param name="head_imu_frame" value="jack/imu_frame_2"/>
+        <param name="imu_frame" value="jack/imu_frame"/>
+    </group>
+
+    <group ns="donna/webots_ros_interface">
+        <param name="base_link_frame" value="donna/base_link"/>
+        <param name="r_sole_frame" value="donna/r_sole"/>
+        <param name="l_sole_frame" value="donna/l_sole"/>
+        <param name="camera_optical_frame" value="donna/camera_optical_frame"/>
+        <param name="head_imu_frame" value="donna/imu_frame_2"/>
+        <param name="imu_frame" value="donna/imu_frame"/>
+    </group>
+
+    <group ns="melody/webots_ros_interface">
+        <param name="base_link_frame" value="melody/base_link"/>
+        <param name="r_sole_frame" value="melody/r_sole"/>
+        <param name="l_sole_frame" value="melody/l_sole"/>
+        <param name="camera_optical_frame" value="melody/camera_optical_frame"/>
+        <param name="head_imu_frame" value="melody/imu_frame_2"/>
+        <param name="imu_frame" value="melody/imu_frame"/>
+    </group>
     <group if ="$(arg imu_filter)">
         <arg name="do_bias_estimation" value="true"/>
         <arg name="bias_alpha" value="0.05"/>
