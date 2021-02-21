@@ -46,7 +46,7 @@ class HardwareControlManager:
         self.blackboard.dynup_action_client = actionlib.SimpleActionClient('dynup', DynUpAction)
         self.blackboard.dynamic_kick_client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
-        self.dsd = DSD(self.blackboard, "/debug/dsd/hcm")
+        self.dsd = DSD(self.blackboard, "debug/dsd/hcm")
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'hcm.dsd'))

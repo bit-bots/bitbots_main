@@ -112,7 +112,7 @@ class HcmBlackboard():
 
         # walking
         self.last_walking_goal_time = rospy.Time()
-        self.walk_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+        self.walk_pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
 
         self.record_active = False
 
@@ -139,7 +139,7 @@ class HcmBlackboard():
         def last_kick_feedback_callback(msg):
             self.last_kick_feedback = rospy.Time.now()
 
-        rospy.Subscriber('/dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=True,
+        rospy.Subscriber('dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=True,
                          queue_size=1)
 
         self.servo_diag_error = False
