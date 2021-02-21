@@ -7,6 +7,7 @@ from time import sleep
 import random
 import rospy
 import actionlib
+import os
 
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Vector3, Quaternion
@@ -22,7 +23,7 @@ if __name__ == "__main__":
           "and will maybe result in tf errors otherwise")
     print("[..] Initializing node", end='')
     rospy.init_node('dynamic_kick_dummy_client', anonymous=True)
-    marker_pub = rospy.Publisher("/debug/dynamic_kick_ball_marker", Marker, queue_size=1)
+    marker_pub = rospy.Publisher("debug/dynamic_kick_ball_marker", Marker, queue_size=1)
     print("\r[OK] Initializing node")
 
 
@@ -74,7 +75,8 @@ if __name__ == "__main__":
 
     goal = KickGoal()
     goal.header.stamp = rospy.Time.now()
-    goal.header.frame_id = "base_footprint"
+    frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
+    goal.header.frame_id = frame_prefix + "base_footprint"
     goal.ball_position.x = 0.2
     goal.ball_position.y = float(sys.argv[1])
     goal.ball_position.z = 0

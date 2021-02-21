@@ -3,8 +3,8 @@
 namespace bitbots_dynamic_kick {
 
 Stabilizer::Stabilizer() {
-  ros::NodeHandle pid_x_nh = ros::NodeHandle("/dynamic_kick/pid_x");
-  ros::NodeHandle pid_y_nh = ros::NodeHandle("/dynamic_kick/pid_y");
+  ros::NodeHandle pid_x_nh = ros::NodeHandle("dynamic_kick/pid_x");
+  ros::NodeHandle pid_y_nh = ros::NodeHandle("dynamic_kick/pid_y");
   pid_x_.init(pid_x_nh, false);
   pid_y_.init(pid_y_nh, false);
   reset();
