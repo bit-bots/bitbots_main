@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="robot_ns" default="robot"/>
     <arg name="sim" default="false"/>
     <arg name="use_game_settings" default="true"/>
     <arg name="motion" default="true"/>
@@ -35,17 +34,6 @@
         <arg name="vision" value="$(arg vision)" />
     </include>
 
-<<<<<<< HEAD
-    <include file="$(find bitbots_bringup)/launch/tools.launch" ns="$(arg robot_ns)"/>
-
-    <group if="$(arg motion)" ns="$(arg robot_ns)">
-        <include file="$(find bitbots_bringup)/launch/motion.launch">
-            <arg name="sim" value="$(arg sim)"/>
-            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-        </include>
-    </group>
-=======
     <!-- load some monitoring tools -->
     <include file="$(find bitbots_bringup)/launch/tools.launch" />
->>>>>>> master
 </launch>
