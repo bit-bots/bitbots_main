@@ -455,7 +455,7 @@ double DynupEngine::calcBackSplines() {
   // since angle between torso and foot changes, we need to apply sin/cos to compute in relation to feet.
   // this is necessary since it will be the correct frame again after next torso rotation
   // shift torso by general x offset + extra parameter to allow positioning of CoM.
-  r_foot_spline_.x()->addPoint(time, -params_.trunk_height_back_1);
+  r_foot_spline_.x()->addPoint(time, -params_.trunk_height_back);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.com_shift_1);
   r_foot_spline_.roll()->addPoint(time, 0);
@@ -494,7 +494,7 @@ double DynupEngine::calcBackSplines() {
   angle_foot = -M_PI * params_.trunk_overshoot_angle_back /180;
   r_foot_spline_.x()->addPoint(time, -params_.com_shift_2);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -params_.trunk_height_back_2);
+  r_foot_spline_.z()->addPoint(time, -params_.trunk_height_back);
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, angle_foot);
   r_foot_spline_.yaw()->addPoint(time, 0);
@@ -517,7 +517,7 @@ double DynupEngine::calcBackSplines() {
   l_foot_spline_.yaw()->addPoint(time, 0);
   r_foot_spline_.x()->addPoint(time, -params_.com_shift_2);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -params_.trunk_height_back_2);
+  r_foot_spline_.z()->addPoint(time, -params_.trunk_height_back);
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
   r_foot_spline_.yaw()->addPoint(time, 0);

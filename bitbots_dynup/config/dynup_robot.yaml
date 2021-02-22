@@ -1,17 +1,17 @@
 dynup:
   # Engine
   engine_rate: 240
+
+  # end pose
   foot_distance: 0.2
   trunk_x_final: -0.025
   hand_walkready_pitch: -60
 
   # Back
   leg_min_length_back: 0.22
-  trunk_x_back: 0.11
   hands_behind_back_x: 0.1
   hands_behind_back_z: 0.1
-  trunk_height_back_1: 0.22
-  trunk_height_back_2: 0.22
+  trunk_height_back: 0.22
   com_shift_1: 0.15
   com_shift_2: 0.05
   foot_angle: 80
