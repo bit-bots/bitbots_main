@@ -1,29 +1,28 @@
 ball:
-  ball_topic: '/balls_in_image'
+  ball_topic: 'balls_in_image'
   # ballradius in meter
   ball_radius: 0.075
 
 lines:
-  lines_topic: '/line_in_image'
+  lines_topic: 'line_in_image'
   # if the line_in_image message is used to only to sent points and a point cloud should be published
   lines_relative: true
   pointcloud: true
 
 goalposts:
-  goalposts_topic: '/goal_posts_in_image'
+  goalposts_topic: 'goal_posts_in_image'
   footpoint_out_of_image_threshold: 30
   bar_height: 2.0
 
 obstacles:
-  obstacles_topic: '/obstacles_in_image'
+  obstacles_topic: 'obstacles_in_image'
 
 field_boundary:
-  field_boundary_topic: '/field_boundary_in_image'
+  field_boundary_topic: 'field_boundary_in_image'
 
 camera_info:
-  camera_info_topic: '/camera_info'
+  camera_info_topic: 'camera/camera_info'
 
 masks:
-  line_mask: '/line_mask_in_image'
+  line_mask: 'line_mask_in_image'
 
-publish_frame: 'base_footprint'

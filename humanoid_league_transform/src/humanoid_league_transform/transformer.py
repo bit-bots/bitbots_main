@@ -27,18 +27,19 @@ class Transformer(object):
         self._ball_height = rospy.get_param("~ball/ball_radius", 0.075)
         self._bar_height = rospy.get_param("~goalposts/bar_height", 2.0)
         self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
+        self._base_footprint_frame = rospy.get_param("~base_footprint_frame", "base_footprint")
         self._goalpost_footpoint_out_of_image_threshold = \
             rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 30)
 
-        camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "/camera_info")
-        ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "/balls_in_image")
-        lines_in_image_topic = rospy.get_param("~lines/lines_topic", "/line_in_image")
-        goalposts_in_image_topic = rospy.get_param("~goalposts/goalposts_topic", "/goalposts_in_image")
-        obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "/obstacles_in_image")
+        camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "camera/camera_info")
+        ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "balls_in_image")
+        lines_in_image_topic = rospy.get_param("~lines/lines_topic", "line_in_image")
+        goalposts_in_image_topic = rospy.get_param("~goalposts/goalposts_topic", "goalposts_in_image")
+        obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "obstacles_in_image")
         field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
-                                                        "/field_boundary_in_image")
+                                                        "field_boundary_in_image")
         line_mask_in_image_topic = rospy.get_param("~masks/line_mask",
-                                                        "/line_mask_in_image")
+                                                        "line_mask_in_image")
 
         publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
         publish_lines_as_pointcloud = rospy.get_param("~lines/pointcloud", False)
@@ -67,12 +68,12 @@ class Transformer(object):
                          "to " + self._camera_info.header.frame_id)
 
         # Also check if we can transform from optical frame to base_footprint
-        while not self._tf_buffer.can_transform("base_footprint",
+        while not self._tf_buffer.can_transform(self._base_footprint_frame,
                                                 self._camera_info.header.frame_id,
                                                 rospy.Time(0),
                                                 timeout=rospy.Duration(5)):
-            rospy.logerr(rospy.get_name() + ": Could not get transformation from 'base_footprint' to " +
-                         self._camera_info.header.frame_id)
+            rospy.logerr(rospy.get_name() + ": Could not get transformation from " + self._base_footprint_frame +
+                         " to " + self._camera_info.header.frame_id)
 
         # Publishers TODO make topics configurable
         self._balls_relative_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1)
@@ -312,7 +313,7 @@ class Transformer(object):
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
 
-        base_frame = "base_footprint"
+        base_frame = self._base_footprint_frame
 
         field_normal = PointStamped()
         field_normal.header.frame_id = base_frame
