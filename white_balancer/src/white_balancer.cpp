@@ -229,7 +229,7 @@ int main(int argc, char **argv)
     // Init
     ros::init(argc, argv, "white_balancer");
     ros::NodeHandle nh;
-    ros::NodeHandle pnh ("white_balancer");
+    ros::NodeHandle pnh ("~");
     WhiteBalancer w(nh, pnh);
 
     return 0;
