@@ -7,12 +7,6 @@
   <arg name="odom_topic" default="motion_odometry" />
   <arg name="laser_topic" default="scan" />
   <arg name="use_game_settings" default="false"/>
-  <arg name="localization" default="false"/>
-
-  <group unless="$(arg localization)">
-    <node name="tf_odom_to_map" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen"/>
-    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/models/field2019.yaml"/>
-  </group>
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find bitbots_move_base)/config/costmap_common_config.yaml" command="load" ns="global_costmap" />

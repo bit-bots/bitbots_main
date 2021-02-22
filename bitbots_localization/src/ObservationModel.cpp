@@ -70,6 +70,16 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
     weight = min_weight_;
   }
 
+
+  // reduce weight if particle is too far outside of the field:
+  float range = config_.out_of_field_range;
+  if ( state.getXPos() > (config_.field_x + config_.field_padding)/2 + range
+    || state.getXPos() < -(config_.field_x + config_.field_padding)/2 - range
+    || state.getYPos() > (config_.field_y + config_.field_padding)/2 + range
+    || state.getYPos() < -(config_.field_y + config_.field_padding)/2 - range){
+    weight = weight - config_.out_of_field_weight_decrease;
+  }
+
   return weight; //exponential?
 }
 
@@ -83,11 +93,16 @@ void RobotPoseObservationModel::set_measurement_lines(hlm::LineInformationRelati
 
 
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::PointCloud2 measurement){
-  sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x");
-  for (; iter_xyz != iter_xyz.end(); ++iter_xyz)
+  int counter = 0;
+  for (sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x"); iter_xyz != iter_xyz.end(); ++iter_xyz)
   {
-      std::pair<double, double> linePolar = cartesianToPolar(iter_xyz[0], iter_xyz[1]);
-      last_measurement_lines_.push_back(linePolar);
+    counter ++;
+    if (counter % 10 != 0 )
+    {
+      continue;
+    }
+    std::pair<double, double> linePolar = cartesianToPolar(iter_xyz[0], iter_xyz[1]);
+    last_measurement_lines_.push_back(linePolar);
   }
 }
 

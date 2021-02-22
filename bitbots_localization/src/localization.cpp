@@ -45,17 +45,32 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   t_crossings_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
   crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
-  ros::Duration(1).sleep();
+  reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+  service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
 
-  service_ = pnh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+  // Get field name
+  std::string field;
+  nh_.getParam("fieldname", field);
 
-  ROS_INFO_STREAM("Setting path to " << config.map_path_lines);
-  lines_.reset(new Map(config.map_path_lines, config));
-  goals_.reset(new Map(config.map_path_goals, config));
-  field_boundary_.reset(new Map(config.map_path_field_boundary, config));
-  corner_.reset(new Map(config.map_path_corners, config));
-  t_crossings_map_.reset(new Map(config.map_path_tcrossings, config));
-  crosses_map_.reset(new Map(config.map_path_crosses, config));
+  // Check if mesurement type is used and load the correct map for that
+  if(config.lines_factor) {
+    lines_.reset(new Map(field, "lines.png", config));
+  }
+  if(config.goals_factor){
+    goals_.reset(new Map(field, "goals.png", config));
+  }
+  if(config.field_boundary_factor){
+    field_boundary_.reset(new Map(field, "field_boundary.png", config));
+  }
+  if(config.corners_factor){
+    corner_.reset(new Map(field, "field_boundary.png", config));
+  }
+  if(config.t_crossings_factor){
+    t_crossings_map_.reset(new Map(field, "t_crossings.png", config));
+  }
+  if(config.crosses_factor){
+    crosses_map_.reset(new Map(field, "crosses.png", config));
+  }
 
   line_information_relative_.header.stamp = ros::Time(0);
   line_pointcloud_relative_.header.stamp = ros::Time(0);
@@ -86,43 +101,57 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
                            config.diffusion_t_std_dev,
                            config.diffusion_multiplicator,
                            drift_cov));
-  robot_state_distribution_start_left_.reset(new RobotStateDistributionStartLeft(random_number_generator_,
-                                                                                 std::make_pair(config.initial_robot_x1,
-                                                                                                config
-                                                                                                    .initial_robot_y1),
-                                                                                 config.initial_robot_t1,
-                                                                                 std::make_pair(config.initial_robot_x2,
-                                                                                                config
-                                                                                                    .initial_robot_y2),
-                                                                                 config.initial_robot_t2,
-                                                                                 std::make_pair(config.field_x,
-                                                                                                config.field_y)));
-  robot_state_distribution_start_right_.reset(new RobotStateDistributionStartRight(random_number_generator_,
-                                                                                   std::make_pair(config
-                                                                                                      .initial_robot_x1,
-                                                                                                  config
-                                                                                                      .initial_robot_y1),
-                                                                                   config.initial_robot_t1,
-                                                                                   std::make_pair(config
-                                                                                                      .initial_robot_x2,
-                                                                                                  config
-                                                                                                      .initial_robot_y2),
-                                                                                   config.initial_robot_t2,
-                                                                                   std::make_pair(config.field_x,
-                                                                                                  config.field_y)));
-  robot_state_distribution_left_half_.reset(new RobotStateDistributionLeftHalf(random_number_generator_,
-                                                                               std::make_pair(config.field_x,
-                                                                                              config.field_y)));
-  robot_state_distribution_right_half_.reset(new RobotStateDistributionRightHalf(random_number_generator_,
-                                                                                 std::make_pair(config.field_x,
-                                                                                                config.field_y)));
-  robot_state_distribution_position_.reset(new RobotStateDistributionPosition(random_number_generator_,
-                                                                              config.initial_robot_x,
-                                                                              config.initial_robot_y));
-  robot_state_distribution_pose_.reset(new RobotStateDistributionPose(random_number_generator_,
-                                                                      config.initial_robot_x,
-                                                                      config.initial_robot_y,
-                                                                      config.initial_robot_t));
+
+  robot_state_distribution_start_left_.reset(
+    new RobotStateDistributionStartLeft(
+      random_number_generator_,
+      std::make_pair(
+        config.initial_robot_x1,
+        config.initial_robot_y1),
+      config.initial_robot_t1,
+      std::make_pair(
+        config.initial_robot_x2,
+        config.initial_robot_y2),
+      config.initial_robot_t2));
+
+  robot_state_distribution_start_right_.reset(
+    new RobotStateDistributionStartRight(
+      random_number_generator_,
+      std::make_pair(
+        config.initial_robot_x1,
+        config.initial_robot_y1),
+      config.initial_robot_t1,
+      std::make_pair(
+        config.initial_robot_x2,
+        config.initial_robot_y2),
+      config.initial_robot_t2));
+
+  robot_state_distribution_left_half_.reset(
+    new RobotStateDistributionLeftHalf(
+      random_number_generator_,
+      std::make_pair(
+        config.field_x,
+        config.field_y)));
+
+  robot_state_distribution_right_half_.reset(
+    new RobotStateDistributionRightHalf(
+      random_number_generator_,
+      std::make_pair(
+        config.field_x,
+        config.field_y)));
+
+  robot_state_distribution_position_.reset(
+    new RobotStateDistributionPosition(
+      random_number_generator_,
+      config.initial_robot_x,
+      config.initial_robot_y));
+
+  robot_state_distribution_pose_.reset(
+    new RobotStateDistributionPose(
+      random_number_generator_,
+      config.initial_robot_x,
+      config.initial_robot_y,
+      config.initial_robot_t));
 
   resampling_.reset(new pf::ImportanceResampling<RobotState>());
 
@@ -234,6 +263,17 @@ std::vector<gm::Point32> Localization::interpolateFieldboundaryPoints(gm::Point3
   }
 
   return pointsInterpolated;
+}
+
+bool Localization::set_paused_callback(bl::set_paused::Request &req,
+                                       bl::set_paused::Response &res) {
+  if(req.paused) {
+    publishing_timer_.stop();
+  } else {
+    publishing_timer_.start();
+  }
+  res.success = true;
+  return true;
 }
 
 bool Localization::reset_filter_callback(bl::reset_filter::Request &req,

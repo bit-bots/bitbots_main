@@ -3,7 +3,7 @@
   # MISC #
   ########
 
-  init_mode: 4
+  init_mode: 1
 
   field_boundary_interpolation_steps: 1
 
@@ -37,12 +37,12 @@
 
 
   particle_number: 500
-  resampling_interval: 15
+  resampling_interval: 5
 
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.5
-  diffusion_multiplicator: 0.005
+  diffusion_multiplicator: 0.01
 
   drift_distance_to_direction: 3.0
   drift_roation_to_direction: 0.0
@@ -55,7 +55,9 @@
   max_translation: 0.09
 
   min_weight: 0.01
-  min_resampling_weight: 0.5
+  min_resampling_weight: 0.1
+  out_of_field_weight_decrease: 0.01
+  out_of_field_range: 0.5  # in m
   percentage_best_particles: 50
 
   distance_factor : 0.5

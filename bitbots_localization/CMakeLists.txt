@@ -8,20 +8,21 @@ add_compile_options(-std=c++17)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  particle_filter
-  roscpp
-  roslib
-  std_msgs
-  visualization_msgs
-  dynamic_reconfigure
-  humanoid_league_msgs
-  eigen_conversions
-  tf2
-  tf2_ros
-  message_generation
-        cv_bridge
-        image_transport
+    geometry_msgs
+    particle_filter
+    roscpp
+    roslib
+    std_msgs
+    visualization_msgs
+    dynamic_reconfigure
+    humanoid_league_msgs
+    eigen_conversions
+    tf2
+    tf2_ros
+    message_generation
+    cv_bridge
+    image_transport
+    bitbots_docs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -33,6 +34,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 add_service_files(
    FILES
    reset_filter.srv
+   set_paused.srv
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -53,6 +55,8 @@ catkin_package(
         CATKIN_DEPENDS geometry_msgs particle_filter roscpp roslib std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure
 #  DEPENDS system_lib
 )
+
+enable_bitbots_docs()
 
 ###########
 ## Build ##
