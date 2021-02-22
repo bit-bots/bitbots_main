@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     def imu_cb(msg: Imu):
         global last_move_time
-        if msg.angular_velocity.x > 0.05 or msg.angular_velocity.y > 0.05:
+        if msg.angular_velocity.x > 0.15 or msg.angular_velocity.y > 0.15:
             last_move_time = rospy.Time.now().to_sec()
 
     rospy.init_node('dynup_dummy_client', anonymous=True)

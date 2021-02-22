@@ -32,17 +32,17 @@ dynup:
   max_leg_angle: 70
   trunk_overshoot_angle_front: 10
   hands_pitch: -30
-  time_hands_side: 1
-  time_hands_rotate: 1
-  time_foot_close: 1
-  time_hands_front: 1
-  time_foot_ground_front: 1 # do at same time as time_hands_front
-  time_torso_45: 1
-  time_to_squat: 1
-  wait_in_squat_front: 1
+  time_hands_side: 0.3
+  time_hands_rotate: 0.3
+  time_foot_close: 0.3
+  time_hands_front: 0.3
+  time_foot_ground_front: 0.3 # do at same time as time_hands_front
+  time_torso_45: 0.4
+  time_to_squat: 0.6
+  wait_in_squat_front: 1.0
 
   # Rise
-  rise_time: 1
+  rise_time: 1.0
 
   # Descend
   descend_time: 0.25
