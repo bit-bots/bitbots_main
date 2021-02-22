@@ -154,9 +154,8 @@ if __name__ == "__main__":
             print("invalid input")
             continue
 
-        print(rospy.Time.now().to_sec() - last_move_time)
         # wait till robot is standing at least 3 seconds not moving
-        while last_move_time and rospy.Time.now().to_sec() - last_move_time < 3:
+        while last_move_time is None or rospy.Time.now().to_sec() - last_move_time < 3:
             rospy.sleep(0.0001)
         # compute duration
         duration = last_move_time - start_time
