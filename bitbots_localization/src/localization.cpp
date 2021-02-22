@@ -46,7 +46,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
   reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
-  service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+  pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
 
   // Get field name
   std::string field;
