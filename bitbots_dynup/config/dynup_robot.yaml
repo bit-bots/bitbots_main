@@ -15,10 +15,10 @@ dynup:
   hands_behind_back_z: 0.1
   trunk_height_back: 0.22
   com_shift_1: 0.15
-  com_shift_2: 0.05
+  com_shift_2: 0.08
   foot_angle: 80
   arms_angle_back: 135
-  trunk_overshoot_angle_back: 25
+  trunk_overshoot_angle_back: 10
   time_legs_close: 0.5
   time_foot_ground_back: 0.5
   time_full_squat_hands: 0.5
