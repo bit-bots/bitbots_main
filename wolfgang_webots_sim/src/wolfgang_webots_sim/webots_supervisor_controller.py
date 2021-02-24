@@ -125,6 +125,10 @@ class SupervisorController:
     def get_ball_pose(self):
         return self.ball.getField("translation").getSFVec3f()
 
+    def get_ball_velocity(self):
+        if self.ball:
+            return self.ball.getVelocity()
+
     def node(self):
         s = self.supervisor.getSelected()
         if s is not None:
