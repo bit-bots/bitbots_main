@@ -456,7 +456,7 @@ void ServoBusInterface::processVte(bool success) {
         // turn off torque on all motors
         // todo should also turn off power, but is not possible yet
         goal_torque_ = false;
-        ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!! In Motor %d", i);
+        ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!! In Motor %s", joint_names_[i].c_str());
         speakError(speak_pub_, "Overload Error!");
       }
     }
