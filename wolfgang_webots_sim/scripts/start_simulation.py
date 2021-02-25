@@ -9,7 +9,6 @@ import rospy
 
 import argparse
 
-from wolfgang_webots_sim.utils import fix_webots_folder
 from wolfgang_webots_sim.webots_controller import WebotsController
 from wolfgang_webots_sim.webots_robot_controller import RobotController
 from wolfgang_webots_sim.webots_supervisor_controller import SupervisorController
@@ -24,17 +23,19 @@ path = rospack.get_path("wolfgang_webots_sim")
 if args.nogui:
     mode = "fast"
     batch = "--batch"
+    no_rendering = "--no-rendering"
 else:
     mode = "normal"
     batch = ""
+    no_rendering = ""
 
 arguments = ["webots",
              batch,
-             path +"/worlds/flat_world.wbt"]
+             no_rendering,
+             path + "/worlds/flat_world.wbt"]
 sim_proc = subprocess.Popen(arguments)
 
 os.environ["WEBOTS_PID"] = str(sim_proc.pid)
-fix_webots_folder(sim_proc.pid)
 
 robot_names = ["amy", "rory", "jack", "donna", "melody"]
 for i in range(2):

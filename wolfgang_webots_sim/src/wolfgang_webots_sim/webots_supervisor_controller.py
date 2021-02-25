@@ -33,8 +33,6 @@ class SupervisorController:
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
         elif mode == 'paused':
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_PAUSE)
-        elif mode == 'run':
-            self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_RUN)
         elif mode == 'fast':
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_FAST)
         else:

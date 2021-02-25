@@ -142,6 +142,7 @@
     <disable_collisions link1="l_hip_1" link2="r_shoulder" reason="Never" />
     <disable_collisions link1="l_hip_1" link2="r_upper_arm" reason="Never" />
     <disable_collisions link1="l_hip_1" link2="torso" reason="Adjacent" />
+    <disable_collisions link1="l_hip_1" link2="l_upper_leg" reason="Adjacent" />
     <disable_collisions link1="l_hip_2" link2="l_lower_leg" reason="Never" />
     <disable_collisions link1="l_hip_2" link2="l_shoulder" reason="Never" />
     <disable_collisions link1="l_hip_2" link2="l_upper_arm" reason="Never" />
@@ -164,6 +165,7 @@
     <disable_collisions link1="l_lower_leg" link2="l_shoulder" reason="Never" />
     <disable_collisions link1="l_lower_leg" link2="l_upper_arm" reason="Never" />
     <disable_collisions link1="l_lower_leg" link2="l_upper_leg" reason="Adjacent" />
+    <disable_collisions link1="l_lower_leg" link2="l_foot" reason="Adjacent" />
     <disable_collisions link1="l_lower_leg" link2="llb" reason="Never" />
     <disable_collisions link1="l_lower_leg" link2="llf" reason="Never" />
     <disable_collisions link1="l_lower_leg" link2="lrb" reason="Never" />
@@ -267,6 +269,7 @@
     <disable_collisions link1="r_hip_1" link2="rlf" reason="Never" />
     <disable_collisions link1="r_hip_1" link2="rrf" reason="Never" />
     <disable_collisions link1="r_hip_1" link2="torso" reason="Adjacent" />
+    <disable_collisions link1="r_hip_1" link2="r_upper_leg" reason="Adjacent" />
     <disable_collisions link1="r_hip_2" link2="r_lower_leg" reason="Never" />
     <disable_collisions link1="r_hip_2" link2="r_shoulder" reason="Never" />
     <disable_collisions link1="r_hip_2" link2="r_upper_arm" reason="Never" />
@@ -279,6 +282,7 @@
     <disable_collisions link1="r_lower_leg" link2="r_shoulder" reason="Never" />
     <disable_collisions link1="r_lower_leg" link2="r_upper_arm" reason="Never" />
     <disable_collisions link1="r_lower_leg" link2="r_upper_leg" reason="Adjacent" />
+    <disable_collisions link1="r_lower_leg" link2="r_foot" reason="Adjacent" />
     <disable_collisions link1="r_lower_leg" link2="rlb" reason="Never" />
     <disable_collisions link1="r_lower_leg" link2="rlf" reason="Never" />
     <disable_collisions link1="r_lower_leg" link2="rrb" reason="Never" />
