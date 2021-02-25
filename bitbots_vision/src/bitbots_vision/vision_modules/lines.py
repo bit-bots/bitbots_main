@@ -29,6 +29,7 @@ class LineDetector:
         self._linepoints_range = config['line_detector_linepoints_range']
         self._use_line_points = config['line_detector_use_line_points']
         self._use_line_mask = config['line_detector_use_line_mask']
+        self._object_grow = config['line_detector_object_remove_grow']
 
         # Set if values should be cached
         self._caching = config['caching']
@@ -170,7 +171,7 @@ class LineDetector:
         """
         mask = self.get_line_mask().copy()
         for candidate in candidate_list:
-            mask = candidate.set_in_mask(mask, 0)
+            mask = candidate.set_in_mask(mask, 0, self._object_grow)
         return mask
 
 
