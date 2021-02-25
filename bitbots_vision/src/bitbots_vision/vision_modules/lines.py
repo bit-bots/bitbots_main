@@ -161,6 +161,12 @@ class LineDetector:
             self._white_mask = cv2.medianBlur(white_mask, 3)
         return self._white_mask
 
+    def get_line_mask_without_other_objects(self, candidate_list):
+        mask = self.get_line_mask().copy()
+        for candidate in candidate_list:
+            mask = candidate.subtract_from_mask(mask)
+        return mask
+
 
 def filter_points_with_candidates(linepoints, candidates):
     """
