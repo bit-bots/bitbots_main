@@ -19,7 +19,7 @@ class LocalizationBlackboard:
         self.covariance = numpy.array([])
 
         #GameState
-        self.game_state_recived = False
+        self.game_state_received = False
         self.game_state = None
         self.secondary_state = None
         self.first_half = None
