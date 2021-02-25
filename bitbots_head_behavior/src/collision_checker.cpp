@@ -20,7 +20,7 @@ CollisionChecker::CollisionChecker() {
   planning_scene_.reset(new planning_scene::PlanningScene(robot_model_));
   robot_state_.reset(new robot_state::RobotState(robot_model_));
   robot_state_->setToDefaultValues();
-  ROS_INFO("Collision checker setup finished\n");
+  ROS_INFO("Collision checker setup finished");
 }
 
 void CollisionChecker::set_head_motors(double pan, double tilt) {
