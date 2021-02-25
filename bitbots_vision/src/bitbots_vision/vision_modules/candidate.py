@@ -159,12 +159,20 @@ class Candidate:
                 <= point[1]
                 <= self.get_upper_left_y() + self.get_height())
 
-    def subtract_from_mask(self, mask, grow=1):
+    def set_in_mask(self, mask, value=0, grow=1):
+        """
+        Sets the bounding box of this candidate in the given mask to the given value.
+
+        :param mask: Binary mask with the shape of the input image
+        :param value: The value of the bounding box region
+        :param grow: A scalar which defines how much arround the box is also removed
+        :returns mask: The input mask without this candidate
+        """
         width = int(self.get_width() * grow * 0.5)
         height = int(self.get_height() * grow * 0.5)
         mask[
             max(self.get_center_y() - height, 0) : min(self.get_center_y() + height, mask.shape[0]),
-            max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = 0
+            max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = value
         return mask
 
     @staticmethod

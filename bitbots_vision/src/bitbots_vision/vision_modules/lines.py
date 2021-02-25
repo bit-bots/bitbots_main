@@ -170,7 +170,7 @@ class LineDetector:
         """
         mask = self.get_line_mask().copy()
         for candidate in candidate_list:
-            mask = candidate.subtract_from_mask(mask)
+            mask = candidate.set_in_mask(mask, 0)
         return mask
 
 
