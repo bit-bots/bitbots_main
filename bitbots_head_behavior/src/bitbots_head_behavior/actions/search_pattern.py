@@ -103,6 +103,7 @@ class AbstractSearchPattern(AbstractActionElement):
             current_tilt_position=current_head_tilt)
 
         if not success:
+            rospy.logwarn(f"Pattern position {self.index} collided, the pattern should probably be changed")
             # Try the next pattern position
             self.index += 1
         else:
