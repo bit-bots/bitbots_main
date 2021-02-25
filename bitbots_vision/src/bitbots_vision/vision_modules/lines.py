@@ -162,6 +162,12 @@ class LineDetector:
         return self._white_mask
 
     def get_line_mask_without_other_objects(self, candidate_list):
+        """
+        Generates a white mask that not contains pixels in the green field, above the field boundary or in the specified candidates.
+
+        :param candidate_list: List ob candidate bounding boxes that are subtracted from the final mask
+        :return: Mask
+        """
         mask = self.get_line_mask().copy()
         for candidate in candidate_list:
             mask = candidate.subtract_from_mask(mask)
