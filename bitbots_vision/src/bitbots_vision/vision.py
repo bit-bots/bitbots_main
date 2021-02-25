@@ -69,7 +69,8 @@ class Vision:
         self._sub_image = None
         self._sub_dynamic_color_lookup_table_msg_topic = None
 
-        self._debug_image_creator = debug.DebugImage()
+        # Debug image drawer placeholder
+        self._debug_image_creator = None
 
         # Register static publishers
         # Register publisher of 'vision_config'-messages
@@ -181,11 +182,12 @@ class Vision:
 
         # Should the debug image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_debug_image'):
-            self._publish_debug_image = config['vision_publish_debug_image']
-            if self._publish_debug_image:
+            if config['vision_publish_debug_image']:
                 rospy.loginfo('Debug images are enabled', logger_name="vision")
             else:
                 rospy.loginfo('Debug images are disabled', logger_name="vision")
+            # Create debug drawer
+            self._debug_image_creator = debug.DebugImage(config['vision_publish_debug_image'])
 
         # Should the fcnn output (only under the field boundary) be published?
         if ros_utils.config_param_change(self._config, config, 'ball_fcnn_publish_output'):
@@ -509,12 +511,14 @@ class Vision:
         ########
 
         # Get a number of top balls under the field boundary, which have an high enough rating
-        top_balls = \
-            candidate.Candidate.rating_threshold(
-                self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_top_candidates(count=self._max_balls),
-                    self._ball_candidate_y_offset),
-                self._ball_candidate_threshold)
+        all_balls = self._ball_detector.get_top_candidates(count=self._max_balls)
+        balls_under_field_boundary = \
+            self._field_boundary_detector.candidates_under_convex_field_boundary(
+                all_balls,
+                self._ball_candidate_y_offset)
+        top_balls = candidate.Candidate.rating_threshold(
+            balls_under_field_boundary,
+            self._ball_candidate_threshold)
         # check whether there are ball candidates
         if top_balls:
             # Convert ball cancidate list to ball message list
@@ -523,6 +527,20 @@ class Vision:
             balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
             self._pub_balls.publish(balls_msg)
+
+        # Debug draw all ball candidates
+        self._debug_image_creator.draw_ball_candidates(
+            all_balls,
+            (0, 0, 255))
+        # Debug draw possible ball candidates under the field boundary
+        self._debug_image_creator.draw_ball_candidates(
+            balls_under_field_boundary,
+            (0, 255, 255))
+        # Debug draw top ball candidate
+        self._debug_image_creator.draw_ball_candidates(
+            top_balls,
+            (0, 255, 0),
+            thickness=2)
 
         #############
         # Obstacles #
@@ -544,6 +562,22 @@ class Vision:
         # Publish obstacles
         self._pub_obstacle.publish(obstacles_msg)
 
+        # Debug draw unknown obstacles
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._unknown_obstacle_detector.get_candidates(),
+            (0, 0, 0),
+            thickness=3)
+        # Debug draw red obstacles
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._red_obstacle_detector.get_candidates(),
+            (0, 0, 255),
+            thickness=3)
+        # Debug draw blue obstacles
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._blue_obstacle_detector.get_candidates(),
+            (255, 0, 0),
+            thickness=3)
+
         ########
         # Goal #
         ########
@@ -562,6 +596,17 @@ class Vision:
             # If we have a goal, lets publish it
             self._pub_goal_posts.publish(goal_posts_msg)
 
+        # Debug draw all goal posts
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._goalpost_detector.get_candidates(),
+            (180, 180, 180),
+            thickness=3)
+        # Debug draw goal posts which start in the field
+        self._debug_image_creator.draw_obstacle_candidates(
+            goal_posts,
+            (255, 255, 255),
+            thickness=3)
+
         #########
         # Lines #
         #########
@@ -575,6 +620,11 @@ class Vision:
             # Publish lines
             self._pub_lines.publish(line_msg)
 
+            # Draw debug line points
+            self._debug_image_creator.draw_points(
+                line_points,
+                (0, 0, 255))
+
         if self._use_line_mask:
             # Define detections (Balls, Goal Posts) that are excluded from the line mask
             excluded_objects = top_balls + goal_posts
@@ -584,6 +634,12 @@ class Vision:
             line_mask_message = ros_utils.build_image_msg(image_msg.header, line_mask, '8UC1')
             # Publish line mask
             self._pub_line_mask.publish(line_mask_message)
+
+            # Draw debug line mask
+            self._debug_image_creator.draw_mask(
+                line_mask,
+                color=(255, 0, 0),
+                opacity=0.8)
 
         ##################
         # Field boundary #
@@ -595,6 +651,15 @@ class Vision:
         convex_field_boundary_msg = ros_utils.build_field_boundary_polygon_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self._pub_convex_field_boundary.publish(convex_field_boundary_msg)
+
+        # Debug draw convex field boundary
+        self._debug_image_creator.draw_field_boundary(
+            convex_field_boundary,
+            (0, 255, 255))
+        # Debug draw field boundary
+        self._debug_image_creator.draw_field_boundary(
+            self._field_boundary_detector.get_field_boundary_points(),
+            (0, 0, 255))
 
         #########
         # Debug #
@@ -648,104 +713,13 @@ class Vision:
                     ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
 
         # Check if we should draw debug image
-        if self._publish_debug_image:
-            # Draw debug image
-            debug_image = self._create_debug_image(image)
+        if self._debug_image_creator.active:
             # publish debug image
             self._pub_debug_image.publish(
-                ros_utils.build_image_msg(image_msg.header, debug_image, 'bgr8'))
-
-    def _create_debug_image(self, image):
-        """
-        Draws a debug image
-
-        :param image: untouched image
-        :return: image with debug annotations
-        """
-        # Draw unknown obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._unknown_obstacle_detector.get_candidates(),
-            (0, 0, 0),
-            thickness=3
-        )
-        # Draw red obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._red_obstacle_detector.get_candidates(),
-            (0, 0, 255),
-            thickness=3
-        )
-        # Draw blue obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._blue_obstacle_detector.get_candidates(),
-            (255, 0, 0),
-            thickness=3
-        )
-        # Draw all goal posts
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._goalpost_detector.get_candidates(),
-            (180, 180, 180),
-            thickness=3
-        )
-        # Draw goal posts which start in the field
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._field_boundary_detector.candidates_under_convex_field_boundary(
-                self._goalpost_detector.get_candidates(),
-                self._goal_post_field_boundary_y_offset),
-            (255, 255, 255),
-            thickness=3
-        )
-        # Draw field boundary
-        self._debug_image_creator.draw_field_boundary(
-            self._field_boundary_detector.get_field_boundary_points(),
-            (0, 0, 255)
-        )
-        # Draw convex field boundary
-        self._debug_image_creator.draw_field_boundary(
-            self._field_boundary_detector.get_convex_field_boundary_points(),
-            (0, 255, 255)
-        )
-        # Draw all ball candidates
-        self._debug_image_creator.draw_ball_candidates(
-            self._ball_detector.get_candidates(),
-            (0, 0, 255)
-        )
-        # Draw possible ball candidates under the field boundary
-        self._debug_image_creator.draw_ball_candidates(
-            candidate.Candidate.rating_threshold(
-                self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_candidates(),
-                    self._ball_candidate_y_offset),
-                self._ball_candidate_threshold),
-            (0, 255, 255)
-        )
-        # Draw top ball candidate
-        self._debug_image_creator.draw_ball_candidates(
-            candidate.Candidate.rating_threshold(
-                self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_top_candidates(count=1),
-                    self._ball_candidate_y_offset),
-                self._ball_candidate_threshold),
-            (0, 255, 0),
-            thickness=2
-        )
-        # Draw line points
-        if self._use_line_points:
-            # Draw line points
-            self._debug_image_creator.draw_points(
-                self._line_detector.get_linepoints(),
-                (0, 0, 255)
-            )
-        # Draw line mask
-        if self._use_line_mask:
-            self._debug_image_creator.draw_mask(
-                self._line_detector.get_line_mask_without_other_objects(
-                    []
-                ),
-                color=(255, 0, 0),
-                opacity=0.8
-            )
-        # Return image from the debug image drawer
-        return self._debug_image_creator.get_image()
+                ros_utils.build_image_msg(
+                    image_msg.header,
+                    self._debug_image_creator.get_image(),
+                    'bgr8'))
 
     def _conventional_precalculation(self):
         """
