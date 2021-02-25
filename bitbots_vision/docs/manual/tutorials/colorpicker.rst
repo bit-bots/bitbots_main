@@ -8,7 +8,7 @@ It subscribes to the ``Image`` topic ``/camera/image_proc``.
 
 
 How to Record a Color Lookup Table
-===========================
+==================================
 
 1. Publish images to the topic ``/camera/image_proc``:
 

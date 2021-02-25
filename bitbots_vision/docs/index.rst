@@ -76,7 +76,7 @@ The following parameters are available:
 
 
 Color lookup table files
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The vision depends on the usage of color lookup table files which define color lookup tables primarily to detect the green field color and therefore lines and the field boundary.
 These files are stored in the directory in ``/config/color_lookup_tables/``.
