@@ -9,5 +9,6 @@
     <node pkg="bitbots_teleop" type="joy_node.py" name="joy_to_twist">
         <param name="type" value="$(arg type)"/>
         <param name="head" value="$(arg head)"/>
+        <rosparam command="load" file="$(find bitbots_teleop)/config/controller.yaml" />
     </node>
 </launch>

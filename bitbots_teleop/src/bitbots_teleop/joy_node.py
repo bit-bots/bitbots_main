@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-import yaml
 import rospy
 import actionlib
 import copy
@@ -23,10 +22,7 @@ class JoyNode(object):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node("joy_to_twist", log_level=log_level, anonymous=False)
 
-        with open(Path(__file__).parent / "../../config/controller.yaml", "r") as r:
-            controller_configs = yaml.safe_load(r)
-
-        self.config = controller_configs[rospy.get_param("~type")] # load the controller specific config
+        self.config = rospy.get_param("~" + rospy.get_param("~type"))
 
         # --- Initialize Topics ---
         rospy.Subscriber("/joy", Joy, self.joy_cb, queue_size=1)
