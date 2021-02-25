@@ -112,7 +112,7 @@ class CheckGameStateReceived(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         self.clear_debug_data()
 
-        if not self.blackboard.game_state_recived:
+        if not self.blackboard.game_state_received:
             if not self.blackboard.initialized:
                 self.blackboard.initialized = True
                 return "NO_GAMESTATE_INIT"
