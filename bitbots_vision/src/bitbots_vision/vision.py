@@ -576,8 +576,10 @@ class Vision:
             self._pub_lines.publish(line_msg)
 
         if self._use_line_mask:
+            # Define detections (Balls, Goal Posts) that are excluded from the line mask
+            excluded_objects = top_balls + goal_posts
             # Get line pixel mask
-            line_mask = self._line_detector.get_line_mask()
+            line_mask = self._line_detector.get_line_mask_without_other_objects(excluded_objects)
             # Create line mask message
             line_mask_message = ros_utils.build_image_msg(image_msg.header, line_mask, '8UC1')
             # Publish line mask
@@ -736,7 +738,9 @@ class Vision:
         # Draw line mask
         if self._use_line_mask:
             self._debug_image_creator.draw_mask(
-                self._line_detector.get_line_mask(),
+                self._line_detector.get_line_mask_without_other_objects(
+                    []
+                ),
                 color=(255, 0, 0),
                 opacity=0.8
             )
