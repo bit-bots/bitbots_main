@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 
+import math
 from time import sleep
 import random
 import rospy
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     goal.ball_position.y = float(sys.argv[1])
     goal.ball_position.z = 0
 
-    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, float(sys.argv[2])))
+    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(float(sys.argv[2]))))
 
     goal.kick_speed = 1
 
