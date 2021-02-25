@@ -60,7 +60,7 @@ class LocalizationHandler(object):
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
-            self.dsd.update() 
+            self.dsd.update()
             try:
                 # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()
