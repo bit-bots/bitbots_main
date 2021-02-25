@@ -8,7 +8,6 @@ import rospy
 
 import argparse
 
-from wolfgang_webots_sim.utils import fix_webots_folder
 from wolfgang_webots_sim.webots_controller import WebotsController
 
 parser = argparse.ArgumentParser()
@@ -34,7 +33,6 @@ arguments = ["webots",
 sim_proc = subprocess.Popen(arguments)
 
 os.environ["WEBOTS_PID"] = str(sim_proc.pid)
-fix_webots_folder(sim_proc.pid)
 
 robot_controller = WebotsController('', True, mode=mode)
 
