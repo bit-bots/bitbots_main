@@ -4,9 +4,9 @@ import os
 import cv2
 import rospy
 import rospkg
-import threading
 import time
 from copy import deepcopy
+from threading import Thread, Lock
 from cv_bridge import CvBridge
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
@@ -83,13 +83,13 @@ class Vision:
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
 
-        # Reconfigure dict transfer variable
+        # Reconfigure data transfer variable
         self._transfer_reconfigure_data = None
-        self._transfer_reconfigure_data_read_flag = False
+        self._transfer_reconfigure_data_mutex = Lock()
 
         # Image transfer variable
         self._transfer_image_msg = None
-        self._transfer_image_msg_read_flag = False
+        self._transfer_image_msg_mutex = Lock()
 
         # Yolo placeholder
         self._yolo = None
@@ -112,24 +112,22 @@ class Vision:
         Main loop that processes the images and configuration changes
         """
         while not rospy.is_shutdown():
-            # Lookup if there is another configuration available
+            # Check for reconfiguration data
             if self._transfer_reconfigure_data is not None:
-                # Copy _config from shared memory
-                self._transfer_reconfigure_data_read_flag = True
-                reconfigure_data = deepcopy(self._transfer_reconfigure_data)
-                self._transfer_reconfigure_data_read_flag = False
-                self._transfer_reconfigure_data = None
+                # Copy reconfigure data from shared memory
+                with self._transfer_reconfigure_data_mutex:
+                    reconfigure_data = deepcopy(self._transfer_reconfigure_data)
+                    self._transfer_reconfigure_data = None
                 # Run vision reconfiguration
                 self._configure_vision(*reconfigure_data)
-            # Check if a new image is avalabile
+            # Check for new image
             elif self._transfer_image_msg is not None:
                 # Copy image from shared memory
-                self._transfer_image_msg_read_flag = True
-                image_msg = deepcopy(self._transfer_image_msg)
-                self._transfer_image_msg_read_flag = False
-                self._transfer_image_msg = None
-                # Run the vision pipeline
-                self._handle_image(image_msg)
+                with self._transfer_image_msg_mutex:
+                    image_msg = self._transfer_image_msg
+                    self._transfer_image_msg = None
+                    # Run the vision pipeline
+                    self._handle_image(image_msg)
                 # Now the first image has been processed
                 self._first_image_callback = False
             else:
@@ -142,14 +140,11 @@ class Vision:
         :param config: New _config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        # Check flag
-        while self._transfer_reconfigure_data_read_flag and not rospy.is_shutdown():
-            time.sleep(0.01)
-        # Set data
-        self._transfer_reconfigure_data = (config, level)
+        with self._transfer_reconfigure_data_mutex:
+            # Set data
+            self._transfer_reconfigure_data = (config, level)
 
         return config
-
 
     def _configure_vision(self, config, level):
         """
@@ -172,8 +167,6 @@ class Vision:
         self._ball_candidate_y_offset = config['ball_candidate_field_boundary_y_offset']
         # Maximum offset for balls over the convex field boundary
         self._goal_post_field_boundary_y_offset = config['goal_post_field_boundary_y_offset']
-
-        self._use_dynamic_color_lookup_table = config['dynamic_color_lookup_table_active']
 
         # Which line type should we publish?
         self._use_line_points = config['line_detector_use_line_points']
@@ -238,16 +231,16 @@ class Vision:
         if ros_utils.config_param_change(self._config, config,
                 r'^field_color_detector_|dynamic_color_lookup_table_') and not config['field_color_detector_use_hsv']:
             # Check if the dynamic color lookup table field color detector or the static field color detector should be used
-            if self._use_dynamic_color_lookup_table:
+            if config['dynamic_color_lookup_table_active']:
                 # Set dynamic color lookup table field color detector
                 self._field_color_detector = color.DynamicPixelListColorDetector(
                     config,
                     self._package_path)
             else:
-                self._use_dynamic_color_lookup_table = False
                 # Unregister old subscriber
                 if self._sub_dynamic_color_lookup_table_msg_topic is not None:
-                    self._sub_dynamic_color_lookup_table_msg_topic.unregister()
+                    # self._sub_dynamic_color_lookup_table_msg_topic.unregister()  # Do not use this method, does not work
+                    self._sub_dynamic_color_lookup_table_msg_topic = None
                 # Set the static field color detector
                 self._field_color_detector = color.PixelListColorDetector(
                     config,
@@ -256,17 +249,13 @@ class Vision:
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
                 r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
-            # Override field color hsv detector
-            self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
-
-        if config['field_color_detector_use_hsv']:
-            # Deactivate dynamic color lookup table
-            self._use_dynamic_color_lookup_table = False
             # Unregister old subscriber
             if self._sub_dynamic_color_lookup_table_msg_topic is not None:
-                self._sub_dynamic_color_lookup_table_msg_topic.unregister()
+                # self._sub_dynamic_color_lookup_table_msg_topic.unregister()  # Do not use this method, does not work
                 self._sub_dynamic_color_lookup_table_msg_topic = None
 
+            # Override field color hsv detector
+            self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
         # Get field boundary detector class by name from _config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method'])
@@ -419,7 +408,7 @@ class Vision:
         """
         self._sub_image = ros_utils.create_or_update_subscriber(self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'], buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
 
-        if self._use_dynamic_color_lookup_table:
+        if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
             self._sub_dynamic_color_lookup_table_msg_topic = ros_utils.create_or_update_subscriber(self._config, config, self._sub_dynamic_color_lookup_table_msg_topic, 'ROS_dynamic_color_lookup_table_msg_topic', ColorLookupTable, callback=self._field_color_detector.color_lookup_table_callback, queue_size=1, buff_size=2 ** 20)
 
     def _image_callback(self, image_msg):
@@ -431,19 +420,20 @@ class Vision:
         Sometimes the queue gets to large, even when the size is limited to 1.
         That's, why we drop old images manually.
         """
-        # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
+        # Drops old images and cleans up the queue.
+        # Still accepts very old images, that are most likely from ROS bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
             rospy.logwarn(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)",
                             logger_name="vision")
             return
 
-        # Check flag
-        if self._transfer_image_msg_read_flag:
+        if self._transfer_image_msg_mutex.locked():
             return
 
-        # Transfer the image to the main thread
-        self._transfer_image_msg = image_msg
+        with self._transfer_image_msg_mutex:
+            # Transfer the image to the main thread
+            self._transfer_image_msg = image_msg
 
     def _handle_image(self, image_msg):
         """
@@ -489,9 +479,9 @@ class Vision:
         # Check if the vision should run the conventional and neural net part parallel
         if self._config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
-            fcnn_thread = threading.Thread(target=self._ball_detector.compute)
+            fcnn_thread = Thread(target=self._ball_detector.compute)
 
-            conventional_thread = threading.Thread(target=self._conventional_precalculation())
+            conventional_thread = Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
             fcnn_thread.start()
@@ -629,7 +619,7 @@ class Vision:
 
         # Check, if field mask image should be published
         if self._publish_field_mask_image:
-            if self._use_dynamic_color_lookup_table:
+            if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
                 # Mask image
                 dyn_field_mask = self._field_color_detector.get_mask_image()
                 static_field_mask = self._field_color_detector.get_static_mask_image()

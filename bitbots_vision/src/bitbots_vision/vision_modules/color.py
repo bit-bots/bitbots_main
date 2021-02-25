@@ -1,3 +1,4 @@
+import os
 import abc
 import cv2
 import yaml
@@ -5,7 +6,8 @@ import pickle
 import rospy
 import VisionExtensions
 import numpy as np
-import os
+from copy import deepcopy
+from threading import Lock
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
 
@@ -360,7 +362,6 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # type:(dict, str) -> None
         """
         Initialization of DynamicPixelListColorDetector.
-
         :param dict config: dictionary of the vision node configuration parameters
         :param str package_path: path of package
         :return: None
@@ -370,19 +371,22 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         # Initialization of parent PixelListColorDetector.
         super(DynamicPixelListColorDetector, self).__init__(config, package_path)
 
-        # Annotate global variable. The global is needed due to threading issues
+        # The global is needed due to threading issues
         global _dyn_color_lookup_table
         _dyn_color_lookup_table = np.copy(self._color_lookup_table)
 
-        # Annotate global variable. The global is needed due to threading issues
+        # The global is needed due to threading issues
         global _base_color_lookup_table
         _base_color_lookup_table = np.copy(self._color_lookup_table)
+
+        # The global is needed to transfer the new message data to the main thread
+        global _transfer_color_lookup_table_data_mutex
+        _transfer_color_lookup_table_data_mutex = Lock()
 
     def set_image(self, image):
         # type: (np.array) -> None
         """
         Refreshes class variables after receiving an image
-
         :param image: the current frame of the video feed
         :return: None
         """
@@ -395,7 +399,6 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         """
         Returns the color mask of the cached (or optional given) image based on the static color lookup table
         (0 for not in color range and 255 for in color range)
-
         :param np.array optional_image: Optional input image
         :return np.array: masked image
         """
@@ -409,7 +412,6 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             mask = self._static_mask
             if mask is None:  # Check for cached static mask
                 mask = self._static_mask = self._mask_image(self._image, _base_color_lookup_table)
-
         return mask
 
     def _mask_image(self, image, color_lookup_table=None):
@@ -417,7 +419,6 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         """
         Returns the color mask of the image based on the dynamic color lookup table unless other is specified
         (0 for not in color range and 255 for in color range)
-
         :param np.array image: input image
         :param np.array color_lookup_table: Optional color lookup table
         :return np.array: masked image
@@ -425,38 +426,40 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         if color_lookup_table is None:
             global _dyn_color_lookup_table
             color_lookup_table = _dyn_color_lookup_table
-
         return VisionExtensions.maskImg(image, color_lookup_table)
 
     def color_lookup_table_callback(self, msg):
         # type: (ColorLookupTable) -> None
         """
         This callback gets called inside the vision node, after subscriber received ColorLookupTableMessage from DynamicColorLookupTable-Node.
-
         :param ColorLookupTableMessage msg: ColorLookupTableMessage
         :return: None
         """
-        self._decode_color_lookup_table(msg)
+        global _transfer_color_lookup_table_data_mutex
+        if _transfer_color_lookup_table_data_mutex.locked():
+            return
+
+        with _transfer_color_lookup_table_data_mutex:
+            self._decode_color_lookup_table(msg)  # Decode color lookup table message
 
     def _decode_color_lookup_table(self, msg):
         # type: (ColorLookupTableMessage) -> None
         """
         Imports new color lookup table from ros msg. This is used to communicate with the DynamicColorLookupTable-Node.
-
         :param ColorLookupTableMessage msg: ColorLookupTableMessage
         :return: None
         """
         # Create temporary color lookup table
         # Use the base color lookup table as basis
         global _base_color_lookup_table
-        color_lookup_table_temp = np.copy(_base_color_lookup_table)
+        new_color_lookup_table = np.copy(_base_color_lookup_table)
 
         # Adds new colors to that color lookup table
-        color_lookup_table_temp[
+        new_color_lookup_table[
             msg.blue,
             msg.green,
             msg.red] = 1
 
         # Switches the reference to the new color lookup table
         global _dyn_color_lookup_table
-        _dyn_color_lookup_table = color_lookup_table_temp
+        _dyn_color_lookup_table = new_color_lookup_table
