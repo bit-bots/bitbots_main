@@ -195,7 +195,7 @@ class Candidate:
     def rating_threshold(candidatelist, threshold):
         """
         Returns list of all candidates with rating above given threshold.
-        
+
         :param [Candidate] candidatelist: List of candidates to filter
         :param float threshold: Filter threshold
         :return [Candidate]: Filtered list of candidates
@@ -205,7 +205,7 @@ class Candidate:
     def __str__(self):
         """
         Returns string representation of candidate.
-        
+
         :return str: String representation of candidate
         """
         return f"x1,y1: {self.get_upper_left_x()},{self.get_upper_left_y()} | width,height: {self.get_width()},{self.get_height()} | rating: {self._rating}"
