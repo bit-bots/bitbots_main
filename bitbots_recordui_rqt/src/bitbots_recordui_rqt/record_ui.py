@@ -114,9 +114,9 @@ class RecordUI(Plugin):
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
-        self.state_sub = rospy.Subscriber("/joint_states", JointState, self.state_update, queue_size=1, tcp_nodelay=True)
-        self._joint_pub = rospy.Publisher("/record_motor_goals", JointCommand, queue_size=1)
-        self.effort_pub = rospy.Publisher("/ros_control/set_torque_individual", JointTorque, queue_size=1)
+        self.state_sub = rospy.Subscriber("joint_states", JointState, self.state_update, queue_size=1, tcp_nodelay=True)
+        self._joint_pub = rospy.Publisher("record_motor_goals", JointCommand, queue_size=1)
+        self.effort_pub = rospy.Publisher("ros_control/set_torque_individual", JointTorque, queue_size=1)
 
         self.ids = {"HeadPan": 0,
                "HeadTilt": 1,

@@ -24,8 +24,8 @@ class Pause(object):
         self.pause = False
 
         self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
-        self.pause_publisher = rospy.Publisher("/pause", Bool, queue_size=10, latch=True)
-        self.speak_publisher = rospy.Publisher("/speak", Audio, queue_size=10)
+        self.pause_publisher = rospy.Publisher("pause", Bool, queue_size=10, latch=True)
+        self.speak_publisher = rospy.Publisher("speak", Audio, queue_size=10)
 
         self.talking = rospy.get_param("/pause/talking", True)
 

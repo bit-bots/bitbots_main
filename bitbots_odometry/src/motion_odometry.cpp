@@ -1,22 +1,27 @@
 #include <bitbots_odometry/motion_odometry.h>
 
 MotionOdometry::MotionOdometry() {
-  ros::NodeHandle n("~");
+  ros::NodeHandle n;
+  ros::NodeHandle pnh("~");
   bool publish_walk_odom_tf;
-  n.param<bool>("/publish_walk_odom_tf", publish_walk_odom_tf, false);
+  n.param<bool>("publish_walk_odom_tf", publish_walk_odom_tf, false);
+  pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
+  pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
+  pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  pnh.param<std::string>("odom_frame", odom_frame_, "odom");
   current_support_state_ = 'n';
   previous_support_state_ = 'n';
-  std::string current_support_link = "r_sole";
+  std::string current_support_link = r_sole_frame_;
   std::string next_support_link;
   ros::Subscriber walk_support_state_sub =
-      n.subscribe("/walk_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
+      n.subscribe("walk_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber kick_support_state_sub =
-      n.subscribe("/dynamic_kick_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
+      n.subscribe("dynamic_kick_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber joint_state_sub =
-      n.subscribe("/joint_states", 1, &MotionOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
-  ros::Subscriber odom_subscriber = n.subscribe("/walk_engine_odometry", 1, &MotionOdometry::odomCallback, this);
+      n.subscribe("joint_states", 1, &MotionOdometry::jointStateCb, this, ros::TransportHints().tcpNoDelay());
+  ros::Subscriber odom_subscriber = n.subscribe("walk_engine_odometry", 1, &MotionOdometry::odomCallback, this);
 
-  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("/motion_odometry", 1);
+  ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("motion_odometry", 1);
   odometry_to_support_foot_ = tf2::Transform();
   // set the origin to 0. will be set correctly on recieving first support state
   odometry_to_support_foot_.setOrigin({0, 0, 0});
@@ -42,11 +47,11 @@ MotionOdometry::MotionOdometry() {
       if ((current_support_state_ == 'l' && previous_support_state_ == 'r') ||
           (current_support_state_ == 'r' && previous_support_state_ == 'l')) {
         if (previous_support_state_ == 'l') {
-          current_support_link = "l_sole";
-          next_support_link = "r_sole";
+          current_support_link = l_sole_frame_;
+          next_support_link = r_sole_frame_;
         } else {
-          current_support_link = "r_sole";
-          next_support_link = "l_sole";
+          current_support_link = r_sole_frame_;
+          next_support_link = l_sole_frame_;
         }
 
         try {
@@ -80,15 +85,15 @@ MotionOdometry::MotionOdometry() {
       //publish odometry and if wanted transform to base_link
       try {
         geometry_msgs::TransformStamped
-            current_support_to_base_msg = tf_buffer_.lookupTransform(current_support_link, "base_link", ros::Time(0));
+            current_support_to_base_msg = tf_buffer_.lookupTransform(current_support_link, base_link_frame_, ros::Time(0));
         tf2::Transform current_support_to_base;
         tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
         tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
         geometry_msgs::TransformStamped odom_to_base_link_msg = geometry_msgs::TransformStamped();
         odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
         odom_to_base_link_msg.header.stamp = ros::Time::now();
-        odom_to_base_link_msg.header.frame_id = "odom";
-        odom_to_base_link_msg.child_frame_id = "base_link";
+        odom_to_base_link_msg.header.frame_id = odom_frame_;
+        odom_to_base_link_msg.child_frame_id = base_link_frame_;
         if (publish_walk_odom_tf) {
           ROS_WARN_ONCE("Sending Tf from walk odometry directly");
           br.sendTransform(odom_to_base_link_msg);
@@ -97,8 +102,8 @@ MotionOdometry::MotionOdometry() {
         // odometry as message
         nav_msgs::Odometry odom_msg;
         odom_msg.header.stamp = ros::Time::now();
-        odom_msg.header.frame_id = "odom";
-        odom_msg.child_frame_id = "base_link";
+        odom_msg.header.frame_id = odom_frame_;
+        odom_msg.child_frame_id = base_link_frame_;
         odom_msg.pose.pose.position.x = odom_to_base_link_msg.transform.translation.x;
         odom_msg.pose.pose.position.y = odom_to_base_link_msg.transform.translation.y;
         odom_msg.pose.pose.position.z = odom_to_base_link_msg.transform.translation.z;
@@ -124,16 +129,16 @@ void MotionOdometry::supportCallback(const std_msgs::Char msg) {
     std::string current_support_link;
     if (current_support_state_ == 'l') {
       previous_support_state_ = 'r';
-      current_support_link= "l_sole";
+      current_support_link= l_sole_frame_;
     } else {
       previous_support_state_ = 'l';
-      current_support_link= "r_sole";
+      current_support_link= r_sole_frame_;
     }
     // on receiving first support state we should also set the location in the world correctly
     // we assume that our baseline is on x=0 and y=0
     try{
         geometry_msgs::TransformStamped
-                base_to_current_support_msg = tf_buffer_.lookupTransform("base_link", current_support_link, ros::Time(0), ros::Duration(10.0));
+                base_to_current_support_msg = tf_buffer_.lookupTransform(base_link_frame_, current_support_link, ros::Time(0), ros::Duration(10.0));
         odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                             -1 * base_to_current_support_msg.transform.translation.y, 0});
     }catch (tf2::TransformException ex){

@@ -94,7 +94,9 @@ class KickNode {
   robot_state::RobotStatePtr goal_state_;
   robot_state::RobotStatePtr current_state_;
 
-  /**
+  std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
+
+    /**
    * Do main loop in which KickEngine::update() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */

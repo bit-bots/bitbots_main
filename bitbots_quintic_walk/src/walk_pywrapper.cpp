@@ -40,7 +40,7 @@ void init_ros() {
   ros::init(empty, "walking", ros::init_options::AnonymousName);
 }
 
-PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
+PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>()) {
   set_robot_state(0);
 }
 

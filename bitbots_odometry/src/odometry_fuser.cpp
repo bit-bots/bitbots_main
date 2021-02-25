@@ -11,6 +11,13 @@ imu (rX, rY)
 
 OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   ros::NodeHandle n("");
+  ros::NodeHandle pnh("~");
+  pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
+  pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
+  pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  pnh.param<std::string>("odom_frame", odom_frame_, "odom");
+  pnh.param<std::string>("rotation_frame", rotation_frame_, "rotation");
+  pnh.param<std::string>("imu_frame", imu_frame_, "imu_frame");
   current_support_state_ = 'n';
 
   tf2::Quaternion dummy_orientation;
@@ -38,7 +45,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   ros::Duration(0.5).sleep();
 
   // wait for transforms from joints
-  while (!tf_buffer_.canTransform("l_sole", "base_link", ros::Time(0), ros::Duration(1)) && ros::ok()) {
+  while (!tf_buffer_.canTransform(l_sole_frame_, base_link_frame_, ros::Time(0), ros::Duration(1)) && ros::ok()) {
     ROS_WARN_THROTTLE(30, "Waiting for transforms from robot joints");
   }
 
@@ -90,8 +97,8 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         // publish rotation point as debug
         geometry_msgs::TransformStamped rotation_point_msg;
         rotation_point_msg.header.stamp = now;
-        rotation_point_msg.header.frame_id = "base_link";
-        rotation_point_msg.child_frame_id = "rotation";
+        rotation_point_msg.header.frame_id = base_link_frame_;
+        rotation_point_msg.child_frame_id = rotation_frame_;
         geometry_msgs::Transform rotation_point_transform_msg;
         rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
         rotation_point_msg.transform = rotation_point_transform_msg;
@@ -110,7 +117,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
         tf2::Transform imu_mounting_offset;
         try {
           geometry_msgs::TransformStamped imu_mounting_transform = tf_buffer_.lookupTransform(
-            "base_link", "imu_frame", ros::Time(0));
+            base_link_frame_, imu_frame_, ros::Time(0));
           fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
         } catch (tf2::TransformException ex) {
           ROS_ERROR("Not able to use the IMU%s", ex.what());
@@ -132,8 +139,8 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
 
       // combine it all into a tf
       tf.header.stamp = now;
-      tf.header.frame_id = "odom";
-      tf.child_frame_id = "base_link";
+      tf.header.frame_id = odom_frame_;
+      tf.child_frame_id = base_link_frame_;
       geometry_msgs::Transform fused_odom_msg;
       fused_odom_msg = toMsg(fused_odometry);
       tf.transform = fused_odom_msg;
@@ -199,13 +206,18 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
 
   // if center of pressure is available, it is the point of rotation
   try {
-    rotation_point = tf_buffer_.lookupTransform("base_link", "cop", ros::Time(0));
+    rotation_point = tf_buffer_.lookupTransform(base_link_frame_, cop_frame_, ros::Time(0));
     fromMsg(rotation_point.transform, rotation_point_tf);
   } catch (tf2::TransformException ex) {
     // otherwise point of rotation is current support foot sole or center point of the soles if double support
     if (current_support_state_ == 'r' || current_support_state_ == 'l') {
       try {
-        rotation_point = tf_buffer_.lookupTransform("base_link", std::string("") + current_support_state_ + "_sole",
+        std::string support_frame;
+        if (current_support_state_ == 'r')
+          support_frame = r_sole_frame_;
+        else
+          support_frame = l_sole_frame_;
+        rotation_point = tf_buffer_.lookupTransform(base_link_frame_, support_frame,
                                                     ros::Time(0));
         fromMsg(rotation_point.transform, rotation_point_tf);
       } catch (tf2::TransformException ex) {
@@ -214,9 +226,9 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
     } else if (current_support_state_ == 'd' || current_support_state_ == 'n') {
       // use point between soles if double support or unknown support
       geometry_msgs::TransformStamped base_to_l_sole;
-      base_to_l_sole = tf_buffer_.lookupTransform("base_link", "l_sole", ros::Time(0));
+      base_to_l_sole = tf_buffer_.lookupTransform(base_link_frame_, l_sole_frame_, ros::Time(0));
       geometry_msgs::TransformStamped l_to_r_sole;
-      l_to_r_sole = tf_buffer_.lookupTransform("l_sole", "r_sole", ros::Time(0));
+      l_to_r_sole = tf_buffer_.lookupTransform(l_sole_frame_, r_sole_frame_, ros::Time(0));
       tf2::Transform base_to_l_sole_tf;
       tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
       tf2::Transform l_to_r_sole_tf;

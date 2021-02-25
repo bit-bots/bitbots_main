@@ -32,6 +32,7 @@ class OdometryFuser {
   tf2_ros::TransformListener tf_listener_;
   tf2::Quaternion last_quat_;
   tf2::Quaternion last_quat_imu_;
+  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_, cop_frame_;
 
   void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
   void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);

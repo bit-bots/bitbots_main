@@ -7,7 +7,7 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-WalkEngine::WalkEngine(const std::string ns) :
+WalkEngine::WalkEngine() :
     phase_(0.0),
     last_phase_(0.0),
     pause_requested_(false),
@@ -30,7 +30,6 @@ WalkEngine::WalkEngine(const std::string ns) :
   // init dynamic reconfigure
   dyn_reconf_server_ =
       new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
-          ns +
               "walking/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);

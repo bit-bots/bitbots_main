@@ -83,5 +83,5 @@ def hcm_state_cb(msg: RobotControlState):
     pub.publish(led)
 
 
-sub = rospy.Subscriber("/robot_state", RobotControlState, hcm_state_cb, queue_size=1, tcp_nodelay=True)
+sub = rospy.Subscriber("robot_state", RobotControlState, hcm_state_cb, queue_size=1, tcp_nodelay=True)
 rospy.spin()

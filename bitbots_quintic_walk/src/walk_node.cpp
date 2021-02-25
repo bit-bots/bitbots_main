@@ -5,11 +5,15 @@
 
 namespace bitbots_quintic_walk {
 
-WalkNode::WalkNode(const std::string ns) :
-    robot_model_loader_(ns + "robot_description", false),
-    stabilizer_(ns),
-    walk_engine_(ns) {
-  nh_ = ros::NodeHandle(ns);
+WalkNode::WalkNode() :
+    robot_model_loader_("robot_description", false){
+  nh_ = ros::NodeHandle();
+  pnh_ = ros::NodeHandle("~");
+
+  pnh_.param<std::string>("base_link_frame", base_link_frame_, "base_link");
+  pnh_.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
+  pnh_.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  pnh_.param<std::string>("odom_frame", odom_frame_, "odom");
 
   // init variables
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
@@ -21,9 +25,9 @@ WalkNode::WalkNode(const std::string ns) :
   current_fly_effort_ = 0;
 
   // read config
-  nh_.param<double>("engine_frequency", engine_frequency_, 100.0);
-  nh_.param<bool>("simulation_active", simulation_active_, false);
-  nh_.param<bool>("walking/node/publish_odom_tf", publish_odom_tf_, false);
+  pnh_.param<double>("engine_frequency", engine_frequency_, 100.0);
+  pnh_.param<bool>("simulation_active", simulation_active_, false);
+  pnh_.param<bool>("walking/node/publish_odom_tf", publish_odom_tf_, false);
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
@@ -60,14 +64,13 @@ WalkNode::WalkNode(const std::string ns) :
 
   // initialize dynamic-reconfigure
   dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle(ns +
-          "walking/node"));
+      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>(ros::NodeHandle("walking/node"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
   // this has to be done to prevent strange initilization bugs
-  walk_engine_ = WalkEngine(ns);
+  walk_engine_ = WalkEngine();
 }
 
 void WalkNode::run() {
@@ -473,8 +476,8 @@ void WalkNode::publishOdometry(WalkResponse response) {
 
   // send the odometry as message
   odom_msg_.header.stamp = current_time;
-  odom_msg_.header.frame_id = "odom";
-  odom_msg_.child_frame_id = "base_link";
+  odom_msg_.header.frame_id = odom_frame_;
+  odom_msg_.child_frame_id = base_link_frame_;
   odom_msg_.pose.pose.position.x = pos[0];
   odom_msg_.pose.pose.position.y = pos[1];
   odom_msg_.pose.pose.position.z = pos[2];
@@ -493,8 +496,8 @@ void WalkNode::publishOdometry(WalkResponse response) {
   if (publish_odom_tf_) {
     odom_trans_ = geometry_msgs::TransformStamped();
     odom_trans_.header.stamp = current_time;
-    odom_trans_.header.frame_id = "odom";
-    odom_trans_.child_frame_id = "base_link";
+    odom_trans_.header.frame_id = odom_frame_;
+    odom_trans_.child_frame_id = base_link_frame_;
 
     odom_trans_.transform.translation.x = pos[0];
     odom_trans_.transform.translation.y = pos[1];
@@ -519,7 +522,7 @@ WalkEngine *WalkNode::getEngine() {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "walking");
   // init node
-  bitbots_quintic_walk::WalkNode node("");
+  bitbots_quintic_walk::WalkNode node;
 
   // run the node
   node.initializeEngine();

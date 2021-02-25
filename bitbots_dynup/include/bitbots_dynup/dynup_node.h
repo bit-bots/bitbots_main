@@ -88,6 +88,8 @@ class DynUpNode {
   tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
 
+  std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
+
   /**
    * Do main loop in which DynUpEngine::tick() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.

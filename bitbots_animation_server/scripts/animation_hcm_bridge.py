@@ -13,7 +13,7 @@ JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow
 class AnimationHcmBridge:
     def __init__(self):
         rospy.init_node("animation_hcm_bridge", anonymous=False)
-        self.joint_publisher = rospy.Publisher("/DynamixelController/command", JointCommand, queue_size=10,
+        self.joint_publisher = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=10,
                                                tcp_nodelay=True)
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = JOINT_NAMES

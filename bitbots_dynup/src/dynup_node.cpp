@@ -8,6 +8,12 @@ DynUpNode::DynUpNode() :
     visualizer_("debug/dynup"),
     robot_model_loader_("robot_description", false),
     listener_(tf_buffer_) {
+  ros::NodeHandle pnh("~");
+  pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
+  pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
+  pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  pnh.param<std::string>("r_wrist_frame", r_wrist_frame_, "r_wrist");
+  pnh.param<std::string>("l_wrist_frame", l_wrist_frame_, "l_wrist");
 
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
   robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
@@ -84,12 +90,12 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
     if(debug_) {
-      visualizer_.displaySplines(engine_.getRFootSplines(), "base_link");
-      visualizer_.displaySplines(engine_.getLFootSplines(), "r_sole");
+      visualizer_.displaySplines(engine_.getRFootSplines(), base_link_frame_);
+      visualizer_.displaySplines(engine_.getLFootSplines(), r_sole_frame_);
       // Workaround for an error in the Visualizer. TODO
       if(request.direction == "front" || request.direction == "back") {
-          visualizer_.displaySplines(engine_.getLHandSplines(), "base_link");
-          visualizer_.displaySplines(engine_.getRHandSplines(), "base_link");
+          visualizer_.displaySplines(engine_.getLHandSplines(), base_link_frame_);
+          visualizer_.displaySplines(engine_.getRHandSplines(), base_link_frame_);
       }
     }
     ros::Rate loop_rate(engine_rate_);
@@ -136,7 +142,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
     DynupResponse response = engine_.update(dt);
-    stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform("r_sole", "base_link", ros::Time(0)));
+    stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
     DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
     bitbots_msgs::DynUpFeedback feedback;
@@ -162,19 +168,19 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
 
   /* Construct zero-positions for all poses in their respective local frames */
   geometry_msgs::PoseStamped l_foot_origin, r_foot_origin, l_hand_origin, r_hand_origin;
-  l_foot_origin.header.frame_id = "l_sole";
+  l_foot_origin.header.frame_id = l_sole_frame_;
   l_foot_origin.pose.orientation.w = 1;
   l_foot_origin.header.stamp = time;
 
-  r_foot_origin.header.frame_id = "r_sole";
+  r_foot_origin.header.frame_id = r_sole_frame_;
   r_foot_origin.pose.orientation.w = 1;
   r_foot_origin.header.stamp = time;
 
-  l_hand_origin.header.frame_id = "l_wrist";
+  l_hand_origin.header.frame_id = l_wrist_frame_;
   l_hand_origin.pose.orientation.w = 1;
   l_hand_origin.header.stamp = time;
 
-  r_hand_origin.header.frame_id = "r_wrist";
+  r_hand_origin.header.frame_id = r_wrist_frame_;
   r_hand_origin.pose.orientation.w = 1;
   r_hand_origin.header.stamp = time;
 
@@ -182,10 +188,10 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
   geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
   try {
     //0.2 second timeout for transformations
-    tf_buffer_.transform(l_foot_origin, l_foot_transformed, "r_sole", ros::Duration(0.2));
-    tf_buffer_.transform(r_foot_origin, r_foot_transformed, "base_link", ros::Duration(0.2));
-    tf_buffer_.transform(l_hand_origin, l_hand_transformed, "base_link", ros::Duration(0.2));
-    tf_buffer_.transform(r_hand_origin, r_hand_transformed, "base_link", ros::Duration(0.2));
+    tf_buffer_.transform(l_foot_origin, l_foot_transformed, r_sole_frame_, ros::Duration(0.2));
+    tf_buffer_.transform(r_foot_origin, r_foot_transformed, base_link_frame_, ros::Duration(0.2));
+    tf_buffer_.transform(l_hand_origin, l_hand_transformed, base_link_frame_, ros::Duration(0.2));
+    tf_buffer_.transform(r_hand_origin, r_hand_transformed, base_link_frame_, ros::Duration(0.2));
     return std::make_tuple(l_foot_transformed.pose, r_foot_transformed.pose, l_hand_transformed.pose, r_hand_transformed.pose);
   } catch (tf2::TransformException &exc) {
     ROS_ERROR_STREAM(exc.what());
