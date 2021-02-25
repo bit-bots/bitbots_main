@@ -21,13 +21,16 @@ path = rospack.get_path("wolfgang_webots_sim")
 if args.nogui:
     mode = "fast"
     batch = "--batch"
+    no_rendering = "--no-rendering"
 else:
     mode = "normal"
     batch = ""
+    no_rendering = ""
 
 arguments = ["webots",
              batch,
-             path +"/worlds/flat_world.wbt"]
+             no_rendering,
+             path + "/worlds/flat_world.wbt"]
 sim_proc = subprocess.Popen(arguments)
 
 os.environ["WEBOTS_PID"] = str(sim_proc.pid)
