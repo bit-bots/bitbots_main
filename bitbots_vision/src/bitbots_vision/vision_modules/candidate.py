@@ -159,6 +159,14 @@ class Candidate:
                 <= point[1]
                 <= self.get_upper_left_y() + self.get_height())
 
+    def subtract_from_mask(self, mask, grow=1):
+        width = int(self.get_width() * grow * 0.5)
+        height = int(self.get_height() * grow * 0.5)
+        mask[
+            max(self.get_center_y() - height, 0) : min(self.get_center_y() + height, mask.shape[0]),
+            max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = 0
+        return mask
+
     @staticmethod
     def sort_candidates(candidatelist):
         """
