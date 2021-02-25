@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <node pkg="tf2_ros" type="static_transform_publisher" name="amy_map" args="0 0 0 0 0 0 1 map amy/map" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="rory_map" args="0 0 0 0 0 0 1 map rory/map" />

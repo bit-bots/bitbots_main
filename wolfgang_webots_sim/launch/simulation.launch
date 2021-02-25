@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <arg name="gui" default="true"/>
     <arg name="num_robots" default="4"/>
@@ -48,55 +49,10 @@
         <param name="head_imu_frame" value="donna/imu_frame_2"/>
         <param name="imu_frame" value="donna/imu_frame"/>
     </group>
-
-    <group ns="melody/webots_ros_interface">
-        <param name="base_link_frame" value="melody/base_link"/>
-        <param name="r_sole_frame" value="melody/r_sole"/>
-        <param name="l_sole_frame" value="melody/l_sole"/>
-        <param name="camera_optical_frame" value="melody/camera_optical_frame"/>
-        <param name="head_imu_frame" value="melody/imu_frame_2"/>
-        <param name="imu_frame" value="melody/imu_frame"/>
-    </group>
     <group if ="$(arg imu_filter)">
-        <arg name="do_bias_estimation" value="true"/>
-        <arg name="bias_alpha" value="0.05"/>
-        <arg name="do_adaptive_gain" value="false"/>
-        <arg name="gain_acc" value="0.04"/>
-
-        <node pkg="imu_complementary_filter" type="complementary_filter_node"
-              name="complementary_filter_gain_node" output="screen" ns="amy">
-            <param name="do_bias_estimation" value="$(arg do_bias_estimation)"/>
-            <param name="bias_alpha" value="$(arg bias_alpha)"/>
-            <param name="do_adaptive_gain" value="$(arg do_adaptive_gain)"/>
-            <param name="gain_acc" value="$(arg gain_acc)"/>
-        </node>
-        <node pkg="imu_complementary_filter" type="complementary_filter_node"
-              name="complementary_filter_gain_node" output="screen" ns="rory">
-            <param name="do_bias_estimation" value="$(arg do_bias_estimation)"/>
-            <param name="bias_alpha" value="$(arg bias_alpha)"/>
-            <param name="do_adaptive_gain" value="$(arg do_adaptive_gain)"/>
-            <param name="gain_acc" value="$(arg gain_acc)"/>
-        </node>
-        <node pkg="imu_complementary_filter" type="complementary_filter_node"
-              name="complementary_filter_gain_node" output="screen" ns="jack">
-            <param name="do_bias_estimation" value="$(arg do_bias_estimation)"/>
-            <param name="bias_alpha" value="$(arg bias_alpha)"/>
-            <param name="do_adaptive_gain" value="$(arg do_adaptive_gain)"/>
-            <param name="gain_acc" value="$(arg gain_acc)"/>
-        </node>
-        <node pkg="imu_complementary_filter" type="complementary_filter_node"
-              name="complementary_filter_gain_node" output="screen" ns="donna">
-            <param name="do_bias_estimation" value="$(arg do_bias_estimation)"/>
-            <param name="bias_alpha" value="$(arg bias_alpha)"/>
-            <param name="do_adaptive_gain" value="$(arg do_adaptive_gain)"/>
-            <param name="gain_acc" value="$(arg gain_acc)"/>
-        </node>
-        <node pkg="imu_complementary_filter" type="complementary_filter_node"
-              name="complementary_filter_gain_node" output="screen" ns="melody">
-            <param name="do_bias_estimation" value="$(arg do_bias_estimation)"/>
-            <param name="bias_alpha" value="$(arg bias_alpha)"/>
-            <param name="do_adaptive_gain" value="$(arg do_adaptive_gain)"/>
-            <param name="gain_acc" value="$(arg gain_acc)"/>
-        </node>
+        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="amy"/>
+        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="rory"/>
+        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="jack"/>
+        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="donna"/>
     </group>
 </launch>
