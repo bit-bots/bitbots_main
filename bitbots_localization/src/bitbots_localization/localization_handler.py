@@ -28,7 +28,7 @@ class LocalizationHandler(object):
         self.dsd.load_behavior(os.path.join(dirname, 'localization.dsd'))
 
         rospy.Subscriber("bitbots_localization/pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
-        rospy.Subscriber("game_state", GameState, self._callback_game_state, queue_size=1)
+        rospy.Subscriber("gamestate", GameState, self._callback_game_state, queue_size=1)
         rospy.Subscriber("robot_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
 
         self.main_loop()
@@ -75,4 +75,3 @@ if __name__ == '__main__':
         LocalizationHandler()
     except rospy.ROSInterruptException:
         pass
-
