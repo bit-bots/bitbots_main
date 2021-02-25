@@ -1,0 +1,40 @@
+xbox:
+  walking:
+    gain_x: 0.2
+    stick_x: 1
+    gain_y: 0.2
+    stick_y: 0
+    stick_left: 2
+    stick_right: 5
+    duo_turn: True
+    gain_turn: -0.5
+  head:
+    gain_tilt: 1.5
+    stick_tilt: 4
+    gain_pan: 2
+    stick_pan: 3
+  kick:
+    btn_left: 4
+    btn_right: 5
+  misc:
+    btn_cheering: 0
+
+noname:
+  walking:
+    gain_x: 0.08
+    stick_x: 1
+    gain_y: 0.08
+    stick_y: 0
+    stick_left: 2
+    duo_turn: False
+    gain_turn: 0.8
+  head:
+    gain_tilt: 1.5
+    stick_tilt: 4
+    gain_pan: 2
+    stick_pan: 3
+  kick:
+    btn_left: 4
+    btn_right: 5
+  misc:
+    btn_cheering: 0

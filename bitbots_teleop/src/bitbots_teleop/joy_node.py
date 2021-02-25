@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+import yaml
 import rospy
 import actionlib
 import copy
 
+from pathlib import Path
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import Audio, HeadMode
@@ -21,58 +23,8 @@ class JoyNode(object):
         log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
         rospy.init_node("joy_to_twist", log_level=log_level, anonymous=False)
 
-        controller_configs = {
-            "xbox": {
-                "walking": {
-                    "gain_x": 0.2,
-                    "stick_x": 1,
-                    "gain_y": 0.2,
-                    "stick_y": 0,
-                    "stick_left": 2,
-                    "stick_right": 5,
-                    "duo_turn": True,
-                    "gain_turn": -0.5
-                },
-                "head": {
-                    "gain_tilt": 1.5,
-                    "stick_tilt": 4, 
-                    "gain_pan": 2,
-                    "stick_pan": 3, 
-                },
-                "kick": {
-                    "btn_left": 4, 
-                    "btn_right": 5, 
-                },
-                "misc": {
-                    "btn_cheering": 0,
-                }
-            },
-
-            "noname":  {
-                "walking": {
-                    "gain_x": 0.08,
-                    "stick_x": 1,
-                    "gain_y": 0.08,
-                    "stick_y": 0,
-                    "stick_left": 2,
-                    "duo_turn": False,
-                    "gain_turn": 0.8
-                },
-                "head": {
-                    "gain_tilt": 1.5,
-                    "stick_tilt": 4, 
-                    "gain_pan": 2,
-                    "stick_pan": 3, 
-                },
-                "kick": {
-                    "btn_left": 4, 
-                    "btn_right": 5, 
-                },
-                "misc": {
-                    "btn_cheering": 0,
-                }
-            },
-        }
+        with open(Path(__file__).parent / "../../config/controller.yaml", "r") as r:
+            controller_configs = yaml.safe_load(r)
 
         self.config = controller_configs[rospy.get_param("~type")] # load the controller specific config
 
@@ -120,7 +72,7 @@ class JoyNode(object):
                 "Will now wait until server is accessible!")
         self.anim_client.wait_for_server()
         rospy.logwarn("Animation server running, will go on.")
-        
+
         rospy.spin()
 
     def play_animation(self, name):
@@ -148,8 +100,8 @@ class JoyNode(object):
     def joy_cb(self, msg):
         # forward and sideward walking with left joystick
         self.walk_msg.linear.x = self.denormalize_joy(
-            self.config['walking']['gain_x'], 
-            self.config['walking']['stick_x'], 
+            self.config['walking']['gain_x'],
+            self.config['walking']['stick_x'],
             msg, 0.01)
         self.walk_msg.linear.y = self.denormalize_joy(
             self.config['walking']['gain_y'],
@@ -164,7 +116,7 @@ class JoyNode(object):
 
         if turn != 0:
             self.walk_msg.angular.z = turn
-        else: 
+        else:
             self.walk_msg.angular.z = 0
 
         # only publish changes
@@ -175,11 +127,11 @@ class JoyNode(object):
         # head movement with right joystick
         if rospy.get_param("~head", False):
             pan_goal = self.denormalize_joy(
-                self.config['head']['gain_pan'], 
+                self.config['head']['gain_pan'],
                 self.config['head']['stick_pan'],
                 msg, -1)
             tilt_goal = self.denormalize_joy(
-                self.config['head']['gain_tilt'], 
+                self.config['head']['gain_tilt'],
                 self.config['head']['stick_tilt'],
                 msg, -1)
 
