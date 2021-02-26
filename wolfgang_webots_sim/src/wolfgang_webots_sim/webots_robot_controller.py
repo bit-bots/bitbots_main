@@ -9,7 +9,7 @@ import math
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang'):
+    def __init__(self, ros_active=False, robot='wolfgang',do_ros_init=True):
         # requires WEBOTS_ROBOT_NAME to be set to "amy" or "rory"
         self.ros_active = ros_active
         self.robot_node = Robot()
@@ -100,7 +100,8 @@ class RobotController:
         self.camera.enable(self.timestep)
 
         if self.ros_active:
-            rospy.init_node("webots_ros_interface", argv=['clock:=/clock'])
+            if do_ros_init:
+                rospy.init_node("webots_ros_interface", argv=['clock:=/clock'])
             self.l_sole_frame = rospy.get_param("~l_sole_frame", "l_sole")
             self.r_sole_frame = rospy.get_param("~r_sole_frame", "r_sole")
             self.camera_optical_frame = rospy.get_param("~camera_optical_frame", "camera_optical_frame")

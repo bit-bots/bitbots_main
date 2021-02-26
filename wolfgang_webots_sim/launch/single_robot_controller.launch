@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+  <arg name="robot_name" default="amy"/>
+  <arg name="void_controller" default="false"/>
+  <arg name="void_flag" value="$(eval '--void-controller' if arg('void_controller') else '')"/>
+
+  <node pkg="wolfgang_webots_sim" type="start_single.sh" name="webots_ros_interface"
+        args="--robot_name $(arg robot_name) $(arg void_flag)">
+    <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
+    <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
+    <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
+    <param name="camera_optical_frame" value="$(arg tf_prefix)camera_optical_frame"/>
+    <param name="head_imu_frame" value="$(arg tf_prefix)imu_frame_2"/>
+    <param name="imu_frame" value="$(arg tf_prefix)imu_frame"/>
+  </node>
+</launch>

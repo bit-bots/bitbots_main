@@ -57,8 +57,7 @@ class SupervisorController:
                 self.rotation_fields[name] = node.getField("rotation")
 
         if self.ros_active:
-            rospy.init_node("webots_ros_supervisor", anonymous=True,
-                            argv=['clock:=/clock'])
+            rospy.init_node("webots_ros_supervisor", argv=['clock:=/clock'])
             self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
             self.model_state_publisher = rospy.Publisher("/model_states", ModelStates, queue_size=1)
             self.reset_service = rospy.Service("reset", Empty, self.reset)
