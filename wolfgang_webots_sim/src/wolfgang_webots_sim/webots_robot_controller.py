@@ -37,7 +37,7 @@ class RobotController:
             pressure_sensor_names = ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
             for name in pressure_sensor_names:
-                sensor = self.robot_node.getTouchSensor(name)
+                sensor = self.robot_node.getDevice(name)
                 sensor.enable(30)
                 self.pressure_sensors.append(sensor)
 
@@ -82,21 +82,21 @@ class RobotController:
 
         # self.robot_node = self.supervisor.getFromDef(self.robot_node_name)
         for motor_name in self.motor_names:
-            self.motors.append(self.robot_node.getMotor(motor_name))
+            self.motors.append(self.robot_node.getDevice(motor_name))
             self.motors[-1].enableTorqueFeedback(self.timestep)
-            self.sensors.append(self.robot_node.getPositionSensor(motor_name + sensor_postfix))
+            self.sensors.append(self.robot_node.getDevice(motor_name + sensor_postfix))
             self.sensors[-1].enable(self.timestep)
 
-        self.accel = self.robot_node.getAccelerometer(accel_name)
+        self.accel = self.robot_node.getDevice(accel_name)
         self.accel.enable(self.timestep)
-        self.gyro = self.robot_node.getGyro(gyro_name)
+        self.gyro = self.robot_node.getDevice(gyro_name)
         self.gyro.enable(self.timestep)
         if self.is_wolfgang:
-            self.accel_head = self.robot_node.getAccelerometer("imu_head accelerometer")
+            self.accel_head = self.robot_node.getDevice("imu_head accelerometer")
             self.accel_head.enable(self.timestep)
-            self.gyro_head = self.robot_node.getGyro("imu_head gyro")
+            self.gyro_head = self.robot_node.getDevice("imu_head gyro")
             self.gyro_head.enable(self.timestep)
-        self.camera = self.robot_node.getCamera(camera_name)
+        self.camera = self.robot_node.getDevice(camera_name)
         self.camera.enable(self.timestep)
 
         if self.ros_active:
