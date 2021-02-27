@@ -132,13 +132,17 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   ROS_INFO("Accepted new goal");
 
   /* get transform to base_footprint */
-  geometry_msgs::TransformStamped
-      tf_trunk_to_base_footprint = tf_buffer_.lookupTransform(base_link_frame_, base_footprint_frame_, ros::Time(0));
-  Eigen::Isometry3d trunk_to_base_footprint = tf2::transformToEigen(tf_trunk_to_base_footprint);
+  geometry_msgs::TransformStamped goal_frame_to_base_footprint =
+      tf_buffer_.lookupTransform(base_footprint_frame_, goal->header.frame_id, ros::Time(0));
+  geometry_msgs::Point base_footprint_ball_position;
+  tf2::doTransform(goal->ball_position, base_footprint_ball_position, goal_frame_to_base_footprint);
+  bitbots_msgs::KickGoal base_footprint_kick_goal = *goal;
+  base_footprint_kick_goal.ball_position = base_footprint_ball_position;
+  base_footprint_kick_goal.header.frame_id = base_footprint_frame_;
 
   /* pass everything to the init function */
   std::string error_string;
-  bool success = init(*goal, error_string);
+  bool success = init(base_footprint_kick_goal, error_string);
   /* there was an error, abort the kick */
   if (!success) {
     bitbots_msgs::KickResult result;
