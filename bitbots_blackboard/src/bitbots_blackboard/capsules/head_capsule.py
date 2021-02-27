@@ -88,7 +88,9 @@ class HeadCapsule:
         # Check for collision
         self.collision_checker.set_head_motors(pan_position, tilt_position)
         if self.collision_checker.check_collision():
-            rospy.logwarn(f"Colliding head position: {math.degrees(pan_position)}, {math.degrees(tilt_position)}. Not moving.")
+            pan = round(math.degrees(pan_position), 2)
+            tilt = round(math.degrees(tilt_position), 2)
+            rospy.logwarn(f"Colliding head position: {pan}, {tilt}. Not moving.")
             return False
         else:
             self.pos_msg.positions = pan_position, tilt_position
