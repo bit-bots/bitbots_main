@@ -1,0 +1,14 @@
+<launch>
+  <arg name="do_bias_estimation" default="true"/>
+  <arg name="bias_alpha" default="0.05"/>
+  <arg name="do_adaptive_gain" default="false"/>
+  <arg name="gain_acc" default="0.04"/>
+
+  <node pkg="imu_complementary_filter" type="complementary_filter_node"
+        name="complementary_filter_gain_node" output="screen">
+    <param name="do_bias_estimation" value="$(arg do_bias_estimation)"/>
+    <param name="bias_alpha" value="$(arg bias_alpha)"/>
+    <param name="do_adaptive_gain" value="$(arg do_adaptive_gain)"/>
+    <param name="gain_acc" value="$(arg gain_acc)"/>
+  </node>
+</launch>

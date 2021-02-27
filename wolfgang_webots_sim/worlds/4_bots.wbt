@@ -1,0 +1,50 @@
+#VRML_SIM R2021a utf8
+DEF world_info WorldInfo {
+}
+Viewpoint {
+  orientation 0.22117367669305005 -0.29950907520213504 -0.9281037219026977 1.9370678888666262
+  position -8.03329852760357 2.9409863465290784 8.855008346617208
+}
+TexturedBackground {
+  texture "stadium"
+}
+TexturedBackgroundLight {
+  texture "stadium"
+}
+DEF amy Wolfgang {
+  translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
+  name "amy"
+  controller "<extern>"
+}
+DEF rory Wolfgang {
+  translation -1.0030583470505934 -2.992412349779964 0.42743223984085194
+  rotation -0.12936697648842493 0.12218664209251788 0.9840399432382805 1.5851841200030763
+  name "rory"
+  controller "<extern>"
+}
+DEF jack Wolfgang {
+  translation -2.996274676605394 2.993192625146885 0.42743339932406893
+  rotation 0.12201168394600673 0.12929756017667823 -0.9840707748495623 1.5871708397776978
+  name "jack"
+  controller "<extern>"
+}
+DEF donna Wolfgang {
+  translation -3.002377385514823 -2.9933188039554204 0.42741141799620075
+  rotation -0.12933593776868751 0.12224505044367762 0.9840367690505863 1.5849563620873361
+  name "donna"
+  controller "<extern>"
+}
+DEF ball SoccerBall {
+  translation 0 -2.5441208454912995e-05 0.07718607870638904
+  rotation 1 0 0 0.0003279304237773247
+  radius 0.0775
+  mass 0.2
+  roll_damping 0.5
+}
+RobotstadiumSoccerFieldHumanoid {
+}
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
+}
