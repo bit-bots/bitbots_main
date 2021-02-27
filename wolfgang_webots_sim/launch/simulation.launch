@@ -1,14 +1,17 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="gui" default="true"/>
-    <arg name="num_robots" default="4"/>
+    <arg name="gui" default="true" doc="Whether or not to launch webots with rendering"/>
+    <arg name="num_robots" default="4"
+         doc="Number of robots for which a ROS controller is started. 1 if multi_robot=True "/>
+    <arg name="imu_filter" default="true"
+         doc="If an IMU filter should be started, otherwise only imu/raw will be available"/>
+    <arg name="multi_robot" default="false" doc="Start world with either one or four robots"/>
+    <arg name="sim_id" default="" doc="Namespace if multiple simulations should be run at the same time"/>
     <param name="/simulation_active" value="true"/>
     <param name="/use_sim_time" value="true"/>
-    <arg name="imu_filter" default="true"/>
-    <arg name="multi_robot" default="false"/>
-    <arg name="sim_id" default=""/>
 
-    <arg name="multi_robot_flag" value="$(eval '--multi-robot' if arg('multi_robot') else '')"/>
+    <arg name="multi_robot_flag" value="$(eval '--multi-robot' if arg('multi_robot') else '')"
+         doc="do not set, used internally"/>
 
     <!-- delete ros parameter "/webots_pid" + sim_id since its used to communicate the process id of the simulation -->
     <rosparam command="delete" param="/webots_pid$(arg sim_id)"/>
