@@ -37,6 +37,7 @@ add_service_files(
    Leds.srv
    AccelerometerCalibration.srv
    SetAccelerometerCalibrationThreshold.srv
+   SetRobotPose.srv
 )
 
 
