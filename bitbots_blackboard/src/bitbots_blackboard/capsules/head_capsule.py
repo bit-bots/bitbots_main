@@ -1,4 +1,5 @@
 from io import BytesIO
+import math
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
@@ -87,7 +88,7 @@ class HeadCapsule:
         # Check for collision
         self.collision_checker.set_head_motors(pan_position, tilt_position)
         if self.collision_checker.check_collision():
-            rospy.logwarn(f"Colliding head position: {pan_position}, {tilt_position}. Not moving.")
+            rospy.logwarn(f"Colliding head position: {math.degrees(pan_position)}, {math.degrees(tilt_position)}. Not moving.")
             return False
         else:
             self.pos_msg.positions = pan_position, tilt_position
