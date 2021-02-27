@@ -10,11 +10,11 @@ class StatisticSorter():
     def __init__(self):
         rospy.init_node("statistic_sorter")
 
-        self.motor_goals_pub = rospy.Publisher("/stat_motor_goals", TopicStatistics, queue_size=100)
-        self.walking_motor_goals_pub = rospy.Publisher("/stat_walking_motor_goals", TopicStatistics, queue_size=100)
-        self.imu_pub = rospy.Publisher("/stat_imu", TopicStatistics, queue_size=100)
-        self.joint_pub = rospy.Publisher("/stat_joint_states", TopicStatistics, queue_size=100)
-        self.animation_pub = rospy.Publisher("/stat_animation", TopicStatistics, queue_size=100)
+        self.motor_goals_pub = rospy.Publisher("stat_motor_goals", TopicStatistics, queue_size=100)
+        self.walking_motor_goals_pub = rospy.Publisher("stat_walking_motor_goals", TopicStatistics, queue_size=100)
+        self.imu_pub = rospy.Publisher("stat_imu", TopicStatistics, queue_size=100)
+        self.joint_pub = rospy.Publisher("stat_joint_states", TopicStatistics, queue_size=100)
+        self.animation_pub = rospy.Publisher("stat_animation", TopicStatistics, queue_size=100)
 
         self.motor_goal_number = 0
         self.motor_goals_mean = 0
@@ -36,7 +36,7 @@ class StatisticSorter():
         self.animations_mean = 0
         self.animations_max = 0
 
-        rospy.Subscriber("/statistics", TopicStatistics, self.stat_cb, queue_size=1000)
+        rospy.Subscriber("statistics", TopicStatistics, self.stat_cb, queue_size=1000)
 
         rospy.spin()
 
@@ -70,6 +70,7 @@ class StatisticSorter():
         pub = msg.node_pub
         sub = msg.node_sub
 
+        #ToDo needs to be tested with changes in namespace
         pattern = re.compile("/record_(0-9)*")
         if pattern.match(sub):
             # test if this is a connection to rosbag record and exclude it
