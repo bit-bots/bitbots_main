@@ -24,7 +24,7 @@ If stabilizing is to be applied to the goal, two PID controllers controll the IM
 Finally, the goal is forwarded to the IK solver, which turns the spline goal into motor goals, which can be sent to the motors.
 Since the arms are lacking degrees of freedom, the IK solver is set to also consider approximate goals to make sure the motion continues, even if the goal cannot be reached exactly.
 
-.. figure:: _static/flowchart.pdf
+.. image:: _static/flowchart.png
 
 
 
