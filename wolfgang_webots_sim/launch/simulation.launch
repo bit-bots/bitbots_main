@@ -23,10 +23,7 @@
           output="screen" required="true" args="--nogui $(arg multi_robot_flag)"/>
 
     <group unless="$(arg multi_robot)">
-        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch">
-            <arg name="robot_name" value="amy"/>
-            <arg name="void_controller" value="false"/>
-        </include>
+        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch"/>
         <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
     </group>
 
@@ -35,18 +32,22 @@
         <!-- start single controllers based on num_robots as ros or void controller -->
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="amy">
             <arg name="robot_name" value="amy"/>
+            <arg name="tf_prefix" value="amy/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 1)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="rory">
             <arg name="robot_name" value="rory"/>
+            <arg name="tf_prefix" value="rory/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 2)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="jack">
             <arg name="robot_name" value="jack"/>
+            <arg name="tf_prefix" value="jack/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 3)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="donna">
             <arg name="robot_name" value="donna"/>
+            <arg name="tf_prefix" value="donna/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 4)"/>
         </include>
 
