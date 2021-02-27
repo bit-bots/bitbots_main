@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="robot_name" default="amy"/>
-  <arg name="void_controller" default="false"/>
-  <arg name="void_flag" value="$(eval '--void-controller' if arg('void_controller') else '')"/>
+  <arg name="robot_name" default="amy" doc="The name of the robot, also used as tf prefix" />
+  <arg name="void_controller" default="false" doc="If set to true, the robot is not controllable" />
+  <arg name="void_flag" value="$(eval '--void-controller' if arg('void_controller') else '')" doc="do not set, used internally" />
 
   <node pkg="wolfgang_webots_sim" type="start_single.sh" name="webots_ros_interface"
         args="--robot_name $(arg robot_name) $(arg void_flag)">
