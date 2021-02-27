@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from __future__ import print_function
-import sys
-
-from time import sleep
+import actionlib
+import argparse
+import math
+import os
 import random
 import rospy
-import actionlib
-import os
+import sys
+from time import sleep
 
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Vector3, Quaternion
@@ -19,6 +19,11 @@ from tf.transformations import quaternion_from_euler
 showing_feedback = False
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ball_y', type=float, help='y position of the ball [m]', default=0)
+    parser.add_argument('kick_direction', type=float, help='kick direction [°]', default=0)
+    args = parser.parse_args()
+
     print("Beware: this script may only work when calling it directly on the robot "
           "and will maybe result in tf errors otherwise")
     print("[..] Initializing node", end='')
@@ -78,10 +83,10 @@ if __name__ == "__main__":
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
     goal.header.frame_id = frame_prefix + "base_footprint"
     goal.ball_position.x = 0.2
-    goal.ball_position.y = float(sys.argv[1])
+    goal.ball_position.y = args.ball_y
     goal.ball_position.z = 0
 
-    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, float(sys.argv[2])))
+    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(args.kick_direction)))
 
     goal.kick_speed = 1
 

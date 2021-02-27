@@ -88,12 +88,12 @@ void PyKickWrapper::set_params(const boost::python::object params) {
   kick_node_->reconfigureCallback(conf, 0xff);
 }
 
-bool PyKickWrapper::set_goal(const std::string &goal_str, const std::string &trunk_to_base_footprint_str) {
+bool PyKickWrapper::set_goal(const std::string &goal_str, const std::string &joint_state_str) {
+  auto joint_state = from_python<sensor_msgs::JointState>(joint_state_str);
+  kick_node_->jointStateCallback(joint_state);
   auto goal = from_python<bitbots_msgs::KickGoal>(goal_str);
-  auto trunk_to_base_footprint_msg = from_python<geometry_msgs::Transform>(trunk_to_base_footprint_str);
-  Eigen::Isometry3d trunk_to_base_footprint = tf2::transformToEigen(trunk_to_base_footprint_msg);
   std::string error_string;
-  return kick_node_->init(goal, error_string, trunk_to_base_footprint);
+  return kick_node_->init(goal, error_string);
 }
 
 double PyKickWrapper::get_progress() {

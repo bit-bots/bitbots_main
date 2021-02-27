@@ -67,7 +67,7 @@ class KickNode {
    * @param trunk_to_base_footprint transform from trunk to base_footprint
    * @return whether the setup was successful
    */
-  bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string, Eigen::Isometry3d &trunk_to_base_footprint);
+  bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string);
 
   /**
    * Set the current joint state of the robot

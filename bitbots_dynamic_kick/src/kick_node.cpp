@@ -5,8 +5,8 @@ namespace bitbots_dynamic_kick {
 KickNode::KickNode(const std::string &ns) :
     server_(node_handle_, "dynamic_kick", boost::bind(&KickNode::executeCb, this, _1), false),
     listener_(tf_buffer_),
-    visualizer_("debug/dynamic_kick"),
-    robot_model_loader_("robot_description", false) {
+    visualizer_(ns + "debug/dynamic_kick"),
+    robot_model_loader_(ns + "robot_description", false) {
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
   pnh.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
@@ -88,8 +88,7 @@ void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &conf
 }
 
 bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
-                    std::string &error_string,
-                    Eigen::Isometry3d &trunk_to_base_footprint) {
+                    std::string &error_string) {
   /* currently, the ball must always be in the base_footprint frame */
   if (goal_msg.header.frame_id != base_footprint_frame_) {
     ROS_ERROR_STREAM("Goal should be in base_footprint frame");
@@ -103,6 +102,13 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   engine_.reset();
   stabilizer_.reset();
   ik_.reset();
+
+  /* get trunk to base footprint transform, assume left and right foot are next to each other (same x and z) */
+  Eigen::Isometry3d trunk_to_l_sole = current_state_->getGlobalLinkTransform("l_sole");
+  Eigen::Isometry3d trunk_to_r_sole = current_state_->getGlobalLinkTransform("r_sole");
+  Eigen::Isometry3d trunk_to_base_footprint = trunk_to_l_sole;
+  trunk_to_base_footprint.translation().y() =
+      (trunk_to_r_sole.translation().y() + trunk_to_l_sole.translation().y()) / 2.0;
 
   /* Set engines goal_msg and start calculating */
   KickGoals goals;
@@ -126,13 +132,17 @@ void KickNode::executeCb(const bitbots_msgs::KickGoalConstPtr &goal) {
   ROS_INFO("Accepted new goal");
 
   /* get transform to base_footprint */
-  geometry_msgs::TransformStamped
-      tf_trunk_to_base_footprint = tf_buffer_.lookupTransform(base_link_frame_, base_footprint_frame_, ros::Time(0));
-  Eigen::Isometry3d trunk_to_base_footprint = tf2::transformToEigen(tf_trunk_to_base_footprint);
+  geometry_msgs::TransformStamped goal_frame_to_base_footprint =
+      tf_buffer_.lookupTransform(base_footprint_frame_, goal->header.frame_id, ros::Time(0));
+  geometry_msgs::Point base_footprint_ball_position;
+  tf2::doTransform(goal->ball_position, base_footprint_ball_position, goal_frame_to_base_footprint);
+  bitbots_msgs::KickGoal base_footprint_kick_goal = *goal;
+  base_footprint_kick_goal.ball_position = base_footprint_ball_position;
+  base_footprint_kick_goal.header.frame_id = base_footprint_frame_;
 
   /* pass everything to the init function */
   std::string error_string;
-  bool success = init(*goal, error_string, trunk_to_base_footprint);
+  bool success = init(base_footprint_kick_goal, error_string);
   /* there was an error, abort the kick */
   if (!success) {
     bitbots_msgs::KickResult result;
