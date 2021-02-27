@@ -54,8 +54,10 @@ void DynupEngine::publishDebug() {
           msg.state_number = 5;
       }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat){
           msg.state_number = 6;
-      }else {
+      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat + params_.wait_in_squat_front){
           msg.state_number = 7;
+      }else {
+          msg.state_number = 8;
       }
     }else if (direction_ == 0) {
       if(time_ < params_.time_legs_close){
@@ -64,10 +66,12 @@ void DynupEngine::publishDebug() {
           msg.state_number = 1;
       }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands){
           msg.state_number = 2;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands +  params_.time_full_squat_legs){
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands +  params_.time_full_squat_legs ){
         msg.state_number = 3;
+      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands +  params_.time_full_squat_legs + params_.wait_in_squat_back){
+        msg.state_number = 4;
       }else{
-          msg.state_number = 4;
+          msg.state_number = 5;
       }
     }else{
           msg.state_number = -1;
