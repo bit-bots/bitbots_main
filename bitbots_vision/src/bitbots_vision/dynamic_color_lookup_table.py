@@ -4,7 +4,10 @@ import cv2
 import yaml
 import rospy
 import rospkg
+import time
 import numpy as np
+from copy import deepcopy
+from threading import Lock
 from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
@@ -62,16 +65,58 @@ class DynamicColorLookupTable:
             queue_size=1,
             tcp_nodelay=True)
 
-        rospy.spin()
+        # Reconfigure data transfer variable
+        self._transfer_reconfigure_data = None
+        self._transfer_reconfigure_data_mutex = Lock()
+
+        # Image transfer variable
+        self._transfer_image_msg = None
+        self._transfer_image_msg_mutex = Lock()
+
+        # Run the dynamic color lookup table main loop
+        self._main_loop()
+
+    def _main_loop(self):
+        """
+        Main loop that processes the images and configuration changes
+        """
+        while not rospy.is_shutdown():
+            # Lookup if there is another configuration available
+            if self._transfer_reconfigure_data is not None:
+                # Copy _config from shared memory
+                with self._transfer_reconfigure_data_mutex:
+                    reconfigure_data = deepcopy(self._transfer_reconfigure_data)
+                    self._transfer_reconfigure_data = None
+                # Run reconfiguration
+                self._reconfigure(reconfigure_data)
+            # Check if a new image is avalabile
+            elif self._transfer_image_msg is not None:
+                # Copy image from shared memory
+                with self._transfer_image_msg_mutex:
+                    image_msg = self._transfer_image_msg
+                    self._transfer_image_msg = None
+                    # Run the pipeline
+                    self._handle_image(image_msg)
+                # Now the first image has been processed
+                self._first_image_callback = False
+            else:
+                time.sleep(0.01)
 
     def _vision_config_callback(self, msg):
         # type: (Config) -> None
         """
         This method is called by the 'vision_config'-message subscriber.
-        Load and update vision config.
-        Handle config changes.
 
-        This callback is delayed (about 30 seconds) after changes through dynamic reconfigure
+        :param Config msg: 'vision_config'-message subscriber
+        :return: None
+        """
+        with self._transfer_reconfigure_data_mutex:
+            # Set reconfigure data
+            self._transfer_reconfigure_data = msg
+
+    def _reconfigure(self, msg):
+        """
+        Handle reconfiguration.
 
         :param Config msg: new 'vision_config'-message subscriber
         :return: None
@@ -148,7 +193,8 @@ class DynamicColorLookupTable:
                 not self._vision_config['dynamic_color_lookup_table_active']:
             return
 
-        # Drops old images
+        # Drops old images and cleans up the queue.
+        # Still accepts very old images, that are most likely from ROS bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
             rospy.logwarn(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)",
@@ -157,11 +203,18 @@ class DynamicColorLookupTable:
 
         # Skip images to constrain node to maximum FPS
         time = rospy.get_rostime()
-        if self._max_fps == 0.0 or (time - self._last_time).to_sec() < (1 / self._max_fps):
+        if (time - self._last_time).to_sec() < 0:  # Time reset happened, probably rosbag looped
+            self._last_time = time
+            return
+        if self._max_fps <= 0.0 or (time - self._last_time).to_sec() < (1 / self._max_fps):
             return
         self._last_time = time
 
-        self._handle_image(image_msg)
+        if self._transfer_image_msg_mutex.locked():
+            return
+        with self._transfer_image_msg_mutex:
+            # Transfer the image to the main thread
+            self._transfer_image_msg = image_msg
 
     def _handle_image(self, image_msg):
         # type: (Image) -> None
