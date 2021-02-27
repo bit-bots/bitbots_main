@@ -1,6 +1,9 @@
+from io import BytesIO
+import math
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
+from bitbots_head_behavior.collision_checker import CollisionChecker
 import tf2_ros as tf2
 
 class HeadCapsule:
@@ -26,6 +29,8 @@ class HeadCapsule:
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
         self.current_head_position = [0, 0]
+
+        self.collision_checker = CollisionChecker()
 
     def head_mode_callback(self, msg):
         """
@@ -62,7 +67,7 @@ class HeadCapsule:
         :param clip: clip the motor values at the maximum value. This should almost always be true.
         :param current_pan_position: Current pan joint state for better interpolation (only active if both joints are set).
         :param current_tilt_position: Current tilt joint state for better interpolation (only active if both joints are set).
-        :return:
+        :return: False if the target position collides, True otherwise
         """
         rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
@@ -80,11 +85,19 @@ class HeadCapsule:
             else:
                 pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
 
-        self.pos_msg.positions = pan_position, tilt_position
-        self.pos_msg.velocities = [pan_speed, tilt_speed]
-        self.pos_msg.header.stamp = rospy.Time.now()
-
-        self.position_publisher.publish(self.pos_msg)
+        # Check for collision
+        self.collision_checker.set_head_motors(pan_position, tilt_position)
+        if self.collision_checker.check_collision():
+            pan = round(math.degrees(pan_position), 2)
+            tilt = round(math.degrees(tilt_position), 2)
+            rospy.logwarn(f"Colliding head position: {pan}°, {tilt}°. Not moving.")
+            return False
+        else:
+            self.pos_msg.positions = pan_position, tilt_position
+            self.pos_msg.velocities = [pan_speed, tilt_speed]
+            self.pos_msg.header.stamp = rospy.Time.now()
+            self.position_publisher.publish(self.pos_msg)
+            return True
 
     def pre_clip(self, pan, tilt):
         """
@@ -105,6 +118,9 @@ class HeadCapsule:
     ##################
 
     def joint_state_callback(self, msg):
+        buf = BytesIO()
+        msg.serialize(buf)
+        self.collision_checker.set_joint_states(buf.getvalue())
         head_pan = msg.position[msg.name.index('HeadPan')]
         head_tilt = msg.position[msg.name.index('HeadTilt')]
         self.current_head_position = [head_pan, head_tilt]

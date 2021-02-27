@@ -14,6 +14,7 @@ from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, PoseWithCertainty,
 from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
+from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 
 
 def run(dsd):
@@ -26,6 +27,8 @@ def run(dsd):
     while not rospy.is_shutdown():
         dsd.update()
         rate.sleep()
+    # Also stop cpp node
+    roscpp_shutdown()
 
 
 def init():
@@ -34,6 +37,9 @@ def init():
     blackboard, dsd, rostopic subscriber
     """
     rospy.init_node('head_behavior')
+    # This is a general purpose initialization function provided by moved
+    # It is used to correctly initialize roscpp which is used in the collision checker module
+    roscpp_init('collision_checker', [])
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('/head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)

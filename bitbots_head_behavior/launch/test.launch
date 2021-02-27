@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+    <group unless="$(arg sim)">
+        <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
+    </group>
+
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+
+    <include file="$(find bitbots_vision)/launch/vision_startup.launch" />
+
+    <include file="$(find humanoid_league_transform)/launch/transformer.launch" />
+
+
+    <arg name="depends_only" default="false" />
+    <rosparam command="load" file="$(find bitbots_head_behavior)/config/head_config.yaml"/>
+
+    <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service"  output="screen"/>
+
+    <node unless="$(arg depends_only)" name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py"  output="screen">
+            <remap from="/head_motor_goals" to="/DynamixelController/command"/>
+    </node>
+
+</launch>

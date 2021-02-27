@@ -31,7 +31,7 @@ behavior:
 
         # Max values for the search pattern
         pan_max: [120, -120]
-        tilt_max: [0, -70]
+        tilt_max: [0, -60]
 
         # Number of scan lines for the search pattern
         scan_lines: 4

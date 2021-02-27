@@ -94,7 +94,7 @@ class AbstractSearchPattern(AbstractActionElement):
         head_tilt = math.radians(head_tilt)
         rospy.logdebug("Searching at {}, {}".format(head_pan, head_tilt))
 
-        self.blackboard.head_capsule.send_motor_goals(
+        success = self.blackboard.head_capsule.send_motor_goals(
             head_pan,
             head_tilt,
             pan_speed=self.pan_speed,
@@ -102,11 +102,16 @@ class AbstractSearchPattern(AbstractActionElement):
             current_pan_position=current_head_pan,
             current_tilt_position=current_head_tilt)
 
-        distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
+        if not success:
+            rospy.logwarn(f"Pattern position {self.index} collided, the pattern should probably be changed")
+            # Try the next pattern position
+            self.index += 1
+        else:
+            distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
 
-        # Increment index when position is reached
-        if distance < math.radians(self.threshold):
-            self.index = self.index + 1
+            # Increment index when position is reached
+            if distance < math.radians(self.threshold):
+                self.index += 1
 
 
 class BallSearchPattern(AbstractSearchPattern):
