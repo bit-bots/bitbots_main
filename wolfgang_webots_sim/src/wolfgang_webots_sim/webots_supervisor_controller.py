@@ -4,6 +4,7 @@ import os
 import rospy
 from geometry_msgs.msg import Quaternion, PointStamped, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
+from bitbots_msgs.srv import SetRobotPose
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
@@ -62,8 +63,11 @@ class SupervisorController:
             self.model_state_publisher = rospy.Publisher("/model_states", ModelStates, queue_size=1)
             self.reset_service = rospy.Service("reset", Empty, self.reset)
             self.initial_poses_service = rospy.Service("initial_pose", Empty, self.set_initial_poses)
+            self.set_robot_position_service = rospy.Service("set_robot_position", SetRobotPose, self.robot_pose_callback)
+            self.reset_ball_service = rospy.Service("reset_ball", Empty, self.reset_ball)
 
         self.world_info = self.supervisor.getFromDef("world_info")
+        self.ball = self.supervisor.getFromDef("ball")
 
     def step_sim(self):
         self.time += self.timestep / 1000
@@ -107,6 +111,14 @@ class SupervisorController:
         self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
         self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
         self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
+
+    def robot_pose_callback(self, req=None):
+        self.reset_robot_pose_rpy([req.position.x, req.position.y, req.position.z], [0,0,0], req.robot_name)
+
+    def reset_ball(self, req=None):
+        self.ball.getField("translation").setSFVec3f([0,0,0.0772])
+        self.ball.getField("rotation").setSFRotation([0,0,1,0])
+        self.ball.resetPhysics()
 
     def node(self):
         s = self.supervisor.getSelected()
@@ -172,4 +184,3 @@ class SupervisorController:
             robot_pose.orientation = Quaternion(*orientation)
             msg.pose.append(robot_pose)
         self.model_state_publisher.publish(msg)
-
