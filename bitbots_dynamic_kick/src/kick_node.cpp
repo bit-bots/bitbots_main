@@ -39,14 +39,14 @@ KickNode::KickNode(const std::string &ns) :
 
 void KickNode::copLCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id != l_sole_frame_) {
-    ROS_ERROR_STREAM("cop_l not in l_sole frame! Stabilizing will not work.");
+    ROS_ERROR_STREAM("cop_l not in " << l_sole_frame_ << " frame! Stabilizing will not work.");
   }
   stabilizer_.cop_left = cop.point;
 }
 
 void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
   if (cop.header.frame_id != r_sole_frame_) {
-    ROS_ERROR_STREAM("cop_r not in r_sole frame! Stabilizing will not work.");
+    ROS_ERROR_STREAM("cop_r not in " << r_sole_frame_ << " frame! Stabilizing will not work.");
   }
   stabilizer_.cop_right = cop.point;
 }
@@ -91,8 +91,8 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
                     std::string &error_string) {
   /* currently, the ball must always be in the base_footprint frame */
   if (goal_msg.header.frame_id != base_footprint_frame_) {
-    ROS_ERROR_STREAM("Goal should be in base_footprint frame");
-    error_string = "Goal should be in base_footprint frame";
+    ROS_ERROR_STREAM("Goal should be in " << base_footprint_frame_ << " frame");
+    error_string = std::string("Goal should be in ") + base_footprint_frame_ + std::string(" frame");
     return false;
   }
 
