@@ -1,13 +1,12 @@
 #! /usr/bin/env python3
 
 import os
-import time
 import cv2
 import rospy
 import rospkg
-import threading
 from copy import deepcopy
 from cv_bridge import CvBridge
+from threading import Thread, Lock
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PolygonStamped
