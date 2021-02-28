@@ -4,7 +4,6 @@ import cv2
 import yaml
 import rospy
 import rospkg
-import time
 import numpy as np
 from copy import deepcopy
 from threading import Lock
@@ -47,6 +46,7 @@ class DynamicColorLookupTable:
 
         # Init params
         self._vision_config = {}
+        self._rate = rospy.Rate(100)  # Rate of sleep timer
         self._max_fps = None
         self._last_time = rospy.get_rostime()  # Time since we have received the last image
 
@@ -100,7 +100,7 @@ class DynamicColorLookupTable:
                 # Now the first image has been processed
                 self._first_image_callback = False
             else:
-                time.sleep(0.01)
+                self._rate.sleep()
 
     def _vision_config_callback(self, msg):
         # type: (Config) -> None
