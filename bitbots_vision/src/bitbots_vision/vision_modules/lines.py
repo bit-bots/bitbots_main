@@ -29,6 +29,7 @@ class LineDetector:
         self._linepoints_range = config['line_detector_linepoints_range']
         self._use_line_points = config['line_detector_use_line_points']
         self._use_line_mask = config['line_detector_use_line_mask']
+        self._object_grow = config['line_detector_object_remove_grow']
 
         # Set if values should be cached
         self._caching = config['caching']
@@ -160,6 +161,18 @@ class LineDetector:
             # Filter out outliers
             self._white_mask = cv2.medianBlur(white_mask, 3)
         return self._white_mask
+
+    def get_line_mask_without_other_objects(self, candidate_list):
+        """
+        Generates a white mask that not contains pixels in the green field, above the field boundary or in the specified candidates.
+
+        :param candidate_list: List ob candidate bounding boxes that are subtracted from the final mask
+        :return: Mask
+        """
+        mask = self.get_line_mask().copy()
+        for candidate in candidate_list:
+            mask = candidate.set_in_mask(mask, 0, self._object_grow)
+        return mask
 
 
 def filter_points_with_candidates(linepoints, candidates):

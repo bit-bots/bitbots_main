@@ -98,6 +98,7 @@ line_detector_field_boundary_offset: 0  # Threshold in which we are also searchi
 line_detector_use_line_points: false  # Calculate and publish the line points
 line_detector_use_line_mask: false  # Calculate and publish the line mask
 line_detector_linepoints_range: 10000  # Number of line points
+line_detector_object_remove_grow: 1.3   # Makes objects like the ball larger before removing them from the mask
 
 obstacle_active: false  # Enables the obstacle detection
 obstacle_finder_method: 'convex'  # Method for the obstacle finder (distance, convex or step)
