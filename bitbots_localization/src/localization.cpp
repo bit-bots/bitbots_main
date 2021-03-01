@@ -446,7 +446,7 @@ void Localization::publish_transforms() {
     //publish odom localisation offset
     geometry_msgs::TransformStamped map_odom_transform;
 
-    map_odom_transform.header.stamp = odom_transform.header.stamp;
+    map_odom_transform.header.stamp = ros::Time::now();
     map_odom_transform.header.frame_id = map_frame_;
     map_odom_transform.child_frame_id = odom_frame_;
 
