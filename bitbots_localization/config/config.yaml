@@ -66,6 +66,13 @@
   t_crossings_factor: 0
   crosses_factor : 0
 
+  line_element_confidence: 0.01
+  goal_element_confidence: 0.0
+  field_boundary_element_confidence: 0.0
+  corner_element_confidence: 0.0
+  t_crossing_element_confidence: 0.0
+  cross_element_confidence: 0.0
+
   min_motion_linear: 0.0
   min_motion_angular: 0.0
   filter_only_with_motion: false
