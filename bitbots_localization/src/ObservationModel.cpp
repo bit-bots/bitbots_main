@@ -28,14 +28,15 @@ double RobotPoseObservationModel::calculate_weight_for_class(
     const RobotState &state,
     const std::vector<std::pair<double, double>> &last_measurement,
     std::shared_ptr<Map> map) const {
-  double particle_weight_for_class = 0;
+  double particle_weight_for_class = 1;
   if (!last_measurement.empty()) {
     number_of_effective_measurements_ += 1;
     std::vector<double> ratings = map->Map::provideRating(state, last_measurement);
     for (double rating : ratings) {
-      particle_weight_for_class += rating;
+      particle_weight_for_class *= 0.99 + 0.01 * (rating/100);
     }
-    particle_weight_for_class /= ratings.size();
+  } else {
+    particle_weight_for_class = 0;
   }
   return particle_weight_for_class;
 }
