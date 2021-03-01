@@ -7,11 +7,11 @@ class AbstractLocalizationPause(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLocalizationPause, self).__init__(blackboard, dsd, parameters=parameters)
-        self.stop_filter_prox = rospy.ServiceProxy('bitbots_localization/pause_filter', set_paused)
+        self.stop_filter_prox = rospy.ServiceProxy('pause_localization', set_paused)
 
     def set_paused(self, paused):
         self.do_not_reevaluate()
-        rospy.wait_for_service('bitbots_localization/pause_filter')
+        rospy.wait_for_service('pause_localization')
         try:
             resp = self.stop_filter_prox(paused)
         except rospy.ServiceException as e:

@@ -149,6 +149,7 @@ class Localization {
   void reset_filter(int distribution, double x, double y);
 
   ros::NodeHandle nh_;
+  ros::NodeHandle pnh_;
 
  private:
   ros::Subscriber line_subscriber_;
@@ -205,6 +206,8 @@ class Localization {
   ros::Time last_stamp_lines_pc = ros::Time(0);
   ros::Time last_stamp_goals = ros::Time(0);
   ros::Time last_stamp_fb_points = ros::Time(0);
+
+  std::string odom_frame_, base_footprint_frame_, map_frame_, publishing_frame_;
 
   std::vector<gm::Point32> interpolateFieldboundaryPoints(gm::Point32 point1, gm::Point32 point2);
 

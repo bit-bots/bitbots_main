@@ -21,7 +21,13 @@ int main(int argc, char **argv) {
 
 Localization::Localization() : line_points_(), tfListener(tfBuffer) {
   ROS_DEBUG("localization");
-  nh_ = ros::NodeHandle("/bitbots_localization");
+  pnh_ = ros::NodeHandle("~");
+  nh_ = ros::NodeHandle();
+
+  pnh_.param<std::string>("odom_frame", odom_frame_, "odom");
+  pnh_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
+  pnh_.param<std::string>("map_frame", map_frame_, "map");
+  pnh_.param<std::string>("publishing_frame", publishing_frame_, "localization_raw");
 }
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
@@ -33,20 +39,20 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   fieldboundary_in_image_subscriber_ = nh_.subscribe(config.fieldboundary_in_image_topic, 1,
                                                      &Localization::FieldBoundaryInImageCallback, this);
 
-  pose_particles_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(config.particle_publishing_topic.c_str(),
+  pose_particles_publisher_ = pnh_.advertise<visualization_msgs::MarkerArray>(config.particle_publishing_topic.c_str(),
                                                                              1);
   pose_with_covariance_publisher_ = nh_.advertise<gm::PoseWithCovarianceStamped>("pose_with_covariance", 1);
-  lines_publisher_ = nh_.advertise<visualization_msgs::Marker>("lines", 1);
-  line_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
-  goal_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
-  fieldboundary_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("field_boundary_ratings", 1);
-  corner_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
-  t_crossings_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
-  crosses_ratings_publisher_ = nh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
+  lines_publisher_ = pnh_.advertise<visualization_msgs::Marker>("lines", 1);
+  line_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
+  goal_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
+  fieldboundary_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("field_boundary_ratings", 1);
+  corner_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
+  t_crossings_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
+  crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
 
   // Get field name
   std::string field;
-  nh_.getParam("fieldname", field);
+  pnh_.getParam("fieldname", field);
 
   // Check if mesurement type is used and load the correct map for that
   if(config.lines_factor) {
@@ -161,11 +167,11 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   if (first_configuration_) {
     first_configuration_ = false;
   
-    reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
-    pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
+    reset_service_ = nh_.advertiseService("reset_localization", &Localization::reset_filter_callback, this);
+    pause_service_ = nh_.advertiseService("pause_localization", &Localization::set_paused_callback, this);
   }
 
-  publishing_timer_ = nh_.createTimer(static_cast<double>(config.publishing_frequency),
+  publishing_timer_ = pnh_.createTimer(static_cast<double>(config.publishing_frequency),
                                       &Localization::run_filter_one_step, this);
 
 }
@@ -368,11 +374,11 @@ void Localization::getMotion() {
 
   try {
 
-    transformStampedNow = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
+    transformStampedNow = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0));
 
     ros::Time past = transformStampedNow.header.stamp - ros::Duration(1.0/(float)config_.publishing_frequency);
 
-    transformStampedPast = tfBuffer.lookupTransform("odom", "base_footprint", past);
+    transformStampedPast = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, past);
 
     //linear movement
     double global_diff_x, global_diff_y;
@@ -423,8 +429,8 @@ void Localization::publish_transforms() {
   //publish localization tf, not the odom offset
   geometry_msgs::TransformStamped localization_transform;
   localization_transform.header.stamp = ros::Time::now();
-  localization_transform.header.frame_id = "/map";
-  localization_transform.child_frame_id = config_.publishing_frame;
+  localization_transform.header.frame_id = map_frame_;
+  localization_transform.child_frame_id = publishing_frame_;
   localization_transform.transform.translation.x = estimate_.getXPos();
   localization_transform.transform.translation.y = estimate_.getYPos();
   localization_transform.transform.translation.z = 0.0;
@@ -436,12 +442,12 @@ void Localization::publish_transforms() {
 
   try{
     //publish odom localisation offset
-    geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform("odom", "base_footprint", ros::Time(0));
+    geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0));
     geometry_msgs::TransformStamped map_odom_transform;
 
     map_odom_transform.header.stamp = odom_transform.header.stamp;
-    map_odom_transform.header.frame_id = "/map";
-    map_odom_transform.child_frame_id = "/odom";
+    map_odom_transform.header.frame_id = map_frame_;
+    map_odom_transform.child_frame_id = odom_frame_;
 
     //calculate odom offset
     tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
@@ -479,7 +485,7 @@ void Localization::publish_pose_with_covariance() {
     estimateMsg.pose.covariance[i] = estimate_cov_[i];
   }
 
-  estimateMsg.header.frame_id = config_.publishing_frame;
+  estimateMsg.header.frame_id = publishing_frame_;
 
   pose_with_covariance_publisher_.publish(estimateMsg);
 }
@@ -498,7 +504,7 @@ void Localization::publish_particle_markers() {
   red.g = 0;
   red.b = 0;
   red.a = 1;
-  pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", "/map",
+  pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", map_frame_,
                                                                   ros::Duration(1),
                                                                   red));
 }
@@ -541,7 +547,7 @@ void Localization::publish_debug_rating(
   double rating = 0;
 
   visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
+  marker.header.frame_id = map_frame_;
   marker.header.stamp = ros::Time::now();
   marker.ns = name;
   marker.action = visualization_msgs::Marker::ADD;
