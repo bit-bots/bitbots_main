@@ -15,7 +15,7 @@ M from_python(const std::string &str_msg) {
 }
 
 CollisionChecker::CollisionChecker() {
-  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("/robot_description", false));
+  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("robot_description", false));
   robot_model_ = robot_model_loader_->getModel();
   planning_scene_.reset(new planning_scene::PlanningScene(robot_model_));
   robot_state_.reset(new robot_state::RobotState(robot_model_));
