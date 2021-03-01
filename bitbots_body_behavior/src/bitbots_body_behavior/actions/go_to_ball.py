@@ -53,7 +53,7 @@ class GoToBall(AbstractActionElement):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         # we get the ball in the ball_approach_frame, this is the place where we want to place our base_footprint
-        pose_msg.header.frame_id = "base_footprint"
+        pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
         pose_msg.pose.position = Point(point.x, point.y, 0)
 

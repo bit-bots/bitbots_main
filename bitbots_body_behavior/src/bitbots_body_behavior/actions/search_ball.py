@@ -22,7 +22,7 @@ class SearchBall(AbstractActionElement):
             # goal to turn by 90 deg left
             pose_msg = PoseStamped()
             pose_msg.header.stamp = rospy.Time.now()
-            pose_msg.header.frame_id = 'base_footprint'
+            pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
             quaternion = quaternion_from_euler(0, 0, - math.pi / 2.0)
 
@@ -48,7 +48,7 @@ class SearchBallPenalty(AbstractActionElement):
             # goal to go straight
             pose_msg = PoseStamped()
             pose_msg.header.stamp = rospy.Time.now()
-            pose_msg.header.frame_id = 'base_footprint'
+            pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
             pose_msg.pose.position.x = 0.75
 

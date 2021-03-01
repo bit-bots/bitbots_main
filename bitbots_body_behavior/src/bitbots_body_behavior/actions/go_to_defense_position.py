@@ -30,7 +30,7 @@ class GoToDefensePosition(AbstractActionElement):
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'map'
+        pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) /2
         pose_msg.pose.position.y = ball_position[1] / 2

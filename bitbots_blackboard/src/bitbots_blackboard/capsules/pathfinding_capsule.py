@@ -30,7 +30,7 @@ class PathfindingCapsule:
     def transform_goal_to_map(self, msg):
         # type: (PoseStamped) -> PoseStamped
         # transform local goal to goal in map frame
-        if msg.header.frame_id == 'map':
+        if msg.header.frame_id ==  self.map_frame:
             return msg
         else:
             try:

@@ -23,7 +23,8 @@ class AbstractLookAt(AbstractActionElement):
         self.request.timeout.secs = 1
         self.request.approximate = True
         self.request.look_at_goals.append(LookAtGoal())
-        self.request.look_at_goals[0].link_name = self.camera_frame
+        # has to be without prefix since this is used for bio ik and frames inside the urdf are not prefixed
+        self.request.look_at_goals[0].link_name = "camera"
         self.request.look_at_goals[0].weight = 1
         self.request.look_at_goals[0].axis.x = 1
 

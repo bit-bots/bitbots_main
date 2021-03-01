@@ -14,6 +14,8 @@ class BodyBlackboard:
     def __init__(self):
 
         self.config = rospy.get_param("behavior/body")
+        self.base_footprint_frame = rospy.get_param("~base_footprint_frame", "base_footprint")
+        self.map_frame = rospy.get_param("~map_frame", "map")
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
         self.animation = AnimationCapsule()

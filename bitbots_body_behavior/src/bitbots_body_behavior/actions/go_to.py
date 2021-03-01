@@ -32,7 +32,7 @@ class GoToRelativePosition(AbstractActionElement):
             self.first = False
             pose_msg = PoseStamped()
             pose_msg.header.stamp = rospy.Time.now()
-            pose_msg.header.frame_id = 'base_footprint'
+            pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
             pose_msg.pose.position.x = self.point[0]
             pose_msg.pose.position.y = self.point[1]
@@ -62,7 +62,7 @@ class GoToAbsolutePosition(AbstractActionElement):
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = 'map'
+        pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
