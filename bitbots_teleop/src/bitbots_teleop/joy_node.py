@@ -4,11 +4,11 @@ import rospy
 import actionlib
 import copy
 
+from pathlib import Path
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import Audio, HeadMode
 import humanoid_league_msgs.msg
-from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 
 
@@ -19,21 +19,19 @@ class JoyNode(object):
     #TODO read max values from config
 
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node("joy_to_twist", log_level=log_level, anonymous=False)
 
-        self.head_pan_pos = 0
-        self.head_tilt_pos = 0
+        self.config = rospy.get_param("~" + rospy.get_param("~type"))
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/joy", Joy, self.joy_cb, queue_size=1)
-        rospy.Subscriber("joint_states", JointState, self.joint_state_cb, queue_size=1)
+        rospy.Subscriber("joy", Joy, self.joy_cb, queue_size=1)
         self.speak_pub = rospy.Publisher('speak', Audio, queue_size=1)
         self.speak_msg = Audio()
 
         self.speak_msg.priority = 1
 
-        self.walk_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.walk_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
         self.walk_msg = Twist()
         self.last_walk_msg = Twist()
@@ -46,9 +44,9 @@ class JoyNode(object):
         self.walk_msg.angular.y = 0.0
         self.walk_msg.angular.z = 0.0
 
-        self.head_pub = rospy.Publisher("/head_motor_goals", JointCommand, queue_size=1)
+        self.head_pub = rospy.Publisher("head_motor_goals", JointCommand, queue_size=1)
 
-        self.head_mode_pub = rospy.Publisher("/head_mode", HeadMode, queue_size=1)
+        self.head_mode_pub = rospy.Publisher("head_mode", HeadMode, queue_size=1)
 
         self.head_msg = JointCommand()
         self.head_msg.max_currents = [-1] * 2
@@ -71,7 +69,6 @@ class JoyNode(object):
         self.anim_client.wait_for_server()
         rospy.logwarn("Animation server running, will go on.")
 
-
         rospy.spin()
 
     def play_animation(self, name):
@@ -85,49 +82,38 @@ class JoyNode(object):
         # don't send it multiple times
         rospy.sleep(0.1)
 
-    def joint_state_cb(self, msg):
-        i = 0
-        for joint_name in msg.name:
-            if joint_name == "HeadTilt":
-                tilt_number = i
-            elif joint_name == "HeadPan":
-                pan_number = i
-            i+=1
-        self.head_pan_pos = msg.position[pan_number]
-        self.head_tilt_pos = msg.position[tilt_number]
-
     def set_head_mode(self, mode):
         msg = HeadMode()
         msg.headMode = mode
         self.head_mode_pub.publish(msg)
 
+    def denormalize_joy(self, gain, axis, msg, deadzone=0):
+        if abs(msg.axes[axis]) > deadzone:
+            return gain * msg.axes[axis]
+        else:
+            return 0
+
     def joy_cb(self, msg):
         # forward and sideward walking with left joystick
-        if msg.axes[1] > 0:
-            self.walk_msg.linear.x = 0.08 * msg.axes[1]
-        elif msg.axes[1] < 0:
-            self.walk_msg.linear.x = 0.08 * msg.axes[1]
-        else:
-            self.walk_msg.linear.x = 0
-
-        if msg.axes[0] == 0:
-            # to prevent sending a -0
-            self.walk_msg.linear.y = 0
-        else:
-            self.walk_msg.linear.y = 0.08 * msg.axes[0]
+        self.walk_msg.linear.x = self.denormalize_joy(
+            self.config['walking']['gain_x'],
+            self.config['walking']['stick_x'],
+            msg, 0.01)
+        self.walk_msg.linear.y = self.denormalize_joy(
+            self.config['walking']['gain_y'],
+            self.config['walking']['stick_y'],
+            msg, 0.01)
 
         # angular walking with shoulder buttons
-        if msg.buttons[6]:
-            self.walk_msg.angular.z = 0.5
-        elif msg.buttons[7]:
-            self.walk_msg.angular.z = -0.5
-        else:
-            self.walk_msg.angular.z = 0.0
+        turn = msg.axes[self.config['walking']['stick_left']]
+        if self.config['walking']['duo_turn']:
+            turn -= msg.axes[self.config['walking']['stick_right']]
+        turn *= self.config['walking']['gain_turn']
 
-        if msg.axes[2] > 0:
-            self.walk_msg.angular.z = 0.6
-        elif msg.axes[2] < 0:
-            self.walk_msg.angular.z = -0.6
+        if turn != 0:
+            self.walk_msg.angular.z = turn
+        else:
+            self.walk_msg.angular.z = 0
 
         # only publish changes
         if self.walk_msg != self.last_walk_msg:
@@ -135,22 +121,20 @@ class JoyNode(object):
         self.last_walk_msg = copy.deepcopy(self.walk_msg)
 
         # head movement with right joystick
-        """
-        joint_names = []
-        positions = []
-        if pan_goal:
-            joint_names.append("HeadPan")
-            positions.append(pan_goal)
-        if tilt_goal:
-            joint_names.append("HeadTilt")
-            positions.append(tilt_goal)
+        if rospy.get_param("~head", False):
+            pan_goal = self.denormalize_joy(
+                self.config['head']['gain_pan'],
+                self.config['head']['stick_pan'],
+                msg, -1)
+            tilt_goal = self.denormalize_joy(
+                self.config['head']['gain_tilt'],
+                self.config['head']['stick_tilt'],
+                msg, -1)
 
-        self.head_msg.joint_names = joint_names
-        self.head_msg.positions = positions
-        if len(joint_names) > 0:
+            self.head_msg.joint_names = ["HeadPan", "HeadTilt"]
+            self.head_msg.positions = [pan_goal, tilt_goal]
             self.head_pub.publish(self.head_msg)
 
-        """
         # kicking with upper shoulder buttons
         if msg.buttons[4]:
             # L1
