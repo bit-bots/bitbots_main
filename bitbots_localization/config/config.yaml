@@ -18,8 +18,6 @@
   fieldboundary_topic: 'field_boundary_relative'
   fieldboundary_in_image_topic: 'field_boundary_in_image'
 
-  publishing_frame: 'localization_raw'
-
   particle_publishing_topic: 'pose_particles'
 
   publishing_frequency: 25
