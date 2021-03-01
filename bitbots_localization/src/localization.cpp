@@ -99,8 +99,8 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   drift_cov.col(1) *= (1 / (config.max_rotation / config.publishing_frequency));
 
   robot_motion_model_.reset(
-      new RobotMotionModel(random_number_generator_, 
-                           config.diffusion_x_std_dev, 
+      new RobotMotionModel(random_number_generator_,
+                           config.diffusion_x_std_dev,
                            config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
                            config.diffusion_multiplicator,
