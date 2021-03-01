@@ -167,8 +167,8 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   if (first_configuration_) {
     first_configuration_ = false;
   
-    reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
-    pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
+    reset_service_ = nh_.advertiseService("reset_localization", &Localization::reset_filter_callback, this);
+    pause_service_ = nh_.advertiseService("pause_localization", &Localization::set_paused_callback, this);
   }
 
   publishing_timer_ = pnh_.createTimer(static_cast<double>(config.publishing_frequency),
