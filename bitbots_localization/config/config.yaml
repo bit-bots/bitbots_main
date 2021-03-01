@@ -34,18 +34,18 @@
   ###################
 
 
-  particle_number: 500
+  particle_number: 200
   resampling_interval: 5
 
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
-  diffusion_t_std_dev: 0.5
-  diffusion_multiplicator: 0.01
+  diffusion_t_std_dev: 0.9
+  diffusion_multiplicator: 0.001
 
   drift_distance_to_direction: 3.0
   drift_roation_to_direction: 0.0
-  drift_distance_to_distance: 0.3
-  drift_roation_to_distance: 0.5
+  drift_distance_to_distance: 0.2
+  drift_roation_to_distance: 0.2
   drift_distance_to_rotation: 0.0
   drift_rotation_to_rotation: 3.0
 
