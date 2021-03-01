@@ -124,8 +124,8 @@ RobotStateDistributionPosition::RobotStateDistributionPosition(
 
 const RobotState RobotStateDistributionPosition::draw() const {
 
-    return (RobotState(random_number_generator_.getGaussian(0.1) + x_,
-                       random_number_generator_.getGaussian(0.1) + y_,
+    return (RobotState(random_number_generator_.getGaussian(0.5) + x_,
+                       random_number_generator_.getGaussian(0.5) + y_,
                        random_number_generator_.getUniform(-M_PI, M_PI)));
 }
 

@@ -37,6 +37,7 @@
   <exec_depend>humanoid_league_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
+  <depend>rospy</depend>
   <depend>opencv</depend>
   <depend>roslib</depend>
 

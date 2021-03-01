@@ -19,11 +19,13 @@ find_package(catkin REQUIRED COMPONENTS
     eigen_conversions
     tf2
     tf2_ros
+    rospy
     message_generation
     cv_bridge
     image_transport
     bitbots_docs
 )
+
 
 find_package(Eigen3 REQUIRED)
 
@@ -36,6 +38,9 @@ add_service_files(
    reset_filter.srv
    set_paused.srv
  )
+
+
+catkin_python_setup()
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -52,7 +57,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
         LIBRARIES bitbots_localization_lib
-        CATKIN_DEPENDS geometry_msgs particle_filter roscpp roslib std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure
+        CATKIN_DEPENDS geometry_msgs particle_filter roscpp roslib rospy std_msgs visualization_msgs humanoid_league_msgs dynamic_reconfigure
 #  DEPENDS system_lib
 )
 

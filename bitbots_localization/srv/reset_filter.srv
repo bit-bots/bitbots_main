@@ -1,6 +1,6 @@
 int64 init_mode
-int64 x
-int64 y
+float32 x
+float32 y
 
 # Constants
 int64 START_RIGHT=0

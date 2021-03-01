@@ -41,7 +41,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
 
   pose_particles_publisher_ = pnh_.advertise<visualization_msgs::MarkerArray>(config.particle_publishing_topic.c_str(),
                                                                              1);
-  pose_with_covariance_publisher_ = pnh_.advertise<gm::PoseWithCovarianceStamped>("pose_with_covariance", 1);
+  pose_with_covariance_publisher_ = nh_.advertise<gm::PoseWithCovarianceStamped>("pose_with_covariance", 1);
   lines_publisher_ = pnh_.advertise<visualization_msgs::Marker>("lines", 1);
   line_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
   goal_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
@@ -49,9 +49,6 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   corner_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
   t_crossings_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
   crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
-
-  reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
-  pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
 
   // Get field name
   std::string field;
@@ -102,7 +99,9 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   drift_cov.col(1) *= (1 / (config.max_rotation / config.publishing_frequency));
 
   robot_motion_model_.reset(
-      new RobotMotionModel(random_number_generator_, config.diffusion_x_std_dev, config.diffusion_y_std_dev,
+      new RobotMotionModel(random_number_generator_, 
+                           config.diffusion_x_std_dev, 
+                           config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
                            config.diffusion_multiplicator,
                            drift_cov));
@@ -161,10 +160,15 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   resampling_.reset(new pf::ImportanceResampling<RobotState>());
 
   config_ = config;
+
+  ROS_INFO("Trying to initialize particle filter...");
+  reset_filter(config.init_mode);
+
   if (first_configuration_) {
     first_configuration_ = false;
-    ROS_INFO("Trying to initialize particle filter...");
-    reset_filter(config_.init_mode);
+  
+    reset_service_ = nh_.advertiseService("reset_filter", &Localization::reset_filter_callback, this);
+    pause_service_ = nh_.advertiseService("pause_filter", &Localization::set_paused_callback, this);
   }
 
   publishing_timer_ = pnh_.createTimer(static_cast<double>(config.publishing_frequency),
@@ -299,7 +303,6 @@ void Localization::reset_filter(int distribution) {
       config_.particle_number, robot_pose_observation_model_, robot_motion_model_));
 
   robot_pf_->setResamplingStrategy(resampling_);
-
   if (distribution == 0) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_start_right_);
   } else if (distribution == 1) {
@@ -311,7 +314,6 @@ void Localization::reset_filter(int distribution) {
   } else {
     return;
   }
-
 }
 
 void Localization::reset_filter(int distribution, double x, double y) {
@@ -413,7 +415,7 @@ void Localization::publish_transforms() {
 
   //get estimate and covariance
   estimate_ = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
-  std::vector<double> estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
+  estimate_cov_ = robot_pf_->getCovariance(config_.percentage_best_particles);
 
   //calculate quaternion
   tf2::Quaternion q;
@@ -463,22 +465,24 @@ void Localization::publish_transforms() {
 }
 
 void Localization::publish_pose_with_covariance() {
-
-  std::vector<double> cov_mat = robot_pf_->getCovariance(config_.percentage_best_particles);
+  //calculate quaternion
+  tf2::Quaternion q;
+  q.setRPY(0, 0, estimate_.getTheta());
+  q.normalize();
 
   gm::PoseWithCovarianceStamped estimateMsg;
 
-  estimateMsg.pose.pose.orientation.w = 1;
-  estimateMsg.pose.pose.orientation.x = 0;
-  estimateMsg.pose.pose.orientation.y = 0;
-  estimateMsg.pose.pose.orientation.z = 0;
-  estimateMsg.pose.pose.position.x = 0;
-  estimateMsg.pose.pose.position.y = 0;
+  estimateMsg.pose.pose.orientation.w = q.w();
+  estimateMsg.pose.pose.orientation.x = q.x();
+  estimateMsg.pose.pose.orientation.y = q.y();
+  estimateMsg.pose.pose.orientation.z = q.z();
+  estimateMsg.pose.pose.position.x = estimate_.getXPos();
+  estimateMsg.pose.pose.position.y = estimate_.getYPos();
 
   std::vector<double> covariance;
 
   for (int i = 0; i < 36; i++) {
-    estimateMsg.pose.covariance[i] = cov_mat[i];
+    estimateMsg.pose.covariance[i] = estimate_cov_[i];
   }
 
   estimateMsg.header.frame_id = publishing_frame_;

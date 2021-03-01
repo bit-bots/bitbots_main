@@ -1,0 +1,16 @@
+-->Localization
+$CheckPickup
+    UP --> @LocalizationStop
+    JUST_DOWN --> @LocalizationStart, @DoNothing
+    DOWN --> $GettingUpState
+        YES --> @LocalizationStop, @DoNothing
+        GOTUP --> @InitPosition, @LocalizationStart, @DoNothing
+        NO --> $CheckGameStateReceived
+            NO_GAMESTATE_INIT --> @InitSide, @DoNothing
+            DO_NOTHING --> @DoNothing
+            GAMESTATE_RECEIVED --> $CheckGameState
+                INIT --> @InitSide, @DoNothing
+                SET --> @DoNothing
+                PLAYING --> @DoNothing
+                PENALTY --> @InitSide, @DoNothing
+                NO_INFORMATION --> @DoNothing

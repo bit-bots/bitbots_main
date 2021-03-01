@@ -1,22 +1,10 @@
 import rospy
 import numpy
-
-STATE_SHUT_DOWN = 0
-STATE_STARTUP = 1
-STATE_FALLEN = 2
-STATE_NOTFALLEN = 3
-STATE_NONGAME = 4
-STATE_INGAME = 5
-STATE_INIT = 6
-STATE_SET = 7
-STATE_PLAYING = 8
-STATE_PENALTY = 9
-
+from humanoid_league_msgs.msg import GameState, RobotControlState
 
 class LocalizationBlackboard:
 
     def __init__(self):
-        self.current_state = STATE_INIT
         self.current_time = rospy.Time()
         self.shut_down_request = False
         self.last_initialized = None
@@ -31,7 +19,7 @@ class LocalizationBlackboard:
         self.covariance = numpy.array([])
 
         #GameState
-        self.last_gamestate_update_time = None
+        self.game_state_received = False
         self.game_state = None
         self.secondary_state = None
         self.first_half = None
@@ -41,5 +29,11 @@ class LocalizationBlackboard:
 
         #Robot Control State
         self.robot_control_state = None
+        self.last_robot_control_state = None
 
+        #Get up
+        self.last_state_get_up = False
 
+        #Picked up
+        self.last_state_pickup = False
+        

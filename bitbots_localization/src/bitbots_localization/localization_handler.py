@@ -5,7 +5,7 @@ from humanoid_league_msgs.msg import GameState, RobotControlState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
 from dynamic_stack_decider.dsd import DSD
-from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
+from bitbots_localization.localization_dsd.localization_blackboard import LocalizationBlackboard
 import os
 
 
@@ -27,9 +27,9 @@ class LocalizationHandler(object):
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'localization.dsd'))
 
-        rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
-        rospy.Subscriber("game_state", GameState, self._callback_game_state, queue_size=1)
-        rospy.Subscriber("robot_control_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
+        rospy.Subscriber("bitbots_localization/pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
+        rospy.Subscriber("gamestate", GameState, self._callback_game_state, queue_size=1)
+        rospy.Subscriber("robot_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
 
         self.main_loop()
 
@@ -43,7 +43,7 @@ class LocalizationHandler(object):
         self.blackboard.covariance = msg.pose.covariance
 
     def _callback_game_state(self, msg):
-        self.blackboard.last_gamestate_update_time = msg.header.stamp
+        self.blackboard.game_state_received = True
         self.blackboard.game_state = msg.gameState
         self.blackboard.secondary_state = msg.secondaryState
         self.blackboard.first_half = msg.firstHalf
@@ -56,7 +56,7 @@ class LocalizationHandler(object):
 
     def main_loop(self):
         """  """
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(25)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
@@ -75,4 +75,3 @@ if __name__ == '__main__':
         LocalizationHandler()
     except rospy.ROSInterruptException:
         pass
-
