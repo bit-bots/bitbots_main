@@ -1,38 +1,36 @@
-team_communication:
+# The port to be used
+port: 12321
 
-  # The port to be used
-  port: 12321
+# Rate of published messages in Hz
+rate: 1
 
-  # Rate of published messages in Hz
-  rate: 1
+# average walking speed in mm / s !!!
+avg_walking_speed: 10
 
-  # average walking speed in mm / s !!!
-  avg_walking_speed: 10
+# in mm
+max_kicking_distance: 1000
 
-  # in mm
-  max_kicking_distance: 1000
+# set the color of your team
+# 2: red
+# 3: blue
+# other values are invalid
+team_color: 2
 
-  # set the color of your team
-  # 2: red
-  # 3: blue
-  # other values are invalid
-  team_color: 2
+#use world model, not implemented right now
+world_model: False
 
-  #use world model, not implemented right now
-  world_model: False
+#lifetime of data [s]
+lifetime: 3
 
-  #lifetime of data [s]
-  lifetime: 3
+#threshold for necessary belief in data to be send to teammates [0,1]
+belief_threshold: 0
 
-  #threshold for necessary belief in data to be send to teammates [0,1]
-  belief_threshold: 0
-
-  # ROS Topics
-  team_data: '/team_data'
-  strategy: '/strategy'
-  robot_state: '/robot_state'
-  goal: '/goal_post_relative'
-  world_model_node: '/local_world_model'
-  position: '/position'
-  ball: '/balls_relative'
-  obstacles: '/obstacle_relative'
+# ROS Topics
+team_data: 'team_data'
+strategy: 'strategy'
+robot_state: 'robot_state'
+goal: 'goal_post_relative'
+world_model_node: 'local_world_model'
+position: 'position'
+ball: 'balls_relative'
+obstacles: 'obstacle_relative'

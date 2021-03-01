@@ -2,31 +2,33 @@
 
 TeamCommunication::TeamCommunication() : nh_() {
   //--- Params ---
-  int port;
+  ros::NodeHandle pnh("~");
   int team;
   int player;
-  nh_.getParam("team_communication/port", port);
   nh_.getParam("team_id", team);
   nh_.getParam("bot_id", player);
-  //publishing rate in Hz
-  nh_.getParam("team_communication/rate", frequency_);
-  nh_.getParam("team_communication/avg_walking_speed", avg_walking_speed_);
-  nh_.getParam("team_communication/max_kicking_distance", max_kicking_distance_);
-  int teamcolor;
-  nh_.getParam("team_communication/team_color", teamcolor);
-  team_color_ = teamcolor;
-  //nh_.getParam("team_communication/world_model", world_model_);
-  nh_.getParam("team_communication/lifetime", lifetime_);
-  nh_.getParam("team_communication/belief_threshold", belief_threshold_);
 
-  nh_.getParam("team_communication/team_data", teamdata_topic_);
-  nh_.getParam("team_communication/strategy", strategy_topic_);
-  nh_.getParam("team_communication/robot_state", robot_state_topic_);
-  nh_.getParam("team_communication/goal", goal_topic_);
-  //nh_.getParam("team_communication/world_model_node", world_model_topic_);
-  nh_.getParam("team_communication/position", position_topic_);
-  nh_.getParam("team_communication/ball", ball_topic_);
-  nh_.getParam("team_communication/obstacles", obstacles_topic_);
+  int port;
+  pnh.getParam("port", port);
+  //publishing rate in Hz
+  pnh.getParam("rate", frequency_);
+  pnh.getParam("avg_walking_speed", avg_walking_speed_);
+  pnh.getParam("max_kicking_distance", max_kicking_distance_);
+  int teamcolor;
+  pnh.getParam("team_color", teamcolor);
+  team_color_ = teamcolor;
+  //pnh.getParam("world_model", world_model_);
+  pnh.getParam("lifetime", lifetime_);
+  pnh.getParam("belief_threshold", belief_threshold_);
+
+  pnh.getParam("team_data", teamdata_topic_);
+  pnh.getParam("strategy", strategy_topic_);
+  pnh.getParam("robot_state", robot_state_topic_);
+  pnh.getParam("goal", goal_topic_);
+  //pnh.getParam("world_model_node", world_model_topic_);
+  pnh.getParam("position", position_topic_);
+  pnh.getParam("ball", ball_topic_);
+  pnh.getParam("obstacles", obstacles_topic_);
 
   //init mitecom
   mitecom_.set_team_id(team);
