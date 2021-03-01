@@ -19,19 +19,19 @@ class JoyNode(object):
     #TODO read max values from config
 
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node("joy_to_twist", log_level=log_level, anonymous=False)
 
         self.config = rospy.get_param("~" + rospy.get_param("~type"))
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/joy", Joy, self.joy_cb, queue_size=1)
+        rospy.Subscriber("joy", Joy, self.joy_cb, queue_size=1)
         self.speak_pub = rospy.Publisher('speak', Audio, queue_size=1)
         self.speak_msg = Audio()
 
         self.speak_msg.priority = 1
 
-        self.walk_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.walk_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
         self.walk_msg = Twist()
         self.last_walk_msg = Twist()
@@ -44,9 +44,9 @@ class JoyNode(object):
         self.walk_msg.angular.y = 0.0
         self.walk_msg.angular.z = 0.0
 
-        self.head_pub = rospy.Publisher("/head_motor_goals", JointCommand, queue_size=1)
+        self.head_pub = rospy.Publisher("head_motor_goals", JointCommand, queue_size=1)
 
-        self.head_mode_pub = rospy.Publisher("/head_mode", HeadMode, queue_size=1)
+        self.head_mode_pub = rospy.Publisher("head_mode", HeadMode, queue_size=1)
 
         self.head_msg = JointCommand()
         self.head_msg.max_currents = [-1] * 2
