@@ -2957,7 +2957,7 @@
     <collision>
       <origin rpy="3.88389e-31 -1.5433e-31 1.35585e-31" xyz="-2.02057e-34 1.07341e-34 0.0045"/>
       <geometry>
-        <cylinder length="0.009" radius="0.025"/>
+        <cylinder length="0.009" radius="0.02"/>
       </geometry>
     </collision>
     <visual>
@@ -2972,7 +2972,7 @@
     <collision>
       <origin rpy="-8.16317e-16 -2.22045e-16 3.14159" xyz="-1.95677e-17 -5.41482e-17 0.0115"/>
       <geometry>
-        <cylinder length="0.005" radius="0.025"/>
+        <cylinder length="0.005" radius="0.02"/>
       </geometry>
     </collision>
     <visual>
