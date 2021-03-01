@@ -22,12 +22,12 @@ class LocalizationHandler(object):
         self.blackboard = LocalizationBlackboard()
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/localization_dsd"
         rospy.loginfo(dirname)
-        self.dsd = DSD(self.blackboard, "/debug/dsd/localization")
+        self.dsd = DSD(self.blackboard, "debug/dsd/localization")
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'localization.dsd'))
 
-        rospy.Subscriber("bitbots_localization/pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
+        rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
         rospy.Subscriber("gamestate", GameState, self._callback_game_state, queue_size=1)
         rospy.Subscriber("robot_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
 
