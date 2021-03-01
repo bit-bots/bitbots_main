@@ -40,13 +40,13 @@ RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
 
 const RobotState RobotStateDistributionStartLeft::draw() const {
     if (random_number_generator_.getUniform(0, 1) > 0.5) {
-        return (RobotState(random_number_generator_.getGaussian(1) + initial_robot_pose_1.first,
+        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) + initial_robot_pose_1.first,
                            random_number_generator_.getGaussian(0.1) + initial_robot_pose_1.second,
-                           random_number_generator_.getGaussian(0.1) + initial_theta_1));
+                           random_number_generator_.getGaussian(0.2) + initial_theta_1));
     } else {
-        return (RobotState(random_number_generator_.getGaussian(1) + initial_robot_pose_2.first,
+        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) + initial_robot_pose_2.first,
                            random_number_generator_.getGaussian(0.1) + initial_robot_pose_2.second,
-                           random_number_generator_.getGaussian(0.1) + initial_theta_2));
+                           random_number_generator_.getGaussian(0.2) + initial_theta_2));
     }
 }
 
@@ -66,13 +66,13 @@ RobotStateDistributionStartRight::RobotStateDistributionStartRight(
 
 const RobotState RobotStateDistributionStartRight::draw() const {
     if (random_number_generator_.getUniform(0, 1) > 0.5) {
-        return (RobotState(random_number_generator_.getGaussian(0.8) - initial_robot_pose_1.first,
+        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) - initial_robot_pose_1.first,
                            random_number_generator_.getGaussian(0.1) + initial_robot_pose_1.second,
-                           random_number_generator_.getGaussian(0.1) + initial_theta_1));
+                           random_number_generator_.getGaussian(0.2) + initial_theta_1));
     } else {
-        return (RobotState(random_number_generator_.getGaussian(0.8) - initial_robot_pose_2.first,
+        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) - initial_robot_pose_2.first,
                            random_number_generator_.getGaussian(0.1) + initial_robot_pose_2.second,
-                           random_number_generator_.getGaussian(0.1) + initial_theta_2));
+                           random_number_generator_.getGaussian(0.2) + initial_theta_2));
     }
 }
 
@@ -147,8 +147,3 @@ const RobotState RobotStateDistributionPose::draw() const {
                        random_number_generator_.getGaussian(0.1) + y_,
                        random_number_generator_.getGaussian(0.1) + t_);
 }
-
-
-
-
-
