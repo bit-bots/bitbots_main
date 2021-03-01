@@ -84,13 +84,13 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_crosses = last_measurement_crosses_.size();
 
   double weight = (number_of_effective_measurements_ == 0) ? 0 : (
-      ( particle_weight_lines * config_.lines_factor +
-        particle_weight_goal * config_.goals_factor +
-        particle_weight_field_boundary * config_.field_boundary_factor +
-        particle_weight_corners * config_.corners_factor +
-        particle_weight_t_crossings * config_.t_crossings_factor +
-        particle_weight_crosses * config_.crosses_factor) /
-          number_of_effective_measurements_); // TODO evaluate this devision
+      ((1 - config_.lines_factor) + config_.lines_factor * particle_weight_lines) *
+      ((1 - config_.goals_factor) + config_.goals_factor * particle_weight_goal) *
+      ((1 - config_.field_boundary_factor) + config_.field_boundary_factor * particle_weight_field_boundary) *
+      ((1 - config_.corners_factor) + config_.corners_factor * particle_weight_corners) *
+      ((1 - config_.t_crossings_factor) + config_.t_crossings_factor * particle_weight_t_crossings) *
+      ((1 - config_.crosses_factor) + config_.crosses_factor * particle_weight_crosses)
+  );
 
   if (weight < min_weight_) {
     weight = min_weight_;
