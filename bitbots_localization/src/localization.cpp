@@ -426,23 +426,24 @@ void Localization::publish_transforms() {
   //publish transforms//
   //////////////////////
 
-  //publish localization tf, not the odom offset
-  geometry_msgs::TransformStamped localization_transform;
-  localization_transform.header.stamp = ros::Time::now();
-  localization_transform.header.frame_id = map_frame_;
-  localization_transform.child_frame_id = publishing_frame_;
-  localization_transform.transform.translation.x = estimate_.getXPos();
-  localization_transform.transform.translation.y = estimate_.getYPos();
-  localization_transform.transform.translation.z = 0.0;
-  localization_transform.transform.rotation.x = q.x();
-  localization_transform.transform.rotation.y = q.y();
-  localization_transform.transform.rotation.z = q.z();
-  localization_transform.transform.rotation.w = q.w();
-  br.sendTransform(localization_transform);
-
   try{
-    //publish odom localisation offset
     geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0));
+
+    //publish localization tf, not the odom offset
+    geometry_msgs::TransformStamped localization_transform;
+    localization_transform.header.stamp = odom_transform.header.stamp;
+    localization_transform.header.frame_id = map_frame_;
+    localization_transform.child_frame_id = publishing_frame_;
+    localization_transform.transform.translation.x = estimate_.getXPos();
+    localization_transform.transform.translation.y = estimate_.getYPos();
+    localization_transform.transform.translation.z = 0.0;
+    localization_transform.transform.rotation.x = q.x();
+    localization_transform.transform.rotation.y = q.y();
+    localization_transform.transform.rotation.z = q.z();
+    localization_transform.transform.rotation.w = q.w();
+    br.sendTransform(localization_transform);
+
+    //publish odom localisation offset
     geometry_msgs::TransformStamped map_odom_transform;
 
     map_odom_transform.header.stamp = odom_transform.header.stamp;
