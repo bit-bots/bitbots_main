@@ -30,21 +30,21 @@ def validate_params():
         return inner_result
 
     result = True
-    result = result and validate_single_param('/system_monitor/update_frequency', int)
-    result = result and validate_single_param('/system_monitor/do_cpu', bool)
-    result = result and validate_single_param('/system_monitor/do_memory', bool)
-    result = result and validate_single_param('/system_monitor/do_network', bool)
+    result = result and validate_single_param('~update_frequency', int)
+    result = result and validate_single_param('~do_cpu', bool)
+    result = result and validate_single_param('~do_memory', bool)
+    result = result and validate_single_param('~do_network', bool)
     return result
 
 
 if __name__ == '__main__':
     rospy.init_node('system_monitor', anonymous=True)
     if validate_params():
-        pub = rospy.Publisher('/system_workload', WorkloadMsg, latch=True, queue_size=1)
-        diagnostic_pub = rospy.Publisher('/diagnostics', DiagnosticArray, latch=True, queue_size=1)
+        pub = rospy.Publisher('system_workload', WorkloadMsg, latch=True, queue_size=1)
+        diagnostic_pub = rospy.Publisher('diagnostics', DiagnosticArray, latch=True, queue_size=1)
 
         hostname = socket.gethostname()
-        config = rospy.get_param('/system_monitor')
+        config = rospy.get_param('~')
         rate = rospy.Rate(config['update_frequency'])
 
         diag_array = DiagnosticArray()
