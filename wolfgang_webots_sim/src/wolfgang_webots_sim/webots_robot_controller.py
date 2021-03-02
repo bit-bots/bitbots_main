@@ -9,10 +9,20 @@ import math
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang',do_ros_init=True):
-        # requires WEBOTS_ROBOT_NAME to be set to "amy" or "rory"
+    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False):
+        """
+        The RobotController, a Webots controller that controls a single robot.
+        The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
+        4_bots.wbt or to "amy" if used with 1_bot.wbt.
+
+        :param ros_active: Whether ROS messages should be published
+        :param robot: The name of the robot to use, currently one of wolfgang, darwin, nao, op3
+        :param do_ros_init: Whether to call rospy.init_node (only used when ros_active is True)
+        :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
+        """
         self.ros_active = ros_active
-        self.robot_node = Robot()
+        if not external_controller:
+            self.robot_node = Robot()
         self.walkready = [0] * 20
         self.time = 0
 
@@ -122,24 +132,22 @@ class RobotController:
             self.cop_r_pub_ = rospy.Publisher("cop_r", PointStamped, queue_size=1)
             rospy.Subscriber("DynamixelController/command", JointCommand, self.command_cb)
 
-
-        # publish camera info once, it will be latched
-        self.cam_info = CameraInfo()
-        self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
-        self.cam_info.header.frame_id = self.camera_optical_frame
-        self.cam_info.height = self.camera.getHeight()
-        self.cam_info.width = self.camera.getWidth()
-        f_y = self.mat_from_fov_and_resolution(
-            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
-            self.cam_info.height)
-        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-        self.cam_info.K = [f_x, 0, self.cam_info.width / 2,
-                           0, f_y, self.cam_info.height / 2,
-                           0, 0, 1]
-        self.cam_info.P = [f_x, 0, self.cam_info.width / 2, 0,
-                           0, f_y, self.cam_info.height / 2, 0,
-                           0, 0, 1, 0]
-        if self.ros_active:
+            # publish camera info once, it will be latched
+            self.cam_info = CameraInfo()
+            self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
+            self.cam_info.header.frame_id = self.camera_optical_frame
+            self.cam_info.height = self.camera.getHeight()
+            self.cam_info.width = self.camera.getWidth()
+            f_y = self.mat_from_fov_and_resolution(
+                self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
+                self.cam_info.height)
+            f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
+            self.cam_info.K = [f_x, 0, self.cam_info.width / 2,
+                               0, f_y, self.cam_info.height / 2,
+                               0, 0, 1]
+            self.cam_info.P = [f_x, 0, self.cam_info.width / 2, 0,
+                               0, f_y, self.cam_info.height / 2, 0,
+                               0, 0, 1, 0]
             self.pub_cam_info.publish(self.cam_info)
 
     def mat_from_fov_and_resolution(self, fov, res):
@@ -155,10 +163,13 @@ class RobotController:
     def step(self):
         self.step_sim()
         if self.ros_active:
-            self.publish_imu()
-            self.publish_joint_states()
-            self.publish_camera()
-            self.publish_pressure()
+            self.publish_ros()
+
+    def publish_ros(self):
+        self.publish_imu()
+        self.publish_joint_states()
+        self.publish_camera()
+        self.publish_pressure()
 
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
