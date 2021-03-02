@@ -680,7 +680,7 @@ class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
                 # Check if we found a pixel under the threshold
                 if subsampled_mask[max_y, x_position] < int(green_threshold / 1000 * 255):
                     # Reset to last step
-                    max_y += 1
+                    max_y += roi_height // 2
                     break
             # Scale the field boundary points back to the original image
             field_boundary_points.append(
