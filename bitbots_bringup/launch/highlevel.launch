@@ -44,7 +44,9 @@
 
     <!-- launch localization or fake localization -->
     <group if="$(arg localization)">
-        <include file="$(find bitbots_localization)/launch/localization.launch" />
+        <include file="$(find bitbots_localization)/launch/localization.launch">
+            <arg name="sim" value="$(arg sim)"/>
+        </include>
     </group>
     <group unless="$(arg localization)">
         <!-- simulate map frame -->
