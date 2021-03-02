@@ -18,17 +18,19 @@ G = 9.81
 
 class SupervisorController:
     def __init__(self, ros_active=False, mode='normal'):
-        # requires WEBOTS_ROBOT_NAME to be set to "amy" or "rory"
+        """
+        The SupervisorController, a Webots controller that can control the world.
+        Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
+
+        :param ros_active: Whether to publish ROS messages
+        :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
+        """
+        # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
         self.time = 0
         self.clock_msg = Clock()
 
         self.supervisor = Supervisor()
-        self.amy_node = self.supervisor.getFromDef("amy")
-        self.rory_node = self.supervisor.getFromDef("rory")
-        self.jack_node = self.supervisor.getFromDef("jack")
-        self.donna_node = self.supervisor.getFromDef("donna")
-        self.melody_node = self.supervisor.getFromDef("melody")
 
         if mode == 'normal':
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
@@ -44,7 +46,7 @@ class SupervisorController:
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
         # resolve the node for corresponding name
-        self.robot_names = ["amy", "rory", "jack", "donna", "melody"]
+        self.robot_names = ["amy", "rory", "jack", "donna"]
         self.robot_nodes = {}
         self.translation_fields = {}
         self.rotation_fields = {}
