@@ -9,7 +9,6 @@
     <!-- remaps necessary for other parts of our software -->
     <remap from="camera/image_raw" to="camera/image_proc"/>
     <remap from="camera/camera_info" to="camera_info"/>
-    <remap from="imu" to="imu/data"/>
 
     <!-- load robot description -->
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
