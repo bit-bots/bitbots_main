@@ -8,12 +8,8 @@ PROTO Wolfgang_imu_bottom_coverMesh [
 ]
 {
   Shape {
-    appearance DEF imu_bottom_cover_material PBRAppearance {
-      baseColor 0.717647 0.717647 0.717647
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
+    appearance RoughPolymer {
+      baseColor 0.1 0.1 0.1
     }
     geometry DEF imu_bottom_cover IndexedFaceSet {
       coord Coordinate {

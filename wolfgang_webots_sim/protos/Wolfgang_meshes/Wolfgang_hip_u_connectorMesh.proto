@@ -8,12 +8,9 @@ PROTO Wolfgang_hip_u_connectorMesh [
 ]
 {
   Shape {
-    appearance DEF hip_u_connector_material PBRAppearance {
-      baseColor 0.647059 0.647059 0.647059
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
+    appearance ScratchedPaint {
+      colorOverride    0.05 0.05 0.05
+      metalScratch     TRUE
     }
     geometry DEF hip_u_connector IndexedFaceSet {
       coord Coordinate {

@@ -8,12 +8,8 @@ PROTO Wolfgang_batteryMesh [
 ]
 {
   Shape {
-    appearance DEF battery_material PBRAppearance {
-      baseColor 0.807843 0.823529 0.831373
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
+    appearance RoughPolymer {
+      baseColor 0.2 0.2 0.2
     }
     geometry DEF battery IndexedFaceSet {
       coord Coordinate {

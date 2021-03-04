@@ -8,12 +8,8 @@ PROTO Wolfgang_lower_leg_spacerMesh [
 ]
 {
   Shape {
-    appearance DEF lower_leg_spacer_material PBRAppearance {
-      baseColor 0.498039 0.498039 0.498039
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
+    appearance RoughPolymer {
+      baseColor 0.1 0.1 0.1
     }
     geometry DEF lower_leg_spacer IndexedFaceSet {
       coord Coordinate {
