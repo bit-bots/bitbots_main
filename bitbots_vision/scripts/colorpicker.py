@@ -9,13 +9,19 @@ import rospy
 import rospkg
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+import argparse
 
 
 class Colorpicker(object):
     """
     The bitbots_colorpicker node, which is used to select colors that occur in the field.
     """
+
     def __init__(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i", "--input", help="loads pickle lookup table file if given", type=str)
+        parser.add_argument("-t", "--topic", help="ros input topic for the image", default ="image_raw")
+        args = parser.parse_args()
         rospy.init_node('bitbots_colorpicker')
         rospy.loginfo('Initializing colorpicker...', logger_name="colorpicker")
         rospack = rospkg.RosPack()
@@ -26,7 +32,7 @@ class Colorpicker(object):
 
         # Subscribe to Image-message
         self._sub_image_msg = rospy.Subscriber(
-            "image_raw",
+            args.topic,
             Image,
             self._image_callback,
             queue_size=1,
@@ -37,10 +43,16 @@ class Colorpicker(object):
         self._output_usage_info()
         cv2.namedWindow("Colorpicker")
         cv2.setMouseCallback("Colorpicker", self._mouse_callback)
-        self._mouse_coord = (0,0)
+        self._mouse_coord = (0, 0)
         self._left_click, self._undo_click = False, False
         self._default_path = "~/.ros/color_space.pickle"
+
         color_space = np.zeros((256, 256, 256), dtype=np.uint8)
+
+        with open(args.input, 'rb') as infile:
+            color_values = pickle.load(infile)
+
+        color_space[color_values['blue'], color_values['green'], color_values['red']] = 1
 
         # Default box size
         self._box_size = 50
@@ -59,14 +71,14 @@ class Colorpicker(object):
         :param np.array color_space: color space
         :return np.array: masked image
         """
-        image_reshape = image.reshape(-1,3).transpose()
+        image_reshape = image.reshape(-1, 3).transpose()
         mask = color_space[
-                image_reshape[0],
-                image_reshape[1],
-                image_reshape[2],
-            ].reshape(
-                image.shape[0],
-                image.shape[1])
+            image_reshape[0],
+            image_reshape[1],
+            image_reshape[2],
+        ].reshape(
+            image.shape[0],
+            image.shape[1])
         return mask
 
     def _mouse_callback(self, event, x, y, flags, param):
@@ -99,8 +111,8 @@ class Colorpicker(object):
         colored_image[:, :] = tuple(np.multiply(color, opacity).astype(np.uint8))
 
         # Compose preview image
-        return cv2.add(cv2.bitwise_and(image, image, mask=255-mask),
-                cv2.add(colored_image*opacity, image*(1-opacity), mask=mask).astype(np.uint8))
+        return cv2.add(cv2.bitwise_and(image, image, mask=255 - mask),
+                       cv2.add(colored_image * opacity, image * (1 - opacity), mask=mask).astype(np.uint8))
 
     def _output_usage_info(self):
         """
@@ -146,11 +158,11 @@ class Colorpicker(object):
             if self._left_click or self._undo_click:
                 # Get pixels in the selction
                 selected_matrix = self._image[
-                                            box_min_y : box_max_y,
-                                            box_min_x : box_max_x
-                                        ]
+                                  box_min_y: box_max_y,
+                                  box_min_x: box_max_x
+                                  ]
                 # Serialize the colors
-                selected_matrix = selected_matrix.reshape(-1,3)
+                selected_matrix = selected_matrix.reshape(-1, 3)
                 # Get the unique colors
                 selected_matrix = np.unique(selected_matrix, axis=0)
 
@@ -161,16 +173,16 @@ class Colorpicker(object):
                 if self._undo_click:
                     # Remove color values from color space
                     color_space[
-                        selected_matrix[:,0],
-                        selected_matrix[:,1],
-                        selected_matrix[:,2]] = 0
+                        selected_matrix[:, 0],
+                        selected_matrix[:, 1],
+                        selected_matrix[:, 2]] = 0
                 # Check if we add stuff
                 elif self._left_click:
                     # Add color values to color space
                     color_space[
-                        selected_matrix[:,0],
-                        selected_matrix[:,1],
-                        selected_matrix[:,2]] = 1
+                        selected_matrix[:, 0],
+                        selected_matrix[:, 1],
+                        selected_matrix[:, 2]] = 1
 
                 # Append new color space to self._history
                 self._history.append(color_space)
@@ -183,14 +195,14 @@ class Colorpicker(object):
             mask = self._mask_image(self._image, self._history[-1])
 
             # Draw the mask on the canvas
-            canvas = self._draw_mask(canvas, mask, (255,0,255), opacity=0.8)
+            canvas = self._draw_mask(canvas, mask, (255, 0, 255), opacity=0.8)
 
             # Draw selection area
             cv2.rectangle(canvas,
-                (box_min_x, box_min_y),
-                (box_max_x, box_max_y),
-                (0, 255, 0),
-                2)
+                          (box_min_x, box_min_y),
+                          (box_max_x, box_max_y),
+                          (0, 255, 0),
+                          2)
 
             # Show canvas
             cv2.imshow("Colorpicker", canvas)
@@ -208,7 +220,7 @@ class Colorpicker(object):
             if key == ord("u") and len(self._history) > 1:
                 del self._history[-1]
             # Quit exit
-            elif key%256 == 27 or 0xFF == ord('q'):
+            elif key % 256 == 27 or 0xFF == ord('q'):
                 save = False
                 break
             # Save exit
@@ -227,7 +239,8 @@ class Colorpicker(object):
         Saves the current colorspace in a pickle file.
         """
         # Get user input
-        input_path = input(f"Press ENTER to save color space file to '{self._default_path}'\nor enter output file path: ")
+        input_path = input(
+            f"Press ENTER to save color space file to '{self._default_path}'\nor enter output file path: ")
 
         # Check if the user entered something
         if input_path == "":
