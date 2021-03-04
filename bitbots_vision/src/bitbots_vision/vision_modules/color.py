@@ -326,10 +326,10 @@ class PixelListColorDetector(ColorDetector):
         length = len(color_values['red'])
         if length == len(color_values['green']) and \
                 length == len(color_values['blue']):
-            # setting colors from yaml file to True in color lookup table
-            for x in range(length):
-                color_lookup_table[color_values['blue'][x], color_values['green'][x], color_values['red'][x]] = 1
-        return color_lookup_table
+            # setting colors from yaml file to True in color space
+            color_lookup_table[color_values['blue'], color_values['green'], color_values['red']] = 1
+        return color_space
+
 
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
