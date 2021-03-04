@@ -159,6 +159,22 @@ class Candidate:
                 <= point[1]
                 <= self.get_upper_left_y() + self.get_height())
 
+    def set_in_mask(self, mask, value=0, grow=1):
+        """
+        Sets the bounding box of this candidate in the given mask to the given value.
+
+        :param mask: Binary mask with the shape of the input image
+        :param value: The value of the bounding box region
+        :param grow: A scalar which defines how much arround the box is also removed
+        :returns mask: The input mask without this candidate
+        """
+        width = int(self.get_width() * grow * 0.5)
+        height = int(self.get_height() * grow * 0.5)
+        mask[
+            max(self.get_center_y() - height, 0) : min(self.get_center_y() + height, mask.shape[0]),
+            max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = value
+        return mask
+
     @staticmethod
     def sort_candidates(candidatelist):
         """
@@ -187,7 +203,7 @@ class Candidate:
     def rating_threshold(candidatelist, threshold):
         """
         Returns list of all candidates with rating above given threshold.
-        
+
         :param [Candidate] candidatelist: List of candidates to filter
         :param float threshold: Filter threshold
         :return [Candidate]: Filtered list of candidates
@@ -197,7 +213,7 @@ class Candidate:
     def __str__(self):
         """
         Returns string representation of candidate.
-        
+
         :return str: String representation of candidate
         """
         return f"x1,y1: {self.get_upper_left_x()},{self.get_upper_left_y()} | width,height: {self.get_width()},{self.get_height()} | rating: {self._rating}"

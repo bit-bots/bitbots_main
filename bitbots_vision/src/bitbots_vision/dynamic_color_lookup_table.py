@@ -5,16 +5,18 @@ import yaml
 import rospy
 import rospkg
 import numpy as np
+from copy import deepcopy
+from threading import Lock
 from cv_bridge import CvBridge
 from collections import deque
 from sensor_msgs.msg import Image
-from bitbots_msgs.msg import ColorSpace, Config
+from bitbots_msgs.msg import ColorLookupTable, Config
 from bitbots_vision.vision_modules import field_boundary, color, ros_utils
 
 
-class DynamicColorSpace:
+class DynamicColorLookupTable:
     """
-    The :class:`.DynamicColorSpace` uses a heuristic to adapt the lookup table of 
+    The :class:`.DynamicColorLookupTable` uses a heuristic to adapt the lookup table of
     the :class:`bitbots_vision.vision_modules.color.DynamicPixelListColorDetector`
     to color changes which happen in the field during a game due to e.g. differing light.
     It only adds colors that only occur under the current field boundary and are surrounded by the current field colors.
@@ -22,14 +24,14 @@ class DynamicColorSpace:
     def __init__(self):
         # type: () -> None
         """
-        DynamicColorSpace is a ROS node, that is used by the vision node to better recognize the field color.
-        DynamicColorSpace is able to calculate dynamically changing color spaces to accommodate e.g.
-        changing lighting conditions or to compensate for not optimized base color space files.
+        DynamicColorLookupTable is a ROS node, that is used by the vision node to better recognize the field color.
+        DynamicColorLookupTable is able to calculate dynamically changing color lookup tables to accommodate e.g.
+        changing lighting conditions or to compensate for not optimized base color lookup table files.
 
-        This node subscribes to an Image-message (default: image_raw) and to the 'vision_config'-message.
-        This node publishes ColorSpace-messages.
+        This node subscribes to an Image-message (default: camera/image_proc) and to the 'vision_config'-message.
+        This node publishes color-lookup-table-messages.
 
-        Initiating 'bitbots_dynamic_color_space' node.
+        Initiating 'bitbots_dynamic_color_lookup_table' node.
 
         :return: None
         """
@@ -37,16 +39,19 @@ class DynamicColorSpace:
         rospack = rospkg.RosPack()
         self._package_path = rospack.get_path('bitbots_vision')
 
-        rospy.init_node('bitbots_dynamic_color_space')
-        rospy.loginfo('Initializing dynamic color-space...', logger_name="dynamic_color_space")
+        rospy.init_node('bitbots_dynamic_color_lookup_table')
+        rospy.loginfo('Initializing dynamic color-lookup-table...', logger_name="dynamic_color_lookup_table")
 
         self._cv_bridge = CvBridge()
 
         # Init params
         self._vision_config = {}
+        self._rate = rospy.Rate(100)  # Rate of sleep timer
+        self._max_fps = None
+        self._last_time = rospy.get_rostime()  # Time since we have received the last image
 
         # Publisher placeholder
-        self._pub_color_space = None
+        self._pub_color_lookup_table = None
 
         # Subscriber placeholder
         self._sub_image_msg = None
@@ -60,16 +65,58 @@ class DynamicColorSpace:
             queue_size=1,
             tcp_nodelay=True)
 
-        rospy.spin()
+        # Reconfigure data transfer variable
+        self._transfer_reconfigure_data = None
+        self._transfer_reconfigure_data_mutex = Lock()
+
+        # Image transfer variable
+        self._transfer_image_msg = None
+        self._transfer_image_msg_mutex = Lock()
+
+        # Run the dynamic color lookup table main loop
+        self._main_loop()
+
+    def _main_loop(self):
+        """
+        Main loop that processes the images and configuration changes
+        """
+        while not rospy.is_shutdown():
+            # Lookup if there is another configuration available
+            if self._transfer_reconfigure_data is not None:
+                # Copy _config from shared memory
+                with self._transfer_reconfigure_data_mutex:
+                    reconfigure_data = deepcopy(self._transfer_reconfigure_data)
+                    self._transfer_reconfigure_data = None
+                # Run reconfiguration
+                self._reconfigure(reconfigure_data)
+            # Check if a new image is avalabile
+            elif self._transfer_image_msg is not None:
+                # Copy image from shared memory
+                with self._transfer_image_msg_mutex:
+                    image_msg = self._transfer_image_msg
+                    self._transfer_image_msg = None
+                    # Run the pipeline
+                    self._handle_image(image_msg)
+                # Now the first image has been processed
+                self._first_image_callback = False
+            else:
+                self._rate.sleep()
 
     def _vision_config_callback(self, msg):
         # type: (Config) -> None
         """
         This method is called by the 'vision_config'-message subscriber.
-        Load and update vision config.
-        Handle config changes.
 
-        This callback is delayed (about 30 seconds) after changes through dynamic reconfigure
+        :param Config msg: 'vision_config'-message subscriber
+        :return: None
+        """
+        with self._transfer_reconfigure_data_mutex:
+            # Set reconfigure data
+            self._transfer_reconfigure_data = msg
+
+    def _reconfigure(self, msg):
+        """
+        Handle reconfiguration.
 
         :param Config msg: new 'vision_config'-message subscriber
         :return: None
@@ -77,15 +124,19 @@ class DynamicColorSpace:
         # Load dict from string in yaml-format in msg.data
         vision_config = yaml.load(msg.data, Loader=yaml.FullLoader)
 
-        # Print status of dynamic color space after toggling 'dynamic_color_space_active' parameter
-        if ros_utils.config_param_change(self._vision_config, vision_config, 'dynamic_color_space_active'):
-            if vision_config['dynamic_color_space_active']:
-                rospy.loginfo('Dynamic color space turned ON.', logger_name="dynamic_color_space")
+        # Print status of dynamic color lookup table after toggling 'dynamic_color_lookup_table_active' parameter
+        if ros_utils.config_param_change(self._vision_config, vision_config, 'dynamic_color_lookup_table_active'):
+            if vision_config['dynamic_color_lookup_table_active']:
+                rospy.loginfo('Dynamic color lookup table turned ON.', logger_name="dynamic_color_lookup_table")
             else:
-                rospy.logwarn('Dynamic color space turned OFF.', logger_name="dynamic_color_space")
+                rospy.logwarn('Dynamic color lookup table turned OFF.', logger_name="dynamic_color_lookup_table")
 
-        # Set publisher of ColorSpace-messages
-        self._pub_color_space = ros_utils.create_or_update_publisher(self._vision_config, vision_config, self._pub_color_space, 'ROS_dynamic_color_space_msg_topic', ColorSpace)
+        if ros_utils.config_param_change(self._vision_config, vision_config, 'dynamic_color_lookup_table_max_fps'):
+            self._max_fps = vision_config['dynamic_color_lookup_table_max_fps']
+            self._last_time = rospy.get_rostime()
+
+        # Set publisher of color-lookup-table-messages
+        self._pub_color_lookup_table = ros_utils.create_or_update_publisher(self._vision_config, vision_config, self._pub_color_lookup_table, 'ROS_dynamic_color_lookup_table_msg_topic', ColorLookupTable)
 
         # Set Color- and FieldBoundaryDetector
         self._color_detector = color.DynamicPixelListColorDetector(
@@ -94,7 +145,7 @@ class DynamicColorSpace:
 
         # Get field boundary detector class by name from config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
-            vision_config['dynamic_color_space_field_boundary_detector_search_method'])
+            vision_config['dynamic_color_lookup_table_field_boundary_detector_search_method'])
 
         # Set the field boundary detector
         self._field_boundary_detector = field_boundary_detector_class(
@@ -102,12 +153,12 @@ class DynamicColorSpace:
             self._color_detector)
 
         # Set params
-        self._queue_max_size = vision_config['dynamic_color_space_queue_max_size']
+        self._queue_max_size = vision_config['dynamic_color_lookup_table_queue_max_size']
         self._color_value_queue = deque(maxlen=self._queue_max_size)
 
         self._pointfinder = Pointfinder(
-            vision_config['dynamic_color_space_threshold'],
-            vision_config['dynamic_color_space_kernel_radius'])
+            vision_config['dynamic_color_lookup_table_threshold'],
+            vision_config['dynamic_color_lookup_table_kernel_radius'])
 
         # Create a new heuristic instance
         self._heuristic = Heuristic()
@@ -137,19 +188,33 @@ class DynamicColorSpace:
         :param Image image_msg: new Image-message from Image-message subscriber
         :return: None
         """
-        # Turn off dynamic color space, if parameter of config is false
-        if 'dynamic_color_space_active' not in self._vision_config or \
-                not self._vision_config['dynamic_color_space_active']:
+        # Turn off dynamic color lookup table, if parameter of config is false
+        if 'dynamic_color_lookup_table_active' not in self._vision_config or \
+                not self._vision_config['dynamic_color_lookup_table_active']:
             return
 
-        # Drops old images
+        # Drops old images and cleans up the queue.
+        # Still accepts very old images, that are most likely from ROS bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
             rospy.logwarn(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)",
-                            logger_name="dynamic_color_space")
+                            logger_name="dynamic_color_lookup_table")
             return
 
-        self._handle_image(image_msg)
+        # Skip images to constrain node to maximum FPS
+        time = rospy.get_rostime()
+        if (time - self._last_time).to_sec() < 0:  # Time reset happened, probably rosbag looped
+            self._last_time = time
+            return
+        if self._max_fps <= 0.0 or (time - self._last_time).to_sec() < (1 / self._max_fps):
+            return
+        self._last_time = time
+
+        if self._transfer_image_msg_mutex.locked():
+            return
+        with self._transfer_image_msg_mutex:
+            # Transfer the image to the main thread
+            self._transfer_image_msg = image_msg
 
     def _handle_image(self, image_msg):
         # type: (Image) -> None
@@ -168,7 +233,7 @@ class DynamicColorSpace:
         colors = self._get_new_dynamic_colors(image)
         # Add new colors to the queue
         self._color_value_queue.append(colors)
-        # Publishes to 'ROS_dynamic_color_space_msg_topic'
+        # Publishes to 'ROS_dynamic_color_lookup_table_msg_topic'
         self._publish(image_msg)
 
     def _get_unique_color_values(self, image, coordinate_list):
@@ -198,7 +263,7 @@ class DynamicColorSpace:
         :param np.array image: image
         :return np.array: array of new dynamic color values
         """
-        # Masks new image with current color space
+        # Masks new image with current color lookup table
         normalized_image_mask = self._color_detector.get_normalized_image_mask()
         # Get mask from field_boundary detector
         self._field_boundary_detector.set_image(image)
@@ -213,41 +278,41 @@ class DynamicColorSpace:
             return colors
         return np.array([[]])
 
-    def _queue_to_color_space(self, queue):
+    def _queue_to_color_lookup_table(self, queue):
         # type: (deque) -> np.array
         """
-        Returns color space as array of all queue elements stacked, which contains all colors from the queue.
+        Returns color lookup table as array of all queue elements stacked, which contains all colors from the queue.
 
         :param dequeue queue: queue of array of color values
-        :return np.array: color space
+        :return np.array: color lookup table
         """
-        # Initializes an empty color space
-        color_space = np.array([], dtype=np.uint8).reshape(0, 3)
-        # Stack every color space in the queue
+        # Initializes an empty color lookup table
+        color_lookup_table = np.array([], dtype=np.uint8).reshape(0, 3)
+        # Stack every color lookup table in the queue
         for new_color_value_list in queue:
-            color_space = np.append(color_space, new_color_value_list[:, :], axis=0)
-        # Return a color space, which contains all colors from the queue
-        return color_space.astype(int)
+            color_lookup_table = np.append(color_lookup_table, new_color_value_list[:, :], axis=0)
+        # Return a color lookup table, which contains all colors from the queue
+        return color_lookup_table.astype(int)
 
     def _publish(self, image_msg):
         # type: (Image) -> None
         """
-        Publishes the current color space via ColorSpace-message.
+        Publishes the current color lookup table via color-lookup-table-message.
 
-        :param Image image_msg: 'image_raw'-message
+        :param Image image_msg: 'camera/image_proc'-message
         :return: None
         """
-        # Get color space from queue
-        color_space = self._queue_to_color_space(self._color_value_queue)
-        # Create ColorSpace-message
-        color_space_msg = ColorSpace()
-        color_space_msg.header.frame_id = image_msg.header.frame_id
-        color_space_msg.header.stamp = image_msg.header.stamp
-        color_space_msg.blue  = color_space[:, 0].tolist()
-        color_space_msg.green = color_space[:, 1].tolist()
-        color_space_msg.red   = color_space[:, 2].tolist()
-        # Publish ColorSpace-message
-        self._pub_color_space.publish(color_space_msg)
+        # Get color lookup table from queue
+        color_lookup_table = self._queue_to_color_lookup_table(self._color_value_queue)
+        # Create color-lookup-table-message
+        color_lookup_table_msg = ColorLookupTable()
+        color_lookup_table_msg.header.frame_id = image_msg.header.frame_id
+        color_lookup_table_msg.header.stamp = image_msg.header.stamp
+        color_lookup_table_msg.blue  = color_lookup_table[:, 0].tolist()
+        color_lookup_table_msg.green = color_lookup_table[:, 1].tolist()
+        color_lookup_table_msg.red   = color_lookup_table[:, 2].tolist()
+        # Publish color-lookup-table-message
+        self._pub_color_lookup_table.publish(color_lookup_table_msg)
 
 
 class Pointfinder():
@@ -292,7 +357,7 @@ class Heuristic:
     def __init__(self):
         # type: () -> None
         """
-        Filters new color space colors according to their position relative to the field boundary.
+        Filters new color lookup table colors according to their position relative to the field boundary.
         Only colors that occur under the field boundary and have no occurrences over the field boundary get picked.
 
         :return: None
@@ -388,4 +453,4 @@ class Heuristic:
 
 
 if __name__ == '__main__':
-    DynamicColorSpace()
+    DynamicColorLookupTable()

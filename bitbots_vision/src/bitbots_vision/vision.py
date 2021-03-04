@@ -4,10 +4,9 @@ import os
 import cv2
 import rospy
 import rospkg
-import threading
-import time
 from copy import deepcopy
 from cv_bridge import CvBridge
+from threading import Thread, Lock
 from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PolygonStamped
@@ -17,7 +16,7 @@ from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
-from bitbots_msgs.msg import Config, ColorSpace
+from bitbots_msgs.msg import Config, ColorLookupTable
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
@@ -63,17 +62,18 @@ class Vision:
         self._pub_red_mask_image = None
         self._pub_blue_mask_image = None
         self._pub_field_mask_image = None
-        self._pub_dynamic_color_space_field_mask_image = None
+        self._pub_dynamic_color_lookup_table_field_mask_image = None
 
         # Subscriber placeholder
         self._sub_image = None
-        self._sub_dynamic_color_space_msg_topic = None
+        self._sub_dynamic_color_lookup_table_msg_topic = None
 
-        self._debug_image_creator = debug.DebugImage()
+        # Debug image drawer placeholder
+        self._debug_image_creator = None
 
         # Register static publishers
         # Register publisher of 'vision_config'-messages
-        # For changes of topic name: also change topic name in dynamic_color_space.py
+        # For changes of topic name: also change topic name in dynamic_color_lookup_table.py
         self._pub_config = rospy.Publisher(
             'vision_config',
             Config,
@@ -83,26 +83,29 @@ class Vision:
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
 
-        # Reconfigure dict transfer variable
+        # Reconfigure data transfer variable
         self._transfer_reconfigure_data = None
-        self._transfer_reconfigure_data_read_flag = False
+        self._transfer_reconfigure_data_mutex = Lock()
 
         # Image transfer variable
         self._transfer_image_msg = None
-        self._transfer_image_msg_read_flag = False
+        self._transfer_image_msg_mutex = Lock()
 
         # Yolo placeholder
         self._yolo = None
 
         # Add model enums to _config
         ros_utils.add_model_enums(VisionConfig, self._package_path)
-        ros_utils.add_color_space_enum(VisionConfig, self._package_path)
+        ros_utils.add_color_lookup_table_enum(VisionConfig, self._package_path)
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
         srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
         # Add general params
         ros_utils.set_general_parameters(["caching"])
+
+        # Define the rate of a sleep timer
+        self._rate = rospy.Rate(100)
 
         # Run the vision main loop
         self._main_loop()
@@ -112,28 +115,26 @@ class Vision:
         Main loop that processes the images and configuration changes
         """
         while not rospy.is_shutdown():
-            # Lookup if there is another configuration available
+            # Check for reconfiguration data
             if self._transfer_reconfigure_data is not None:
-                # Copy _config from shared memory
-                self._transfer_reconfigure_data_read_flag = True
-                reconfigure_data = deepcopy(self._transfer_reconfigure_data)
-                self._transfer_reconfigure_data_read_flag = False
-                self._transfer_reconfigure_data = None
+                # Copy reconfigure data from shared memory
+                with self._transfer_reconfigure_data_mutex:
+                    reconfigure_data = deepcopy(self._transfer_reconfigure_data)
+                    self._transfer_reconfigure_data = None
                 # Run vision reconfiguration
                 self._configure_vision(*reconfigure_data)
-            # Check if a new image is avalabile
+            # Check for new image
             elif self._transfer_image_msg is not None:
                 # Copy image from shared memory
-                self._transfer_image_msg_read_flag = True
-                image_msg = deepcopy(self._transfer_image_msg)
-                self._transfer_image_msg_read_flag = False
-                self._transfer_image_msg = None
-                # Run the vision pipeline
-                self._handle_image(image_msg)
+                with self._transfer_image_msg_mutex:
+                    image_msg = self._transfer_image_msg
+                    self._transfer_image_msg = None
+                    # Run the vision pipeline
+                    self._handle_image(image_msg)
                 # Now the first image has been processed
                 self._first_image_callback = False
             else:
-                time.sleep(0.01)
+                self._rate.sleep()
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
@@ -142,14 +143,10 @@ class Vision:
         :param config: New _config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        # Check flag
-        while self._transfer_reconfigure_data_read_flag and not rospy.is_shutdown():
-            time.sleep(0.01)
-        # Set data
-        self._transfer_reconfigure_data = (config, level)
-
+        with self._transfer_reconfigure_data_mutex:
+            # Set data
+            self._transfer_reconfigure_data = (config, level)
         return config
-
 
     def _configure_vision(self, config, level):
         """
@@ -173,19 +170,18 @@ class Vision:
         # Maximum offset for balls over the convex field boundary
         self._goal_post_field_boundary_y_offset = config['goal_post_field_boundary_y_offset']
 
-        self._use_dynamic_color_space = config['dynamic_color_space_active']
-
         # Which line type should we publish?
         self._use_line_points = config['line_detector_use_line_points']
         self._use_line_mask = config['line_detector_use_line_mask']
 
         # Should the debug image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_debug_image'):
-            self._publish_debug_image = config['vision_publish_debug_image']
-            if self._publish_debug_image:
+            if config['vision_publish_debug_image']:
                 rospy.loginfo('Debug images are enabled', logger_name="vision")
             else:
                 rospy.loginfo('Debug images are disabled', logger_name="vision")
+            # Create debug drawer
+            self._debug_image_creator = debug.DebugImage(config['vision_publish_debug_image'])
 
         # Should the fcnn output (only under the field boundary) be published?
         if ros_utils.config_param_change(self._config, config, 'ball_fcnn_publish_output'):
@@ -211,18 +207,18 @@ class Vision:
             else:
                 rospy.loginfo('HSV mask image publishing is disabled', logger_name="vision_hsv_color_detector")
 
-        # Should the (dynamic color space-) field mask image be published?
+        # Should the (dynamic color lookup table-) field mask image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_field_mask_image'):
             self._publish_field_mask_image = config['vision_publish_field_mask_image']
             if self._publish_field_mask_image:
-                rospy.loginfo('(Dynamic color space-) Field mask image publishing is enabled', logger_name="dynamic_color_space")
+                rospy.loginfo('(Dynamic color lookup table-) Field mask image publishing is enabled', logger_name="dynamic_color_lookup_table")
             else:
-                rospy.loginfo('(Dynamic color space-) Field mask image publishing is disabled', logger_name="dynamic_color_space")
+                rospy.loginfo('(Dynamic color lookup table-) Field mask image publishing is disabled', logger_name="dynamic_color_lookup_table")
 
         # Set the white color detector
         if ros_utils.config_param_change(self._config, config, r'^white_color_detector_'):
-            if config['white_color_detector_use_color_space']:
-                self._white_color_detector = color.PixelListColorDetector(config, self._package_path, 'white_color_detector_color_space_path')
+            if config['white_color_detector_use_color_lookup_table']:
+                self._white_color_detector = color.PixelListColorDetector(config, self._package_path, 'white_color_detector_color_lookup_table_path')
             else:
                 self._white_color_detector = color.HsvSpaceColorDetector(config, "white")
 
@@ -236,18 +232,18 @@ class Vision:
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
-                r'^field_color_detector_|dynamic_color_space_') and not config['field_color_detector_use_hsv']:
-            # Check if the dynamic color space field color detector or the static field color detector should be used
-            if self._use_dynamic_color_space:
-                # Set dynamic color space field color detector
+                r'^field_color_detector_|dynamic_color_lookup_table_') and not config['field_color_detector_use_hsv']:
+            # Check if the dynamic color lookup table field color detector or the static field color detector should be used
+            if config['dynamic_color_lookup_table_active']:
+                # Set dynamic color lookup table field color detector
                 self._field_color_detector = color.DynamicPixelListColorDetector(
                     config,
                     self._package_path)
             else:
-                self._use_dynamic_color_space = False
                 # Unregister old subscriber
-                if self._sub_dynamic_color_space_msg_topic is not None:
-                    self._sub_dynamic_color_space_msg_topic.unregister()
+                if self._sub_dynamic_color_lookup_table_msg_topic is not None:
+                    # self._sub_dynamic_color_lookup_table_msg_topic.unregister()  # Do not use this method, does not work
+                    self._sub_dynamic_color_lookup_table_msg_topic = None
                 # Set the static field color detector
                 self._field_color_detector = color.PixelListColorDetector(
                     config,
@@ -256,17 +252,13 @@ class Vision:
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
                 r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
+            # Unregister old subscriber
+            if self._sub_dynamic_color_lookup_table_msg_topic is not None:
+                # self._sub_dynamic_color_lookup_table_msg_topic.unregister()  # Do not use this method, does not work
+                self._sub_dynamic_color_lookup_table_msg_topic = None
+
             # Override field color hsv detector
             self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
-
-        if config['field_color_detector_use_hsv']:
-            # Deactivate dynamic color space
-            self._use_dynamic_color_space = False
-            # Unregister old subscriber
-            if self._sub_dynamic_color_space_msg_topic is not None:
-                self._sub_dynamic_color_space_msg_topic.unregister()
-                self._sub_dynamic_color_space_msg_topic = None
-
         # Get field boundary detector class by name from _config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method'])
@@ -378,7 +370,7 @@ class Vision:
             self._line_detector,
         ]
 
-        # Publish Config-message (mainly for the dynamic color space node)
+        # Publish Config-message (mainly for the dynamic color lookup table node)
         ros_utils.publish_vision_config(config, self._pub_config)
 
         # The old _config gets replaced with the new _config
@@ -407,7 +399,7 @@ class Vision:
         self._pub_red_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
         self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
         self._pub_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
-        self._pub_dynamic_color_space_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_dynamic_color_space_field_mask_image, 'ROS_dynamic_color_space_field_mask_image_msg_topic', Image)
+        self._pub_dynamic_color_lookup_table_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_dynamic_color_lookup_table_field_mask_image, 'ROS_dynamic_color_lookup_table_field_mask_image_msg_topic', Image)
 
     def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
@@ -419,8 +411,8 @@ class Vision:
         """
         self._sub_image = ros_utils.create_or_update_subscriber(self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'], buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
 
-        if self._use_dynamic_color_space:
-            self._sub_dynamic_color_space_msg_topic = ros_utils.create_or_update_subscriber(self._config, config, self._sub_dynamic_color_space_msg_topic, 'ROS_dynamic_color_space_msg_topic', ColorSpace, callback=self._field_color_detector.color_space_callback, queue_size=1, buff_size=2 ** 20)
+        if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
+            self._sub_dynamic_color_lookup_table_msg_topic = ros_utils.create_or_update_subscriber(self._config, config, self._sub_dynamic_color_lookup_table_msg_topic, 'ROS_dynamic_color_lookup_table_msg_topic', ColorLookupTable, callback=self._field_color_detector.color_lookup_table_callback, queue_size=1, buff_size=2 ** 20)
 
     def _image_callback(self, image_msg):
         # type: (Image) -> None
@@ -431,19 +423,20 @@ class Vision:
         Sometimes the queue gets to large, even when the size is limited to 1.
         That's, why we drop old images manually.
         """
-        # drops old images and cleans up queue. Still accepts very old images, that are most likely from ros bags.
+        # Drops old images and cleans up the queue.
+        # Still accepts very old images, that are most likely from ROS bags.
         image_age = rospy.get_rostime() - image_msg.header.stamp
         if 1.0 < image_age.to_sec() < 1000.0:
             rospy.logwarn(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)",
                             logger_name="vision")
             return
 
-        # Check flag
-        if self._transfer_image_msg_read_flag:
+        if self._transfer_image_msg_mutex.locked():
             return
 
-        # Transfer the image to the main thread
-        self._transfer_image_msg = image_msg
+        with self._transfer_image_msg_mutex:
+            # Transfer the image to the main thread
+            self._transfer_image_msg = image_msg
 
     def _handle_image(self, image_msg):
         """
@@ -489,9 +482,9 @@ class Vision:
         # Check if the vision should run the conventional and neural net part parallel
         if self._config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
-            fcnn_thread = threading.Thread(target=self._ball_detector.compute)
+            fcnn_thread = Thread(target=self._ball_detector.compute)
 
-            conventional_thread = threading.Thread(target=self._conventional_precalculation())
+            conventional_thread = Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
             fcnn_thread.start()
@@ -509,12 +502,14 @@ class Vision:
         ########
 
         # Get a number of top balls under the field boundary, which have an high enough rating
-        top_balls = \
-            candidate.Candidate.rating_threshold(
-                self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_top_candidates(count=self._max_balls),
-                    self._ball_candidate_y_offset),
-                self._ball_candidate_threshold)
+        all_balls = self._ball_detector.get_top_candidates(count=self._max_balls)
+        balls_under_field_boundary = \
+            self._field_boundary_detector.candidates_under_convex_field_boundary(
+                all_balls,
+                self._ball_candidate_y_offset)
+        top_balls = candidate.Candidate.rating_threshold(
+            balls_under_field_boundary,
+            self._ball_candidate_threshold)
         # check whether there are ball candidates
         if top_balls:
             # Convert ball cancidate list to ball message list
@@ -523,6 +518,20 @@ class Vision:
             balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
             # Publish balls
             self._pub_balls.publish(balls_msg)
+
+        # Debug draw all ball candidates
+        self._debug_image_creator.draw_ball_candidates(
+            all_balls,
+            (0, 0, 255))
+        # Debug draw possible ball candidates under the field boundary
+        self._debug_image_creator.draw_ball_candidates(
+            balls_under_field_boundary,
+            (0, 255, 255))
+        # Debug draw top ball candidate
+        self._debug_image_creator.draw_ball_candidates(
+            top_balls,
+            (0, 255, 0),
+            thickness=2)
 
         #############
         # Obstacles #
@@ -544,6 +553,22 @@ class Vision:
         # Publish obstacles
         self._pub_obstacle.publish(obstacles_msg)
 
+        # Debug draw unknown obstacles
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._unknown_obstacle_detector.get_candidates(),
+            (0, 0, 0),
+            thickness=3)
+        # Debug draw red obstacles
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._red_obstacle_detector.get_candidates(),
+            (0, 0, 255),
+            thickness=3)
+        # Debug draw blue obstacles
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._blue_obstacle_detector.get_candidates(),
+            (255, 0, 0),
+            thickness=3)
+
         ########
         # Goal #
         ########
@@ -562,6 +587,17 @@ class Vision:
             # If we have a goal, lets publish it
             self._pub_goal_posts.publish(goal_posts_msg)
 
+        # Debug draw all goal posts
+        self._debug_image_creator.draw_obstacle_candidates(
+            self._goalpost_detector.get_candidates(),
+            (180, 180, 180),
+            thickness=3)
+        # Debug draw goal posts which start in the field
+        self._debug_image_creator.draw_obstacle_candidates(
+            goal_posts,
+            (255, 255, 255),
+            thickness=3)
+
         #########
         # Lines #
         #########
@@ -575,13 +611,26 @@ class Vision:
             # Publish lines
             self._pub_lines.publish(line_msg)
 
+            # Draw debug line points
+            self._debug_image_creator.draw_points(
+                line_points,
+                (0, 0, 255))
+
         if self._use_line_mask:
+            # Define detections (Balls, Goal Posts) that are excluded from the line mask
+            excluded_objects = top_balls + goal_posts
             # Get line pixel mask
-            line_mask = self._line_detector.get_line_mask()
+            line_mask = self._line_detector.get_line_mask_without_other_objects(excluded_objects)
             # Create line mask message
             line_mask_message = ros_utils.build_image_msg(image_msg.header, line_mask, '8UC1')
             # Publish line mask
             self._pub_line_mask.publish(line_mask_message)
+
+            # Draw debug line mask
+            self._debug_image_creator.draw_mask(
+                line_mask,
+                color=(255, 0, 0),
+                opacity=0.8)
 
         ##################
         # Field boundary #
@@ -593,6 +642,15 @@ class Vision:
         convex_field_boundary_msg = ros_utils.build_field_boundary_polygon_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self._pub_convex_field_boundary.publish(convex_field_boundary_msg)
+
+        # Debug draw convex field boundary
+        self._debug_image_creator.draw_field_boundary(
+            convex_field_boundary,
+            (0, 255, 255))
+        # Debug draw field boundary
+        self._debug_image_creator.draw_field_boundary(
+            self._field_boundary_detector.get_field_boundary_points(),
+            (0, 0, 255))
 
         #########
         # Debug #
@@ -629,12 +687,12 @@ class Vision:
 
         # Check, if field mask image should be published
         if self._publish_field_mask_image:
-            if self._use_dynamic_color_space:
+            if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
                 # Mask image
                 dyn_field_mask = self._field_color_detector.get_mask_image()
                 static_field_mask = self._field_color_detector.get_static_mask_image()
                 # Publish mask image
-                self._pub_dynamic_color_space_field_mask_image.publish(
+                self._pub_dynamic_color_lookup_table_field_mask_image.publish(
                     ros_utils.build_image_msg(image_msg.header, dyn_field_mask, '8UC1'))
                 self._pub_field_mask_image.publish(
                     ros_utils.build_image_msg(image_msg.header, static_field_mask, '8UC1'))
@@ -646,102 +704,13 @@ class Vision:
                     ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
 
         # Check if we should draw debug image
-        if self._publish_debug_image:
-            # Draw debug image
-            debug_image = self._create_debug_image(image)
+        if self._debug_image_creator.active:
             # publish debug image
             self._pub_debug_image.publish(
-                ros_utils.build_image_msg(image_msg.header, debug_image, 'bgr8'))
-
-    def _create_debug_image(self, image):
-        """
-        Draws a debug image
-
-        :param image: untouched image
-        :return: image with debug annotations
-        """
-        # Draw unknown obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._unknown_obstacle_detector.get_candidates(),
-            (0, 0, 0),
-            thickness=3
-        )
-        # Draw red obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._red_obstacle_detector.get_candidates(),
-            (0, 0, 255),
-            thickness=3
-        )
-        # Draw blue obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._blue_obstacle_detector.get_candidates(),
-            (255, 0, 0),
-            thickness=3
-        )
-        # Draw all goal posts
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._goalpost_detector.get_candidates(),
-            (180, 180, 180),
-            thickness=3
-        )
-        # Draw goal posts which start in the field
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._field_boundary_detector.candidates_under_convex_field_boundary(
-                self._goalpost_detector.get_candidates(),
-                self._goal_post_field_boundary_y_offset),
-            (255, 255, 255),
-            thickness=3
-        )
-        # Draw field boundary
-        self._debug_image_creator.draw_field_boundary(
-            self._field_boundary_detector.get_field_boundary_points(),
-            (0, 0, 255)
-        )
-        # Draw convex field boundary
-        self._debug_image_creator.draw_field_boundary(
-            self._field_boundary_detector.get_convex_field_boundary_points(),
-            (0, 255, 255)
-        )
-        # Draw all ball candidates
-        self._debug_image_creator.draw_ball_candidates(
-            self._ball_detector.get_candidates(),
-            (0, 0, 255)
-        )
-        # Draw possible ball candidates under the field boundary
-        self._debug_image_creator.draw_ball_candidates(
-            candidate.Candidate.rating_threshold(
-                self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_candidates(),
-                    self._ball_candidate_y_offset),
-                self._ball_candidate_threshold),
-            (0, 255, 255)
-        )
-        # Draw top ball candidate
-        self._debug_image_creator.draw_ball_candidates(
-            candidate.Candidate.rating_threshold(
-                self._field_boundary_detector.candidates_under_convex_field_boundary(
-                    self._ball_detector.get_top_candidates(count=1),
-                    self._ball_candidate_y_offset),
-                self._ball_candidate_threshold),
-            (0, 255, 0),
-            thickness=2
-        )
-        # Draw line points
-        if self._use_line_points:
-            # Draw line points
-            self._debug_image_creator.draw_points(
-                self._line_detector.get_linepoints(),
-                (0, 0, 255)
-            )
-        # Draw line mask
-        if self._use_line_mask:
-            self._debug_image_creator.draw_mask(
-                self._line_detector.get_line_mask(),
-                color=(255, 0, 0),
-                opacity=0.8
-            )
-        # Return image from the debug image drawer
-        return self._debug_image_creator.get_image()
+                ros_utils.build_image_msg(
+                    image_msg.header,
+                    self._debug_image_creator.get_image(),
+                    'bgr8'))
 
     def _conventional_precalculation(self):
         """

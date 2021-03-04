@@ -29,7 +29,7 @@ The Bit-Bots vision pipeline architecture is modular allowing easy implementatio
 For ball detection, you can choose between an FCNN or multiple yolo implementations.
 The goalpost detection also runs via yolo or a conventional detection method, which is also used for obstacle and robot detection.
 
-The whole system is embedded in the ROS environment and able to run on many devices including the Nvidia Jetson TX2 or the Intel Neural Compute Stick 2 in our Wolfgang robots.
+The whole system is embedded in the ROS environment and able to run on many devices including the Intel Neural Compute Stick 2 (and the Nvidia Jetson TX2, legacy) in our Wolfgang robots.
 
 In the context of the Hamburg Bit-Bots, the images are provided by a Basler industry grade ethernet camera.
 The camera drivers are not included in this package for licensing reasons, but can be auto launched.
@@ -43,12 +43,12 @@ Neural network models are stored in the directory ``bitbots_vision/models``.
 These models are not part of this repository.
 
 For the field detection, which is needed for the field boundary and obstacle detection, the vision uses RGB lookup table provided by the ``colorpicker.py`` as in `Additional Scripts`_.
-These color spaces can be improved and converted to a pickle file for faster loading times using the ``colorspace_tool``.
-The field color space itself can be dynamically adapted in real-time using the dynamic color space heuristic.
+These color lookup tables can be improved and converted to a pickle file for faster loading times using the ``color_lookup_table_tool``.
+The field color lookup table itself can be dynamically adapted in real-time using the dynamic color lookup table heuristic.
 Therefore the vision gets more resistant to natural light conditions.
 
 Launchscripts
-~~~~~~~~~~~~~
+-------------
 
 To start the vision, use
 
@@ -58,39 +58,40 @@ To start the vision, use
 
 The following parameters are available:
 
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|Param                |Default  |Output                                                                                                                |
-+=====================+=========+======================================================================================================================+
-|``sim``              |``false``|Activate simulation time, switch to simulation color settings and deactivate launching of an image provider           |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``camera``           |``true`` |Deactivate all image providers (e.g. for use with rosbags or in simulation)                                           |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``basler``           |``true`` |Start `wolves_image_provider <https://github.com/bit-bots/wolves_image_provider>`_ instead of the basler camera driver|
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``dummyball``        |``false``|NOT start the ball detection to save resources                                                                        |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``debug``            |``false``|Activate publishing of several debug images which can be inspected in the rqt image view                              |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
-|``use_game_settings``|``false``|Load additional game settings                                                                                         |
-+---------------------+---------+----------------------------------------------------------------------------------------------------------------------+
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|Param                |Default  |Output                                                                                                                     |
++=====================+=========+===========================================================================================================================+
+|``sim``              |``false``|Activate simulation time, switch to simulation color settings and deactivate launching of an image provider                |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``camera``           |``true`` |Deactivate all image providers (e.g. for use with rosbags or in simulation)                                                |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``basler``           |``true`` |Start the basler camera driver instead of the  `wolves_image_provider <https://github.com/bit-bots/wolves_image_provider>`_|
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``dummyball``        |``false``|NOT start the ball detection to save resources                                                                             |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``debug``            |``false``|Activate publishing of several debug images which can be inspected in the rqt image view                                   |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
+|``use_game_settings``|``false``|Load additional game settings                                                                                              |
++---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
 
-Color space files
-~~~~~~~~~~~~~~~~~
 
-The vision depends on the usage of color space files which define color lookup tables primarily to detect the green field color and therefore lines and the field boundary.
-These files are stored in the directory in ``/config/color_spaces/``.
+Color lookup table files
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The vision depends on the usage of color lookup table files which define color lookup tables primarily to detect the green field color and therefore lines and the field boundary.
+These files are stored in the directory in ``/config/color_lookup_tables/``.
 Use the provided ``colorpicker.py`` tool as in `Additional Scripts`_ to generate these files.
 
-Currently, the Bit-Bots vision package supports two file types for color spaces:
+Currently, the Bit-Bots vision package supports two file types for color lookup tables:
 
 -  ``.pickle``
 
-   Generally, this is a generated binary representation of color spaces we use to prevent the long loading times of the ``.yaml`` format.
+   Generally, this is a generated binary representation of color lookup tables we use to prevent the long loading times of the ``.yaml`` format.
 
 -  ``.yaml``
 
    This format is deprecated.
-   This format provides a human readable representation of color spaces.
+   This format provides a human readable representation of color lookup tables.
    See below for a example representation.
 
    ::
@@ -101,7 +102,7 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
                 green: [g_1,g_2,..., g_n]
                 blue: [b_1,b_2,..., b_n]
 
-   Assume the following RGB color value ``(0, 153, 51)`` is part of the color space.
+   Assume the following RGB color value ``(0, 153, 51)`` is part of the color lookup table.
    The correct representation is:
 
    ::
@@ -110,16 +111,16 @@ Currently, the Bit-Bots vision package supports two file types for color spaces:
         g_i = 153
         b_i = 51
 
-   For large color spaces, loading of such files takes a while.
+   For large color lookup tables, loading of such files takes a while.
 
 White Balancer
-~~~~~~~~~~~~~~
+--------------
 
 This repository also includes the ``white_balancer``.
 It is a ROS nodelet that color-corrects incoming images with a predefined light temperature.
 
 Additional Scripts
-~~~~~~~~~~~~~~~~~~
+------------------
 
 In the bitbots_vision package, special tools for debugging/introspection purposes are provided.
 
@@ -131,26 +132,26 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
 
 -  ``/scripts/colorpicker.py``
 
-   A tool to create color space files out of an video stream.
+   A tool to create color lookup table files out of an video stream.
 
    This tool provides usage information on launch.
 
--  ``/scripts/color_space_tool.py``
+-  ``/scripts/color_lookup_table_tool.py``
 
-   A small tool for color space enhancement.
+   A small tool for color lookup table enhancement.
 
-   The tool is able to find main clusters in the color space,
+   The tool is able to find main clusters in the color lookup table,
    interpolate defined distances, add brightness thresholds and convert
-   a yaml encoded to an pickle encoded color space. It also visualizes
-   the color space in a browser based 3d graph.
+   a yaml encoded to an pickle encoded color lookup table. It also visualizes
+   the color lookup table in a browser based 3d graph.
 
    This tool provides a help page ``-h`` for further details.
 
--  ``/scripts/color_space_subtract.py``
+-  ``/scripts/color_lookup_table_subtract.py``
 
-   Another small tool for color space enhancement.
+   Another small tool for color lookup table enhancement.
 
-   This tool is able to subtracts color values from one color space file
+   This tool is able to subtracts color values from one color lookup table file
    from another.
 
    For further details, see help page ``-h``.
@@ -182,10 +183,10 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
 
    ::
 
-      rosrun bitbots_vision extract_from_rosbag.py -i testdata.bag -o testdataset -t /image_raw -n 3
+      rosrun bitbots_vision extract_from_rosbag.py -i testdata.bag -o testdataset -t /camera/image_proc -n 3
 
    This will extract every third image from the ``testdata.bag`` on the
-   ``/image_raw`` message topic into the folder ``$PWD/testdataset``.
+   ``/camera/image_proc`` message topic into the folder ``$PWD/testdataset``.
 
    This tool provides a help page ``-h`` for further details.
 
@@ -200,6 +201,19 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
    -  ``1`` -> move current image to **Trash** subdirectory
    -  ``2`` -> Move current image to **Balls** subdirectory
    -  ``3`` -> Move current image to **Goals** subdirectory
+   - use ``arrow keys`` to navigate through images and keep the current image inside its original directory
+
+- ``/scripts/rosbag_remapper.py``
+
+   This script remaps the ``image_raw`` topic in old rosbags to the new ``camera/image_proc``. Input can either be a single
+   bag or a folder containing bags. The new output bag or folder has an ``_updated`` appended to its name.
+
+   Usage:
+
+   ::
+
+    rosrun bitbots_vision rosbag_remapper.py /path/to/rosbag_or_folder
+
 
 
 .. toctree::
@@ -222,5 +236,3 @@ Indices and tables
 * :ref:`genindex`
 * |modindex|
 * :ref:`search`
-
-

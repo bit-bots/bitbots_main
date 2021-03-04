@@ -156,14 +156,14 @@ WhiteBalancer::WhiteBalancer(ros::NodeHandle nh, ros::NodeHandle pnh)
     ros::Duration(2.0).sleep();
 
     std::string ROS_output_topic, ROS_input_topic;
-    if (pnh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
+    if (pnh.getParam("ROS_output_topic", ROS_output_topic)) {
         WhiteBalancer::pub = it.advertise(ROS_output_topic, 1);
     } else {
         ROS_ERROR("No output topic set");
         exit(2);
     }
     image_transport::Subscriber sub;
-    if (pnh.getParam("/white_balancer/ROS_input_topic", ROS_input_topic)) {
+    if (pnh.getParam("ROS_input_topic", ROS_input_topic)) {
          sub = it.subscribe(ROS_input_topic, 1, &WhiteBalancer::imageCallback, this);
     } else {
         ROS_ERROR("No input topic set");
@@ -229,7 +229,8 @@ int main(int argc, char **argv)
     // Init
     ros::init(argc, argv, "white_balancer");
     ros::NodeHandle nh;
-    WhiteBalancer w(nh, nh);
+    ros::NodeHandle pnh ("~");
+    WhiteBalancer w(nh, pnh);
 
     return 0;
 }

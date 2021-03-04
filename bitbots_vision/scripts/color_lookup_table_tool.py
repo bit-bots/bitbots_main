@@ -10,11 +10,11 @@ import math
 from multiprocessing import Process, Manager
 
 """
-A small tool for color space enhancement.
+A small tool for color lookup table enhancement.
 
-This tool is able to find main clusters in the color space, interpolate defined distances,
-add brightness thresholds and convert a yaml encoded to an pickle encoded color space.
-It also visualizes the color space in a browser based 3d graph.
+This tool is able to find main clusters in the color lookup table, interpolate defined distances,
+add brightness thresholds and convert a yaml encoded to an pickle encoded color lookup table.
+It also visualizes the color lookup table in a browser based 3d graph.
 """
 
 def connect(ends):
@@ -42,7 +42,7 @@ def get_value_tuple_outer_function(index, tuple_input):
             tuple_input[1][index],
             tuple_input[2][index])
 
-def worker(start, stop, result_map, index, distances, interpolation_threshold, main_cluster, colorspace_points):
+def worker(start, stop, result_map, index, distances, interpolation_threshold, main_cluster, color_lookup_table_points):
     """
     Parralel interpolation worker.
     """
@@ -53,16 +53,16 @@ def worker(start, stop, result_map, index, distances, interpolation_threshold, m
         points = set(np.where(distances[point] < interpolation_threshold)[0].tolist())
         points = list(points.intersection(main_cluster_set))
         for point2 in points:
-            line = generate_interpolated_points(get_value_tuple_outer_function(point, colorspace_points),
-                                                get_value_tuple_outer_function(point2, colorspace_points))
+            line = generate_interpolated_points(get_value_tuple_outer_function(point, color_lookup_table_points),
+                                                get_value_tuple_outer_function(point2, color_lookup_table_points))
             interpolated_points.update(line)
 
     result_map[index] = interpolated_points
 
 
-class ColorspaceTool():
+class ColorLookupTableTool():
     def __init__(self):
-        self.colorspace_points = (None, None, None)
+        self.color_lookup_table_points = (None, None, None)
         self.point_count = 0
         self.distances = None
         self.distance_threshold = 3
@@ -74,9 +74,9 @@ class ColorspaceTool():
         self.to_dark = 0
         self.to_bright = 255
 
-    def load_colorspace_from_yaml(self, color_path):
+    def load_color_lookup_table_from_yaml(self, color_path):
         """
-        Loads yaml color space.
+        Loads yaml color lookup table.
         """
         with open(color_path, 'r') as stream:
             print("Loading file...")
@@ -92,29 +92,29 @@ class ColorspaceTool():
                 x = np.array(color_values['red'])
                 y = np.array(color_values['green'])
                 z = np.array(color_values['blue'])
-                self.colorspace_points = (x, y, z)
+                self.color_lookup_table_points = (x, y, z)
 
     def get_value_tuple(self, index):
         """
-        Colorspace color getter.
+        color lookup table color getter.
         """
-        return (self.colorspace_points[0][index],
-                self.colorspace_points[1][index],
-                self.colorspace_points[2][index])
+        return (self.color_lookup_table_points[0][index],
+                self.color_lookup_table_points[1][index],
+                self.color_lookup_table_points[2][index])
 
-    def get_colorspace_points(self, pointlist):
+    def get_color_lookup_table_points(self, pointlist):
         """
-        Colorspace color getter with index list input.
+        color lookup table color getter with index list input.
         """
-        return ([self.colorspace_points[0][x] for x in pointlist],
-                [self.colorspace_points[1][x] for x in pointlist],
-                [self.colorspace_points[2][x] for x in pointlist])
+        return ([self.color_lookup_table_points[0][x] for x in pointlist],
+                [self.color_lookup_table_points[1][x] for x in pointlist],
+                [self.color_lookup_table_points[2][x] for x in pointlist])
 
     def all_distances(self):
         """
-        Calculates all distance between all points in the color space.
+        Calculates all distance between all points in the color lookup table.
         """
-        points = self.colorspace_points
+        points = self.color_lookup_table_points
 
         red = np.repeat(np.expand_dims(points[0], axis=0), points[0].size, axis=0)
         green = np.repeat(np.expand_dims(points[1], axis=0), points[1].size, axis=0)
@@ -127,7 +127,7 @@ class ColorspaceTool():
 
     def cluster(self):
         """
-        Calculates the main clusters in the color space
+        Calculates the main clusters in the color lookup table
         """
         print("Calculating distances")
         self.all_distances()
@@ -159,7 +159,7 @@ class ColorspaceTool():
 
     def interpolate(self):
         """
-        Interpolates between points with a certain distance in the color space.
+        Interpolates between points with a certain distance in the color lookup table.
         """
         print("Interpolating points...")
         interpolated_points = set()
@@ -183,7 +183,7 @@ class ColorspaceTool():
                                              self.distances,
                                              self.interpolation_threshold,
                                              self.main_cluster,
-                                             self.colorspace_points))
+                                             self.color_lookup_table_points))
             jobs.append(p)
             p.start()
 
@@ -205,7 +205,7 @@ class ColorspaceTool():
         """
         Add upper/lower brightness bounds.
         """
-        points = self.colorspace_points
+        points = self.color_lookup_table_points
         lightness_max_value = math.sqrt(3 * (255**2))
         deadpool = list()
         for index, point in enumerate(points[0]):
@@ -213,14 +213,14 @@ class ColorspaceTool():
             lightness = int(math.sqrt(point[0]**2 + point[1]**2 + point[2]**2) * 255 / lightness_max_value)
             if not self.to_dark < lightness < self.to_bright:
                 deadpool.append(index)
-        self.colorspace_points = (np.delete(points[0], deadpool),
+        self.color_lookup_table_points = (np.delete(points[0], deadpool),
                                   np.delete(points[1], deadpool),
                                   np.delete(points[2], deadpool))
-        self.point_count = len(self.colorspace_points[0])
+        self.point_count = len(self.color_lookup_table_points[0])
 
     def plot_values(self, filename):
         """
-        Creates an interactive 3d plotly graph for the color space.
+        Creates an interactive 3d plotly graph for the color lookup table.
         """
         point_colors = [f'rgb{self.get_value_tuple(index)}' for index in range(self.point_count)]
 
@@ -230,9 +230,9 @@ class ColorspaceTool():
             visible = True
 
         trace1 = go.Scatter3d(
-            x=self.colorspace_points[0],
-            y=self.colorspace_points[1],
-            z=self.colorspace_points[2],
+            x=self.color_lookup_table_points[0],
+            y=self.color_lookup_table_points[1],
+            z=self.color_lookup_table_points[2],
             name='Color points',
             mode='markers',
             visible=visible,
@@ -244,7 +244,7 @@ class ColorspaceTool():
         )
         data = [trace1, ]
         if len(self.clusters) > 0:
-            points = self.get_colorspace_points(self.main_cluster)
+            points = self.get_color_lookup_table_points(self.main_cluster)
             trace2 = go.Scatter3d(
                 x=points[0],
                 y=points[1],
@@ -277,7 +277,7 @@ class ColorspaceTool():
             )
             data.append(trace3)
         layout = go.Layout(
-            title=f'Colorspace {filename[7:-5]}',
+            title=f'ColorLookupTable {filename[7:-5]}',
             scene=dict(
                 xaxis=dict(
                     range=[0, 255],
@@ -316,7 +316,7 @@ class ColorspaceTool():
 
     def save(self, filename):
         """
-        This saves the enhanced color space in a pickle encoded file.
+        This saves the enhanced color lookup table in a pickle encoded file.
         """
         if len(self.interpolated_points) > 0:
             red, green, blue = zip(*self.interpolated_points)
@@ -326,13 +326,13 @@ class ColorspaceTool():
             output_type = "interpolated"
             print("Exporting interpolated points")
         elif len(self.main_cluster) > 0:
-            red, green, blue = self.get_colorspace_points(self.main_cluster)
+            red, green, blue = self.get_color_lookup_table_points(self.main_cluster)
             output_type = "clustered"
             print("Exporting cluster points")
         else:
-            red = self.colorspace_points[0]
-            green = self.colorspace_points[1]
-            blue = self.colorspace_points[2]
+            red = self.color_lookup_table_points[0]
+            green = self.color_lookup_table_points[1]
+            blue = self.color_lookup_table_points[2]
             output_type = "resized"
             print("Exporting resized points")
 
@@ -345,12 +345,12 @@ class ColorspaceTool():
         filename = f'{filename}_{output_type}.pickle'
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile, protocol=2)
-            # stores data of colorspace in file as pickle for efficient loading (yaml is too slow)
+            # stores data of color lookup table in file as pickle for efficient loading (yaml is too slow)
 
         print(f"Output saved to '{filename}'.")
 
 if __name__ == "__main__":
-    tool = ColorspaceTool()
+    tool = ColorLookupTableTool()
     parser = argparse.ArgumentParser()
     parser.add_argument("-y", "--yaml", help="Input YAML file.")
     parser.add_argument("-o", "--output", help="Saves the output in a YAML file.", action='store_true')
@@ -366,7 +366,7 @@ if __name__ == "__main__":
     np.warnings.filterwarnings('ignore')
 
     if args.yaml and os.path.exists(args.yaml):
-        tool.load_colorspace_from_yaml(args.yaml)
+        tool.load_color_lookup_table_from_yaml(args.yaml)
         name = os.path.basename(args.yaml).split('.')[0]
         if args.min_brightness:
             tool.to_dark = args.min_brightness
