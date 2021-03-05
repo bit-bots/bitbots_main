@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <launch>
     <!-- arguments -->
-    <arg name="behavior" value="true" doc="if the behavior should be started" />
-    <arg name="localization" value="false" doc="if the localization should be used" />
-    <arg name="motion" value="true" doc="if the motion should be started" />
-    <arg name="game_controller" value="false" doc="if the game controller node should be started" />
-    <arg name="use_game_settings" value="false" doc="whether game settings should be used" />
+    <arg name="behavior" default="true" doc="if the behavior should be started" />
+    <arg name="localization" default="false" doc="if the localization should be used" />
+    <arg name="motion" default="true" doc="if the motion should be started" />
+    <arg name="game_controller" default="false" doc="if the game controller node should be started" />
+    <arg name="use_game_settings" default="false" doc="whether game settings should be used" />
 
     <!-- set visualization parameter -->
     <param name="visualization_active" value="true" />
