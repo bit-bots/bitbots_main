@@ -441,7 +441,12 @@ void Localization::publish_transforms() {
     localization_transform.transform.rotation.y = q.y();
     localization_transform.transform.rotation.z = q.z();
     localization_transform.transform.rotation.w = q.w();
-    br.sendTransform(localization_transform);
+
+    if (localization_tf_last_published_time_ != localization_transform.header.stamp) {
+      // do not resend a transform for the same timestamp
+      localization_tf_last_published_time_ = localization_transform.header.stamp;
+      br.sendTransform(localization_transform);
+    }
 
     //publish odom localisation offset
     geometry_msgs::TransformStamped map_odom_transform;
@@ -458,7 +463,11 @@ void Localization::publish_transforms() {
 
     map_odom_transform.transform = tf2::toMsg(map_tf);
 
-    br.sendTransform(map_odom_transform);
+    if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
+      // do not resend a transform for the same timestamp
+      map_odom_tf_last_published_time_ = map_odom_transform.header.stamp;
+      br.sendTransform(map_odom_transform);
+    }
   }
   catch (const tf2::TransformException &ex) {
     ROS_WARN("Odom not available, therefore odom offset can not be published: %s", ex.what());
