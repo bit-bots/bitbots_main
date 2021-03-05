@@ -27,15 +27,17 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 double RobotPoseObservationModel::calculate_weight_for_class(
     const RobotState &state,
     const std::vector<std::pair<double, double>> &last_measurement,
-    std::shared_ptr<Map> map) const {
-  double particle_weight_for_class = 0;
+    std::shared_ptr<Map> map,
+    double element_weight) const {
+  double particle_weight_for_class = 1;
   if (!last_measurement.empty()) {
     number_of_effective_measurements_ += 1;
     std::vector<double> ratings = map->Map::provideRating(state, last_measurement);
     for (double rating : ratings) {
-      particle_weight_for_class += rating;
+      particle_weight_for_class *= (1 - element_weight) + element_weight * (rating/100);
     }
-    particle_weight_for_class /= ratings.size();
+  } else {
+    particle_weight_for_class = 0;
   }
   return particle_weight_for_class;
 }
@@ -43,12 +45,36 @@ double RobotPoseObservationModel::calculate_weight_for_class(
 double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_of_effective_measurements_ = 0;
 
-  double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_, map_lines_);
-  double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_, map_goals_);
-  double particle_weight_field_boundary = calculate_weight_for_class(state, last_measurement_field_boundary_, map_field_boundary_);
-  double particle_weight_corners = calculate_weight_for_class(state, last_measurement_corners_, map_corners_);
-  double particle_weight_t_crossings = calculate_weight_for_class(state, last_measurement_t_crossings_, map_t_crossings_);
-  double particle_weight_crosses = calculate_weight_for_class(state, last_measurement_crosses_, map_crosses_);
+  double particle_weight_lines = calculate_weight_for_class(
+    state,
+    last_measurement_lines_,
+     map_lines_,
+     config_.line_element_confidence);
+  double particle_weight_goal = calculate_weight_for_class(
+    state,
+    last_measurement_goal_,
+    map_goals_,
+    config_.goal_element_confidence);
+  double particle_weight_field_boundary = calculate_weight_for_class(
+    state,
+    last_measurement_field_boundary_,
+    map_field_boundary_,
+    config_.field_boundary_element_confidence);
+  double particle_weight_corners = calculate_weight_for_class(
+    state,
+    last_measurement_corners_,
+    map_corners_,
+    config_.corner_element_confidence);
+  double particle_weight_t_crossings = calculate_weight_for_class(
+    state,
+    last_measurement_t_crossings_,
+    map_t_crossings_,
+    config_.t_crossing_element_confidence);
+  double particle_weight_crosses = calculate_weight_for_class(
+    state,
+    last_measurement_crosses_,
+    map_crosses_,
+    config_.cross_element_confidence);
 
   number_lines = last_measurement_lines_.size();
   number_goals = last_measurement_goal_.size();
@@ -58,13 +84,13 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   number_crosses = last_measurement_crosses_.size();
 
   double weight = (number_of_effective_measurements_ == 0) ? 0 : (
-      ( particle_weight_lines * config_.lines_factor +
-        particle_weight_goal * config_.goals_factor +
-        particle_weight_field_boundary * config_.field_boundary_factor +
-        particle_weight_corners * config_.corners_factor +
-        particle_weight_t_crossings * config_.t_crossings_factor +
-        particle_weight_crosses * config_.crosses_factor) /
-          number_of_effective_measurements_); // TODO evaluate this devision
+      ((1 - config_.lines_factor) + config_.lines_factor * particle_weight_lines) *
+      ((1 - config_.goals_factor) + config_.goals_factor * particle_weight_goal) *
+      ((1 - config_.field_boundary_factor) + config_.field_boundary_factor * particle_weight_field_boundary) *
+      ((1 - config_.corners_factor) + config_.corners_factor * particle_weight_corners) *
+      ((1 - config_.t_crossings_factor) + config_.t_crossings_factor * particle_weight_t_crossings) *
+      ((1 - config_.crosses_factor) + config_.crosses_factor * particle_weight_crosses)
+  );
 
   if (weight < min_weight_) {
     weight = min_weight_;

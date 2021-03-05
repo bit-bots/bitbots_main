@@ -91,7 +91,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   double calculate_weight_for_class(
     const RobotState &state,
     const std::vector<std::pair<double, double>> &last_measurement,
-    std::shared_ptr<Map> map) const;
+    std::shared_ptr<Map> map,
+    double element_weight) const;
 
   std::vector<std::pair<double, double>> last_measurement_lines_;
 
