@@ -6,9 +6,9 @@
     <arg name="localization" value="true" />
   </include>
 
+  <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
   <!-- set head mode to 3=field_features -->
   <param name="behavior/head/defaults/head_mode" value="3"/>
-  <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
 
   <node name="$(anon rviz)" pkg="rviz" type="rviz" args="-d $(find bitbots_localization)/config/localization.rviz" />
 </launch>
