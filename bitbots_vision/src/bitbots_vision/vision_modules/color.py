@@ -323,12 +323,9 @@ class PixelListColorDetector(ColorDetector):
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
             color_values = color_values['color_values']['greenField']
-        length = len(color_values['red'])
-        if length == len(color_values['green']) and \
-                length == len(color_values['blue']):
-            # setting colors from yaml file to True in color space
-            color_lookup_table[color_values['blue'], color_values['green'], color_values['red']] = 1
-        return color_space
+        # setting colors from yaml file to True in color space
+        color_lookup_table[color_values['blue'], color_values['green'], color_values['red']] = 1
+        return color_lookup_table
 
 
     def match_pixel(self, pixel):
