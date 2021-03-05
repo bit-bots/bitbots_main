@@ -206,6 +206,8 @@ class Localization {
   ros::Time last_stamp_lines_pc = ros::Time(0);
   ros::Time last_stamp_goals = ros::Time(0);
   ros::Time last_stamp_fb_points = ros::Time(0);
+  ros::Time localization_tf_last_published_time_ = ros::Time(0);
+  ros::Time map_odom_tf_last_published_time_ = ros::Time(0);
 
   std::string odom_frame_, base_footprint_frame_, map_frame_, publishing_frame_;
 
