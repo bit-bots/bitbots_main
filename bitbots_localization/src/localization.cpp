@@ -274,8 +274,8 @@ std::vector<gm::Point32> Localization::interpolateFieldboundaryPoints(gm::Point3
   return pointsInterpolated;
 }
 
-bool Localization::set_paused_callback(bl::set_paused::Request &req,
-                                       bl::set_paused::Response &res) {
+bool Localization::set_paused_callback(bl::SetPaused::Request &req,
+                                       bl::SetPaused::Response &res) {
   if(req.paused) {
     publishing_timer_.stop();
   } else {
@@ -285,8 +285,8 @@ bool Localization::set_paused_callback(bl::set_paused::Request &req,
   return true;
 }
 
-bool Localization::reset_filter_callback(bl::reset_filter::Request &req,
-                                         bl::reset_filter::Response &res) {
+bool Localization::reset_filter_callback(bl::ResetFilter::Request &req,
+                                         bl::ResetFilter::Response &res) {
   if (req.init_mode == 3) {
     reset_filter(req.init_mode, req.x, req.y);
   } else {

@@ -1,13 +1,13 @@
 import rospy
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_localization.srv import set_paused
+from bitbots_localization.srv import SetPaused
 
 
 class AbstractLocalizationPause(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLocalizationPause, self).__init__(blackboard, dsd, parameters=parameters)
-        self.stop_filter_prox = rospy.ServiceProxy('pause_localization', set_paused)
+        self.stop_filter_prox = rospy.ServiceProxy('pause_localization', SetPaused)
 
     def set_paused(self, paused):
         self.do_not_reevaluate()

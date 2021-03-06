@@ -56,8 +56,8 @@
 #include <bitbots_localization/Resampling.h>
 #include <bitbots_localization/RobotState.h>
 
-#include <bitbots_localization/reset_filter.h>
-#include <bitbots_localization/set_paused.h>
+#include <bitbots_localization/ResetFilter.h>
+#include <bitbots_localization/SetPaused.h>
 #include <bitbots_localization/tools.h>
 
 #include <cv_bridge/cv_bridge.h>
@@ -86,16 +86,16 @@ class Localization {
    * @param req Request.
    * @param res Response.
    */ 
-  bool set_paused_callback( bl::set_paused::Request &req,
-                            bl::set_paused::Response &res);
+  bool set_paused_callback( bl::SetPaused::Request &req,
+                            bl::SetPaused::Response &res);
 
   /**
    * Callback for the filter reset service
    * @param req Request.
    * @param res Response.
    */ 
-  bool reset_filter_callback(bl::reset_filter::Request &req,
-                             bl::reset_filter::Response &res);
+  bool reset_filter_callback(bl::ResetFilter::Request &req,
+                             bl::ResetFilter::Response &res);
 
   /**
    * Callback for ros dynamic reconfigure
