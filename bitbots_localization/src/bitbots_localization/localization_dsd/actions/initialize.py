@@ -1,6 +1,6 @@
 import rospy
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_localization.srv import reset_filter
+from bitbots_localization.srv import ResetFilter
 
 
 class AbstractInitialize(AbstractActionElement):
@@ -26,7 +26,7 @@ class InitPose(AbstractInitialize):
     def perform(self, reevaluate=False):
         rospy.logdebug("initializing pose")
         rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = rospy.ServiceProxy('reset_localization', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('reset_localization', ResetFilter)
         try:
             resp = reset_filter_proxy(0, None, None)
             return resp.success
@@ -38,7 +38,7 @@ class InitLeftHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
         rospy.logdebug("initializing left half")
         rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = rospy.ServiceProxy('reset_localization', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('reset_localization', ResetFilter)
         try:
             resp = reset_filter_proxy(1, None, None)
             return resp.success
@@ -51,7 +51,7 @@ class InitRightHalf(AbstractInitialize):
         rospy.logdebug("initializing right half")
 
         rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = rospy.ServiceProxy('reset_localization', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('reset_localization', ResetFilter)
         try:
             resp = reset_filter_proxy(2, None, None)
             return resp.success
@@ -65,7 +65,7 @@ class InitPosition(AbstractInitialize):
         rospy.logdebug("initializing position")
 
         rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = rospy.ServiceProxy('reset_localization', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('reset_localization', ResetFilter)
         try:
             resp = reset_filter_proxy(
                 3, 
@@ -82,7 +82,7 @@ class InitSide(AbstractInitialize):
         rospy.logdebug("initializing on the side line of our half")
 
         rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = rospy.ServiceProxy('reset_localization', reset_filter)
+        reset_filter_proxy = rospy.ServiceProxy('reset_localization', ResetFilter)
         try:
             resp = reset_filter_proxy(0, None, None)
         except rospy.ServiceException as e:
