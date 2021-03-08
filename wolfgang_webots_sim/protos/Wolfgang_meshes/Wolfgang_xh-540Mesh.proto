@@ -8,9 +8,7 @@ PROTO Wolfgang_xh-540Mesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.12 0.12 0.12
-    }
+    appearance WolfgangMotor {}
     geometry DEF xh-540 IndexedFaceSet {
       coord Coordinate {
         point [

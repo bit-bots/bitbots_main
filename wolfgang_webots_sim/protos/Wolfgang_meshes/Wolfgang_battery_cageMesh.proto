@@ -8,9 +8,7 @@ PROTO Wolfgang_battery_cageMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF battery_cage IndexedFaceSet {
       coord Coordinate {
         point [

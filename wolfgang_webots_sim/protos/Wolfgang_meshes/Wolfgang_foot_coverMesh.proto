@@ -8,9 +8,7 @@ PROTO Wolfgang_foot_coverMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF foot_cover IndexedFaceSet {
       coord Coordinate {
         point [

@@ -8,9 +8,7 @@ PROTO Wolfgang_camera_lower_basler_wolfgang_imu_v2_2Mesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF camera_lower_basler_wolfgang_imu_v2_2 IndexedFaceSet {
       coord Coordinate {
         point [

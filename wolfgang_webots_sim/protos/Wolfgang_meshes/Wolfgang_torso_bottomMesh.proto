@@ -8,10 +8,7 @@ PROTO Wolfgang_torso_bottomMesh [
 ]
 {
   Shape {
-    appearance ScratchedPaint {
-      colorOverride    0.05 0.05 0.05
-      metalScratch     TRUE
-    }
+    appearance WolfgangPaintedMetal {}
     geometry DEF torso_bottom IndexedFaceSet {
       coord Coordinate {
         point [

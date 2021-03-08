@@ -1,0 +1,15 @@
+ #VRML_SIM R2021a utf8
+ # license: Apache License 2.0
+ # license url: http://www.apache.org/licenses/LICENSE-2.0
+ # tags: hidden
+ # Extracted from: wolfgang.urdf
+
+PROTO WolfgangPaintedMetal [
+]
+{
+    PBRAppearance {
+        baseColor 0.05 0.05 0.05
+        roughness 0.6
+        metalness 1
+    }
+}

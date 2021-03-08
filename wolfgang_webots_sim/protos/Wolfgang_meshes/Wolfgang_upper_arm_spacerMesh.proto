@@ -8,9 +8,7 @@ PROTO Wolfgang_upper_arm_spacerMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF upper_arm_spacer IndexedFaceSet {
       coord Coordinate {
         point [

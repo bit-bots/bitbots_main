@@ -8,9 +8,7 @@ PROTO Wolfgang_lower_leg_spacerMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF lower_leg_spacer IndexedFaceSet {
       coord Coordinate {
         point [

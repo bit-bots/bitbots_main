@@ -1,0 +1,17 @@
+ #VRML_SIM R2021a utf8
+ # license: Apache License 2.0
+ # license url: http://www.apache.org/licenses/LICENSE-2.0
+ # tags: hidden
+ # Extracted from: wolfgang.urdf
+
+PROTO WolfgangOdroid [
+]
+{
+    PBRAppearance {
+      baseColor 0.02 0.24 0.28
+      transparency 0.000000
+      roughness 1.000000
+      metalness 0
+      emissiveColor 0.000000 0.000000 0.000000
+    }
+}

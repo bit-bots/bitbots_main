@@ -8,9 +8,7 @@ PROTO Wolfgang_batteryMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.2 0.2 0.2
-    }
+    appearance WolfgangPlastic {}
     geometry DEF battery IndexedFaceSet {
       coord Coordinate {
         point [

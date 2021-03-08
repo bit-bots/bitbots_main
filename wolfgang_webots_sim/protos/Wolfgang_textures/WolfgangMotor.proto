@@ -1,0 +1,15 @@
+ #VRML_SIM R2021a utf8
+ # license: Apache License 2.0
+ # license url: http://www.apache.org/licenses/LICENSE-2.0
+ # tags: hidden
+ # Extracted from: wolfgang.urdf
+
+PROTO WolfgangMotor [
+]
+{
+    PBRAppearance {
+        baseColor 0.1 0.1 0.1
+        roughness 1
+        metalness 0
+    }
+}

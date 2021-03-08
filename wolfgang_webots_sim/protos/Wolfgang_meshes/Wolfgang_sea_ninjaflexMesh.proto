@@ -8,7 +8,7 @@ PROTO Wolfgang_sea_ninjaflexMesh [
 ]
 {
   Shape {
-    appearance Rubber {}
+    appearance WolfgangPlastic {}
     geometry DEF sea_ninjaflex IndexedFaceSet {
       coord Coordinate {
         point [

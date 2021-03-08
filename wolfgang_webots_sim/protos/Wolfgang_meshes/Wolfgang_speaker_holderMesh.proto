@@ -8,9 +8,7 @@ PROTO Wolfgang_speaker_holderMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF speaker_holder IndexedFaceSet {
       coord Coordinate {
         point [

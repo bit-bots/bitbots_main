@@ -8,9 +8,7 @@ PROTO Wolfgang_foot_printed_rightMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF foot_printed_right IndexedFaceSet {
       coord Coordinate {
         point [

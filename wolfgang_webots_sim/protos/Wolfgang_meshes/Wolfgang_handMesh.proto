@@ -8,9 +8,7 @@ PROTO Wolfgang_handMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF hand IndexedFaceSet {
       coord Coordinate {
         point [

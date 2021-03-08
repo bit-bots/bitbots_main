@@ -8,9 +8,7 @@ PROTO Wolfgang_baseplate_odroid_xu4_coreMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF baseplate_odroid_xu4_core IndexedFaceSet {
       coord Coordinate {
         point [

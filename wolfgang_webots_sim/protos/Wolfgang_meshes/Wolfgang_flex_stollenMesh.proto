@@ -8,7 +8,7 @@ PROTO Wolfgang_flex_stollenMesh [
 ]
 {
   Shape {
-    appearance Rubber {}
+    appearance WolfgangPlastic {}
     geometry DEF flex_stollen IndexedFaceSet {
       coord Coordinate {
         point [

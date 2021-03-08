@@ -8,7 +8,7 @@ PROTO Wolfgang_torso_bumper_rightMesh [
 ]
 {
   Shape {
-    appearance Rubber {}
+    appearance WolfgangPlastic {}
     geometry DEF torso_bumper_right IndexedFaceSet {
       coord Coordinate {
         point [

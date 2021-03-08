@@ -8,9 +8,7 @@ PROTO Wolfgang_router_holder_leftMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF router_holder_left IndexedFaceSet {
       coord Coordinate {
         point [

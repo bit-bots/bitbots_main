@@ -8,9 +8,7 @@ PROTO Wolfgang_knee_connectorMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF knee_connector IndexedFaceSet {
       coord Coordinate {
         point [

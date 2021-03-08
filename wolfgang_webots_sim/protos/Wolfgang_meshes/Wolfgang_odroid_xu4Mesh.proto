@@ -8,13 +8,7 @@ PROTO Wolfgang_odroid_xu4Mesh [
 ]
 {
   Shape {
-    appearance DEF odroid_xu4_material PBRAppearance {
-      baseColor 0.564706 0.811765 0.945098
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance WolfgangOdroid {}
     geometry DEF odroid_xu4 IndexedFaceSet {
       coord Coordinate {
         point [

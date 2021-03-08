@@ -8,11 +8,7 @@ PROTO Wolfgang_shoulder_connectorMesh [
 ]
 {
   Shape {
-    appearance RustyMetal {
-     rustLevel        1
-     textureTransform NULL
-     colorOverride    1 1 1
-   }
+    appearance WolfgangPaintedMetal {}
     geometry DEF shoulder_connector IndexedFaceSet {
       coord Coordinate {
         point [

@@ -8,9 +8,7 @@ PROTO Wolfgang_imu_holderMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF imu_holder IndexedFaceSet {
       coord Coordinate {
         point [

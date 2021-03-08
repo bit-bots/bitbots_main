@@ -8,9 +8,7 @@ PROTO Wolfgang_dummy_speakerMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.2 0.2 0.2
-    }
+    appearance WolfgangPlastic {}
     geometry DEF dummy_speaker IndexedFaceSet {
       coord Coordinate {
         point [

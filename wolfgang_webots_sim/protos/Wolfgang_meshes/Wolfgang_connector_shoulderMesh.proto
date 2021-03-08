@@ -8,10 +8,7 @@ PROTO Wolfgang_connector_shoulderMesh [
 ]
 {
   Shape {
-    appearance ScratchedPaint {
-      colorOverride    0.05 0.05 0.05
-      metalScratch     TRUE
-    }
+    appearance WolfgangPaintedMetal {}
     geometry DEF connector_shoulder IndexedFaceSet {
       coord Coordinate {
         point [

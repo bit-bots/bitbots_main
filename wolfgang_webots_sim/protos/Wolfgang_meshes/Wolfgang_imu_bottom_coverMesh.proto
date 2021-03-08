@@ -8,9 +8,7 @@ PROTO Wolfgang_imu_bottom_coverMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF imu_bottom_cover IndexedFaceSet {
       coord Coordinate {
         point [

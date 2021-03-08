@@ -8,9 +8,7 @@ PROTO Wolfgang_spring_holder_lowerMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.1 0.1 0.1
-    }
+    appearance WolfgangPlastic {}
     geometry DEF spring_holder_lower IndexedFaceSet {
       coord Coordinate {
         point [

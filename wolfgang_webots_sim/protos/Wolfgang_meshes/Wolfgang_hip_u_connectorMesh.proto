@@ -8,10 +8,7 @@ PROTO Wolfgang_hip_u_connectorMesh [
 ]
 {
   Shape {
-    appearance ScratchedPaint {
-      colorOverride    0.05 0.05 0.05
-      metalScratch     TRUE
-    }
+    appearance WolfgangPaintedMetal {}
     geometry DEF hip_u_connector IndexedFaceSet {
       coord Coordinate {
         point [

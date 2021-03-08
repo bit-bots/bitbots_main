@@ -8,9 +8,7 @@ PROTO Wolfgang_mx-64-bodyMesh [
 ]
 {
   Shape {
-    appearance RoughPolymer {
-      baseColor 0.15 0.15 0.15
-    }
+    appearance WolfgangMotor {}
     geometry DEF mx-64-body IndexedFaceSet {
       coord Coordinate {
         point [
