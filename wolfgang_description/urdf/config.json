@@ -13,6 +13,7 @@
     "robotName": "wolfgang",
     "additionalUrdfFile": "/additionalURDF.txt",
 
+    // in Nm
     "jointMaxEffort": {
         "default": 0.0,
         "RShoulderRoll": 5.43,
@@ -36,6 +37,7 @@
         "HeadPan": 5.43,
         "HeadTilt": 5.43
     },
+    // in rad/sec
     "jointMaxVelocity": {
         "default": 0.0,
         "RShoulderRoll": 10.33,

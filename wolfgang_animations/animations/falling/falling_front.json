@@ -15,7 +15,7 @@
                 "LHipRoll": 4, 
                 "LHipYaw": 6, 
                 "LKnee": 13, 
-                "LShoulderPitch": 78, 
+                "LShoulderPitch": 90,
                 "LShoulderRoll": 0, 
                 "RAnklePitch": 36, 
                 "RAnkleRoll": -4, 
@@ -24,7 +24,7 @@
                 "RHipRoll": -4, 
                 "RHipYaw": 6, 
                 "RKnee": -13, 
-                "RShoulderPitch": -78, 
+                "RShoulderPitch": -90,
                 "RShoulderRoll": 0
             }, 
             "name": "frame0", 
