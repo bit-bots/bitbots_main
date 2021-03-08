@@ -135,6 +135,8 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
    A tool to create color lookup table files out of an video stream.
 
    This tool provides usage information on launch.
+   Also have a look at the help page ``-h`` for more information on how to load
+   existing color lookup table files or change the video input topic.
 
 -  ``/scripts/color_lookup_table_tool.py``
 
@@ -146,15 +148,6 @@ In the bitbots_vision package, special tools for debugging/introspection purpose
    the color lookup table in a browser based 3d graph.
 
    This tool provides a help page ``-h`` for further details.
-
--  ``/scripts/color_lookup_table_subtract.py``
-
-   Another small tool for color lookup table enhancement.
-
-   This tool is able to subtracts color values from one color lookup table file
-   from another.
-
-   For further details, see help page ``-h``.
 
 -  ``/scripts/convert_to_image.py``
 
