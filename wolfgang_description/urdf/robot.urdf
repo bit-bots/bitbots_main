@@ -28,9 +28,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-2.653589793311608e-06 -1.5707926535897931 -4.423534971767023e-17" xyz="0.01605000184433592 0.05404995350847408 0.20349993553524365"/>
+      <origin rpy="-3.14159 1.5708 0.0" xyz="0.01605 0.053 0.2035"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -43,9 +43,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-3.141592653589793 1.5707926535897931 -2.0547445652144405e-43" xyz="0.016049999058128213 -0.05405000007897615 0.20350006446474608"/>
+      <origin rpy="-1.2326e-32 -1.5708 0.0" xyz="0.01605 -0.053 0.2035"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -133,9 +133,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5708 -2.2491894362125527e-22 1.5707926535897931" xyz="0.01804999823467918 -0.05500006630134563 0.02650006638330539"/>
+      <origin rpy="1.5708 -0.0 -1.5708" xyz="0.01805 -0.055 0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
@@ -178,9 +178,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5708 -2.2491894362125527e-22 1.5707926535897931" xyz="0.01804999823467895 0.05499993369865437 0.02650006638330539"/>
+      <origin rpy="1.5708 -0.0 -1.5708" xyz="0.01805 0.055 0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
@@ -328,9 +328,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 -2.2491894362125527e-22 -1.5707926535897931" xyz="0.00804999520114417 6.446473222949373e-08 0.21205006454371517"/>
+      <origin rpy="-1.5708 -0.0 1.5708" xyz="0.00805 2.94903e-16 0.211"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -595,9 +595,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 -4.1633422491894364e-16 3.1415926535897913" xyz="-2.5100152749071744e-17 -0.017549995201262457 -0.022449935456284827"/>
+      <origin rpy="-1.5708 4.16334e-16 -2.10942e-15" xyz="-2.31426e-17 -0.01755 -0.0235"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -731,9 +731,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 -5.620502249189436e-16 -3.141592653589793" xyz="-1.8046306665724704e-18 -0.01754999520126257 -0.022449935456284827"/>
+      <origin rpy="-1.5708 5.6205e-16 -5.30016e-31" xyz="-1.94844e-18 -0.01755 -0.0235"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -914,9 +914,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 4.3853797750810566e-15 -3.141592653589793" xyz="-6.999751492085584e-18 -0.01754999520126254 -0.022449935456284827"/>
+      <origin rpy="-1.5708 -4.38538e-15 -2.0118e-29" xyz="5.82097e-17 -0.01755 -0.0235"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -1011,9 +1011,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 -2.249189453961952e-22 -3.141592653589793" xyz="-2.394819443367352e-18 -0.017549995201262568 -0.022449935456284827"/>
+      <origin rpy="-1.5708 1.77494e-30 1.26218e-29" xyz="6.42385e-29 -0.01755 -0.0235"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
     <visual>
@@ -1203,9 +1203,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 -4.341812249189436e-16 3.1415926535897927" xyz="-8.016734268191458e-18 -0.018050001908006656 -0.026499933780600633"/>
+      <origin rpy="-1.5708 4.34181e-16 -6.8556e-16" xyz="-4.16733e-18 -0.01805 -0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
@@ -1263,9 +1263,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5707926536064634 1.5707926535897934 -1.667000296312536e-11" xyz="0.0004999337805928218 -0.018050001908006767 -0.06909999816364068"/>
+      <origin rpy="-1.5708 -1.5708 0.0" xyz="-4.45282e-15 -0.01805 -0.0691"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
   </link>
@@ -1545,7 +1545,7 @@
       <inertia ixx="0.000116775" ixy="-4.53798e-06" ixz="6.10986e-07" iyy="0.000268473" iyz="-7.45081e-07" izz="0.000272856"/>
     </inertial>
     <visual>
-      <origin rpy="1.5708 -1.31376e-16 1.5708" xyz="-0.0261 -0.021 -0.0405"/>
+      <origin rpy="1.5708 8.07766e-17 1.5708" xyz="-0.0261 -0.021 -0.0405"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
       </geometry>
@@ -1554,13 +1554,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5707963267973226 1.5707926535897934 -3.141588980387116" xyz="-0.020300062518327444 -0.006999978263411921 -0.04350002133064612"/>
+      <origin rpy="-1.570796326739566 1.5707926535897934 -3.141588980329359" xyz="-0.020300062518327444 -0.006999978263411923 -0.04350002133064612"/>
       <geometry>
         <box size="0.006000000052154064 0.011599999852478506 0.02800000086426735"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="-1.5708 -1.5708 0.0" xyz="-0.0431 -1.11022e-16 -0.026"/>
+      <origin rpy="-1.5708 -1.5708 0.0" xyz="-0.0431 -5.55112e-17 -0.026"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
@@ -1569,13 +1569,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5707926536064634 1.5707926535897934 -1.667000296312536e-11" xyz="-0.04260006621940274 -0.018050001908006767 -0.025999998163640688"/>
+      <origin rpy="-1.5708 -1.5708 0.0" xyz="-0.0431 -0.01805 -0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="-1.5708 -1.1315e-15 -1.5708" xyz="-0.0261 0.007 -0.0115"/>
+      <origin rpy="-1.5708 -1.33068e-15 -1.5708" xyz="-0.0261 0.007 -0.0115"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
       </geometry>
@@ -1584,7 +1584,7 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5707963271362781 -1.5707926535897934 -3.672863721742693e-06" xyz="-0.020300040479096636 -0.007000021736669031 -0.00850002127853252"/>
+      <origin rpy="-1.5707963271905034 -1.5707926535897934 -3.6728094966192937e-06" xyz="-0.020300040479096636 -0.007000021736669029 -0.008500021278532516"/>
       <geometry>
         <box size="0.006000000052154064 0.011599999852478506 0.02800000086426735"/>
       </geometry>
@@ -1605,7 +1605,7 @@
       </geometry>
     </collision>
     <visual>
-      <origin rpy="-1.5708 3.82166e-31 4.69433e-16" xyz="3.46945e-18 -5.55112e-17 -0.026"/>
+      <origin rpy="-1.5708 3.4122e-32 1.32553e-17" xyz="1.38778e-17 -5.55112e-17 -0.026"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
@@ -1614,9 +1614,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 -2.249189440034212e-22 -3.1415926535897927" xyz="9.57851333433784e-18 -0.01805000190800671 -0.026499933780600633"/>
+      <origin rpy="-1.5708 3.4122e-32 1.32553e-17" xyz="2.15684e-17 -0.01805 -0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
   </link>
@@ -1627,7 +1627,7 @@
       <inertia ixx="0.000884107" ixy="-3.29345e-05" ixz="5.01436e-06" iyy="0.00031783" iyz="-1.77693e-05" izz="0.00115364"/>
     </inertial>
     <visual>
-      <origin rpy="-3.50584e-15 1.09462e-16 -9.29077e-18" xyz="-0.03 0.0065 -0.034"/>
+      <origin rpy="-3.52812e-15 1.12974e-16 -1.00224e-17" xyz="-0.03 0.0065 -0.034"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
       </geometry>
@@ -1636,13 +1636,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="3.1103800338687595 1.570796326794893 -1.6020089465159308" xyz="-0.03 0.006500000000000007 -0.0319999999050051"/>
+      <origin rpy="3.109582571373531 1.570796326794893 -1.6028064090111591" xyz="-0.03 0.006500000000000007 -0.0319999999050051"/>
       <geometry>
         <box size="0.004000000189989805 0.008000000379979616 0.03999999910593033"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="5.6583e-17 -1.23713e-18 -3.69928e-19" xyz="0.0 0.046 -0.036"/>
+      <origin rpy="5.20592e-17 -2.1633e-18 2.92836e-19" xyz="-6.93889e-18 0.046 -0.036"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/ankle.stl"/>
       </geometry>
@@ -1651,13 +1651,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5707963267948968 -1.2371299999999895e-18 -1.8406694787210296e-16" xyz="-3.092825046086684e-20 0.046 -0.010999999627470967"/>
+      <origin rpy="1.5707963267948968 -2.1632999999999903e-18 -1.8340418387210297e-16" xyz="-6.992972500805892e-18 0.046 -0.010999999627470967"/>
       <geometry>
         <box size="0.048000000417232534 0.050000000745058074 0.10000000149011612"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="-3.50584e-15 1.09462e-16 -9.29077e-18" xyz="0.06 0.1635 -0.034"/>
+      <origin rpy="-3.52812e-15 1.12974e-16 -1.00224e-17" xyz="0.06 0.1635 -0.034"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
       </geometry>
@@ -1666,13 +1666,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="3.1103800338687595 1.570796326794893 -1.6020089465159308" xyz="0.06 0.1635 -0.0319999999050051"/>
+      <origin rpy="3.109582571373531 1.570796326794893 -1.6028064090111591" xyz="0.06 0.1635 -0.0319999999050051"/>
       <geometry>
         <box size="0.004000000189989805 0.008000000379979616 0.03999999910593033"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="3.14159 5.28484e-16 1.67739e-16" xyz="0.038 0.16 -0.0324"/>
+      <origin rpy="3.14159 5.27419e-16 1.68145e-16" xyz="0.038 0.16 -0.0324"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
       </geometry>
@@ -1681,13 +1681,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="3.141592653390635 1.5707936732051033 -1.5707963269940546" xyz="0.008000000670552256 0.1299999985477861 -0.033199920372095446"/>
+      <origin rpy="3.141592653391036 1.5707936732051033 -1.5707963269936533" xyz="0.008000000670552256 0.1299999985477861 -0.033199920372095446"/>
       <geometry>
         <box size="0.0015999999595806113 0.05999999865889549 0.0599999986588955"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="-2.91789e-15 -1.22155e-18 -1.15199e-17" xyz="-0.03 0.1635 -0.034"/>
+      <origin rpy="-2.92213e-15 1.32096e-19 -1.13088e-17" xyz="-0.03 0.1635 -0.034"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
       </geometry>
@@ -1696,13 +1696,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-3.1411740120616214 1.5707963267948937 -1.570377685266725" xyz="-0.03 0.1635 -0.0319999999050051"/>
+      <origin rpy="3.1415474482088177 1.5707963267948937 -1.5708415321758722" xyz="-0.03 0.1635 -0.0319999999050051"/>
       <geometry>
         <box size="0.004000000189989805 0.008000000379979616 0.03999999910593033"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.35526e-15 -2.55919e-15 -1.5708" xyz="-0.145 0.085 -0.0395"/>
+      <origin rpy="1.35293e-15 -2.61682e-15 -1.5708" xyz="-0.145 0.085 -0.0395"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/foot_printed_right.stl"/>
       </geometry>
@@ -1711,13 +1711,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="0.4870196908764161 1.5707963267948937 -1.083780309123584" xyz="0.015000020350560167 0.09049941225734351 -0.032250000208616056"/>
+      <origin rpy="0.4771652026263078 1.5707963267948937 -1.0936347973736924" xyz="0.015000020350560167 0.09049941225734351 -0.032250000208616056"/>
       <geometry>
         <box size="0.014499999582767483 0.10599999874830249 0.18900000303983688"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="-7.31241e-15 9.37269e-16 3.14159" xyz="0.06 0.0065 -0.034"/>
+      <origin rpy="-7.26031e-15 9.3687e-16 3.14159" xyz="0.06 0.0065 -0.034"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
       </geometry>
@@ -1726,13 +1726,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="3.0141126223697805 1.5707963267948892 1.4433136419850903" xyz="0.06 0.006499999999999985 -0.0319999999050051"/>
+      <origin rpy="3.013261865279921 1.5707963267948892 1.442462884895231" xyz="0.06 0.006499999999999985 -0.0319999999050051"/>
       <geometry>
         <box size="0.004000000189989805 0.008000000379979616 0.03999999910593033"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.4598e-16 -6.37431e-16 -1.5708" xyz="0.0234568 0.0618337 -0.0463905"/>
+      <origin rpy="1.42744e-16 -6.57336e-16 -1.5708" xyz="0.0234568 0.0618337 -0.0463905"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
       </geometry>
@@ -1741,7 +1741,7 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.4598e-16 -6.37431e-16 -1.5708" xyz="0.0149998 0.120225 -0.0192245"/>
+      <origin rpy="1.42744e-16 -6.57336e-16 -1.5708" xyz="0.0149998 0.120225 -0.0192245"/>
       <geometry>
         <box size="0.04 0.106 0.019"/>
       </geometry>
@@ -1761,7 +1761,7 @@
     </inertial>
   </link>
   <joint name="r_sole_frame" type="fixed">
-    <origin rpy="-4.18784e-16 2.31919e-15 1.5708" xyz="0.0152219 0.0907683 -0.0529"/>
+    <origin rpy="-4.1858e-16 2.36866e-15 1.5708" xyz="0.0152219 0.0907683 -0.0529"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="r_foot"/>
     <child link="r_sole"/>
@@ -1774,19 +1774,19 @@
     </inertial>
   </link>
   <joint name="r_toe_frame" type="fixed">
-    <origin rpy="-1.35689e-15 2.56061e-15 1.5708" xyz="0.015 0.1845 -0.03775"/>
+    <origin rpy="-1.35775e-15 2.56512e-15 1.5708" xyz="0.015 0.1845 -0.03775"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="r_foot"/>
     <child link="r_toe"/>
   </joint>
   <link name="rlb">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="1.40205e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="1.39932e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
-      <inertia ixx="4.3352e-08" ixy="4.17276e-26" ixz="1.81516e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
+      <inertia ixx="4.3352e-08" ixy="-3.37492e-26" ixz="6.89534e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
     <visual>
-      <origin rpy="1.2656e-18 1.88239e-17 -3.76367e-19" xyz="1.38778e-17 0.0 -0.01"/>
+      <origin rpy="3.23006e-18 -1.19123e-17 2.03698e-19" xyz="1.38778e-17 0.0 -0.01"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
@@ -1795,13 +1795,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.2656e-18 1.88239e-17 -3.76367e-19" xyz="1.39648e-17 -9.74967e-21 -0.005"/>
+      <origin rpy="3.23006e-18 -1.19123e-17 2.03698e-19" xyz="1.39155e-17 4.95295e-21 -0.005"/>
       <geometry>
         <cylinder length="0.01" radius="0.006"/>
       </geometry>
     </collision>
     <collision>
-      <origin rpy="1.2656e-18 1.88239e-17 -3.76367e-19" xyz="1.38778e-17 0.0 -0.01"/>
+      <origin rpy="3.23006e-18 -1.19123e-17 2.03698e-19" xyz="1.38778e-17 0.0 -0.01"/>
       <geometry>
         <sphere radius="0.006"/>
       </geometry>
@@ -1815,13 +1815,13 @@
     </inertial>
   </link>
   <joint name="r_cleat_l_back_frame" type="fixed">
-    <origin rpy="-1.16828e-15 -4.65794e-17 -3.14159" xyz="1.38778e-17 -0.0005 -0.016"/>
+    <origin rpy="-1.17224e-15 -1.58433e-17 -3.14159" xyz="0.0 -0.0005 -0.016"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rlb"/>
     <child link="r_cleat_l_back"/>
   </joint>
   <joint name="RLB" type="fixed">
-    <origin rpy="-2.98953e-16 -2.63023e-16 -1.5708" xyz="-0.03 -0.007 -0.034"/>
+    <origin rpy="-2.99252e-16 -3.15564e-16 -1.5708" xyz="-0.03 -0.007 -0.034"/>
     <axis xyz="0.0 1.22465e-16 1.0"/>
     <parent link="r_foot"/>
     <child link="rlb"/>
@@ -1830,12 +1830,12 @@
   </joint>
   <link name="rlf">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="5.54699e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="-1.36915e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
-      <inertia ixx="4.3352e-08" ixy="1.35355e-26" ixz="-3.31883e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
+      <inertia ixx="4.3352e-08" ixy="9.47585e-26" ixz="8.92562e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
     <visual>
-      <origin rpy="-4.47812e-20 1.7015e-17 -2.62934e-19" xyz="5.55112e-17 0.0 -0.01"/>
+      <origin rpy="-3.73069e-18 2.62616e-17 -9.07888e-20" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
@@ -1844,13 +1844,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-4.47812e-20 1.7015e-17 -2.62934e-19" xyz="5.51881e-17 1.43398e-20 -0.005"/>
+      <origin rpy="-3.73069e-18 2.62616e-17 -9.07888e-20" xyz="-1.36827e-17 -5.81894e-21 -0.005"/>
       <geometry>
         <cylinder length="0.01" radius="0.006"/>
       </geometry>
     </collision>
     <collision>
-      <origin rpy="-4.47812e-20 1.7015e-17 -2.62934e-19" xyz="5.55112e-17 0.0 -0.01"/>
+      <origin rpy="-3.73069e-18 2.62616e-17 -9.07888e-20" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
         <sphere radius="0.006"/>
       </geometry>
@@ -1864,13 +1864,13 @@
     </inertial>
   </link>
   <joint name="r_cleat_l_front_frame" type="fixed">
-    <origin rpy="2.41328e-16 2.75668e-16 -3.14159" xyz="0.0 -0.0005 -0.016"/>
+    <origin rpy="2.44346e-16 2.736e-16 -3.14159" xyz="-1.38778e-17 -0.0005 -0.016"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rlf"/>
     <child link="r_cleat_l_front"/>
   </joint>
   <joint name="RLF" type="fixed">
-    <origin rpy="-1.37255e-15 5.10716e-16 -1.5708" xyz="-0.03 0.177 -0.034"/>
+    <origin rpy="-1.37387e-15 4.73288e-16 -1.5708" xyz="-0.03 0.177 -0.034"/>
     <axis xyz="0.0 1.22465e-16 1.0"/>
     <parent link="r_foot"/>
     <child link="rlf"/>
@@ -1879,12 +1879,12 @@
   </joint>
   <link name="rrf">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="4.16023e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="-4.15201e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
-      <inertia ixx="4.3352e-08" ixy="-3.9082e-26" ixz="-2.92513e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
+      <inertia ixx="4.3352e-08" ixy="-1.71608e-26" ixz="2.07716e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
     <visual>
-      <origin rpy="-1.27309e-19 1.0687e-17 4.20987e-19" xyz="4.16334e-17 1.38778e-17 -0.01"/>
+      <origin rpy="-2.05778e-18 -5.89301e-17 1.25017e-18" xyz="-4.16334e-17 1.38778e-17 -0.01"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
@@ -1893,13 +1893,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.27309e-19 1.0687e-17 4.20987e-19" xyz="4.13336e-17 1.3877e-17 -0.005"/>
+      <origin rpy="-2.05778e-18 -5.89301e-17 1.25017e-18" xyz="-4.16005e-17 1.38593e-17 -0.005"/>
       <geometry>
         <cylinder length="0.01" radius="0.006"/>
       </geometry>
     </collision>
     <collision>
-      <origin rpy="-1.27309e-19 1.0687e-17 4.20987e-19" xyz="4.16334e-17 1.38778e-17 -0.01"/>
+      <origin rpy="-2.05778e-18 -5.89301e-17 1.25017e-18" xyz="-4.16334e-17 1.38778e-17 -0.01"/>
       <geometry>
         <sphere radius="0.006"/>
       </geometry>
@@ -1913,13 +1913,13 @@
     </inertial>
   </link>
   <joint name="r_cleat_r_front_frame" type="fixed">
-    <origin rpy="6.426e-16 8.18562e-16 -3.14159" xyz="5.55112e-17 -0.0005 -0.016"/>
+    <origin rpy="6.44157e-16 8.47782e-16 -3.14159" xyz="-6.93889e-17 -0.0005 -0.016"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rrf"/>
     <child link="r_cleat_r_front"/>
   </joint>
   <joint name="RRF" type="fixed">
-    <origin rpy="1.04023e-15 -2.05167e-15 -1.5708" xyz="0.06 0.177 -0.034"/>
+    <origin rpy="1.04209e-15 -2.09028e-15 -1.5708" xyz="0.06 0.177 -0.034"/>
     <axis xyz="0.0 1.22465e-16 1.0"/>
     <parent link="r_foot"/>
     <child link="rrf"/>
@@ -1928,12 +1928,12 @@
   </joint>
   <link name="rrb">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="1.38378e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="-1.37337e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
-      <inertia ixx="4.3352e-08" ixy="-1.23284e-27" ixz="-2.07604e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
+      <inertia ixx="4.3352e-08" ixy="-5.41947e-26" ixz="3.45502e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
     <visual>
-      <origin rpy="1.9681e-18 -2.30546e-17 7.78349e-19" xyz="1.38778e-17 0.0 -0.01"/>
+      <origin rpy="3.60539e-18 -8.45708e-17 1.33887e-18" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
@@ -1942,13 +1942,13 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.9681e-18 -2.30546e-17 7.78349e-19" xyz="1.35575e-17 3.00727e-21 -0.005"/>
+      <origin rpy="3.60539e-18 -8.45708e-17 1.33887e-18" xyz="-1.3776e-17 -5.86161e-21 -0.005"/>
       <geometry>
         <cylinder length="0.01" radius="0.006"/>
       </geometry>
     </collision>
     <collision>
-      <origin rpy="1.9681e-18 -2.30546e-17 7.78349e-19" xyz="1.38778e-17 0.0 -0.01"/>
+      <origin rpy="3.60539e-18 -8.45708e-17 1.33887e-18" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
         <sphere radius="0.006"/>
       </geometry>
@@ -1962,13 +1962,13 @@
     </inertial>
   </link>
   <joint name="r_cleat_r_back_frame" type="fixed">
-    <origin rpy="3.36899e-17 -1.41669e-15 3.14159" xyz="1.38778e-17 -0.0005 -0.016"/>
+    <origin rpy="3.0848e-17 -1.36062e-15 3.14159" xyz="-1.38778e-17 -0.0005 -0.016"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rrb"/>
     <child link="r_cleat_r_back"/>
   </joint>
   <joint name="RRB" type="fixed">
-    <origin rpy="-1.82057e-15 5.38982e-15 -1.5708" xyz="0.06 -0.007 -0.034"/>
+    <origin rpy="-1.81929e-15 5.34084e-15 -1.5708" xyz="0.06 -0.007 -0.034"/>
     <axis xyz="0.0 1.22465e-16 1.0"/>
     <parent link="r_foot"/>
     <child link="rrb"/>
@@ -1976,7 +1976,7 @@
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="RAnkleRoll" type="revolute">
-    <origin rpy="5.46411e-15 1.54833 -1.5708" xyz="-0.0691 -5.55112e-17 -0.026"/>
+    <origin rpy="-1.46564e-14 1.54833 -1.5708" xyz="-0.0691 -1.11022e-16 -0.026"/>
     <axis xyz="0.0 -1.0 0.0"/>
     <parent link="r_ankle"/>
     <child link="r_foot"/>
@@ -1984,11 +1984,11 @@
     <dynamics damping="0.92" friction="0.0"/>
   </joint>
   <joint name="RAnklePitch" type="revolute">
-    <origin rpy="-1.5708 0.0364674 1.18307e-15" xyz="-2.08167e-17 0.0505 -0.17"/>
+    <origin rpy="-1.5708 4.23642e-15 1.2925e-15" xyz="4.16334e-16 0.0505 -0.17"/>
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="r_lower_leg"/>
     <child link="r_ankle"/>
-    <limit effort="7.57" lower="-1.5708" upper="1.22173" velocity="8.22"/>
+    <limit effort="7.57" lower="-1.74533" upper="1.22173" velocity="8.22"/>
     <dynamics damping="0.92" friction="0.0"/>
   </joint>
   <joint name="RKnee" type="revolute">
@@ -2076,9 +2076,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 1.965167750810564e-16 -3.1415926535897922" xyz="1.9106002601091498e-17 -0.018050001908006656 -0.026499933780600633"/>
+      <origin rpy="-1.5708 -1.96517e-16 7.99616e-16" xyz="-3.08152e-18 -0.01805 -0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
@@ -2091,9 +2091,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5707926535731234 -1.5707926535897934 -1.6670002963125355e-11" xyz="-0.0004999337805972418 -0.018050001908006662 -0.06909999816364068"/>
+      <origin rpy="-1.5708 1.5708 0.0" xyz="2.282e-17 -0.01805 -0.0691"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
@@ -2457,9 +2457,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="1.5708 5.161009775081056e-15 -3.141592653589793" xyz="2.831575190605763e-17 -0.018050001908006656 -0.026499933780600633"/>
+      <origin rpy="-1.5708 -5.16101e-15 1.90688e-17" xyz="-5.8887e-17 -0.01805 -0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
     <visual>
@@ -2472,9 +2472,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="-1.5707926535731234 -1.5707926535897934 -1.6670002963125355e-11" xyz="0.04260006621940274 -0.018050001908006656 -0.02599999816364068"/>
+      <origin rpy="-1.5708 1.5708 0.0" xyz="0.0431 -0.01805 -0.026"/>
       <geometry>
-        <box size="0.04019999876618385 0.047999998554587364 0.06509999930858612"/>
+        <box size="0.0402 0.046 0.0651"/>
       </geometry>
     </collision>
   </link>
@@ -2639,7 +2639,7 @@
   </joint>
   <link name="llb">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="1.39776e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="1.39725e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
       <inertia ixx="4.3352e-08" ixy="-2.54026e-27" ixz="-3.40123e-27" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
@@ -2688,7 +2688,7 @@
   </joint>
   <link name="llf">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="-1.37294e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="-1.37344e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
       <inertia ixx="4.3352e-08" ixy="2.25172e-27" ixz="8.03696e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
@@ -2737,7 +2737,7 @@
   </joint>
   <link name="lrf">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="2.79039e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="2.78989e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
       <inertia ixx="4.3352e-08" ixy="2.25172e-27" ixz="8.03696e-25" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
@@ -2786,7 +2786,7 @@
   </joint>
   <link name="lrb">
     <inertial>
-      <origin rpy="0.0 0.0 0.0" xyz="-1.38063e-17 0.000155519 -0.00775879"/>
+      <origin rpy="0.0 0.0 0.0" xyz="-1.38113e-17 0.000155519 -0.00775879"/>
       <mass value="0.00165976"/>
       <inertia ixx="4.3352e-08" ixy="1.6966e-26" ixz="-1.09118e-24" iyy="4.44049e-08" iyz="-1.0993e-09" izz="3.04397e-08"/>
     </inertial>
@@ -2846,7 +2846,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_lower_leg"/>
     <child link="l_ankle"/>
-    <limit effort="7.57" lower="-1.22173" upper="1.5708" velocity="8.22"/>
+    <limit effort="7.57" lower="-1.22173" upper="1.74533" velocity="8.22"/>
     <dynamics damping="0.92" friction="0.0"/>
   </joint>
   <joint name="LKnee" type="revolute">
@@ -2912,9 +2912,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="2.6535897934000795e-06 1.5707926535897934 4.4235349719145036e-17" xyz="0.018450003728203063 0.001050046649470863 -0.024000064464735873"/>
+      <origin rpy="3.14159 -1.5708 0.0" xyz="0.01845 3.8809e-17 -0.024"/>
       <geometry>
-        <box size="0.04019999876618385 0.04609999991953372 0.06109999865293502"/>
+        <box size="0.0402 0.041 0.0611"/>
       </geometry>
     </collision>
   </link>
@@ -2957,7 +2957,7 @@
     <collision>
       <origin rpy="3.88389e-31 -1.5433e-31 1.35585e-31" xyz="-2.02057e-34 1.07341e-34 0.0045"/>
       <geometry>
-        <cylinder length="0.009" radius="0.02"/>
+        <cylinder length="0.009" radius="0.025"/>
       </geometry>
     </collision>
     <visual>
@@ -2972,7 +2972,7 @@
     <collision>
       <origin rpy="-8.16317e-16 -2.22045e-16 3.14159" xyz="-1.95677e-17 -5.41482e-17 0.0115"/>
       <geometry>
-        <cylinder length="0.005" radius="0.02"/>
+        <cylinder length="0.005" radius="0.025"/>
       </geometry>
     </collision>
     <visual>
