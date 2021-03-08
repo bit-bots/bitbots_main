@@ -104,13 +104,16 @@ class TFMonitor:
             print(f'The tf_monitor is running with a display rate of {monitor_freq} Hz\n')
 
         # For pretty-printing
-        if use_chain:
-            frame_len = max(len(frame) for frame in self.chain)
-        else:
-            frame_len = max(len(frame) for frame in self.frame_delay_dict)
-        node_len = max(len(node) for node in self.broadcaster_delay_dict)
         round_len = 10
         num_len = round_len + 5
+        if self.use_chain:
+            frames = set(frame for frame in self.frame_delay_dict if frame in self.chain)
+            broadcasters = set(self.frame_broadcaster_dict[frame] for frame in frames)
+        else:
+            frames = self.frame_delay_dict.keys()
+            broadcasters = self.broadcaster_delay_dict.keys()
+        frame_len = max(len(frame) for frame in frames)
+        broadcaster_len = max(len(broadcaster) for broadcaster in broadcasters)
 
         if self.use_chain:
             # Print general information about the chain
@@ -123,22 +126,24 @@ class TFMonitor:
             print('All Frames:')
 
         # Print details about each frame
-        for frame, delay_list in sorted(self.frame_delay_dict.items()):
-            if use_chain and frame not in self.chain:
-                continue
+        for frame in sorted(frames):
+            delay_list = self.frame_delay_dict[frame]
             average_delay = round(sum(delay_list) / len(delay_list), round_len)
             max_delay = round(max(delay_list), round_len)
-            print(f'Frame: {frame:{frame_len}}     Published by {self.frame_broadcaster_dict[frame]:<{node_len}}   '
+            print(f'Frame: {frame:{frame_len}}     Published by {self.frame_broadcaster_dict[frame]:<{broadcaster_len}}   '
                   f'Average Delay: {average_delay:{num_len}}    Max Delay: {max_delay:{num_len}}')
 
         # Print details about each broadcaster
-        print('\nAll Broadcasters:')
-        for node in sorted(self.broadcaster_delay_dict):
+        if self.use_chain:
+            print('\nBroadcasters in chain:')
+        else:
+            print('\nAll Broadcasters:')
+        for node in sorted(broadcasters):
             average_delay = round(sum(self.broadcaster_delay_dict[node]) / len(self.broadcaster_delay_dict[node]), round_len)
             max_delay = round(max(self.broadcaster_delay_dict[node]), round_len)
             frequency_list = self.broadcaster_frequency_dict[node]
             frequency_out = round(len(frequency_list) / max(1e-8, (frequency_list[-1] - frequency_list[0])), round_len)
-            print(f'Node: {node:{node_len}} {frequency_out:{num_len}} Hz    '
+            print(f'Node: {node:{broadcaster_len}} {frequency_out:{num_len}} Hz    '
                   f'Average Delay: {average_delay:{num_len}}    Max Delay: {max_delay:{num_len}}')
 
 
