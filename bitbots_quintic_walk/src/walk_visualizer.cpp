@@ -9,6 +9,11 @@ WalkVisualizer::WalkVisualizer() {
   pub_engine_debug_ = nh.advertise<bitbots_quintic_walk::WalkEngineDebug>("walk_engine_debug", 1);
   pub_debug_marker_ = nh.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
 
+  ros::NodeHandle pnh("~");
+  pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
+  pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
+  pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+
 }
 
 void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model) {
@@ -33,9 +38,9 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   // define current support frame
   std::string current_support_frame;
   if (is_left_support) {
-    current_support_frame = "l_sole";
+    current_support_frame = l_sole_frame_;
   } else {
-    current_support_frame = "r_sole";
+    current_support_frame = r_sole_frame_;
   }
 
   // define colors based on current support state
@@ -139,7 +144,7 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   pose.orientation.y = 0;
   pose.orientation.z = 0;
   pose.orientation.w = 1;
-  publishArrowMarker("trunk_result", "base_link", pose, r, g, b, a);
+  publishArrowMarker("trunk_result", base_link_frame_, pose, r, g, b, a);
 
   pub_engine_debug_.publish(msg);
 }
@@ -170,8 +175,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
     msg.left_foot_goal = pose_fly_foot_goal;
     msg.right_foot_goal = pose_support_foot_goal;
   }
-  publishArrowMarker("engine_left_goal", "base_link", msg.left_foot_goal, 0, 1, 0, 1);
-  publishArrowMarker("engine_right_goal", "base_link", msg.right_foot_goal, 1, 0, 0, 1);
+  publishArrowMarker("engine_left_goal", base_link_frame_, msg.left_foot_goal, 0, 1, 0, 1);
+  publishArrowMarker("engine_right_goal", base_link_frame_, msg.right_foot_goal, 1, 0, 0, 1);
 
   // IK results
   robot_state::RobotStatePtr goal_state;
@@ -197,8 +202,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
     msg.support_foot_ik_result = pose_right_result;
     msg.fly_foot_ik_result = pose_left_result;
   }
-  publishArrowMarker("ik_left", "base_link", pose_left_result, 0, 1, 0, 1);
-  publishArrowMarker("ik_right", "base_link", pose_right_result, 1, 0, 0, 1);
+  publishArrowMarker("ik_left", base_link_frame_, pose_left_result, 0, 1, 0, 1);
+  publishArrowMarker("ik_right", base_link_frame_, pose_right_result, 1, 0, 0, 1);
 
 
   // IK offsets
@@ -310,9 +315,9 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   visualization_msgs::Marker marker_msg;
   marker_msg.header.stamp = ros::Time::now();
   if (response.is_left_support_foot) {
-    marker_msg.header.frame_id = "l_sole";
+    marker_msg.header.frame_id = l_sole_frame_;
   } else {
-    marker_msg.header.frame_id = "r_sole";
+    marker_msg.header.frame_id = r_sole_frame_;
   }
   marker_msg.type = marker_msg.CUBE;
   marker_msg.action = 0;

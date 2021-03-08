@@ -67,7 +67,7 @@ class KickNode {
    * @param trunk_to_base_footprint transform from trunk to base_footprint
    * @return whether the setup was successful
    */
-  bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string, Eigen::Isometry3d &trunk_to_base_footprint);
+  bool init(const bitbots_msgs::KickGoal &goal_msg, std::string &error_string);
 
   /**
    * Set the current joint state of the robot
@@ -94,7 +94,9 @@ class KickNode {
   robot_state::RobotStatePtr goal_state_;
   robot_state::RobotStatePtr current_state_;
 
-  /**
+  std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
+
+    /**
    * Do main loop in which KickEngine::update() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */

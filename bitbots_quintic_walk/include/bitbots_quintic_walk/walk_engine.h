@@ -28,7 +28,7 @@ namespace bitbots_quintic_walk {
  */
 class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
-  WalkEngine(const std::string ns);
+  WalkEngine();
 
   // methods from abstract engine class
   WalkResponse update(double dt) override;

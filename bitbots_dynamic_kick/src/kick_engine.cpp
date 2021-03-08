@@ -118,14 +118,14 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
   flying_foot_spline_.x()->addPoint(phase_timings_.move_trunk_back, 0);
 
   flying_foot_spline_.y()->addPoint(0, flying_foot_pose.translation().y());
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk, kick_foot_sign * params_.foot_distance);
+  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk, flying_foot_pose.translation().y());
   flying_foot_spline_.y()->addPoint(phase_timings_.raise_foot, kick_foot_sign * params_.foot_distance);
   flying_foot_spline_.y()->addPoint(phase_timings_.windup, windup_point_.y(), 0, 0);
   flying_foot_spline_.y()
       ->addPoint(phase_timings_.kick, ball_position_.y(), speed_vector.y() * kick_speed_, 0);
   flying_foot_spline_.y()->addPoint(phase_timings_.move_back, kick_foot_sign * params_.foot_distance);
   flying_foot_spline_.y()->addPoint(phase_timings_.lower_foot, kick_foot_sign * params_.foot_distance);
-  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk_back, kick_foot_sign * params_.foot_distance);
+  flying_foot_spline_.y()->addPoint(phase_timings_.move_trunk_back, flying_foot_pose.translation().y());
 
   flying_foot_spline_.z()->addPoint(0, flying_foot_pose.translation().z());
   flying_foot_spline_.z()->addPoint(phase_timings_.move_trunk, 0);

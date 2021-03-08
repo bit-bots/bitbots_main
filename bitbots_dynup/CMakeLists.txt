@@ -59,6 +59,6 @@ set(SOURCES
 
 add_executable(DynupNode ${SOURCES})
 
-add_dependencies(DynupNode ${PROJECT_NAME}_gencfg)
+add_dependencies(DynupNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages)
 
 target_link_libraries(DynupNode ${catkin_LIBRARIES})

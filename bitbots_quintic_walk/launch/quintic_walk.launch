@@ -1,4 +1,5 @@
 <launch>
+  <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
   <arg name="sim" default="false"/>
   <arg name="wolfgang" default="false"/>
   <arg name="use_game_settings" default="false"/>
@@ -20,6 +21,11 @@
         </group>
   </group>   
   <group unless="$(arg no_node)">
-    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen" launch-prefix="$(arg taskset)"/>
+    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen" launch-prefix="$(arg taskset)">
+      <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
+      <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
+      <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
+      <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+    </node>
   </group>
 </launch>

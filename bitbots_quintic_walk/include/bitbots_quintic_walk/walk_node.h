@@ -53,7 +53,7 @@ namespace bitbots_quintic_walk {
 
 class WalkNode {
  public:
-  WalkNode(const std::string ns);
+  WalkNode();
   bitbots_msgs::JointCommand step(
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
@@ -122,6 +122,8 @@ class WalkNode {
 
   double getTimeDelta();
 
+  std::string odom_frame_, base_link_frame_, l_sole_frame_, r_sole_frame_;
+
   WalkRequest current_request_;
 
   bool debug_active_;
@@ -177,6 +179,7 @@ class WalkNode {
   geometry_msgs::TransformStamped odom_trans_;
 
   ros::NodeHandle nh_;
+  ros::NodeHandle pnh_;
 
   ros::Publisher pub_controller_command_;
   ros::Publisher pub_odometry_;
