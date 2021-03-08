@@ -14,6 +14,7 @@ from dynamic_reconfigure.server import Server
 
 class ROSInterface:
     def __init__(self, simulation, namespace='', node=True):
+        self.namespace = namespace
         # give possibility to use the interface directly as class with setting node=False
         if node:
             if namespace == '':
@@ -70,14 +71,13 @@ class ROSInterface:
 
     def step(self):
         self.simulation.step()
-        if not self.simulation.paused:
-            self.publish_joints()
-            self.publish_imu()
-            self.publish_foot_pressure()
-            self.publish_true_odom()
-            self.clock_msg.clock = rospy.Time.from_seconds(self.simulation.time)
-            self.clock_publisher.publish(self.clock_msg)
-            self.compute_real_time_factor()
+        self.publish_joints()
+        self.publish_imu()
+        self.publish_foot_pressure()
+        self.publish_true_odom()
+        self.clock_msg.clock = rospy.Time.from_seconds(self.simulation.time)
+        self.clock_publisher.publish(self.clock_msg)
+        self.compute_real_time_factor(
 
     def run_simulation(self, duration=None, sleep=0):
         start_time = rospy.get_time()
@@ -97,9 +97,10 @@ class ROSInterface:
         efforts = []
         for name in self.joint_state_msg.name:
             joint = self.simulation.joints[name]
-            positions.append(joint.get_position())
-            velocities.append(joint.get_velocity())
-            efforts.append(joint.get_torque())
+            position, velocity, forces, applied_torque = joint.get_state()
+            positions.append(position)
+            velocities.append(velocity)
+            efforts.append(applied_torque)
         self.joint_state_msg.position = positions
         self.joint_state_msg.velocity = velocities
         self.joint_state_msg.effort = efforts
@@ -206,7 +207,7 @@ class ROSInterface:
         # center position on foot
         pos_x = 0.085
         pos_y = 0.045
-        threshold = 0.1
+        threshold = 0.0
 
         cop_l = PointStamped()
         cop_l.header.frame_id = "l_sole"
