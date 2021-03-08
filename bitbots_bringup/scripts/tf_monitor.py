@@ -101,7 +101,7 @@ class TFMonitor:
         print('\n\n')
         if event.last_real and event.current_real:
             monitor_freq = round(1/(event.current_real - event.last_real).to_sec(), 3)
-            print(f'The tf_monitor is running with a display rate of {monitor_freq} Hz\n')
+            print(f'The tf_monitor is running with a display rate of {monitor_freq:.2f} Hz\n')
 
         # For pretty-printing
         round_len = 10
@@ -120,7 +120,7 @@ class TFMonitor:
             print('Chain is:', ' -> '.join(self.chain))
             average_delay = round(sum(self.chain_delay) / len(self.chain_delay), round_len)
             max_delay = round(max(self.chain_delay), round_len)
-            print(f'Average Net Delay: {average_delay:{num_len}}    Max Net Delay: {max_delay:{num_len}}')
+            print(f'Average Net Delay: {average_delay:.{num_len}f}    Max Net Delay: {max_delay:.{num_len}f}')
             print('\nFrames in chain:')
         else:
             print('All Frames:')
@@ -131,7 +131,7 @@ class TFMonitor:
             average_delay = round(sum(delay_list) / len(delay_list), round_len)
             max_delay = round(max(delay_list), round_len)
             print(f'Frame: {frame:{frame_len}}     Published by {self.frame_broadcaster_dict[frame]:<{broadcaster_len}}   '
-                  f'Average Delay: {average_delay:{num_len}}    Max Delay: {max_delay:{num_len}}')
+                  f'Average Delay: {average_delay:.{num_len}f}    Max Delay: {max_delay:.{num_len}f}')
 
         # Print details about each broadcaster
         if self.use_chain:
@@ -143,8 +143,8 @@ class TFMonitor:
             max_delay = round(max(self.broadcaster_delay_dict[node]), round_len)
             frequency_list = self.broadcaster_frequency_dict[node]
             frequency_out = round(len(frequency_list) / max(1e-8, (frequency_list[-1] - frequency_list[0])), round_len)
-            print(f'Node: {node:{broadcaster_len}} {frequency_out:{num_len}} Hz    '
-                  f'Average Delay: {average_delay:{num_len}}    Max Delay: {max_delay:{num_len}}')
+            print(f'Node: {node:{broadcaster_len}} {frequency_out:.{num_len}f} Hz    '
+                  f'Average Delay: {average_delay:.{num_len}f}    Max Delay: {max_delay:.{num_len}f}')
 
 
 if __name__ == '__main__':
