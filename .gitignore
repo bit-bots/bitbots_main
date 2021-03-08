@@ -4,4 +4,5 @@
 **/docs/cppapi
 **/docs/pyapi
 
+**/.*.cache
 __pycache__
