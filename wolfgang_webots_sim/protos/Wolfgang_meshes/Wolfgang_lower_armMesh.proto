@@ -8,13 +8,7 @@ PROTO Wolfgang_lower_armMesh [
 ]
 {
   Shape {
-    appearance DEF lower_arm_material PBRAppearance {
-      baseColor 0.960784 0.960784 0.960784
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance CarbonFiberAppearance {}
     geometry DEF lower_arm IndexedFaceSet {
       coord Coordinate {
         point [

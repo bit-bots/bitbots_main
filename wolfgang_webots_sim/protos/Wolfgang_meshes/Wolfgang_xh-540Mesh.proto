@@ -8,13 +8,7 @@ PROTO Wolfgang_xh-540Mesh [
 ]
 {
   Shape {
-    appearance DEF xh-540_material PBRAppearance {
-      baseColor 0.498039 0.498039 0.498039
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance WolfgangMotor {}
     geometry DEF xh-540 IndexedFaceSet {
       coord Coordinate {
         point [

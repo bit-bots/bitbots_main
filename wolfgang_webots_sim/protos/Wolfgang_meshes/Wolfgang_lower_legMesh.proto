@@ -8,13 +8,7 @@ PROTO Wolfgang_lower_legMesh [
 ]
 {
   Shape {
-    appearance DEF lower_leg_material PBRAppearance {
-      baseColor 0.407843 0.407843 0.407843
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance CarbonFiberAppearance {}
     geometry DEF lower_leg IndexedFaceSet {
       coord Coordinate {
         point [

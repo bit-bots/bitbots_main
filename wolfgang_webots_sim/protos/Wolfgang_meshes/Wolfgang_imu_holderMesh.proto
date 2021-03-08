@@ -8,13 +8,7 @@ PROTO Wolfgang_imu_holderMesh [
 ]
 {
   Shape {
-    appearance DEF imu_holder_material PBRAppearance {
-      baseColor 0.717647 0.717647 0.717647
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance WolfgangPlastic {}
     geometry DEF imu_holder IndexedFaceSet {
       coord Coordinate {
         point [

@@ -8,13 +8,7 @@ PROTO Wolfgang_spring_holder_lowerMesh [
 ]
 {
   Shape {
-    appearance DEF spring_holder_lower_material PBRAppearance {
-      baseColor 1.000000 0.690196 0.000000
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance WolfgangPlastic {}
     geometry DEF spring_holder_lower IndexedFaceSet {
       coord Coordinate {
         point [

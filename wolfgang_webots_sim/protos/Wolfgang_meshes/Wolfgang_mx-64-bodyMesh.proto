@@ -8,13 +8,7 @@ PROTO Wolfgang_mx-64-bodyMesh [
 ]
 {
   Shape {
-    appearance DEF mx-64-body_material PBRAppearance {
-      baseColor 0.247059 0.247059 0.247059
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance WolfgangMotor {}
     geometry DEF mx-64-body IndexedFaceSet {
       coord Coordinate {
         point [

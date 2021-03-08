@@ -8,13 +8,7 @@ PROTO Wolfgang_baseplate_odroid_xu4_coreMesh [
 ]
 {
   Shape {
-    appearance DEF baseplate_odroid_xu4_core_material PBRAppearance {
-      baseColor 0.717647 0.717647 0.717647
-      transparency 0.000000
-      roughness 1.000000
-      metalness 0
-      emissiveColor 0.000000 0.000000 0.000000
-    }
+    appearance WolfgangPlastic {}
     geometry DEF baseplate_odroid_xu4_core IndexedFaceSet {
       coord Coordinate {
         point [
