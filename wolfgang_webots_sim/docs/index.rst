@@ -48,7 +48,7 @@ Secondly, replace the number behind `fieldOfView` in the `camera_optical_frame` 
 
 Thirdly, delete the compass from both IMUs.
 
-Fourthly, add the following code into both imu `Solid` nodes. Afterwards there should be the fields translation, rotation, physics, boundingObject, children(Accelerometer, Gyo), name
+Fourthly, add the following fields into both imu `Solid` nodes. Afterwards the Solids should have the following fields: translation, rotation, physics, boundingObject, children(Accelerometer, Gyo), name
 
 .. code-block:: json
 
