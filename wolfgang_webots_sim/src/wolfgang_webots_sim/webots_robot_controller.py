@@ -179,11 +179,12 @@ class RobotController:
             try:
                 motor_index = self.external_motor_names.index(name)
                 self.motors[motor_index].setPosition(command.positions[i])
-                if command.velocities[i] == -1:
+                if len(command.velocities) == 0 or command.velocities[i] == -1:
                     self.motors[motor_index].setVelocity(self.motors[motor_index].getMaxVelocity())
                 else:
                     self.motors[motor_index].setVelocity(command.velocities[i])
-                self.motors[motor_index].setAcceleration(command.accelerations[i])
+                if not len(command.accelerations) == 0:
+                    self.motors[motor_index].setAcceleration(command.accelerations[i])
 
             except ValueError:
                 print(f"invalid motor specified ({name})")

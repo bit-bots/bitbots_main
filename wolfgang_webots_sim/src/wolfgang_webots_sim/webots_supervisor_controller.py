@@ -16,7 +16,7 @@ G = 9.81
 
 
 class SupervisorController:
-    def __init__(self, ros_active=False, mode='normal', do_ros_init=True, base_ns=''):
+    def __init__(self, ros_active=False, mode='normal', do_ros_init=True, base_ns='', model_states_active=True):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
@@ -28,6 +28,7 @@ class SupervisorController:
         """
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
+        self.model_states_active = model_states_active
         self.time = 0
         self.clock_msg = Clock()
 
@@ -89,7 +90,8 @@ class SupervisorController:
         self.step_sim()
         if self.ros_active:
             self.publish_clock()
-            self.publish_model_states()
+            if self.model_states_active:
+                self.publish_model_states()
 
     def publish_clock(self):
         self.clock_msg.clock = rospy.Time.from_seconds(self.time)
@@ -194,6 +196,12 @@ class SupervisorController:
 
     def get_robot_pose_quat(self, name="amy"):
         return self.get_robot_position(name), self.get_robot_orientation_quat(name)
+
+    def get_link_pose(self, link, name="amy"):
+        link_node = self.robot_nodes[name].getFromProtoDef(link)
+        link_position = link_node.getPosition()
+        link_orientation = link_node.getOrientation()
+        return link_position, link_orientation
 
     def publish_model_states(self):
         msg = ModelStates()
