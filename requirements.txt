@@ -15,3 +15,4 @@ setuptools
 silx
 sklearn
 transforms3d
+git+https://github.com/catkin/catkin_tools.git
