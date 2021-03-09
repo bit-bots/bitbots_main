@@ -4,7 +4,7 @@
     <arg name="use_game_settings" default="false"/>
     <arg name="behavior" doc="start the behavior" default="true"/>
     <arg name="fake_walk" doc="fake the walking by using simplified physics and move the robot around on the plain field" default="false"/>
-    <arg name="localization" doc="start the localization, if false publish ground truth" default="false" />
+    <arg name="localization" doc="start the localization, if false publish ground truth" default="true" />
     <arg name="game_controller" doc="start the game controller" default="true"/>
     <arg name="vision_debug" default="false" doc="activates the debug output of the vision pipeline"/>
 
