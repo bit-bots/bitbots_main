@@ -104,6 +104,7 @@ class WorldModelCapsule:
         else:
             ball = self.ball_odom
         try:
+            ball.header.stamp = rospy.Time(0)
             ball_position = self.tf_buffer.transform(ball, 'ball_approach_frame', timeout=rospy.Duration(0.3))
             return ball_position.point.x, ball_position.point.y, 'ball_approach_frame'
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
