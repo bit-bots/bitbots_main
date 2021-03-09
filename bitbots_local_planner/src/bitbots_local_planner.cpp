@@ -1,4 +1,4 @@
-#include <bitbots_local_planner/ftc_planner.h>
+#include <bitbots_local_planner/bitbots_local_planner.h>
 
 #include <pluginlib/class_list_macros.h>
 
