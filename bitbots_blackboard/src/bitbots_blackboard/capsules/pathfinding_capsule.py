@@ -26,23 +26,6 @@ class PathfindingCapsule:
             self.goal = map_goal
             self.pathfinding_pub.publish(self.fix_rotation(map_goal))
 
-    def is_new_goal_far_from_old_goal(self, new_goal_msg):
-        # type: (PoseStamped) -> bool
-        if not self.goal:
-            return True
-        old_goal = self.goal
-        old_position = old_goal.pose.position
-        old_orientation = old_goal.pose.orientation
-        old_orientation = euler_from_quaternion([old_orientation.x, old_orientation.y, old_orientation.z, old_orientation.w])
-        new_position = new_goal_msg.pose.position
-        new_orientation = new_goal_msg.pose.orientation
-        new_orientation = euler_from_quaternion([new_orientation.x, new_orientation.y, new_orientation.z, new_orientation.w])
-
-        # Calculate distance between the position
-        position_distance = math.sqrt((old_position.x - new_position.x) ** 2 + (old_position.y - new_position.y) ** 2)
-        orientation_distance = math.degrees(abs(old_orientation[2] - new_orientation[2]))
-        return position_distance > self.position_threshold or orientation_distance > self.orientation_threshold
-
     def transform_goal_to_map(self, msg):
         # type: (PoseStamped) -> PoseStamped
         # transform local goal to goal in map frame

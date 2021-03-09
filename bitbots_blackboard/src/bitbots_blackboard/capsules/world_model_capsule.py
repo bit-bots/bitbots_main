@@ -89,7 +89,6 @@ class WorldModelCapsule:
             ball = self.ball_map
         else:
             ball = self.ball_odom
-        ball.header.stamp = rospy.Time(0)
         try:
             ball_bfp = self.tf_buffer.transform(ball, 'base_footprint', timeout=rospy.Duration(0.2)).point
         except (tf2.ExtrapolationException) as e:
@@ -104,7 +103,6 @@ class WorldModelCapsule:
         else:
             ball = self.ball_odom
         try:
-            ball.header.stamp = rospy.Time(0)
             ball_position = self.tf_buffer.transform(ball, 'ball_approach_frame', timeout=rospy.Duration(0.3))
             return ball_position.point.x, ball_position.point.y, 'ball_approach_frame'
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
@@ -132,6 +130,9 @@ class WorldModelCapsule:
                 self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
                 self.ball_odom = self.tf_buffer.transform(ball_buffer, 'odom', timeout=rospy.Duration(0.3))
                 self.ball_map = self.tf_buffer.transform(ball_buffer, 'map', timeout=rospy.Duration(0.3))
+                # Set timestamps to zero to get the newest transform when this is transformed later
+                self.ball_odom.header.stamp = rospy.Time(0)
+                self.ball_map.header.stamp = rospy.Time(0)
                 self.ball_seen_time = rospy.Time.now()
                 self.ball_seen = True
 
