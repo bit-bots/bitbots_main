@@ -471,7 +471,7 @@ void Localization::publish_pose_with_covariance() {
   q.normalize();
 
   gm::PoseWithCovarianceStamped estimateMsg;
-
+  estimateMsg.header.stamp = ros::Time::now();
   estimateMsg.pose.pose.orientation.w = q.w();
   estimateMsg.pose.pose.orientation.x = q.x();
   estimateMsg.pose.pose.orientation.y = q.y();
