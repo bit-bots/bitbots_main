@@ -4,12 +4,12 @@ dynup:
 
   # end pose
   foot_distance: 0.2
-  hand_walkready_pitch: -60
+  hand_walkready_pitch: -60.0
   trunk_height: 0.4
-  trunk_pitch: 0
+  trunk_pitch: 0.0
   trunk_x_final: 0
 
-  arm_side_offset: 0.178
+  arm_side_offset: 0.148
 
   # Back
   arms_angle_back: 120.36
@@ -28,22 +28,23 @@ dynup:
   wait_in_squat_back: 0.6
 
   # Front
-  leg_min_length_front: 0.25
-  trunk_x_front: 0.0
-  max_leg_angle: 70
-  trunk_overshoot_angle_front: 10
-  hands_pitch: -30
-  time_hands_side: 1
-  time_hands_rotate: 1
-  time_foot_close: 1
-  time_hands_front: 1
-  time_foot_ground_front: 1 # do at same time as time_hands_front
-  time_torso_45: 1
-  time_to_squat: 1
-  wait_in_squat_front: 1
+  hands_pitch: -65.86
+  leg_min_length_front: 0.244
+  max_leg_angle: 71.71
+  time_foot_close: 0.0
+  time_foot_ground_front: 0.132
+  time_hands_front: 0.396
+  time_hands_rotate: 0.231
+  time_hands_side: 0.132
+  time_to_squat: 0.924
+  time_torso_45: 0.462
+  trunk_overshoot_angle_front: -10.54
+  trunk_x_front: 0.091
+  wait_in_squat_front: 0.165
+
 
   # Rise
-  rise_time: 0.84
+  rise_time: 0.231
 
   # Descend
   descend_time: 0.25
