@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find bitbots_bringup)/launch/simulator_teamplayer.launch">
+    <arg name="behavior" value="false" />
+    <arg name="game_controller" value="false" />
+    <arg name="localization" value="true" />
+  </include>
+
+  <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
+  <!-- set head mode to 3=field_features -->
+  <param name="behavior/head/defaults/head_mode" value="3"/>
+
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" args="-d $(find bitbots_localization)/config/localization.rviz" />
+</launch>

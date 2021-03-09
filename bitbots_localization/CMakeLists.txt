@@ -35,8 +35,8 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
-   reset_filter.srv
-   set_paused.srv
+   ResetFilter.srv
+   SetPaused.srv
  )
 
 

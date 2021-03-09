@@ -56,8 +56,8 @@
 #include <bitbots_localization/Resampling.h>
 #include <bitbots_localization/RobotState.h>
 
-#include <bitbots_localization/reset_filter.h>
-#include <bitbots_localization/set_paused.h>
+#include <bitbots_localization/ResetFilter.h>
+#include <bitbots_localization/SetPaused.h>
 #include <bitbots_localization/tools.h>
 
 #include <cv_bridge/cv_bridge.h>
@@ -86,16 +86,16 @@ class Localization {
    * @param req Request.
    * @param res Response.
    */ 
-  bool set_paused_callback( bl::set_paused::Request &req,
-                            bl::set_paused::Response &res);
+  bool set_paused_callback( bl::SetPaused::Request &req,
+                            bl::SetPaused::Response &res);
 
   /**
    * Callback for the filter reset service
    * @param req Request.
    * @param res Response.
    */ 
-  bool reset_filter_callback(bl::reset_filter::Request &req,
-                             bl::reset_filter::Response &res);
+  bool reset_filter_callback(bl::ResetFilter::Request &req,
+                             bl::ResetFilter::Response &res);
 
   /**
    * Callback for ros dynamic reconfigure
@@ -206,6 +206,8 @@ class Localization {
   ros::Time last_stamp_lines_pc = ros::Time(0);
   ros::Time last_stamp_goals = ros::Time(0);
   ros::Time last_stamp_fb_points = ros::Time(0);
+  ros::Time localization_tf_last_published_time_ = ros::Time(0);
+  ros::Time map_odom_tf_last_published_time_ = ros::Time(0);
 
   std::string odom_frame_, base_footprint_frame_, map_frame_, publishing_frame_;
 
