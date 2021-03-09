@@ -10,7 +10,8 @@ commands). Then, install the required ROS packages:
 
 .. code-block:: bash
 
-    sudo apt install ros-melodic-amcl ros-melodic-controller-interface ros-melodic-controller-manager ros-melodic-controller-manager-msgs ros-melodic-desktop-full ros-melodic-gazebo-ros-control ros-melodic-hector-gazebo ros-melodic-hector-gazebo-plugins ros-melodic-imu-sensor-controller ros-melodic-joint-state-controller ros-melodic-joint-trajectory-controller ros-melodic-map-server ros-melodic-move-base ros-melodic-moveit ros-melodic-moveit-core ros-melodic-moveit-resources ros-melodic-moveit-ros-planning ros-melodic-moveit-ros-planning-interface ros-melodic-plotjuggler ros-melodic-pointcloud-to-laserscan ros-melodic-robot-controllers ros-melodic-robot-controllers-interface ros-melodic-robot-controllers-msgs ros-melodic-robot-localization ros-melodic-ros-control ros-melodic-ros-controllers ros-melodic-rqt-controller-manager ros-melodic-rqt-joint-trajectory-controller ros-melodic-yocs-velocity-smoother ros-melodic-spatio-temporal-voxel-layer ros-melodic-rviz-imu-plugin ros-melodic-imu-complementary-filter ros-melodic-joy
+    sudo apt install python3-pip ros-melodic-amcl ros-melodic-controller-interface ros-melodic-controller-manager ros-melodic-controller-manager-msgs ros-melodic-desktop-full ros-melodic-gazebo-ros-control ros-melodic-hector-gazebo ros-melodic-hector-gazebo-plugins ros-melodic-imu-sensor-controller ros-melodic-joint-state-controller ros-melodic-joint-trajectory-controller ros-melodic-map-server ros-melodic-move-base ros-melodic-moveit ros-melodic-moveit-core ros-melodic-moveit-resources ros-melodic-moveit-ros-planning ros-melodic-moveit-ros-planning-interface ros-melodic-plotjuggler ros-melodic-pointcloud-to-laserscan ros-melodic-robot-controllers ros-melodic-robot-controllers-interface ros-melodic-robot-controllers-msgs ros-melodic-robot-localization ros-melodic-ros-control ros-melodic-ros-controllers ros-melodic-rqt-controller-manager ros-melodic-rqt-joint-trajectory-controller ros-melodic-yocs-velocity-smoother ros-melodic-spatio-temporal-voxel-layer ros-melodic-rviz-imu-plugin ros-melodic-imu-complementary-filter ros-melodic-joy
+
 
 After that, create an account on https://github.com/ and get team access to our organization
 (https://github.com/bit-bots). Then, in a terminal, execute ``ssh-keygen`` and then
@@ -21,13 +22,19 @@ Now, in a terminal, execute ``git clone git@github.com:bit-bots/bitbots_meta.git
 software meta package. Confirm the host key by typing ``yes``. Then, go to the folder by executing
 ``cd bitbots_meta``. Use ``make pull-init`` to download all of the software.
 
+We need to install additional python packages, that are not available via apt.
+To do this, run the following command:
+
+.. code-block:: bash
+
+    pip3 install --user -r requirements.txt
+
 Next, we need a catkin workspace. Execute ``mkdir -p ~/catkin_ws/src`` to create a workspace and go
-there with ``cd ~/catkin_ws``. First, you have to install catkin:
-``pip3 install git+https://github.com/catkin/catkin_tools.git``. Execute
-``export PATH=$PATH:$HOME/.local/bin`` to setup your path environment. Use
-``source /opt/ros/melodic/setup.bash`` to source your ROS environment. Execute ``catkin init`` to
-initialize the workspace and ``catkin config -DPYTHON_VERSION=3`` to set the correct python
-version. Now, execute ``ln -s ~/bitbots_meta src`` to link the source directory. Finally, build the
+there with ``cd ~/catkin_ws``.
+Execute ``export PATH=$PATH:$HOME/.local/bin`` to setup your path environment.
+Use ``source /opt/ros/melodic/setup.bash`` to source your ROS environment.
+Execute ``catkin init`` to initialize the workspace and ``catkin config -DPYTHON_VERSION=3`` to set the correct python version.
+Now, execute ``ln -s ~/bitbots_meta src`` to link the source directory. Finally, build the
 software with ``catkin build -c``.
 
 To make the changes persistent, open your bashrc with ``nano ~/.bashrc`` and paste the following
