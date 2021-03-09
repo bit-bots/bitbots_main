@@ -25,8 +25,5 @@ class StandAndWait(AbstractActionElement):
         if self.duration is not None and \
                 (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
             return self.pop()
-        stand_pose = PoseStamped()
-        stand_pose.header.stamp = rospy.Time.now()
-        stand_pose.header.frame_id = 'base_footprint'
-        stand_pose.pose.orientation.w = 1
-        self.blackboard.pathfinding.publish(stand_pose)
+
+        self.blackboard.pathfinding.cancel_goal()

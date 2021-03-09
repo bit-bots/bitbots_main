@@ -1,8 +1,8 @@
 #GoAndKickBallMapGoal
 $AlignedToGoal
     YES --> $BallKickArea
-        LEFT --> @LookAtBall, @Stop, @StandAndWait + duration:1, @KickBallDynamic
-        RIGHT --> @LookAtBall, @Stop, @StandAndWait + duration:1, @KickBallDynamic
+        LEFT --> @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
+        RIGHT --> @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
         FAR -->@LookAtFieldFeatures, @GoToBall + target:map_goal
     NO -->  @GoToBall + target:map_goal
 
