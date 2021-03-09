@@ -3,7 +3,7 @@ Welcome to |project|'s documentation!
 
 Description
 -----------
-This robot model is exportet from onshape by using onshape-to-robot.
+This robot model is exported from onshape by using onshape-to-robot.
 See their `documentation <https://onshape-to-robot.readthedocs.io/en/latest/>`_ on how this works.
 
 We do not want to use the exact model as a collision model, since this would make the simulation run slowly.
