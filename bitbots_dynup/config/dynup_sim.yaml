@@ -3,30 +3,31 @@ dynup:
   engine_rate: 240
 
   # end pose
+  foot_distance: 0.2
+  hand_walkready_pitch: -60
   trunk_height: 0.4
   trunk_pitch: 0
-  foot_distance: 0.2
-  trunk_x_final: -0.025
-  hand_walkready_pitch: -60
+  trunk_x_final: 0
+
+  arm_side_offset: 0.178
 
   # Back
-  leg_min_length_back: 0.22
-  hands_behind_back_x: 0.1
-  hands_behind_back_z: 0.1
-  trunk_height_back: 0.22
-  com_shift_1: 0.15
-  com_shift_2: 0.05
-  foot_angle: 80
-  arms_angle_back: 135
-  trunk_overshoot_angle_back: 25
-  time_legs_close: 0.5
-  time_foot_ground_back: 0.5
-  time_full_squat_hands: 0.5
-  time_full_squat_legs: 0.5
-  wait_in_squat_back: 1
+  arms_angle_back: 120.36
+  com_shift_1: 0.051
+  com_shift_2: 0.0
+  foot_angle: 51.76
+  hands_behind_back_x: 0.162
+  hands_behind_back_z: 0.183
+  leg_min_length_back: 0.253
+  time_foot_ground_back: 0.536
+  time_full_squat_hands: 0.172
+  time_full_squat_legs: 0.196
+  time_legs_close: 0.068
+  trunk_height_back: 0.179
+  trunk_overshoot_angle_back: 5.95
+  wait_in_squat_back: 0.6
 
   # Front
-  arm_side_offset: 0.12
   leg_min_length_front: 0.25
   trunk_x_front: 0.0
   max_leg_angle: 70
@@ -42,7 +43,7 @@ dynup:
   wait_in_squat_front: 1
 
   # Rise
-  rise_time: 1
+  rise_time: 0.84
 
   # Descend
   descend_time: 0.25
