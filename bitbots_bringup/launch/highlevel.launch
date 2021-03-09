@@ -3,7 +3,6 @@
     <arg name="behavior" default="true"/>
     <arg name="game_controller" default="true" doc="Sets whether the Gamecontroller should be started"/>
     <arg name="localization" default="true"/>
-    <arg name="motion" default="true"/>
     <arg name="sim" default="false"/>
     <arg name="simple" default="false" doc="Whether to use the simple behavior" />
     <arg name="teamcom" default="false"/>
