@@ -10,12 +10,21 @@ class Stop(AbstractActionElement):
     def perform(self, reevaluate=False):
         self.blackboard.pathfinding.cancel_goal()
         self.pop()
-        
+
 
 class StandAndWait(AbstractActionElement):
     """ This stops the robots walking and keeps standing """
 
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(StandAndWait, self).__init__(blackboard, dsd, parameters)
+        self.duration = parameters.get('duration', None)
+
+        self.start_time = rospy.Time.now()
+
     def perform(self, reevaluate=False):
+        if self.duration is not None and \
+                (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
+            self.pop()
         stand_pose = PoseStamped()
         stand_pose.header.stamp = rospy.Time.now()
         stand_pose.header.frame_id = 'base_footprint'
