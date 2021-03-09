@@ -13,4 +13,5 @@ rosdep
 rospkg
 setuptools
 silx
-tensorflow
+sklearn
+transforms3d
