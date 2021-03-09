@@ -44,7 +44,7 @@ Firstly, add the line
 
 to the header of the proto.
 
-Secondly, change the number behind `fieldOfView` in the `camera_optical_frame` with `IS cameraFOV`.
+Secondly, replace the number behind `fieldOfView` in the `camera_optical_frame` with `IS cameraFOV`.
 
 Thirdly, delete the compass from both IMUs.
 
