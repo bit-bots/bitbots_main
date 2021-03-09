@@ -28,4 +28,4 @@ line_detector_use_line_mask: true
 
 neural_network_type: 'yolo_opencv'
 yolo_darknet_model_path: '2021_02_jonas_webotsonlyfov'  # Name of the yolo model
-yolo_confidence_threshold: 0.98
+yolo_confidence_threshold: 0.90
