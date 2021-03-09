@@ -35,7 +35,7 @@ Run the conversion script from urdf to proto file
 
 .. code-block:: bash
 
-  python urdf2webots/demo.py --input webots_robot.urdf --output protos  --multi-file --box-collision --disable-mesh-optimization --link-to-def
+  python urdf2webots/demo.py --input webots_robot.urdf --output protos  --multi-file --box-collision --link-to-def
 
 Unfortunately, there are four things that need to be done manually.
 Firstly, add the line
