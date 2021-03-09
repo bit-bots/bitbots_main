@@ -1,3 +1,7 @@
+import os
+import math
+import time
+
 from controller import Robot, Node, Field
 
 import rospy
@@ -5,11 +9,11 @@ from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 
 from bitbots_msgs.msg import JointCommand, FootPressure
-import math
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns=''):
+    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns='',
+                 recognize=False):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -22,6 +26,7 @@ class RobotController:
         :param base_ns: The namespace of this node, can normally be left empty
         """
         self.ros_active = ros_active
+        self.recognize = recognize
         if not external_controller:
             self.robot_node = Robot()
         self.walkready = [0] * 20
@@ -109,6 +114,14 @@ class RobotController:
             self.gyro_head.enable(self.timestep)
         self.camera = self.robot_node.getDevice(camera_name)
         self.camera.enable(self.timestep)
+        if self.recognize:
+            self.camera.recognitionEnable(self.timestep)
+            self.last_img_saved = 0.0
+            self.img_save_dir = "/tmp/webots/images" +\
+                                time.strftime("%Y-%m-%d-%H-%M-%S") +\
+                                os.getenv('WEBOTS_ROBOT_NAME')
+            if not os.path.exists(self.img_save_dir):
+                os.makedirs(self.img_save_dir)
 
         if self.ros_active:
             if base_ns == "":
@@ -173,6 +186,8 @@ class RobotController:
         self.publish_joint_states()
         self.publish_camera()
         self.publish_pressure()
+        if self.recognize:
+            self.save_recognition()
 
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
@@ -261,6 +276,46 @@ class RobotController:
         img = self.camera.getImage()
         img_msg.data = img
         self.pub_cam.publish(img_msg)
+
+    def save_recognition(self):
+        if self.time - self.last_img_saved < 1.0:
+            return
+        self.last_img_saved = self.time
+        annotation = ""
+        img_stamp = f"{self.time:.2f}".replace(".", "_")
+        img_name = f"img_{os.getenv('WEBOTS_ROBOT_NAME')}_{img_stamp}.PNG"
+        recognized_objects = self.camera.getRecognitionObjects()
+        # variables for saving not in image later
+        found_ball = False
+        found_wolfgang = False
+        for e in range(self.camera.getRecognitionNumberOfObjects()):
+            model = recognized_objects[e].get_model()
+            position = recognized_objects[e].get_position_on_image()
+            size = recognized_objects[e].get_size_on_image()
+            if model == b"soccer ball":
+                found_ball = True
+                vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
+                annotation += f"{img_name}|"
+                annotation += "ball|"
+                annotation += vector
+                annotation += "\n"
+            if model == b"wolfgang":
+                found_wolfgang = True
+                vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
+                annotation += f"{img_name}|"
+                annotation += "robot|"
+                annotation += vector
+                annotation += "\n"
+        if not found_ball:
+            annotation +=  f"{img_name}|ball|not in image\n"
+        if not found_wolfgang:
+            annotation += f"{img_name}|robot|not in image\n"
+        with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
+            f.write(annotation)
+        self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)
+
+
+
 
     def get_image(self):
         return self.camera.getImage()

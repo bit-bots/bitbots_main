@@ -26,6 +26,10 @@ PROTO Wolfgang [
     supervisor IS supervisor
     synchronization IS synchronization
     selfCollision IS selfCollision
+    recognitionColors [
+      0.2 0.2 0.2
+    ]
+    model "wolfgang"
     children [
       Transform {
         translation -0.001500 0.053000 0.203500
@@ -3502,6 +3506,14 @@ PROTO Wolfgang [
                         fieldOfView IS cameraFOV
                         width 620
                         height 480
+                        recognition Recognition {
+                          maxRange       100
+                          maxObjects     -1
+                          occlusion      TRUE
+                          segmentation   TRUE
+                          frameColor 0.929412 0.831373 0
+                          frameThickness 3
+                        }
                       }
                     ]
                     name "camera_optical_frame"
