@@ -24,7 +24,7 @@ class StandAndWait(AbstractActionElement):
     def perform(self, reevaluate=False):
         if self.duration is not None and \
                 (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
-            self.pop()
+            return self.pop()
         stand_pose = PoseStamped()
         stand_pose.header.stamp = rospy.Time.now()
         stand_pose.header.frame_id = 'base_footprint'
