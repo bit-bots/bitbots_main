@@ -117,7 +117,9 @@ class RobotController:
         if self.recognize:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
-            self.img_save_dir = "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S")
+            self.img_save_dir = "/tmp/webots/images" +\
+                                time.strftime("%Y-%m-%d-%H-%M-%S") +\
+                                os.getenv('WEBOTS_ROBOT_NAME')
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
 
@@ -280,7 +282,7 @@ class RobotController:
         self.last_img_saved = self.time
         annotation = ""
         img_stamp = f"{self.time:.2f}".replace(".", "_")
-        img_name = f"img_{img_stamp}.PNG"
+        img_name = f"img_{os.getenv('WEBOTS_ROBOT_NAME')}_{img_stamp}.PNG"
         recognized_objects = self.camera.getRecognitionObjects()
         for e in range(self.camera.getRecognitionNumberOfObjects()):
             model = recognized_objects[e].get_model()
@@ -292,6 +294,8 @@ class RobotController:
                 annotation += "ball|"
                 annotation += vector
                 annotation += "\n"
+            if model == b"wolfgang":
+                rospy.logerr("found a wolfgang")
         with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
             f.write(annotation)
         self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)

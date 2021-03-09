@@ -26,6 +26,10 @@ PROTO Wolfgang [
     supervisor IS supervisor
     synchronization IS synchronization
     selfCollision IS selfCollision
+    recognitionColors [
+      0.2 0.2 0.2
+    ]
+    model "wolfgang"
     children [
       Transform {
         translation -0.001500 0.053000 0.203500
