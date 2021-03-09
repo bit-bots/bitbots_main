@@ -127,8 +127,6 @@ class WorldModelCapsule:
             if ball.confidence == 0:
                 return
 
-            # adding a minor delay to timestamp to ease transformations.
-            msg.header.stamp += rospy.Duration.from_sec(0.01)
             ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
             try:
                 self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
