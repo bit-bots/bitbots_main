@@ -3502,6 +3502,14 @@ PROTO Wolfgang [
                         fieldOfView IS cameraFOV
                         width 620
                         height 480
+                        recognition Recognition {
+                          maxRange       100
+                          maxObjects     -1
+                          occlusion      TRUE
+                          segmentation   TRUE
+                          frameColor 0.929412 0.831373 0
+                          frameThickness 3
+                        }
                       }
                     ]
                     name "camera_optical_frame"
