@@ -284,18 +284,31 @@ class RobotController:
         img_stamp = f"{self.time:.2f}".replace(".", "_")
         img_name = f"img_{os.getenv('WEBOTS_ROBOT_NAME')}_{img_stamp}.PNG"
         recognized_objects = self.camera.getRecognitionObjects()
+        # variables for saving not in image later
+        found_ball = False
+        found_wolfgang = False
         for e in range(self.camera.getRecognitionNumberOfObjects()):
             model = recognized_objects[e].get_model()
             position = recognized_objects[e].get_position_on_image()
             size = recognized_objects[e].get_size_on_image()
             if model == b"soccer ball":
+                found_ball = True
                 vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
                 annotation += f"{img_name}|"
                 annotation += "ball|"
                 annotation += vector
                 annotation += "\n"
             if model == b"wolfgang":
-                rospy.logerr("found a wolfgang")
+                found_wolfgang = True
+                vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
+                annotation += f"{img_name}|"
+                annotation += "robot|"
+                annotation += vector
+                annotation += "\n"
+        if not found_ball:
+            annotation +=  f"{img_name}|ball|not in image\n"
+        if not found_wolfgang:
+            annotation += f"{img_name}|robot|not in image\n"
         with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
             f.write(annotation)
         self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)
