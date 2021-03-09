@@ -1,9 +1,9 @@
 #GoAndKickBallMapGoal
 $AlignedToGoal
     YES --> $BallKickArea
-        LEFT --> @Stop, @StandAndWait + duration:1, @KickBallDynamic
-        RIGHT --> @Stop, @StandAndWait + duration:1, @KickBallDynamic
-        FAR --> @GoToBall + target:map_goal
+        LEFT --> @LookAtBall, @Stop, @StandAndWait + duration:1, @KickBallDynamic
+        RIGHT --> @LookAtBall, @Stop, @StandAndWait + duration:1, @KickBallDynamic
+        FAR -->@LookAtFieldFeatures, @GoToBall + target:map_goal
     NO -->  @GoToBall + target:map_goal
 
 #GoAndKickBallDetectionGoal
@@ -27,7 +27,7 @@ $BallSeen
             YES --> #GoAndKickBallDetectionGoal
             NO --> #GoAndKickBallAway
         NO --> @GoToBall + target:close
-    NO --> @Stop, @SearchBall
+    NO --> @Stop, @LookAtBall, @SearchBall
 
 #NoLocalizationGoalieBehavior
 $BallSeen
@@ -38,12 +38,12 @@ $BallSeen
 
 #Positioning
 $LocalizationAvailable
-    YES --> @GoToRolePosition, @LookAtFieldFeatures
+    YES --> @LookAtFieldFeatures, @GoToRolePosition
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
 #PositioningReady
 $LocalizationAvailable
-    YES --> @GoToRolePosition, @LookAtFieldFeatures
+    YES --> @LookAtFieldFeatures, @GoToRolePosition
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
 
 #GoalieBehavior
@@ -56,8 +56,8 @@ $LocalizationAvailable
                 NO --> $BallSeen
                     YES --> $BallDangerous
                         YES --> #GoAndKickBallMapGoal
-                        NO --> @GoToBlockPosition, @LookAtBall
-                    NO --> @SearchBall
+                        NO --> @GoToBlockPosition, @LookAtFieldFeatures
+                    NO --> @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
             YES --> $TimerRunning + name:reorientation
@@ -83,7 +83,7 @@ $LocalizationAvailable
                 YES --> #Positioning
                 NO --> $BallSeen
                     YES --> #GoAndKickBallMapGoal
-                    NO --> @Stop, @SearchBall
+                    NO --> @Stop, @LookAtFieldFeatures, @SearchBall
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationOffenseBehavior
             YES --> $TimerRunning + name:reorientation
@@ -106,7 +106,7 @@ $LocalizationAvailable
                         NO -->  $BallClose
                             YES --> #GoAndKickBallAway
                             NO --> @GoToDefensePosition
-                    NO --> @Stop, @SearchBall
+                    NO --> @Stop, @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationPlayerBehavior
             YES --> $TimerRunning + name:reorientation
@@ -130,7 +130,7 @@ $BallSeen
 -->BodyBehavior
 $RoleDecider
     GOALIE --> $GameStateDecider
-        INITIAL --> @LookAtBall, @StandAndWait
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
         READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> $SecondaryStateDecider
@@ -157,7 +157,7 @@ $RoleDecider
                 OUR --> @LookAtBall, @StandAndWait
                 OTHER --> @LookAtBall, @StandAndWait
         FINISHED --> @StandAndWait
-        NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
+        NOT_ALLOWED_TO_MOVE --> @LookAtFieldFeatures, @StandAndWait
     OFFENSE --> $GameStateDecider
         INITIAL --> @LookAtBall, @StandAndWait
         READY --> #PositioningReady
