@@ -1,0 +1,7 @@
+<library path="lib/bitbots_local_planner">
+  <class name="bitbots_local_planner/BBPlanner" type="bitbots_local_planner::BBPlanner" base_class_type="nav_core::BaseLocalPlanner">
+    <description>
+      A simple local planner for humanoid robots.
+    </description>
+  </class>
+</library>
