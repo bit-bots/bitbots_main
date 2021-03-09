@@ -126,10 +126,9 @@ double DynUpNode::getTimeDelta() {
     return 0.001;
   }
   dt = current_ros_time - last_ros_update_time_;
-  // this can happen due to floating point precision
+  // this can happen due to floating point precision or simulation issues. will be catched later
   if (dt == 0) {
-    ROS_WARN("dt was 0. this can happen in simulation if your update rate is higher than the simulators.");
-    dt = 0.001;
+    ROS_WARN_ONCE("dt was 0. this can happen in simulation if your update rate is higher than the simulators. This warning is only displayed once!");
   }
   last_ros_update_time_ = current_ros_time;
   return dt;
@@ -141,22 +140,24 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
-    DynupResponse response = engine_.update(dt);
-    stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
-    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
-    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-    bitbots_msgs::DynUpFeedback feedback;
-    feedback.percent_done = engine_.getPercentDone();
-    server_.publishFeedback(feedback);
-    publishGoals(goals);
-    if(goals.first.empty()) {
-      failed_tick_counter++;
+    // catch weird time glitches and dont do anything in this case
+    if(dt > 0){
+        DynupResponse response = engine_.update(dt);
+        stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
+        DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+        bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+        bitbots_msgs::DynUpFeedback feedback;
+        feedback.percent_done = engine_.getPercentDone();
+        server_.publishFeedback(feedback);
+        publishGoals(goals);
+        if(goals.first.empty()) {
+          failed_tick_counter++;
+        }
+        if (feedback.percent_done >= 100) {
+          ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
+          break;
+        }
     }
-    if (feedback.percent_done >= 100) {
-      ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
-      break;
-    }
-
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
     loop_rate.sleep();

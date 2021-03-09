@@ -1,47 +1,54 @@
 dynup:
   # Engine
-  engine_rate: 500
+  engine_rate: 240
+
+  # end pose
+  trunk_height: 0.4
+  trunk_pitch: 0
   foot_distance: 0.2
-  leg_min_length: 0.21
-  arm_side_offset: 0.05
-  trunk_x: -0.05
+  trunk_x_final: -0.025
   hand_walkready_pitch: -60
 
   # Back
-  hands_behind_back_x: 0.15
-  hands_behind_back_z: 0.15
-  trunk_height_back: 0.2
-  trunk_forward: 0.07
-  foot_angle: 70
-  trunk_overshoot_angle_back: 0
-  time_legs_close: 0.2
-  time_foot_ground_back: 0.3
-  time_full_squat_hands: 0.2
-  time_full_squat_legs: 0.25
-  wait_in_squat_back: 0
+  leg_min_length_back: 0.22
+  hands_behind_back_x: 0.1
+  hands_behind_back_z: 0.1
+  trunk_height_back: 0.22
+  com_shift_1: 0.15
+  com_shift_2: 0.08
+  foot_angle: 80
+  arms_angle_back: 135
+  trunk_overshoot_angle_back: 10
+  time_legs_close: 0.5
+  time_foot_ground_back: 0.5
+  time_full_squat_hands: 0.5
+  time_full_squat_legs: 0.5
+  wait_in_squat_back: 1
 
   # Front
-  max_leg_angle: 60
-  trunk_overshoot_angle_front: -30
-  time_hands_side: 0.2
-  time_hands_rotate: 0.2
-  time_foot_close: 0.0
-  time_hands_front: 0.2
-  time_foot_ground_front: 0 # do at same time as time_hands_front
-  time_torso_45: 0.25
-  time_to_squat: 0.1
-  wait_in_squat_front: 1
+  arm_side_offset: 0.12
+  leg_min_length_front: 0.25
+  trunk_x_front: 0.0
+  max_leg_angle: 70
+  trunk_overshoot_angle_front: 10
+  hands_pitch: -30
+  time_hands_side: 0.3
+  time_hands_rotate: 0.3
+  time_foot_close: 0.3
+  time_hands_front: 0.3
+  time_foot_ground_front: 0.3 # do at same time as time_hands_front
+  time_torso_45: 0.4
+  time_to_squat: 0.6
+  wait_in_squat_front: 1.0
 
   # Rise
-  rise_time: 0.5
-  trunk_height: 0.4
-  trunk_pitch: 0
+  rise_time: 1.0
 
   # Descend
   descend_time: 0.25
 
   # Stabilier
-  stabilizing: False
+  stabilizing: True
   minimal_displacement: False
 
   # Visualizer
@@ -49,18 +56,18 @@ dynup:
   display_debug: True
 
   pid_trunk_roll:
-    p: 0.76
-    i: 2.0
-    d: 0.02977
+    p: 0.36
+    i: 0.8674
+    d: 0.03735
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
     publish_state: True
   pid_trunk_pitch:
-    p: 0.42
-    i: 1.68
-    d: 0.02625
+    p: -0.42
+    i: -5.31646
+    d: -0.008295
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0

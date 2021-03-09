@@ -11,6 +11,11 @@
 #include <moveit/robot_state/robot_state.h>
 #include <tf2_ros/transform_listener.h>
 #include <control_toolbox/pid.h>
+#include <rot_conv/rot_conv.h>
+#include <Eigen/Geometry>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_eigen/tf2_eigen.h>
+
 
 namespace bitbots_dynup {
 

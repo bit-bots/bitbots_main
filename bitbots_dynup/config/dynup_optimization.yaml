@@ -1,21 +1,22 @@
 dynup:
-  engine:
-    foot_distance: 0.2
+  # necessary to provide
+  engine_rate: 240
+
   pid_trunk_roll:
-    p: 0.76
-    i: 2.0
-    d: 0.02977
+    p: 0.0
+    i: 0.0
+    d: 0.00
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
-    publish_state: True
+    publish_state: False
   pid_trunk_pitch:
-    p: 0.42
-    i: 1.68
-    d: 0.02625
+    p: 0.0
+    i: 0.0
+    d: 0.0
     i_clamp: 0
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
-    publish_state: True
+    publish_state: False
