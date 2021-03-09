@@ -15,7 +15,7 @@ Therefore, we first need to simplify the model by using the following.
     cd urdf
     rosrun simplify_urdf_collision simplify.py robot.urdf robot.urdf -r -s
 
-The script will ask you which links should be excluded for the simplification. Normally, you don't need to do this for any links, since the important links (feet, hands) have already good collision models which were done manually in OpenSCAD.
+The script will ask you which links should be excluded for the simplification. Normally, you don't need to exclude any links, since the important collision models (arms or feet) already have manually created collision models which are not shown in this list.
 
 |description|
 
