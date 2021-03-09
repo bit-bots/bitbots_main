@@ -38,11 +38,6 @@ namespace bitbots_local_planner
     {
         global_plan_ = plan;
 
-        if (global_plan_.size())
-        {
-            //ROS_INFO("%d\n" ,global_plan_.size());
-        }
-
         //First start of the local plan. First global plan.
         bool first_use = false;
         if(first_setPlan_)
@@ -81,9 +76,17 @@ namespace bitbots_local_planner
         tf::Stamped<tf::Pose> current_pose;
         geometry_msgs::PoseStamped msg;
         costmap_ros_->getRobotPose(msg);
-        current_pose.setData(tf::Transform(
-                                tf::Quaternion(msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w),
-                             tf::Vector3(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)));
+        current_pose.setData(
+            tf::Transform(
+                tf::Quaternion(
+                    msg.pose.orientation.x,
+                    msg.pose.orientation.y,
+                    msg.pose.orientation.z,
+                    msg.pose.orientation.w),
+                tf::Vector3(
+                    msg.pose.position.x,
+                    msg.pose.position.y,
+                    msg.pose.position.z)));
 
         double walk_angle = std::fmod(
                 std::atan2(
@@ -96,11 +99,10 @@ namespace bitbots_local_planner
                     pow(goal_pose_.getOrigin().x() - current_pose.getOrigin().x(), 2)
                 );
 
-        double walk_vel = std::min(distance * 0.3, config_.max_x_vel);
-
+        double walk_vel = std::min(distance * config_.translation_slow_down_factor, config_.max_vel_x);
 
         double diff = 0;
-        if (distance > 1)
+        if (distance > config_.orient_to_goal_distance)
         {
             diff = walk_angle - tf::getYaw(current_pose.getRotation());
         } else
@@ -108,11 +110,12 @@ namespace bitbots_local_planner
             diff = tf::getYaw(goal_pose_.getRotation()) - tf::getYaw(current_pose.getRotation());
         }
 
-
         double min_angle = (std::fmod(diff + M_PI, 2* M_PI) - M_PI);
-        double vel = std::max(std::min(0.2*min_angle, config_.max_rotation_vel), -config_.max_rotation_vel);
+        double vel = std::max(std::min(
+            config_.rotation_slow_down_factor * min_angle,
+            config_.max_rotation_vel), -config_.max_rotation_vel);
 
-        if(distance < 0.05 && abs(min_angle) < 0.1)
+        if(distance < config_.position_accuracy && abs(min_angle) < config_.rotation_accuracy)
         {
             cmd_vel.linear.x = 0;
             cmd_vel.linear.y = 0;
@@ -125,10 +128,7 @@ namespace bitbots_local_planner
             goal_reached_ = false;
         }
 
-        int max_point = 0;
-        //Second part of the routine. Drive alonge the global plan.
-
-        publishPlan(max_point);
+        publishPlan(0);
 
         ros::Time end = ros::Time::now();
         ros::Duration duration = end - begin;
