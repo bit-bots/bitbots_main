@@ -41,7 +41,7 @@ catkin_package(
 )
 
 add_library(bitbots_local_planner
-	    src/ftc_planner.cpp
+	    src/bitbots_local_planner.cpp
 	    src/transform_global_plan.cpp)
 target_link_libraries(bitbots_local_planner ${catkin_LIBRARIES})
 add_dependencies(bitbots_local_planner bitbots_local_planner_gencfg)
