@@ -9,7 +9,7 @@ import math
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False):
+    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns=''):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -19,6 +19,7 @@ class RobotController:
         :param robot: The name of the robot to use, currently one of wolfgang, darwin, nao, op3
         :param do_ros_init: Whether to call rospy.init_node (only used when ros_active is True)
         :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
+        :param base_ns: The namespace of this node, can normally be left empty
         """
         self.ros_active = ros_active
         if not external_controller:
@@ -110,27 +111,29 @@ class RobotController:
         self.camera.enable(self.timestep)
 
         if self.ros_active:
+            if base_ns == "":
+                clock_topic = "/clock"
+            else:
+                clock_topic = base_ns + "clock"
             if do_ros_init:
-                rospy.init_node("webots_ros_interface", argv=['clock:=/clock'])
+                rospy.init_node("webots_ros_interface", argv=['clock:=' + clock_topic])
             self.l_sole_frame = rospy.get_param("~l_sole_frame", "l_sole")
             self.r_sole_frame = rospy.get_param("~r_sole_frame", "r_sole")
             self.camera_optical_frame = rospy.get_param("~camera_optical_frame", "camera_optical_frame")
             self.head_imu_frame = rospy.get_param("~head_imu_frame", "imu_frame_2")
             self.imu_frame = rospy.get_param("~imu_frame", "imu_frame")
-            self.pub_js = rospy.Publisher("joint_states", JointState, queue_size=1)
-            self.pub_imu = rospy.Publisher("imu/data_raw", Imu, queue_size=1)
+            self.pub_js = rospy.Publisher(base_ns + "joint_states", JointState, queue_size=1)
+            self.pub_imu = rospy.Publisher(base_ns + "imu/data_raw", Imu, queue_size=1)
 
-            self.pub_imu_head = rospy.Publisher("imu_head/data", Imu, queue_size=1)
-            self.pub_cam = rospy.Publisher("camera/image_proc", Image, queue_size=1)
-            self.pub_cam_info = rospy.Publisher("camera/camera_info", CameraInfo, queue_size=1, latch=True)
+            self.pub_imu_head = rospy.Publisher(base_ns + "imu_head/data", Imu, queue_size=1)
+            self.pub_cam = rospy.Publisher(base_ns + "camera/image_proc", Image, queue_size=1)
+            self.pub_cam_info = rospy.Publisher(base_ns + "camera/camera_info", CameraInfo, queue_size=1, latch=True)
 
-            self.pub_pres_left = rospy.Publisher("foot_pressure_left/filtered", FootPressure,
-                                                 queue_size=1)
-            self.pub_pres_right = rospy.Publisher("foot_pressure_right/filtered", FootPressure,
-                                                  queue_size=1)
-            self.cop_l_pub_ = rospy.Publisher("cop_l", PointStamped, queue_size=1)
-            self.cop_r_pub_ = rospy.Publisher("cop_r", PointStamped, queue_size=1)
-            rospy.Subscriber("DynamixelController/command", JointCommand, self.command_cb)
+            self.pub_pres_left = rospy.Publisher(base_ns + "foot_pressure_left/filtered", FootPressure, queue_size=1)
+            self.pub_pres_right = rospy.Publisher(base_ns + "foot_pressure_right/filtered", FootPressure, queue_size=1)
+            self.cop_l_pub_ = rospy.Publisher(base_ns + "cop_l", PointStamped, queue_size=1)
+            self.cop_r_pub_ = rospy.Publisher(base_ns + "cop_r", PointStamped, queue_size=1)
+            rospy.Subscriber(base_ns + "DynamixelController/command", JointCommand, self.command_cb)
 
             # publish camera info once, it will be latched
             self.cam_info = CameraInfo()
