@@ -26,15 +26,15 @@ behavior:
     # Search pattern for ball
     search_pattern:
         # Speed search pattern
-        tilt_speed: 2
-        pan_speed: 2
+        tilt_speed: 3
+        pan_speed: 3
 
         # Max values for the search pattern
         pan_max: [120, -120]
-        tilt_max: [0, -60]
+        tilt_max: [-10, -60]
 
         # Number of scan lines for the search pattern
-        scan_lines: 4
+        scan_lines: 2
 
     # Search pattern for penalty
     search_pattern_penalty:
@@ -60,10 +60,10 @@ behavior:
         scan_lines: 2
 
     search_pattern_field_features:
-        tilt_speed: 1
-        pan_speed: 1
-        pan_max: [-90, 90]
-        tilt_max: [7, 0]
+        tilt_speed: 3
+        pan_speed: 3
+        pan_max: [-120, 120]
+        tilt_max: [-10, -60]
         scan_lines: 2
 
     search_recent_ball:
