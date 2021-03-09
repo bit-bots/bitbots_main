@@ -5,7 +5,7 @@ from wolfgang_webots_sim.webots_supervisor_controller import SupervisorControlle
 class RobotSupervisorController(SupervisorController, RobotController):
     """Unified controller that has supervisor privileges and controls a robot"""
 
-    def __init__(self, ros_active=False, mode='normal', robot='wolfgang'):
+    def __init__(self, ros_active=False, mode='normal', robot='wolfgang', base_ns=''):
         """
         A unified controller that has supervisor privileges and controls a robot.
         It inherits from SupervisorController and RobotController. Since SupervisorController is the first
@@ -14,10 +14,10 @@ class RobotSupervisorController(SupervisorController, RobotController):
 
         For the parameter documentation, see the parent class constructors.
         """
-        super().__init__(ros_active=ros_active, mode=mode)
+        super().__init__(ros_active=ros_active, mode=mode, do_ros_init=False, base_ns=base_ns)
         # This is used so that SupervisorController and RobotController can use the same underlying controller
         self.robot_node = self.supervisor
-        RobotController.__init__(self, ros_active=ros_active, robot=robot, do_ros_init=True, external_controller=True)
+        RobotController.__init__(self, ros_active=ros_active, robot=robot, do_ros_init=False, external_controller=True, base_ns=base_ns)
 
     def step(self):
         super().step()

@@ -9,7 +9,6 @@ from bitbots_msgs.srv import SetRobotPose
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-
 import transforms3d
 import numpy as np
 
@@ -17,13 +16,15 @@ G = 9.81
 
 
 class SupervisorController:
-    def __init__(self, ros_active=False, mode='normal'):
+    def __init__(self, ros_active=False, mode='normal', do_ros_init=True, base_ns=''):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
 
         :param ros_active: Whether to publish ROS messages
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
+        :param do_ros_init: Whether rospy.init_node should be called
+        :param base_ns: The namespace of this node, can normally be left empty
         """
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
@@ -60,13 +61,22 @@ class SupervisorController:
                 self.rotation_fields[name] = node.getField("rotation")
 
         if self.ros_active:
-            rospy.init_node("webots_ros_supervisor", argv=['clock:=/clock'])
-            self.clock_publisher = rospy.Publisher("/clock", Clock, queue_size=1)
-            self.model_state_publisher = rospy.Publisher("/model_states", ModelStates, queue_size=1)
-            self.reset_service = rospy.Service("reset", Empty, self.reset)
-            self.initial_poses_service = rospy.Service("initial_pose", Empty, self.set_initial_poses)
-            self.set_robot_position_service = rospy.Service("set_robot_position", SetRobotPose, self.robot_pose_callback)
-            self.reset_ball_service = rospy.Service("reset_ball", Empty, self.reset_ball)
+            # need to handle these topics differently or we will end up having a double //
+            if base_ns == "":
+                clock_topic = "/clock"
+                model_topic = "/model_states"
+            else:
+                clock_topic = base_ns + "clock"
+                model_topic = base_ns + "model_states"
+            if do_ros_init:
+                rospy.init_node("webots_ros_supervisor", argv=['clock:=' + clock_topic])
+            self.clock_publisher = rospy.Publisher(clock_topic, Clock, queue_size=1)
+            self.model_state_publisher = rospy.Publisher(model_topic, ModelStates, queue_size=1)
+            self.reset_service = rospy.Service(base_ns + "reset", Empty, self.reset)
+            self.initial_poses_service = rospy.Service(base_ns + "initial_pose", Empty, self.set_initial_poses)
+            self.set_robot_position_service = rospy.Service(base_ns + "set_robot_position", SetRobotPose,
+                                                            self.robot_pose_callback)
+            self.reset_ball_service = rospy.Service(base_ns + "reset_ball", Empty, self.reset_ball)
 
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
@@ -113,11 +123,11 @@ class SupervisorController:
         self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
 
     def robot_pose_callback(self, req=None):
-        self.reset_robot_pose_rpy([req.position.x, req.position.y, req.position.z], [0,0,0], req.robot_name)
+        self.reset_robot_pose_rpy([req.position.x, req.position.y, req.position.z], [0, 0, 0], req.robot_name)
 
     def reset_ball(self, req=None):
-        self.ball.getField("translation").setSFVec3f([0,0,0.0772])
-        self.ball.getField("rotation").setSFRotation([0,0,1,0])
+        self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
+        self.ball.getField("rotation").setSFRotation([0, 0, 1, 0])
         self.ball.resetPhysics()
 
     def set_ball_pose(self, pos):
@@ -198,7 +208,7 @@ class SupervisorController:
             head_node = robot_node.getFromProtoDef("head")
             head_position = head_node.getPosition()
             head_orientation = head_node.getOrientation()
-            head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3,3)))
+            head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3, 3)))
             head_pose = Pose()
             head_pose.position = Point(*head_position)
             head_pose.orientation = Quaternion(head_orientation_quat[1], head_orientation_quat[2],
