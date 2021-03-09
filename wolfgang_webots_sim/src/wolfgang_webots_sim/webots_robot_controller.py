@@ -1,3 +1,7 @@
+import os
+import math
+import time
+
 from controller import Robot, Node, Field
 
 import rospy
@@ -5,11 +9,11 @@ from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 
 from bitbots_msgs.msg import JointCommand, FootPressure
-import math
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns=''):
+    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns='',
+                 recognition=False):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -109,6 +113,8 @@ class RobotController:
             self.gyro_head.enable(self.timestep)
         self.camera = self.robot_node.getDevice(camera_name)
         self.camera.enable(self.timestep)
+        if recognition:
+            self.camera.recognitionEnable(self.timestep)
 
         if self.ros_active:
             if base_ns == "":
@@ -173,6 +179,8 @@ class RobotController:
         self.publish_joint_states()
         self.publish_camera()
         self.publish_pressure()
+        if self.save_images_with_groundtruth:
+            self.save_recognition()
 
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
@@ -260,6 +268,30 @@ class RobotController:
         img = self.camera.getImage()
         img_msg.data = img
         self.pub_cam.publish(img_msg)
+
+    def save_recognition(self):
+        savedirectory = "/tmp/webots/"
+        imagepath = os.path.join(os.path.join(savedirectory, "images"))
+        if not os.path.exists(imagepath):
+            os.makedirs(imagepath)
+        savefile = ""
+        img_name = f"img_{str(time.time())}.PNG"
+        for e in range(0, self.camera.getRecognitionNumberOfObjects()):
+            id_of_object = self.camera.getRecognitionObjects()[e].get_id()
+            position = self.camera.getRecognitionObjects()[e].get_position_on_image()
+            size = self.camera.getRecognitionObjects()[e].get_size_on_image()
+            if id_of_object == 1321:
+                vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
+                savefile += f"{img_name}|"
+                savefile += "ball|"
+                savefile += vector
+                savefile += "\n"
+        with open(savedirectory + "foo.txt", "a") as f:
+            f.write(savefile)
+        self.camera.saveImage(filename=os.path.join(imagepath, img_name), quality=100)
+
+
+
 
     def get_image(self):
         return self.camera.getImage()
