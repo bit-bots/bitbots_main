@@ -3,8 +3,11 @@ ansible_labor
 ansible
 bitbots_docs_internal
 
+**/__pycache__
+
 # auto-generated documentation
 **/docs/_build
 **/docs/_out
 **/docs/conf.py
-
+**/docs/cppapi
+**/docs/pyapi
