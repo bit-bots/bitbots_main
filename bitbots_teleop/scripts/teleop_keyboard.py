@@ -15,6 +15,7 @@ import sys, select, termios, tty
 import actionlib
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 from geometry_msgs.msg import Vector3, Quaternion
+from std_msgs.msg import Bool
 from tf.transformations import quaternion_from_euler
 
 msg = """
@@ -43,6 +44,8 @@ SHIFT increases with factor 10
 
 y: kick left
 c: kick right
+Y: walk kick left
+C: walk kick right
 
 CTRL-C to quit
 
@@ -139,6 +142,8 @@ if __name__ == "__main__":
     head_pan_step = 0.05
     head_tilt_step = 0.05
 
+    walk_kick_pub = rospy.Publisher("kick", Bool, queue_size=1)
+
     print(msg)
 
     goal_left = KickGoal()
@@ -188,8 +193,13 @@ if __name__ == "__main__":
                 client.send_goal(goal_left)
             elif key == 'c':
                 # kick right
-                print("kick")
                 client.send_goal(goal_right)
+            elif key == 'Y':
+                # kick left walk
+                walk_kick_pub.publish(False)
+            elif key == 'C':
+                # kick right walk
+                walk_kick_pub.publish(True)
             else:
                 x = 0
                 y = 0
