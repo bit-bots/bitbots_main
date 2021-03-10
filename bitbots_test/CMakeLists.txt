@@ -7,4 +7,4 @@ catkin_python_setup()
 
 enable_bitbots_docs()
 
-catkin_package()
+catkin_package(CFG_EXTRAS enable_bitbots_tests.cmake)

@@ -1,0 +1,48 @@
+#
+# Enable tests for this package according to bitbots conventions.
+#
+# :param TEST_DIR: Directory where unit and integration tests are located.
+#   (default: test)
+# :type target: string
+# :param UNIT_DIR: Directory where unit tests are located.
+#   (default: ${TEST_DIR}/unit_tests)
+# :type url: string
+# :param INTEGRATION_DIR: Directory where integration tests are located.
+#   (default: ${TEST_DIR}/integration_tests)
+# :type INTEGRATION_DIR: string
+#
+# @public
+function(enable_bitbots_tests)
+    if(NOT CATKIN_ENABLE_TESTING)
+        return()
+    endif()
+
+    # parse function arguments
+    set(options "")
+    set(oneValueArgs TEST_DIR UNIT_DIR INTEGRATION_DIR)
+    set(multiValueArgs "")
+    cmake_parse_arguments(PARSE_ARGV 0 ENABLE_BITBOTS_TESTS "${options}" "${oneValueArgs}" "${multiValueArgs}")
+    # set argument default values
+    if(NOT DEFINED ENABLE_BITBOTS_TESTS_TEST_DIR)
+        set(ENABLE_BITBOTS_TESTS_TEST_DIR test)
+    endif()
+    if(NOT DEFINED ENABLE_BITBOTS_TESTS_UNIT_DIR)
+        set(ENABLE_BITBOTS_TESTS_UNIT_DIR ${ENABLE_BITBOTS_TESTS_TEST_DIR}/unit_tests)
+    endif()
+    if(NOT DEFINED ENABLE_BITBOTS_TESTS_INTEGRATION_DIR)
+        set(ENABLE_BITBOTS_TESTS_INTEGRATION_DIR ${ENABLE_BITBOTS_TESTS_TEST_DIR}/integration_tests)
+    endif()
+
+    # find a list of integration tests as fileglobs in the integration test dir
+    file(GLOB_RECURSE integration_tests LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/test_*.launch)
+
+    message(VERBOSE "bitbots unit_test_dir: ${ENABLE_BITBOTS_TESTS_UNIT_DIR}")
+    message(VERBOSE "discovered bitbots integration tests: ${integration_tests}")
+
+    # register all tests with cmake
+    find_package(catkin REQUIRED COMPONENTS rostest rosunit)
+    catkin_add_nosetests(${ENABLE_BITBOTS_TESTS_UNIT_DIR})
+    foreach(i ${integration_tests})
+        add_rostest(${i})
+    endforeach()
+endfunction()
