@@ -7,7 +7,7 @@ $HeadModeDecision
         YES --> @TrackBall
         NO --> @PenaltySearchPattern + init:NEAREST
     POST_MODE --> $PostSeen
-        YES --> @TrackPost
+        YES --> @FieldFeaturesSearchPattern + init:NEAREST
         NO --> @GoalSearchPattern + init:NEAREST
     BALL_GOAL_TRACKING --> @Wait + time:1
     FIELD_FEATURES --> @FieldFeaturesSearchPattern + init:NEAREST

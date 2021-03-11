@@ -31,12 +31,13 @@ class AbstractSearchPattern(AbstractActionElement):
 
         # Generate a search pattern with the min/max values from the config.
         # The min/max statements are used to ensure that the values aren't switched in the config.
-        self.pattern = self.blackboard.head_capsule.generate_pattern(pattern_config['scan_lines'],
-                                                                     max(pattern_config['pan_max']),
-                                                                     min(pattern_config['pan_max']),
-                                                                     max(pattern_config['tilt_max']),
-                                                                     min(pattern_config['tilt_max']),
-                                                                     reduce_last_scanline=0.2)
+        self.pattern = self.blackboard.head_capsule.generate_pattern(
+            pattern_config['scan_lines'],
+            max(pattern_config['pan_max']),
+            min(pattern_config['pan_max']),
+            max(pattern_config['tilt_max']),
+            min(pattern_config['tilt_max']),
+            reduce_last_scanline=pattern_config.get('reduce_last_scanline', 1))
 
         self.threshold = self.blackboard.config['position_reached_threshold']
 
