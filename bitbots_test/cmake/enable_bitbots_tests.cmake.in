@@ -33,16 +33,34 @@ function(enable_bitbots_tests)
         set(ENABLE_BITBOTS_TESTS_INTEGRATION_DIR ${ENABLE_BITBOTS_TESTS_TEST_DIR}/integration_tests)
     endif()
 
-    # find a list of integration tests as fileglobs in the integration test dir
-    file(GLOB_RECURSE integration_tests LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/test_*.launch)
+    # find a list of integration and unit tests
+    file(GLOB_RECURSE integration_tests_launch LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/test_*.launch)
+    file(GLOB_RECURSE integration_tests_py LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/test_*.py)
+    file(GLOB_RECURSE unit_tests LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_UNIT_DIR}/*.py)
 
-    message(VERBOSE "bitbots unit_test_dir: ${ENABLE_BITBOTS_TESTS_UNIT_DIR}")
-    message(VERBOSE "discovered bitbots integration tests: ${integration_tests}")
+    message(VERBOSE "discovered bitbots unit tests: ${unit_tests}")
+    message(VERBOSE "discovered bitbots integration tests: ${integration_tests_launch}")
+
+    # check that unit tests are not executable
+    foreach(i ${unit_tests})
+        execute_process(COMMAND test -x "${i}" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE result)
+        if(${result} EQUAL 0)
+            message(WARNING "unit test ${i} is an executable file but unit tests should not be executable")
+        endif()
+    endforeach()
+
+    # check that integration tests are executable
+    foreach(i ${integration_tests_py})
+        execute_process(COMMAND test -x "${i}" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE result)
+        if(${result} EQUAL 1)
+            message(WARNING "integration test ${i} is not executable but integrations tests should be")
+        endif()
+    endforeach()
 
     # register all tests with cmake
     find_package(catkin REQUIRED COMPONENTS rostest rosunit)
     catkin_add_nosetests(${ENABLE_BITBOTS_TESTS_UNIT_DIR})
-    foreach(i ${integration_tests})
+    foreach(i ${integration_tests_launch})
         add_rostest(${i})
     endforeach()
 endfunction()
