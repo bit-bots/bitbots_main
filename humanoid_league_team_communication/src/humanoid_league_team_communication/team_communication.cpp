@@ -1,60 +1,61 @@
 #include "humanoid_league_team_communication/team_communication.h"
 
+using namespace robocup;
+using namespace humanoid;
+
 TeamCommunication::TeamCommunication() : nh_() {
-  //--- Params ---
-  int port;
-  int team;
-  int player;
-  nh_.getParam("team_communication/port", port);
-  nh_.getParam("team_id", team);
-  nh_.getParam("bot_id", player);
-  //publishing rate in Hz
-  nh_.getParam("team_communication/rate", frequency_);
-  nh_.getParam("team_communication/avg_walking_speed", avg_walking_speed_);
-  nh_.getParam("team_communication/max_kicking_distance", max_kicking_distance_);
-  int teamcolor;
-  nh_.getParam("team_communication/team_color", teamcolor);
-  team_color_ = teamcolor;
-  //nh_.getParam("team_communication/world_model", world_model_);
-  nh_.getParam("team_communication/lifetime", lifetime_);
-  nh_.getParam("team_communication/belief_threshold", belief_threshold_);
+    // --- Params ---
+    int port;
+    int team;
+    int player;
+    nh_.getParam("team_communication/port", port);
+    nh_.getParam("team_id", team);
+    nh_.getParam("bot_id", player);
+    //publishing rate in Hz
+    nh_.getParam("team_communication/rate", frequency_);
+    nh_.getParam("team_communication/avg_walking_speed", avg_walking_speed_);
+    nh_.getParam("team_communication/max_kicking_distance", max_kicking_distance_);
+    int teamcolor;
+    nh_.getParam("team_communication/team_color", teamcolor);
+    team_color_ = teamcolor;
+    //nh_.getParam("team_communication/world_model", world_model_);
+    nh_.getParam("team_communication/lifetime", lifetime_);
+    nh_.getParam("team_communication/belief_threshold", belief_threshold_);
 
-  nh_.getParam("team_communication/team_data", teamdata_topic_);
-  nh_.getParam("team_communication/strategy", strategy_topic_);
-  nh_.getParam("team_communication/robot_state", robot_state_topic_);
-  nh_.getParam("team_communication/goal", goal_topic_);
-  //nh_.getParam("team_communication/world_model_node", world_model_topic_);
-  nh_.getParam("team_communication/position", position_topic_);
-  nh_.getParam("team_communication/ball", ball_topic_);
-  nh_.getParam("team_communication/obstacles", obstacles_topic_);
+    nh_.getParam("team_communication/team_data", teamdata_topic_);
+    nh_.getParam("team_communication/strategy", strategy_topic_);
+    nh_.getParam("team_communication/robot_state", robot_state_topic_);
+    nh_.getParam("team_communication/goal", goal_topic_);
+    //nh_.getParam("team_communication/world_model_node", world_model_topic_);
+    nh_.getParam("team_communication/position", position_topic_);
+    nh_.getParam("team_communication/ball", ball_topic_);
+    nh_.getParam("team_communication/obstacles", obstacles_topic_);
 
-  //init mitecom
-  mitecom_.set_team_id(team);
-  mitecom_.open_socket(port);
-  mitecom_.set_robot_id(player);
+    // --- Init UDP Connection ---
+    udp_connection = new UdpConnection(port);
 
-  // --- Initialize Topics ---
-  publisher_ = nh_.advertise<humanoid_league_msgs::TeamData>(teamdata_topic_, 10);
+    // --- Initialize Topics ---
+    publisher_ = nh_.advertise<humanoid_league_msgs::TeamData>(teamdata_topic_, 10);
 
-  sub_role_ = nh_.subscribe(strategy_topic_, 1, &TeamCommunication::strategyCallback, this,
-                            ros::TransportHints().tcpNoDelay());
-  sub_robot_state_ = nh_.subscribe(robot_state_topic_, 1, &TeamCommunication::robotStateCallback,
-                                   this, ros::TransportHints().tcpNoDelay());
-  sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
-                            ros::TransportHints().tcpNoDelay());
+    sub_role_ = nh_.subscribe(strategy_topic_, 1, &TeamCommunication::strategyCallback, this,
+                              ros::TransportHints().tcpNoDelay());
+    sub_robot_state_ = nh_.subscribe(robot_state_topic_, 1, &TeamCommunication::robotStateCallback,
+                                     this, ros::TransportHints().tcpNoDelay());
+    sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
+                              ros::TransportHints().tcpNoDelay());
 
-  //if(world_model_){
-  //  sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
-  //                            ros::TransportHints().tcpNoDelay());
-  //}
-  //else{
-  sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
+    //if(world_model_){
+    //  sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
+    //                            ros::TransportHints().tcpNoDelay());
+    //}
+    //else{
+    sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
                                   ros::TransportHints().tcpNoDelay());
     sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballsCallback, this,
                               ros::TransportHints().tcpNoDelay());
-  sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
+    sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
                                    this, ros::TransportHints().tcpNoDelay());
-  //}
+    //}
 }
 
 void TeamCommunication::run() {

@@ -19,6 +19,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 #include "robocup_extension.pb.h"
+#include "udp_connection.h"
+
 
 /*
  * This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information
@@ -74,7 +76,7 @@ class TeamCommunication{
   uint64_t offensive_side_ = 0;
   bool offensive_side_set_ = false;
 
-  MiTeCom::mitecom mitecom_;
+  UdpConnection* udp_connection;
   double frequency_ = 0.0;
   ros::Publisher publisher_;
   //bool world_model_ = false;
