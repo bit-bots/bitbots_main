@@ -36,18 +36,18 @@ class GameStateReceiver(object):
         rospy.init_node('game_controller')
 
         # Information that is used when sending the answer to the game controller
-        self.team = rospy.get_param('/team_id')
-        self.player = rospy.get_param('/bot_id')
+        self.team = rospy.get_param('team_id')
+        self.player = rospy.get_param('bot_id')
         rospy.loginfo('We are playing as player {} in team {}'.format(self.player, self.team))
         self.state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1)
 
         self.man_penalize = False
         self.game_controller_lost_time = 20
-        self.game_controller_connected_publisher = rospy.Publisher('/game_controller_connected', Bool, queue_size=1)
+        self.game_controller_connected_publisher = rospy.Publisher('game_controller_connected', Bool, queue_size=1)
 
         # The address listening on and the port for sending back the robots meta data
-        self.addr = (rospy.get_param('/game_controller/listen_host'), rospy.get_param('/game_controller/listen_port'))
-        self.answer_port = rospy.get_param('/game_controller/answer_port')
+        self.addr = (rospy.get_param('~listen_host'), rospy.get_param('~listen_port'))
+        self.answer_port = rospy.get_param('~answer_port')
 
         # The state and time we received last form the GC
         self.state = None

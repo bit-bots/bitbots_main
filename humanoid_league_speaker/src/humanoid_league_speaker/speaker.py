@@ -34,7 +34,7 @@ class Speaker(object):
     # https://github.com/muhrix/espeak_ros/blob/master/src/espeak_ros_node.cpp
 
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
+        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node('humanoid_league_speaker', log_level=log_level, anonymous=False)
         rospy.loginfo("Starting speaker")
 
@@ -56,7 +56,7 @@ class Speaker(object):
         self.server = Server(speaker_paramsConfig, self.reconfigure)
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/speak", Audio, self.speak_cb)
+        rospy.Subscriber("speak", Audio, self.speak_cb)
 
         # --- Start loop ---
         self.run_speaker()

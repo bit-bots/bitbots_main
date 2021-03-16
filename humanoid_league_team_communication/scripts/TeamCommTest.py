@@ -11,10 +11,10 @@ from humanoid_league_msgs.msg import ObstacleRelativeArray, ObstacleRelative, Po
 
 if __name__ == '__main__':
     rospy.init_node("TeamCommTest")
-    ball_pub = rospy.Publisher("/balls_relative", PoseWithCertaintyArray, queue_size=1)
-    goal_post_pub = rospy.Publisher("/goal_post_relative", PoseWithCertaintyArray, queue_size=1)
-    position_pub = rospy.Publisher("/position", PoseWithCovarianceStamped, queue_size=1)
-    obstacle_pub = rospy.Publisher("/obstacle_relative", ObstacleRelativeArray, queue_size=1)
+    ball_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1)
+    goal_post_pub = rospy.Publisher("goal_post_relative", PoseWithCertaintyArray, queue_size=1)
+    position_pub = rospy.Publisher("position", PoseWithCovarianceStamped, queue_size=1)
+    obstacle_pub = rospy.Publisher("obstacle_relative", ObstacleRelativeArray, queue_size=1)
     position_msg = PoseWithCovarianceStamped()
     position_msg.pose.pose.position.x = 2
     obstacle_msg = ObstacleRelativeArray()
