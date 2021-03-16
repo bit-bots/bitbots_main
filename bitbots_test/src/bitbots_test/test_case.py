@@ -1,4 +1,5 @@
-from unittest import TestCase
+"""Base classes for TestCases as well as useful assertions and ros integrations"""
+from unittest.case import TestCase
 import rospy
 
 
