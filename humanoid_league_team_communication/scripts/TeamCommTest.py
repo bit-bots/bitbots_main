@@ -12,11 +12,12 @@ from humanoid_league_msgs.msg import ObstacleRelativeArray, ObstacleRelative, Po
 if __name__ == '__main__':
     rospy.init_node("TeamCommTest")
     ball_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1)
-    goal_post_pub = rospy.Publisher("goal_post_relative", PoseWithCertaintyArray, queue_size=1)
-    position_pub = rospy.Publisher("position", PoseWithCovarianceStamped, queue_size=1)
-    obstacle_pub = rospy.Publisher("obstacle_relative", ObstacleRelativeArray, queue_size=1)
-    position_msg = PoseWithCovarianceStamped()
+    goal_post_pub = rospy.Publisher("goal_posts_relative", PoseWithCertaintyArray, queue_size=1)
+    position_pub = rospy.Publisher("pose_with_certainty", PoseWithCertainty, queue_size=1)
+    obstacle_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
+    position_msg = PoseWithCertainty()
     position_msg.pose.pose.position.x = 2
+    position_msg.confidence = 0.7
     obstacle_msg = ObstacleRelativeArray()
     obstacle = ObstacleRelative()
     obstacle.pose.pose.pose.position.x = 4
@@ -38,7 +39,6 @@ if __name__ == '__main__':
     goal_msg.poses.append(goalpost)
 
     while not rospy.is_shutdown():
-        position_msg.header.stamp = rospy.Time.now()
         obstacle_msg.header.stamp = rospy.Time.now()
         ball_msg.header.stamp = rospy.Time.now()
         goal_msg.header.stamp = rospy.Time.now()
