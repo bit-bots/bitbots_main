@@ -41,6 +41,9 @@ function(enable_bitbots_tests)
     message(VERBOSE "discovered bitbots unit tests: ${unit_tests}")
     message(VERBOSE "discovered bitbots integration tests: ${integration_tests_launch}")
 
+    # create unit and integration test directories
+    file(MAKE_DIRECTORY ${ENABLE_BITBOTS_TESTS_UNIT_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR})
+
     # check that unit tests are not executable
     foreach(i ${unit_tests})
         execute_process(COMMAND test -x "${i}" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE result)

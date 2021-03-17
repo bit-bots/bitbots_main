@@ -18,5 +18,7 @@
   <depend>rosunit</depend>
   <depend>rostest</depend>
 
+  <test_depend>python-hypothesis</test_depend>
+
   <doc_depend>bitbots_docs</doc_depend>
 </package>

@@ -11,3 +11,6 @@ bitbots_docs_internal
 **/docs/conf.py
 **/docs/cppapi
 **/docs/pyapi
+
+# test caches
+**/.hypothesis
