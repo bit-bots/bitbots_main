@@ -632,7 +632,16 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     double time = calcBackSplines();
     duration_ = calcRiseSplines(time);
     direction_ = 0;
-  }else if(goals.direction == "rise"){
+  }
+  else if(goals.direction == "front-only"){
+      duration_ = calcFrontSplines();
+      direction_ = 1;
+  }
+  else if(goals.direction == "back-only"){
+      duration_ = calcBackSplines();
+      direction_ = 0;
+  }
+  else if(goals.direction == "rise"){
     duration_ = calcRiseSplines(0);
     direction_ = 2;
   }else if(goals.direction == "descend"){
