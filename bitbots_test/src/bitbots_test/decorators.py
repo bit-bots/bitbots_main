@@ -1,8 +1,9 @@
 """Useful decorators for modifying the behavior of test functions as well as :class:`unittest.TestCase` classes."""
-from unittest import skipIf, skipUnless
 import typing
 import sys
 import os
+from unittest import skipIf, skipUnless
+from bitbots_test.test_case import TestCase
 
 
 def tag(*tags: str) -> typing.Callable:
@@ -55,7 +56,16 @@ def tag(*tags: str) -> typing.Callable:
         )
 
     def class_decorator(cls: typing.Type) -> typing.Type:
-        print(f"tags: {list(tags)}, class decorator", file=sys.stderr)
+        if not issubclass(cls, TestCase):
+            raise ValueError(f"@tag decorator can only be used on TestCase subclasses and not {cls.__name__}")
+
+        # manually apply @tag() decorator to all test functions in this TestCase
+        test_funcs = [t for t in dir(cls) if t.startswith("test_") and callable(getattr(cls, t))]
+        for t in test_funcs:
+            original_func = getattr(cls, t)
+            decorated_func = tag(*tags)(original_func)
+            setattr(cls, t, decorated_func)
+
         return cls
 
     def decorator(decorated: typing.Union[typing.Callable, typing.Type]):
