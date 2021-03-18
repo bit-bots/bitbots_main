@@ -15,9 +15,10 @@
     <rosparam file="$(find bitbots_move_base)/config/global_costmap_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/move_base_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/dwa_local_planner_config.yaml" command="load" />
+    <rosparam file="$(find bitbots_move_base)/config/bitbots_local_planner_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/global_planner_config.yaml" command="load" />
 
-    
+
     <!-- reset frame_id parameters using user input data -->
     <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
     <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
