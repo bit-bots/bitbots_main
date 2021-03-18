@@ -12,7 +12,7 @@ from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
 showing_feedback = False
 
 if __name__ == "__main__":
-    directions = ['front', 'front_only', 'back', 'back_only', 'squat', 'rise',
+    directions = ['front', 'front_only', 'back', 'back_only', 'rise',
                   'descend']
     if len(sys.argv) != 2 or not sys.argv[1] in directions:
         print('Use ' + str(directions) + ' as parameters!')
