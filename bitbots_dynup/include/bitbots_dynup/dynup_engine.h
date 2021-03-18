@@ -22,7 +22,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
  public:
   DynupEngine();
 
-  void init(double arm_max_length, double arm_offset_y, double arm_offset_z);
+  void init(double arm_offset_y, double arm_offset_z);
 
   DynupResponse update(double dt) override;
 
@@ -65,7 +65,6 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   int marker_id_;
   double time_;
   double duration_;
-  double arm_max_length_;
   double shoulder_offset_y_;
   double arm_offset_y_;
   double arm_offset_z_;

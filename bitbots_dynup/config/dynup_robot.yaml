@@ -3,6 +3,7 @@ dynup:
   engine_rate: 240
 
   # end pose
+  arm_max_length:0.3
   trunk_height: 0.4
   trunk_pitch: 0
   foot_distance: 0.2
