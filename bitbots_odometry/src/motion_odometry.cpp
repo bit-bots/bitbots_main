@@ -44,9 +44,13 @@ MotionOdometry::MotionOdometry() {
       ROS_WARN_THROTTLE(30, "No joint states received. Will not provide odometry.");
     } else {
       // check if step finished, meaning left->right or right->left support. double support is skipped
+      // Mean abstand im dubble support?
+      // Sind die daten immer synchron zur motion
+      // Published die motion diese infos im richtigen moment?
       if ((current_support_state_ == 'l' && previous_support_state_ == 'r') ||
           (current_support_state_ == 'r' && previous_support_state_ == 'l')) {
         if (previous_support_state_ == 'l') {
+          //Namen irreführend, bis logik falsch
           current_support_link = l_sole_frame_;
           next_support_link = r_sole_frame_;
         } else {
@@ -57,7 +61,7 @@ MotionOdometry::MotionOdometry() {
         try {
           // add the transform between current and next support link to the odometry transform
           geometry_msgs::TransformStamped current_to_next_support_msg =
-              tf_buffer_.lookupTransform(current_support_link, next_support_link, ros::Time(0));
+              tf_buffer_.lookupTransform(current_support_link, next_support_link, ros::Time(0));// Nicht jetzt, sondern letzter tick im dubble support
           tf2::Transform current_to_next_support = tf2::Transform();
           tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
           // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
@@ -92,6 +96,7 @@ MotionOdometry::MotionOdometry() {
         geometry_msgs::TransformStamped odom_to_base_link_msg = geometry_msgs::TransformStamped();
         odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
         odom_to_base_link_msg.header.stamp = ros::Time::now();
+        //? Müsste zeit von TF sein?
         odom_to_base_link_msg.header.frame_id = odom_frame_;
         odom_to_base_link_msg.child_frame_id = base_link_frame_;
         if (publish_walk_odom_tf) {
@@ -121,7 +126,7 @@ MotionOdometry::MotionOdometry() {
   }
 }
 
-void MotionOdometry::supportCallback(const std_msgs::Char msg) {
+void MotionOdometry::supportCallback(const std_msgs::Char msg) { // Use timestamp
   current_support_state_ = msg.data;
 
   // remember if we recieved first support state, only remember left or right
