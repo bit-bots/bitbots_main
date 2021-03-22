@@ -31,8 +31,6 @@ Localization::Localization() : line_points_(), tfListener(tfBuffer) {
 }
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
-  config_ = config;
-
   line_subscriber_ = nh_.subscribe(config.line_topic, 1, &Localization::LineCallback, this);
   line_point_cloud_subscriber_ = nh_.subscribe(config.line_pointcloud_topic, 1, &Localization::LinePointcloudCallback, this);
   goal_subscriber_ = nh_.subscribe(config.goal_topic, 1, &Localization::GoalPostsCallback, this);
@@ -84,7 +82,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   robot_pose_observation_model_.reset(
       new RobotPoseObservationModel(
         lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_, config));
-  robot_pose_observation_model_->set_min_weight(config_.min_weight);
+  robot_pose_observation_model_->set_min_weight(config.min_weight);
 
   Eigen::Matrix<double, 3, 2> drift_cov;
   drift_cov <<
@@ -160,6 +158,8 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       config.initial_robot_t));
 
   resampling_.reset(new pf::ImportanceResampling<RobotState>());
+
+  config_ = config;
 
   ROS_INFO("Trying to initialize particle filter...");
   reset_filter(config.init_mode);
