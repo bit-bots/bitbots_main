@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <stdlib.h>
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -23,6 +24,7 @@ public:
 
 private:
     int socketfd;
+    int port;
     const static size_t MAXSIZE=1000;
 };
 
