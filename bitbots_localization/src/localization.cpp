@@ -82,7 +82,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   robot_pose_observation_model_.reset(
       new RobotPoseObservationModel(
         lines_, goals_, field_boundary_, corner_, t_crossings_map_, crosses_map_, config));
-  robot_pose_observation_model_->set_min_weight(config_.min_weight);
+  robot_pose_observation_model_->set_min_weight(config.min_weight);
 
   Eigen::Matrix<double, 3, 2> drift_cov;
   drift_cov <<
