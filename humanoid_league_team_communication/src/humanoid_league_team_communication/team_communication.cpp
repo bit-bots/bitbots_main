@@ -345,29 +345,52 @@ void TeamCommunication::strategyCallback(humanoid_league_msgs::Strategy msg) {
 
 void TeamCommunication::robotStateCallback(humanoid_league_msgs::RobotControlState msg) {
   state_ = msg.state;
+  // states in which the robot is penalized by the game controller
   if (state_ == humanoid_league_msgs::RobotControlState::PENALTY ||
       state_ == humanoid_league_msgs::RobotControlState::PENALTY_ANIMATION ||
-      state_ == humanoid_league_msgs::RobotControlState::PICKED_UP){
-    state_ = STATE_PENALIZED;
+      state_ == humanoid_league_msgs::RobotControlState::PICKED_UP) {
+    state_ = PENALISED;
   }
+    // state in which the robot is not able to play
   else if (state_ == humanoid_league_msgs::RobotControlState::STARTUP ||
       state_ == humanoid_league_msgs::RobotControlState::SHUTDOWN ||
-      state_ == humanoid_league_msgs::RobotControlState::RECORD) {
-    state_ = STATE_INACTIVE;
-  }
-  else {
-    state_ = STATE_ACTIVE;
+      state_ == humanoid_league_msgs::RobotControlState::RECORD ||
+      state_ == humanoid_league_msgs::RobotControlState::HCM_OFF ||
+      state_ == humanoid_league_msgs::RobotControlState::HARDWARE_PROBLEM) {
+    state_ = UNKNOWN_STATE;
+  } else {
+    state_ = UNPENALISED;
   }
 }
 
-void TeamCommunication::positionCallback(const geometry_msgs::PoseWithCovarianceStamped& msg) {
-  //conversion from m (ROS message) to mm (self.mitecom)
-  position_x_ = static_cast<uint64_t>(msg.pose.pose.position.x * 1000.0);
-  position_y_ = static_cast<uint64_t>(msg.pose.pose.position.y * 1000.0);
-  // position_orientation_ = static_cast<uint64_t>(msg.pose.theta * 1000.0);  TODO sent Quaternion
-  //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  // position_belief_ = static_cast<uint64_t>(msg.confidence * 255.0); TODO transformation
-  position_exists_ = msg.header.stamp.sec;
+void TeamCommunication::positionCallback(humanoid_league_msgs::PoseWithCertainty msg) {
+  // TODO convert position + orientation to protocol convention
+  // get position
+  position_x_ = msg.pose.pose.position.x;
+  position_y_ = msg.pose.pose.position.y;
+
+  // get orientation
+  tf2::Quaternion tf2_quaternion;
+  tf2::convert(msg.pose.pose.orientation , tf2_quaternion);
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(tf2_quaternion).getRPY(roll, pitch, yaw);
+  position_orientation_ = static_cast<float>(yaw);
+
+  // get belief
+  position_cov_[0][0] = msg.pose.covariance[0];
+  position_cov_[0][1] = msg.pose.covariance[1];
+  position_cov_[0][2] = msg.pose.covariance[5];
+  position_cov_[1][0] = msg.pose.covariance[6];
+  position_cov_[1][1] = msg.pose.covariance[7];
+  position_cov_[1][2] = msg.pose.covariance[11];
+  position_cov_[2][0] = msg.pose.covariance[30];
+  position_cov_[2][1] = msg.pose.covariance[31];
+  position_cov_[2][2] = msg.pose.covariance[35];
+
+  position_belief_ = msg.confidence;
+
+  // set time to decide if the information is up to date when broadcasting it
+  position_exists_ = ros::Time::now().toSec();
 }
 
 void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg){
