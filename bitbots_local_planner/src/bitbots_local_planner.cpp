@@ -9,10 +9,10 @@ namespace bitbots_local_planner {
 BBPlanner::BBPlanner() {
 }
 
-void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros) {
+void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf_buffer, costmap_2d::Costmap2DROS *costmap_ros) {
   ros::NodeHandle private_nh("~/" + name);
   local_plan_publisher_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
-  tf_ = tf;
+  tf_buffer_ = tf_buffer;
   first_setPlan_ = true;
   goal_reached_ = false;
   stand_at_goal_ = false;
@@ -38,7 +38,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
   if (first_setPlan_) {
     first_setPlan_ = false;
     first_use = true;
-    bitbots_local_planner::getXPose(*tf_,
+    bitbots_local_planner::getXPose(*tf_buffer_,
                                     global_plan_,
                                     costmap_ros_->getGlobalFrameID(),
                                     old_goal_pose_,
@@ -46,7 +46,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
     first_use = true;
   }
 
-  bitbots_local_planner::getXPose(*tf_,
+  bitbots_local_planner::getXPose(*tf_buffer_,
                                   global_plan_,
                                   costmap_ros_->getGlobalFrameID(),
                                   goal_pose_,
@@ -57,8 +57,8 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
       <= config_.position_accuracy &&
       std::abs(std::abs(old_goal_pose_.getOrigin().getY()) - std::abs(goal_pose_.getOrigin().getY()))
           <= config_.position_accuracy && !first_use
-      && std::abs(angles::shortest_angular_distance(tf::getYaw(old_goal_pose_.getRotation()),
-                                                    tf::getYaw(goal_pose_.getRotation())))
+      && std::abs(angles::shortest_angular_distance(tf2::getYaw(old_goal_pose_.getRotation()),
+                                                    tf2::getYaw(goal_pose_.getRotation())))
           <= config_.rotation_accuracy) {
     ROS_DEBUG("BBPlanner: Old Goal == new Goal.");
   } else {
@@ -75,17 +75,17 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
 bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel) {
   ros::Time begin = ros::Time::now();
 
-  tf::Stamped<tf::Pose> current_pose;
+  tf2::Stamped<tf2::Transform> current_pose;
   geometry_msgs::PoseStamped msg;
   costmap_ros_->getRobotPose(msg);
   current_pose.setData(
-      tf::Transform(
-          tf::Quaternion(
+      tf2::Transform(
+          tf2::Quaternion(
               msg.pose.orientation.x,
               msg.pose.orientation.y,
               msg.pose.orientation.z,
               msg.pose.orientation.w),
-          tf::Vector3(
+          tf2::Vector3(
               msg.pose.position.x,
               msg.pose.position.y,
               msg.pose.position.z)));
@@ -105,9 +105,9 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel) {
 
   double diff = 0;
   if (distance > config_.orient_to_goal_distance) {
-    diff = walk_angle - tf::getYaw(current_pose.getRotation());
+    diff = walk_angle - tf2::getYaw(current_pose.getRotation());
   } else {
-    diff = tf::getYaw(goal_pose_.getRotation()) - tf::getYaw(current_pose.getRotation());
+    diff = tf2::getYaw(goal_pose_.getRotation()) - tf2::getYaw(current_pose.getRotation());
   }
 
   double min_angle = (std::fmod(diff + M_PI, 2 * M_PI) - M_PI);
@@ -121,8 +121,8 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel) {
     cmd_vel.angular.z = 0;
     goal_reached_ = true;
   } else {
-    cmd_vel.linear.x = std::cos(walk_angle - tf::getYaw(current_pose.getRotation())) * walk_vel;
-    cmd_vel.linear.y = std::sin(walk_angle - tf::getYaw(current_pose.getRotation())) * walk_vel;
+    cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
+    cmd_vel.linear.y = std::sin(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
     cmd_vel.angular.z = vel;
     goal_reached_ = false;
   }

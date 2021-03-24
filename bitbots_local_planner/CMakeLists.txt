@@ -3,14 +3,18 @@ project(bitbots_local_planner)
 
 find_package(catkin REQUIRED
   COMPONENTS
+  angles
   cmake_modules
   costmap_2d
   dynamic_reconfigure
+  geometry_msgs
   nav_core
   nav_msgs
   pluginlib
   roscpp
-  tf
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 include_directories(
