@@ -26,6 +26,7 @@ PROTO Wolfgang [
   field  SFFloat     XH540W270-damping    1.82
   field  SFFloat     gearMass        0.001
   field  SFFloat     backlash        0.01
+  field  SFFloat     spring-constant 0.76
 ]
 {
   Robot {
@@ -1443,7 +1444,7 @@ PROTO Wolfgang [
                             anchor -0.003923 -0.051000 -0.169043
                             dampingConstant IS XH540W270-damping
                             staticFriction 0.0
-                            springConstant 0.76
+                            springConstant IS spring-constant
                           }
                           device [
                             RotationalMotor {
@@ -2531,9 +2532,9 @@ PROTO Wolfgang [
                           jointParameters HingeJointParameters {
                             axis 0.000001 0.000004 1.000000
                             anchor 0.004356 -0.168793 0.049000
-                            dampingConstant IS XH540W270-torque
+                            dampingConstant IS XH540W270-damping
                             staticFriction 0.0
-                            springConstant 0.76
+                            springConstant IS spring-constant
                           }
                           device [
                             RotationalMotor {
