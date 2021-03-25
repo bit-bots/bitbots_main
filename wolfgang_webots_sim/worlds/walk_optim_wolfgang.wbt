@@ -38,15 +38,16 @@ TexturedBackground {
 TexturedBackgroundLight {
   texture "stadium_dry"
 }
+DEF amy Wolfgang {
+  translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
+  name "amy"
+  controller "<extern>"
+  supervisor TRUE
+}
 Floor {
   rotation 1 0 0 1.57
   contactMaterial "grass"
   size 100 100
   tileSize 2 2
-}
-
-DEF amy Darwin-op {
-  name "amy"
-  controller "<extern>"
-  supervisor TRUE
 }
