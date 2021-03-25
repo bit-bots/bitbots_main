@@ -27,6 +27,7 @@ PROTO Wolfgang [
   field  SFFloat     gearMass        0.001
   field  SFFloat     backlash        0.01
   field  SFFloat     spring-constant 0.76
+  field  SFVec3f     pid             10 0 0
 ]
 {
   Robot {
@@ -335,6 +336,7 @@ PROTO Wolfgang [
             minPosition -3.14159
             maxPosition 3.14159
             maxTorque IS MX64-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "RShoulderPitch_sensor"
@@ -383,6 +385,7 @@ PROTO Wolfgang [
                   maxVelocity IS MX64-vel
                   maxPosition 3.14159
                   maxTorque IS MX64-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "RShoulderRoll_sensor"
@@ -456,6 +459,7 @@ PROTO Wolfgang [
                         minPosition -1.0472
                         maxPosition 1.5708
                         maxTorque IS MX64-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "RElbow_sensor"
@@ -788,6 +792,7 @@ PROTO Wolfgang [
             minPosition -3.14159
             maxPosition 3.14159
             maxTorque IS MX64-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "LShoulderPitch_sensor"
@@ -836,6 +841,7 @@ PROTO Wolfgang [
                   maxVelocity IS MX64-vel
                   minPosition -3.14159
                   maxTorque IS MX64-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "LShoulderRoll_sensor"
@@ -909,6 +915,7 @@ PROTO Wolfgang [
                         minPosition -1.5708
                         maxPosition 1.0472
                         maxTorque IS MX64-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "LElbow_sensor"
@@ -1241,6 +1248,7 @@ PROTO Wolfgang [
             minPosition -1.5708
             maxPosition 1.5708
             maxTorque IS MX106-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "RHipYaw_sensor"
@@ -1274,6 +1282,7 @@ PROTO Wolfgang [
                   minPosition -1.5708
                   maxPosition 1.5708
                   maxTorque IS MX106-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "RHipRoll_sensor"
@@ -1339,6 +1348,7 @@ PROTO Wolfgang [
                         minPosition -2.0944
                         maxPosition 1.91986
                         maxTorque IS MX106-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "RHipPitch_sensor"
@@ -1436,6 +1446,7 @@ PROTO Wolfgang [
                               maxVelocity IS XH540W270-vel
                               minPosition -2.96706
                               maxTorque IS XH540W270-torque
+                              controlPID IS pid
                             }
                             PositionSensor {
                               name "RKnee_sensor"
@@ -1525,6 +1536,7 @@ PROTO Wolfgang [
                                     minPosition -1.74533
                                     maxPosition 1.22173
                                     maxTorque IS MX106-torque
+                                    controlPID IS pid
                                   }
                                   PositionSensor {
                                     name "RAnklePitch_sensor"
@@ -1589,6 +1601,7 @@ PROTO Wolfgang [
                                           maxVelocity IS MX106-vel
                                           minPosition -1.0472
                                           maxPosition 1.0472
+                                          controlPID IS pid
                                         }
                                         PositionSensor {
                                           name "RAnkleRoll_sensor"
@@ -2321,6 +2334,7 @@ PROTO Wolfgang [
             minPosition -1.5708
             maxPosition 1.5708
             maxTorque IS MX106-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "LHipYaw_sensor"
@@ -2354,6 +2368,7 @@ PROTO Wolfgang [
                   minPosition -1.5708
                   maxPosition 1.5708
                   maxTorque IS MX106-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "LHipRoll_sensor"
@@ -2419,6 +2434,7 @@ PROTO Wolfgang [
                         minPosition -1.91986
                         maxPosition 2.0944
                         maxTorque IS MX106-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "LHipPitch_sensor"
@@ -2516,6 +2532,7 @@ PROTO Wolfgang [
                               maxVelocity IS XH540W270-vel
                               maxPosition 2.96706
                               maxTorque IS XH540W270-torque
+                              controlPID IS pid
                             }
                             PositionSensor {
                               name "LKnee_sensor"
@@ -2605,6 +2622,7 @@ PROTO Wolfgang [
                                     minPosition -1.22173
                                     maxPosition 1.74533
                                     maxTorque IS MX106-torque
+                                    controlPID IS pid
                                   }
                                   PositionSensor {
                                     name "LAnklePitch_sensor"
@@ -2670,6 +2688,7 @@ PROTO Wolfgang [
                                           minPosition -1.0472
                                           maxPosition 1.0472
                                           maxTorque IS MX106-torque
+                                          controlPID IS pid
                                         }
                                         PositionSensor {
                                           name "LAnkleRoll_sensor"
@@ -3402,6 +3421,7 @@ PROTO Wolfgang [
             minPosition -2.0944
             maxPosition 2.0944
             maxTorque IS MX64-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "HeadPan_sensor"
@@ -3443,6 +3463,7 @@ PROTO Wolfgang [
                   minPosition -1.5708
                   maxPosition 1.0472
                   maxTorque IS MX64-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "HeadTilt_sensor"
