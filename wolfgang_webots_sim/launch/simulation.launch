@@ -7,6 +7,7 @@
          doc="If an IMU filter should be started, otherwise only imu/raw will be available"/>
     <arg name="multi_robot" default="false" doc="Start world with either one or four robots"/>
     <arg name="sim_id" default="" doc="Namespace if multiple simulations should be run at the same time"/>
+    <arg name="camera" default="true" doc="Turn on or off the camera (to speed up if only motion is required)"/>
     <arg name="recognition" default="false" doc="Turn on or off automatic recognition for collection of training data"/>
     <param name="/simulation_active" value="true"/>
     <param name="/use_sim_time" value="true"/>
@@ -25,6 +26,7 @@
 
     <group unless="$(arg multi_robot)">
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch">
+            <arg name="camera" value="$(arg camera)"/>
             <arg name="recognition" value="$(arg recognition)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
@@ -37,24 +39,28 @@
             <arg name="robot_name" value="amy"/>
             <arg name="tf_prefix" value="amy/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 1)"/>
+            <arg name="camera" value="$(arg camera)"/>
             <arg name="recognition" value="$(arg recognition)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="rory">
             <arg name="robot_name" value="rory"/>
             <arg name="tf_prefix" value="rory/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 2)"/>
+            <arg name="camera" value="$(arg camera)"/>
             <arg name="recognition" value="$(arg recognition)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="jack">
             <arg name="robot_name" value="jack"/>
             <arg name="tf_prefix" value="jack/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 3)"/>
+            <arg name="camera" value="$(arg camera)"/>
             <arg name="recognition" value="$(arg recognition)"/>
         </include>
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="donna">
             <arg name="robot_name" value="donna"/>
             <arg name="tf_prefix" value="donna/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 4)"/>
+            <arg name="camera" value="$(arg camera)"/>
             <arg name="recognition" value="$(arg recognition)"/>
         </include>
 

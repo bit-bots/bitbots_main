@@ -2,15 +2,18 @@
 <launch>
   <arg name="robot_name" default="amy" doc="The name of the robot" />
   <arg name="tf_prefix" default="" doc="Prefix applied to the published frames in the headers"/>
+  <arg name="camera" default="false" doc="Turn on or off the camera (to speed up if only motion is required)"/>
   <arg name="recognition" default="false" doc="Turn on or off automatic recognition for collection of training data"/>
   <arg name="void_controller" default="false" doc="If set to true, the robot is not controllable"/>
   <arg name="void_flag" value="$(eval '--void-controller' if arg('void_controller') else '')"
        doc="do not set, used internally"/>
   <arg name="recognition_flag" value="$(eval '--recognize' if arg('recognition') else '')"
        doc="do not set, used internally"/>
+  <arg name="camera_disable_flag" value="$(eval '--disable-camera' if not arg('camera') else '')"
+       doc="do not set, used internally"/>
 
   <node pkg="wolfgang_webots_sim" type="start_single.sh" name="webots_ros_interface"
-        args="--robot_name $(arg robot_name) $(arg void_flag) $(arg recognition_flag)">
+        args="--robot_name $(arg robot_name) $(arg void_flag) $(arg recognition_flag) $(arg camera_disable_flag)">
     <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
     <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
     <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>

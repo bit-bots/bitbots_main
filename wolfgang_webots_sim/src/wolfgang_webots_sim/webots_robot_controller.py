@@ -10,6 +10,8 @@ from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 
 from bitbots_msgs.msg import JointCommand, FootPressure
 
+CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
+
 
 class RobotController:
     def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns='',
@@ -55,7 +57,7 @@ class RobotController:
             self.pressure_sensors = []
             for name in pressure_sensor_names:
                 sensor = self.robot_node.getDevice(name)
-                sensor.enable(30)
+                sensor.enable(self.timestep)
                 self.pressure_sensors.append(sensor)
 
         elif robot == 'darwin':
@@ -114,8 +116,9 @@ class RobotController:
             self.gyro_head = self.robot_node.getDevice("imu_head gyro")
             self.gyro_head.enable(self.timestep)
         self.camera = self.robot_node.getDevice(camera_name)
+        self.camera_counter = 0
         if self.camera_active:
-            self.camera.enable(self.timestep)
+            self.camera.enable(self.timestep*CAMERA_DIVIDER)
         if self.recognize:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
@@ -193,11 +196,12 @@ class RobotController:
     def publish_ros(self):
         self.publish_imu()
         self.publish_joint_states()
-        if self.camera_active:
+        if self.camera_active and self.camera_counter == 0:
             self.publish_camera()
         self.publish_pressure()
         if self.recognize:
             self.save_recognition()
+        self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
 
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
