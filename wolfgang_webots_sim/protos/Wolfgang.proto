@@ -15,6 +15,19 @@ PROTO Wolfgang [
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
   field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
   field  SFFloat     cameraFOV       1.04
+  field  SFFloat     MX64-torque     5.475
+  field  SFFloat     MX64-vel        8.17
+  field  SFFloat     MX64-damping    0.67
+  field  SFFloat     MX106-torque    7.5
+  field  SFFloat     MX106-vel       5.76
+  field  SFFloat     MX106-damping   1.3
+  field  SFFloat     XH540W270-torque     8.775
+  field  SFFloat     XH540W270-vel        4.82
+  field  SFFloat     XH540W270-damping    1.82
+  field  SFFloat     gearMass        0.001
+  field  SFFloat     backlash        0.01
+  field  SFFloat     spring-constant 0.76
+  field  SFVec3f     pid             10 0 0
 ]
 {
   Robot {
@@ -295,14 +308,9 @@ PROTO Wolfgang [
           }
         ]
       }
-      DEF imu_frame Solid {
+      DEF imu_frame Transform {
         translation -0.036975 -0.047461 0.224000
         rotation 0.000000 1.000000 0.000000 0.000000
-        physics Physics {
-        }
-        boundingObject Box {
-        size 0.01 0.01 0.01
-        }
         children [
           Accelerometer {
             name "imu accelerometer"
@@ -311,22 +319,24 @@ PROTO Wolfgang [
             name "imu gyro"
           }
         ]
-        name "imu_frame"
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000003 -1.000000 -0.000000
           anchor -0.001500 -0.076500 0.203500
-          dampingConstant 0.53
+          dampingConstant IS MX64-damping
           staticFriction 0.0
         }
         device [
           RotationalMotor {
             name "RShoulderPitch"
-            maxVelocity 10.33
+            maxVelocity IS MX64-vel
             minPosition -3.14159
             maxPosition 3.14159
-            maxTorque 5.43
+            maxTorque IS MX64-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "RShoulderPitch_sensor"
@@ -360,19 +370,22 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 -0.000004 0.000004
                 anchor -0.016950 0.042000 0.000000
-                dampingConstant 0.53
+                dampingConstant IS MX64-damping
                 staticFriction 0.0
               }
               device [
                 RotationalMotor {
                   name "RShoulderRoll"
-                  maxVelocity 10.33
+                  maxVelocity IS MX64-vel
                   maxPosition 3.14159
-                  maxTorque 5.43
+                  maxTorque IS MX64-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "RShoulderRoll_sensor"
@@ -430,20 +443,23 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis 1.000000 -0.000004 -0.000004
                       anchor 0.024000 -0.144000 -0.023500
-                      dampingConstant 0.53
+                      dampingConstant IS MX64-damping
                       staticFriction 0.0
                     }
                     device [
                       RotationalMotor {
                         name "RElbow"
-                        maxVelocity 10.33
+                        maxVelocity IS MX64-vel
                         minPosition -1.0472
                         maxPosition 1.5708
-                        maxTorque 5.43
+                        maxTorque IS MX64-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "RElbow_sensor"
@@ -484,11 +500,6 @@ PROTO Wolfgang [
                             Wolfgang_lower_armMesh {
                             }
                           ]
-                        }
-                        DEF r_wrist Solid {
-                          translation 0.000000 -0.226182 -0.023500
-                          rotation 0.577350 -0.577352 -0.577350 2.094399
-                          name "r_wrist"
                         }
                       ]
                       name "r_lower_arm"
@@ -765,20 +776,23 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000003 1.000000 -0.000003
           anchor -0.001500 0.076500 0.203500
-          dampingConstant 0.53
+          dampingConstant IS MX64-damping
           staticFriction 0.0
         }
         device [
           RotationalMotor {
             name "LShoulderPitch"
-            maxVelocity 10.33
+            maxVelocity IS MX64-vel
             minPosition -3.14159
             maxPosition 3.14159
-            maxTorque 5.43
+            maxTorque IS MX64-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "LShoulderPitch_sensor"
@@ -812,19 +826,22 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 0.000004 0.000004
                 anchor -0.016950 0.042000 -0.000000
-                dampingConstant 0.53
+                dampingConstant IS MX64-damping
                 staticFriction 0.0
               }
               device [
                 RotationalMotor {
                   name "LShoulderRoll"
-                  maxVelocity 10.33
+                  maxVelocity IS MX64-vel
                   minPosition -3.14159
-                  maxTorque 5.43
+                  maxTorque IS MX64-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "LShoulderRoll_sensor"
@@ -882,20 +899,23 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis -1.000000 -0.000004 -0.000004
                       anchor -0.024000 -0.144000 -0.023500
-                      dampingConstant 0.53
+                      dampingConstant IS MX64-damping
                       staticFriction 0.0
                     }
                     device [
                       RotationalMotor {
                         name "LElbow"
-                        maxVelocity 10.33
+                        maxVelocity IS MX64-vel
                         minPosition -1.5708
                         maxPosition 1.0472
-                        maxTorque 5.43
+                        maxTorque IS MX64-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "LElbow_sensor"
@@ -936,11 +956,6 @@ PROTO Wolfgang [
                             Wolfgang_lower_armMesh {
                             }
                           ]
-                        }
-                        DEF l_wrist Solid {
-                          translation -0.000000 -0.225182 -0.023500
-                          rotation -0.577350 0.577352 -0.577350 2.094399
-                          name "l_wrist"
                         }
                       ]
                       name "l_lower_arm"
@@ -1217,20 +1232,23 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000000 -0.000004 -1.000000
           anchor 0.000000 -0.055000 0.000000
-          dampingConstant 0.92
+          dampingConstant IS MX106-damping
           staticFriction 0.0
         }
         device [
           RotationalMotor {
             name "RHipYaw"
-            maxVelocity 8.22
+            maxVelocity IS MX106-vel
             minPosition -1.5708
             maxPosition 1.5708
-            maxTorque 7.57
+            maxTorque IS MX106-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "RHipYaw_sensor"
@@ -1248,20 +1266,23 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 -0.000003 -0.000004
                 anchor -0.046000 0.041400 0.000000
-                dampingConstant 0.92
+                dampingConstant IS MX106-damping
                 staticFriction 0.0
               }
               device [
                 RotationalMotor {
                   name "RHipRoll"
-                  maxVelocity 8.22
+                  maxVelocity IS MX106-vel
                   minPosition -1.5708
                   maxPosition 1.5708
-                  maxTorque 7.57
+                  maxTorque IS MX106-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "RHipRoll_sensor"
@@ -1311,20 +1332,23 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis -1.000000 -0.000004 0.000004
                       anchor -0.026500 -0.000000 -0.069100
-                      dampingConstant 0.92
+                      dampingConstant IS MX106-damping
                       staticFriction 0.0
                     }
                     device [
                       RotationalMotor {
                         name "RHipPitch"
-                        maxVelocity 8.22
+                        maxVelocity IS MX106-vel
                         minPosition -2.0944
                         maxPosition 1.91986
-                        maxTorque 7.57
+                        maxTorque IS MX106-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "RHipPitch_sensor"
@@ -1406,19 +1430,23 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        HingeJoint {
+                        HingeJointWithBacklash {
+                          gearMass IS gearMass
+                          backlash IS backlash
                           jointParameters HingeJointParameters {
                             axis -0.000000 -1.000000 -0.000000
                             anchor -0.003923 -0.051000 -0.169043
-                            dampingConstant 1.0
+                            dampingConstant IS XH540W270-damping
                             staticFriction 0.0
+                            springConstant IS spring-constant
                           }
                           device [
                             RotationalMotor {
                               name "RKnee"
-                              maxVelocity 10.0
+                              maxVelocity IS XH540W270-vel
                               minPosition -2.96706
-                              maxTorque 10.0
+                              maxTorque IS XH540W270-torque
+                              controlPID IS pid
                             }
                             PositionSensor {
                               name "RKnee_sensor"
@@ -1492,20 +1520,23 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              HingeJoint {
+                              HingeJointWithBacklash {
+                                gearMass IS gearMass
+                                backlash IS backlash
                                 jointParameters HingeJointParameters {
                                   axis 0.000000 -1.000000 0.000004
                                   anchor 0.000000 0.050500 -0.170000
-                                  dampingConstant 0.92
+                                  dampingConstant IS XH540W270-damping
                                   staticFriction 0.0
                                 }
                                 device [
                                   RotationalMotor {
                                     name "RAnklePitch"
-                                    maxVelocity 8.22
+                                    maxVelocity IS MX106-vel
                                     minPosition -1.74533
                                     maxPosition 1.22173
-                                    maxTorque 7.57
+                                    maxTorque IS MX106-torque
+                                    controlPID IS pid
                                   }
                                   PositionSensor {
                                     name "RAnklePitch_sensor"
@@ -1555,20 +1586,22 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    HingeJoint {
+                                    HingeJointWithBacklash {
+                                      gearMass IS gearMass
+                                      backlash IS backlash
                                       jointParameters HingeJointParameters {
                                         axis -1.000000 0.000004 0.000000
                                         anchor -0.069100 -0.000000 -0.026000
-                                        dampingConstant 0.92
+                                        dampingConstant IS MX106-torque
                                         staticFriction 0.0
                                       }
                                       device [
                                         RotationalMotor {
                                           name "RAnkleRoll"
-                                          maxVelocity 8.22
+                                          maxVelocity IS MX106-vel
                                           minPosition -1.0472
                                           maxPosition 1.0472
-                                          maxTorque 7.57
+                                          controlPID IS pid
                                         }
                                         PositionSensor {
                                           name "RAnkleRoll_sensor"
@@ -1641,16 +1674,6 @@ PROTO Wolfgang [
                                               Wolfgang_foot_coverMesh {
                                               }
                                             ]
-                                          }
-                                          DEF r_sole Solid {
-                                            translation 0.015222 0.090768 -0.052900
-                                            rotation -0.000000 0.000000 1.000000 1.570800
-                                            name "r_sole"
-                                          }
-                                          DEF r_toe Solid {
-                                            translation 0.015000 0.184500 -0.037750
-                                            rotation -0.000000 0.000000 1.000000 1.570800
-                                            name "r_toe"
                                           }
                                           DEF rlb TouchSensor {
                                             type "force-3d"
@@ -2295,20 +2318,23 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000000 -0.000004 -1.000000
           anchor 0.000000 0.055000 -0.000000
-          dampingConstant 0.92
+          dampingConstant IS MX106-damping
           staticFriction 0.0
         }
         device [
           RotationalMotor {
             name "LHipYaw"
-            maxVelocity 8.22
+            maxVelocity IS MX106-vel
             minPosition -1.5708
             maxPosition 1.5708
-            maxTorque 7.57
+            maxTorque IS MX106-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "LHipYaw_sensor"
@@ -2326,20 +2352,23 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 0.000003 -0.000004
                 anchor -0.046000 0.041400 0.000000
-                dampingConstant 0.92
+                dampingConstant IS MX106-damping
                 staticFriction 0.0
               }
               device [
                 RotationalMotor {
                   name "LHipRoll"
-                  maxVelocity 8.22
+                  maxVelocity IS MX106-vel
                   minPosition -1.5708
                   maxPosition 1.5708
-                  maxTorque 7.57
+                  maxTorque IS MX106-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "LHipRoll_sensor"
@@ -2389,20 +2418,23 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis 1.000000 -0.000000 0.000004
                       anchor 0.026000 0.000000 -0.069100
-                      dampingConstant 0.92
+                      dampingConstant IS MX106-damping
                       staticFriction 0.0
                     }
                     device [
                       RotationalMotor {
                         name "LHipPitch"
-                        maxVelocity 8.22
+                        maxVelocity IS MX106-vel
                         minPosition -1.91986
                         maxPosition 2.0944
-                        maxTorque 7.57
+                        maxTorque IS MX106-torque
+                        controlPID IS pid
                       }
                       PositionSensor {
                         name "LHipPitch_sensor"
@@ -2484,19 +2516,23 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        HingeJoint {
+                        HingeJointWithBacklash {
+                          gearMass IS gearMass
+                          backlash IS backlash
                           jointParameters HingeJointParameters {
                             axis 0.000001 0.000004 1.000000
                             anchor 0.004356 -0.168793 0.049000
-                            dampingConstant 1.0
+                            dampingConstant IS XH540W270-damping
                             staticFriction 0.0
+                            springConstant IS spring-constant
                           }
                           device [
                             RotationalMotor {
                               name "LKnee"
-                              maxVelocity 10.0
+                              maxVelocity IS XH540W270-vel
                               maxPosition 2.96706
-                              maxTorque 10.0
+                              maxTorque IS XH540W270-torque
+                              controlPID IS pid
                             }
                             PositionSensor {
                               name "LKnee_sensor"
@@ -2570,20 +2606,23 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              HingeJoint {
+                              HingeJointWithBacklash {
+                                gearMass IS gearMass
+                                backlash IS backlash
                                 jointParameters HingeJointParameters {
                                   axis 0.000003 1.000000 0.000004
                                   anchor 0.000000 -0.050500 -0.170000
-                                  dampingConstant 0.92
+                                  dampingConstant IS MX106-damping
                                   staticFriction 0.0
                                 }
                                 device [
                                   RotationalMotor {
                                     name "LAnklePitch"
-                                    maxVelocity 8.22
+                                    maxVelocity IS MX106-vel
                                     minPosition -1.22173
                                     maxPosition 1.74533
-                                    maxTorque 7.57
+                                    maxTorque IS MX106-torque
+                                    controlPID IS pid
                                   }
                                   PositionSensor {
                                     name "LAnklePitch_sensor"
@@ -2633,20 +2672,23 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    HingeJoint {
+                                    HingeJointWithBacklash {
+                                      gearMass IS gearMass
+                                      backlash IS backlash
                                       jointParameters HingeJointParameters {
                                         axis 1.000000 0.000004 0.000004
                                         anchor 0.069100 0.000000 -0.026000
-                                        dampingConstant 0.92
+                                        dampingConstant IS MX106-damping
                                         staticFriction 0.0
                                       }
                                       device [
                                         RotationalMotor {
                                           name "LAnkleRoll"
-                                          maxVelocity 8.22
+                                          maxVelocity IS MX106-vel
                                           minPosition -1.0472
                                           maxPosition 1.0472
-                                          maxTorque 7.57
+                                          maxTorque IS MX106-torque
+                                          controlPID IS pid
                                         }
                                         PositionSensor {
                                           name "LAnkleRoll_sensor"
@@ -2719,16 +2761,6 @@ PROTO Wolfgang [
                                               Wolfgang_load_cellMesh {
                                               }
                                             ]
-                                          }
-                                          DEF l_sole Solid {
-                                            translation -0.015222 0.090768 -0.052900
-                                            rotation 0.000000 -0.000000 1.000000 1.570800
-                                            name "l_sole"
-                                          }
-                                          DEF l_toe Solid {
-                                            translation -0.015000 0.184500 -0.037750
-                                            rotation 0.000000 -0.000000 1.000000 1.570800
-                                            name "l_toe"
                                           }
                                           DEF llb TouchSensor {
                                             type "force-3d"
@@ -3373,20 +3405,23 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000000 -0.000003 1.000000
           anchor -0.009500 0.000000 0.234500
-          dampingConstant 0.53
+          dampingConstant IS MX64-damping
           staticFriction 0.0
         }
         device [
           RotationalMotor {
             name "HeadPan"
-            maxVelocity 10.33
+            maxVelocity IS MX64-vel
             minPosition -2.0944
             maxPosition 2.0944
-            maxTorque 5.43
+            maxTorque IS MX64-torque
+            controlPID IS pid
           }
           PositionSensor {
             name "HeadPan_sensor"
@@ -3412,20 +3447,23 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 0.000000 1.000000 -0.000004
                 anchor 0.036000 0.023500 -0.024000
-                dampingConstant 0.53
+                dampingConstant IS MX64-damping
                 staticFriction 0.0
               }
               device [
                 RotationalMotor {
                   name "HeadTilt"
-                  maxVelocity 10.33
+                  maxVelocity IS MX64-vel
                   minPosition -1.5708
                   maxPosition 1.0472
-                  maxTorque 5.43
+                  maxTorque IS MX64-torque
+                  controlPID IS pid
                 }
                 PositionSensor {
                   name "HeadTilt_sensor"
@@ -3491,12 +3529,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  DEF camera Solid {
-                    translation 0.043700 0.079500 -0.023500
-                    rotation -1.000000 -0.000000 -0.000000 1.570800
-                    name "camera"
-                  }
-                  DEF camera_optical_frame Solid {
+                  DEF camera_optical_frame Transform {
                     translation 0.043200 0.080000 -0.023500
                     rotation 0.707105 -0.000001 0.707108 3.141591
                     children [
@@ -3516,16 +3549,10 @@ PROTO Wolfgang [
                         }
                       }
                     ]
-                    name "camera_optical_frame"
                   }
-                  DEF imu_frame_2 Solid {
+                  DEF imu_frame_2 Transform {
                     translation -0.025450 0.053500 -0.023500
                     rotation -1.000000 -0.000000 -0.000000 1.570800
-                    physics Physics {
-                    }
-                    boundingObject Box {
-                    size 0.01 0.01 0.01
-                    }
                     children [
                       Accelerometer {
                         name "imu_head accelerometer"
@@ -3534,7 +3561,6 @@ PROTO Wolfgang [
                         name "imu_head gyro"
                       }
                     ]
-                    name "imu_frame_2"
                   }
                 ]
                 name "head"
