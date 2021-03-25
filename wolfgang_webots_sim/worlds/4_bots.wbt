@@ -1,7 +1,7 @@
 #VRML_SIM R2021a utf8
 DEF world_info WorldInfo {
   basicTimeStep 8
-  optimalThreadCount 8
+  optimalThreadCount 4
   physicsDisableTime 0.1
   physicsDisableLinearThreshold 0.1
   physicsDisableAngularThreshold 0.1
