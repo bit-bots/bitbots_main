@@ -24,6 +24,8 @@ PROTO Wolfgang [
   field  SFFloat     XH540W270-torque     8.775
   field  SFFloat     XH540W270-vel        4.82
   field  SFFloat     XH540W270-damping    1.82
+  field  SFFloat     gearMass        0.001
+  field  SFFloat     backlash        0.01
 ]
 {
   Robot {
@@ -322,7 +324,9 @@ PROTO Wolfgang [
         ]
         name "imu_frame"
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000003 -1.000000 -0.000000
           anchor -0.001500 -0.076500 0.203500
@@ -369,7 +373,9 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 -0.000004 0.000004
                 anchor -0.016950 0.042000 0.000000
@@ -439,7 +445,9 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis 1.000000 -0.000004 -0.000004
                       anchor 0.024000 -0.144000 -0.023500
@@ -774,7 +782,9 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000003 1.000000 -0.000003
           anchor -0.001500 0.076500 0.203500
@@ -821,7 +831,9 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 0.000004 0.000004
                 anchor -0.016950 0.042000 -0.000000
@@ -891,7 +903,9 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis -1.000000 -0.000004 -0.000004
                       anchor -0.024000 -0.144000 -0.023500
@@ -1226,7 +1240,9 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000000 -0.000004 -1.000000
           anchor 0.000000 -0.055000 0.000000
@@ -1257,7 +1273,9 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 -0.000003 -0.000004
                 anchor -0.046000 0.041400 0.000000
@@ -1320,7 +1338,9 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis -1.000000 -0.000004 0.000004
                       anchor -0.026500 -0.000000 -0.069100
@@ -1415,7 +1435,9 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        HingeJoint {
+                        HingeJointWithBacklash {
+                          gearMass IS gearMass
+                          backlash IS backlash
                           jointParameters HingeJointParameters {
                             axis -0.000000 -1.000000 -0.000000
                             anchor -0.003923 -0.051000 -0.169043
@@ -1502,7 +1524,9 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              HingeJoint {
+                              HingeJointWithBacklash {
+                                gearMass IS gearMass
+                                backlash IS backlash
                                 jointParameters HingeJointParameters {
                                   axis 0.000000 -1.000000 0.000004
                                   anchor 0.000000 0.050500 -0.170000
@@ -1565,7 +1589,9 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    HingeJoint {
+                                    HingeJointWithBacklash {
+                                      gearMass IS gearMass
+                                      backlash IS backlash
                                       jointParameters HingeJointParameters {
                                         axis -1.000000 0.000004 0.000000
                                         anchor -0.069100 -0.000000 -0.026000
@@ -2304,7 +2330,9 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000000 -0.000004 -1.000000
           anchor 0.000000 0.055000 -0.000000
@@ -2335,7 +2363,9 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 1.000000 0.000003 -0.000004
                 anchor -0.046000 0.041400 0.000000
@@ -2398,7 +2428,9 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJoint {
+                  HingeJointWithBacklash {
+                    gearMass IS gearMass
+                    backlash IS backlash
                     jointParameters HingeJointParameters {
                       axis 1.000000 -0.000000 0.000004
                       anchor 0.026000 0.000000 -0.069100
@@ -2493,7 +2525,9 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        HingeJoint {
+                        HingeJointWithBacklash {
+                          gearMass IS gearMass
+                          backlash IS backlash
                           jointParameters HingeJointParameters {
                             axis 0.000001 0.000004 1.000000
                             anchor 0.004356 -0.168793 0.049000
@@ -2580,7 +2614,9 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              HingeJoint {
+                              HingeJointWithBacklash {
+                                gearMass IS gearMass
+                                backlash IS backlash
                                 jointParameters HingeJointParameters {
                                   axis 0.000003 1.000000 0.000004
                                   anchor 0.000000 -0.050500 -0.170000
@@ -2643,7 +2679,9 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    HingeJoint {
+                                    HingeJointWithBacklash {
+                                      gearMass IS gearMass
+                                      backlash IS backlash
                                       jointParameters HingeJointParameters {
                                         axis 1.000000 0.000004 0.000004
                                         anchor 0.069100 0.000000 -0.026000
@@ -3383,7 +3421,9 @@ PROTO Wolfgang [
           }
         }
       }
-      HingeJoint {
+      HingeJointWithBacklash {
+        gearMass IS gearMass
+        backlash IS backlash
         jointParameters HingeJointParameters {
           axis 0.000000 -0.000003 1.000000
           anchor -0.009500 0.000000 0.234500
@@ -3422,7 +3462,9 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJoint {
+            HingeJointWithBacklash {
+              gearMass IS gearMass
+              backlash IS backlash
               jointParameters HingeJointParameters {
                 axis 0.000000 1.000000 -0.000004
                 anchor 0.036000 0.023500 -0.024000
