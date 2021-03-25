@@ -263,8 +263,8 @@ void OdometryFuser::odomCallback(const nav_msgs::Odometry::ConstPtr &msg) {
   _odom_update_time = ros::Time::now();
 }
 
-void OdometryFuser::supportCallback(const std_msgs::Char::ConstPtr &msg) {
-  current_support_state_ = msg->data;
+void OdometryFuser::supportCallback(const bitbots_msgs::SupportState msg) {
+  current_support_state_ = msg.state;
 }
 
 int main(int argc, char **argv) {

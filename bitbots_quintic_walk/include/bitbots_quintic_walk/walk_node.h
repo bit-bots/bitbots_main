@@ -29,6 +29,7 @@ https://github.com/Rhoban/model/
 #include <humanoid_league_msgs/RobotControlState.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_msgs/FootPressure.h>
+#include <bitbots_msgs/SupportState.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>

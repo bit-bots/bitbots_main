@@ -16,6 +16,7 @@
 #include <tf2/LinearMath/Transform.h>
 #include <Eigen/Geometry>
 #include <rot_conv/rot_conv.h>
+#include <bitbots_msgs/SupportState.h>
 
 
 class OdometryFuser {
@@ -36,7 +37,7 @@ class OdometryFuser {
 
   void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
   void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);
-  void supportCallback(const std_msgs::Char::ConstPtr &msg);
+  void supportCallback(const bitbots_msgs::SupportState msg);
   tf2::Quaternion getCurrentMotionOdomYaw(tf2::Quaternion motion_odom_rotation);
   tf2::Quaternion getCurrentImuRotationWithoutYaw(tf2::Quaternion imu_rotation);
   tf2::Transform getCurrentRotationPoint();

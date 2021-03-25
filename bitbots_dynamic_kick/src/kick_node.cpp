@@ -30,7 +30,7 @@ KickNode::KickNode(const std::string &ns) :
   engine_.setRobotState(current_state_);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
-  support_foot_publisher_ = node_handle_.advertise<std_msgs::Char>("dynamic_kick_support_state", 1, /* latch = */ true);
+  support_foot_publisher_ = node_handle_.advertise<bitbots_msgs::SupportState>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
   joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &KickNode::jointStateCallback, this);
@@ -259,8 +259,8 @@ bitbots_msgs::JointCommand KickNode::getJointCommand(const bitbots_splines::Join
 }
 
 void KickNode::publishSupportFoot(bool is_left_kick) {
-  std_msgs::Char msg;
-  msg.data = is_left_kick ? 'r' : 'l';
+  bitbots_msgs::SupportState msg;
+  msg.state = is_left_kick ? bitbots_msgs::SupportState::RIGHT : bitbots_msgs::SupportState::LEFT;
   // only publish one time per kick
   if (!was_support_foot_published_) {
     support_foot_publisher_.publish(msg);

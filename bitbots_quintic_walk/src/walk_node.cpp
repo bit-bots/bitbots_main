@@ -32,7 +32,7 @@ WalkNode::WalkNode() :
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_engine_odometry", 1);
-  pub_support_ = nh_.advertise<std_msgs::Char>("walk_support_state", 1, true);
+  pub_support_ = nh_.advertise<bitbots_msgs::SupportState>("walk_support_state", 1, true);
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
   robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robotStateCb, this,
@@ -77,8 +77,8 @@ void WalkNode::run() {
   int odom_counter = 0;
   WalkResponse response;
   // publish the starting support state once, especially for odometry. we always start with the same foot
-  std_msgs::Char sup_state;
-  sup_state.data = 'l';
+  bitbots_msgs::SupportState sup_state;
+  sup_state.state = bitbots_msgs::SupportState::LEFT;
   pub_support_.publish(sup_state);
 
   while (ros::ok()) {
@@ -135,19 +135,20 @@ void WalkNode::calculateAndPublishJointGoals(const WalkResponse &response, doubl
   publishGoals(motor_goals);
 
   // publish current support state
-  std_msgs::Char support_state;
+  bitbots_msgs::SupportState support_state;
   if (walk_engine_.isDoubleSupport()) {
-    support_state.data = 'd';
+    support_state.state = bitbots_msgs::SupportState::DOUBLE;
   } else if (walk_engine_.isLeftSupport()) {
-    support_state.data = 'l';
+    support_state.state = bitbots_msgs::SupportState::LEFT;
   } else {
-    support_state.data = 'r';
+    support_state.state = bitbots_msgs::SupportState::RIGHT;
   }
 
   // publish if foot changed
-  if (current_support_foot_ != support_state.data) {
+  if (current_support_foot_ != support_state.state) {
+    support_state.header.stamp = ros::Time::now();
     pub_support_.publish(support_state);
-    current_support_foot_ = support_state.data;
+    current_support_foot_ = support_state.state;
   }
 
 
