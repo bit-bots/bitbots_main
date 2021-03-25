@@ -44,12 +44,8 @@ DEF amy Wolfgang {
   name "amy"
   controller "<extern>"
 }
-DEF ball SoccerBall {
-  translation 0 -2.5441208454912995e-05 0.07718607870638904
-  rotation 1 0 0 0.0003279304237773247
-  radius 0.0775
-  mass 0.2
-  roll_damping 0.5
+DEF ball RobocupSoccerBall {
+  translation 0 0 0.08
 }
 RobocupSoccerField {
   size "kid"
