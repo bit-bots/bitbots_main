@@ -16,36 +16,84 @@ import actionlib
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 from geometry_msgs.msg import Vector3, Quaternion
 from std_msgs.msg import Bool
+from std_srvs.srv import Empty
 from tf.transformations import quaternion_from_euler
 
+__ids__ = [
+    "HeadPan",
+    "HeadTilt",
+    "LShoulderPitch",
+    "LShoulderRoll",
+    "LElbow",
+    "RShoulderPitch",
+    "RShoulderRoll",
+    "RElbow",
+    "LHipYaw",
+    "LHipRoll",
+    "LHipPitch",
+    "LKnee",
+    "LAnklePitch",
+    "LAnkleRoll",
+    "RHipYaw",
+    "RHipRoll",
+    "RHipPitch",
+    "RKnee",
+    "RAnklePitch",
+    "RAnkleRoll"
+]
+__velocity__ = 5.0
+__accelerations__ = -1.0
+__max_currents__ = -1.0
+
+walkready = JointCommand(
+    joint_names=__ids__,
+    velocities=[__velocity__] * len(__ids__),
+    accelerations=[__accelerations__] * len(__ids__),
+    max_currents=[__max_currents__] * len(__ids__),
+    positions=[
+        0.0,  # HeadPan
+        0.0,  # HeadTilt
+        0.0,  # LShoulderPitch
+        0.0,  # LShoulderRoll
+        0.79,  # LElbow
+        0.0,  # RShoulderPitch
+        0.0,  # RShoulderRoll
+        -0.79,  # RElbow
+        -0.0112,  # LHipYaw
+        0.0615,  # LHipRoll
+        0.4732,  # LHipPitch
+        1.0058,  # LKnee
+        -0.4512,  # LAnklePitch
+        0.0625,  # LAnkleRoll
+        0.0112,  # RHipYaw
+        -0.0615,  # RHipRoll
+        -0.4732,  # RHipPitch
+        -1.0059,  # RKnee
+        0.4512,  # RAnklePitch
+        -0.0625,  # RAnkleRoll
+    ])
 msg = """
 BitBots Teleop
 --------------
-Walk around:
-    q    w    e
-    a    s    d   
+Walk around:            Move head:
+    q    w    e         u    i    o
+    a    s    d         j    k    l
+                        m    ,    .  
 
-q/e: turn left/right
-a/d: left/rigth
-w/s: forward/back
-
-Move head:
-    u    i    o
-    j    k    l
-    m    ,    .        
-
-k: zero head position
-i/,: up/down
-j/l: left/right
-u/o/m/.: combinations
+q/e: turn left/right    k: zero head position
+a/d: left/rigth         i/,: up/down
+w/s: forward/back       j/l: left/right
+                        u/o/m/.: combinations     
 
 Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
 
-y: kick left
-c: kick right
-Y: walk kick left
-C: walk kick right
+y: kick left    Y: walk kick left
+c: kick right   C: walk kick right
+
+f: play walkready animation
+r: rest robot in simulation
+R: rest ball in simulation
 
 CTRL-C to quit
 
@@ -143,6 +191,10 @@ if __name__ == "__main__":
     head_tilt_step = 0.05
 
     walk_kick_pub = rospy.Publisher("kick", Bool, queue_size=1)
+    joint_pub = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=1)
+
+    reset_robot = rospy.ServiceProxy("/initial_pose", Empty)
+    reset_ball = rospy.ServiceProxy("/reset_ball", Empty)
 
     print(msg)
 
@@ -200,6 +252,22 @@ if __name__ == "__main__":
             elif key == 'C':
                 # kick right walk
                 walk_kick_pub.publish(True)
+            elif key == 'f':
+                # play walkready animation
+                walkready.header.stamp = rospy.Time.now()
+                joint_pub.publish(walkready)
+            elif key == 'r':
+                # reset robot in sim
+                try:
+                    reset_robot()
+                except:
+                    pass
+            elif key == 'R':
+                # rest ball in sim
+                try:
+                    reset_ball()
+                except:
+                    pass
             else:
                 x = 0
                 y = 0
