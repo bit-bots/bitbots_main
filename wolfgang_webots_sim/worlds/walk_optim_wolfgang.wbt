@@ -1,7 +1,7 @@
 #VRML_SIM R2021b utf8
 DEF world_info WorldInfo {
   basicTimeStep 8
-  optimalThreadCount 1
+  optimalThreadCount 8
   physicsDisableTime 0.1
   physicsDisableLinearThreshold 0.1
   physicsDisableAngularThreshold 0.1
@@ -30,7 +30,7 @@ DEF world_info WorldInfo {
 }
 Viewpoint {
   orientation 0.5822646357855299 -0.5251883903055194 -0.6206005547869271 1.9346482193122416
-  position -5.946917013599383 1.0058339968097092 1.133931538668616
+  position -4.202834140442779 2.0691769763877104 0.9004083608899398
 }
 TexturedBackground {
   texture "stadium_dry"
@@ -38,18 +38,16 @@ TexturedBackground {
 TexturedBackgroundLight {
   texture "stadium_dry"
 }
+DEF amy Wolfgang {
+  translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
+  name "amy"
+  controller "<extern>"
+  supervisor TRUE
+}
 Floor {
   rotation 1 0 0 1.57
   contactMaterial "grass"
   size 100 100
   tileSize 2 2
-}
-DEF amy Nao {
-  name "amy"
-  degreeOfFreedom 21
-  controller "<extern>"
-  supervisor TRUE
-  contactMaterial "default"
-  footContactMaterial "default"
-  fingerContactMaterial "default"
 }

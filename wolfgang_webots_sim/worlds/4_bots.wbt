@@ -1,15 +1,42 @@
 #VRML_SIM R2021a utf8
 DEF world_info WorldInfo {
+  basicTimeStep 8
+  optimalThreadCount 4
+  physicsDisableTime 0.1
+  physicsDisableLinearThreshold 0.1
+  physicsDisableAngularThreshold 0.1
+  contactProperties [
+    ContactProperties {
+      material1 "grass"
+      coulombFriction [
+        0.5
+      ]
+      softCFM 0.03
+    }
+    ContactProperties {
+      material1 "grass"
+      material2 "robocup soccer ball"
+      coulombFriction [
+        0.5
+      ]
+      bounce 0.76
+      softCFM 0.05
+    }
+    ContactProperties {
+      material2 "robocup soccer ball"
+      bounce 0.76
+    }
+  ]
 }
 Viewpoint {
   orientation 0.22117367669305005 -0.29950907520213504 -0.9281037219026977 1.9370678888666262
   position -8.03329852760357 2.9409863465290784 8.855008346617208
 }
 TexturedBackground {
-  texture "stadium"
+  texture "stadium_dry"
 }
 TexturedBackgroundLight {
-  texture "stadium"
+  texture "stadium_dry"
 }
 DEF amy Wolfgang {
   translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
@@ -35,14 +62,11 @@ DEF donna Wolfgang {
   name "donna"
   controller "<extern>"
 }
-DEF ball SoccerBall {
-  translation 0 -2.5441208454912995e-05 0.07718607870638904
-  rotation 1 0 0 0.0003279304237773247
-  radius 0.0775
-  mass 0.2
-  roll_damping 0.5
+DEF ball RobocupSoccerBall {
+  translation 0 0 0.08
 }
-RobotstadiumSoccerFieldHumanoid {
+RobocupSoccerField {
+  size "kid"
 }
 DEF supervisor_robot hl_supervisor {
   name "supervisor_robot"

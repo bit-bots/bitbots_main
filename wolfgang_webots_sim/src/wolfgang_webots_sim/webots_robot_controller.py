@@ -10,10 +10,12 @@ from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 
 from bitbots_msgs.msg import JointCommand, FootPressure
 
+CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
+
 
 class RobotController:
     def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns='',
-                 recognize=False):
+                 recognize=False, camera_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -27,6 +29,7 @@ class RobotController:
         """
         self.ros_active = ros_active
         self.recognize = recognize
+        self.camera_active = camera_active
         if not external_controller:
             self.robot_node = Robot()
         self.walkready = [0] * 20
@@ -54,7 +57,7 @@ class RobotController:
             self.pressure_sensors = []
             for name in pressure_sensor_names:
                 sensor = self.robot_node.getDevice(name)
-                sensor.enable(30)
+                sensor.enable(self.timestep)
                 self.pressure_sensors.append(sensor)
 
         elif robot == 'darwin':
@@ -113,7 +116,9 @@ class RobotController:
             self.gyro_head = self.robot_node.getDevice("imu_head gyro")
             self.gyro_head.enable(self.timestep)
         self.camera = self.robot_node.getDevice(camera_name)
-        self.camera.enable(self.timestep)
+        self.camera_counter = 0
+        if self.camera_active:
+            self.camera.enable(self.timestep*CAMERA_DIVIDER)
         if self.recognize:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
@@ -166,6 +171,13 @@ class RobotController:
                                0, 0, 1, 0]
             self.pub_cam_info.publish(self.cam_info)
 
+        if robot == "op3":
+            # start pose
+            command = JointCommand()
+            command.joint_names = ["r_sho_roll", "l_sho_roll"]
+            command.positions = [-math.tau/8, math.tau/8]
+            self.command_cb(command)
+
     def mat_from_fov_and_resolution(self, fov, res):
         return 0.5 * res * (math.cos((fov / 2)) / math.sin((fov / 2)))
 
@@ -184,10 +196,12 @@ class RobotController:
     def publish_ros(self):
         self.publish_imu()
         self.publish_joint_states()
-        self.publish_camera()
+        if self.camera_active and self.camera_counter == 0:
+            self.publish_camera()
         self.publish_pressure()
         if self.recognize:
             self.save_recognition()
+        self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
 
     def command_cb(self, command: JointCommand):
         for i, name in enumerate(command.joint_names):
@@ -263,7 +277,8 @@ class RobotController:
 
     def publish_imu(self):
         self.pub_imu.publish(self.get_imu_msg(head=False))
-        self.pub_imu_head.publish(self.get_imu_msg(head=True))
+        if self.is_wolfgang:
+            self.pub_imu_head.publish(self.get_imu_msg(head=True))
 
     def publish_camera(self):
         img_msg = Image()
