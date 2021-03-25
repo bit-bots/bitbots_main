@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   bitbots_docs
   rotconv
+  bitbots_msgs
 )
 
 find_package(Eigen3 REQUIRED)

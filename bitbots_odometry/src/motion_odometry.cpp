@@ -9,10 +9,10 @@ MotionOdometry::MotionOdometry() {
   pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
   pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
   pnh.param<std::string>("odom_frame", odom_frame_, "odom");
-  current_support_state_ = 'n';
-  previous_support_state_ = 'n';
-  std::string current_support_link = r_sole_frame_;
-  std::string next_support_link;
+  current_support_state_ = -1;
+  previous_support_state_ = -1;
+  std::string previous_support_link = r_sole_frame_;
+  std::string current_support_link;
   ros::Subscriber walk_support_state_sub =
       n.subscribe("walk_support_state", 1, &MotionOdometry::supportCallback, this, ros::TransportHints().tcpNoDelay());
   ros::Subscriber kick_support_state_sub =
@@ -26,6 +26,8 @@ MotionOdometry::MotionOdometry() {
   // set the origin to 0. will be set correctly on recieving first support state
   odometry_to_support_foot_.setOrigin({0, 0, 0});
   odometry_to_support_foot_.setRotation(tf2::Quaternion(0, 0, 0, 1));
+
+  ros::Time foot_change_time;
 
   static tf2_ros::TransformBroadcaster br;
   tf2_ros::TransformListener tf_listener(tf_buffer_);
@@ -44,35 +46,37 @@ MotionOdometry::MotionOdometry() {
       ROS_WARN_THROTTLE(30, "No joint states received. Will not provide odometry.");
     } else {
       // check if step finished, meaning left->right or right->left support. double support is skipped
-      // Mean abstand im dubble support?
-      // Sind die daten immer synchron zur motion
-      // Published die motion diese infos im richtigen moment?
-      if ((current_support_state_ == 'l' && previous_support_state_ == 'r') ||
-          (current_support_state_ == 'r' && previous_support_state_ == 'l')) {
-        if (previous_support_state_ == 'l') {
-          //Namen irreführend, bis logik falsch
-          current_support_link = l_sole_frame_;
-          next_support_link = r_sole_frame_;
-        } else {
+      // the support foot change is published when the joint goals for the last movements are published.
+      // it takes some time till the joints actually reach this position, this can create some offset
+      // but since we skip the double support phase, we basically take the timepoint when the double support phase is
+      // finished. This means both feet did not move and this should create no offset.
+      if ((current_support_state_ == bitbots_msgs::SupportState::LEFT && previous_support_state_ == bitbots_msgs::SupportState::RIGHT) ||
+          (current_support_state_ == bitbots_msgs::SupportState::RIGHT && previous_support_state_ == bitbots_msgs::SupportState::LEFT)) {
+          foot_change_time = current_support_state_time_;
+        if (previous_support_state_ == bitbots_msgs::SupportState::LEFT) {
+          previous_support_link = l_sole_frame_;
           current_support_link = r_sole_frame_;
-          next_support_link = l_sole_frame_;
+        } else {
+          previous_support_link = r_sole_frame_;
+          current_support_link = l_sole_frame_;
         }
 
         try {
-          // add the transform between current and next support link to the odometry transform
-          geometry_msgs::TransformStamped current_to_next_support_msg =
-              tf_buffer_.lookupTransform(current_support_link, next_support_link, ros::Time(0));// Nicht jetzt, sondern letzter tick im dubble support
-          tf2::Transform current_to_next_support = tf2::Transform();
-          tf2::fromMsg(current_to_next_support_msg.transform, current_to_next_support);
+          // add the transform between previous and current support link to the odometry transform.
+          // we wait a bit for the transform as the joint messages are maybe a bit behind
+          geometry_msgs::TransformStamped previous_to_current_support_msg =
+              tf_buffer_.lookupTransform(previous_support_link, current_support_link, foot_change_time, ros::Duration(0.1));
+          tf2::Transform previous_to_current_support = tf2::Transform();
+          tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
           // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
-          current_to_next_support.setOrigin({
-                                                current_to_next_support.getOrigin().x(),
-                                                current_to_next_support.getOrigin().y(),
+          previous_to_current_support.setOrigin({
+                                                previous_to_current_support.getOrigin().x(),
+                                                previous_to_current_support.getOrigin().y(),
                                                 0});
           tf2::Quaternion q;
-          q.setRPY(0, 0, tf2::getYaw(current_to_next_support.getRotation()));
-          current_to_next_support.setRotation(q);
-          odometry_to_support_foot_ = odometry_to_support_foot_ * current_to_next_support;
+          q.setRPY(0, 0, tf2::getYaw(previous_to_current_support.getRotation()));
+          previous_to_current_support.setRotation(q);
+          odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
         } catch (tf2::TransformException &ex) {
           ROS_WARN("%s", ex.what());
           ros::Duration(1.0).sleep();
@@ -80,23 +84,24 @@ MotionOdometry::MotionOdometry() {
         }
 
         // update current support link for transform from foot to base link
-        current_support_link = next_support_link;
+        previous_support_link = current_support_link;
 
-        // remember the support state change
-        previous_support_state_ = current_support_state_;
+        // remember the support state change but skip the double support phase
+        if (current_support_state_ != bitbots_msgs::SupportState::DOUBLE){
+            previous_support_state_ = current_support_state_;
+        }
       }
 
       //publish odometry and if wanted transform to base_link
       try {
         geometry_msgs::TransformStamped
-            current_support_to_base_msg = tf_buffer_.lookupTransform(current_support_link, base_link_frame_, ros::Time(0));
+            current_support_to_base_msg = tf_buffer_.lookupTransform(previous_support_link, base_link_frame_, ros::Time(0));
         tf2::Transform current_support_to_base;
         tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
         tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
         geometry_msgs::TransformStamped odom_to_base_link_msg = geometry_msgs::TransformStamped();
         odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
-        odom_to_base_link_msg.header.stamp = ros::Time::now();
-        //? Müsste zeit von TF sein?
+        odom_to_base_link_msg.header.stamp = current_support_to_base_msg.header.stamp;
         odom_to_base_link_msg.header.frame_id = odom_frame_;
         odom_to_base_link_msg.child_frame_id = base_link_frame_;
         if (publish_walk_odom_tf) {
@@ -106,7 +111,7 @@ MotionOdometry::MotionOdometry() {
 
         // odometry as message
         nav_msgs::Odometry odom_msg;
-        odom_msg.header.stamp = ros::Time::now();
+        odom_msg.header.stamp = current_support_to_base_msg.header.stamp;
         odom_msg.header.frame_id = odom_frame_;
         odom_msg.child_frame_id = base_link_frame_;
         odom_msg.pose.pose.position.x = odom_to_base_link_msg.transform.translation.x;
@@ -126,17 +131,18 @@ MotionOdometry::MotionOdometry() {
   }
 }
 
-void MotionOdometry::supportCallback(const std_msgs::Char msg) { // Use timestamp
-  current_support_state_ = msg.data;
+void MotionOdometry::supportCallback(const bitbots_msgs::SupportState msg) {
+  current_support_state_ = msg.state;
+  current_support_state_time_ = msg.header.stamp;
 
-  // remember if we recieved first support state, only remember left or right
-  if (previous_support_state_ == 'n' && current_support_state_ != 'd') {
+  // remember if we received first support state, only remember left or right
+  if (previous_support_state_ == -1 && current_support_state_ != bitbots_msgs::SupportState::DOUBLE) {
     std::string current_support_link;
-    if (current_support_state_ == 'l') {
-      previous_support_state_ = 'r';
+    if (current_support_state_ == bitbots_msgs::SupportState::LEFT) {
+      previous_support_state_ = bitbots_msgs::SupportState::RIGHT;
       current_support_link= l_sole_frame_;
     } else {
-      previous_support_state_ = 'l';
+      previous_support_state_ = bitbots_msgs::SupportState::LEFT;
       current_support_link= r_sole_frame_;
     }
     // on receiving first support state we should also set the location in the world correctly
