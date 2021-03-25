@@ -160,9 +160,9 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
   }
 }
 
-void ConvenienceFramesBroadcaster::supportFootCallback(const std_msgs::Char::ConstPtr &msg) {
+void ConvenienceFramesBroadcaster::supportFootCallback(const bitbots_msgs::SupportState msg) {
   got_support_foot_ = true;
-  is_left_support = (msg->data == 'l');
+  is_left_support = (msg.state == bitbots_msgs::SupportState::LEFT);
 }
 
 void ConvenienceFramesBroadcaster::ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg) {

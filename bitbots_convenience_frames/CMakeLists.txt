@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   rospy
   humanoid_league_msgs
+  bitbots_msgs
 )
 
 catkin_package()

@@ -6,6 +6,7 @@
 #include <tf2/utils.h>
 #include <humanoid_league_msgs/PoseWithCertainty.h>
 #include <humanoid_league_msgs/PoseWithCertaintyArray.h>
+#include <bitbots_msgs/SupportState.h>
 
 #include <utility>
 
@@ -23,7 +24,7 @@ class ConvenienceFramesBroadcaster {
   bool is_left_support{false};
   bool got_support_foot_{false};
   void publishTransform(std::string header_frame_id, std::string child_frame_id, double x, double y, double z);
-  void supportFootCallback(const std_msgs::Char::ConstPtr &msg);
+  void supportFootCallback(const bitbots_msgs::SupportState msg);
   void ballsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg);
   void goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg);
   void goalPostsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg);
