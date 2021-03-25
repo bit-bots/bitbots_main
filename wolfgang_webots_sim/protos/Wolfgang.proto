@@ -307,14 +307,9 @@ PROTO Wolfgang [
           }
         ]
       }
-      DEF imu_frame Solid {
+      DEF imu_frame Transform {
         translation -0.036975 -0.047461 0.224000
         rotation 0.000000 1.000000 0.000000 0.000000
-        physics Physics {
-        }
-        boundingObject Box {
-        size 0.01 0.01 0.01
-        }
         children [
           Accelerometer {
             name "imu accelerometer"
@@ -323,7 +318,6 @@ PROTO Wolfgang [
             name "imu gyro"
           }
         ]
-        name "imu_frame"
       }
       HingeJointWithBacklash {
         gearMass IS gearMass
@@ -502,11 +496,6 @@ PROTO Wolfgang [
                             Wolfgang_lower_armMesh {
                             }
                           ]
-                        }
-                        DEF r_wrist Solid {
-                          translation 0.000000 -0.226182 -0.023500
-                          rotation 0.577350 -0.577352 -0.577350 2.094399
-                          name "r_wrist"
                         }
                       ]
                       name "r_lower_arm"
@@ -960,11 +949,6 @@ PROTO Wolfgang [
                             Wolfgang_lower_armMesh {
                             }
                           ]
-                        }
-                        DEF l_wrist Solid {
-                          translation -0.000000 -0.225182 -0.023500
-                          rotation -0.577350 0.577352 -0.577350 2.094399
-                          name "l_wrist"
                         }
                       ]
                       name "l_lower_arm"
@@ -1677,16 +1661,6 @@ PROTO Wolfgang [
                                               Wolfgang_foot_coverMesh {
                                               }
                                             ]
-                                          }
-                                          DEF r_sole Solid {
-                                            translation 0.015222 0.090768 -0.052900
-                                            rotation -0.000000 0.000000 1.000000 1.570800
-                                            name "r_sole"
-                                          }
-                                          DEF r_toe Solid {
-                                            translation 0.015000 0.184500 -0.037750
-                                            rotation -0.000000 0.000000 1.000000 1.570800
-                                            name "r_toe"
                                           }
                                           DEF rlb TouchSensor {
                                             type "force-3d"
@@ -2769,16 +2743,6 @@ PROTO Wolfgang [
                                               }
                                             ]
                                           }
-                                          DEF l_sole Solid {
-                                            translation -0.015222 0.090768 -0.052900
-                                            rotation 0.000000 -0.000000 1.000000 1.570800
-                                            name "l_sole"
-                                          }
-                                          DEF l_toe Solid {
-                                            translation -0.015000 0.184500 -0.037750
-                                            rotation 0.000000 -0.000000 1.000000 1.570800
-                                            name "l_toe"
-                                          }
                                           DEF llb TouchSensor {
                                             type "force-3d"
                                             translation -0.060000 -0.007000 -0.034000
@@ -3544,12 +3508,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  DEF camera Solid {
-                    translation 0.043700 0.079500 -0.023500
-                    rotation -1.000000 -0.000000 -0.000000 1.570800
-                    name "camera"
-                  }
-                  DEF camera_optical_frame Solid {
+                  DEF camera_optical_frame Transform {
                     translation 0.043200 0.080000 -0.023500
                     rotation 0.707105 -0.000001 0.707108 3.141591
                     children [
@@ -3569,16 +3528,10 @@ PROTO Wolfgang [
                         }
                       }
                     ]
-                    name "camera_optical_frame"
                   }
-                  DEF imu_frame_2 Solid {
+                  DEF imu_frame_2 Transform {
                     translation -0.025450 0.053500 -0.023500
                     rotation -1.000000 -0.000000 -0.000000 1.570800
-                    physics Physics {
-                    }
-                    boundingObject Box {
-                    size 0.01 0.01 0.01
-                    }
                     children [
                       Accelerometer {
                         name "imu_head accelerometer"
@@ -3587,7 +3540,6 @@ PROTO Wolfgang [
                         name "imu_head gyro"
                       }
                     ]
-                    name "imu_frame_2"
                   }
                 ]
                 name "head"
