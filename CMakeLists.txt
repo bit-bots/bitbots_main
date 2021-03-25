@@ -26,6 +26,7 @@ add_message_files(
   FootPressure.msg
   JointCommand.msg
   JointTorque.msg
+  SupportState.msg
 )
 
 add_service_files(
