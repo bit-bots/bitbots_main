@@ -18,7 +18,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   pnh.param<std::string>("odom_frame", odom_frame_, "odom");
   pnh.param<std::string>("rotation_frame", rotation_frame_, "rotation");
   pnh.param<std::string>("imu_frame", imu_frame_, "imu_frame");
-  current_support_state_ = 'n';
+  current_support_state_ = -1;
 
   tf2::Quaternion dummy_orientation;
   dummy_orientation.setRPY(0, 0, 0);
@@ -176,10 +176,10 @@ tf2::Quaternion OdometryFuser::getCurrentImuRotationWithoutYaw(tf2::Quaternion i
   tf2::Vector3 robot_vector = tf2::Vector3(0,0,1);
   tf2::Vector3 robot_vector_rotated = robot_vector.rotate(imu_rotation.getAxis(), imu_rotation.getAngle()).normalize();
 
-  // Check if the robots orientation is near the yaw singulateri
+  // Check if the robots orientation is near the yaw singularity
   if (robot_vector_rotated.z() < 0.2)
   {
-    // Use ony a IMU offset during the singulateri
+    // Use ony a IMU offset during the singularity
     return imu_rotation;
   }
 
@@ -210,10 +210,10 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
     fromMsg(rotation_point.transform, rotation_point_tf);
   } catch (tf2::TransformException ex) {
     // otherwise point of rotation is current support foot sole or center point of the soles if double support
-    if (current_support_state_ == 'r' || current_support_state_ == 'l') {
+    if (current_support_state_ == bitbots_msgs::SupportState::RIGHT || current_support_state_ == bitbots_msgs::SupportState::LEFT) {
       try {
         std::string support_frame;
-        if (current_support_state_ == 'r')
+        if (current_support_state_ == bitbots_msgs::SupportState::RIGHT)
           support_frame = r_sole_frame_;
         else
           support_frame = l_sole_frame_;
@@ -223,7 +223,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       } catch (tf2::TransformException ex) {
         ROS_ERROR("%s", ex.what());
       }
-    } else if (current_support_state_ == 'd' || current_support_state_ == 'n') {
+    } else if (current_support_state_ == bitbots_msgs::SupportState::DOUBLE || current_support_state_ == -1) {
       // use point between soles if double support or unknown support
       geometry_msgs::TransformStamped base_to_l_sole;
       base_to_l_sole = tf_buffer_.lookupTransform(base_link_frame_, l_sole_frame_, ros::Time(0));
