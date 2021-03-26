@@ -92,8 +92,8 @@ y: kick left    Y: walk kick left
 c: kick right   C: walk kick right
 
 f: play walkready animation
-r: rest robot in simulation
-R: rest ball in simulation
+r: reset robot in simulation
+R: reset ball in simulation
 
 CTRL-C to quit
 
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
 
     try:
-        while (1):
+        while True:
             key = getKey()
             if key in moveBindings.keys():
                 x += moveBindings[key][0] * x_speed_step
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                 except:
                     pass
             elif key == 'R':
-                # rest ball in sim
+                # reset ball in sim
                 try:
                     reset_ball()
                 except:
