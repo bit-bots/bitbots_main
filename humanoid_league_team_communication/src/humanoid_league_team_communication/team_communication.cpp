@@ -393,29 +393,33 @@ void TeamCommunication::positionCallback(humanoid_league_msgs::PoseWithCertainty
   position_exists_ = ros::Time::now().toSec();
 }
 
-void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg){
+void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg) {
   // TODO: Replace sorting by just filtering for the ball with highest confidence
-  auto sortByConfidence = [](humanoid_league_msgs::PoseWithCertainty& ball1,
-    humanoid_league_msgs::PoseWithCertainty& ball2) -> bool
-  {
+  auto sortByConfidence = [](humanoid_league_msgs::PoseWithCertainty &ball1,
+                             humanoid_league_msgs::PoseWithCertainty &ball2) -> bool {
     return ball1.confidence >= ball2.confidence;
   };
 
   std::sort(msg.poses.begin(), msg.poses.end(), sortByConfidence);  // Sort balls by confidence
   humanoid_league_msgs::PoseWithCertainty ball = msg.poses[0];  // Choose ball with highest confidence
 
-  //conversion from m (ROS message) to mm (self.mitecom)
-  ball_relative_x_ = static_cast<uint64_t>(ball.pose.pose.position.x * 1000.0);
-  ball_relative_y_ = static_cast<uint64_t>(ball.pose.pose.position.y * 1000.0);
-  //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  //ball_belief_ = static_cast<uint64_t>(ball->confidence * 255.0); //TODO transformation
+  // get position
+  // TODO convert position to protocol convention
+  ball_relative_x_ = ball.pose.pose.position.x;
+  ball_relative_y_ = ball.pose.pose.position.y;
+
+  // get belief
+  ball_belief_ = ball.confidence;
+
   //use pythagoras to compute time to ball
-  time_to_position_at_ball_ = static_cast<uint64_t>((sqrt((pow(ball_relative_x_, 2.0) + pow(ball_relative_y_, 2.0))) * 1000.0) / avg_walking_speed_);
+  time_to_position_at_ball_ = sqrt((pow(ball_relative_x_, 2.0) + pow(ball_relative_y_, 2.0))) / avg_walking_speed_;
   time_to_position_at_ball_set_ = true;
-  ball_exists_ = msg.header.stamp.sec;
+
+  // set time to decide if the information is up to date when broadcasting it
+  ball_exists_ = msg.header.stamp.toSec();
 }
 
-void TeamCommunication::goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg) {
+void TeamCommunication::goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray &msg) {
   /* todo von python nach c++ (es gibt keine positions in der msg)
    * todo improve computation of position
    * if msg.positions is None or msg.positions == []:

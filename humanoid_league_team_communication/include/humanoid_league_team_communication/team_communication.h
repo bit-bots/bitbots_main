@@ -91,21 +91,27 @@ class TeamCommunication {
   float position_cov_[3][3];
 
   // Ball
+  float ball_relative_x_ = 0;
+  float ball_relative_y_ = 0;
+  float ball_belief_ = 1;
+  float time_to_position_at_ball_ = 0;
+
   // Goal
   // Obstacle
   // Misc (static parameters)
+  float avg_walking_speed_ = 0;
 
   // auxiliary variables
   bool offensive_side_set_ = false;
   double position_exists_ = 0;
+  double ball_exists_ = 0;
+  bool time_to_position_at_ball_set_ = false;
 
-  int avg_walking_speed_ = 0;
+
   int max_kicking_distance_ = 0;
   uint8_t team_color_ = humanoid_league_msgs::ObstacleRelative::ROBOT_UNDEFINED;
 
-  uint64_t ball_relative_x_ = 0;
-  uint64_t ball_relative_y_ = 0;
-  uint64_t ball_belief_ = 1;
+
 
   /*uint64_t oppgoal_relative_x_;
   uint64_t oppgoal_relative_y_;
@@ -115,15 +121,14 @@ class TeamCommunication {
   std::vector<Tuple3> opponent_robots_;
   std::vector<Tuple3> team_robots_;
 
-  uint64_t time_to_position_at_ball_ = 0;
-  bool time_to_position_at_ball_set_ = false;
+
 
   double frequency_ = 0.0;
 
   //bool world_model_ = false;
 
   int lifetime_ = 0;
-  int ball_exists_ = 0;
+
 
   int obstacles_exists_ = 0;
   double belief_threshold_ = 0;
