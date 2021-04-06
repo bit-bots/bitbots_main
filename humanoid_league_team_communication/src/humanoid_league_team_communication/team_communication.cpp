@@ -372,9 +372,7 @@ void TeamCommunication::positionCallback(humanoid_league_msgs::PoseWithCertainty
   // get orientation
   tf2::Quaternion tf2_quaternion;
   tf2::convert(msg.pose.pose.orientation , tf2_quaternion);
-  double roll, pitch, yaw;
-  tf2::Matrix3x3(tf2_quaternion).getRPY(roll, pitch, yaw);
-  position_orientation_ = static_cast<float>(yaw);
+  position_orientation_ = static_cast<float>(tf2::getYaw(tf2_quaternion));
 
   // get belief
   position_cov_[0][0] = msg.pose.covariance[0];
