@@ -48,7 +48,7 @@ class TeamCommunication {
   void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray &msg);
 
   // UDP parameters
-  UdpConnection *udp_connection;
+  UdpConnection *udp_connection_;
 
   // ROS node parameters
   ros::NodeHandle nh_;

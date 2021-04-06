@@ -4,60 +4,53 @@ using namespace robocup;
 using namespace humanoid;
 
 TeamCommunication::TeamCommunication() : nh_() {
-    // --- Params ---
-    ros::NodeHandle pnh("~");
-    int team;
-    int player;
-    nh_.getParam("team_id", team);
-    nh_.getParam("bot_id", player);
+  // --- Params ---
+  ros::NodeHandle pnh("~");
+  int team;
+  int player;
+  nh_.getParam("team_id", team);
+  nh_.getParam("bot_id", player);
 
-    int port;
-    pnh.getParam("port", port);
-    //publishing rate in Hz
-    pnh.getParam("rate", frequency_);
-    pnh.getParam("avg_walking_speed", avg_walking_speed_);
-    pnh.getParam("max_kicking_distance", max_kicking_distance_);
-    int teamcolor;
-    pnh.getParam("team_color", teamcolor);
-    team_color_ = teamcolor;
-    //pnh.getParam("world_model", world_model_);
-    pnh.getParam("lifetime", lifetime_);
-    pnh.getParam("belief_threshold", belief_threshold_);
+  int port;
+  pnh.getParam("port", port);
+  //publishing rate in Hz
+  pnh.getParam("rate", frequency_);
+  pnh.getParam("avg_walking_speed", avg_walking_speed_);
+  pnh.getParam("max_kicking_distance", max_kicking_distance_);
+  int teamcolor;
+  pnh.getParam("team_color", teamcolor);
+  team_color_ = teamcolor;
+  pnh.getParam("lifetime", lifetime_);
+  pnh.getParam("belief_threshold", belief_threshold_);
 
-    pnh.getParam("team_data", teamdata_topic_);
-    pnh.getParam("strategy", strategy_topic_);
-    pnh.getParam("robot_state", robot_state_topic_);
-    pnh.getParam("goal", goal_topic_);
-    //pnh.getParam("world_model_node", world_model_topic_);
-    pnh.getParam("position", position_topic_);
-    pnh.getParam("ball", ball_topic_);
-    pnh.getParam("obstacles", obstacles_topic_);
+  pnh.getParam("team_data", teamdata_topic_);
+  pnh.getParam("strategy", strategy_topic_);
+  pnh.getParam("robot_state", robot_state_topic_);
+  pnh.getParam("goal", goal_topic_);
+  pnh.getParam("position", position_topic_);
+  pnh.getParam("ball", ball_topic_);
+  pnh.getParam("obstacles", obstacles_topic_);
 
-    // --- Init UDP Connection ---
-    udp_connection = new UdpConnection(port);
+  std::fill(*position_cov_, *position_cov_ + 3*3, 0);
 
-    // --- Initialize Topics ---
-    publisher_ = nh_.advertise<humanoid_league_msgs::TeamData>(teamdata_topic_, 10);
+  // --- Init UDP Connection ---
+  udp_connection_ = new UdpConnection(port);
 
-    sub_role_ = nh_.subscribe(strategy_topic_, 1, &TeamCommunication::strategyCallback, this,
-                              ros::TransportHints().tcpNoDelay());
-    sub_robot_state_ = nh_.subscribe(robot_state_topic_, 1, &TeamCommunication::robotStateCallback,
-                                     this, ros::TransportHints().tcpNoDelay());
-    sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
-                              ros::TransportHints().tcpNoDelay());
+  // --- Initialize Topics ---
+  publisher_ = nh_.advertise<humanoid_league_msgs::TeamData>(teamdata_topic_, 10);
 
-    //if(world_model_){
-    //  sub_world_ = nh_.subscribe(world_model_topic_, 1, &TeamCommunication::worldCallback, this,
-    //                            ros::TransportHints().tcpNoDelay());
-    //}
-    //else{
-    sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
-                                  ros::TransportHints().tcpNoDelay());
-    sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballsCallback, this,
-                              ros::TransportHints().tcpNoDelay());
-    sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
+  sub_role_ = nh_.subscribe(strategy_topic_, 1, &TeamCommunication::strategyCallback, this,
+                            ros::TransportHints().tcpNoDelay());
+  sub_robot_state_ = nh_.subscribe(robot_state_topic_, 1, &TeamCommunication::robotStateCallback,
                                    this, ros::TransportHints().tcpNoDelay());
-    //}
+  sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
+                            ros::TransportHints().tcpNoDelay());
+  sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
+                                ros::TransportHints().tcpNoDelay());
+  sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballsCallback, this,
+                            ros::TransportHints().tcpNoDelay());
+  sub_obstacles_ = nh_.subscribe(obstacles_topic_, 1, &TeamCommunication::obstaclesCallback,
+                                 this, ros::TransportHints().tcpNoDelay());
 }
 
 void TeamCommunication::run() {
