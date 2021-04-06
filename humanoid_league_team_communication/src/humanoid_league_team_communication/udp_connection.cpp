@@ -31,11 +31,11 @@ UdpConnection::~UdpConnection() {
     close(socketfd);
 }
 
-void UdpConnection::send_data(Message* send_msg) {
+void UdpConnection::send_data(Message send_msg) {
     // prepare message
     // convert to string
     std::string send_str;
-    send_msg->SerializeToString(&send_str);
+    send_msg.SerializeToString(&send_str);
     // convert to char buffer
     char send_char[send_str.size()];
     std::size_t length = send_str.copy(send_char, send_str.size());

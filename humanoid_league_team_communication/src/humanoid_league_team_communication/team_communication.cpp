@@ -76,7 +76,15 @@ void TeamCommunication::recvThread() {
 
 void TeamCommunication::sendThread(const ros::TimerEvent &) {
   if (state_ != PENALISED) {
-    Message* send_msg;
+    Message send_msg;
+
+    // set timestamp
+    ros::Time time = ros::Time::now();
+    ::google::protobuf::Timestamp *proto_timestamp = new ::google::protobuf::Timestamp();
+    proto_timestamp->set_seconds(time.sec);
+    proto_timestamp->set_nanos(time.nsec);
+    send_msg.set_allocated_timestamp(proto_timestamp);
+
     //    //state
     //    mitecom_.set_state(state_);
     //    mitecom_.set_action(action_);
@@ -284,9 +292,11 @@ void TeamCommunication::publishData(Message* received_msg){
 //    offensive_side.push_back(rob_data.get_offensive_side());
 //  }
 //
-//  // build message
-//  humanoid_league_msgs::TeamData message;
-//  message.header.stamp = ros::Time::now();
+  // build message
+  humanoid_league_msgs::TeamData message;
+  message.header.stamp.sec = google::protobuf::util::TimeUtil::TimestampToSeconds(received_msg->timestamp());
+  message.header.stamp.nsec =
+      google::protobuf::util::TimeUtil::TimestampToNanoseconds(received_msg->timestamp()) % int(pow(10, 9));
 //
 //    //Due to the message refactoring, the team data msg only includes information of one robot. This counteracts the
 //    // Mitecom concept. Therefore, no received information will be published.
