@@ -34,12 +34,12 @@ class TeamCommunication {
  public:
   TeamCommunication();
   void run();
-  void sendThread(const ros::TimerEvent&);
+  void sendThread(const ros::TimerEvent &);
 
  private:
   static void* startRecvThread(void* context);
   void recvThread();
-  void publishData(const MiTeCom::TeamRobotData& team_data);
+  void publishData(Message* received_msg);
   void strategyCallback(humanoid_league_msgs::Strategy msg);
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(humanoid_league_msgs::PoseWithCertainty msg);
