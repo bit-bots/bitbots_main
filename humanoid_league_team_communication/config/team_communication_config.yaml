@@ -16,9 +16,6 @@ max_kicking_distance: 1000
 # other values are invalid
 team_color: 2
 
-#use world model, not implemented right now
-world_model: False
-
 #lifetime of data [s]
 lifetime: 3
 
@@ -30,7 +27,6 @@ team_data: 'team_data'
 strategy: 'strategy'
 robot_state: 'robot_state'
 goal: 'goal_posts_relative'
-world_model_node: 'local_world_model'
 position: 'pose_with_certainty'
 ball: 'balls_relative'
 obstacles: 'obstacles_relative'

@@ -9,7 +9,6 @@
 #include "humanoid_league_msgs/ObstacleRelative.h"
 #include "humanoid_league_msgs/RobotControlState.h"
 #include "humanoid_league_msgs/Strategy.h"
-//#include "humanoid_league_msgs/Model.h"
 #include "humanoid_league_msgs/PoseWithCertainty.h"
 #include "humanoid_league_msgs/PoseWithCertaintyArray.h"
 #include <ros/ros.h>
@@ -45,9 +44,8 @@ class TeamCommunication {
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(humanoid_league_msgs::PoseWithCertainty msg);
   void ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg);
-  void goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray& msg);
-  void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg);
-  //void worldCallback(const humanoid_league_msgs::Model& msg);
+  void goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray &msg);
+  void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray &msg);
 
   // UDP parameters
   UdpConnection *udp_connection;
@@ -60,7 +58,6 @@ class TeamCommunication {
   ros::Subscriber sub_role_;
   ros::Subscriber sub_robot_state_;
   ros::Subscriber sub_goal_;
-  //ros::Subscriber sub_world_;
   ros::Subscriber sub_position_;
   ros::Subscriber sub_ball_;
   ros::Subscriber sub_obstacles_;
@@ -71,7 +68,6 @@ class TeamCommunication {
   std::string strategy_topic_;
   std::string robot_state_topic_;
   std::string goal_topic_;
-  //std::string world_model_topic_;
   std::string position_topic_;
   std::string ball_topic_;
   std::string obstacles_topic_;
@@ -125,7 +121,6 @@ class TeamCommunication {
 
   double frequency_ = 0.0;
 
-  //bool world_model_ = false;
 
   int lifetime_ = 0;
 

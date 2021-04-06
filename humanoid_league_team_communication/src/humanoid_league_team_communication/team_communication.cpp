@@ -477,40 +477,6 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
   obstacles_exists_ = ros::Time::now().sec;
 }
 
-/**
-void TeamCommunication::worldCallback(const humanoid_league_msgs::Model& msg){
-  //ball
-  ballsCallback(msg.ball);
-
-  //position
-  //conversion from m (ROS message) to mm (self.mitecom)
-  position_x_ = static_cast<uint64_t>(msg.position.pose.pose.position.x * 1000);
-  position_y_ = static_cast<uint64_t>(msg.position.pose.pose.position.y * 1000);
-  tf2::Quaternion quaternion(msg.position.pose.pose.orientation.x, msg.position.pose.pose.orientation.y,
-                             msg.position.pose.pose.orientation.z, msg.position.pose.pose.orientation.w);
-  double yaw = tf2::getYaw(quaternion);
-  position_orientation_ = static_cast<uint64_t>(yaw * 1000.0);
-  // convert covariance matrix to confidence, so Mitecom can send it as int
-  double sum = 0;
-  int elements = 0;
-  for (auto const& matrixelement : msg.position.pose.covariance){
-    sum += matrixelement;
-    if (matrixelement > 0){
-      // count number of significant elements in the matrix
-      elements += 1;
-    }
-  }
-  // TODO sinnvollerere Normalisierung
-  double covariance_mean = sum/elements;
-  //the scale is different in mitecom_, so we have to transfer from 0...1 to 0...255
-  position_belief_ = static_cast<uint64_t>(covariance_mean * 255);
-  ROS_INFO_STREAM(covariance_mean);
-
-  //obstacles
-  obstaclesCallback(msg.obstacles);
-}
-**/
-
 
 int main(int argc, char **argv){
   ROS_INFO("Starting Team Communication");
