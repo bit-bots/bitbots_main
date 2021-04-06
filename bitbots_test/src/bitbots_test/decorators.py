@@ -1,26 +1,30 @@
 """Useful decorators for modifying the behavior of test functions as well as :class:`unittest.TestCase` classes."""
-import typing
+from typing import *
 import os
-from unittest import skipIf, skipUnless, skip
+import abc
+from functools import wraps
+from unittest import skip, SkipTest
 from bitbots_test.test_case import TestCase
 
 
-def tag(*tags: str) -> typing.Callable:
+def tag(*tags: str) -> Callable:
     """
-    Apply a set of tags to a test function or subclass of :class:`unittest.TestCase`
+    Apply a set of tags to a subclass of :class:`unittest.TestCase`
 
     When multiple @tag decorators are defined, their tags will be merged together.
 
-    This will enable the user to filter test execution to a subset of tests by specifying a list of tags to run as well
-    as a list of tags to forbid. This is done defining the environment variable *TEST_TAGS* as a comma separated list.
+    This will enable the user to filter test execution to a subset of tests by specifying a list of tags
+    to run as well as a list of tags to forbid. This is done defining the environment variable *TEST_TAGS*
+    as a comma separated list.
 
-    Behavior when specifying tags on test execution:
+    Behavior when specifying multiple tags on test execution:
 
     - When no tags are specified by the user, all tests will be run and this decorator has no effect at all.
-    - When only a simple list of tags is specified by the user, only tests which have this tag will be run.
-    - When only forbidden tags are specified by the user, tests with these tags will not run but all other tests will.
-    - When specifying a list of tags as well as forbidden tags, first tests will be filtered to the allowed tags and then
-        again all tests with forbidden tags will be removed.
+    - When a simple list of tags is specified by the user, only tests which have this tag will be run.
+    - When only forbidden tags are specified by the user, tests with these tags will not run but all other
+      tests will.
+    - When specifying a list of tags as well as forbidden tags, first tests will be filtered to the allowed
+      tags and then again all tests with forbidden tags will be removed.
     """
     # sanity checks
     if len(tags) == 0:
@@ -35,86 +39,109 @@ def tag(*tags: str) -> typing.Callable:
         if t == "":
             raise ValueError(f"an empty string is not a valid tag")
 
-    def get_requested_tags() -> typing.Set[str]:
+    def get_requested_tags() -> Set[str]:
         return set(
-            [
-                t
-                for t in os.environ.get("TEST_TAGS", "").split(",")
-                if not t.startswith("!") and t != ""
-            ]
+            [t for t in os.environ.get("TEST_TAGS", "").split(",") if not t.startswith("!") and t != ""]
         )
 
-    def get_forbidden_tags() -> typing.Set[str]:
-        return set(
-            [
-                t[1:]
-                for t in os.environ.get("TEST_TAGS", "").split(",")
-                if t.startswith("!")
-            ]
-        )
+    def get_forbidden_tags() -> Set[str]:
+        return set([t[1:] for t in os.environ.get("TEST_TAGS", "").split(",") if t.startswith("!")])
 
-    def is_test_requested(func: typing.Callable) -> bool:
-        matching_tags = [t for t in func._test_tags_ if t in get_requested_tags()]
+    def is_test_requested(applied_tags: Union[str]) -> bool:
+        matching_tags = [t for t in applied_tags if t in get_requested_tags()]
         return len(matching_tags) > 0
 
-    def is_test_forbidden(func: typing.Callable) -> bool:
-        matching_tags = [t for t in func._test_tags_ if t in get_forbidden_tags()]
+    def is_test_forbidden(applied_tags: Union[str]) -> bool:
+        matching_tags = [t for t in applied_tags if t in get_forbidden_tags()]
         return len(matching_tags) > 0
 
-    def func_decorator(func: typing.Callable) -> typing.Callable:
-        if not hasattr(func, "_test_tags_"):
-            func._test_tags_ = set(tags)
-        else:
-            func._test_tags_ = func._test_tags_.union(set(tags))
+    def conditional_exec(func: Callable, applied_tags: Union[str]) -> Any:
+        """
+        Conditionally execute the given callable but only if the set of applied_tags are specified to be run
+        according to the rules described in the @tag docstring.
 
-        # When no tags are specified by the user, all tests will be run and this decorator has no effect at all
+        :arg applied_tags: The set of tags which are applied to this TestCase
+        """
+
+        # When no tags are specified by the user, the function will simply be run
         if len(get_requested_tags()) == 0 and len(get_forbidden_tags()) == 0:
-            return func
+            return func()
 
-        # When only a simple list of tags is specified by the user, only tests which have this tag will be run
+        # When only a positive list of tags is specified by the user, the function will only be run
+        # if one of the applied_tags is requested
         if len(get_requested_tags()) > 0 and len(get_forbidden_tags()) == 0:
-            if is_test_requested(func):
-                return func
+            if is_test_requested(applied_tags):
+                return func()
             else:
-                return skip(f"none of the tags {func._test_tags_} are requested to be run")(func)
+                raise SkipTest(f"none of the tags {applied_tags} are requested to be run")
 
-        # When only forbidden tags are specified by the user, tests with these tags will not run but all other tests will
+        # When only forbidden tags are specified by the user, the function will run by default but not if
+        # one of the applied_tags is forbidden
         if len(get_requested_tags()) == 0 and len(get_forbidden_tags()) > 0:
-            if is_test_forbidden(func):
-                return skip(f"one of the tags {func._test_tags_} are forbidden from running")(func)
+            if is_test_forbidden(applied_tags):
+                raise SkipTest(f"one of the tags {applied_tags} are forbidden from running")
             else:
-                return func
+                return func()
 
-        # When specifying a list of tags as well as forbidden tags, first tests will be filtered to the allowed tags
+        # When specifying a list of tags as well as forbidden tags,
+        # first tests will be filtered to the allowed tags
         # and then again all tests with forbidden tags will be removed.
         if len(get_requested_tags()) > 0 and len(get_forbidden_tags()) > 0:
-            if is_test_requested(func):
-                if not is_test_forbidden(func):
+            if is_test_requested(applied_tags):
+                if not is_test_forbidden(applied_tags):
                     return func
-                return skip(f"one of the tags {func._test_tags_} are forbidden from running")(func)
-            return skip(f"none of the tags {func._test_tags_} are requested to be run")(func)
+                raise SkipTest(f"one of the tags {applied_tags} are forbidden from running")
+            raise SkipTest(f"none of the tags {applied_tags} are requested to be run")
 
-    def class_decorator(cls: typing.Type) -> typing.Type:
+    def decorator(cls: Type):
+        # sanity checks
+        if type(cls) != type:
+            raise TypeError(f"@tag decorator can only be used on classes and not {type(cls)}")
+
         if not issubclass(cls, TestCase):
-            raise ValueError(
-                f"@tag decorator can only be used on TestCase subclasses and not {cls.__name__}"
-            )
+            raise ValueError(f"@tag decorator can only be used on TestCase subclasses and not {cls.__name__}")
 
-        # manually apply @tag() decorator to all test functions in this TestCase
-        test_funcs = [
-            t for t in dir(cls) if t.startswith("test_") and callable(getattr(cls, t))
-        ]
+        # store the tags in a class attribute so that multiple @tag decorators get merged
+        if not hasattr(cls, "tags"):
+            cls.tags = set(tags)
+        else:
+            cls.tags.update(tags)
+
+        # wrap all test functions in this TestCase to only execute if the relevant tags are specified
+        test_funcs = [t for t in dir(cls) if t.startswith("test_") and callable(getattr(cls, t))]
         for t in test_funcs:
             original_func = getattr(cls, t)
-            decorated_func = tag(*tags)(original_func)
-            setattr(cls, t, decorated_func)
+
+            @wraps(original_func)
+            def new_func(*args, **kwargs):
+                applied_tags = getattr(cls, "tags", set())
+                return conditional_exec(lambda: original_func(*args, **kwargs), applied_tags)
+
+            setattr(cls, t, new_func)
 
         return cls
 
-    def decorator(decorated: typing.Union[typing.Callable, typing.Type]):
-        if type(decorated) == type:
-            return class_decorator(decorated)
+    return decorator
+
+
+class TestRestriction(abc.ABC):
+    @abc.abstractmethod
+    def should_execute(self) -> bool:
+        pass
+
+    def get_reason(self) -> str:
+        return f"{type(self).__name__} restriction prevented test execution"
+
+
+def restrict(restriction: TestRestriction):
+    """
+    Restrict the execution of this test function or :class:`unittest.TestCase` to a dynamically evaluated condition
+    """
+
+    def decorator(decorated: Union[Callable, Type]):
+        if restriction.should_execute():
+            return decorated
         else:
-            return func_decorator(decorated)
+            return skip(restriction.get_reason())(decorated)
 
     return decorator
