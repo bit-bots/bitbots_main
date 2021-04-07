@@ -40,22 +40,20 @@ def tag(*tags: str) -> Callable:
             raise ValueError(f"an empty string is not a valid tag")
 
     def get_requested_tags() -> Set[str]:
-        return set(
-            [t for t in os.environ.get("TEST_TAGS", "").split(",") if not t.startswith("!") and t != ""]
-        )
+        return set(t for t in os.environ.get("TEST_TAGS", "").split(",") if not t.startswith("!") and t != "")
 
     def get_forbidden_tags() -> Set[str]:
-        return set([t[1:] for t in os.environ.get("TEST_TAGS", "").split(",") if t.startswith("!")])
+        return set(t[1:] for t in os.environ.get("TEST_TAGS", "").split(",") if t.startswith("!"))
 
-    def is_test_requested(applied_tags: Union[str]) -> bool:
+    def is_test_requested(applied_tags: Set[str]) -> bool:
         matching_tags = [t for t in applied_tags if t in get_requested_tags()]
         return len(matching_tags) > 0
 
-    def is_test_forbidden(applied_tags: Union[str]) -> bool:
+    def is_test_forbidden(applied_tags: Set[str]) -> bool:
         matching_tags = [t for t in applied_tags if t in get_forbidden_tags()]
         return len(matching_tags) > 0
 
-    def conditional_exec(func: Callable, applied_tags: Union[str]) -> Any:
+    def conditional_exec(func: Callable, applied_tags: Set[str]) -> Any:
         """
         Conditionally execute the given callable but only if the set of applied_tags are specified to be run
         according to the rules described in the @tag docstring.
