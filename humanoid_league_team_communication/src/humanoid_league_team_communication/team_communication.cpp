@@ -3,7 +3,7 @@
 using namespace robocup;
 using namespace humanoid;
 
-TeamCommunication::TeamCommunication() : nh_() {
+TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) {
   // --- Params ---
   ros::NodeHandle pnh("~");
   int team;
@@ -360,26 +360,42 @@ void TeamCommunication::robotStateCallback(humanoid_league_msgs::RobotControlSta
 }
 
 void TeamCommunication::positionCallback(humanoid_league_msgs::PoseWithCertainty msg) {
-  // TODO convert position + orientation to protocol convention
+  // transform robot pose and cov matrix to the map frame
+  geometry_msgs::TransformStamped transform;
+  geometry_msgs::PoseWithCovariance position_map;
+  try {
+    transform = tf_buffer_.lookupTransform("map", "base_footprint", ros::Time(0));
+    tf2::doTransform(msg.pose.pose, position_map.pose, transform);
+    tf2::Stamped<tf2::Transform> tf_transform;
+    tf2::fromMsg(transform, tf_transform);
+    position_map.covariance = tf2::transformCovariance(msg.pose.covariance, tf_transform);
+  }
+  catch (tf2::TransformException &ex) {
+    ROS_WARN("TeamComm: Robot pose is not send due to a transformation error: %s", ex.what());
+    // If the robot pose could not be transformed, it should not be saved and send to the other robots which expect the
+    // robot's pose to be in the map frame.
+    return;
+  }
+
   // get position
-  position_x_ = msg.pose.pose.position.x;
-  position_y_ = msg.pose.pose.position.y;
+  position_x_ = position_map.pose.position.x;
+  position_y_ = position_map.pose.position.y;
 
   // get orientation
   tf2::Quaternion tf2_quaternion;
-  tf2::convert(msg.pose.pose.orientation , tf2_quaternion);
+  tf2::convert(position_map.pose.orientation, tf2_quaternion);
   position_orientation_ = static_cast<float>(tf2::getYaw(tf2_quaternion));
 
   // get belief
-  position_cov_[0][0] = msg.pose.covariance[0];
-  position_cov_[0][1] = msg.pose.covariance[1];
-  position_cov_[0][2] = msg.pose.covariance[5];
-  position_cov_[1][0] = msg.pose.covariance[6];
-  position_cov_[1][1] = msg.pose.covariance[7];
-  position_cov_[1][2] = msg.pose.covariance[11];
-  position_cov_[2][0] = msg.pose.covariance[30];
-  position_cov_[2][1] = msg.pose.covariance[31];
-  position_cov_[2][2] = msg.pose.covariance[35];
+  position_cov_[0][0] = position_map.covariance[0];
+  position_cov_[0][1] = position_map.covariance[1];
+  position_cov_[0][2] = position_map.covariance[5];
+  position_cov_[1][0] = position_map.covariance[6];
+  position_cov_[1][1] = position_map.covariance[7];
+  position_cov_[1][2] = position_map.covariance[11];
+  position_cov_[2][0] = position_map.covariance[30];
+  position_cov_[2][1] = position_map.covariance[31];
+  position_cov_[2][2] = position_map.covariance[35];
 
   position_belief_ = msg.confidence;
 
@@ -397,10 +413,24 @@ void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArr
   std::sort(msg.poses.begin(), msg.poses.end(), sortByConfidence);  // Sort balls by confidence
   humanoid_league_msgs::PoseWithCertainty ball = msg.poses[0];  // Choose ball with highest confidence
 
+  // transform position to map frame
+  geometry_msgs::TransformStamped transform;
+  geometry_msgs::PoseWithCovariance ball_map;
+  try {
+    transform = tf_buffer_.lookupTransform("map", msg.header.frame_id, ros::Time(0));
+    tf2::doTransform(ball.pose.pose, ball_map.pose, transform);
+
+  }
+  catch (tf2::TransformException &ex) {
+    ROS_WARN("TeamComm: Ball is not send due to a transformation error: %s", ex.what());
+    // If the ball could not be transformed, it should not be saved and send to the other robots which expect the ball
+    // to be in the map frame.
+    return;
+  }
+
   // get position
-  // TODO convert position to protocol convention
-  ball_relative_x_ = ball.pose.pose.position.x;
-  ball_relative_y_ = ball.pose.pose.position.y;
+  ball_relative_x_ = ball_map.pose.position.x;
+  ball_relative_y_ = ball_map.pose.position.y;
 
   // get belief
   ball_belief_ = ball.confidence;

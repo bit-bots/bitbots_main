@@ -14,11 +14,12 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <algorithm>
+#include <tf2_ros/transform_listener.h>
 #include <google/protobuf/util/time_util.h>
 #include "robocup_extension.pb.h"
 #include "udp_connection.h"
@@ -53,6 +54,10 @@ class TeamCommunication {
   // ROS node parameters
   ros::NodeHandle nh_;
   ros::Timer timer_;
+
+  // Transformation parameters
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener transform_listener_;
 
   // Subscribers, Publisher, Topics
   ros::Subscriber sub_role_;
