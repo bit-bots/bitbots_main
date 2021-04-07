@@ -3,6 +3,8 @@ ansible_labor
 ansible
 bitbots_docs_internal
 
+**/.idea
+
 **/__pycache__
 
 # auto-generated documentation
