@@ -101,6 +101,7 @@ class TeamCommunication {
   // Obstacle
   // Misc (static parameters)
   float avg_walking_speed_ = 0;
+  int player;
 
   // auxiliary variables
   bool offensive_side_set_ = false;

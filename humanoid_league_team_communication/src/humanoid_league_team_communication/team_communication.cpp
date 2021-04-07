@@ -7,7 +7,6 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
   // --- Params ---
   ros::NodeHandle pnh("~");
   int team;
-  int player;
   nh_.getParam("team_id", team);
   nh_.getParam("bot_id", player);
 
@@ -69,7 +68,10 @@ void TeamCommunication::recvThread() {
   while (ros::ok()) {
     Message *recv_msg;
     recv_msg = udp_connection_->receive_data();
-    publishData(recv_msg);
+    // do not publish the robot's own data
+    if (recv_msg->current_pose().player_id() != player) {
+      publishData(recv_msg);
+    }
     thread_rate.sleep();
   }
 }
@@ -507,7 +509,7 @@ int main(int argc, char **argv) {
   ROS_INFO("Starting Team Communication");
   ros::init(argc, argv, "humanoid_league_team_communication");
   // init node
-  TeamCommunication node = TeamCommunication();
+  TeamCommunication node;
   // run the node
   node.run();
   ros::spin();
