@@ -73,6 +73,11 @@ function(enable_bitbots_tests)
         endif()
     endforeach()
 
+    # check that integration tests are only written in python
+    if (NOT integration_tests_cxx STREQUAL "")
+        message(WARNING "only python integration tests are currently supported but the following C++ files were found: ${integration_tests_cxx}")
+    endif ()
+
     # register all tests with cmake
     find_package(catkin REQUIRED COMPONENTS rostest rosunit)
     catkin_add_nosetests(${ENABLE_BITBOTS_TESTS_UNIT_DIR})
