@@ -6,6 +6,7 @@ bitbots_docs_internal
 **/.idea
 
 **/__pycache__
+**/cmake-build-*
 
 # auto-generated documentation
 **/docs/_build
