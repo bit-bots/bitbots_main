@@ -23,18 +23,11 @@ install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CATKIN_PACKAGE_LIBR_DESTIN
 
 enable_bitbots_docs()
 
-# we cannot use the compiled catkin package of bitbots_test since that would require this package to depend on itself
-# therefore we need to compile the sub cmake file ourselves and include it manually
-configure_file(cmake/enable_bitbots_tests.cmake.in ${CMAKE_BINARY_DIR}/enable_bitbots_tests.cmake @ONLY)
-include(${CMAKE_BINARY_DIR}/enable_bitbots_tests.cmake)
-enable_bitbots_tests()
-
-
-
-
-#catkin_add_gtest(${PROJECT_NAME}_utest test/unit_tests/test_tagged_test_case.cpp)
-#target_link_libraries(${PROJECT_NAME}_utest ${PROJECT_NAME} ${catkin_LIBRARIES})
-
-find_package(Boost REQUIRED)
-catkin_add_gtest(${PROJECT_NAME}_tags test/unit_tests/test_tags.cpp ${SOURCES})
-catkin_add_gtest(${PROJECT_NAME}_test_restrictions test/unit_tests/test_restrictions.cpp ${SOURCES})
+if (CATKIN_ENABLE_TESTING)
+    find_package(Boost REQUIRED)
+    # we cannot use the compiled catkin package of bitbots_test since that would require this package to depend on itself
+    # therefore we need to compile the sub cmake file ourselves and include it manually
+    configure_file(cmake/enable_bitbots_tests.cmake.in ${CMAKE_BINARY_DIR}/enable_bitbots_tests.cmake @ONLY)
+    include(${CMAKE_BINARY_DIR}/enable_bitbots_tests.cmake)
+    enable_bitbots_tests(CXX_SOURCES "${SOURCES}")
+endif()
