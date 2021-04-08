@@ -25,7 +25,6 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
   pnh.getParam("team_data", teamdata_topic_);
   pnh.getParam("strategy", strategy_topic_);
   pnh.getParam("robot_state", robot_state_topic_);
-  pnh.getParam("goal", goal_topic_);
   pnh.getParam("position", position_topic_);
   pnh.getParam("ball", ball_topic_);
   pnh.getParam("obstacles", obstacles_topic_);
@@ -42,8 +41,6 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
                             ros::TransportHints().tcpNoDelay());
   sub_robot_state_ = nh_.subscribe(robot_state_topic_, 1, &TeamCommunication::robotStateCallback,
                                    this, ros::TransportHints().tcpNoDelay());
-  sub_goal_ = nh_.subscribe(goal_topic_, 1, &TeamCommunication::goalCallback, this,
-                            ros::TransportHints().tcpNoDelay());
   sub_position_ = nh_.subscribe(position_topic_, 1, &TeamCommunication::positionCallback, this,
                                 ros::TransportHints().tcpNoDelay());
   sub_ball_ = nh_.subscribe(ball_topic_, 1, &TeamCommunication::ballsCallback, this,
@@ -445,25 +442,7 @@ void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArr
   ball_exists_ = msg.header.stamp.toSec();
 }
 
-void TeamCommunication::goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray &msg) {
-  /* todo von python nach c++ (es gibt keine positions in der msg)
-   * todo improve computation of position
-   * if msg.positions is None or msg.positions == []:
-   * return
-   * post_a = msg.positions[0]
-   * if len(msg.positions) > 1:
-   * post_b = msg.positions[1]
-   * self.oppgoal_relative_x_ = (post_a.x - post_b.x) / 2 + post_a.x
-   * self.oppgoal_relative_y_ = (post_a.y - post_b.y) / 2 + post_a.y
-   * else:
-   * self.oppgoal_relative_x_ = post_a.x
-   * self.oppgoal_relative_y_ = post_a.y
-   * self.oppgoal_belief_ = msg.confidence
-   */
-
-}
-
-void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray& msg){
+void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray &msg) {
   // clear team_robots_ and obstacle:robots because of new data from vision
   team_robots_.clear();
   opponent_robots_.clear();

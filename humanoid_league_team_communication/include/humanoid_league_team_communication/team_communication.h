@@ -45,7 +45,6 @@ class TeamCommunication {
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(humanoid_league_msgs::PoseWithCertainty msg);
   void ballsCallback(humanoid_league_msgs::PoseWithCertaintyArray msg);
-  void goalCallback(const humanoid_league_msgs::PoseWithCertaintyArray &msg);
   void obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray &msg);
 
   // UDP parameters
@@ -62,7 +61,6 @@ class TeamCommunication {
   // Subscribers, Publisher, Topics
   ros::Subscriber sub_role_;
   ros::Subscriber sub_robot_state_;
-  ros::Subscriber sub_goal_;
   ros::Subscriber sub_position_;
   ros::Subscriber sub_ball_;
   ros::Subscriber sub_obstacles_;
@@ -72,7 +70,6 @@ class TeamCommunication {
   std::string teamdata_topic_;
   std::string strategy_topic_;
   std::string robot_state_topic_;
-  std::string goal_topic_;
   std::string position_topic_;
   std::string ball_topic_;
   std::string obstacles_topic_;
@@ -97,7 +94,6 @@ class TeamCommunication {
   float ball_belief_ = 1;
   float time_to_position_at_ball_ = 0;
 
-  // Goal
   // Obstacle
   // Misc (static parameters)
   float avg_walking_speed_ = 0;
@@ -113,11 +109,6 @@ class TeamCommunication {
   int max_kicking_distance_ = 0;
   uint8_t team_color_ = humanoid_league_msgs::ObstacleRelative::ROBOT_UNDEFINED;
 
-
-
-  /*uint64_t oppgoal_relative_x_;
-  uint64_t oppgoal_relative_y_;
-  uint64_t oppgoal_belief_ = 0;*/
 
   using Tuple3 = std::array<uint64_t, 3>;
   std::vector<Tuple3> opponent_robots_;

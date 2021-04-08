@@ -26,7 +26,6 @@ belief_threshold: 0
 team_data: 'team_data'
 strategy: 'strategy'
 robot_state: 'robot_state'
-goal: 'goal_posts_relative'
 position: 'pose_with_certainty'
 ball: 'balls_relative'
 obstacles: 'obstacles_relative'
