@@ -15,10 +15,13 @@
   <url type="bugtracker">https://github.com/bit-bots/bitbots_tools/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>rosunit</depend>
+  <build_depend>bitbots_docs</build_depend>
   <depend>rostest</depend>
   <depend>roscpp</depend>
 
+  <exec_depend>rosunit</exec_depend>
+
+  <test_depend>rosunit</test_depend>
   <test_depend>boost</test_depend>
 
   <test_depend>python-hypothesis</test_depend>
