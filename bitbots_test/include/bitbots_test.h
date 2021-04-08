@@ -36,8 +36,22 @@ namespace bitbots_test {
      * @return Whether this test should be executed right now or not
      */
     bool should_tags_run(const std::set<std::string> &tags);
+
+    /**
+     * Whether or not the test is currently being run on robot hardware.
+     *
+     * Works by checking if the environment variable `IS_ROBOT` is equal to `true`
+     */
+    bool is_on_robot();
 }
 
+/**
+ * This is test documentation
+ */
 #define TEST_TAGS(tags) if (!bitbots_test::should_tags_run(tags)) { GTEST_SKIP(); }
+
+#define TEST_ONLY_ON_ROBOT if (!bitbots_test::is_on_robot()) { GTEST_SKIP(); }
+
+#define TEST_ONLY_WITHOUT_ROBOT if (bitbots_test::is_on_robot()) { GTEsT_SKIP(); }
 
 #endif //BITBOTS_TEST_BITBOTS_TEST_H

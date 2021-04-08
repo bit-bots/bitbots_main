@@ -65,4 +65,12 @@ namespace bitbots_test {
         else
             return impl::is_test_requested(tags) && !impl::is_test_forbidden(tags);
     }
+
+    bool is_on_robot() {
+        auto env = std::getenv("IS_ROBOT");
+        if (env == nullptr || std::string(env) != "true")
+            return false;
+
+        return true;
+    }
 }

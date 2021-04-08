@@ -36,4 +36,5 @@ enable_bitbots_tests()
 #target_link_libraries(${PROJECT_NAME}_utest ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED)
-catkin_add_gtest(${PROJECT_NAME}_utest test/unit_tests/test_tags.cpp ${SOURCES})
+catkin_add_gtest(${PROJECT_NAME}_tags test/unit_tests/test_tags.cpp ${SOURCES})
+catkin_add_gtest(${PROJECT_NAME}_test_restrictions test/unit_tests/test_restrictions.cpp ${SOURCES})
