@@ -15,7 +15,6 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
   //publishing rate in Hz
   pnh.getParam("rate", frequency_);
   pnh.getParam("avg_walking_speed", avg_walking_speed_);
-  pnh.getParam("max_kicking_distance", max_kicking_distance_);
   int teamcolor;
   pnh.getParam("team_color", teamcolor);
   team_color_ = static_cast<Team>(teamcolor);

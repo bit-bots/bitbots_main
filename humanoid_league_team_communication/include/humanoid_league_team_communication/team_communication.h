@@ -97,7 +97,6 @@ class TeamCommunication {
 
   // Obstacle
   // Misc (static parameters)
-  float avg_walking_speed_ = 0;
   int player_;
   robocup::humanoid::Team team_color_ = robocup::humanoid::UNKNOWN_TEAM;
 
@@ -107,10 +106,7 @@ class TeamCommunication {
   double ball_exists_ = 0;
   int lifetime_ = 0;
   double belief_threshold_ = 0;
-
-
-  int max_kicking_distance_ = 0;
-
+  float avg_walking_speed_ = 0;
 
 
   using Tuple3 = std::array<uint64_t, 3>;

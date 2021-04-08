@@ -7,9 +7,6 @@ rate: 1
 # average walking speed in [m/s]
 avg_walking_speed: 0.01
 
-# in mm
-max_kicking_distance: 1000
-
 # set the color of your team
 # 2: red
 # 3: blue
