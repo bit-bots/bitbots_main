@@ -53,6 +53,7 @@ class TeamCommunication {
   // ROS node parameters
   ros::NodeHandle nh_;
   ros::Timer timer_;
+  double frequency_ = 0.0;
 
   // Transformation parameters
   tf2_ros::Buffer tf_buffer_;
@@ -76,11 +77,11 @@ class TeamCommunication {
 
   // parameters send by the TeamComm
   // Strategy
-  uint8_t role_ = humanoid_league_msgs::Strategy::ROLE_IDLING;
-  uint8_t action_ = humanoid_league_msgs::Strategy::ACTION_UNDEFINED;
-  uint8_t offensive_side_ = humanoid_league_msgs::Strategy::SIDE_LEFT;
+  robocup::humanoid::Role role_ = robocup::humanoid::ROLE_IDLING;
+  robocup::humanoid::Action action_ = robocup::humanoid::ACTION_UNDEFINED;
+  robocup::humanoid::OffensiveSide offensive_side_ = robocup::humanoid::SIDE_LEFT;
   // State
-  uint8_t state_ = robocup::humanoid::UNKNOWN_STATE;
+  robocup::humanoid::State state_ = robocup::humanoid::UNKNOWN_STATE;
   // Robots pose
   float position_x_ = 0;
   float position_y_ = 0;
@@ -92,22 +93,24 @@ class TeamCommunication {
   float ball_relative_x_ = 0;
   float ball_relative_y_ = 0;
   float ball_belief_ = 1;
-  float time_to_position_at_ball_ = 0;
+  float time_to_position_at_ball_ = 1000;
 
   // Obstacle
   // Misc (static parameters)
   float avg_walking_speed_ = 0;
-  int player;
+  int player_;
+  robocup::humanoid::Team team_color_ = robocup::humanoid::UNKNOWN_TEAM;
 
   // auxiliary variables
-  bool offensive_side_set_ = false;
+  double strategy_exists_ = 0;
   double position_exists_ = 0;
   double ball_exists_ = 0;
-  bool time_to_position_at_ball_set_ = false;
+  int lifetime_ = 0;
+  double belief_threshold_ = 0;
 
 
   int max_kicking_distance_ = 0;
-  uint8_t team_color_ = humanoid_league_msgs::ObstacleRelative::ROBOT_UNDEFINED;
+
 
 
   using Tuple3 = std::array<uint64_t, 3>;
@@ -115,15 +118,8 @@ class TeamCommunication {
   std::vector<Tuple3> team_robots_;
 
 
-
-  double frequency_ = 0.0;
-
-
-  int lifetime_ = 0;
-
-
   int obstacles_exists_ = 0;
-  double belief_threshold_ = 0;
+
 };
 
 #endif

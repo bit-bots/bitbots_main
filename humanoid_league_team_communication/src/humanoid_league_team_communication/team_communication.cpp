@@ -8,7 +8,7 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
   ros::NodeHandle pnh("~");
   int team;
   nh_.getParam("team_id", team);
-  nh_.getParam("bot_id", player);
+  nh_.getParam("bot_id", player_);
 
   int port;
   pnh.getParam("port", port);
@@ -18,7 +18,7 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
   pnh.getParam("max_kicking_distance", max_kicking_distance_);
   int teamcolor;
   pnh.getParam("team_color", teamcolor);
-  team_color_ = teamcolor;
+  team_color_ = static_cast<Team>(teamcolor);
   pnh.getParam("lifetime", lifetime_);
   pnh.getParam("belief_threshold", belief_threshold_);
 
@@ -66,7 +66,7 @@ void TeamCommunication::recvThread() {
     Message *recv_msg;
     recv_msg = udp_connection_->receive_data();
     // do not publish the robot's own data
-    if (recv_msg->current_pose().player_id() != player) {
+    if (recv_msg->current_pose().player_id() != player_) {
       publishData(recv_msg);
     }
     thread_rate.sleep();
@@ -84,30 +84,59 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
     proto_timestamp->set_nanos(time.nsec);
     send_msg.set_allocated_timestamp(proto_timestamp);
 
-    //    //state
-    //    mitecom_.set_state(state_);
-    //    mitecom_.set_action(action_);
-    //    mitecom_.set_role(role_);
-    //
-    //    mitecom_.set_max_kicking_distance(max_kicking_distance_);
-    //    mitecom_.set_get_avg_walking_speed(avg_walking_speed_);
-    //
-    //    //position
-    //    if (position_belief_ > belief_threshold_ && ros::Time::now().sec - position_exists_ < lifetime_) {
-    //      mitecom_.set_pos(position_x_, position_y_, position_orientation_, position_belief_);
-    //    }
-    //    //ball
-    //    if (ball_belief_ > belief_threshold_ && ros::Time::now().sec - ball_exists_ < lifetime_) {
-    //      mitecom_.set_relative_ball(ball_relative_x_, ball_relative_y_, ball_belief_);
-    //    }
-    //    else{
-    //      // workaround to be able to identify in TeamData Msg which robot has sent the useful data
-    //      mitecom_.set_relative_ball(1000.0, 1000.0, 0.0);
-    //    }
-    //    /*//opponent goal
-    //    if (oppgoal_belief_ > 0) {
-    //        mitecom_.set_opp_goal_relative(oppgoal_relative_x_, oppgoal_relative_y_, oppgoal_belief_);
-    //    }*/
+    // set state
+    send_msg.set_state(state_);
+
+    // set strategy
+    send_msg.set_role(role_);
+    send_msg.set_offensive_side(offensive_side_);
+    send_msg.set_action(action_);
+
+    // set position
+    if (position_belief_ > belief_threshold_ && ros::Time::now().toSec() - position_exists_ < lifetime_) {
+      Robot *current_pose = new Robot();
+      current_pose->set_player_id(player_);
+      fvec3 *pose_position = new fvec3();
+      pose_position->set_x(position_x_);
+      pose_position->set_y(position_y_);
+      pose_position->set_z(position_orientation_);
+      current_pose->set_allocated_position(pose_position);
+      fmat3 *pose_covariance = new fmat3();
+      fvec3 *pose_covariance_x = new fvec3();
+      fvec3 *pose_covariance_y = new fvec3();
+      fvec3 *pose_covariance_z = new fvec3();
+      pose_covariance_x->set_x(position_cov_[0][0]);
+      pose_covariance_x->set_y(position_cov_[0][1]);
+      pose_covariance_x->set_z(position_cov_[0][2]);
+      pose_covariance_y->set_x(position_cov_[1][0]);
+      pose_covariance_y->set_y(position_cov_[1][1]);
+      pose_covariance_y->set_z(position_cov_[1][2]);
+      pose_covariance_z->set_x(position_cov_[2][0]);
+      pose_covariance_z->set_y(position_cov_[2][1]);
+      pose_covariance_z->set_z(position_cov_[2][2]);
+      pose_covariance->set_allocated_x(pose_covariance_x);
+      pose_covariance->set_allocated_y(pose_covariance_y);
+      pose_covariance->set_allocated_z(pose_covariance_z);
+      current_pose->set_allocated_covariance(pose_covariance);
+      current_pose->set_team(team_color_);
+      send_msg.set_allocated_current_pose(current_pose);
+      send_msg.set_position_confidence(position_belief_);
+    }
+
+    // set ball
+    if (ball_belief_ > belief_threshold_ && ros::Time::now().toSec() - ball_exists_ < lifetime_) {
+      Ball *ball = new Ball();
+      fvec3 *ball_position = new fvec3();
+      ball_position->set_x(ball_relative_x_);
+      ball_position->set_y(ball_relative_y_);
+      ball->set_allocated_position(ball_position);
+      send_msg.set_allocated_ball(ball);
+      send_msg.set_ball_confidence(ball_belief_);
+      send_msg.set_time_to_ball(time_to_position_at_ball_);
+    }
+
+    // TODO set obstacles
+
     //    if(ros::Time::now().sec - obstacles_exists_ < lifetime_) {
     //      //opponent robots
     //      if (!opponent_robots_.empty()) {
@@ -166,15 +195,6 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
     //      mitecom_.set_team_robot_b(1000.0, 1000.0, 0.0);
     //      mitecom_.set_team_robot_c(1000.0, 1000.0, 0.0);
     //
-    //    }
-    //
-    //    //time to ball
-    //    if(time_to_position_at_ball_set_ && ros::Time::now().sec - ball_exists_ < lifetime_) {
-    //      mitecom_.set_time_to_ball(time_to_position_at_ball_);
-    //    }
-    //    // strategy
-    //    if(offensive_side_set_) {
-    //      mitecom_.set_offensive_side(offensive_side_);
     //    }
     udp_connection_->send_data(send_msg);
   }
@@ -332,26 +352,26 @@ void TeamCommunication::publishData(Message* received_msg){
 }
 
 void TeamCommunication::strategyCallback(humanoid_league_msgs::Strategy msg) {
-  role_ = msg.role;
-  action_ = msg.action;
-  offensive_side_ = msg.offensive_side;
-  offensive_side_set_ = true;
+  role_ = static_cast<Role>(msg.role);
+  action_ = static_cast<Action>(msg.action);
+  offensive_side_ = static_cast<OffensiveSide>(msg.offensive_side);
+  strategy_exists_ = ros::Time::now().toSec();
 }
 
 void TeamCommunication::robotStateCallback(humanoid_league_msgs::RobotControlState msg) {
-  state_ = msg.state;
+  uint8_t state = msg.state;
   // states in which the robot is penalized by the game controller
-  if (state_ == humanoid_league_msgs::RobotControlState::PENALTY ||
-      state_ == humanoid_league_msgs::RobotControlState::PENALTY_ANIMATION ||
-      state_ == humanoid_league_msgs::RobotControlState::PICKED_UP) {
+  if (state == humanoid_league_msgs::RobotControlState::PENALTY ||
+      state == humanoid_league_msgs::RobotControlState::PENALTY_ANIMATION ||
+      state == humanoid_league_msgs::RobotControlState::PICKED_UP) {
     state_ = PENALISED;
   }
     // state in which the robot is not able to play
-  else if (state_ == humanoid_league_msgs::RobotControlState::STARTUP ||
-      state_ == humanoid_league_msgs::RobotControlState::SHUTDOWN ||
-      state_ == humanoid_league_msgs::RobotControlState::RECORD ||
-      state_ == humanoid_league_msgs::RobotControlState::HCM_OFF ||
-      state_ == humanoid_league_msgs::RobotControlState::HARDWARE_PROBLEM) {
+  else if (state == humanoid_league_msgs::RobotControlState::STARTUP ||
+      state == humanoid_league_msgs::RobotControlState::SHUTDOWN ||
+      state == humanoid_league_msgs::RobotControlState::RECORD ||
+      state == humanoid_league_msgs::RobotControlState::HCM_OFF ||
+      state == humanoid_league_msgs::RobotControlState::HARDWARE_PROBLEM) {
     state_ = UNKNOWN_STATE;
   } else {
     state_ = UNPENALISED;
@@ -436,7 +456,6 @@ void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArr
 
   //use pythagoras to compute time to ball
   time_to_position_at_ball_ = sqrt((pow(ball_relative_x_, 2.0) + pow(ball_relative_y_, 2.0))) / avg_walking_speed_;
-  time_to_position_at_ball_set_ = true;
 
   // set time to decide if the information is up to date when broadcasting it
   ball_exists_ = msg.header.stamp.toSec();
