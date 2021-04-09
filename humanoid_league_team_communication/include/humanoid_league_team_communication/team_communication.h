@@ -4,6 +4,10 @@
 #include <pthread.h>
 #include <vector>
 #include <algorithm>
+
+#include <ros/ros.h>
+#include <google/protobuf/util/time_util.h>
+
 #include "humanoid_league_msgs/TeamData.h"
 #include "humanoid_league_msgs/ObstacleRelativeArray.h"
 #include "humanoid_league_msgs/ObstacleRelative.h"
@@ -11,28 +15,25 @@
 #include "humanoid_league_msgs/Strategy.h"
 #include "humanoid_league_msgs/PoseWithCertainty.h"
 #include "humanoid_league_msgs/PoseWithCertaintyArray.h"
-#include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseWithCovariance.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
-#include <google/protobuf/util/time_util.h>
+
 #include "robocup_extension.pb.h"
 #include "udp_connection.h"
 
 
 /*
- * This node provides ROS connections to a mitecom object. Two threads are started, one for receiving information
- * from other robots and one for sending out information to other robots and to the ROS topics. Information about
- * the current state of the robot are fetched using subscription on multiple topics.
+ * This node provides ROS connections to a protobuf object of the RoboCup protocol. Two threads are started, one for
+ * receiving information from other robots and one for sending out information to other robots and to the ROS topics.
+ * Information about the current state of the robot are fetched using subscription on multiple topics.
  */
 
 // This struct includes the data used to describe another recognized robot.
-struct ObstacleData{
+struct ObstacleData {
   float x;
   float y;
   float belief;
@@ -47,7 +48,7 @@ class TeamCommunication {
   void sendThread(const ros::TimerEvent &);
 
  private:
-  static void* startRecvThread(void* context);
+  static void *startRecvThread(void *context);
   void recvThread();
   void publishData(Message received_msg);
   void strategyCallback(humanoid_league_msgs::Strategy msg);

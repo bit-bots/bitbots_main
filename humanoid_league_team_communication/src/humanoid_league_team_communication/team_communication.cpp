@@ -28,7 +28,7 @@ TeamCommunication::TeamCommunication() : nh_(), transform_listener_(tf_buffer_) 
   pnh.getParam("ball", ball_topic_);
   pnh.getParam("obstacles", obstacles_topic_);
 
-  std::fill(*position_cov_, *position_cov_ + 3*3, 0);
+  std::fill(*position_cov_, *position_cov_ + 3 * 3, 0);
 
   // --- Init UDP Connection ---
   udp_connection_ = new UdpConnection(port);
@@ -135,7 +135,7 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
     }
 
     // set obstacles
-    if(ros::Time::now().toSec() - obstacles_exists_ < lifetime_) {
+    if (ros::Time::now().toSec() - obstacles_exists_ < lifetime_) {
       Robot *current_obstacle;
       for (auto const &obstacle : obstacles_) {
         if (obstacle.belief > belief_threshold_) {
@@ -205,18 +205,16 @@ void TeamCommunication::publishData(Message received_msg) {
   humanoid_league_msgs::ObstacleRelativeArray obstacles;
   obstacles.header.frame_id = "map";
   int num_of_obstacles = received_msg.others_size();
-  for (int i=0; i<num_of_obstacles; i++){
+  for (int i = 0; i < num_of_obstacles; i++) {
     Robot recv_obstacle = received_msg.others(i);
     humanoid_league_msgs::ObstacleRelative obstacle;
     obstacle.pose.pose.pose.position.x = recv_obstacle.position().x();
     obstacle.pose.pose.pose.position.y = recv_obstacle.position().y();
-    if (recv_obstacle.team() == RED){
+    if (recv_obstacle.team() == RED) {
       obstacle.type = humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA;
-    }
-    else if (recv_obstacle.team() == BLUE){
+    } else if (recv_obstacle.team() == BLUE) {
       obstacle.type = humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN;
-    }
-    else if(recv_obstacle.team() == UNKNOWN_TEAM){
+    } else if (recv_obstacle.team() == UNKNOWN_TEAM) {
       obstacle.type = humanoid_league_msgs::ObstacleRelative::ROBOT_UNDEFINED;
     }
     obstacle.playerNumber = recv_obstacle.player_id();

@@ -2,13 +2,12 @@
 <package format="2">
   <name>humanoid_league_team_communication</name>
   <version>2.0.0</version>
-  <description>The humanoid_league_team_communication package provides a ROS wrapper for the MiteCom standard communication
-  protocol developed by the FUmanoids. </description>
+  <description>The humanoid_league_team_communication package provides a ROS wrapper for the Protobuf RoboCup protocol.
+    This is the standard communication protocol developed by the NUbots. </description>
   
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="5flemmin@informatik.uni-hamburg.de">Tanja Flemming</author>
 
   <license>MIT</license>
@@ -20,11 +19,13 @@
   <depend>roscpp</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
   <depend>bitbots_docs</depend>
 
   <export>
     <bitbots_documentation>
-        <status>tested_viz</status>
+        <status>starts</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>
