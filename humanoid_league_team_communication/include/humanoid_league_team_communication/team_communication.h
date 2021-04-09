@@ -31,6 +31,15 @@
  * the current state of the robot are fetched using subscription on multiple topics.
  */
 
+// This struct includes the data used to describe another recognized robot.
+struct ObstacleData{
+  float x;
+  float y;
+  float belief;
+  int player_number;
+  robocup::humanoid::Team teamcolor;
+};
+
 class TeamCommunication {
  public:
   TeamCommunication();
@@ -95,7 +104,9 @@ class TeamCommunication {
   float ball_belief_ = 1;
   float time_to_position_at_ball_ = 1000;
 
-  // Obstacle
+  // Obstacles
+  std::vector<ObstacleData> obstacles_;
+
   // Misc (static parameters)
   int player_;
   robocup::humanoid::Team team_color_ = robocup::humanoid::UNKNOWN_TEAM;
@@ -107,15 +118,7 @@ class TeamCommunication {
   int lifetime_ = 0;
   double belief_threshold_ = 0;
   float avg_walking_speed_ = 0;
-
-
-  using Tuple3 = std::array<uint64_t, 3>;
-  std::vector<Tuple3> opponent_robots_;
-  std::vector<Tuple3> team_robots_;
-
-
   int obstacles_exists_ = 0;
-
 };
 
 #endif

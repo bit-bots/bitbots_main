@@ -134,67 +134,23 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
       send_msg.set_time_to_ball(time_to_position_at_ball_);
     }
 
-    // TODO set obstacles
-
-    //    if(ros::Time::now().sec - obstacles_exists_ < lifetime_) {
-    //      //opponent robots
-    //      if (!opponent_robots_.empty()) {
-    //        mitecom_.set_opponent_robot_a(opponent_robots_[0][0], opponent_robots_[0][1], opponent_robots_[0][2]);
-    //      }
-    //      else{
-    //        // workaround to be able to identify in TeamData Msg which robot has sent the useful data
-    //        mitecom_.set_opponent_robot_a(1000.0, 1000.0, 0.0);
-    //      }
-    //      if (opponent_robots_.size() > 1) {
-    //        mitecom_.set_opponent_robot_b(opponent_robots_[1][0], opponent_robots_[1][1], opponent_robots_[1][2]);
-    //      }
-    //      else{
-    //        mitecom_.set_opponent_robot_b(1000.0, 1000.0, 0.0);
-    //      }
-    //      if (opponent_robots_.size() > 2) {
-    //        mitecom_.set_opponent_robot_c(opponent_robots_[2][0], opponent_robots_[2][1], opponent_robots_[2][2]);
-    //      }
-    //      else{
-    //        mitecom_.set_opponent_robot_c(1000.0, 1000.0, 0.0);
-    //      }
-    //      if (opponent_robots_.size() > 3) {
-    //        mitecom_.set_opponent_robot_d(opponent_robots_[3][0], opponent_robots_[3][1], opponent_robots_[3][2]);
-    //      }
-    //      else{
-    //        mitecom_.set_opponent_robot_d(1000.0, 1000.0, 0.0);
-    //      }
-    //
-    //      //team robots
-    //      if (!team_robots_.empty()) {
-    //        mitecom_.set_team_robot_a(team_robots_[0][0], team_robots_[0][1], team_robots_[0][2]);
-    //      }
-    //      else{
-    //        mitecom_.set_team_robot_a(1000.0, 1000.0, 0.0);
-    //      }
-    //      if (team_robots_.size() > 1) {
-    //        mitecom_.set_team_robot_b(team_robots_[1][0], team_robots_[1][1], team_robots_[1][2]);
-    //      }
-    //      else{
-    //        mitecom_.set_team_robot_b(1000.0, 1000.0, 0.0);
-    //      }
-    //      if (team_robots_.size() > 2) {
-    //        mitecom_.set_team_robot_c(team_robots_[2][0], team_robots_[2][1], team_robots_[2][2]);
-    //      }
-    //      else{
-    //        mitecom_.set_team_robot_c(1000.0, 1000.0, 0.0);
-    //      }
-    //    }
-    //    else{
-    //      // workaround to be able to identify in TeamData Msg which robot has sent the useful data
-    //      mitecom_.set_opponent_robot_a(1000.0, 1000.0, 0.0);
-    //      mitecom_.set_opponent_robot_b(1000.0, 1000.0, 0.0);
-    //      mitecom_.set_opponent_robot_c(1000.0, 1000.0, 0.0);
-    //      mitecom_.set_opponent_robot_d(1000.0, 1000.0, 0.0);
-    //      mitecom_.set_team_robot_a(1000.0, 1000.0, 0.0);
-    //      mitecom_.set_team_robot_b(1000.0, 1000.0, 0.0);
-    //      mitecom_.set_team_robot_c(1000.0, 1000.0, 0.0);
-    //
-    //    }
+    // set obstacles
+    if(ros::Time::now().toSec() - obstacles_exists_ < lifetime_) {
+      Robot *current_obstacle;
+      for (auto const &obstacle : obstacles_) {
+        if (obstacle.belief > belief_threshold_) {
+          current_obstacle = send_msg.add_others();
+          current_obstacle->set_player_id(obstacle.player_number);
+          fvec3 *obstacle_pos = new fvec3();
+          obstacle_pos->set_x(obstacle.x);
+          obstacle_pos->set_y(obstacle.y);
+          current_obstacle->set_allocated_position(obstacle_pos);
+          current_obstacle->set_team(obstacle.teamcolor);
+          send_msg.add_obstacle_confidence(obstacle.belief);
+        }
+      }
+    }
+    // broadcast data
     udp_connection_->send_data(send_msg);
   }
 }
@@ -245,8 +201,31 @@ void TeamCommunication::publishData(Message received_msg) {
   message.ball_relative.confidence = received_msg.ball_confidence();
   message.time_to_position_at_ball = received_msg.time_to_ball();
 
-  // TODO obstacles
+  // obstacles
+  humanoid_league_msgs::ObstacleRelativeArray obstacles;
+  obstacles.header.frame_id = "map";
+  int num_of_obstacles = received_msg.others_size();
+  for (int i=0; i<num_of_obstacles; i++){
+    Robot recv_obstacle = received_msg.others(i);
+    humanoid_league_msgs::ObstacleRelative obstacle;
+    obstacle.pose.pose.pose.position.x = recv_obstacle.position().x();
+    obstacle.pose.pose.pose.position.y = recv_obstacle.position().y();
+    if (recv_obstacle.team() == RED){
+      obstacle.type = humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA;
+    }
+    else if (recv_obstacle.team() == BLUE){
+      obstacle.type = humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN;
+    }
+    else if(recv_obstacle.team() == UNKNOWN_TEAM){
+      obstacle.type = humanoid_league_msgs::ObstacleRelative::ROBOT_UNDEFINED;
+    }
+    obstacle.playerNumber = recv_obstacle.player_id();
+    obstacle.pose.confidence = received_msg.obstacle_confidence(i);
+    obstacles.obstacles.push_back(obstacle);
+  }
+  message.obstacles = obstacles;
 
+  // publish data
   publisher_.publish(message);
 }
 
@@ -361,45 +340,44 @@ void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArr
 }
 
 void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRelativeArray &msg) {
-  // clear team_robots_ and obstacle:robots because of new data from vision
-  team_robots_.clear();
-  opponent_robots_.clear();
+  // clear obstacle array because of new data
+  obstacles_.clear();
 
-  // team color
-  uint8_t opponent_color;
-  if (team_color_ == humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA) {
-    opponent_color = humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN;
-  }
-  else if (team_color_ == humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN) {
-    opponent_color = humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA;
-  }
-  else {
-    ROS_INFO_STREAM("Could not set the input \""
-                        << team_color_
-                        << "\" as team color. the value has to correspond with either ROBOT_MAGENTA or ROBOT_CYAN set in the ObstacleRelative message");
-    return;
-  }
-  uint64_t x;
-  uint64_t y;
-  uint64_t belief = 0;
+  // get data of all recognized robots
+  ObstacleData obstacle_data;
+  for (auto const &obstacle : msg.obstacles) {
+    // only robots are broadcasted
+    if (obstacle.type != humanoid_league_msgs::ObstacleRelative::HUMAN
+        && obstacle.type != humanoid_league_msgs::ObstacleRelative::POLE) {
+      // reset values
+      obstacle_data = {};
 
-  for (auto const& obstacle : msg.obstacles){
-    //only take obstacles that are team mates or opponents
-    if( obstacle.type == team_color_)
-    {
-      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
-      //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0); //TODO confidence
-      team_robots_.push_back({x, y, belief});
-    }
-    else if (obstacle.type == opponent_color){
-      x = static_cast<uint64_t>(obstacle.pose.pose.pose.position.x * 1000.0);
-      y = static_cast<uint64_t>(obstacle.pose.pose.pose.position.y * 1000.0);
-      //belief = static_cast<uint64_t>(obstacle.pose.confidence * 255.0);
-      opponent_robots_.push_back({x, y, belief});
+      // get position
+      obstacle_data.x = obstacle.pose.pose.pose.position.x;
+      obstacle_data.y = obstacle.pose.pose.pose.position.y;
+
+      // get confidence
+      obstacle_data.belief = obstacle.pose.confidence;
+
+      // get player number
+      obstacle_data.player_number = obstacle.playerNumber;
+
+      // get team color
+      if (obstacle.type == humanoid_league_msgs::ObstacleRelative::ROBOT_MAGENTA) {
+        obstacle_data.teamcolor = RED;
+      } else if (obstacle.type == humanoid_league_msgs::ObstacleRelative::ROBOT_CYAN) {
+        obstacle_data.teamcolor = BLUE;
+      } else {
+        obstacle_data.teamcolor = UNKNOWN_TEAM;
+      }
+
+      // store one recognized robot
+      obstacles_.push_back(obstacle_data);
     }
   }
-  obstacles_exists_ = ros::Time::now().sec;
+
+  // set time to decide if the information is up to date when broadcasting it
+  obstacles_exists_ = ros::Time::now().toSec();
 }
 
 int main(int argc, char **argv) {
