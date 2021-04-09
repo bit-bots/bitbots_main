@@ -20,7 +20,7 @@ public:
     UdpConnection(int port);
     ~UdpConnection();
     void send_data(Message send_msg);
-    Message* receive_data();
+    Message receive_data();
 
 private:
     int socketfd;

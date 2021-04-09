@@ -68,15 +68,15 @@ void UdpConnection::send_data(Message send_msg) {
     }
 }
 
-Message* UdpConnection::receive_data() {
+Message UdpConnection::receive_data() {
     // receive data
     char receive_buffer[MAXSIZE];
     recv(socketfd, receive_buffer, sizeof(receive_buffer), 0);
     // convert to string
     std::string recv_str = receive_buffer;
     // convert to protobuf message
-    Message* recv_msg = new Message();
-    recv_msg->ParseFromString(recv_str);
+    Message recv_msg;
+    recv_msg.ParseFromString(recv_str);
 
     return recv_msg;
 }

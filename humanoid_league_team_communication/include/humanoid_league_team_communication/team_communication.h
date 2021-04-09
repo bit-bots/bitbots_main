@@ -40,7 +40,7 @@ class TeamCommunication {
  private:
   static void* startRecvThread(void* context);
   void recvThread();
-  void publishData(Message* received_msg);
+  void publishData(Message received_msg);
   void strategyCallback(humanoid_league_msgs::Strategy msg);
   void robotStateCallback(humanoid_league_msgs::RobotControlState msg);
   void positionCallback(humanoid_league_msgs::PoseWithCertainty msg);
