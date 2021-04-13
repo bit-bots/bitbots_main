@@ -15,3 +15,13 @@ class RosNodeTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
         rospy.init_node(type(self).__name__, anonymous=True)
+
+    def tearDown(self) -> None:
+        super().tearDown()
+
+    @property
+    def test_topic(self):
+        """A ros topic which is local to the current test"""
+        if self._testMethodName:
+            return f"{type(self).__name__}/{self._testMethodName}"
+        return f"{type(self).__name__}"

@@ -1,3 +1,0 @@
-<launch>
-    <test pkg="bitbots_test" type="demo_test.py" test-name="demo_test"/>
-</launch>
