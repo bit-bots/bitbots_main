@@ -19,13 +19,13 @@ catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}_lib
 )
-ADD_SUBDIRECTORY(src/humanoid_league_team_communication/RobocupProtocol)
+ADD_SUBDIRECTORY(../../lib/RobocupProtocol ${CMAKE_CURRENT_BINARY_DIR}/../RobocupProtocol)
 
 include_directories(
         include
         ${Protobuf_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_BINARY_DIR}/src/humanoid_league_team_communication/RobocupProtocol
+        ${CMAKE_CURRENT_BINARY_DIR}/../RobocupProtocol
         ${Boost_INCLUDE_DIRS}
 )
 
