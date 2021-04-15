@@ -2,6 +2,8 @@ PyQt5
 PyYAML
 breathe
 construct
+defusedxml
+filterpy
 matplotlib
 numpy
 opencv-python
