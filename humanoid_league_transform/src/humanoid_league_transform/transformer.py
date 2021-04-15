@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import cv2
 import rospy
 import tf2_ros
 import numpy as np
@@ -38,7 +39,7 @@ class Transformer(object):
         obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "obstacles_in_image")
         field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
                                                         "field_boundary_in_image")
-        line_mask_in_image_topic = rospy.get_param("~masks/line_mask",
+        line_mask_in_image_topic = rospy.get_param("~masks/line_mask/topic",
                                                         "line_mask_in_image")
 
         publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
@@ -97,7 +98,10 @@ class Transformer(object):
         rospy.Subscriber(field_boundary_in_image_topic, PolygonStamped,
                          self._callback_field_boundary, queue_size=1)
         rospy.Subscriber(line_mask_in_image_topic, Image,
-            lambda msg: self._callback_masks(msg, self._line_mask_relative_pc_pub), queue_size=1)
+            lambda msg: self._callback_masks(
+                msg,
+                self._line_mask_relative_pc_pub,
+                scale=rospy.get_param("~masks/line_mask/scale", 1.0)), queue_size=1)
 
         rospy.spin()
 
@@ -265,7 +269,7 @@ class Transformer(object):
 
         self._field_boundary_pub.publish(field_boundary)
 
-    def _callback_masks(self, msg: Image, publisher: rospy.Publisher, encoding='8UC1'):
+    def _callback_masks(self, msg: Image, publisher: rospy.Publisher, encoding='8UC1', scale=1.0):
         """
         Projects a mask from the input image as a pointcloud on the field plane.
         """
@@ -274,8 +278,10 @@ class Transformer(object):
         if field is None:
             return
 
-        # Convert image
-        image = self._cv_bridge.imgmsg_to_cv2(msg, encoding)
+        # Convert subsampled image
+        image = cv2.resize(
+            self._cv_bridge.imgmsg_to_cv2(msg, encoding),
+            (0,0), fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
 
         # Get indices for all non 0 pixels (the pixels which should be displayed in the pointcloud)
         point_idx_tuple = np.where(image != 0)
@@ -286,7 +292,10 @@ class Transformer(object):
         point_idx_array[:, 1] = point_idx_tuple[0]
 
         # Project the pixels onto the field plane
-        points_on_plane_from_cam = self._get_field_intersection_for_pixels(point_idx_array, field)
+        points_on_plane_from_cam = self._get_field_intersection_for_pixels(
+            point_idx_array,
+            field,
+            scale=1.0/scale)
 
         # Make a pointcloud2 out of them
         pc_in_image_frame = pc2.create_cloud_xyz32(msg.header, points_on_plane_from_cam)
@@ -354,14 +363,14 @@ class Transformer(object):
         field_normal = field_point - field_normal
         return field_normal, field_point
 
-    def _get_field_intersection_for_pixels(self, points, field):
+    def _get_field_intersection_for_pixels(self, points, field, scale=1):
         """
         Projects an numpy array of points to the correspoding places on the field plane (in the camera frame).
         """
         camera_projection_matrix = self._camera_info.K
 
-        binning_x = max(self._camera_info.binning_x, 1)
-        binning_y = max(self._camera_info.binning_y, 1)
+        binning_x = max(self._camera_info.binning_x, 1) * scale
+        binning_y = max(self._camera_info.binning_y, 1) * scale
 
         points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] / binning_x)) / (camera_projection_matrix[0] / binning_x)
         points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] / binning_y)) / (camera_projection_matrix[4] / binning_y)
