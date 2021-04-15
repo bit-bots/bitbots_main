@@ -13,9 +13,9 @@ class VisualCompassRecord(AbstractActionElement):
         super(VisualCompassRecord, self).__init__(blackboard, dsd, parameters)
         
         self.index = 0
-        self.pan_speed = 1.0
-        self.tilt_speed = 1.0
-        self.interpolation_steps = 4
+        self.pan_speed = self.blackboard.config['record_pattern_speed_pan']
+        self.tilt_speed = self.blackboard.config['record_pattern_speed_tilt']
+        self.interpolation_steps = self.blackboard.config['interpolation_steps']
 
         # Generate a scan pattern for the left side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
         self.pattern_left = self.blackboard.head_capsule.generate_pattern(  self.blackboard.config['record_pattern_scan_lines'],
@@ -52,8 +52,8 @@ class VisualCompassRecord(AbstractActionElement):
         head_pan, head_tilt = self.pattern[int(self.index)]
 
         # Convert to radians
-        head_pan = head_pan / 180.0 * math.pi
-        head_tilt = head_tilt / 180.0 * math.pi
+        head_pan = math.radians(head_pan)
+        head_tilt = math.radians(head_tilt)
         rospy.logdebug("Searching at {}, {}".format(head_pan, head_tilt))
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
@@ -61,7 +61,7 @@ class VisualCompassRecord(AbstractActionElement):
         distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
 
         # Increment index when position is reached
-        if distance < (self.threshold / 180.0 * math.pi):
+        if distance < math.radians(self.threshold):
             if self.index < len(self.pattern) - 1:
                 self.index = (self.index + 1)
                 # Notify the visual compass that a new ground truth can be set

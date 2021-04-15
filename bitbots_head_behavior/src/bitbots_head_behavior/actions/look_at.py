@@ -69,7 +69,12 @@ class AbstractLookAt(AbstractActionElement):
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         if abs(current_head_pan - head_pan) >= math.radians(min_pan_delta) or \
                 abs(current_head_tilt - head_tilt) >= math.radians(min_tilt_delta):
-            self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
+
+            self.blackboard.head_capsule.send_motor_goals(head_pan,
+                                                          head_tilt,
+                                                          pan_speed=self.pan_speed,
+                                                          tilt_speed=self.tilt_speed)
+
 
 
 class LookDirection(AbstractLookAt):
@@ -111,7 +116,7 @@ class LookDirection(AbstractLookAt):
         else:
             head_pan, head_tilt = self.position_forward
 
-        head_pan = head_pan / 180.0 * math.pi
-        head_tilt = head_tilt / 180.0 * math.pi
+        head_pan = math.radians(head_pan)
+        head_tilt = math.radians(head_tilt)
 
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt)

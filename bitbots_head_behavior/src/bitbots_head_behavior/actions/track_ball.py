@@ -26,4 +26,6 @@ class TrackBall(AbstractLookAt):
         point = self.blackboard.world_model.get_ball_stamped()
 
         # Call internal look-at to turn head to this point (when necessary)
-        self.look_at(point, self.ball_tracking_min_pan_delta, self.ball_tracking_min_tilt_delta)
+        self.look_at(point,
+                     self.ball_tracking_min_pan_delta,
+                     self.ball_tracking_min_tilt_delta)
