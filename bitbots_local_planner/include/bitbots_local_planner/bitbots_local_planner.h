@@ -81,12 +81,12 @@ namespace bitbots_local_planner
         std::vector<geometry_msgs::PoseStamped> global_plan_;
         //transformed global plan in global frame with only the points with are needed for calculation (max_points)
         std::vector<geometry_msgs::PoseStamped> transformed_global_plan_;
-        //check if plan first at first time
-        bool first_setPlan_;
         //last point of the global plan in global frame
         tf::Stamped<tf::Pose> goal_pose_;
         // true if the robot should rotate to gobal plan if new global goal set
         tf::Stamped<tf::Pose> old_goal_pose_;
+        // The final pose
+        tf::Stamped<tf::Pose> end_pose_;
         //for dynamic reconfigure
         dynamic_reconfigure::Server<BBPlannerConfig> *dsrv_;
         //start config
@@ -95,8 +95,6 @@ namespace bitbots_local_planner
         bitbots_local_planner::BBPlannerConfig config_;
         //true if the goal point is reache and orientation of goal is reached
         bool goal_reached_;
-        //true if the goal point is reache and orientation of goal isn't reached
-        bool stand_at_goal_;
         //opublisher where the local plan for visulatation is published
         ros::Publisher local_plan_publisher_;
 

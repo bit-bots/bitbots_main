@@ -16,9 +16,7 @@ namespace bitbots_local_planner
         ros::NodeHandle private_nh("~/" + name);
         local_plan_publisher_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
         tf_ = tf;
-        first_setPlan_ = true;
         goal_reached_ = false;
-        stand_at_goal_ = false;
         costmap_ros_ = costmap_ros;
 
         //Parameter for dynamic reconfigure
@@ -26,7 +24,7 @@ namespace bitbots_local_planner
         dynamic_reconfigure::Server<BBPlannerConfig>::CallbackType cb = boost::bind(&BBPlanner::reconfigureCB, this, _1, _2);
         dsrv_->setCallback(cb);
 
-        ROS_INFO("BBPlanner: Version 2 Init.");
+        ROS_INFO("BBPlanner: Init.");
     }
 
     void BBPlanner::reconfigureCB(BBPlannerConfig &config, uint32_t level)
@@ -38,33 +36,34 @@ namespace bitbots_local_planner
     {
         global_plan_ = plan;
 
-        //First start of the local plan. First global plan.
-        bool first_use = false;
-        if(first_setPlan_)
+        int carrot_distance = 10;
+        if (global_plan_.size() > 10)
         {
-            first_setPlan_ = false;
-            first_use = true;
-            bitbots_local_planner::getXPose(*tf_,global_plan_, costmap_ros_->getGlobalFrameID(),old_goal_pose_,global_plan_.size()-1);
-            first_use = true;
-        }
-
-        bitbots_local_planner::getXPose(*tf_,global_plan_, costmap_ros_->getGlobalFrameID(),goal_pose_,global_plan_.size()-1);
-
-        //Have the new global plan an new goal, reset. Else dont reset.
-        if(std::abs(std::abs(old_goal_pose_.getOrigin().getX())-std::abs(goal_pose_.getOrigin().getX())) <= config_.position_accuracy &&
-                std::abs(std::abs(old_goal_pose_.getOrigin().getY())-std::abs(goal_pose_.getOrigin().getY())) <= config_.position_accuracy && !first_use
-                && std::abs(angles::shortest_angular_distance(tf::getYaw(old_goal_pose_.getRotation()), tf::getYaw(goal_pose_.getRotation()))) <= config_.rotation_accuracy)
-        {
-            ROS_DEBUG("BBPlanner: Old Goal == new Goal.");
+            carrot_distance = 10;
         }
         else
         {
-            goal_reached_ = false;
-            stand_at_goal_ = false;
-            ROS_INFO("BBPlanner: New Goal. Start new routine.");
+            carrot_distance = global_plan_.size()-1;
         }
 
+        // Querys the pose of our carrot which we want to follow
+        bitbots_local_planner::getXPose(
+            *tf_,
+            global_plan_,
+            costmap_ros_->getGlobalFrameID(),
+            goal_pose_,
+            carrot_distance);
+
+        // Query the final pose of our robot at the end of the global plan
+        bitbots_local_planner::getXPose(
+            *tf_,global_plan_,
+            costmap_ros_->getGlobalFrameID(),
+            end_pose_,
+            global_plan_.size() - 1);
+
         old_goal_pose_ = goal_pose_;
+
+        goal_reached_ = false;
 
         return true;
     }
@@ -94,9 +93,15 @@ namespace bitbots_local_planner
                     goal_pose_.getOrigin().x() - current_pose.getOrigin().x()),
             2* M_PI);
 
+        double final_walk_angle = std::fmod(
+                std::atan2(
+                    end_pose_.getOrigin().y() - current_pose.getOrigin().y(),
+                    end_pose_.getOrigin().x() - current_pose.getOrigin().x()),
+            2* M_PI);
+
         double distance = sqrt(
-                    pow(goal_pose_.getOrigin().y() - current_pose.getOrigin().y(), 2) +
-                    pow(goal_pose_.getOrigin().x() - current_pose.getOrigin().x(), 2)
+                    pow(end_pose_.getOrigin().y() - current_pose.getOrigin().y(), 2) +
+                    pow(end_pose_.getOrigin().x() - current_pose.getOrigin().x(), 2)
                 );
 
         double walk_vel = std::min(distance * config_.translation_slow_down_factor, config_.max_vel_x);
@@ -104,10 +109,10 @@ namespace bitbots_local_planner
         double diff = 0;
         if (distance > config_.orient_to_goal_distance)
         {
-            diff = walk_angle - tf::getYaw(current_pose.getRotation());
+            diff = final_walk_angle - tf::getYaw(current_pose.getRotation());
         } else
         {
-            diff = tf::getYaw(goal_pose_.getRotation()) - tf::getYaw(current_pose.getRotation());
+            diff = tf::getYaw(end_pose_.getRotation()) - tf::getYaw(current_pose.getRotation());
         }
 
         double min_angle = (std::fmod(diff + M_PI, 2* M_PI) - M_PI);

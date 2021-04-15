@@ -45,7 +45,6 @@ add_library(bitbots_local_planner
 	    src/transform_global_plan.cpp)
 target_link_libraries(bitbots_local_planner ${catkin_LIBRARIES})
 add_dependencies(bitbots_local_planner bitbots_local_planner_gencfg)
-add_dependencies(bitbots_local_planner nav_msgs_gencpp)
 
 install(TARGETS bitbots_local_planner
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
