@@ -131,9 +131,7 @@ sub install_rosdeps() {
 
 sub install_pip() {
     print "Installing python dependencies...$/";
-    # Formatting: ("package1", "package2")
-    my @python3 = ("defusedxml");
-    system "pip3 install --user " . join(" ", @python3) and die "pip3 package installation failed";
+    system "pip3 install --user -r $start_dir/requirements.txt" and die "pip3 package installation failed";
 }
 
 sub first_catkin_build() {
