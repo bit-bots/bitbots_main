@@ -74,6 +74,11 @@ class KickNode {
    * Set the current joint state of the robot
    */
   void jointStateCallback(const sensor_msgs::JointState &joint_states);
+
+  /**
+   * Get the current pose of the trunk, relative to the support foot
+   */
+  geometry_msgs::Pose getTrunkPose();
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;

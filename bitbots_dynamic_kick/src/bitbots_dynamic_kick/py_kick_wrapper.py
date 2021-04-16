@@ -2,7 +2,7 @@ from io import BytesIO
 
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Transform
+from geometry_msgs.msg import Pose
 from bitbots_dynamic_kick.py_dynamic_kick import PyKickWrapper
 from bitbots_msgs.msg import JointCommand, KickGoal
 
@@ -92,3 +92,7 @@ class PyKick:
         :param params_dict: dict where the key is the name of the parameter (str). Does not have to contain all params.
         """
         self.py_kick_wrapper.set_params(params_dict)
+
+    def get_trunk_pose(self) -> Pose:
+        """Returns the current pose of the trunk relative to the support foot"""
+        return from_cpp(self.py_kick_wrapper.get_trunk_pose(), Pose)
