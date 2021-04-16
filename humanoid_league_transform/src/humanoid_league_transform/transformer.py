@@ -41,6 +41,8 @@ class Transformer(object):
                                                         "field_boundary_in_image")
         line_mask_in_image_topic = rospy.get_param("~masks/line_mask/topic",
                                                         "line_mask_in_image")
+        
+        line_mask_scaling = rospy.get_param("~masks/line_mask/scale", 1.0)
 
         publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
         publish_lines_as_pointcloud = rospy.get_param("~lines/pointcloud", False)
@@ -101,7 +103,7 @@ class Transformer(object):
             lambda msg: self._callback_masks(
                 msg,
                 self._line_mask_relative_pc_pub,
-                scale=rospy.get_param("~masks/line_mask/scale", 1.0)), queue_size=1)
+                scale=line_mask_scaling), queue_size=1)
 
         rospy.spin()
 
@@ -295,7 +297,7 @@ class Transformer(object):
         points_on_plane_from_cam = self._get_field_intersection_for_pixels(
             point_idx_array,
             field,
-            scale=1.0/scale)
+            scale=scale)
 
         # Make a pointcloud2 out of them
         pc_in_image_frame = pc2.create_cloud_xyz32(msg.header, points_on_plane_from_cam)
@@ -363,14 +365,14 @@ class Transformer(object):
         field_normal = field_point - field_normal
         return field_normal, field_point
 
-    def _get_field_intersection_for_pixels(self, points, field, scale=1):
+    def _get_field_intersection_for_pixels(self, points, field, scale=1.0):
         """
         Projects an numpy array of points to the correspoding places on the field plane (in the camera frame).
         """
         camera_projection_matrix = self._camera_info.K
 
-        binning_x = max(self._camera_info.binning_x, 1) * scale
-        binning_y = max(self._camera_info.binning_y, 1) * scale
+        binning_x = max(self._camera_info.binning_x, 1) / scale
+        binning_y = max(self._camera_info.binning_y, 1) / scale
 
         points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] / binning_x)) / (camera_projection_matrix[0] / binning_x)
         points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] / binning_y)) / (camera_projection_matrix[4] / binning_y)
