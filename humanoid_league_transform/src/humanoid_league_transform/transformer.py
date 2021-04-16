@@ -271,7 +271,7 @@ class Transformer(object):
 
         self._field_boundary_pub.publish(field_boundary)
 
-    def _callback_masks(self, msg: Image, publisher: rospy.Publisher, encoding='8UC1', scale=1.0):
+    def _callback_masks(self, msg: Image, publisher: rospy.Publisher, encoding='8UC1', scale=1.0: float):
         """
         Projects a mask from the input image as a pointcloud on the field plane.
         """
