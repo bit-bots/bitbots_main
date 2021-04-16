@@ -206,7 +206,7 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
                            bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
     server_.publishFeedback(feedback);
 
-    if (feedback.percent_done == 100) {
+    if (feedback.percent_done >= 100) {
       break;
     }
     joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
