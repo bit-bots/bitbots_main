@@ -56,7 +56,7 @@ class PyKick:
     def __del__(self):
         roscpp_shutdown()
 
-    def set_goal(self, msg: KickGoal, joint_state: JointState):
+    def set_goal(self, msg: KickGoal, joint_state: JointState) -> bool:
         """
         Set a goal for the kick.
 
@@ -66,7 +66,7 @@ class PyKick:
         """
         return self.py_kick_wrapper.set_goal(to_cpp(msg), to_cpp(joint_state))
 
-    def step(self, dt: float, joint_state: JointState):
+    def step(self, dt: float, joint_state: JointState) -> JointCommand:
         """
         Perform a step of the kick engine, must be repeatedly called to perform the full kick.
 
@@ -82,7 +82,7 @@ class PyKick:
         step = self.py_kick_wrapper.step(dt, to_cpp(joint_state))
         return from_cpp(step, JointCommand)
 
-    def get_progress(self):
+    def get_progress(self) -> float:
         """Returns the progress of the kick, between 0 and 1 where 1 is finished."""
         return self.py_kick_wrapper.get_progress()
 
