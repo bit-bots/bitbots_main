@@ -13,7 +13,6 @@ from nav_msgs.msg import Odometry
 
 class PyWalk(object):
     def __init__(self, namespace=""):
-        init_ros()
         # make namespace end with a /
         if namespace != "" and namespace[-1] != '/':
             namespace = namespace + "/"
