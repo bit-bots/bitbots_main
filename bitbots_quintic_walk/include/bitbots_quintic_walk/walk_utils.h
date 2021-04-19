@@ -1,6 +1,8 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_
 
+#define M_TAU M_PI * 2
+
 #include <cmath>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -59,17 +61,17 @@ struct WalkResponse {
 
 /**
  * Return the given angle in radian
- * bounded between -PI and PI
+ * bounded between -TAU/2 and TAU/2
  */
 inline double angleBound(double angle) {
   return
       angle
-          - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
+          - M_TAU * std::floor((angle + M_TAU / 2) / M_TAU);
 }
 
 /**
  * Compute the oriented distance between the two given angle
- * in the range -PI/2:PI/2 radian from angleSrc to angleDst
+ * in the range -TAU/4:TAU/4 radian from angleSrc to angleDst
  * (Better than doing angleDst-angleSrc)
  */
 inline double angleDistance(double angle_src, double angle_dst) {
@@ -86,7 +88,7 @@ inline double angleDistance(double angle_src, double angle_dst) {
   }
 
   double dist_1 = max - min;
-  double dist_2 = 2.0 * M_PI - max + min;
+  double dist_2 = M_TAU - max + min;
 
   if (dist_1 < dist_2) {
     if (angle_src > angle_dst) {

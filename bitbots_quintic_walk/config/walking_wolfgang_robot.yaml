@@ -72,6 +72,8 @@ walking:
     first_step_swing_factor: 1.0
     first_step_trunk_phase: -0.5
 
+    trunk_z_movement: 0.0
+
   node:
     # update frequency of the engine
     engine_freq: 500.0
@@ -88,6 +90,10 @@ walking:
     max_step_xy: 0.09
     max_step_z: 0.05
     max_step_angular: 0.45
+
+    x_speed_multiplier: 1
+    y_speed_multiplier: 1
+    yaw_speed_multiplier: 1
 
     vel: -1
     acc: -1

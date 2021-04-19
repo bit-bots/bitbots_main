@@ -5,6 +5,7 @@ https://github.com/Rhoban/model/
 */
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
+#define M_TAU M_PI * 2
 
 #include <iostream>
 #include <string>
@@ -54,18 +55,23 @@ namespace bitbots_quintic_walk {
 
 class WalkNode {
  public:
-  WalkNode();
+  WalkNode(const std::string ns);
+  bitbots_msgs::JointCommand step(double dt);
   bitbots_msgs::JointCommand step(
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
       const sensor_msgs::Imu &imu_msg,
-      const sensor_msgs::JointState &jointstate_msg);
+      const sensor_msgs::JointState &jointstate_msg,
+      const bitbots_msgs::FootPressure &pressure_left,
+      const bitbots_msgs::FootPressure &pressure_right);
   /**
    * Small helper method to get foot position via python wrapper
    */
   geometry_msgs::Pose get_left_foot_pose();
 
   void reset();
+
+  void specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
@@ -94,6 +100,8 @@ class WalkNode {
   void robotStateCb(humanoid_league_msgs::RobotControlState msg);
 
   WalkEngine *getEngine();
+
+  nav_msgs::Odometry getOdometry();
 
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
@@ -160,6 +168,10 @@ class WalkNode {
 
   char current_support_foot_;
 
+  WalkResponse current_response_;
+  WalkResponse current_stabilized_response_;
+  bitbots_splines::JointGoals motor_goals_;
+
   bitbots_quintic_walk_paramsConfig params_;
 
   /**
@@ -174,6 +186,10 @@ class WalkNode {
    */
   double max_step_xy_;
   bitbots_quintic_walk::WalkEngine walk_engine_;
+
+  double x_speed_multiplier_;
+  double y_speed_multiplier_;
+  double yaw_speed_multiplier_;
 
   bitbots_msgs::JointCommand command_msg_;
   nav_msgs::Odometry odom_msg_;

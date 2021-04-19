@@ -3,12 +3,12 @@ from io import BytesIO
 import rospy
 from std_msgs.msg import Int64
 
-from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros
-from bitbots_msgs.msg import JointCommand
+from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros, spin_once
+from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
-
+from nav_msgs.msg import Odometry
 
 
 class PyWalk(object):
@@ -17,7 +17,11 @@ class PyWalk(object):
         # make namespace end with a /
         if namespace != "" and namespace[-1] != '/':
             namespace = namespace + "/"
+        init_ros(namespace)
         self.py_walk_wrapper = PyWalkWrapper(namespace)
+
+    def spin_ros(self):
+        spin_once()
 
     def _to_cpp(self, msg):
         """Return a serialized string from a ROS message
@@ -46,15 +50,22 @@ class PyWalk(object):
     def reset(self):
         self.py_walk_wrapper.reset()
 
-    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg):
+    def special_reset(self, state: String, phase: float, cmd_vel_msg: Twist, reset_odometry: bool):
+        state_dict = {"PAUSED": 0, "WALKING": 1, "IDLE": 2, "START_MOVEMENT": 3, "STOP_MOVEMENT": 4, "START_STEP": 5,
+                      "STOP_STEP": 6, "KICK": 7}
+        self.py_walk_wrapper.special_reset(state_dict[state], phase, self._to_cpp(cmd_vel_msg), reset_odometry)
+
+    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
         if dt == 0.0:
-            # preventing wierd spline interpolation errors on edge case
+            # preventing weird spline interpolation errors on edge case
             dt = 0.001
         stepi = self.py_walk_wrapper.step(
             dt,
             self._to_cpp(cmdvel_msg),
             self._to_cpp(imu_msg),
-            self._to_cpp(jointstate_msg))
+            self._to_cpp(jointstate_msg),
+            self._to_cpp(pressure_left),
+            self._to_cpp(pressure_right))
 
         result = self._from_cpp(
             stepi,
@@ -79,3 +90,8 @@ class PyWalk(object):
 
     def get_freq(self):
         return self.py_walk_wrapper.get_freq()
+
+    def get_odom(self):
+        odom = self.py_walk_wrapper.get_odom()
+        result = self._from_cpp(odom, Odometry)
+        return result

@@ -1,5 +1,5 @@
 /*
-This code is based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -28,13 +28,20 @@ namespace bitbots_quintic_walk {
  */
 class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
-  WalkEngine();
+  WalkEngine(const std::string ns);
 
   // methods from abstract engine class
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
   int getPercentDone() const override;
+
+  void specialReset(WalkState state,
+                    double phase,
+                    tf2::Vector3 linear_orders,
+                    double angular_z,
+                    bool walkable_state,
+                    bool reset_odometry);
 
   /**
    * Return current walk phase between 0 and 1
