@@ -282,6 +282,10 @@ double KickNode::getProgress() {
   return engine_.getPercentDone() / 100.0;
 }
 
+geometry_msgs::Pose KickNode::getTrunkPose() {
+  return engine_.getTrunkPose();
+}
+
 }
 
 int main(int argc, char *argv[]) {

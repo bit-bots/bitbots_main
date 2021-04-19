@@ -100,6 +100,11 @@ double PyKickWrapper::get_progress() {
   return kick_node_->getProgress();
 }
 
+moveit::py_bindings_tools::ByteString PyKickWrapper::get_trunk_pose() {
+  std::string trunk_pose_str = to_python<geometry_msgs::Pose>(kick_node_->getTrunkPose());
+  return moveit::py_bindings_tools::serializeMsg(trunk_pose_str);
+}
+
 BOOST_PYTHON_MODULE (py_dynamic_kick) {
   using namespace boost::python;
   using namespace bitbots_dynamic_kick;
@@ -108,5 +113,6 @@ BOOST_PYTHON_MODULE (py_dynamic_kick) {
       .def("set_goal", &PyKickWrapper::set_goal)
       .def("step", &PyKickWrapper::step)
       .def("get_progress", &PyKickWrapper::get_progress)
-      .def("set_params", &PyKickWrapper::set_params);
+      .def("set_params", &PyKickWrapper::set_params)
+      .def("get_trunk_pose", &PyKickWrapper::get_trunk_pose);
 }

@@ -8,6 +8,7 @@
 #include <boost/python.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Pose.h>
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <bitbots_dynamic_kick/kick_node.h>
 
@@ -18,6 +19,7 @@ class PyKickWrapper {
   bool set_goal(const std::string &goal_str, const std::string &joint_state_str);
   double get_progress();
   void set_params(boost::python::object params);
+  moveit::py_bindings_tools::ByteString get_trunk_pose();
 
  private:
   std::shared_ptr<bitbots_dynamic_kick::KickNode> kick_node_;

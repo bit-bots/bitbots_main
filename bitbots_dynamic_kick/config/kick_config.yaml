@@ -7,9 +7,9 @@ foot_rise: 0.08
 foot_distance: 0.2
 kick_windup_distance: 0.14
 trunk_height: 0.41
-trunk_roll: deg(13.6)
-trunk_pitch: deg(-8.1)
-trunk_yaw: deg(3.5)
+trunk_roll: 0.237
+trunk_pitch: -0.141
+trunk_yaw: 0.0611
 
 # Timings
 move_trunk_time: 0.59

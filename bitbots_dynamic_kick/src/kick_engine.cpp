@@ -30,8 +30,16 @@ void KickEngine::setGoals(const KickGoals &goals) {
   Eigen::Isometry3d trunk_to_flying_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "l_sole" : "r_sole");
   Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(is_left_kick_ ? "r_sole" : "l_sole");
 
+  /* get the start position of the trunk relative to the support foot */
+  Eigen::Isometry3d trunk_frame;
+  if (is_left_kick_) {
+    trunk_frame = current_state_->getGlobalLinkTransform("r_sole").inverse();
+  } else {
+    trunk_frame = current_state_->getGlobalLinkTransform("l_sole").inverse();
+  }
+
   /* Plan new splines according to new goal */
-  calcSplines(trunk_to_support_foot.inverse() * trunk_to_flying_foot, getTrunkPose());
+  calcSplines(trunk_to_support_foot.inverse() * trunk_to_flying_foot, trunk_frame);
 }
 
 KickPositions KickEngine::update(double dt) {
@@ -57,16 +65,6 @@ KickPositions KickEngine::update(double dt) {
 
   /* Stabilize and return result */
   return positions;
-}
-
-Eigen::Isometry3d KickEngine::getTrunkPose() {
-  Eigen::Isometry3d trunk_frame;
-  if (is_left_kick_) {
-    trunk_frame = current_state_->getGlobalLinkTransform("r_sole").inverse();
-  } else {
-    trunk_frame = current_state_->getGlobalLinkTransform("l_sole").inverse();
-  }
-  return trunk_frame;
 }
 
 void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Eigen::Isometry3d &trunk_pose) {
@@ -289,6 +287,10 @@ bool KickEngine::isLeftKick() {
 
 int KickEngine::getPercentDone() const {
   return int(time_ / phase_timings_.move_trunk_back * 100);
+}
+
+geometry_msgs::Pose KickEngine::getTrunkPose() {
+  return trunk_spline_.getGeometryMsgPose(time_);
 }
 
 bitbots_splines::PoseSpline KickEngine::getFlyingSplines() const {
