@@ -13,8 +13,8 @@ class MockSubscriberTestCase(RosNodeTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.pub = rospy.Publisher(self.test_topic, String, queue_size=10)
-        self.sub = MockSubscriber(self.test_topic, String, queue_size=10)
+        self.pub = rospy.Publisher(self.topic, String, queue_size=10)
+        self.sub = MockSubscriber(self.topic, String, queue_size=10)
         self.sub.wait_until_connected()
 
     def tearDown(self) -> None:

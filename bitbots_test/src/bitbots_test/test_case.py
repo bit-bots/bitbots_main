@@ -20,7 +20,7 @@ class RosNodeTestCase(TestCase):
         super().tearDown()
 
     @property
-    def test_topic(self):
+    def topic(self):
         """A ros topic which is local to the current test"""
         if self._testMethodName:
             return f"{type(self).__name__}/{self._testMethodName}"
