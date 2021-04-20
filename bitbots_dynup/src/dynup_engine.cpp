@@ -150,6 +150,7 @@ void DynupEngine::publishArrowMarker(std::string name_space,
 }
 
 DynupResponse DynupEngine::update(double dt) {
+  time_ = std::min(time_, duration_);
   // TODO what happens when splines for foot and trunk are not present?
   /* Get should-be pose from planned splines (every axis) at current time */
   tf2::Transform l_foot_pose = l_foot_spline_.getTfTransform(time_);
@@ -675,7 +676,7 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
                                         params_.time_full_squat_legs) ||
-           (direction_ == 2) || (direction_ == 3)) && getPercentDone() < 99;
+           (direction_ == 2) || (direction_ == 3));
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {

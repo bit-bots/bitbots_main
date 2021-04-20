@@ -47,6 +47,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
         goal_fused.fusedPitch += pid_trunk_pitch_.computeCommand(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
         goal_fused.fusedRoll += pid_trunk_roll_.computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
 
+        is_stable_ = (abs(goal_fused.fusedPitch - current_orientation.fusedPitch) < stable_threshold_) &&
+                (abs(goal_fused.fusedRoll - current_orientation.fusedRoll) < stable_threshold_);
+
         tf2::Quaternion corrected_orientation;
         Eigen::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
         tf2::convert(goal_orientation_eigen_corrected, corrected_orientation);
@@ -72,8 +75,14 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
     return response;
 }
 
-void Stabilizer::useStabilizing(bool use) {
-  use_stabilizing_ = use;
+void Stabilizer::setParams(DynUpConfig params) {
+  use_stabilizing_ = params.stabilizing;
+  stable_threshold_ = params.stable_threshold;
+
+}
+
+bool Stabilizer::isStable() {
+    return is_stable_;
 }
 
 
