@@ -128,10 +128,6 @@ class TagTestCase(TestCase):
     @given(st.sets(CustomStrategies.tags, min_size=1))
     def test_tags_get_merged(self, tags: Set[str]):
         # setup
-        #try:
-        #    os.environ["TEST_TAGS"] = list(tags)[-1]
-        #except ValueError:
-        #    raise UnsatisfiedAssumption()
         TestTestCase, test_func = self._getTestTestCase()
 
         # execution
@@ -144,4 +140,4 @@ class TagTestCase(TestCase):
 
 
 if __name__ == "__main__":
-    rosunit.unitrun("udp_bridge", TagTestCase.__name__, TagTestCase)
+    rosunit.unitrun("bitbots_test", TagTestCase.__name__, TagTestCase)
