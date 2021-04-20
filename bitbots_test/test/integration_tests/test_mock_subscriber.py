@@ -27,8 +27,7 @@ class MockSubscriberTestCase(RosNodeTestCase):
         self.pub.publish(String("this is a test"))
 
         # verification
-        time.sleep(0.2)
-        self.sub.assert_message_received()
+        self.with_assertion_grace_period(t=200, f=self.sub.assert_message_received)
         self.sub.assert_message_received(String("this is a test"))
         self.assertRaises(AssertionError, lambda: self.sub.assert_message_received(String("something else")))
 
@@ -39,7 +38,7 @@ class MockSubscriberTestCase(RosNodeTestCase):
         self.pub.publish(String("test 3"))
 
         # verification
-        time.sleep(0.2)
+        self.with_assertion_grace_period(t=200, f=self.sub.assert_message_received)
         self.sub.assert_messages_received([String("test 1"), String("test 2"), String("test 3")])
         self.sub.assert_messages_received([String("test 2"), String("test 1"), String("test 3")], any_order=True)
         self.assertRaises(AssertionError, lambda: self.sub.assert_messages_received([String("test2"), String("test1")]))
@@ -53,7 +52,7 @@ class MockSubscriberTestCase(RosNodeTestCase):
         self.pub.publish(String("test"))
 
         # verification
-        time.sleep(0.2)
+        self.with_assertion_grace_period(t=200, f=self.sub.assert_one_message_received)
         self.sub.assert_one_message_received()
         self.sub.assert_one_message_received(String("test"))
 
@@ -64,8 +63,7 @@ class MockSubscriberTestCase(RosNodeTestCase):
     def test_reset(self):
         # setup
         self.pub.publish(String("test"))
-        time.sleep(0.2)
-        self.sub.assert_one_message_received()
+        self.with_assertion_grace_period(t=200, f=self.sub.assert_one_message_received)
 
         # execution
         self.sub.reset()
