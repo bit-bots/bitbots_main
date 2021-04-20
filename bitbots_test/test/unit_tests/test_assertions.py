@@ -1,4 +1,3 @@
-import rosunit
 from datetime import datetime, timedelta
 from bitbots_test.test_case import TestCase
 
@@ -30,4 +29,5 @@ class GeneralAssertionMixinTestCase(TestCase):
 
 
 if __name__ == "__main__":
-    rosunit.unitrun("bitbots_test", GeneralAssertionMixinTestCase.__name__, GeneralAssertionMixinTestCase)
+    from bitbots_test import run_unit_tests
+    run_unit_tests(GeneralAssertionMixinTestCase)

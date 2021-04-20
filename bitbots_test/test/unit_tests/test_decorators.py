@@ -1,4 +1,3 @@
-import rosunit
 import os
 from typing import *
 from unittest.mock import Mock
@@ -140,4 +139,5 @@ class TagTestCase(TestCase):
 
 
 if __name__ == "__main__":
-    rosunit.unitrun("bitbots_test", TagTestCase.__name__, TagTestCase)
+    from bitbots_test import run_unit_tests
+    run_unit_tests(TagTestCase)

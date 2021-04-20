@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import rospy
-import rostest
 import time
 from std_msgs.msg import String
 from bitbots_test.test_case import RosNodeTestCase
@@ -75,4 +74,5 @@ class MockSubscriberTestCase(RosNodeTestCase):
 
 
 if __name__ == "__main__":
-    rostest.rosrun("bitbots_test", MockSubscriberTestCase.__name__, MockSubscriberTestCase)
+    from bitbots_test import run_integration_tests
+    run_integration_tests(MockSubscriberTestCase)
