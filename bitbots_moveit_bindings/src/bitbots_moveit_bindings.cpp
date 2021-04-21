@@ -110,9 +110,7 @@ moveit::py_bindings_tools::ByteString getPositionIK(const std::string& request_s
   static std::mutex mutex;
   std::lock_guard<std::mutex> lock(mutex);
 
-  moveit::core::RobotState robot_state(robot_model);
-
-  robot_state.setToDefaultValues();
+  static moveit::core::RobotState robot_state(robot_model);
   robot_state.update();
 
   if (!request.ik_request.robot_state.joint_state.name.empty() ||
