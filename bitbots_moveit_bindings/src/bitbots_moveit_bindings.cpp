@@ -10,8 +10,6 @@
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2/convert.h>
-#include <unordered_map>
-#include <mutex>
 
 /**
  * Read a ROS message from a serialized string.
@@ -46,44 +44,22 @@ std::string to_python(const M &msg) {
   return str_msg;
 }
 
-moveit::core::RobotModelPtr getRobotModel(std::string robot_description) {
-  if (robot_description.empty())
-    robot_description = "robot_description";
-  static std::mutex mutex;
-  std::lock_guard<std::mutex> lock(mutex);
-  static std::unordered_map<std::string, moveit::core::RobotModelPtr>
-      robot_models;
-  if (robot_models.find(robot_description) == robot_models.end()) {
-    ROS_INFO("loading robot model %s", robot_description.c_str());
-    static std::unordered_map<std::string, robot_model_loader::RobotModelLoader>
-        loaders;
-    loaders.emplace(robot_description, robot_description);
-    robot_models[robot_description] = loaders[robot_description].getModel();
-    if (!robot_models[robot_description]) {
-      ROS_ERROR("failed to load robot model %s", robot_description.c_str());
-    }
+moveit::core::RobotModelPtr getRobotModel() {
+  std::string robot_description = "robot_description";
+  static robot_model_loader::RobotModelLoader loader(robot_description);
+  moveit::core::RobotModelPtr robot_model = loader.getModel();
+  if (!robot_model) {
+    ROS_ERROR("failed to load robot model %s", robot_description.c_str());
   }
-  return robot_models[robot_description];
+  return robot_model;
 }
 
-planning_scene::PlanningSceneConstPtr getPlanningScene(std::string robot_description) {
-  if (robot_description.empty())
-    robot_description = "robot_description";
-  static std::mutex mutex;
-  std::lock_guard<std::mutex> lock(mutex);
-  static std::unordered_map<std::string,
-                            planning_scene_monitor::PlanningSceneMonitorPtr>
-      planning_scene_monitors;
-  if (planning_scene_monitors.find(robot_description) ==
-      planning_scene_monitors.end()) {
-    ROS_INFO("connecting to planning scene");
-    planning_scene_monitors[robot_description] =
-        planning_scene_monitor::PlanningSceneMonitorPtr(
-            new planning_scene_monitor::PlanningSceneMonitor(
-                robot_description));
-  }
+planning_scene::PlanningSceneConstPtr getPlanningScene() {
+  std::string robot_description = "robot_description";
+  static auto planning_scene_monitor =
+      std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(robot_description);
   planning_scene::PlanningSceneConstPtr planning_scene =
-      planning_scene_monitors[robot_description]->getPlanningScene();
+      planning_scene_monitor->getPlanningScene();
   if (!planning_scene) {
     ROS_ERROR_ONCE("failed to connect to planning scene");
   }
@@ -93,7 +69,7 @@ planning_scene::PlanningSceneConstPtr getPlanningScene(std::string robot_descrip
 moveit::py_bindings_tools::ByteString getPositionIK(const std::string& request_str, bool approximate = false) {
   auto request = from_python<moveit_msgs::GetPositionIK::Request>(request_str);
   moveit_msgs::GetPositionIK::Response response;
-  auto robot_model = getRobotModel("");
+  static moveit::core::RobotModelPtr robot_model = getRobotModel();
   if (!robot_model) {
     response.error_code.val =
         moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME;
@@ -106,9 +82,6 @@ moveit::py_bindings_tools::ByteString getPositionIK(const std::string& request_s
     response.error_code.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
     return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
   }
-
-  static std::mutex mutex;
-  std::lock_guard<std::mutex> lock(mutex);
 
   static moveit::core::RobotState robot_state(robot_model);
   robot_state.update();
@@ -131,7 +104,7 @@ moveit::py_bindings_tools::ByteString getPositionIK(const std::string& request_s
     callback = [](moveit::core::RobotState *state,
                   const moveit::core::JointModelGroup *group,
                   const double *values) {
-      auto planning_scene = getPlanningScene("");
+      auto planning_scene = getPlanningScene();
       state->setJointGroupPositions(group, values);
       state->update();
       return !planning_scene ||
@@ -188,14 +161,14 @@ moveit::py_bindings_tools::ByteString getPositionFK(const std::string& request_s
   auto request = from_python<moveit_msgs::GetPositionFK::Request>(request_str);
   moveit_msgs::GetPositionFK::Response response;
   
-  auto robot_model = getRobotModel("");
+  static moveit::core::RobotModelPtr robot_model = getRobotModel();
   if (!robot_model) {
     response.error_code.val =
         moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME;
     return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionFK::Response>(response));
   }
 
-  moveit::core::RobotState robot_state(robot_model);
+  static moveit::core::RobotState robot_state(robot_model);
   sensor_msgs::JointState joint_state = request.robot_state.joint_state;
   for (int i = 0; i < joint_state.name.size(); ++i) {
     robot_state.setJointPositions(joint_state.name[i], &joint_state.position[i]);
