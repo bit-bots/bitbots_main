@@ -8,6 +8,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "dynup_utils.h"
+#include <bitbots_dynup/DynUpConfig.h>
 #include <moveit/robot_state/robot_state.h>
 #include <tf2_ros/transform_listener.h>
 #include <control_toolbox/pid.h>
@@ -24,10 +25,11 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void init(moveit::core::RobotModelPtr kinematic_model);
   DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
   void setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk);
-  void useStabilizing(bool use);
+  void setParams(DynUpConfig params);
   void setRobotModel(moveit::core::RobotModelPtr model); 
   void reset() override;
   void setImu(sensor_msgs::Imu imu);
+  bool isStable();
 
 
 private:
@@ -40,6 +42,9 @@ private:
   geometry_msgs::TransformStamped r_sole_to_trunk_;
 
   bool stabilize_now_;
+
+  bool is_stable_;
+  double stable_threshold_;
 
   bool use_stabilizing_;
 };

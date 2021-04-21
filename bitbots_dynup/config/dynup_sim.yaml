@@ -53,6 +53,8 @@ dynup:
   # Stabilier
   stabilizing: False
   minimal_displacement: False
+  stable_threshold: 0.05
+  stable_duration: 100
 
   # Visualizer
   spline_smoothness: 100
