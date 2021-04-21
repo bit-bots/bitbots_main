@@ -148,7 +148,7 @@ void WalkNode::run() {
   }
 }
 
-bitbots_msgs::JointCommand WalkNode::step(double dt) {
+bitbots_msgs::JointCommand WalkNode::step(double dt, bool compute_ik) {
   // PID control on foot position. take previous goal orientation and compute difference with actual orientation
   Eigen::Quaterniond goal_orientation_eigen;
   tf2::convert(current_response_.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
@@ -168,7 +168,7 @@ bitbots_msgs::JointCommand WalkNode::step(double dt) {
   current_stabilized_response_ = stabilizer_.stabilize(current_response_, ros::Duration(dt));
 
   // compute motor goals from IK
-  motor_goals_ = ik_.calculate(current_stabilized_response_);
+  motor_goals_ = ik_.calculate(current_stabilized_response_, compute_ik);
 
   // change to joint command message type
   bitbots_msgs::JointCommand command;
@@ -229,7 +229,8 @@ bitbots_msgs::JointCommand WalkNode::step(double dt,
                                           const sensor_msgs::Imu &imu_msg,
                                           const sensor_msgs::JointState &jointstate_msg,
                                           const bitbots_msgs::FootPressure &pressure_left,
-                                          const bitbots_msgs::FootPressure &pressure_right) {
+                                          const bitbots_msgs::FootPressure &pressure_right,
+                                          bool compute_ik) {
   // method for python interface. take all messages as parameters instead of using ROS
   cmdVelCb(cmdvel_msg);
   imuCb(imu_msg);
@@ -239,10 +240,16 @@ bitbots_msgs::JointCommand WalkNode::step(double dt,
   // we don't use external robot state
   current_request_.walkable_state = true;
   // update walk engine response
-  bitbots_msgs::JointCommand joint_goals = step(dt);
+  bitbots_msgs::JointCommand joint_goals = step(dt, compute_ik);
   return joint_goals;
 }
 
+geometry_msgs::Pose WalkNode::get_right_foot_pose() {
+  robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
+  geometry_msgs::Pose pose;
+  tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose);
+  return pose;
+}
 geometry_msgs::Pose WalkNode::get_left_foot_pose() {
   robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
   geometry_msgs::Pose pose;

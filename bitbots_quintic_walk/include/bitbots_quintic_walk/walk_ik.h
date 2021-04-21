@@ -11,7 +11,7 @@ class WalkIK : public bitbots_splines::AbstractIK<WalkResponse> {
  public:
   WalkIK();
 
-  bitbots_splines::JointGoals calculate(const WalkResponse &ik_goals) override;
+  bitbots_splines::JointGoals calculate(const WalkResponse &ik_goals, bool compute_ik=true);
   void init(moveit::core::RobotModelPtr kinematic_model) override;
   void reset() override;
   void setIKTimeout(double timeout);

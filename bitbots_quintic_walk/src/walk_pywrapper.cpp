@@ -50,14 +50,16 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt,
                                                           const std::string &imu_msg,
                                                           const std::string &jointstate_msg,
                                                           const std::string &pressure_left,
-                                                          const std::string &pressure_right) {
+                                                          const std::string &pressure_right,
+                                                          bool compute_ik) {
   std::string result =
       to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt,
                                                              from_python<geometry_msgs::Twist>(cmdvel_msg),
                                                              from_python<sensor_msgs::Imu>(imu_msg),
                                                              from_python<sensor_msgs::JointState>(jointstate_msg),
                                                              from_python<bitbots_msgs::FootPressure>(pressure_left),
-                                                             from_python<bitbots_msgs::FootPressure>(pressure_right)));
+                                                             from_python<bitbots_msgs::FootPressure>(pressure_right),
+                                                             compute_ik));
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 

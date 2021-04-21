@@ -18,7 +18,8 @@ class PyWalkWrapper {
                                              const std::string &imu_msg,
                                              const std::string &jointstate_msg,
                                              const std::string &pressure_left,
-                                             const std::string &pressure_right);
+                                             const std::string &pressure_right,
+                                             bool compute_ik=true);
   moveit::py_bindings_tools::ByteString get_left_foot_pose();
   moveit::py_bindings_tools::ByteString get_odom();
   void reset();

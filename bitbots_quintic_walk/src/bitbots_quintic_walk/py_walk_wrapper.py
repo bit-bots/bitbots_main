@@ -54,7 +54,8 @@ class PyWalk(object):
                       "STOP_STEP": 6, "KICK": 7}
         self.py_walk_wrapper.special_reset(state_dict[state], phase, self._to_cpp(cmd_vel_msg), reset_odometry)
 
-    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
+    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right,
+             cartesian_result=False):
         if dt == 0.0:
             # preventing weird spline interpolation errors on edge case
             dt = 0.001
@@ -64,16 +65,21 @@ class PyWalk(object):
             self._to_cpp(imu_msg),
             self._to_cpp(jointstate_msg),
             self._to_cpp(pressure_left),
-            self._to_cpp(pressure_right))
+            self._to_cpp(pressure_right),
+            not cartesian_result)
 
-        result = self._from_cpp(
-            stepi,
-            JointCommand
-        )
-
-        return result
+        if cartesian_result:
+            return self.get_left_foot_pose(), self.get_right_foot_pose()
+        else:
+            result = self._from_cpp(stepi, JointCommand)
+            return result
 
     def get_left_foot_pose(self):
+        foot_pose = self.py_walk_wrapper.get_left_foot_pose()
+        result = self._from_cpp(foot_pose, Pose)
+        return result
+
+    def get_right_foot_pose(self):
         foot_pose = self.py_walk_wrapper.get_left_foot_pose()
         result = self._from_cpp(foot_pose, Pose)
         return result

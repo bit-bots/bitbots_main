@@ -15,7 +15,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
 }
 
-bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
+bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals, bool compute_ik) {
   // change goals from support foot based coordinate system to trunk based coordinate system
   tf2::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
   tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
@@ -36,20 +36,21 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // call IK two times, since we have two legs
   bool success;
 
-  // we have to do this otherwise there is an error
-  goal_state_->updateLinkTransforms();
+  if (compute_ik) {
+    // we have to do this otherwise there is an error
+    goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(left_leg_joints_group_,
-                                   left_foot_goal_msg,
-                                   ik_timeout_,
-                                   moveit::core::GroupStateValidityCallbackFn());
-  goal_state_->updateLinkTransforms();
+    success = goal_state_->setFromIK(left_leg_joints_group_,
+                                     left_foot_goal_msg,
+                                     ik_timeout_,
+                                     moveit::core::GroupStateValidityCallbackFn());
+    goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(right_leg_joints_group_,
-                                    right_foot_goal_msg,
-                                    ik_timeout_,
-                                    moveit::core::GroupStateValidityCallbackFn());
-
+    success &= goal_state_->setFromIK(right_leg_joints_group_,
+                                      right_foot_goal_msg,
+                                      ik_timeout_,
+                                      moveit::core::GroupStateValidityCallbackFn());
+  }
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
   goal_state_->copyJointGroupPositions(legs_joints_group_, joint_goals);
