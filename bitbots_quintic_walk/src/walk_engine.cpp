@@ -229,7 +229,7 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  specialReset(WalkState::WALKING, 0.5, {0, 0, 0}, 0, false, false);
+  specialReset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
 }
 
 void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
