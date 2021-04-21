@@ -78,7 +78,7 @@ namespace bitbots_splines {
          * @param positions the cartesian positions of end points and custom additional information (e.g. support foot)
          * @return motor positions
          */
-        //virtual JointGoals calculate(const Positions &positions) = 0;
+        virtual JointGoals calculate(const Positions &positions) = 0;
         /**
          * Reset the IK to its initial state.
          */

@@ -5,7 +5,7 @@ from std_msgs.msg import Int64
 
 from bitbots_quintic_walk.py_quintic_walk import PyWalkWrapper, init_ros, spin_once
 from bitbots_msgs.msg import JointCommand, FootPressure
-from geometry_msgs.msg import Twist, Pose
+from geometry_msgs.msg import Twist, Pose, PoseArray
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
@@ -54,8 +54,7 @@ class PyWalk(object):
                       "STOP_STEP": 6, "KICK": 7}
         self.py_walk_wrapper.special_reset(state_dict[state], phase, self._to_cpp(cmd_vel_msg), reset_odometry)
 
-    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right,
-             cartesian_result=False):
+    def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
         if dt == 0.0:
             # preventing weird spline interpolation errors on edge case
             dt = 0.001
@@ -65,14 +64,21 @@ class PyWalk(object):
             self._to_cpp(imu_msg),
             self._to_cpp(jointstate_msg),
             self._to_cpp(pressure_left),
-            self._to_cpp(pressure_right),
-            not cartesian_result)
+            self._to_cpp(pressure_right))
 
-        if cartesian_result:
-            return self.get_left_foot_pose(), self.get_right_foot_pose()
-        else:
-            result = self._from_cpp(stepi, JointCommand)
-            return result
+        result = self._from_cpp(stepi, JointCommand)
+        return result
+
+    def step_open_loop(self, dt: float, cmdvel_msg: Twist):
+        if dt == 0.0:
+            # preventing weird spline interpolation errors on edge case
+            dt = 0.001
+        stepi = self.py_walk_wrapper.step_open_loop(
+            dt,
+            self._to_cpp(cmdvel_msg))
+
+        result = self._from_cpp(stepi, PoseArray)
+        return result
 
     def get_left_foot_pose(self):
         foot_pose = self.py_walk_wrapper.get_left_foot_pose()
@@ -80,7 +86,7 @@ class PyWalk(object):
         return result
 
     def get_right_foot_pose(self):
-        foot_pose = self.py_walk_wrapper.get_left_foot_pose()
+        foot_pose = self.py_walk_wrapper.get_right_foot_pose()
         result = self._from_cpp(foot_pose, Pose)
         return result
 

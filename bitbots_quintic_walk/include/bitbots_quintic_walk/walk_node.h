@@ -17,6 +17,7 @@ https://github.com/Rhoban/model/
 
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PointStamped.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>
@@ -56,15 +57,16 @@ namespace bitbots_quintic_walk {
 class WalkNode {
  public:
   WalkNode(const std::string ns);
-  bitbots_msgs::JointCommand step(double dt, bool compute_ik=true);
+  bitbots_msgs::JointCommand step(double dt);
   bitbots_msgs::JointCommand step(
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
       const sensor_msgs::Imu &imu_msg,
       const sensor_msgs::JointState &jointstate_msg,
       const bitbots_msgs::FootPressure &pressure_left,
-      const bitbots_msgs::FootPressure &pressure_right,
-      bool compute_ik=true);
+      const bitbots_msgs::FootPressure &pressure_right);
+  geometry_msgs::PoseArray step_open_loop(double dt, const geometry_msgs::Twist &cmdvel_msg);
+
   /**
    * Small helper method to get foot position via python wrapper
    */
