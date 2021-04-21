@@ -10,7 +10,7 @@ find_package(PythonLibs COMPONENTS Interpreter Development)
 if(PYTHONLIBS_VERSION_STRING VERSION_LESS "3.8")
     find_package(Boost REQUIRED COMPONENTS python3)
 else()
-    find_package(Boost REQUIRED COMPONENTS python)
+    find_package(Boost REQUIRED COMPONENTS python bitbots_docs)
 endif()
 
 catkin_package(CATKIN_DEPENDS
@@ -18,6 +18,8 @@ catkin_package(CATKIN_DEPENDS
 )
 
 catkin_python_setup()
+
+enable_bitbots_docs()
 
 add_library(bitbots_moveit_bindings SHARED src/bitbots_moveit_bindings.cpp)
 target_include_directories(bitbots_moveit_bindings PRIVATE ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
