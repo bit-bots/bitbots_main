@@ -11,6 +11,7 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2/convert.h>
 #include <unordered_map>
+#include <mutex>
 
 /**
  * Read a ROS message from a serialized string.
