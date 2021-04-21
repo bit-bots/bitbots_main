@@ -242,14 +242,47 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
   pause_requested_ = false;
 
   // set the support foot inversely for first trajectory building
-  if (phase >= 0.5) {
-    is_left_support_foot_ = false;
-  } else {
+  if (phase < 0.5) {
     is_left_support_foot_ = true;
+    last_phase_ = 0.49999;
+  } else {
+    is_left_support_foot_ = false;
+    last_phase_ = 1.0;
+  }
+  phase_ = phase;
+
+  support_to_last_.setIdentity();
+  support_to_next_.setIdentity();
+  if (is_left_support_foot_) {
+    support_to_next_.getOrigin()[1] = -params_.foot_distance;
+  } else {
+    support_to_next_.getOrigin()[1] = params_.foot_distance;
   }
 
+  //Reset the trunk saved state
+  if (is_left_support_foot_) {
+    trunk_pos_at_foot_change_ = tf2::Vector3(
+        params_.trunk_x_offset,
+        -params_.foot_distance / 2.0 + params_.trunk_y_offset,
+        params_.trunk_height);
+  } else {
+    trunk_pos_at_foot_change_ = tf2::Vector3(
+        params_.trunk_x_offset,
+        params_.foot_distance / 2.0 + params_.trunk_y_offset,
+        params_.trunk_height);
+  }
+
+  trunk_pos_vel_at_foot_change_.setZero();
+  trunk_pos_acc_at_foot_change_.setZero();
+  trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
+  trunk_orientation_vel_at_last_foot_change_.setZero();
+  trunk_orientation_acc_at_foot_change_.setZero();
+
+
   // build trajectories for this state once to get correct start point for new trajectory
-  if (state == WalkState::WALKING) {
+  if (state == WalkState::IDLE) {
+    buildStartMovementTrajectories();
+  } else if (state == WalkState::WALKING) {
     buildNormalTrajectories();
   } else if (state == WalkState::START_MOVEMENT) {
     buildStartMovementTrajectories();
@@ -261,20 +294,23 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
     buildStopStepTrajectories();
   } else if (state == WalkState::KICK) {
     buildKickTrajectories();
+  } else {
+    ROS_ERROR("walk reset state not known");
   }
 
-  // set last phase to the end of the trajectory
-  last_phase_ = 1.0;
-
-  // set the support foot correctly
+  // now switch them again
   if (phase < 0.5) {
     is_left_support_foot_ = false;
+    last_phase_ = 1.0;
   } else {
     is_left_support_foot_ = true;
+    last_phase_ = 0.49999;
   }
 
   // build trajectories one more time with end state of previously build trajectories as a start
-  if (state == WalkState::WALKING) {
+  if (state == WalkState::IDLE) {
+    buildStartMovementTrajectories();
+  } else if (state == WalkState::WALKING) {
     buildNormalTrajectories();
   } else if (state == WalkState::START_MOVEMENT) {
     buildStartMovementTrajectories();
@@ -286,11 +322,10 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
     buildStopStepTrajectories();
   } else if (state == WalkState::KICK) {
     buildKickTrajectories();
+  } else {
+    ROS_ERROR("walk reset state not known");
   }
-
-  // set phases correctly
-  phase_ = phase;
-  last_phase_ = phase;
+  last_phase_ = phase_;
 
   if (reset_odometry) {
     // move left and right in world by foot distance for correct initialization
