@@ -243,11 +243,12 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
 
   // set the support foot inversely for first trajectory building
   if (phase < 0.5) {
-    is_left_support_foot_ = true;
+    is_left_support_foot_ = false;
     last_phase_ = 0.49999;
   } else {
-    is_left_support_foot_ = false;
+    is_left_support_foot_ = true;
     last_phase_ = 1.0;
+
   }
   phase_ = phase;
 
@@ -300,10 +301,10 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
 
   // now switch them again
   if (phase < 0.5) {
-    is_left_support_foot_ = false;
+    is_left_support_foot_ = true;
     last_phase_ = 1.0;
   } else {
-    is_left_support_foot_ = true;
+    is_left_support_foot_ = false;
     last_phase_ = 0.49999;
   }
 
