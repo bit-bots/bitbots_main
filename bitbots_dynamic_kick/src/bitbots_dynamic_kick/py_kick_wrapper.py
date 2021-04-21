@@ -2,7 +2,7 @@ from io import BytesIO
 
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Transform
+from geometry_msgs.msg import Pose
 from bitbots_dynamic_kick.py_dynamic_kick import PyKickWrapper
 from bitbots_msgs.msg import JointCommand, KickGoal
 
@@ -56,7 +56,7 @@ class PyKick:
     def __del__(self):
         roscpp_shutdown()
 
-    def set_goal(self, msg: KickGoal, joint_state: JointState):
+    def set_goal(self, msg: KickGoal, joint_state: JointState) -> bool:
         """
         Set a goal for the kick.
 
@@ -66,7 +66,7 @@ class PyKick:
         """
         return self.py_kick_wrapper.set_goal(to_cpp(msg), to_cpp(joint_state))
 
-    def step(self, dt: float, joint_state: JointState):
+    def step(self, dt: float, joint_state: JointState) -> JointCommand:
         """
         Perform a step of the kick engine, must be repeatedly called to perform the full kick.
 
@@ -82,7 +82,7 @@ class PyKick:
         step = self.py_kick_wrapper.step(dt, to_cpp(joint_state))
         return from_cpp(step, JointCommand)
 
-    def get_progress(self):
+    def get_progress(self) -> float:
         """Returns the progress of the kick, between 0 and 1 where 1 is finished."""
         return self.py_kick_wrapper.get_progress()
 
@@ -92,3 +92,7 @@ class PyKick:
         :param params_dict: dict where the key is the name of the parameter (str). Does not have to contain all params.
         """
         self.py_kick_wrapper.set_params(params_dict)
+
+    def get_trunk_pose(self) -> Pose:
+        """Returns the current pose of the trunk relative to the support foot"""
+        return from_cpp(self.py_kick_wrapper.get_trunk_pose(), Pose)

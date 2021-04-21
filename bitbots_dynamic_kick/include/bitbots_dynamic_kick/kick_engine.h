@@ -107,6 +107,11 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
 
   int getPercentDone() const override;
 
+  /**
+   * Get the current position of the trunk relative to the support foot
+   */
+  geometry_msgs::Pose getTrunkPose();
+
   bitbots_splines::PoseSpline getFlyingSplines() const;
   bitbots_splines::PoseSpline getTrunkSplines() const;
 
@@ -164,11 +169,6 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    */
   bool calcIsLeftFootKicking(const Eigen::Vector3d &ball_position,
                              const Eigen::Quaterniond &kick_direction);
-
-  /**
-   * Get the current position of the trunk relative to the support foot
-   */
-  Eigen::Isometry3d getTrunkPose();
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned
