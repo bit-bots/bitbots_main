@@ -29,19 +29,22 @@ class BallFilter:
             self.ball_callback,
             queue_size=1
         )
-        #publishes positons of ball
+
+        # publishes positons of ball
         self.ball_pose_publisher = rospy.Publisher(
             rospy.get_param('~ball_position_publish_topic'),
             PoseWithCovarianceStamped,
             queue_size=1
         )
-        #publishes velocity of ball
+
+        # publishes velocity of ball
         self.ball_movement_publisher = rospy.Publisher(
             rospy.get_param('~ball_movement_publish_topic'),
             TwistWithCovarianceStamped,
             queue_size=1
         )
-        #publishes ball
+
+        # publishes ball
         self.ball_publisher = rospy.Publisher(
             rospy.get_param('~ball_publish_topic'),
             PoseWithCertaintyStamped,
@@ -118,6 +121,7 @@ class BallFilter:
         """
         # initial value of position(x,y) of the ball and velocity
         self.kf.x = np.array([x, y, 0, 0])
+
         # transition matrix
         self.kf.F = np.array([[1.0, 0.0, 1.0, 0.0],
                              [0.0, 1.0, 0.0, 1.0],
@@ -128,10 +132,11 @@ class BallFilter:
                               [0.0, 1.0, 0.0, 0.0]])
         # multiplying by the initial uncertainty
         self.kf.P = np.eye(4) * 1000
+
         # assigning measurement noise
-        # TODO: paramter
         self.kf.R = np.array([[1, 0],
                              [0, 1]]) * 0.1
+
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=rospy.get_param('~process_noise_variance'), block_size=2, order_by_dim=False)
 
