@@ -16,10 +16,11 @@
 #include <tf2/LinearMath/Transform.h>
 #include <Eigen/Geometry>
 #include <rot_conv/rot_conv.h>
-#include <bitbots_msgs/SupportState.h>
+#include <message_filters/cache.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <bitbots_msgs/SupportState.h>
 
 
 class OdometryFuser {
@@ -29,13 +30,13 @@ class OdometryFuser {
   sensor_msgs::Imu _imu_data;
   nav_msgs::Odometry _odom_data;
   geometry_msgs::TransformStamped tf;
-  char current_support_state_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_, cop_frame_;
 
+  message_filters::Cache<bitbots_msgs::SupportState> support_state_cache_;
+
   void imuCallback(const sensor_msgs::Imu::ConstPtr &img_msg, const nav_msgs::Odometry::ConstPtr &motion_odom_msg);
-  void supportCallback(const bitbots_msgs::SupportState msg);
   tf2::Quaternion getCurrentMotionOdomYaw(tf2::Quaternion motion_odom_rotation);
   tf2::Quaternion getCurrentImuRotationWithoutYaw(tf2::Quaternion imu_rotation);
   tf2::Transform getCurrentRotationPoint();

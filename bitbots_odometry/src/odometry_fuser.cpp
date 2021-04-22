@@ -9,7 +9,7 @@ imu (rX, rY)
 
 // TODO Doku
 
-OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
+OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_), support_state_cache_(100) {
   ros::NodeHandle n("");
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
@@ -18,13 +18,14 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_) {
   pnh.param<std::string>("odom_frame", odom_frame_, "odom");
   pnh.param<std::string>("rotation_frame", rotation_frame_, "rotation");
   pnh.param<std::string>("imu_frame", imu_frame_, "imu_frame");
-  current_support_state_ = -1;
 
-  ros::Subscriber walk_support_state_sub = n.subscribe("walk_support_state", 1, &OdometryFuser::supportCallback,
-                                                       this, ros::TransportHints().tcpNoDelay());
-  ros::Subscriber kick_support_state_sub = n.subscribe("dynamic_kick_support_state", 1,
-                                                       &OdometryFuser::supportCallback, this,
-                                                       ros::TransportHints().tcpNoDelay());
+  auto callback = [&](const bitbots_msgs::SupportState::ConstPtr &msg){support_state_cache_.add(msg);};
+
+  ros::Subscriber walk_support_state_sub = n.subscribe<bitbots_msgs::SupportState>(
+    "walk_support_state", 1, callback);
+
+  ros::Subscriber kick_support_state_sub = n.subscribe<bitbots_msgs::SupportState>(
+    "dynamic_kick_support_state", 1, callback);
 
   message_filters::Subscriber<sensor_msgs::Imu> imu_sub(n, "imu/data", 1);
   message_filters::Subscriber<nav_msgs::Odometry> motion_odom_sub(n, "motion_odometry", 1);
@@ -177,16 +178,24 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
   geometry_msgs::TransformStamped rotation_point;
   tf2::Transform rotation_point_tf;
 
+  char current_support_state = bitbots_msgs::SupportState::DOUBLE;
+
+  bitbots_msgs::SupportState::ConstPtr current_support_state_msg = support_state_cache_.getElemBeforeTime(_imu_data.header.stamp);
+
+  if (current_support_state_msg) {
+    current_support_state = current_support_state_msg->state;
+  }
+
   // if center of pressure is available, it is the point of rotation
   try {
     rotation_point = tf_buffer_.lookupTransform(base_link_frame_, cop_frame_, _imu_data.header.stamp);
     fromMsg(rotation_point.transform, rotation_point_tf);
   } catch (tf2::TransformException ex) {
     // otherwise point of rotation is current support foot sole or center point of the soles if double support
-    if (current_support_state_ == bitbots_msgs::SupportState::RIGHT || current_support_state_ == bitbots_msgs::SupportState::LEFT) {
+    if (current_support_state == bitbots_msgs::SupportState::RIGHT || current_support_state == bitbots_msgs::SupportState::LEFT) {
       try {
         std::string support_frame;
-        if (current_support_state_ == bitbots_msgs::SupportState::RIGHT)
+        if (current_support_state == bitbots_msgs::SupportState::RIGHT)
           support_frame = r_sole_frame_;
         else
           support_frame = l_sole_frame_;
@@ -196,7 +205,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       } catch (tf2::TransformException ex) {
         ROS_ERROR("%s", ex.what());
       }
-    } else if (current_support_state_ == bitbots_msgs::SupportState::DOUBLE || current_support_state_ == -1) {
+    } else if (current_support_state == bitbots_msgs::SupportState::DOUBLE) {
       // use point between soles if double support or unknown support
       geometry_msgs::TransformStamped base_to_l_sole;
       base_to_l_sole = tf_buffer_.lookupTransform(base_link_frame_, l_sole_frame_, _imu_data.header.stamp);
@@ -220,7 +229,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
       rotation_point_tf.setRotation(zero_rotation);
     } else {
-      ROS_ERROR_THROTTLE(2, "cop not available and unknown support state %c", current_support_state_);
+      ROS_ERROR_THROTTLE(2, "cop not available and unknown support state %c", current_support_state);
     }
   }
   return rotation_point_tf;
@@ -231,10 +240,6 @@ void OdometryFuser::imuCallback(
     const nav_msgs::Odometry::ConstPtr &motion_odom_msg) {
   _imu_data = *imu_msg;
   _odom_data = *motion_odom_msg;
-}
-
-void OdometryFuser::supportCallback(const bitbots_msgs::SupportState msg) {
-  current_support_state_ = msg.state;
 }
 
 int main(int argc, char **argv) {
