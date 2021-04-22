@@ -135,13 +135,12 @@ void WalkNode::run() {
           visualizer_.publishEngineDebug(current_response_);
         }
       }
-
-      // publish odometry
-      odom_counter++;
-      if (odom_counter > odom_pub_factor_) {
-        pub_odometry_.publish(getOdometry());
-        odom_counter = 0;
-      }
+    }
+    // always publish odometry to not confuse odometry fuser
+    odom_counter++;
+    if (odom_counter > odom_pub_factor_) {
+      pub_odometry_.publish(getOdometry());
+      odom_counter = 0;
     }
     ros::spinOnce();
     loop_rate.sleep();
