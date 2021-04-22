@@ -316,6 +316,14 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
       last_phase_ = 0.49999;
     }
 
+   if (reset_odometry) {
+     // move left and right in world by foot distance for correct initialization
+     left_in_world_.setIdentity();
+     right_in_world_.setIdentity();
+     left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
+     right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
+   }
+
     // build trajectories one more time with end state of previously build trajectories as a start
     if (state == WalkState::WALKING) {
       buildNormalTrajectories();
@@ -334,12 +342,6 @@ void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear
     }
   }
   last_phase_ = phase_;
-
-  if (reset_odometry) {
-    // move left and right in world by foot distance for correct initialization
-    left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
-    right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
-  }
 }
 
 void WalkEngine::saveCurrentRobotState() {
