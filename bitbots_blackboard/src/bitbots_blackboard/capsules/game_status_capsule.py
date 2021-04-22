@@ -66,7 +66,7 @@ class GameStatusCapsule:
         return rospy.get_time() - self.unpenalized_since
 
     def is_allowed_to_move(self):
-        return self.gamestate.allowedToMove or rospy.get_time() - self.last_update > 15
+        return self.gamestate.allowedToMove
 
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:
