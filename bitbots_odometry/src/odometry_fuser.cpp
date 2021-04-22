@@ -51,7 +51,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_), support_state_cache_(
     ROS_WARN_THROTTLE(30, "Waiting for transforms from robot joints");
   }
 
-  ros::Rate r(200.0);
+  ros::Rate r(500.0);
   ros::Time last_time_stamp;
   while (ros::ok()) {
     ros::spinOnce();
