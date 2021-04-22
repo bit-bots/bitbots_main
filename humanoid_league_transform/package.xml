@@ -22,6 +22,7 @@
   <depend>message_generation</depend>
   <depend>geometry_msgs</depend>
   <depend>bitbots_docs</depend>
+  <depend>python3-opencv</depend>
 
   <exec_depend>rospy</exec_depend>
   <exec_depend>humanoid_league_msgs</exec_depend>

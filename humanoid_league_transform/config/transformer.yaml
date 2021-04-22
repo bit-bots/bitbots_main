@@ -24,5 +24,7 @@ camera_info:
   camera_info_topic: 'camera/camera_info'
 
 masks:
-  line_mask: 'line_mask_in_image'
+  line_mask:
+    topic: 'line_mask_in_image'
+    scale: 0.5
 
