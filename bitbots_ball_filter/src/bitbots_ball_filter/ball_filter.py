@@ -77,13 +77,14 @@ class BallFilter:
 
 
     def filter_step(self, event):
-        """"When ball has been assigned a value and filter has been initialized:
-            state will be updated according to filter.
-            If filter has not been initialized, then that will be done first.
+        """"
+        When ball has been assigned a value and filter has been initialized:
+        state will be updated according to filter.
+        If filter has not been initialized, then that will be done first.
 
-            If there is not data for ball, a prediction will still be made and published
-            Process noise is taken into account
-            """
+        If there is not data for ball, a prediction will still be made and published
+        Process noise is taken into account
+        """
         if self.ball:
             if self.filter_init:
                 self.kf.predict()
