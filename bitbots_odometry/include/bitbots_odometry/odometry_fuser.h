@@ -27,12 +27,12 @@ class OdometryFuser {
  public:
   OdometryFuser();
  private:
-  sensor_msgs::Imu _imu_data;
-  nav_msgs::Odometry _odom_data;
-  geometry_msgs::TransformStamped tf;
+  sensor_msgs::Imu imu_data_;
+  nav_msgs::Odometry odom_data_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_, cop_frame_;
+  ros::Time fused_time_;
+  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_;
 
   message_filters::Cache<bitbots_msgs::SupportState> support_state_cache_;
 
