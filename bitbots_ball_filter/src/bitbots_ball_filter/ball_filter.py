@@ -20,6 +20,7 @@ class BallFilter:
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_init = False
         self.ball = None  # type:PointStamped
+        self.ball_header = None
         self.last_ball_msg = None  # type: PoseWithCertainty
 
         # setup subscriber
@@ -54,7 +55,8 @@ class BallFilter:
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(2))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
-        self.filter_time_step = rospy.get_param('~filter_time_step')
+        self.filter_rate = rospy.get_param('~filter_rate')
+        self.filter_time_step = 1.0 / self.filter_rate
 
         self.odom_frame = rospy.get_param('~odom_frame', 'odom')
 
@@ -77,8 +79,6 @@ class BallFilter:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
 
-
-
     def filter_step(self, event):
         """"
         When ball has been assigned a value and filter has been initialized:
@@ -89,16 +89,12 @@ class BallFilter:
         Process noise is taken into account
         """
         if self.ball:
-            if self.filter_init:
-                self.kf.predict()
-                self.kf.update(self.get_ball_measurement())
-                state = self.kf.get_update()
-            else:
+            if not self.filter_init:
                 self.init_filter(*self.get_ball_measurement())
-                self.kf.predict()
-                self.kf.update(self.get_ball_measurement())
-                state = self.kf.get_update()
                 self.filter_init = True
+            self.kf.predict()
+            self.kf.update(self.get_ball_measurement())
+            state = self.kf.get_update()
             self.publish_data(*state)
             self.ball = None
         else: 
