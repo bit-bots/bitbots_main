@@ -60,6 +60,9 @@ class BallFilter:
 
         self.odom_frame = rospy.get_param('~odom_frame', 'odom')
 
+        # adapt velocity factor to frequency
+        self.velocity_factor = rospy.get_param('~velocity_reduction') ** (1 / self.filter_rate)
+
         self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
         rospy.spin()
 
@@ -120,8 +123,8 @@ class BallFilter:
         self.kf.x = np.array([x, y, 0, 0])
 
         # transition matrix
-        self.kf.F = np.array([[1.0, 0.0, 1.0, 0.0],
-                             [0.0, 1.0, 0.0, 1.0],
+        self.kf.F = np.array([[1.0, 0.0, self.velocity_factor, 0.0],
+                             [0.0, 1.0, 0.0, self.velocity_factor],
                              [0.0, 0.0, 1.0, 0.0],
                              [0.0, 0.0, 0.0, 1.0]])
         # measurement function

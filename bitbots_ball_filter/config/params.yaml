@@ -9,4 +9,7 @@ odom_frame: 'odom'
 # Filtering rate in Hz
 filter_rate: 10
 
+# velocity reduction (per axis) factor of the ball per second
+velocity_reduction: 0.95
+
 process_noise_variance: 0.005
