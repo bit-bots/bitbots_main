@@ -40,7 +40,7 @@ class SimBall:
         msg.pose.pose.orientation.w = 1
         return msg
 
-SimBall()
-
+if __name__ == '__main__':
+    SimBall()
 
 
