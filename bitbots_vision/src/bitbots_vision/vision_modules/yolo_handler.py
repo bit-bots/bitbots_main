@@ -485,15 +485,13 @@ class YoloHandlerPytorchYolo(YoloHandler):
     def predict(self):
         if self._candidates is None or not self._caching:
             self._candidates = defaultdict(list)
-            boxes = detect.detect_image(self.model, self._image,
+            boxes = detect.detect_image(self.model, cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB),
                                         conf_thres=self._confidence_threshold,
                                         nms_thres=self._nms_threshold)
             for box in boxes:
                 # x1, y1, x2, y2, confidence, class
                 c = Candidate.from_x1y1x2y2(*box[0:4].astype(int), box[4].astype(float))
                 classname = self._class_names[int(box[5])]
-                print("AHHHHHHHH")
-                print(c, classname)
                 self._candidates[classname].append(c)
 
 
