@@ -1201,13 +1201,13 @@
     <collision>
       <origin rpy="-1.5708 1.5708 0.0" xyz="-0.048 0.0259 3.46945e-18"/>
       <geometry>
-        <box size="0.036 0.004 0.053"/>
+        <box size="0.0260229 0.004 0.053"/>
       </geometry>
     </collision>
     <collision>
       <origin rpy="-1.5708 1.5708 0.0" xyz="0.048 0.0259 3.46945e-18"/>
       <geometry>
-        <box size="0.036 0.004 0.053"/>
+        <box size="0.0260229 0.004 0.053"/>
       </geometry>
     </collision>
     <collision>
@@ -1911,13 +1911,49 @@
     <collision>
       <origin rpy="5.20592e-17 -2.1633e-18 2.92836e-19" xyz="-6.87261e-18 0.094 -0.011"/>
       <geometry>
-        <box size="0.048 0.004 0.05"/>
+        <box size="0.021 0.004 0.05"/>
       </geometry>
     </collision>
     <collision>
       <origin rpy="5.20592e-17 -2.1633e-18 2.92836e-19" xyz="-6.9512e-18 -0.002 -0.011"/>
       <geometry>
-        <box size="0.048 0.004 0.05"/>
+        <box size="0.021 0.004 0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="5.20592e-17 -2.1633e-18 2.92836e-19" xyz="-6.97387e-18 -0.002 -0.032"/>
+      <geometry>
+        <box size="0.048 0.004 0.008"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="5.48556e-17 0.320679 4.65142e-18" xyz="-0.0104 -0.002 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="5.48556e-17 -0.320679 -4.06575e-18" xyz="0.0104 -0.002 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="5.48556e-17 0.320679 4.65142e-18" xyz="-0.0104 0.094 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="5.48556e-17 -0.320679 -4.06575e-18" xyz="0.0104 0.094 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="5.20592e-17 -2.1633e-18 2.92836e-19" xyz="-6.89528e-18 0.094 -0.032"/>
+      <geometry>
+        <box size="0.048 0.004 0.008"/>
       </geometry>
     </collision>
     <visual>
@@ -2341,13 +2377,13 @@
     <collision>
       <origin rpy="-1.5708 1.5708 0.0" xyz="-0.048 0.0259 3.46945e-18"/>
       <geometry>
-        <box size="0.036 0.004 0.053"/>
+        <box size="0.0260229 0.004 0.053"/>
       </geometry>
     </collision>
     <collision>
       <origin rpy="-1.5708 1.5708 0.0" xyz="0.048 0.0259 3.46945e-18"/>
       <geometry>
-        <box size="0.036 0.004 0.053"/>
+        <box size="0.0260229 0.004 0.053"/>
       </geometry>
     </collision>
     <collision>
@@ -3147,13 +3183,49 @@
     <collision>
       <origin rpy="2.07221e-17 1.23247e-32 4.97835e-31" xyz="1.24326e-34 0.094 -0.011"/>
       <geometry>
-        <box size="0.048 0.004 0.05"/>
+        <box size="0.021 0.004 0.05"/>
       </geometry>
     </collision>
     <collision>
       <origin rpy="2.07221e-17 1.23247e-32 4.97835e-31" xyz="-1.13781e-33 -0.002 -0.011"/>
       <geometry>
-        <box size="0.048 0.004 0.05"/>
+        <box size="0.021 0.004 0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="2.07221e-17 1.23247e-32 4.97835e-31" xyz="-7.12147e-34 -0.002 -0.032"/>
+      <geometry>
+        <box size="0.048 0.004 0.008"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="2.18352e-17 0.320679 1.41653e-18" xyz="-0.0104 -0.002 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="2.18352e-17 -0.320679 -1.41653e-18" xyz="0.0104 -0.002 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="2.18352e-17 0.320679 1.41653e-18" xyz="-0.0104 0.094 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="2.18352e-17 -0.320679 -1.41653e-18" xyz="0.0104 0.094 -0.0093"/>
+      <geometry>
+        <box size="0.014 0.004 0.0442561"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="2.07221e-17 1.23247e-32 4.97835e-31" xyz="5.49989e-34 0.094 -0.032"/>
+      <geometry>
+        <box size="0.048 0.004 0.008"/>
       </geometry>
     </collision>
     <visual>

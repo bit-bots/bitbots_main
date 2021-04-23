@@ -13,10 +13,10 @@ rotate([0,90,90]){
     }
 
     translate([0,50-2,53/2]){
-    cube([36,4,53], center=true);
+    cube([26.02287,4,53], center=true);
     }
     translate([0,-(50-2),53/2]){
-    cube([36,4,53], center=true);
+    cube([26.02287,4,53], center=true);
     }
     cylinder(r=25, h=4);
 }
