@@ -187,7 +187,7 @@ class YoloHandlerOpenCV(YoloHandler):
         # Check if cached
         if self._candidates is None or not self._caching:
             # Set image
-            blob = cv2.dnn.blobFromImage(self._image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+            blob = cv2.dnn.blobFromImage(self._image, 1/255.0, (416, 416), swapRB=True, crop=False)
             self._net.setInput(blob)
             self._width = self._image.shape[1]
             self._height = self._image.shape[0]
