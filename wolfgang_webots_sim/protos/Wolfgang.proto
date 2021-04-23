@@ -341,7 +341,7 @@ PROTO Wolfgang [
         }
         device [
           RotationalMotor {
-            name "RShoulderPitch"
+            name "RShoulderPitch [shoulder]"
             maxVelocity IS MX64-vel
             minPosition -3.14159
             maxPosition 3.14159
@@ -349,7 +349,7 @@ PROTO Wolfgang [
             controlPID IS pid
           }
           PositionSensor {
-            name "RShoulderPitch_sensor"
+            name "RShoulderPitch [shoulder]_sensor"
             resolution IS encoderResolution
           }
         ]
@@ -520,7 +520,7 @@ PROTO Wolfgang [
                           name "r_wrist"
                         }
                       ]
-                      name "r_lower_arm"
+                      name "r_lower_arm [arm]"
                       boundingObject Group {
                         children [
                           Transform {
@@ -678,7 +678,7 @@ PROTO Wolfgang [
                     }
                   }
                 ]
-                name "r_upper_arm"
+                name "r_upper_arm [arm]"
                 boundingObject Group {
                   children [
                     Transform {
@@ -863,7 +863,7 @@ PROTO Wolfgang [
         }
         device [
           RotationalMotor {
-            name "LShoulderPitch"
+            name "LShoulderPitch [shoulder]"
             maxVelocity IS MX64-vel
             minPosition -3.14159
             maxPosition 3.14159
@@ -871,7 +871,7 @@ PROTO Wolfgang [
             controlPID IS pid
           }
           PositionSensor {
-            name "LShoulderPitch_sensor"
+            name "LShoulderPitch [shoulder]_sensor"
             resolution IS encoderResolution
           }
         ]
@@ -1042,7 +1042,7 @@ PROTO Wolfgang [
                           name "l_wrist"
                         }
                       ]
-                      name "l_lower_arm"
+                      name "l_lower_arm [arm]"
                       boundingObject Group {
                         children [
                           Transform {
@@ -1200,7 +1200,7 @@ PROTO Wolfgang [
                     }
                   }
                 ]
-                name "l_upper_arm"
+                name "l_upper_arm [arm]"
                 boundingObject Group {
                   children [
                     Transform {
@@ -1420,7 +1420,7 @@ PROTO Wolfgang [
               }
               device [
                 RotationalMotor {
-                  name "RHipRoll"
+                  name "RHipRoll [hip]"
                   maxVelocity IS MX106-vel
                   minPosition -1.5708
                   maxPosition 1.5708
@@ -1428,7 +1428,7 @@ PROTO Wolfgang [
                   controlPID IS pid
                 }
                 PositionSensor {
-                  name "RHipRoll_sensor"
+                  name "RHipRoll [hip]_sensor"
                   resolution IS encoderResolution
                 }
               ]
@@ -2047,7 +2047,7 @@ PROTO Wolfgang [
                                             }
                                           }
                                         ]
-                                        name "r_foot"
+                                        name "r_foot [foot]"
                                         boundingObject Group {
                                           children [
                                             Transform {
@@ -3043,7 +3043,7 @@ PROTO Wolfgang [
               }
               device [
                 RotationalMotor {
-                  name "LHipRoll"
+                  name "LHipRoll [hip]"
                   maxVelocity IS MX106-vel
                   minPosition -1.5708
                   maxPosition 1.5708
@@ -3051,7 +3051,7 @@ PROTO Wolfgang [
                   controlPID IS pid
                 }
                 PositionSensor {
-                  name "LHipRoll_sensor"
+                  name "LHipRoll [hip]_sensor"
                   resolution IS encoderResolution
                 }
               ]
@@ -3670,7 +3670,7 @@ PROTO Wolfgang [
                                             }
                                           }
                                         ]
-                                        name "l_foot"
+                                        name "l_foot [foot]"
                                         boundingObject Group {
                                           children [
                                             Transform {
