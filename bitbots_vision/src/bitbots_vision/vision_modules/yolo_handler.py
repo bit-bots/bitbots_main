@@ -36,7 +36,7 @@ class YoloHandler():
         # Load possible class names
         namepath = os.path.join(model_path, "obj.names")
         with open(namepath, "r") as fp:
-            self._class_names = fp.read().split("\n")[:-1]
+            self._class_names = fp.read().splitlines()
 
         # Set config
         self.set_config(config)
@@ -498,6 +498,43 @@ class YoloBallDetector(CandidateFinder):
         self._yolo.predict()
 
 class YoloGoalpostDetector(CandidateFinder):
+    """
+    A goalpost detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the goalpost class.
+    """
+    def __init__(self, config, yolo):
+        """
+        Constructor for the YoloGoalpostDetector.
+
+        :param config: The vision config
+        :param yolo: An YoloHandler implementation that runs the yolo network
+        """
+        self._config = config
+        self._yolo = yolo
+
+    def set_image(self, image):
+        """
+        Set a image for yolo. This is cached.
+
+        :param image: current vision image
+        """
+        self._yolo.set_image(image)
+
+    def get_candidates(self):
+        """
+        :return: all found goalpost candidates
+        """
+        return self._yolo.get_candidates("goalpost")
+
+    def compute(self):
+        """
+        Runs the yolo network
+        """
+        self._yolo.predict()
+
+
+class YoloDetector(CandidateFinder):
     """
     A goalpost detector using the yolo neural network.
     This layer connects a single YOLO network with multiple candidate finders for the different classes,
