@@ -33,6 +33,7 @@ PROTO Wolfgang [
   field  SFFloat     backlash        0.01
   field  SFFloat     spring-constant 0.76
   field  SFVec3f     pid             10 0 0
+  field  SFFloat     encoderResolution 0.00153398078
 ]
 {
   Robot {
@@ -345,6 +346,7 @@ PROTO Wolfgang [
           }
           PositionSensor {
             name "RShoulderPitch_sensor"
+            resolution IS encoderResolution
           }
         ]
         endPoint DEF r_shoulder Solid {
@@ -394,6 +396,7 @@ PROTO Wolfgang [
                 }
                 PositionSensor {
                   name "RShoulderRoll_sensor"
+                  resolution IS encoderResolution
                 }
               ]
               endPoint DEF r_upper_arm Solid {
@@ -468,6 +471,7 @@ PROTO Wolfgang [
                       }
                       PositionSensor {
                         name "RElbow_sensor"
+                        resolution IS encoderResolution
                       }
                     ]
                     endPoint DEF r_lower_arm Solid {
@@ -864,6 +868,7 @@ PROTO Wolfgang [
           }
           PositionSensor {
             name "LShoulderPitch_sensor"
+            resolution IS encoderResolution
           }
         ]
         endPoint DEF l_shoulder Solid {
@@ -913,6 +918,7 @@ PROTO Wolfgang [
                 }
                 PositionSensor {
                   name "LShoulderRoll_sensor"
+                  resolution IS encoderResolution
                 }
               ]
               endPoint DEF l_upper_arm Solid {
@@ -987,6 +993,7 @@ PROTO Wolfgang [
                       }
                       PositionSensor {
                         name "LElbow_sensor"
+                        resolution IS encoderResolution
                       }
                     ]
                     endPoint DEF l_lower_arm Solid {
@@ -1383,6 +1390,7 @@ PROTO Wolfgang [
           }
           PositionSensor {
             name "RHipYaw_sensor"
+            resolution IS encoderResolution
           }
         ]
         endPoint DEF r_hip_1 Solid {
@@ -1417,6 +1425,7 @@ PROTO Wolfgang [
                 }
                 PositionSensor {
                   name "RHipRoll_sensor"
+                  resolution IS encoderResolution
                 }
               ]
               endPoint DEF r_hip_2 Solid {
@@ -1483,6 +1492,7 @@ PROTO Wolfgang [
                       }
                       PositionSensor {
                         name "RHipPitch_sensor"
+                        resolution IS encoderResolution
                       }
                     ]
                     endPoint DEF r_upper_leg Solid {
@@ -1581,6 +1591,7 @@ PROTO Wolfgang [
                             }
                             PositionSensor {
                               name "RKnee_sensor"
+                              resolution IS encoderResolution
                             }
                           ]
                           endPoint DEF r_lower_leg Solid {
@@ -1671,6 +1682,7 @@ PROTO Wolfgang [
                                   }
                                   PositionSensor {
                                     name "RAnklePitch_sensor"
+                                    resolution IS encoderResolution
                                   }
                                 ]
                                 endPoint DEF r_ankle Solid {
@@ -1737,6 +1749,7 @@ PROTO Wolfgang [
                                         }
                                         PositionSensor {
                                           name "RAnkleRoll_sensor"
+                                          resolution IS encoderResolution
                                         }
                                       ]
                                       endPoint DEF r_foot Solid {
@@ -3000,6 +3013,7 @@ PROTO Wolfgang [
           }
           PositionSensor {
             name "LHipYaw_sensor"
+            resolution IS encoderResolution
           }
         ]
         endPoint DEF l_hip_1 Solid {
@@ -3034,6 +3048,7 @@ PROTO Wolfgang [
                 }
                 PositionSensor {
                   name "LHipRoll_sensor"
+                  resolution IS encoderResolution
                 }
               ]
               endPoint DEF l_hip_2 Solid {
@@ -3100,6 +3115,7 @@ PROTO Wolfgang [
                       }
                       PositionSensor {
                         name "LHipPitch_sensor"
+                        resolution IS encoderResolution
                       }
                     ]
                     endPoint DEF l_upper_leg Solid {
@@ -3198,6 +3214,7 @@ PROTO Wolfgang [
                             }
                             PositionSensor {
                               name "LKnee_sensor"
+                              resolution IS encoderResolution
                             }
                           ]
                           endPoint DEF l_lower_leg Solid {
@@ -3288,6 +3305,7 @@ PROTO Wolfgang [
                                   }
                                   PositionSensor {
                                     name "LAnklePitch_sensor"
+                                    resolution IS encoderResolution
                                   }
                                 ]
                                 endPoint DEF l_ankle Solid {
@@ -3354,6 +3372,7 @@ PROTO Wolfgang [
                                         }
                                         PositionSensor {
                                           name "LAnkleRoll_sensor"
+                                          resolution IS encoderResolution
                                         }
                                       ]
                                       endPoint DEF l_foot Solid {
@@ -4617,6 +4636,7 @@ PROTO Wolfgang [
           }
           PositionSensor {
             name "HeadPan_sensor"
+            resolution IS encoderResolution
           }
         ]
         endPoint DEF neck Solid {
@@ -4659,6 +4679,7 @@ PROTO Wolfgang [
                 }
                 PositionSensor {
                   name "HeadTilt_sensor"
+                  resolution IS encoderResolution
                 }
               ]
               endPoint DEF head Solid {
