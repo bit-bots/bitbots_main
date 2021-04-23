@@ -320,9 +320,13 @@ PROTO Wolfgang [
         children [
           Accelerometer {
             name "imu accelerometer"
+            lookupTable [ -156.96 -156.96 0,
+                           156.96  156.96 0, ]
           }
           Gyro {
             name "imu gyro"
+            lookupTable [ -34.90659 -34.90659 0,
+                           34.90659  34.90659 0, ]
           }
         ]
       }
@@ -4767,9 +4771,13 @@ PROTO Wolfgang [
                     children [
                       Accelerometer {
                         name "imu_head accelerometer"
+                        lookupTable [ -156.96 -156.96 0,
+                                       156.96  156.96 0, ]
                       }
                       Gyro {
                         name "imu_head gyro"
+                        lookupTable [ -34.90659 -34.90659 0,
+                                       34.90659  34.90659 0, ]
                       }
                     ]
                   }
