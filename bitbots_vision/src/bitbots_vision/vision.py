@@ -317,7 +317,7 @@ class Vision:
                 self._goalpost_detector = obstacle.WhiteObstacleDetector(self._obstacle_detector)
 
         # Check if the yolo ball/goalpost detector is activated and if the non tpu version is used
-        if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
+        if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet', 'yolo_pytorch']:
             if ros_utils.config_param_change(self._config, config, ['yolo_darknet_model_path', 'neural_network_type']):
                 # Build absolute model path
                 yolo_darknet_model_path = os.path.join(self._package_path, 'models', config['yolo_darknet_model_path'])
@@ -332,6 +332,8 @@ class Vision:
                     elif config['neural_network_type'] == 'yolo_darknet':
                         # Load Darknet implementation (uses CUDA)
                         self._yolo = yolo_handler.YoloHandlerDarknet(config, yolo_darknet_model_path)
+                    elif config['neural_network_type'] == 'yolo_pytorch':
+                        self._yolo = yolo_handler.YoloHandlerPytorchYolo(config, yolo_darknet_model_path)
                     # Set both ball and goalpost detector
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)

@@ -18,7 +18,10 @@ try:
     ie = IECore()
 except NameError:
     rospy.logerr("Please install/source OpenVino environment to use the NCS2 YOLO Handler.", logger_name="vision_yolo")
-
+try:
+    from pytorchyolo import models, detect
+except ImportError:
+    rospy.logerr("Not able to import pytorchyolo. This might be fine if you use another method.", logger_name="vision_yolo")
 
 class YoloHandler():
     """
@@ -457,6 +460,41 @@ class YoloHandlerNCS2(YoloHandler):
                     class_id = class_ids[index]
                     class_name = self._class_names[class_id]
                     self._candidates[class_name].append(c)
+
+
+class YoloHandlerPytorchYolo(YoloHandler):
+    """
+    Using Pytorch to get YOLO predictions
+    """
+    def __init__(self, config, model_path):
+        """
+        Initialization of PytorchYolo
+
+        :param config:
+        :param model_path:
+        """
+        weightpath = os.path.join(model_path, "yolo_weights.weights")
+        configpath = os.path.join(model_path, "config.cfg")
+
+        self.model = models.load_model(configpath, weightpath)
+
+        self._image = None
+
+        super(YoloHandlerPytorchYolo, self).__init__(config, model_path)
+
+    def predict(self):
+        if self._candidates is None or not self._caching:
+            self._candidates = defaultdict(list)
+            boxes = detect.detect_image(self.model, self._image,
+                                        conf_thres=self._confidence_threshold,
+                                        nms_thres=self._nms_threshold)
+            for box in boxes:
+                # x1, y1, x2, y2, confidence, class
+                c = Candidate.from_x1y1x2y2(*box[0:4].astype(int), box[4].astype(float))
+                classname = self._class_names[int(box[5])]
+                print("AHHHHHHHH")
+                print(c, classname)
+                self._candidates[classname].append(c)
 
 
 class YoloBallDetector(CandidateFinder):
