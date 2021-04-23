@@ -4,13 +4,14 @@ project(bitbots_moveit_bindings)
 find_package(catkin REQUIRED COMPONENTS
     moveit_core
     moveit_ros_planning
+    bitbots_docs
 )
 
 find_package(PythonLibs COMPONENTS Interpreter Development)
 if(PYTHONLIBS_VERSION_STRING VERSION_LESS "3.8")
     find_package(Boost REQUIRED COMPONENTS python3)
 else()
-    find_package(Boost REQUIRED COMPONENTS python bitbots_docs)
+    find_package(Boost REQUIRED COMPONENTS python)
 endif()
 
 catkin_package(CATKIN_DEPENDS
