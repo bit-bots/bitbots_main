@@ -26,9 +26,11 @@ rotate([90,0,0]){
 }
 
 translate([-24,-2,6]){
-rotate([0,5,0]){
-    cube([34, 2, 160]);
-}
+    rotate([0,5,0]){
+        translate([34/2,2/2,160/2]) {
+            cube([34, 2, 160], center=true);
+        }
+    }
 }
 
 // cylinder(r=10, h=10, center=true);
