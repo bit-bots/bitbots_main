@@ -17,18 +17,18 @@ PROTO Wolfgang [
   field  SFFloat     cameraFOV       1.04
   field  SFInt32     cameraWidth     640
   field  SFInt32     cameraHeight    480
-  field  SFFloat     MX64-torque     5.475
+  field  SFFloat     MX64-torque     7.3
   field  SFFloat     MX64-vel        8.17
-  field  SFFloat     MX64-damping    0.67
-  field  SFFloat     MX64-static     0.67
-  field  SFFloat     MX106-torque    7.5
+  field  SFFloat     MX64-damping    0.65
+  field  SFFloat     MX64-static     1.73
+  field  SFFloat     MX106-torque    10
   field  SFFloat     MX106-vel       5.76
-  field  SFFloat     MX106-damping   1.3
-  field  SFFloat     MX106-static    0.67
-  field  SFFloat     XH540W270-torque     8.775
-  field  SFFloat     XH540W270-vel        4.82
-  field  SFFloat     XH540W270-damping    1.82
-  field  SFFloat     XH540W270-static    1.82
+  field  SFFloat     MX106-damping   1.23
+  field  SFFloat     MX106-static    2.55
+  field  SFFloat     XH540W270-torque     12.9
+  field  SFFloat     XH540W270-vel        3.87
+  field  SFFloat     XH540W270-damping    2.92
+  field  SFFloat     XH540W270-static     1.49
   field  SFFloat     gearMass        0.001
   field  SFFloat     backlash        0.01
   field  SFFloat     spring-constant 0.76
