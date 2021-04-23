@@ -4,6 +4,7 @@ import abc
 import rospy
 import numpy as np
 from math import exp
+from collections import defaultdict
 from .candidate import CandidateFinder, Candidate
 try:
     from pydarknet import Detector, Image
@@ -29,9 +30,14 @@ class YoloHandler():
         """
         Initialization of the abstract YoloHandler.
         """
-        self._ball_candidates = None
-        self._goalpost_candidates = None
+        self._candidates = None
         self._image = None
+
+        # Load possible class names
+        namepath = os.path.join(model_path, "obj.names")
+        with open(namepath, "r") as fp:
+            self._class_names = fp.read().split("\n")[:-1]
+
         # Set config
         self.set_config(config)
 
@@ -56,8 +62,7 @@ class YoloHandler():
         # Set image
         self._image = img
         # Reset cached stuff
-        self._goalpost_candidates = None
-        self._ball_candidates = None
+        self._candidates = None
 
     @abc.abstractmethod
     def predict(self):
@@ -66,25 +71,15 @@ class YoloHandler():
         """
         raise NotImplementedError
 
-    def get_candidates(self):
-        """
-        Runs neural network and returns results for all classes. (Cached)
-        """
-        return [self.get_ball_candidates(), self.get_goalpost_candidates()]
-
-    def get_ball_candidates(self):
+    def get_candidates(self, class_name):
         """
         Runs neural network and returns results for ball class. (Cached)
-        """
-        self.predict()
-        return self._ball_candidates
 
-    def get_goalpost_candidates(self):
-        """
-        Runs neural network and returns results for goalpost class. (Cached)
+        :param class_name: The name of the class you want to query
         """
         self.predict()
-        return self._goalpost_candidates
+        return self._candidates[class_name]
+
 
 class YoloHandlerDarknet(YoloHandler):
     """
@@ -129,12 +124,11 @@ class YoloHandlerDarknet(YoloHandler):
         Runs the neural network
         """
         # Check if cached
-        if self._ball_candidates is None or self._goalpost_candidates is None or not self._caching:
+        if self._candidates is None or not self._caching:
             # Run neural network
             results = self._net.detect(Image(self._image))
             # Init lists
-            self._ball_candidates = []
-            self._goalpost_candidates = []
+            self._candidates = defaultdict(list)
             # Go through results
             for out in results:
                 # Get class id
@@ -149,10 +143,9 @@ class YoloHandlerDarknet(YoloHandler):
                     # Create candidate
                     c = Candidate(int(x), int(y), int(w), int(h), confidence)
                     # Append candidate to the right list depending on the class
-                    if class_id == b"ball":
-                        self._ball_candidates.append(c)
-                    if class_id == b"goalpost":
-                        self._goalpost_candidates.append(c)
+                    assert class_id.decode() in self._class_names, \
+                        f"Predicted class {class_id.decode()} not in {self._class_names}."
+                    self._candidates[class_id.decode()].append(c)
 
 class YoloHandlerOpenCV(YoloHandler):
     """
@@ -189,7 +182,7 @@ class YoloHandlerOpenCV(YoloHandler):
         Runs the neural network
         """
         # Check if cached
-        if self._ball_candidates is None or self._goalpost_candidates is None or not self._caching:
+        if self._candidates is None or not self._caching:
             # Set image
             blob = cv2.dnn.blobFromImage(self._image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
             self._net.setInput(blob)
@@ -201,8 +194,7 @@ class YoloHandlerOpenCV(YoloHandler):
             class_ids = []
             confidences = []
             boxes = []
-            self._ball_candidates = []
-            self._goalpost_candidates = []
+            self._candidates = defaultdict(list)
             # Iterate over output/detections
             for out in self._outs:
                 for detection in out:
@@ -243,10 +235,8 @@ class YoloHandlerOpenCV(YoloHandler):
                 c = Candidate(*box, confidences[i])
                 # Append candidate to the right list depending on the class
                 class_id = class_ids[i]
-                if class_id == 0:
-                    self._ball_candidates.append(c)
-                if class_id == 1:
-                    self._goalpost_candidates.append(c)
+                class_name = self._class_names[class_id]
+                self._candidates[class_name].append(c)
 
 class YoloHandlerNCS2(YoloHandler):
     """
@@ -408,10 +398,9 @@ class YoloHandlerNCS2(YoloHandler):
         return objects
 
     def predict(self):
-        if (self._ball_candidates is None and self._goalpost_candidates is None) or not self._caching:
+        if self._candidates is None or not self._caching:
             # Set up variables
-            self._ball_candidates = list()
-            self._goalpost_candidates = list()
+            self._candidates = defaultdict(list)
 
             rospy.logdebug("Starting inference...", logger_name="vision_yolo")
 
@@ -466,10 +455,8 @@ class YoloHandlerNCS2(YoloHandler):
                     c = Candidate(*box, confidences[index])
                     # Append candidate to the right list depending on the class
                     class_id = class_ids[index]
-                    if class_id == 0:
-                        self._ball_candidates.append(c)
-                    if class_id == 1:
-                        self._goalpost_candidates.append(c)
+                    class_name = self._class_names[class_id]
+                    self._candidates[class_name].append(c)
 
 
 class YoloBallDetector(CandidateFinder):
@@ -502,7 +489,7 @@ class YoloBallDetector(CandidateFinder):
         """
         :return: all found ball candidates
         """
-        return self._yolo.get_ball_candidates()
+        return self._yolo.get_candidates("ball")
 
     def compute(self):
         """
@@ -538,7 +525,7 @@ class YoloGoalpostDetector(CandidateFinder):
         """
         :return: all found goalpost candidates
         """
-        return self._yolo.get_goalpost_candidates()
+        return self._yolo.get_candidates("goalpost")
 
     def compute(self):
         """
