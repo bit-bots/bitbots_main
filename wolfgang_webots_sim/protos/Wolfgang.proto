@@ -2043,29 +2043,83 @@ PROTO Wolfgang [
                                               ]
                                             }
                                             Transform {
-                                              translation -0.000000 0.046000 -0.034000
-                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              translation 0.0 0.046 -0.033999999999999996
+                                              rotation 0.0 0.0 1.0 0.0
                                               children [
                                                 Box {
-                                                   size 0.048000 0.100000 0.004000
+                                                  size 0.048 0.1 0.004
                                                 }
                                               ]
                                             }
                                             Transform {
-                                              translation -0.000000 0.094000 -0.011000
-                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              translation 0.0 0.094 -0.010999999999999996
+                                              rotation 0.0 0.0 1.0 0.0
                                               children [
                                                 Box {
-                                                   size 0.048000 0.004000 0.050000
+                                                  size 0.021 0.004 0.05
                                                 }
                                               ]
                                             }
                                             Transform {
-                                              translation -0.000000 -0.002000 -0.011000
-                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              translation 0.0 -0.0020000000000000018 -0.010999999999999996
+                                              rotation 0.0 0.0 1.0 0.0
                                               children [
                                                 Box {
-                                                   size 0.048000 0.004000 0.050000
+                                                  size 0.021 0.004 0.05
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0 -0.0020000000000000018 -0.032
+                                              rotation 0.0 0.0 1.0 0.0
+                                              children [
+                                                Box {
+                                                  size 0.048 0.004 0.008
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.0104 -0.0020000000000000018 -0.0093
+                                              rotation 0.0 1.0 0.0 0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0104 -0.0020000000000000018 -0.0093
+                                              rotation 0.0 1.0 0.0 -0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.0104 0.094 -0.0093
+                                              rotation 0.0 1.0 0.0 0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0104 0.094 -0.0093
+                                              rotation 0.0 1.0 0.0 -0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0 0.094 -0.032
+                                              rotation 0.0 0.0 1.0 0.0
+                                              children [
+                                                Box {
+                                                  size 0.048 0.004 0.008
                                                 }
                                               ]
                                             }
@@ -2877,39 +2931,39 @@ PROTO Wolfgang [
           boundingObject Group {
             children [
               Transform {
-                translation 0.000000 0.001400 0.000000
-                rotation -0.577350 0.577350 0.577352 2.094399
+                translation 0.0 0.0014000000000000002 0.0
+                rotation -0.5773502691896256 0.577350269189626 0.5773502691896256 2.0943951023931953
                 children [
                   Box {
-                     size 0.036000 0.100000 0.004000
+                    size 0.036 0.1 0.004
                   }
                 ]
               }
               Transform {
-                translation -0.048000 0.025900 0.000000
-                rotation -0.577350 0.577350 0.577352 2.094399
+                translation -0.048 0.0259 0.0
+                rotation -0.5773502691896256 0.577350269189626 0.5773502691896256 2.0943951023931953
                 children [
                   Box {
-                     size 0.036000 0.004000 0.053000
+                    size 0.0260229 0.004 0.053
                   }
                 ]
               }
               Transform {
-                translation 0.048000 0.025900 0.000000
-                rotation -0.577350 0.577350 0.577352 2.094399
+                translation 0.048 0.0259 0.0
+                rotation -0.5773502691896256 0.577350269189626 0.5773502691896256 2.0943951023931953
                 children [
                   Box {
-                     size 0.036000 0.004000 0.053000
+                    size 0.0260229 0.004 0.053
                   }
                 ]
               }
               Transform {
-                translation 0.000000 -0.000600 0.002000
-                rotation -0.000002 1.000000 0.000002 1.570800
+                translation 0.0 -0.0006 0.0019999999999999983
+                rotation -5.551115123125783e-17 1.0 5.551115123125783e-17 1.5707963267948966
                 children [
                   Cylinder {
-                    radius 0.025
                     height 0.004
+                    radius 0.025
                   }
                 ]
               }
@@ -3696,29 +3750,83 @@ PROTO Wolfgang [
                                               ]
                                             }
                                             Transform {
-                                              translation -0.000000 0.046000 -0.034000
-                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              translation 0.0 0.046 -0.033999999999999996
+                                              rotation 0.0 0.0 1.0 0.0
                                               children [
                                                 Box {
-                                                   size 0.048000 0.100000 0.004000
+                                                  size 0.048 0.1 0.004
                                                 }
                                               ]
                                             }
                                             Transform {
-                                              translation 0.000000 0.094000 -0.011000
-                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              translation 0.0 0.094 -0.010999999999999996
+                                              rotation 0.0 0.0 1.0 0.0
                                               children [
                                                 Box {
-                                                   size 0.048000 0.004000 0.050000
+                                                  size 0.021 0.004 0.05
                                                 }
                                               ]
                                             }
                                             Transform {
-                                              translation -0.000000 -0.002000 -0.011000
-                                              rotation 0.000000 1.000000 0.000000 0.000000
+                                              translation 0.0 -0.0020000000000000018 -0.010999999999999996
+                                              rotation 0.0 0.0 1.0 0.0
                                               children [
                                                 Box {
-                                                   size 0.048000 0.004000 0.050000
+                                                  size 0.021 0.004 0.05
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0 -0.0020000000000000018 -0.032
+                                              rotation 0.0 0.0 1.0 0.0
+                                              children [
+                                                Box {
+                                                  size 0.048 0.004 0.008
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.0104 -0.0020000000000000018 -0.0093
+                                              rotation 0.0 1.0 0.0 0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0104 -0.0020000000000000018 -0.0093
+                                              rotation 0.0 1.0 0.0 -0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation -0.0104 0.094 -0.0093
+                                              rotation 0.0 1.0 0.0 0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0104 0.094 -0.0093
+                                              rotation 0.0 1.0 0.0 -0.3206788586841724
+                                              children [
+                                                Box {
+                                                  size 0.014 0.004 0.04425610000000001
+                                                }
+                                              ]
+                                            }
+                                            Transform {
+                                              translation 0.0 0.094 -0.032
+                                              rotation 0.0 0.0 1.0 0.0
+                                              children [
+                                                Box {
+                                                  size 0.048 0.004 0.008
                                                 }
                                               ]
                                             }
@@ -4440,44 +4548,44 @@ PROTO Wolfgang [
           boundingObject Group {
             children [
               Transform {
-                translation 0.000000 0.001400 0.000000
-                rotation -0.577350 0.577350 0.577352 2.094399
+                translation 0.0 0.0014000000000000002 0.0
+                rotation -0.5773502691896256 0.577350269189626 0.5773502691896256 2.0943951023931953
                 children [
                   Box {
-                     size 0.036000 0.100000 0.004000
+                    size 0.036 0.1 0.004
                   }
                 ]
               }
               Transform {
-                translation -0.048000 0.025900 0.000000
-                rotation -0.577350 0.577350 0.577352 2.094399
+                translation -0.048 0.0259 0.0
+                rotation -0.5773502691896256 0.577350269189626 0.5773502691896256 2.0943951023931953
                 children [
                   Box {
-                     size 0.036000 0.004000 0.053000
+                    size 0.0260229 0.004 0.053
                   }
                 ]
               }
               Transform {
-                translation 0.048000 0.025900 0.000000
-                rotation -0.577350 0.577350 0.577352 2.094399
+                translation 0.048 0.0259 0.0
+                rotation -0.5773502691896256 0.577350269189626 0.5773502691896256 2.0943951023931953
                 children [
                   Box {
-                     size 0.036000 0.004000 0.053000
+                    size 0.0260229 0.004 0.053
                   }
                 ]
               }
               Transform {
-                translation 0.000000 -0.000600 0.002000
-                rotation -0.000002 1.000000 0.000002 1.570800
+                translation 0.0 -0.0006 0.0019999999999999983
+                rotation -5.551115123125783e-17 1.0 5.551115123125783e-17 1.5707963267948966
                 children [
                   Cylinder {
-                    radius 0.025
                     height 0.004
+                    radius 0.025
                   }
                 ]
               }
             ]
-          }
+}
           physics Physics {
             density -1
             mass 0.068973
