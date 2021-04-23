@@ -73,7 +73,7 @@ class YoloHandler():
 
     def get_candidates(self, class_name):
         """
-        Runs neural network and returns results for ball class. (Cached)
+        Runs neural network and returns results for all classes. (Cached)
 
         :param class_name: The name of the class you want to query
         """
