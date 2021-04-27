@@ -16,7 +16,6 @@ spec:
       image: quay.io/podman/stable
       tty: true
       securityContext:
-        runAsUser: 1000
         privileged: true
       command:
       - cat
