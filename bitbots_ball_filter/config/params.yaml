@@ -13,3 +13,6 @@ filter_rate: 10
 velocity_reduction: 0.95
 
 process_noise_variance: 0.005
+
+# max ball not seen time in Seconds
+filter_reset_time: 20

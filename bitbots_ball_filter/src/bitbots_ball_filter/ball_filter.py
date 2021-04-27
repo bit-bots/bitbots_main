@@ -22,6 +22,7 @@ class BallFilter:
         self.ball = None  # type:PointStamped
         self.ball_header = None
         self.last_ball_msg = None  # type: PoseWithCertainty
+        self.last_state = None
 
         # setup subscriber
         self.subscriber = rospy.Subscriber(
@@ -57,6 +58,7 @@ class BallFilter:
 
         self.filter_rate = rospy.get_param('~filter_rate')
         self.filter_time_step = 1.0 / self.filter_rate
+        self.filter_reset_duration = rospy.Duration(secs=rospy.get_param('~filter_reset_time'))
 
         self.odom_frame = rospy.get_param('~odom_frame', 'odom')
 
@@ -99,13 +101,19 @@ class BallFilter:
             self.kf.update(self.get_ball_measurement())
             state = self.kf.get_update()
             self.publish_data(*state)
+            self.last_state = state
             self.ball = None
         else: 
             if self.filter_init:
+                if (rospy.Time.now() - self.last_ball_msg_stamp) > self.filter_reset_duration:
+                    self.filter_init = False
+                    self.last_state = None
+                    return
                 self.kf.predict()
                 self.kf.update(None)
                 state = self.kf.get_update()
                 self.publish_data(*state)
+                self.last_state = state
 
     def get_ball_measurement(self):
         """extracts filter measurement from ball message"""
