@@ -314,7 +314,6 @@ void TeamCommunication::ballsCallback(humanoid_league_msgs::PoseWithCertaintyArr
   try {
     transform = tf_buffer_.lookupTransform("map", msg.header.frame_id, ros::Time(0));
     tf2::doTransform(ball.pose.pose, ball_map.pose, transform);
-
   }
   catch (tf2::TransformException &ex) {
     ROS_WARN("TeamComm: Ball is not send due to a transformation error: %s", ex.what());
@@ -343,6 +342,7 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
 
   // get data of all recognized robots
   ObstacleData obstacle_data;
+
   for (auto const &obstacle : msg.obstacles) {
     // only robots are broadcasted
     if (obstacle.type != humanoid_league_msgs::ObstacleRelative::HUMAN
@@ -350,9 +350,22 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
       // reset values
       obstacle_data = {};
 
+      // transform position to map frame
+      geometry_msgs::TransformStamped transform;
+      geometry_msgs::PoseWithCovariance obstacle_map;
+      try {
+        transform = tf_buffer_.lookupTransform("map", msg.header.frame_id, ros::Time(0));
+        tf2::doTransform(obstacle.pose.pose.pose, obstacle_map.pose, transform);
+      }
+      catch (tf2::TransformException &ex) {
+        ROS_WARN("TeamComm: Obstacle is not send due to a transformation error: %s", ex.what());
+        // If the obstacle could not be transformed, it should not be saved and send to the other robots which expect
+        // the obstacle to be in the map frame.
+        continue;
+      }
       // get position
-      obstacle_data.x = obstacle.pose.pose.pose.position.x;
-      obstacle_data.y = obstacle.pose.pose.pose.position.y;
+      obstacle_data.x = obstacle_map.pose.position.x;
+      obstacle_data.y = obstacle_map.pose.position.y;
 
       // get confidence
       obstacle_data.belief = obstacle.pose.confidence;
