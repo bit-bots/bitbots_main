@@ -1,12 +1,12 @@
 # Use upstream melodic images as base
-FROM docker.io/ros:melodic-ros-base-bionic AS bitbots-builder
+FROM docker.io/ros:noetic-ros-base AS bitbots-builder
 
 # Install system dependencies
 RUN apt-get update
-RUN apt-get remove -y ros-melodic-rosdoc-lite python-sphinx
-RUN apt-get install -y sudo python3-pip python-pip python-coverage python-xmlrunner python-rospkg python-catkin-pkg \
-    python-catkin-lint python-rosdep dia python3-sphinx python3-sphinx-rtd-theme python3-breathe
-RUN python3 -m pip install rospkg catkin-pkg exhale
+RUN apt-get remove -y ros-noetic-rosdoc-lite python3-sphinx
+RUN apt-get install -y git sudo dia python3-pip python3-coverage python3-rospkg python3-catkin-pkg \
+    python3-catkin-lint python3-rosdep python3-sphinx python3-sphinx-rtd-theme python3-breathe
+RUN python3 -m pip install exhale
 RUN python3 -m pip install git+https://github.com/catkin/catkin_tools
 
 # Install sudoers file
@@ -16,33 +16,23 @@ ADD sudoers /etc/sudoers
 ARG UID=150
 RUN useradd -M -d /catkin_ws -s /bin/bash -u $UID builder
 
-# Build empty install space in shared install space
-ARG SHARED_INSTALL_SPACE="/srv/catkin_install"
-RUN . /opt/ros/melodic/setup.sh && \
-    mkdir -p /catkin_ws/src && cd /catkin_ws && \
-    catkin init >/dev/null && \
-    catkin config --install --merge-install --install-space $SHARED_INSTALL_SPACE >/dev/null && \
-    catkin build && \
-    chown -R builder:builder $SHARED_INSTALL_SPACE && \
-    rm -r /catkin_ws
-
 # Setup catkin workspace
-RUN . /opt/ros/melodic/setup.sh && \
-    mkdir -p /catkin_ws/src; cd /catkin_ws && \
+ENV BITBOTS_CATKIN_WORKSPACE=/catkin_ws
+RUN . /opt/ros/noetic/setup.sh && \
+    mkdir -p $BITBOTS_CATKIN_WORKSPACE/src; cd /catkin_ws && \
     catkin init && \
-    catkin config --profile default --extend $SHARED_INSTALL_SPACE --install --isolate-install && \
-    catkin config --profile install --extend $SHARED_INSTALL_SPACE --install --merge-install --install-space $SHARED_INSTALL_SPACE && \
+    catkin config --profile default --extend /opt/ros/noetic && \
     catkin build && \
     chown -R builder:builder /catkin_ws && \
     chmod -R 740 /catkin_ws
 
 # Setup rosdep
+ADD rosdep.source.list /etc/ros/rosdep/sources.list.d/30-bitbots.list
 RUN su -c "rosdep update" builder
 
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
 ENV ROS_PYTHON_VERSION=3
-VOLUME ["/srv/catkin_install"]
 USER builder:builder
 COPY entrypoint.sh /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]

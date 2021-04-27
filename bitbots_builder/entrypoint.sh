@@ -2,7 +2,6 @@
 set -e
 set -x
 
-source /opt/ros/melodic/setup.bash
-source /catkin_ws/devel/setup.bash
+source $BITBOTS_CATKIN_WORKSPACE/devel/setup.bash
 
 exec "$@"
