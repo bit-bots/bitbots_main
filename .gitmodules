@@ -67,3 +67,6 @@
 [submodule "lib/rot_conv_lib"]
 	path = lib/rot_conv_lib
 	url = git@github.com:bit-bots/rot_conv_lib.git
+[submodule "bitbots_world_model"]
+	path = bitbots_world_model
+	url = ./bitbots_world_model
