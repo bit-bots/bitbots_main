@@ -18,9 +18,16 @@ After that, create an account on https://github.com/ and get team access to our 
 ``cat ~/.ssh/id_rsa.pub`` and copy the text. Go back to GitHub > Settings > SSH and GPG keys. There,
 click on New SSH Key and paste the result.
 
+.. note::
+    If you're not part of our team, you can skip this step and use https in the next stept to clone the git.
+
 Now, in a terminal, execute ``git clone git@github.com:bit-bots/bitbots_meta.git`` to download our
 software meta package. Confirm the host key by typing ``yes``. Then, go to the folder by executing
 ``cd bitbots_meta``. Use ``make pull-init`` to download all of the software.
+
+.. note::
+    The script may tell you to install basler drivers. You can ignore this if you dont want to
+    use the actual robot hardware.
 
 We need to install additional python packages, that are not available via apt.
 To do this, run the following command:
