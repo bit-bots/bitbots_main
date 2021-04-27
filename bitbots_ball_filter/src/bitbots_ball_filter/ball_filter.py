@@ -6,6 +6,7 @@ import numpy as np
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertaintyStamped, PoseWithCertainty
 
@@ -16,23 +17,28 @@ class BallFilter:
         creates Kalmanfilter and subscribes to messages which are needed
         """
         rospy.init_node('ball_filter')
-        #creates kalmanfilter with 4 dimensions
+
+        # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_init = False
         self.ball = None  # type:PointStamped
-        self.ball_header = None
+        self.ball_header = None  # type: Header
         self.last_ball_msg = None  # type: PoseWithCertainty
         self.last_state = None
 
-        # setup subscriber
-        self.subscriber = rospy.Subscriber(
-            rospy.get_param('~ball_subscribe_topic'),
-            PoseWithCertaintyArray,
-            self.ball_callback,
-            queue_size=1
-        )
 
-        # publishes positons of ball
+        self.filter_rate = rospy.get_param('~filter_rate')
+        self.filter_time_step = 1.0 / self.filter_rate
+        self.filter_reset_duration = rospy.Duration(secs=rospy.get_param('~filter_reset_time'))
+
+        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
+
+        # adapt velocity factor to frequency
+        self.velocity_factor = rospy.get_param('~velocity_reduction') ** (1 / self.filter_rate)
+
+        self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
+
+        # publishes positions of ball
         self.ball_pose_publisher = rospy.Publisher(
             rospy.get_param('~ball_position_publish_topic'),
             PoseWithCovarianceStamped,
@@ -105,7 +111,7 @@ class BallFilter:
             self.ball = None
         else: 
             if self.filter_init:
-                if (rospy.Time.now() - self.last_ball_msg_stamp) > self.filter_reset_duration:
+                if (rospy.Time.now() - self.ball_header.stamp) > self.filter_reset_duration:
                     self.filter_init = False
                     self.last_state = None
                     return
