@@ -19,14 +19,16 @@ catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ${PROJECT_NAME}_lib
 )
-ADD_SUBDIRECTORY(../../lib/RobocupProtocol ${CMAKE_CURRENT_BINARY_DIR}/../RobocupProtocol)
 
 include_directories(
         include
         ${Protobuf_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_BINARY_DIR}/../RobocupProtocol
+        ${CMAKE_CURRENT_BINARY_DIR} # Dir is necessary for the generated protobuf header files
 )
+
+PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER src/humanoid_league_team_communication/RobocupProtocol/robocup_extension.proto)
+ADD_LIBRARY(robocup_protocol_lib ${PROTO_HEADER} ${PROTO_SRC})
 
 add_executable(team_communication
         src/${PROJECT_NAME}/team_communication.cpp
