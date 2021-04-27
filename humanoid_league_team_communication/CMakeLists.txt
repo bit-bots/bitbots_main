@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(humanoid_league_team_communication)
 
-INCLUDE(FindProtobuf)
+include(FindProtobuf)
 find_package(Protobuf REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -27,8 +27,8 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR} # Dir is necessary for the generated protobuf header files
 )
 
-PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER src/humanoid_league_team_communication/RobocupProtocol/robocup_extension.proto)
-ADD_LIBRARY(robocup_protocol_lib ${PROTO_HEADER} ${PROTO_SRC})
+protobuf_generate_cpp(PROTO_SRC PROTO_HEADER src/humanoid_league_team_communication/RobocupProtocol/robocup_extension.proto)
+add_library(robocup_protocol_lib ${PROTO_HEADER} ${PROTO_SRC})
 
 add_executable(team_communication
         src/${PROJECT_NAME}/team_communication.cpp
