@@ -1,0 +1,15 @@
+# Topics
+ball_subscribe_topic: 'balls_relative'
+ball_position_publish_topic: 'ball_position_relative_filtered'
+ball_movement_publish_topic: 'ball_relative_movement'
+ball_publish_topic: 'ball_relative_filtered'
+
+odom_frame: 'odom'
+
+# Filtering rate in Hz
+filter_rate: 10
+
+# velocity reduction (per axis) factor of the ball per second
+velocity_reduction: 0.95
+
+process_noise_variance: 0.005
