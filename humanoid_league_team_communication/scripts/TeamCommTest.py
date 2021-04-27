@@ -32,7 +32,9 @@ if __name__ == '__main__':
 
     while not rospy.is_shutdown():
         obstacle_msg.header.stamp = rospy.Time.now()
+        obstacle_msg.header.frame_id = "base_footprint"
         ball_msg.header.stamp = rospy.Time.now()
+        ball_msg.header.frame_id = "base_footprint"
         ball_pub.publish(ball_msg)
         position_pub.publish(position_msg)
         obstacle_pub.publish(obstacle_msg)
