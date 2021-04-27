@@ -1,5 +1,7 @@
-@Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
+@Library('bitbots_jenkins_library') import de.bitbots.jenkins.*;
 
-bitbotsPipeline([
-	new PackageDefinition("bitbots_msgs", true, ".")
-] as PackageDefinition[])
+defineProperties()
+
+def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_msgs", "."), true, true, !isChangeRequest()))
+pipeline.execute()
