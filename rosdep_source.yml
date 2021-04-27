@@ -2,6 +2,6 @@
 bitbots_docs:
   ubuntu: &bitbots_docs
     source:
-      uri: 'https://raw.githubusercontent.com/bit-bots/bitbots_tools/feature/rosdep_src_install/bitbots_docs/.rdmanifest'
+      uri: 'https://raw.githubusercontent.com/bit-bots/bitbots_tools/master/bitbots_docs/.rdmanifest'
   debian: *bitbots_docs
   fedora: *bitbots_docs
