@@ -17,6 +17,8 @@ The correct version of the extentions must be installed.
         pip3 install exhale --user
 
 
+.. _build_documentation:
+
 How to build the documentation
 ==============================
 
@@ -31,6 +33,15 @@ How to build the documentation
   .. code-block:: bash
 
           catkin build <package> --no-deps --make-args Documentation
+
+* If you happen to build documentation a lot and don't want to always type the whole command, you can `define a catkin alias <https://catkin-tools.readthedocs.io/en/latest/advanced/verb_customization.html>`_
+  by creating the following file:
+
+  .. code-block:: yaml
+
+          # ~/.config/catkin/verb_aliases/01-doc.yaml
+          ---
+          doc: build --make-args Documentation --
 
 
 How to write documentation for a package
@@ -47,23 +58,20 @@ Preferably create your ``.rst`` documents in the directory ``docs/manual``, then
 
         manual/*
 
+
 .. _activate_docs_for_package:
 
 Activate documentation for a package
 ====================================
 
-
-
-
-Um Dokumentation für ein Paket wie oben beschrieben, schreiben zu können, muss das bauen der Doku für das
-entsprechende Paket aktiviert sein.
-
-Dadurch wird auch automatisch der Ordner ``docs/`` angelegt und eine initiale ``docs/conf.py`` und ``docs/index.rst``
-Datei angelegt.
+To be able to actually succeed in building documentation for a package as
+:ref:`described above <build_documentation>` that package must have documentation enabled.
+This can be done with the following steps and automatically creates the files ``docs/conf.py`` and
+``docs/index.rst``
 
 #) ``package.xml``:
-    Die ``package.xml`` beschreibt das Paket.
-    Wir fügen ihr nun eine Abhängigkeit auf das Paket `bitbtos_docs` hinzu.
+    The ``package.xml`` describes the package to the build system.
+    You need to add a dependency to ``bitbots_docs``.
 
     .. code-block:: xml
 
@@ -72,23 +80,24 @@ Datei angelegt.
         </package>
 
 #) ``CMakeLists.txt``:
-    In der ``CMakeLists.txt`` wird definiert, wie ein Paket gebaut wird.
-
-    Zuerst nutzen wir die Abhängigkeit auf `bitbots_docs`, um zusätzliche CMake Kommandos verfügbar zu machen:
+    This file describes how exactly a package is built.
+    First we need to add the ``bitbots_docs`` dependency here as well in order to make additional cmake
+    commands available.
 
     .. code-block:: cmake
 
         find_package(catkin COMPONENT bitbots_docs)
 
-    Dadurch wurde das Kommando `enable_bitbots_docs()` geladen, welches Dokumentation für dieses Paket aktiviert.
+    This registered the command ``enable_bitbots_docs()`` which is used to register the `Documentation`
+    target for this package and thus enables building documentation.
 
     .. code-block:: cmake
 
         enable_bitbots_docs()
 
 #) ``.gitignore``:
-    Diese Anpassungen sind nicht zwingend jedoch empfohlen, um das Git Repo nicht mit überflüssigen
-    Dateien vollzumüllen:
+    These additions are not strictly necessary but since we use git for all our packages you should do it
+    anyways. It is only required once per repository and not per package.
 
     .. code-block:: text
 
@@ -98,39 +107,4 @@ Datei angelegt.
         **/docs/cppapi
         **/docs/pyapi
 
-#) ``Jenkinsfile``:
-    Die Jenkinsfile ist nicht für die Doku an sich notwendig jedoch steuert sie unsere CI und damit das automatische Bauen der Doku.
-    Die Jenkinsfile ist in groovy zu schreiben, was ähnlich wie Java ist.
-
-    .. seealso:: :doc:`../software/ci` for a more detailed description of how our CI works.
-
-    .. note:: Nur `<package-name>` muss geändert werden:
-
-    .. code-block:: groovy
-
-CI für ein Repository aktivieren
-================================
-
-Damit die Dokumentation von Paketen auch automatisch gebaut wird, muss unserem CI-System (Jenkins) auch beschrieben
-werden, wie dies geht.
-
-.. todo:: Jenkins Dokument referenzieren
-
-Dafür muss die Datei ``Jenkinsfile`` im Hauptordner des Git Repositories angelegt werden.
-Die Jenkinsfile ist in groovy zu schreiben, was ähnlich wie Java ist.
-
-.. note:: Nur `<package-name>` muss geändert werden:
-
-.. code-block:: groovy
-
-    @Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
-
-    bitbotsPipeline([
-        new PackageDefinition("<package-name>", true)
-    ] as PackageDefinition[])
-
-
-Damit wird unsere Jenkins Bibliothek eingebunden und danach die ``bitbotsPipeline`` gestartet.
-Diese braucht ein Array an Paketdefinitionen.
-Der Konstruktor akzeptiert den Paketnamen und dann, ob Doku gebaut werden soll.
-Da wir Doku bauen wollen, muss das 2. Argument auf true gesetzt werden.
+.. note:: See :doc:`../software/ci` for information about building the documentation automatically via Jenkins
