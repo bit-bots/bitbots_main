@@ -1,0 +1,14 @@
+---
+uri: 'https://github.com/bit-bots/bitbots_tools/archive/refs/heads/master.tar.gz'
+depends: []
+exec-path: 'bitbots_tools-master/bitbots_docs'
+check-presence-script: |
+  #!/bin/bash
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_docs
+install-script: |
+  #!/bin/bash
+  if [[ ! -d $BITBOTS_CATKIN_WORKSPACE/src ]]; then
+    echo '$BITBOTS_CATKIN_WORKSPACE/src does not exist' > /dev/stderr
+  fi
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_docs
