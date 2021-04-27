@@ -58,6 +58,8 @@ include:
         - python_extensions
         - white_balancer
         - bitbots_gestures
+    - bitbots_world_model:
+        - bitbots_ball_filter
 exclude:
     - "*.bag"
     - "*.pyc"
