@@ -25,7 +25,7 @@
 
   <export>
     <bitbots_documentation>
-        <status>starts</status>
+        <status>tested_viz</status>
       <language>c++</language>
     </bitbots_documentation>
   </export>
