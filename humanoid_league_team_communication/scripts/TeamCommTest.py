@@ -22,6 +22,10 @@ if __name__ == '__main__':
     obstacle.pose.pose.pose.position.x = 4
     obstacle.type = 2
     obstacle_msg.obstacles.append(obstacle)
+    obstacle2 = ObstacleRelative()
+    obstacle2.pose.pose.pose.position.x = 2
+    obstacle2.type = 2
+    obstacle_msg.obstacles.append(obstacle2)
     ball_msg = PoseWithCertaintyArray()
     ball = PoseWithCertainty()
     ball.confidence = 1.0
