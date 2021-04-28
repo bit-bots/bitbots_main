@@ -43,11 +43,15 @@ class TeamDataCapsule:
             return None
 
     def team_rank_to_ball(self, own_ball_relative):
-        """Returns the rank of this robot compared to the team robots concerning ball distance
+        """Returns the rank of this robot compared to the team robots concerning ball distance.
+        Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
+        For example, we do not want our goalie to perform a throw in against our empty goal.
 
         :param own_ball_relative: the ball relative to this robot
         :return the rank from 1 (nearest) to the number of robots
         """
+        if self.strategy.role ==Strategy.ROLE_GOALIE:
+            return 99 # todo: this ensures the goalie's distance is not counted. There should be a better solution for this.
         own_distance = math.sqrt(own_ball_relative[0] ** 2 + own_ball_relative[1] ** 2)
         relative_balls = self.team_data.ball_relative
         ball_distances = [math.sqrt(ball.x ** 2 + ball.y ** 2) for ball in relative_balls]
