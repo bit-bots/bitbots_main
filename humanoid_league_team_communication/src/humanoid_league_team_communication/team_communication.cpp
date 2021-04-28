@@ -92,7 +92,7 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
     send_msg.set_action(action_);
 
     // set position
-    if (position_belief_ > belief_threshold_ && ros::Time::now().toSec() - position_exists_ < lifetime_) {
+    if (position_belief_ >= belief_threshold_ && ros::Time::now().toSec() - position_exists_ < lifetime_) {
       Robot *current_pose = new Robot();
       current_pose->set_player_id(player_);
       fvec3 *pose_position = new fvec3();
@@ -123,7 +123,7 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
     }
 
     // set ball
-    if (ball_belief_ > belief_threshold_ && ros::Time::now().toSec() - ball_exists_ < lifetime_) {
+    if (ball_belief_ >= belief_threshold_ && ros::Time::now().toSec() - ball_exists_ < lifetime_) {
       Ball *ball = new Ball();
       fvec3 *ball_position = new fvec3();
       ball_position->set_x(ball_relative_x_);
@@ -138,7 +138,7 @@ void TeamCommunication::sendThread(const ros::TimerEvent &) {
     if (ros::Time::now().toSec() - obstacles_exists_ < lifetime_) {
       Robot *current_obstacle;
       for (auto const &obstacle : obstacles_) {
-        if (obstacle.belief > belief_threshold_) {
+        if (obstacle.belief >= belief_threshold_) {
           current_obstacle = send_msg.add_others();
           current_obstacle->set_player_id(obstacle.player_number);
           fvec3 *obstacle_pos = new fvec3();
