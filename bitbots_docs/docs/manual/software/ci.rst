@@ -59,25 +59,9 @@ When package a is used as a dependency by package b and package b is supposed to
 to be resolvable via rosdep.
 This section assumes you are the maintainer of package a and want to make your package resolvable.
 
-1. Create ``.rdmanifest`` file in your package (not repository) root with content like
-   the following:
-
-   .. code-block:: yaml
-
-        ---
-        # url where the packages repo can be downloaded as .tar.gz file
-        uri: 'https://github.com/bit-bots/<repo>/archive/refs/heads/master.tar.gz'
-        # other rosdep keys which this package depends on
-        depends: []
-        # directory to change to when installing the package <unpacked-tar-dir>/<package-dir>
-        exec-path: 'bitbots_tools-master/bitbots_docs'
-        # $BITBOTS_CATKIN_WORKSPACE is defined in CI and points to the current catkin workspace
-        check-presence-script: |
-          #!/bin/bash
-          test -d $BITBOTS_CATKIN_WORKSPACE/src/<package-name>
-        install-script: |
-          #!/bin/bash
-          cp -r . $BITBOTS_CATKIN_WORKSPACE/src/<package-name>
+1. Create ``.rdmanifest`` file in your package (not repository) root by calling the script
+   ``gen_rdmanifest.py`` in *bitbots_meta*. It's options should be self-explanatory when calling with
+   `--help`.
 
    `.rdmanifest syntax reference <https://ros.org/reps/rep-0112.html#rdmanifest-syntax>`_
 
