@@ -1,4 +1,4 @@
-# Use upstream melodic images as base
+# Use upstream noetic images as base
 FROM docker.io/ros:noetic-ros-base AS bitbots-builder
 
 # Install system dependencies
@@ -9,6 +9,21 @@ RUN apt-get install -y git sudo dia python3-pip python3-coverage python3-rospkg 
 RUN python3 -m pip install exhale
 RUN python3 -m pip install git+https://github.com/catkin/catkin_tools
 
+# Setup libraries in dedicated workspace and install it into /opt/ros/noetice
+WORKDIR /lib_ws
+RUN . /opt/ros/noetic/setup.sh && \
+    mkdir src && \
+    catkin init && \
+    catkin config --profile default --extend /opt/ros/noetic --install --merge-install --install-space /opt/ros/noetic
+RUN git clone --depth 1 https://github.com/TAMS-Group/bio_ik.git src/bio_ik
+RUN git clone --depth 1 https://github.com/TAMS-Group/bio_ik_service.git src/bio_ik_service
+RUN git clone --depth 1 https://github.com/bit-bots/DynamixelSDK.git src/dynamixel_sdk
+RUN git clone --depth 1 https://github.com/bit-bots/dynamixel-workbench.git src/dynamixel_workbench
+RUN git clone --depth 1 https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git src/dynamixel_workbench_msgs
+RUN git clone --depth 1 https://github.com/bit-bots/rot_conv_lib.git src/rot_conf_lib
+RUN rosdep install -iry --from-paths src
+RUN catkin build
+
 # Install sudoers file
 ADD sudoers /etc/sudoers
 
@@ -18,6 +33,7 @@ RUN useradd -M -d /catkin_ws -s /bin/bash -u $UID builder
 
 # Setup catkin workspace
 ENV BITBOTS_CATKIN_WORKSPACE=/catkin_ws
+WORKDIR $BITBOTS_CATKIN_WORKSPACE
 RUN . /opt/ros/noetic/setup.sh && \
     mkdir -p $BITBOTS_CATKIN_WORKSPACE/src; cd /catkin_ws && \
     catkin init && \
