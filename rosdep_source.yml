@@ -96,3 +96,10 @@ particle_filter:
       uri: https://raw.githubusercontent.com/bit-bots/particle_filter/master/.rdmanifest
   debian: *particle_filter
   fedora: *particle_filter
+
+udp_bridge:
+  ubuntu: &udp_bridge
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/udp_bridge/master/.rdmanifest
+  debian: *udp_bridge
+  fedora: *udp_bridge
