@@ -2,6 +2,7 @@ FROM docker.io/jenkins/jenkins
 
 ENV PLUGINS="\
     antisamy-markup-formatter \
+    blueocean \
     build-timeout \
     cloudbees-folder \
     configuration-as-code \
