@@ -1,0 +1,20 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_local_planner'
+depends:
+- cmake_modules
+- costmap_2d
+- dynamic_reconfigure
+- nav_core
+- nav_msgs
+- pluginlib
+- roscpp
+- tf
+- tf2_geometry_msgs
+exec-path: bitbots_navigation-master/bitbots_local_planner
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_local_planner'
+uri: https://github.com/bit-bots/bitbots_navigation/archive/refs/heads/master.tar.gz
