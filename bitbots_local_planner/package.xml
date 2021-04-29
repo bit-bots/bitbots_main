@@ -24,6 +24,8 @@
     <run_depend>roscpp</run_depend>
     <run_depend>tf</run_depend>
 
+    <depend>tf2_geometry_msgs</depend>
+
     <export>
         <nav_core plugin="${prefix}/blp_plugin.xml"/>
     </export>

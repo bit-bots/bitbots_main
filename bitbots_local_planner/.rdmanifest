@@ -12,6 +12,7 @@ depends:
 - pluginlib
 - roscpp
 - tf
+- tf2_geometry_msgs
 exec-path: bitbots_navigation-master/bitbots_local_planner
 install-script: '#!/bin/bash
 
