@@ -27,7 +27,7 @@ All our `Jenkinsfiles` mostly look the same and utilizes common logic defined in
     defineProperties()
 
     def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
-    pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_docs"), true, true, !isChangeRequest()))
+    pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_docs")))
     pipeline.execute()
 
 
@@ -41,14 +41,18 @@ Explained line by line:
 5. We create a `pipeline` variable of type `BitbotsPipeline <https://github.com/bit-bots/bitbots_jenkins_library/blob/master/src/de/bitbots/jenkins/BitbotsPipeline.groovy>`_.
    This class contains most of the pipeline logic and is the main content of this library.
 
+   By default, the pipeline restricts documentation publishing to only happen on the primary branch of a
+   repository. Since we don't want to change the default behavior, we don't explicitly define the last
+   argument.
+
 6. We configure the pipeline to run for the package named *bitbots_docs*.
    See `PackagePipelineSettings <https://github.com/bit-bots/bitbots_jenkins_library/blob/master/src/de/bitbots/jenkins/PackagePipelineSettings.groovy>`_
    which configures what the pipeline should do and `PackageDefinition <https://github.com/bit-bots/bitbots_jenkins_library/blob/master/src/de/bitbots/jenkins/PackageDefinition.groovy>`_
    which defines a packages name and where it is defined in the repo.
 
    In this case, the pipeline should run for the package *bitbots_docs* which is located in a folder with the same name.
-   The pipeline should *build the package*, *document the package* and *publish the package* if
-   the current run is not a change request (meaning not a pull request).
+   The pipeline should *build the package*, *document the package* and *publish the package* which are the
+   default settings so they are not explicitly given.
 
 
 .. _make_package_resolvable_in_ci:
