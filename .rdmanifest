@@ -1,0 +1,19 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_msgs'
+depends:
+- roscpp
+- rospy
+- std_msgs
+- sensor_msgs
+- bitbots_docs
+- message_generation
+- actionlib_msgs
+- message_runtime
+exec-path: bitbots_msgs-master
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_msgs'
+uri: https://github.com/bit-bots/bitbots_msgs/archive/refs/heads/master.tar.gz
