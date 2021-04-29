@@ -1,0 +1,12 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_bringup'
+depends:
+- bitbots_docs
+exec-path: bitbots_misc-master/bitbots_bringup
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_bringup'
+uri: https://github.com/bit-bots/bitbots_misc/archive/refs/heads/master.tar.gz
