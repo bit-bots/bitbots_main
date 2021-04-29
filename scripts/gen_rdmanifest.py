@@ -28,7 +28,7 @@ if __name__ == "__main__":
                         help="Relative directory inside the repository which contains the package."
                              "If not specified the package is not located in a subdirectory but rather the "
                              "repository root")
-    parser.add_argument("--dependency", "-d", action="append", dest="dependencies",
+    parser.add_argument("--dependency", "-d", action="append", dest="dependencies", default=[],
                         help="Rosdep key which the target package depends on. "
                              "Can be specified multiple times")
     parser.add_argument("--force", "-f", action="store_true", default=False,
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     data = {
         "uri": f"https://github.com/{args.github_org}/{args.github_repo}/archive/refs/heads/{args.default_branch}.tar.gz",
-        "depends": args.dependencies,
+        "depends": sorted(set(args.dependencies)),
         "exec-path": f"{args.github_repo}-{args.default_branch}/{args.relative_package_dir}"
         if args.relative_package_dir
         else f"{args.github_repo}-{args.default_branch}",
