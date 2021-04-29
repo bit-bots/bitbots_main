@@ -3,5 +3,5 @@
 defineProperties()
 
 def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
-pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_msgs", "."), true, true, !isChangeRequest()))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_msgs", ".")))
 pipeline.execute()
