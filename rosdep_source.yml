@@ -2,6 +2,104 @@
 bitbots_docs:
   ubuntu: &bitbots_docs
     source:
-      uri: 'https://raw.githubusercontent.com/bit-bots/bitbots_tools/master/bitbots_docs/.rdmanifest'
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_tools/master/bitbots_docs/.rdmanifest
   debian: *bitbots_docs
   fedora: *bitbots_docs
+
+bitbots_bringup:
+  ubuntu: &bitbots_bringup
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_bringup/.rdmanifest
+  debian: *bitbots_bringup
+  fedora: *bitbots_bringup
+
+bitbots_ceiling_cam:
+  ubuntu: &bitbots_ceiling_cam
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_ceiling_cam/.rdmanifest
+  debian: *bitbots_ceiling_cam
+  fedora: *bitbots_ceiling_cam
+
+bitbots_live_tool_rqt:
+  ubuntu: &bitbots_live_tool_rqt:
+    source: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_live_tool_rqt/.rdmanifest
+      uri:
+  debian: *bitbots_live_tool_rqt
+  fedora: *bitbots_live_tool_rqt
+
+bitbots_time_constraint:
+  ubuntu: &bitbots_time_constraint
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_time_constraint/.rdmanifest
+  debian: *bitbots_time_constraint
+  fedora: *bitbots_time_constraint
+
+system_monitor:
+  ubuntu: &system_monitor
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/system_monitor/.rdmanifest
+  debian: *system_monitor
+  fedora: *system_monitor
+
+bitbots_msgs:
+  ubuntu: &bitbots_msgs
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_msgs/master/.rdmanifest
+  debian: *bitbots_msgs
+  fedora: *bitbots_msgs
+
+bitbots_local_planner:
+  ubuntu: &bitbots_local_planner
+    source:
+      uri: https://github.com/bit-bots/bitbots_navigation/blob/master/bitbots_local_planner/.rdmanifest
+  debian: *bitbots_local_planner
+  fedora: *bitbots_local_planner
+
+center_of_mass:
+  ubuntu: &center_of_mass
+    source:
+      uri: https://github.com/bit-bots/center_of_mass/blob/master/.rdmanifest
+  debian: *center_of_mass
+  fedora: *center_of_mass
+
+dynamic_stack_decider:
+  ubuntu: &dynamic_stack_decider
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/dynamic_stack_decider/master/dynamic_stack_decider/.rdmanifest
+  debian: *dynamic_stack_decider
+  fedora: *dynamic_stack_decider
+
+humanoid_league_msgs:
+  ubuntu: &humanoid_league_msgs
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_msgs/master/.rdmanifest
+  debian: *humanoid_league_msgs
+  fedora: *humanoid_league_msgs
+
+humanoid_league_gazebo_world:
+  ubuntu: &humanoid_league_gazebo_world
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_visualization/master/humanoid_league_gazebo_world/.rdmanifest
+  debian: *humanoid_league_gazebo_world
+  fedora: *humanoid_league_gazebo_world
+
+humanoid_league_interactive_marker:
+  ubuntu: &humanoid_league_interactive_marker
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_visualization/master/humanoid_league_interactive_marker/.rdmanifest
+  debian: *humanoid_league_interactive_marker
+  fedora: *humanoid_league_interactive_marker
+
+particle_filter:
+  ubuntu: &particle_filter
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/particle_filter/master/.rdmanifest
+  debian: *particle_filter
+  fedora: *particle_filter
+
+udp_bridge:
+  ubuntu: &udp_bridge
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/udp_bridge/master/.rdmanifest
+  debian: *udp_bridge
+  fedora: *udp_bridge
