@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_moveit_bindings</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>Some MoveIt bindings for python</description>
 
   <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
