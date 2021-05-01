@@ -1,0 +1,14 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_moveit_bindings'
+depends:
+- bitbots_docs
+- moveit_core
+- moveit_ros_planning
+exec-path: bitbots_motion-master/bitbots_moveit_bindings
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_moveit_bindings'
+uri: https://github.com/bit-bots/bitbots_motion/archive/refs/heads/master.tar.gz
