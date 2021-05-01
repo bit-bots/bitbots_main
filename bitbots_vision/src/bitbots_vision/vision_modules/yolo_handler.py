@@ -81,6 +81,9 @@ class YoloHandler:
         self.predict()
         return self._candidates[class_name]
 
+    def get_classes(self):
+        return self._class_names
+
 
 class YoloHandlerDarknet(YoloHandler):
     """

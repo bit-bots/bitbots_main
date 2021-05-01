@@ -134,7 +134,10 @@ class Vision:
                 # Now the first image has been processed
                 self._first_image_callback = False
             else:
-                self._rate.sleep()
+                try:
+                    self._rate.sleep()
+                except rospy.exceptions.ROSTimeMovedBackwardsException:
+                    pass
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
@@ -278,21 +281,37 @@ class Vision:
         # Set the obstacle detector
         self._obstacle_detector = obstacle.ObstacleDetector(
             config,
-            self._red_color_detector,
-            self._blue_color_detector,
-            self._white_color_detector,
             self._field_boundary_detector)
 
         # Set the other obstacle detectors
-        self._red_obstacle_detector = obstacle.RedObstacleDetector(self._obstacle_detector)
-        self._blue_obstacle_detector = obstacle.BlueObstacleDetector(self._obstacle_detector)
-        self._unknown_obstacle_detector = obstacle.UnknownObstacleDetector(self._obstacle_detector)
+        self._red_obstacle_detector = obstacle.ColorObstacleDetector(
+            self._obstacle_detector,
+            self._red_color_detector,
+            threshold=config['obstacle_color_threshold'])
+        self._blue_obstacle_detector = obstacle.ColorObstacleDetector(
+            self._obstacle_detector,
+            self._blue_color_detector,
+            threshold=config['obstacle_color_threshold'],
+            subtractors=[self._red_obstacle_detector])
+        self._unknown_obstacle_detector = obstacle.ColorObstacleDetector(
+            self._obstacle_detector,
+            threshold=config['obstacle_color_threshold'],
+            subtractors=[self._red_obstacle_detector, self._blue_obstacle_detector])
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['neural_network_type'] == 'dummy':
             self._ball_detector = candidate.DummyCandidateFinder()
             # If we don't use YOLO set the conventional goalpost detector.
-            self._goalpost_detector = obstacle.WhiteObstacleDetector(self._obstacle_detector)
+            self._goalpost_detector = obstacle.WhiteObstacleDetector(
+                self._obstacle_detector)
+            # Recreate the unknown obstacle color classinier, because we have another color we want to exclude
+            self._unknown_obstacle_detector = obstacle.ColorObstacleDetector(
+                self._obstacle_detector,
+                threshold=config['obstacle_color_threshold'],
+                subtractors=[
+                    self._red_obstacle_detector,
+                    self._blue_obstacle_detector,
+                    self._goalpost_detector])
 
         # Check if the fcnn is activated
         if config['neural_network_type'] == 'fcnn':
@@ -315,6 +334,14 @@ class Vision:
                     self._ball_fcnn)
                 # If we don't use YOLO set the conventional goalpost detector.
                 self._goalpost_detector = obstacle.WhiteObstacleDetector(self._obstacle_detector)
+                # Recreate the unknown obstacle color classinier, because we have another color we want to exclude
+                self._unknown_obstacle_detector = obstacle.ColorObstacleDetector(
+                    self._obstacle_detector,
+                    threshold=config['obstacle_color_threshold'],
+                    subtractors=[
+                        self._red_obstacle_detector,
+                        self._blue_obstacle_detector,
+                        self._goalpost_detector])
 
         # Check if the yolo ball/goalpost detector is activated and if the non tpu version is used
         if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
@@ -335,6 +362,9 @@ class Vision:
                     # Set both ball and goalpost detector
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
+                    # Check if we use the yolo robot detection
+                    if "robot" in self._yolo.get_classes():
+                        self._obstacle_detector = yolo_handler.YoloRobotDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
             # For other changes only modify the config
             elif ros_utils.config_param_change(self._config, config, r'yolo_'):
@@ -353,6 +383,9 @@ class Vision:
                     self._yolo = yolo_handler.YoloHandlerNCS2(config, yolo_openvino_model_path)
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
+                    # Check if we use the yolo robot detection
+                    if "robot" in self._yolo.get_classes():
+                        self._obstacle_detector = yolo_handler.YoloRobotDetector(config, self._yolo)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
             # For other changes only modify the config
             elif ros_utils.config_param_change(self._config, config, r'yolo_'):
@@ -366,6 +399,7 @@ class Vision:
             self._white_color_detector,
             self._red_color_detector,
             self._blue_color_detector,
+            self._unknown_obstacle_detector,
             self._obstacle_detector,
             self._line_detector,
         ]
@@ -463,6 +497,7 @@ class Vision:
             self._white_color_detector,
             self._red_color_detector,
             self._blue_color_detector,
+            self._unknown_obstacle_detector,
             self._field_boundary_detector,
             self._obstacle_detector,
             self._red_obstacle_detector,
