@@ -347,7 +347,7 @@ class ColorObstacleDetector(CandidateFinder):
 
             # Get the ignored obstacles
             ignored_obstacles = itertools.chain.from_iterable(sub_det.get_candidates() for sub_det in self._subtractors)
-            # Subtract them from out detections
+            # Subtract them from our detections
             self._obstacles =  list(set(obstacles) - set(ignored_obstacles))
 
         return self._obstacles
