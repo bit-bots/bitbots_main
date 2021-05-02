@@ -4,6 +4,7 @@ project(bitbots_moveit_bindings)
 find_package(catkin REQUIRED COMPONENTS
     moveit_core
     moveit_ros_planning
+    moveit_ros_planning_interface
     bitbots_docs
 )
 

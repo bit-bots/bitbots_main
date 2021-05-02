@@ -7,6 +7,7 @@ depends:
 - bitbots_docs
 - moveit_core
 - moveit_ros_planning
+- moveit_ros_planning_interface
 exec-path: bitbots_motion-master/bitbots_moveit_bindings
 install-script: '#!/bin/bash
 
