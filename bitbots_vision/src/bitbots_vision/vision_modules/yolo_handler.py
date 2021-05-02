@@ -491,8 +491,7 @@ class YoloHandlerPytorchYolo(YoloHandler):
             for box in boxes:
                 # x1, y1, x2, y2, confidence, class
                 c = Candidate.from_x1y1x2y2(*box[0:4].astype(int), box[4].astype(float))
-                classname = self._class_names[int(box[5])]
-                self._candidates[classname].append(c)
+                self._candidates[self._class_names[int(box[5])]].append(c)
 
 
 class YoloBallDetector(CandidateFinder):
