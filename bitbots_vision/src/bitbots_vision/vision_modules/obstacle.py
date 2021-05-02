@@ -306,8 +306,6 @@ class ColorObstacleDetector(CandidateFinder):
 
         self._color_threshold = threshold
 
-        self._image = None
-
     def set_image(self, image):
         # type: (np.ndarray) -> None
         """
@@ -315,12 +313,6 @@ class ColorObstacleDetector(CandidateFinder):
 
         :param image: image the current image vision
         """
-        # Check if image has been set
-        if np.array_equal(image, self._image):
-            return
-
-        self._image = image
-
         self._obstacle_detector.set_image(image)
 
         # Reset cache
@@ -357,7 +349,6 @@ class ColorObstacleDetector(CandidateFinder):
             ignored_obstacles = itertools.chain.from_iterable(sub_det.get_candidates() for sub_det in self._subtractors)
             # Subtract them from out detections
             self._obstacles =  list(set(obstacles) - set(ignored_obstacles))
-            print(list(ignored_obstacles), obstacles, self._obstacles, type(self._obstacle_detector), type(self._color_detector))
 
         return self._obstacles
 
