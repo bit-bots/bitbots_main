@@ -471,7 +471,7 @@ class YoloDetector(CandidateFinder):
     """
     def __init__(self, config, yolo):
         """
-        Constructor for the YoloGoalpostDetector.
+        Constructor for the YoloDetector.
 
         :param config: The vision config
         :param yolo: An YoloHandler implementation that runs the yolo network
