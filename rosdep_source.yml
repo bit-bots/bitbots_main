@@ -22,8 +22,8 @@ bitbots_ceiling_cam:
 
 bitbots_live_tool_rqt:
   ubuntu: &bitbots_live_tool_rqt
-    source: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_live_tool_rqt/.rdmanifest
-      uri:
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_live_tool_rqt/.rdmanifest
   debian: *bitbots_live_tool_rqt
   fedora: *bitbots_live_tool_rqt
 
