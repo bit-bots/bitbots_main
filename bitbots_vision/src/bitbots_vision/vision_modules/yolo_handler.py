@@ -530,21 +530,6 @@ class YoloGoalpostDetector(YoloDetector):
         """
         return self._yolo.get_candidates("goalpost")
 
-class YoloGoalpostDetector(YoloDetector):
-    """
-    A goalpost detector using the yolo neural network.
-    This layer connects a single YOLO network with multiple candidate finders for the different classes,
-    in this case the goalpost class.
-    """
-    def __init__(self, config, yolo):
-        super().__init__(config, yolo)
-
-    def get_candidates(self):
-        """
-        :return: all found goalpost candidates
-        """
-        return self._yolo.get_candidates("goalpost")
-
 
 class YoloRobotDetector(YoloDetector):
     """
