@@ -6,27 +6,28 @@
   <maintainer email="2hartfil@informatik.uni-hamburg.de">Judith Hartfill</maintainer>
   <license>MIT</license>
 
-  <!-- Use build_depend for packages you need at compile time: -->
-  <build_depend>message_generation</build_depend>
-  <!-- Use build_export_depend for packages you need in order to build against this package: -->
-  <!--   <build_export_depend>message_generation</build_export_depend> -->
-  <!-- Use exec_depend for packages you need at runtime: -->
-  <exec_depend>message_runtime</exec_depend>
-
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>cv_bridge</depend>
+  <depend>dynamic_reconfigure</depend>
   <depend>geometry_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>image_transport</depend>
+  <depend>libopencv-dev</depend>
   <depend>particle_filter</depend>
   <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>visualization_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>dynamic_reconfigure</depend>
-  <depend>rospy</depend>
-  <depend>opencv</depend>
-  <depend>roslib</depend>
+
+  <build_depend>message_generation</build_depend>
+
   <exec_depend>map_server</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <test_depend>bitbots_test</test_depend>
+
+  <doc_depend>bitbots_docs</doc_depend>
 
   <export>
 
