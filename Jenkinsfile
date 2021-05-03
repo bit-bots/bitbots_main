@@ -3,5 +3,7 @@
 defineProperties()
 
 def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
-pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_local_planner")).withoutDocumentation().withoutPublishing())
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_local_planner")).withoutDocumentation())
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_localization")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_move_base")))
 pipeline.execute()
