@@ -1,0 +1,18 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_odometry'
+depends:
+- bitbots_docs
+- bitbots_msgs
+- nav_msgs
+- rotconv
+- sensor_msgs
+- tf2
+- tf2_eigen
+exec-path: bitbots_motion-master/bitbots_odometry
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_odometry'
+uri: https://github.com/bit-bots/bitbots_motion/archive/refs/heads/master.tar.gz

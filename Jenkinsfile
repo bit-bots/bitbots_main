@@ -4,4 +4,6 @@ defineProperties()
 
 def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
 pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_moveit_bindings")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_odometry")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_splines")))
 pipeline.execute()
