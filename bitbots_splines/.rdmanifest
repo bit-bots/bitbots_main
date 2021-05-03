@@ -1,0 +1,17 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_splines'
+depends:
+- bio_ik
+- bitbots_docs
+- eigen_conversions
+- rosconsole
+- roscpp
+- std_msgs
+exec-path: bitbots_motion-master/bitbots_splines
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_splines'
+uri: https://github.com/bit-bots/bitbots_motion/archive/refs/heads/master.tar.gz
