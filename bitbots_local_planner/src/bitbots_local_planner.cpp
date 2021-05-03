@@ -11,7 +11,7 @@ BBPlanner::BBPlanner()
 {
 }
 
-void BBPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
+void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros)
 {
     ros::NodeHandle private_nh("~/" + name);
     local_plan_publisher_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
@@ -32,7 +32,7 @@ void BBPlanner::reconfigureCB(BBPlannerConfig &config, uint32_t level)
     config_ = config;
 }
 
-bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
+bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan)
 {
     global_plan_ = plan;
 
@@ -43,7 +43,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
     }
     else
     {
-        carrot_distance = global_plan_.size()-1;
+        carrot_distance = global_plan_.size() - 1;
     }
 
     // Querys the pose of our carrot which we want to follow
@@ -56,7 +56,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
 
     // Query the final pose of our robot at the end of the global plan
     bitbots_local_planner::getXPose(
-        *tf_,global_plan_,
+        *tf_, global_plan_,
         costmap_ros_->getGlobalFrameID(),
         end_pose_,
         global_plan_.size() - 1);
@@ -68,7 +68,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
     return true;
 }
 
-bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
+bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel)
 {
     ros::Time begin = ros::Time::now();
 
@@ -88,21 +88,20 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
                 msg.pose.position.z)));
 
     double walk_angle = std::fmod(
-            std::atan2(
-                goal_pose_.getOrigin().y() - current_pose.getOrigin().y(),
-                goal_pose_.getOrigin().x() - current_pose.getOrigin().x()),
-        2* M_PI);
+        std::atan2(
+            goal_pose_.getOrigin().y() - current_pose.getOrigin().y(),
+            goal_pose_.getOrigin().x() - current_pose.getOrigin().x()),
+        2 * M_PI);
 
     double final_walk_angle = std::fmod(
-            std::atan2(
-                end_pose_.getOrigin().y() - current_pose.getOrigin().y(),
-                end_pose_.getOrigin().x() - current_pose.getOrigin().x()),
-        2* M_PI);
+        std::atan2(
+            end_pose_.getOrigin().y() - current_pose.getOrigin().y(),
+            end_pose_.getOrigin().x() - current_pose.getOrigin().x()),
+        2 * M_PI);
 
     double distance = sqrt(
-                pow(end_pose_.getOrigin().y() - current_pose.getOrigin().y(), 2) +
-                pow(end_pose_.getOrigin().x() - current_pose.getOrigin().x(), 2)
-            );
+        pow(end_pose_.getOrigin().y() - current_pose.getOrigin().y(), 2) +
+        pow(end_pose_.getOrigin().x() - current_pose.getOrigin().x(), 2));
 
     double walk_vel = std::min(distance * config_.translation_slow_down_factor, config_.max_vel_x);
 
@@ -110,23 +109,27 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     if (distance > config_.orient_to_goal_distance)
     {
         diff = final_walk_angle - tf::getYaw(current_pose.getRotation());
-    } else
+    }
+    else
     {
         diff = tf::getYaw(end_pose_.getRotation()) - tf::getYaw(current_pose.getRotation());
     }
 
-    double min_angle = (std::fmod(diff + M_PI, 2* M_PI) - M_PI);
+    double min_angle = (std::fmod(diff + M_PI, 2 * M_PI) - M_PI);
     double vel = std::max(std::min(
-        config_.rotation_slow_down_factor * min_angle,
-        config_.max_rotation_vel), -config_.max_rotation_vel);
+                                config_.rotation_slow_down_factor * min_angle,
+                                config_.max_rotation_vel),
+                            -config_.max_rotation_vel);
 
-    if(distance < config_.position_accuracy && abs(min_angle) < config_.rotation_accuracy)
+    if (distance < config_.position_accuracy && abs(min_angle) < config_.rotation_accuracy)
     {
         cmd_vel.linear.x = 0;
         cmd_vel.linear.y = 0;
         cmd_vel.angular.z = 0;
         goal_reached_ = true;
-    } else {
+    }
+    else
+    {
         cmd_vel.linear.x = std::cos(walk_angle - tf::getYaw(current_pose.getRotation())) * walk_vel;
         cmd_vel.linear.y = std::sin(walk_angle - tf::getYaw(current_pose.getRotation())) * walk_vel;
         cmd_vel.angular.z = vel;
@@ -143,7 +146,7 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
 bool BBPlanner::isGoalReached()
 {
-    if(goal_reached_)
+    if (goal_reached_)
     {
         ROS_INFO("BBPlanner: Goal reached.");
     }
@@ -156,7 +159,7 @@ void BBPlanner::publishPlan(int max_point)
     path = transformed_global_plan_;
 
     //given an empty path we won't do anything
-    if(path.empty())
+    if (path.empty())
         return;
 
     //create a path message
@@ -166,7 +169,7 @@ void BBPlanner::publishPlan(int max_point)
     gui_path.header.stamp = path[0].header.stamp;
 
     // Extract the plan in world co-ordinates, we assume the path is all in the same frame
-    for(unsigned int i=0; i < path.size(); i++)
+    for (unsigned int i = 0; i < path.size(); i++)
     {
         gui_path.poses[i] = path[i];
     }
