@@ -4,15 +4,12 @@
 
 PLUGINLIB_EXPORT_CLASS(bitbots_local_planner::BBPlanner, nav_core::BaseLocalPlanner)
 
-namespace bitbots_local_planner
-{
+namespace bitbots_local_planner {
 
-BBPlanner::BBPlanner()
-{
+BBPlanner::BBPlanner() {
 }
 
-void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros)
-{
+void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros) {
     ros::NodeHandle private_nh("~/" + name);
     local_plan_publisher_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
     tf_ = tf;
@@ -27,13 +24,11 @@ void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Co
     ROS_INFO("BBPlanner: Init.");
 }
 
-void BBPlanner::reconfigureCB(BBPlannerConfig &config, uint32_t level)
-{
+void BBPlanner::reconfigureCB(BBPlannerConfig &config, uint32_t level) {
     config_ = config;
 }
 
-bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan)
-{
+bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
     global_plan_ = plan;
 
     int carrot_distance = 10;
@@ -68,8 +63,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan)
     return true;
 }
 
-bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel)
-{
+bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel) {
     ros::Time begin = ros::Time::now();
 
     tf::Stamped<tf::Pose> current_pose;
@@ -144,8 +138,7 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel)
     return true;
 }
 
-bool BBPlanner::isGoalReached()
-{
+bool BBPlanner::isGoalReached() {
     if (goal_reached_)
     {
         ROS_INFO("BBPlanner: Goal reached.");
@@ -153,8 +146,7 @@ bool BBPlanner::isGoalReached()
     return goal_reached_;
 }
 
-void BBPlanner::publishPlan(int max_point)
-{
+void BBPlanner::publishPlan(int max_point) {
     std::vector<geometry_msgs::PoseStamped> path;
     path = transformed_global_plan_;
 
@@ -177,7 +169,6 @@ void BBPlanner::publishPlan(int max_point)
     local_plan_publisher_.publish(gui_path);
 }
 
-BBPlanner::~BBPlanner()
-{
+BBPlanner::~BBPlanner() {
 }
 }
