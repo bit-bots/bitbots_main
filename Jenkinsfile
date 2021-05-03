@@ -1,8 +1,10 @@
-@Library('bitbots_jenkins_library') import de.bitbots.jenkins.PackageDefinition
+@Library('bitbots_jenkins_library') import de.bitbots.jenkins.*;
 
-bitbotsPipeline([
-	new PackageDefinition("humanoid_league_game_controller", true),
-	new PackageDefinition("humanoid_league_team_communication", true),
-	new PackageDefinition("humanoid_league_speaker", true),
-	new PackageDefinition("humanoid_league_transform", true)
-] as PackageDefinition[])
+defineProperties()
+
+def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("humanoid_league_game_controller")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("humanoid_league_speaker")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("humanoid_league_team_communication")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("humanoid_league_transform")))
+pipeline.execute()
