@@ -1,0 +1,13 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_ball_filter'
+depends:
+- geometry_msgs
+- rospy
+exec-path: bitbots_world_model-master/bitbots_ball_filter
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_ball_filter'
+uri: https://github.com/bit-bots/bitbots_world_model/archive/refs/heads/master.tar.gz
