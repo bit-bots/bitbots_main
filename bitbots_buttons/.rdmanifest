@@ -1,0 +1,18 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_buttons'
+depends:
+- bitbots_docs
+- bitbots_msgs
+- humanoid_league_msgs
+- message_generation
+- message_runtime
+- rospy
+- std_msgs
+exec-path: bitbots_lowlevel-master/bitbots_buttons
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_buttons'
+uri: https://github.com/bit-bots/bitbots_lowlevel/archive/refs/heads/master.tar.gz
