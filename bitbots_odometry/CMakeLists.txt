@@ -10,6 +10,7 @@ project(bitbots_odometry)
 find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   sensor_msgs
+  message_filters
   tf2
   tf2_ros
   tf2_geometry_msgs
