@@ -104,3 +104,101 @@ udp_bridge:
       uri: https://raw.githubusercontent.com/bit-bots/udp_bridge/master/.rdmanifest
   debian: *udp_bridge
   fedora: *udp_bridge
+
+bitbots_blackboard:
+  ubuntu: &bitbots_blackboard
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_behavior/master/bitbots_blackboard/.rdmanifest
+  debian: *bitbots_blackboard
+  fedora: *bitbots_blackboard
+
+bitbots_buttons:
+  ubuntu: &bitbots_buttons
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_lowlevel/master/bitbots_buttons/.rdmanifest
+  debian: *bitbots_buttons
+  fedora: *bitbots_buttons
+
+bitbots_hardware_rqt:
+  ubuntu: &bitbots_hardware_rqt
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_lowlevel/master/bitbots_hardware_rqt/.rdmanifest
+  debian: *bitbots_hardware_rqt
+  fedora: *bitbots_hardware_rqt
+
+bitbots_convenience_frames:
+  ubuntu: &bitbots_convenience_frames
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_convenience_frames/.rdmanifest
+  debian: *bitbots_convenience_frames
+  fedora: *bitbots_convenience_frames
+
+bitbots_teleop:
+  ubuntu: &bitbots_teleop
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_teleop/.rdmanifest
+  debian: *bitbots_teleop
+  fedora: *bitbots_teleop
+
+bitbots_moveit_bindings:
+  ubuntu: &bitbots_moveit_bindings
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_motion/master/bitbots_moveit_bindings/.rdmanifest
+  debian: *bitbots_moveit_bindings
+  fedora: *bitbots_moveit_bindings
+
+bitbots_odometry:
+  ubuntu: &bitbots_odometry
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_motion/master/bitbots_odometry/.rdmanifest
+  debian: *bitbots_odometry
+  fedora: *bitbots_odometry
+
+bitbots_splines:
+  ubuntu: &bitbots_splines
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_motion/master/bitbots_splines/.rdmanifest
+  debian: *bitbots_splines
+  fedora: *bitbots_splines
+
+white_balancer:
+  ubuntu: &white_balancer
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_vision/master/white_balancer/.rdmanifest
+  debian: *white_balancer
+  fedora: *white_balancer
+
+bitbots_ball_filter:
+  ubuntu: &bitbots_ball_filter
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_world_model/master/bitbots_ball_filter/.rdmanifest
+  debian: *bitbots_ball_filter
+  fedora: *bitbots_ball_filter
+
+humanoid_base_footprint:
+  ubuntu: &humanoid_base_footprint
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_base_footprint/master/.rdmanifest
+  debian: *humanoid_base_footprint
+  fedora: *humanoid_base_footprint
+
+humanoid_league_game_controller:
+  ubuntu: &humanoid_league_game_controller
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_misc/master/humanoid_league_game_controller/.rdmanifest
+  debian: *humanoid_league_game_controller
+  fedora: *humanoid_league_game_controller
+
+humanoid_league_team_communication:
+  ubuntu: &humanoid_league_team_communication
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_misc/master/humanoid_league_team_communication/.rdmanifest
+  debian: *humanoid_league_team_communication
+  fedora: *humanoid_league_team_communication
+
+humanoid_league_transform:
+  ubuntu: &humanoid_league_transform
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_misc/master/humanoid_league_transform/.rdmanifest
+  debian: *humanoid_league_transform
+  fedora: *humanoid_league_transform
