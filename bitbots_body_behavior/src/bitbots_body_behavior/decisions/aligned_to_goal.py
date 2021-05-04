@@ -20,7 +20,7 @@ class AlignedToGoal(AbstractDecisionElement):
         if current_pose is None or current_ball is None:
             return 'NO'
 
-        # calculate the distance of the intersection of a line from the robot throu the ball and the goal line.
+        # calculate the distance of the intersection of a line from the robot through the ball and the goal line.
         dist = abs(
             current_pose[1] +
             (current_pose[1] - current_ball[1]) *
@@ -67,4 +67,3 @@ class AlignedToMoveBaseGoal(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
-
