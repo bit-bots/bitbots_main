@@ -20,12 +20,14 @@ class BallFilter:
 
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
-        self.filter_init = False
+        self.filter_initialized = False
         self.ball = None  # type:PointStamped
         self.ball_header = None  # type: Header
         self.last_ball_msg = None  # type: PoseWithCertainty
-        self.last_state = None
 
+
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(2))
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
         self.filter_rate = rospy.get_param('~filter_rate')
         self.filter_time_step = 1.0 / self.filter_rate
@@ -95,9 +97,9 @@ class BallFilter:
         Process noise is taken into account
         """
         if self.ball:
-            if not self.filter_init:
+            if not self.filter_initialized:
                 self.init_filter(*self.get_ball_measurement())
-                self.filter_init = True
+                self.filter_initialized = True
             self.kf.predict()
             self.kf.update(self.get_ball_measurement())
             state = self.kf.get_update()
@@ -105,9 +107,9 @@ class BallFilter:
             self.last_state = state
             self.ball = None
         else: 
-            if self.filter_init:
+            if self.filter_initialized:
                 if (rospy.Time.now() - self.ball_header.stamp) > self.filter_reset_duration:
-                    self.filter_init = False
+                    self.filter_initialized = False
                     self.last_state = None
                     return
                 self.kf.predict()
