@@ -36,7 +36,6 @@ class BallFilter:
         # adapt velocity factor to frequency
         self.velocity_factor = rospy.get_param('~velocity_reduction') ** (1 / self.filter_rate)
 
-        self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
 
         # publishes positions of ball
         self.ball_pose_publisher = rospy.Publisher(
@@ -59,17 +58,13 @@ class BallFilter:
             queue_size=1
         )
 
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(2))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
-
-        self.filter_rate = rospy.get_param('~filter_rate')
-        self.filter_time_step = 1.0 / self.filter_rate
-        self.filter_reset_duration = rospy.Duration(secs=rospy.get_param('~filter_reset_time'))
-
-        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
-
-        # adapt velocity factor to frequency
-        self.velocity_factor = rospy.get_param('~velocity_reduction') ** (1 / self.filter_rate)
+        # setup subscriber
+        self.subscriber = rospy.Subscriber(
+            rospy.get_param('~ball_subscribe_topic'),
+            PoseWithCertaintyArray,
+            self.ball_callback,
+            queue_size=1
+        )
 
         self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
         rospy.spin()
