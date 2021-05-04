@@ -1,0 +1,10 @@
+---
+# rosdep definitions for required packages that are not yet present in the official rosdep definitions
+# upstream package definitions are hosted at https://github.com/ros/rosdistro/tree/master/rosdep
+
+beignet-dev:
+  ubuntu: beignet-dev
+  debian: beignet-dev
+libcv-bridge-dev:
+  ubuntu: libcv-bridge-dev
+  debian: libcv-bridge-dev
