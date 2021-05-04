@@ -1,4 +1,5 @@
 ---
+# rosdep definitions for all our packages installed as sources
 bitbots_docs:
   ubuntu: &bitbots_docs
     source:
