@@ -21,6 +21,7 @@ RUN git clone --depth 1 https://github.com/bit-bots/DynamixelSDK.git src/dynamix
 RUN git clone --depth 1 https://github.com/bit-bots/dynamixel-workbench.git src/dynamixel_workbench
 RUN git clone --depth 1 https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git src/dynamixel_workbench_msgs
 RUN git clone --depth 1 https://github.com/bit-bots/rot_conv_lib.git src/rot_conf_lib
+RUN git clone --depth 1 -b noetic-devel https://github.com/SteveMacenski/spatio_temporal_voxel_layer.git src/spatio_temporal_voxel_layer
 RUN rosdep install -iry --from-paths src
 RUN catkin build
 
