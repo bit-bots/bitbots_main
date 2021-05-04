@@ -1,5 +1,6 @@
 # Use upstream noetic images as base
 FROM docker.io/ros:noetic-ros-base AS bitbots-builder
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
 RUN apt-get update
