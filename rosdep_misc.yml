@@ -5,6 +5,3 @@
 beignet-dev:
   ubuntu: beignet-dev
   debian: beignet-dev
-libcv-bridge-dev:
-  ubuntu: libcv-bridge-dev
-  debian: libcv-bridge-dev
