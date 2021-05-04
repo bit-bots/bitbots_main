@@ -1,1 +1,2 @@
 yaml https://raw.githubusercontent.com/bit-bots/bitbots_tools/master/rosdep_source.yml
+yaml https://raw.githubusercontent.com/bit-bots/bitbots_tools/master/rosdep_misc.yml
