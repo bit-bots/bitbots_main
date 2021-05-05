@@ -1,5 +1,14 @@
 FROM docker.io/jenkins/jenkins
 
+# these are the UID and GIDs of jenkins_master on rzrobo
+USER root
+ARG UID=997
+ARG GID=994
+RUN groupmod -g $GID jenkins
+RUN usermod -u $UID -g $GID jenkins
+RUN chown -R $UID:$GID /var/jenkins_home /usr/share/jenkins
+USER jenkins
+
 ENV PLUGINS="\
     antisamy-markup-formatter \
     blueocean \
