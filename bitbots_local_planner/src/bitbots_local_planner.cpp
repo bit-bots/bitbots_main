@@ -64,7 +64,7 @@ bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
   } else {
     goal_reached_ = false;
     stand_at_goal_ = false;
-    ROS_INFO("BBPlanner: New Goal. Start new routine.");
+    ROS_DEBUG("BBPlanner: New Goal. Start new routine.");
   }
 
   old_goal_pose_ = goal_pose_;
@@ -137,7 +137,7 @@ bool BBPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel) {
 
 bool BBPlanner::isGoalReached() {
   if (goal_reached_) {
-    ROS_INFO("BBPlanner: Goal reached.");
+    ROS_DEBUG("BBPlanner: Goal reached.");
   }
   return goal_reached_;
 }
