@@ -4,20 +4,14 @@ port: 12321
 # Rate of published messages in Hz
 rate: 1
 
-# average walking speed in mm / s !!!
-avg_walking_speed: 10
-
-# in mm
-max_kicking_distance: 1000
+# average walking speed in [m/s]
+avg_walking_speed: 0.01
 
 # set the color of your team
 # 2: red
 # 3: blue
 # other values are invalid
 team_color: 2
-
-#use world model, not implemented right now
-world_model: False
 
 #lifetime of data [s]
 lifetime: 3
@@ -29,8 +23,6 @@ belief_threshold: 0
 team_data: 'team_data'
 strategy: 'strategy'
 robot_state: 'robot_state'
-goal: 'goal_post_relative'
-world_model_node: 'local_world_model'
-position: 'position'
+position: 'pose_with_certainty'
 ball: 'balls_relative'
-obstacles: 'obstacle_relative'
+obstacles: 'obstacles_relative'
