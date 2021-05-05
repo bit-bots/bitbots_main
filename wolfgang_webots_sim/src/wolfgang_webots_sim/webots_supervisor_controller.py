@@ -197,11 +197,24 @@ class SupervisorController:
     def get_robot_pose_quat(self, name="amy"):
         return self.get_robot_position(name), self.get_robot_orientation_quat(name)
 
+    def get_robot_velocity(self, name="amy"):
+        velocity = self.robot_nodes[name].getVelocity()
+        return velocity[:3], velocity[3:]
+
     def get_link_pose(self, link, name="amy"):
         link_node = self.robot_nodes[name].getFromProtoDef(link)
+        if not link_node:
+            return None
         link_position = link_node.getPosition()
-        link_orientation = link_node.getOrientation()
+        mat = link_node.getOrientation()
+        link_orientation = transforms3d.quaternions.mat2quat(np.array(mat))
         return link_position, link_orientation
+
+    def get_link_velocities(self, link, name="amy"):
+        """Returns linear and angular velocities"""
+        link_node = self.robot_nodes[name].getFromProtoDef(link)
+        velocity = link_node.getVelocity()
+        return velocity[:3], velocity[3:]
 
     def publish_model_states(self):
         msg = ModelStates()

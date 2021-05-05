@@ -49,7 +49,7 @@ class RobotController:
                                 "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan",
                                 "HeadTilt"]
             self.external_motor_names = self.motor_names
-            sensor_postfix = "_sensor"
+            self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
@@ -68,7 +68,7 @@ class RobotController:
                                          "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
                                          "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
                                          "LAnkleRoll", "HeadPan", "HeadTilt"]
-            sensor_postfix = "S"
+            self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
@@ -80,7 +80,7 @@ class RobotController:
                                 "HeadYaw",
                                 "HeadPitch"]
             self.external_motor_names = self.motor_names
-            sensor_postfix = "S"
+            self.sensor_suffix = "S"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
@@ -93,7 +93,7 @@ class RobotController:
                                          "r_el", "l_el", "r_hip_yaw", "l_hip_yaw", "r_hip_roll", "l_hip_roll",
                                          "r_hip_pitch", "l_hip_pitch", "r_knee", "l_knee", "r_ank_pitch",
                                          "l_ank_pitch", "r_ank_roll", "l_ank_roll", "head_pan", "head_tilt"]
-            sensor_postfix = "S"
+            self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
@@ -103,7 +103,7 @@ class RobotController:
         for motor_name in self.motor_names:
             self.motors.append(self.robot_node.getDevice(motor_name))
             self.motors[-1].enableTorqueFeedback(self.timestep)
-            self.sensors.append(self.robot_node.getDevice(motor_name + sensor_postfix))
+            self.sensors.append(self.robot_node.getDevice(motor_name + self.sensor_suffix))
             self.sensors[-1].enable(self.timestep)
 
         self.accel = self.robot_node.getDevice(accel_name)
@@ -328,9 +328,6 @@ class RobotController:
         with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
             f.write(annotation)
         self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)
-
-
-
 
     def get_image(self):
         return self.camera.getImage()
