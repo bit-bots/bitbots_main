@@ -18,13 +18,8 @@
   <build_depend>bitbots_docs</build_depend>
   <depend>rostest</depend>
   <depend>roscpp</depend>
+  <depend>rosunit</depend>
 
-  <exec_depend>rosunit</exec_depend>
-
-  <test_depend>rosunit</test_depend>
   <test_depend>boost</test_depend>
-
-  <test_depend>python-hypothesis</test_depend>
-
-  <doc_depend>bitbots_docs</doc_depend>
+  <test_depend>python3-hypothesis</test_depend>
 </package>
