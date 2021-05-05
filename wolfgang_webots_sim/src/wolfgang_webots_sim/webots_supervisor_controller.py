@@ -208,7 +208,7 @@ class SupervisorController:
         link_position = link_node.getPosition()
         mat = link_node.getOrientation()
         link_orientation = transforms3d.quaternions.mat2quat(np.array(mat))
-        return link_position, link_orientation
+        return link_position, np.append(link_orientation[1:], link_orientation[0])
 
     def get_link_velocities(self, link, name="amy"):
         """Returns linear and angular velocities"""
