@@ -392,8 +392,8 @@ void TeamCommunication::obstaclesCallback(const humanoid_league_msgs::ObstacleRe
 }
 
 int main(int argc, char **argv) {
-  ROS_INFO("Starting Team Communication");
   ros::init(argc, argv, "humanoid_league_team_communication");
+  ROS_INFO("Starting Team Communication");
   // init node
   TeamCommunication node;
   // run the node
