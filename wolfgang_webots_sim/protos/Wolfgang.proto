@@ -1611,6 +1611,10 @@ PROTO Wolfgang [
                                         translation -0.069100 -0.000000 -0.026000
                                         rotation 0.572979 0.572976 -0.585998 2.081475
                                         children [
+                                          DEF r_sole Solid {
+                                            translation 0.0152219 0.0907683 -0.0529
+                                            rotation 0.000000 0.000000 1.000000 1.5708
+                                          }
                                           Transform {
                                             translation -0.030000 0.006500 -0.034000
                                             rotation 0.000000 1.000000 0.000000 0.000000
@@ -2698,6 +2702,10 @@ PROTO Wolfgang [
                                         translation 0.069100 0.000000 -0.026000
                                         rotation 0.577350 -0.577350 0.577352 2.094399
                                         children [
+                                          DEF l_sole Solid {
+                                            translation -0.0152219 0.0907683 -0.0529
+                                            rotation 0.000000 0.000000 1.000000 1.5708
+                                          }
                                           Transform {
                                             translation -0.060000 0.163500 -0.034000
                                             rotation 0.000000 1.000000 0.000000 0.000000
