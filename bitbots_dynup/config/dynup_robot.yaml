@@ -9,6 +9,7 @@ dynup:
   foot_distance: 0.2
   trunk_x_final: -0.025
   hand_walkready_pitch: -25.0
+  hand_walkready_height: -0.35
 
   # Back
   leg_min_length_back: 0.22

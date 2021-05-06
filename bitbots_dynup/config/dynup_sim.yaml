@@ -6,6 +6,7 @@ dynup:
   arm_extended_length: 0.3
   foot_distance: 0.2
   hand_walkready_pitch: -25.0
+  hand_walkready_height: -0.35
   trunk_height: 0.4
   trunk_pitch: 0.0
   trunk_x_final: 0
