@@ -192,7 +192,7 @@ double DynupEngine::calcFrontSplines() {
   /*
   calculates splines for front up
   */
-  
+
   /*
    * Pose 0: Extend hands to the side, for later turning
    */
@@ -562,13 +562,13 @@ double DynupEngine::calcRiseSplines(double time) {
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, -0.35);
   l_hand_spline_.roll()->addPoint(time, 0);
   l_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, -0.35);
   r_hand_spline_.roll()->addPoint(time, 0);
   r_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
   r_hand_spline_.yaw()->addPoint(time, 0);
