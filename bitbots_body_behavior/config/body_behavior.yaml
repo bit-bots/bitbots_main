@@ -111,6 +111,9 @@ behavior:
     pathfinding_position_threshold: 0.3
     pathfinding_orientation_threshold: 10
 
+    # topics the behavior subscribes to
+    ball_movement_subscribe_topic: 'ball_relative_movement'
+
 
 role: "offense"
 

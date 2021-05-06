@@ -10,7 +10,7 @@ import rospy
 import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped
 from tf.transformations import euler_from_quaternion
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 
@@ -51,6 +51,7 @@ class WorldModelCapsule:
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
         self.ball_map.header.stamp = rospy.Time.now()
         self.ball_map.header.frame_id = self.map_frame
+        self.ball_twist_map = None
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
@@ -148,6 +149,20 @@ class WorldModelCapsule:
             self.ball_publisher.publish(self.ball)
         else:
             return
+
+    def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
+        # TODO: check sufficient covariance
+        twist_stamped = TwistStamped()
+        twist_stamped.header = msg.header
+        twist_stamped.twist = msg.twist.twist
+        if twist_stamped.header.frame_id != self.map_frame:
+            try:
+                self.ball_twist_map = self.tf_buffer.transform(twist_stamped, self.map_frame, timeout=rospy.Duration(0.3))
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                rospy.logwarn(e)
+        else:
+            self.ball_twist_map = twist_stamped
+
 
     def forget_ball(self):
         """Forget that we saw a ball"""
