@@ -159,7 +159,11 @@ class WorldModelCapsule:
         return rospy.Time.now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
 
     def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
-        # TODO: check sufficient covariance
+        x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = msg.twist.covariance[7]  # position 1,1 in a 6x6-matrix
+        if x_sdev > self.config['ball_twist_precision_threshold']['x_sdev'] or \
+           y_sdev > self.config['ball_twist_precision_threshold']['y_sdev']:
+            return
         twist_stamped = TwistStamped()
         twist_stamped.header = msg.header
         twist_stamped.twist = msg.twist.twist
