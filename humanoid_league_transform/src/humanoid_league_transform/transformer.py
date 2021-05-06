@@ -41,7 +41,7 @@ class Transformer(object):
                                                         "field_boundary_in_image")
         line_mask_in_image_topic = rospy.get_param("~masks/line_mask/topic",
                                                         "line_mask_in_image")
-        
+
         line_mask_scaling = rospy.get_param("~masks/line_mask/scale", 1.0)
 
         publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
@@ -239,8 +239,8 @@ class Transformer(object):
             obstacle.pose.confidence = o.confidence
             obstacle.type = o.type
             point = Point()
-            point.x = o.top_left.x + o.height
-            point.y = o.top_left.y + o.width/2
+            point.x = o.top_left.x + o.width/2
+            point.y = o.top_left.y + o.height
             position = self._transform_point(point, field, msg.header.stamp)
             if position is not None:
                 obstacle.pose.pose.pose.position = position
