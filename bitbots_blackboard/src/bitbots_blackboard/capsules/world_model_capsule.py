@@ -32,7 +32,9 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
+
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
@@ -52,6 +54,7 @@ class WorldModelCapsule:
         self.ball_map.header.stamp = rospy.Time.now()
         self.ball_map.header.frame_id = self.map_frame
         self.ball_twist_map = None
+        self.ball_twist_lost_time = rospy.Duration(config["ball_twist_lost_time"])
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
@@ -149,6 +152,11 @@ class WorldModelCapsule:
             self.ball_publisher.publish(self.ball)
         else:
             return
+
+    def recent_ball_twist_available(self):
+        if self.ball_twist_map is None:
+            return False
+        return rospy.Time.now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
 
     def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
         # TODO: check sufficient covariance

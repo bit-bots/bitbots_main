@@ -21,7 +21,7 @@ class BodyBlackboard:
         self.animation = AnimationCapsule()
         self.kick = KickCapsule(self)
         self.pathfinding = PathfindingCapsule()
-        self.world_model = WorldModelCapsule()
+        self.world_model = WorldModelCapsule(self.config)
         self.team_data = TeamDataCapsule()
 
 
