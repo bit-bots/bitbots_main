@@ -10,6 +10,9 @@ depends:
 - roscpp
 - std_msgs
 - tf2
+- tf2_ros
+- tf2_geometry_msgs
+- protobuf-dev
 exec-path: humanoid_league_misc-master/humanoid_league_team_communication
 install-script: '#!/bin/bash
 
