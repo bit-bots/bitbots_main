@@ -22,6 +22,7 @@
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>bitbots_docs</depend>
+  <depend>protobuf-dev</depend>
 
   <export>
     <bitbots_documentation>
