@@ -55,11 +55,11 @@ RUN . /opt/ros/melodic/setup.sh && \
 
 # Setup rosdep
 ADD rosdep.source.list /etc/ros/rosdep/sources.list.d/30-bitbots.list
-RUN su -c "rosdep update" builder
+USER builder:builder
+RUN rosdep update
 
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
-USER builder:builder
 COPY entrypoint.sh /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD ["bash"]
