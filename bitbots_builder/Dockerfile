@@ -4,6 +4,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=melodic
 ENV ROS_PYTHON_VERSION=3
 
+# workaround for a bug during installation https://stackoverflow.com/a/25267015
+RUN ln -s -f /bin/true /usr/bin/chfn
+
 # Install system dependencies
 RUN apt-get update
 RUN apt-get install -y gnupg2
