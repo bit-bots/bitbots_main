@@ -20,6 +20,7 @@ ENV PLUGINS="\
     embeddable-build-status \
     git \
     git-parameter \
+    gitea \
     github \
     github-branch-source \
     junit \
