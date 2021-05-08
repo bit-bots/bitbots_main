@@ -14,7 +14,7 @@ class TeamDataCapsule:
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
         self.team_data = TeamData()
-        self.team_strategy = defaultdict(Strategy.ROLE_IDLING)
+        self.team_strategy = defaultdict(lambda: Strategy.ROLE_IDLING)
         self.times_to_ball = defaultdict(None)
         self.strategy = Strategy()
         self.last_update_team_data = None

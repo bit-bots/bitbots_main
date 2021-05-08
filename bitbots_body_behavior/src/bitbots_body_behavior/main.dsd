@@ -93,20 +93,6 @@ $LocalizationAvailable
                 NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
     NO --> #NoLocalizationOffenseBehavior
 
-#OffenseFreekickProcedure
-$GameStateDecider
-    INITIAL --> @LookAtFieldFeatures, @StandAndWait
-    READY --> $ClosestToBall
-        TRUE --> @GoToBall
-        FALSE --> @StandAndWait
-    SET --> @StandAndWait
-    PLAYING --> $ClosestToBall
-        TRUE --> @KickBall
-        FALSE --> @StandAndWait
-    FINISHED --> @StandAndWait
-    NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
-
-
 #DefenseBehavior
 $LocalizationAvailable
     YES --> $LocalizationPrecision
@@ -143,11 +129,11 @@ $BallSeen
 
 -->BodyBehavior
 $RoleDecider
-    GOALIE --> $SecondaryGameStateDecider
+    GOALIE --> $SecondaryStateDecider
         PENALTYSHOOT --> $SecondaryStateTeamDecider
             OUR --> $GameStateDecider
                 READY --> @GoToBall
-                PLAYING --> @KickBall
+                PLAYING --> @KickBallDynamic
                 ELSE --> @LookAtBall, @StandAndWait
             OTHER --> #GoalieBehavior
         TIMEOUT --> @StandAndWait
@@ -156,16 +142,16 @@ $RoleDecider
             READY --> #PositioningReady
             PLAYING --> #GoalieBehavior
             ELSE --> @LookAtBall, @StandAndWait
-    OFFENSE --> $SecondaryGameStateDecider
+    OFFENSE --> $SecondaryStateDecider
         NORMAL --> $GameStateDecider
             INITIAL --> @LookAtFieldFeatures, @StandAndWait
             READY --> #PositioningReady
             PLAYING --> #OffenseBehavior
             ELSE --> @LookAtBall, @StandAndWait
-        PENALTYSHOOT --> @SecondaryStateTeamDecider
+        PENALTYSHOOT --> $SecondaryStateTeamDecider
             OUR --> $GameStateDecider
                 READY --> @GoToBall
-                PLAYING --> @KickBall
+                PLAYING --> @KickBallDynamic
                 ELSE --> @LookAtBall, @StandAndWait
             OTHER --> #GoalieBehavior
         OVERTIME --> $GameStateDecider
@@ -178,7 +164,7 @@ $RoleDecider
             OUR --> $ClosestToBallNoGoalie
                 TRUE --> $GameStateDecider
                     READY --> @GoToBall
-                    PLAYING --> @KickBall
+                    PLAYING --> @KickBallDynamic
                     ELSE --> @LookAtBall, @StandAndWait
                 FALSE --> $GameStateDecider
                     READY --> @GoToRolePosition
@@ -188,16 +174,16 @@ $RoleDecider
                 READY --> @GoToDefensePosition
                 PLAYING --> #OffenseBehavior
                 ELSE --> @LookAtBall, @StandAndWait
-    DEFENSE --> $SecondaryGameStateDecider
+    DEFENSE --> $SecondaryStateDecider
         NORMAL --> $GameStateDecider
             INITIAL --> @LookAtFieldFeatures, @StandAndWait
             READY --> #PositioningReady
             PLAYING --> #DefenseBehavior
             ELSE --> @LookAtBall, @StandAndWait
-        PENALTYSHOOT --> $SecondaryTeamDecider
+        PENALTYSHOOT --> $SecondaryStateTeamDecider
             OUR --> $GameStateDecider
                 READY --> @GoToBall
-                PLAYING --> @KickBall
+                PLAYING --> @KickBallDynamic
                 ELSE --> @LookAtBall, @StandAndWait
             OTHER --> #GoalieBehavior
         OVERTIME --> $GameStateDecider
