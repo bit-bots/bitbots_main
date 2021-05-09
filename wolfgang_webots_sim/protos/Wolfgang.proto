@@ -7,7 +7,7 @@
 PROTO Wolfgang [
   field  SFVec3f     translation     0 0 0
   field  SFRotation  rotation        0 1 0 0
-  field  SFString    name            "Wolfgang"  # Is `Robot.name`.
+  field  SFString    name            "red player 1"  # Is `Robot.name`.
   field  SFString    controller      "void"      # Is `Robot.controller`.
   field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
   field  SFString    customData      ""          # Is `Robot.customData`.
@@ -48,6 +48,18 @@ PROTO Wolfgang [
     recognitionColors [
       0.2 0.2 0.2
     ]
+    %{
+      if fields.name.value ~= '' then
+        local color = "none"
+        local number = 0
+        -- name is supposed to be something like "red player 2" or "blue player 1"
+        local words = {}
+        for word in fields.name.value:gmatch("%w+") do table.insert(words, word) end
+        if #words >= 3 then
+          color = words[1]
+          number = words[3]
+        end
+    }%
     model "wolfgang"
     children [
       Transform {
@@ -191,6 +203,48 @@ PROTO Wolfgang [
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
           Wolfgang_torso_bottomMesh {
+          }
+        ]
+      }
+      Transform {
+        translation -0.065000 0.0 0.043000
+        rotation 0.0 0.0 -1.0 1.5707963
+        children [
+          Shape {
+            appearance WolfgangMarker{
+              textureUrl [ %{='"textures/number_' .. number .. '.png"'}% ]
+                %{ if color == "red" then }%
+                  baseColor  1.0, 0.0, 0.0
+                %{ elseif color == "blue" then }%
+                  baseColor  0.0, 0.0, 1.0
+                %{else}%
+                  baseColor  0.0, 0.0, 0.0
+                 %{ end }%
+            }
+            geometry Box {
+              size 0.15 0.005 0.08
+            }
+          }
+        ]
+      }
+      Transform {
+        translation 0.06000 0.0 0.043000
+        rotation 0.0 0.0 1.0 1.5707963
+        children [
+          Shape {
+            appearance WolfgangMarker{
+              textureUrl [ %{='"textures/number_' .. number .. '.png"'}% ]
+                %{ if color == "red" then }%
+                  baseColor  1.0, 0.0, 0.0
+                %{ elseif color == "blue" then }%
+                  baseColor  0.0, 0.0, 1.0
+                %{else}%
+                  baseColor  0.0, 0.0, 0.0
+                %{ end }%
+              }
+            geometry Box {
+              size 0.15 0.005 0.08
+            }
           }
         ]
       }
@@ -420,6 +474,26 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
+                      }
+                    ]
+                  }
+                  Transform {
+                    translation -0.028 -0.075 -0.023
+                    rotation 0.0 0.0 1.0 1.5707963
+                    children [
+                      Shape {
+                        appearance WolfgangMarker{
+                          %{ if color == "red" then }%
+                            baseColor  1.0, 0.0, 0.0
+                          %{ elseif color == "blue" then }%
+                            baseColor  0.0, 0.0, 1.0
+                          %{else}%
+                            baseColor  0.0, 0.0, 0.0
+                          %{ end }%
+                        }
+                        geometry Box {
+                          size 0.07 0.005 0.04
+                        }
                       }
                     ]
                   }
@@ -937,6 +1011,27 @@ PROTO Wolfgang [
                       }
                     ]
                   }
+                  Transform {
+                    translation 0.0295 -0.075 -0.023
+                    rotation 0.0 0.0 1.0 1.5707963
+                    children [
+                      Shape {
+                        appearance WolfgangMarker{
+                          %{ if color == "red" then }%
+                            baseColor  1.0, 0.0, 0.0
+                          %{ elseif color == "blue" then }%
+                            baseColor  0.0, 0.0, 1.0
+                          %{else}%
+                            baseColor  0.0, 0.0, 0.0
+                          %{ end }%
+                        }
+                        geometry Box {
+                          size 0.07 0.005 0.04
+                        }
+                      }
+                    ]
+                  }
+                  %{end}%
                   Transform {
                     translation -0.014700 -0.010500 -0.023500
                     rotation -0.577350 -0.577352 0.577350 2.094399
