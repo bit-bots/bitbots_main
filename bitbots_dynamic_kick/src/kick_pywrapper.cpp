@@ -105,6 +105,10 @@ moveit::py_bindings_tools::ByteString PyKickWrapper::get_trunk_pose() {
   return moveit::py_bindings_tools::serializeMsg(trunk_pose_str);
 }
 
+bool PyKickWrapper::is_left_kick() {
+  return kick_node_->isLeftKick();
+}
+
 BOOST_PYTHON_MODULE (py_dynamic_kick) {
   using namespace boost::python;
   using namespace bitbots_dynamic_kick;
@@ -114,5 +118,6 @@ BOOST_PYTHON_MODULE (py_dynamic_kick) {
       .def("step", &PyKickWrapper::step)
       .def("get_progress", &PyKickWrapper::get_progress)
       .def("set_params", &PyKickWrapper::set_params)
-      .def("get_trunk_pose", &PyKickWrapper::get_trunk_pose);
+      .def("get_trunk_pose", &PyKickWrapper::get_trunk_pose)
+      .def("is_left_kick", &PyKickWrapper::is_left_kick);
 }
