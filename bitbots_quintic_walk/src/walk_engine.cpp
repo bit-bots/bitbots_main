@@ -208,9 +208,9 @@ void WalkEngine::updatePhase(double dt) {
   //Update the phase
   phase_ += dt * params_.freq;
 
-  // reset to 0 if step complete
+  // reset if step complete
   if (phase_ > 1.0) {
-    phase_ = 0.0;
+    phase_ = phase_ - 1;
   }
 }
 
