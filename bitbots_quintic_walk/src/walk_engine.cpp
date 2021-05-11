@@ -679,7 +679,6 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
           + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
           + params_.trunk_pitch_p_coef_turn * fabs(getNextEuler().z()),
       getNextEuler().z());
-  ROS_WARN_STREAM(support_to_next_.getOrigin().x());
 
   // we set a velocity for the points in yaw since we want to keep the speed in turning direction for next step
   // in roll and pitch, no velocity is set since changes are only minor when speed changes
