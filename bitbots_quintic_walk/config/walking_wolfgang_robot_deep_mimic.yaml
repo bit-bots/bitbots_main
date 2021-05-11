@@ -60,10 +60,10 @@ walking:
     trunk_x_offset_p_coef_turn: 0.0
     # Trunk pitch orientation proportional to forward step
     # (in rad/m)
-    trunk_pitch_p_coef_forward: 4.2
+    trunk_pitch_p_coef_forward: 1.2
     # Trunk pitch orientation proportional to rotation step
     # (in 1)
-    trunk_pitch_p_coef_turn: 0 # -0.05
+    trunk_pitch_p_coef_turn: -0.05
 
     kick_length: 0.09
     kick_vel: 0.2
