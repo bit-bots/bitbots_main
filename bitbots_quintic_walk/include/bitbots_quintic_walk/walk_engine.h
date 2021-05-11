@@ -38,8 +38,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void specialReset(WalkState state,
                     double phase,
-                    tf2::Vector3 linear_orders,
-                    double angular_z,
                     bool walkable_state,
                     bool reset_odometry);
 

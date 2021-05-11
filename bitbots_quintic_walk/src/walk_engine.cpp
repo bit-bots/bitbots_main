@@ -229,13 +229,10 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  specialReset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
+  specialReset(WalkState::IDLE, 0, false, false);
 }
 
-void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
-                              bool walkable_state, bool reset_odometry) {
-  request_.linear_orders = linear_orders;
-  request_.angular_z = angular_z;
+void WalkEngine::specialReset(WalkState state, double phase, bool walkable_state, bool reset_odometry) {
   request_.walkable_state = walkable_state;
   engine_state_ = state;
   time_paused_ = 0.0;
@@ -682,6 +679,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
           + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
           + params_.trunk_pitch_p_coef_turn * fabs(getNextEuler().z()),
       getNextEuler().z());
+  ROS_WARN_STREAM(support_to_next_.getOrigin().x());
 
   // we set a velocity for the points in yaw since we want to keep the speed in turning direction for next step
   // in roll and pitch, no velocity is set since changes are only minor when speed changes
