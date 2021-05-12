@@ -50,7 +50,3 @@ DEF ball RobocupSoccerBall {
 RobocupSoccerField {
   size "kid"
 }
-DEF supervisor_robot hl_supervisor {
-  name "supervisor_robot"
-  controller "<extern>"
-}
