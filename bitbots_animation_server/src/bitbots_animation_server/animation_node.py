@@ -46,6 +46,7 @@ class PlayAnimationAction(object):
         self.action_name = name
         self.hcm_state = 0
         self.current_animation = None
+        self.animation_cache = {}
 
         self.parsed_animation = {}
 
@@ -126,19 +127,22 @@ class PlayAnimationAction(object):
                 exit()
 
     def get_animation_splines(self, animation_name):
-        try:
-            with open(find_animation(animation_name)) as fp:
-                self.parsed_animation = parse(json.load(fp))
-        except IOError:
-            rospy.logwarn("Animation '%s' not found" % animation_name)
-            self._as.set_aborted(False, "Animation not found")
-            return
-        except ValueError:
-            rospy.logwarn("Animation '%s' had an ValueError. Propably there is a syntax error in the animation file. "
-                          "See traceback" % animation_name)
-            traceback.print_exc()
-            self._as.set_aborted(False, "Animation not found")
-            return
+        if animation_name not in self.animation_cache:
+            try:
+                with open(find_animation(animation_name)) as fp:
+                    self.animation_cache[animation_name] = parse(json.load(fp))
+            except IOError:
+                rospy.logwarn("Animation '%s' not found" % animation_name)
+                self._as.set_aborted(False, "Animation not found")
+                return
+            except ValueError:
+                rospy.logwarn("Animation '%s' had an ValueError. Propably there is a syntax error in the animation file. "
+                              "See traceback" % animation_name)
+                traceback.print_exc()
+                self._as.set_aborted(False, "Animation not found")
+                return
+
+        self.parsed_animation = self.animation_cache[animation_name]
         return SplineAnimator(self.parsed_animation, self.current_joint_states)
 
     def check_for_new_goal(self):
