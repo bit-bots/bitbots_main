@@ -286,6 +286,10 @@ geometry_msgs::Pose KickNode::getTrunkPose() {
   return engine_.getTrunkPose();
 }
 
+bool KickNode::isLeftKick() {
+  return engine_.isLeftKick();
+}
+
 }
 
 int main(int argc, char *argv[]) {

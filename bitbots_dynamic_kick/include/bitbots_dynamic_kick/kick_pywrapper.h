@@ -20,6 +20,7 @@ class PyKickWrapper {
   double get_progress();
   void set_params(boost::python::object params);
   moveit::py_bindings_tools::ByteString get_trunk_pose();
+  bool is_left_kick();
 
  private:
   std::shared_ptr<bitbots_dynamic_kick::KickNode> kick_node_;

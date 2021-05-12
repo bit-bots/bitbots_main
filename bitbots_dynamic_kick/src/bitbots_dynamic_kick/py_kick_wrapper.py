@@ -96,3 +96,7 @@ class PyKick:
     def get_trunk_pose(self) -> Pose:
         """Returns the current pose of the trunk relative to the support foot"""
         return from_cpp(self.py_kick_wrapper.get_trunk_pose(), Pose)
+
+    def is_left_kick(self) -> bool:
+        """Returns if the left foot is the currently kicking foot"""
+        return self.py_kick_wrapper.is_left_kick()
