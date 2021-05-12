@@ -3,6 +3,8 @@ import json
 
 import actionlib
 import traceback
+
+import numpy as np
 import rospy
 import time
 
@@ -106,13 +108,13 @@ class PlayAnimationAction(object):
 
                 # animation is finished
                 # tell it to the hcm
-                self.send_animation(False, True, goal.hcm, None)
+                self.send_animation(False, True, goal.hcm, None, None)
                 self._as.publish_feedback(PlayAnimationFeedback(percent_done=100))
                 # we give a positive result
                 self._as.set_succeeded(PlayAnimationResult(True))
                 return
 
-            self.send_animation(first, False, goal.hcm, pose)
+            self.send_animation(first, False, goal.hcm, pose, animator.get_torque(t))
             first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((rospy.get_time() - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = max(0,min(perc_done, 100))
@@ -175,13 +177,12 @@ class PlayAnimationAction(object):
         self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
-    def send_animation(self, first, last, hcm, pose):
+    def send_animation(self, first, last, hcm, pose, torque):
         self.anim_msg.request = False
         self.anim_msg.first = first
         self.anim_msg.last = last
         self.anim_msg.hcm = hcm
         if pose is not None:
-            torque = self.get_torque()
             self.traj_msg.joint_names = []
             self.traj_msg.points = [JointTrajectoryPoint()]
             # We are only using a single point in the trajectory message, since we don't want to send a trajectory, but a single joint goal
@@ -190,21 +191,13 @@ class PlayAnimationAction(object):
             for joint in pose:
                 self.traj_msg.joint_names.append(joint)
                 self.traj_msg.points[0].positions.append(pose[joint])
-                for t in torque:
-                    if joint == t:
-                        self.traj_msg.points[0].effort.append(bool(torque[t]))
+                if torque:
+                    # 1 and 2 should be mapped to 1
+                    self.traj_msg.points[0].effort.append(np.clip((torque[joint]), 0, 1))
             self.anim_msg.position = self.traj_msg
         self.anim_msg.header.stamp = rospy.Time.now()
         self.hcm_publisher.publish(self.anim_msg)
 
-    def get_torque(self):
-        torque = {}
-        if not self.parsed_animation == {}:
-            for kf in self.parsed_animation.keyframes:
-                for t in kf.torque:
-                    torque[t] = kf.torque[t]
-        return torque
-        
 
 if __name__ == "__main__":
     rospy.logdebug("starting animation node")

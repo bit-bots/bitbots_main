@@ -1,4 +1,6 @@
 import math
+
+import numpy as np
 import rospy
 from bitbots_animation_server.animation import Keyframe, Animation
 from bitbots_splines.smooth_spline import SmoothSpline
@@ -10,7 +12,8 @@ class SplineAnimator:
         self.start_time = rospy.get_time()
         self.animation_duration = 0
         self.current_point_time = 0
-        self.spline_dict = {}        
+        self.spline_dict = {}
+        self.torques = {}
 
         #add current joint positions as start
         if current_joint_states is not None:
@@ -36,7 +39,8 @@ class SplineAnimator:
                     self.spline_dict[joint] = SmoothSpline()
                 self.spline_dict[joint].add_point(self.current_point_time, keyframe.goals[joint])
                 self.spline_dict[joint].add_point(self.current_point_time + keyframe.pause, keyframe.goals[joint])                
-            self.current_point_time += keyframe.pause       
+            self.current_point_time += keyframe.pause
+            self.torques[self.current_point_time] = keyframe.torque
 
         # compute the splines
         for joint in self.spline_dict:
@@ -58,7 +62,21 @@ class SplineAnimator:
         for joint in self.spline_dict:
             ret_dict[joint] = math.radians(self.spline_dict[joint].pos(time))
         return ret_dict
-    
+
+    def get_torque(self, current_time):
+        torque = {}
+        if current_time < 0 or current_time > self.animation_duration:
+            return torque
+
+        # find previous time
+        sorted_keys = sorted(self.torques.keys())
+        keyframe_time = sorted_keys[0]
+        for keyframe_time in reversed(sorted_keys):
+            if keyframe_time <= current_time:
+                break
+
+        return self.torques[keyframe_time]
+
     def get_start_time(self):
         return self.start_time
 
