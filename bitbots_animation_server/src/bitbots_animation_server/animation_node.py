@@ -27,7 +27,7 @@ class AnimationNode:
         """Starts a simple action server and waits for requests."""
         # currently we set log level to info since the action server is spamming to much
         log_level = rospy.INFO if rospy.get_param("debug_active", False) else rospy.INFO
-        rospy.init_node("bitbots_animation_server", log_level=log_level, anonymous=False)
+        rospy.init_node("animation", log_level=log_level, anonymous=False)
         rospy.on_shutdown(self.on_shutdown_hook)
         rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
