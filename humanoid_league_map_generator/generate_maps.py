@@ -17,7 +17,11 @@ parser.add_argument('output',
                     help="output folder where the models should be saved")
 parser.add_argument('-p', '--package', dest="package",
                     help="ros package where the models maps be saved")
+parser.add_argument('--no_blur', action='store_true',
+                    help="disable blurring for debug purposes")
 args = parser.parse_args()
+
+do_apply_blur = not args.no_blur
 
 lines = True
 posts = False
@@ -30,21 +34,23 @@ tcrossings = False
 tcrossings_blobs = False
 crosses_blobs = False
 
-penalty_mark = False
-center_point = False
+penalty_mark = True
+center_point = True
+goal_back = True  # Draw goal back area
 
-# 2019 field WM
+# V-HL21 Rules
+line_width = 5
 field_length = 900
 field_width = 600
+goal_depth = 60
 goal_width = 260
 goal_area_length = 100
 goal_area_width = 300
-penalty_area_length = 200
-penalty_area_width = 500
 penalty_mark_distance = 150
 center_circle_diameter = 150
 border_strip_width = 100
-line_width = 5
+penalty_area_length = 200
+penalty_area_width = 500
 
 if args.package:
     import rospkg
@@ -56,9 +62,6 @@ else:
 
 if not os.path.exists(path):
     os.mkdir(path)
-
-# Invert image image to get black on white background
-invert = True
 
 # Choose mark style
 # mark_type = 'point'
@@ -118,18 +121,31 @@ goalpost_left_2 = (border_strip_width,
 goalpost_right_1 = (image_size[1] - goalpost_left_1[0], goalpost_left_1[1])
 goalpost_right_2 = (image_size[1] - goalpost_left_2[0], goalpost_left_2[1])
 
+goal_back_corner_left_1 = (goalpost_left_1[0] - goal_depth,
+                           goalpost_left_1[1])
+goal_back_corner_left_2 = (goalpost_left_2[0] - goal_depth,
+                           goalpost_left_2[1])
 
-def drawCross(img, point, width=5, length=10):
-    # Might need some fine tuning
-    vertical_start = (point[0] - width, point[1] - length)
-    vertical_end = (point[0] + width, point[1] + length)
-    horizontal_start = (point[0] - length, point[1] - width)
-    horizontal_end = (point[0] + length, point[1] + width)
+goal_back_corner_right_1 = (goalpost_right_1[0] + goal_depth,
+                            goalpost_right_1[1])
+goal_back_corner_right_2 = (goalpost_right_2[0] + goal_depth,
+                            goalpost_right_2[1])
+
+
+def drawCross(img, point, width=5, length=15):
+    half_width = width // 2 + width % 2
+    vertical_start = (point[0] - half_width, point[1] - length)
+    vertical_end = (point[0] + half_width, point[1] + length)
+    horizontal_start = (point[0] - length, point[1] - half_width)
+    horizontal_end = (point[0] + length, point[1] + half_width)
     img = cv2.rectangle(img, vertical_start, vertical_end, color, -1)
     img = cv2.rectangle(img, horizontal_start, horizontal_end, color, -1)
 
 
 def blurDistance(image, b=5):
+    if not do_apply_blur:  # Skip blur
+        return image
+
     # Calc distances
     distance_map = 255 - ndimage.morphology.distance_transform_edt(255 - image)  # todo weniger hin und her rechnen
 
@@ -154,6 +170,9 @@ def blurDistance(image, b=5):
 
 
 def blurGaussian(image):
+    if not do_apply_blur:  # Skip blur
+        return image
+
     out_img = cv2.GaussianBlur(image, (99, 99), cv2.BORDER_DEFAULT)
     out_img = cv2.normalize(out_img, None, alpha=0, beta=100, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     out_img = 100 - out_img
@@ -165,7 +184,6 @@ def blurGaussian(image):
 ################################################################################
 
 if lines:
-
     # Create black image in correct size for lines
     img_lines = np.zeros(image_size, np.uint8)
 
@@ -183,7 +201,7 @@ if lines:
         if mark_type == 'point':
             img_lines = cv2.circle(img_lines, middle_point, line_width * 2, color, -1)
         else:
-            drawCross(img_lines, middle_point)
+            drawCross(img_lines, middle_point, line_width)
 
     # Draw penalty marks
     if penalty_mark:
@@ -191,8 +209,8 @@ if lines:
             img_lines = cv2.circle(img_lines, penalty_mark_left, line_width * 2, color, -1)
             img_lines = cv2.circle(img_lines, penalty_mark_right, line_width * 2, color, -1)
         else:
-            drawCross(img_lines, penalty_mark_left)
-            drawCross(img_lines, penalty_mark_right)
+            drawCross(img_lines, penalty_mark_left, line_width)
+            drawCross(img_lines, penalty_mark_right, line_width)
 
     # Draw goal area
     img_lines = cv2.rectangle(img_lines, goal_area_left_start, goal_area_left_end, color, line_width)
@@ -201,6 +219,11 @@ if lines:
     # Draw penalty area
     img_lines = cv2.rectangle(img_lines, penalty_area_left_start, penalty_area_left_end, color, line_width)
     img_lines = cv2.rectangle(img_lines, penalty_area_right_start, penalty_area_right_end, color, line_width)
+
+    # Draw goal back area
+    if goal_back:
+        img_lines = cv2.rectangle(img_lines, goalpost_left_1, goal_back_corner_left_2, color, line_width)
+        img_lines = cv2.rectangle(img_lines, goalpost_right_1, goal_back_corner_right_2, color, line_width)
 
     # blur and write
     cv2.imwrite(os.path.join(path, 'lines.png'), blurDistance(img_lines, 5))
