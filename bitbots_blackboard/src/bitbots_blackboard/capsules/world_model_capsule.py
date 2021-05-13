@@ -170,15 +170,19 @@ class WorldModelCapsule:
         twist_stamped.twist = msg.twist.twist
         if twist_stamped.header.frame_id != self.map_frame:
             try:
+                # point (0,0,0)
                 point_a = PointStamped()
                 point_a.header = msg.header
+                # linear velocity vector
                 point_b = PointStamped()
                 point_b.header = msg.header
                 point_b.point.x = msg.twist.twist.linear.x
                 point_b.point.y = msg.twist.twist.linear.y
                 point_b.point.z = msg.twist.twist.linear.z
+                # transform start and endpoint of velocity vector
                 point_a = self.tf_buffer.transform(point_a, self.map_frame, timeout=rospy.Duration(0.3))
                 point_b = self.tf_buffer.transform(point_b, self.map_frame, timeout=rospy.Duration(0.3))
+                # build new twist using transform vector
                 self.ball_twist_map = TwistStamped()
                 self.ball_twist_map.header = msg.header
                 self.ball_twist_map.header.frame_id = self.map_frame
