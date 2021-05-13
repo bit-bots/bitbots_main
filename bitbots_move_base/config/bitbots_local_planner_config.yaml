@@ -3,6 +3,6 @@ BBPlanner:
   position_accuracy: 0.05
   max_rotation_vel: 0.95
   max_vel_x: 0.15
-  rotation_slow_down_factor: 0.2
-  translation_slow_down_factor: 0.3
+  rotation_slow_down_factor: 0.3
+  translation_slow_down_factor: 0.6
   orient_to_goal_distance: 1

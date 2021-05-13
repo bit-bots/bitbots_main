@@ -1,6 +1,6 @@
 obstacle_layer:
   enabled:                  true
-  voxel_decay:              5.0   # seconds if linear, e^n if exponential
+  voxel_decay:              4   # seconds if linear, e^n if exponential
   decay_model:              0     # 0=linear, 1=exponential, -1=persistent
   voxel_size:               0.05  # meters
   track_unknown_space:      true  # default space is known
@@ -32,5 +32,5 @@ obstacle_layer:
 
 inflation_layer:
   enabled:              true
-  cost_scaling_factor:  10.0  # exponential rate at which the obstacle cost drops off (default: 10)
-  inflation_radius:     0.5  # max. distance from an obstacle at which costs are incurred for planning paths.
+  cost_scaling_factor:  20.0  # exponential rate at which the obstacle cost drops off (default: 10)
+  inflation_radius:     0.4  # max. distance from an obstacle at which costs are incurred for planning paths.
