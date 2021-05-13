@@ -15,8 +15,9 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
     RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
-from move_base_msgs.msg import MoveBaseActionFeedback
+from move_base_msgs.msg import MoveBaseActionFeedback, MoveBaseActionResult
 from actionlib_msgs.msg import GoalID
+from std_msgs.msg import Bool
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
@@ -30,6 +31,7 @@ if __name__ == "__main__":
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_mode", HeadMode, queue_size=10)
     D.blackboard.pathfinding.pathfinding_pub = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
     D.blackboard.pathfinding.pathfinding_cancel_pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
+    D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
