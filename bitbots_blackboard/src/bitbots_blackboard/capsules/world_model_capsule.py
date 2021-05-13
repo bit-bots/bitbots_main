@@ -179,7 +179,7 @@ class WorldModelCapsule:
                 point_a = self.tf_buffer.transform(point_a, self.map_frame, timeout=rospy.Duration(0.3))
                 point_b = self.tf_buffer.transform(point_b, self.map_frame, timeout=rospy.Duration(0.3))
                 self.ball_twist_map = TwistStamped()
-                self.ball_twist_map = msg.header
+                self.ball_twist_map.header = msg.header
                 self.ball_twist_map.header.frame_id = self.map_frame
                 self.ball_twist_map.twist.linear.x = point_b.point.x - point_a.point.x
                 self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
