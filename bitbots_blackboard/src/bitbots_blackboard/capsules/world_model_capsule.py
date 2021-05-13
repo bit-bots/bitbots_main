@@ -54,7 +54,7 @@ class WorldModelCapsule:
         self.ball_map.header.stamp = rospy.Time.now()
         self.ball_map.header.frame_id = self.map_frame
         self.ball_twist_map = None
-        self.ball_twist_lost_time = rospy.Duration(config["ball_twist_lost_time"])
+        self.ball_twist_lost_time = rospy.Duration(self.config["ball_twist_lost_time"])
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
