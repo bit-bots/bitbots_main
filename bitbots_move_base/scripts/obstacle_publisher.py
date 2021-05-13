@@ -10,7 +10,7 @@ from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, P
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_srvs.srv import Empty
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Bool
 
 
 class ObstaclePublisher:
@@ -22,20 +22,50 @@ class ObstaclePublisher:
         rospy.logwarn("Found Service clear_costmap")
 
         rospy.Subscriber("balls_relative", PoseWithCertaintyArray, self._balls_callback, queue_size=1)
+        rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
 
         self.obstacle_publisher = rospy.Publisher("obstacles", PointCloud2, queue_size=10)
 
+        self.publish_timer = rospy.Timer(rospy.Duration(1/20), self.publish_obstacles)
+
+        self.balls = []
+        self.balls_header = None
+        self.ball_active = True
+
+        self.obstacles = []
+        self.obstacles_header = None
+
         rospy.spin()
 
+    def publish_obstacles(self, event):
+
+        # Publish balls
+        if self.ball_active:
+            for ball in self.balls:
+                self.obstacle_publisher.publish(create_cloud_xyz32(self.balls_header, [[ball.pose.pose.position.x, ball.pose.pose.position.y, ball.pose.pose.position.z]]))
+
+        # Publish other obstacles
+        distance = 0.05  # TODO remove after time not new message
+        points = []
+        for o in self.obstacles:
+            points.append([o.pose.pose.pose.position.x, o.pose.pose.pose.position.y, o.pose.pose.pose.position.z])
+            points.append([o.pose.pose.pose.position.x - distance, o.pose.pose.pose.position.y - distance, o.pose.pose.pose.position.z])
+            points.append([o.pose.pose.pose.position.x - distance, o.pose.pose.pose.position.y + distance, o.pose.pose.pose.position.z])
+            points.append([o.pose.pose.pose.position.x + distance, o.pose.pose.pose.position.y - distance, o.pose.pose.pose.position.z])
+            points.append([o.pose.pose.pose.position.x + distance, o.pose.pose.pose.position.y + distance, o.pose.pose.pose.position.z])
+        self.obstacle_publisher.publish(create_cloud_xyz32(self.obstacles_header, points))
+
     def _balls_callback(self, msg):
-        balls = msg.poses
-        for ball in balls:
-            self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, [[ball.pose.pose.position.x, ball.pose.pose.position.y, ball.pose.pose.position.z]]))
+        self.balls = msg.poses
+        self.balls_header = msg.header
 
     def _obstacle_callback(self, msg):
-        self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, \
-            [[o.pose.pose.pose.position.x, o.pose.pose.pose.position.y, o.pose.pose.pose.position.z] for o in msg.obstacles]))
+        self.obstacles = msg.obstacles
+        self.obstacles_header = msg.header
+
+    def _ball_active_callback(self, msg):
+        self.ball_active = msg.data
 
 if __name__ == "__main__":
     ObstaclePublisher()
