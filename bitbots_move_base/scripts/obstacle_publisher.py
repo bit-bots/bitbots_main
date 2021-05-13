@@ -42,7 +42,7 @@ class ObstaclePublisher:
 
         # Publish balls
         if self.ball_active:
-            for ball in self.balls:
+            for ball in self.balls:  # TODO timespamp aware and transfroms
                 self.obstacle_publisher.publish(create_cloud_xyz32(self.balls_header, [[ball.pose.pose.position.x, ball.pose.pose.position.y, ball.pose.pose.position.z]]))
 
         # Publish other obstacles
