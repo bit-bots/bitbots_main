@@ -32,8 +32,8 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
+        self.config = rospy.get_param("behavior/body")
 
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
