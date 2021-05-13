@@ -4,7 +4,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class BallClose(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallClose, self).__init__(blackboard, dsd, parameters)
-        self.ball_close_distance = self.blackboard.config['ball_close_distance']
+        self.ball_close_distance = parameters.get("distance", self.blackboard.config['ball_close_distance'])
 
     def perform(self, reevaluate=False):
         """
