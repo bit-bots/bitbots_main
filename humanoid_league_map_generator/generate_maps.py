@@ -17,11 +17,9 @@ parser.add_argument('output',
                     help="output folder where the models should be saved")
 parser.add_argument('-p', '--package', dest="package",
                     help="ros package where the models maps be saved")
-parser.add_argument('--no_blur', action='store_true',
-                    help="disable blurring for debug purposes")
+parser.add_argument('-b', '--blur', type=float, default=1.0,
+                    help="amount of applied blurring (between 0 and 1)")
 args = parser.parse_args()
-
-do_apply_blur = not args.no_blur
 
 lines = True
 posts = False
@@ -142,12 +140,12 @@ def drawCross(img, point, width=5, length=15):
     img = cv2.rectangle(img, horizontal_start, horizontal_end, color, -1)
 
 
-def blurDistance(image, b=5):
-    if not do_apply_blur:  # Skip blur
-        return image
+def blurDistance(image, blur_factor=args.blur):
+    if blur_factor <= 0:  # Skip blur
+        return (255 - image) // 2.55
 
     # Calc distances
-    distance_map = 255 - ndimage.morphology.distance_transform_edt(255 - image)  # todo weniger hin und her rechnen
+    distance_map = 255 - ndimage.morphology.distance_transform_edt(255 - image)
 
     # Maximum field distance
     maximum_size = math.sqrt(image.shape[0] ** 2 + image.shape[1] ** 2)
@@ -156,7 +154,7 @@ def blurDistance(image, b=5):
     distance_map = (distance_map / maximum_size)
 
     # Magic value please change it
-    beta = b
+    beta = (1 - blur_factor) * 10
 
     # Activation function
     distance_map = distance_map ** (2 * beta)
@@ -169,11 +167,12 @@ def blurDistance(image, b=5):
     return out_img
 
 
-def blurGaussian(image):
-    if not do_apply_blur:  # Skip blur
-        return image
+def blurGaussian(image, blur_factor=args.blur):
+    if blur_factor <= 0:  # Skip blur
+        return (255 - image) // 2.55
 
-    out_img = cv2.GaussianBlur(image, (99, 99), cv2.BORDER_DEFAULT)
+    sigma = blur_factor * 50
+    out_img = cv2.GaussianBlur(image, (99, 99), sigma, borderType=cv2.BORDER_DEFAULT)
     out_img = cv2.normalize(out_img, None, alpha=0, beta=100, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     out_img = 100 - out_img
     return out_img
@@ -226,7 +225,7 @@ if lines:
         img_lines = cv2.rectangle(img_lines, goalpost_right_1, goal_back_corner_right_2, color, line_width)
 
     # blur and write
-    cv2.imwrite(os.path.join(path, 'lines.png'), blurDistance(img_lines, 5))
+    cv2.imwrite(os.path.join(path, 'lines.png'), blurDistance(img_lines))
 
 #############################################################################
 # goalposts
@@ -258,7 +257,7 @@ if fieldboundary:
                                       line_width)
 
     # blur and write
-    cv2.imwrite(os.path.join(path, 'fieldboundary.png'), blurDistance(img_fieldboundary, 5))  # TODO oder gaussian?
+    cv2.imwrite(os.path.join(path, 'fieldboundary.png'), blurDistance(img_fieldboundary))  # TODO oder gaussian?
 
 ############################################################################
 # features
