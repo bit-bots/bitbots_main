@@ -78,6 +78,7 @@ class WorldModelCapsule:
         # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
+        self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
 
     ############
     ### Ball ###
@@ -188,7 +189,7 @@ class WorldModelCapsule:
                 rospy.logwarn(e)
         else:
             self.ball_twist_map = twist_stamped
-
+        self.ball_twist_publisher.publish(self.ball_twist_map)
 
     def forget_ball(self):
         """Forget that we saw a ball"""
