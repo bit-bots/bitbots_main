@@ -1,10 +1,16 @@
 #GoAndKickBallMapGoal
-$AlignedToGoal
-    YES --> $BallKickArea
-        LEFT --> @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
-        RIGHT --> @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
-        FAR -->@LookAtFieldFeatures, @GoToBall + target:map_goal
-    NO -->  @GoToBall + target:map_goal
+$AvoidBall
+    NO --> $BallClose + distance:1
+        YES --> $AlignedToGoal
+            YES --> $BallKickArea
+                LEFT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
+                RIGHT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
+                FAR --> @LookAtBall, @GoToBall + target:map_goal
+            NO --> @LookAtBall, @GoToBall + target:map_goal
+        NO --> @LookAtFieldFeatures, @GoToBall + target:far_map_goal + blocking:false, @AvoidBall + active:true
+    YES --> $ReachedMovebaseGoalPosition + thres:0.2
+        YES --> @AvoidBall + active:false
+        NO --> @LookAtFieldFeatures, @GoToBall + target:far_map_goal
 
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
@@ -159,7 +165,7 @@ $RoleDecider
         FINISHED --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtFieldFeatures, @StandAndWait
     OFFENSE --> $GameStateDecider
-        INITIAL --> @LookAtBall, @StandAndWait
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
         READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> $SecondaryStateDecider
@@ -188,7 +194,7 @@ $RoleDecider
         FINISHED --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     DEFENSE --> $GameStateDecider
-        INITIAL --> @LookAtBall, @StandAndWait
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
         READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> $SecondaryStateDecider
@@ -217,7 +223,7 @@ $RoleDecider
         FINISHED --> @StandAndWait
         NOT_ALLOWED_TO_MOVE --> @LookAtBall, @StandAndWait
     PENALTY --> $GameStateDecider
-        INITIAL --> @LookAtBallPenalty, @StandAndWait
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
         READY --> #PositioningReady
         SET --> @StandAndWait
         PLAYING --> #PenaltyBehavior
