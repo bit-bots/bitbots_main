@@ -74,7 +74,7 @@ class GoToBall(AbstractActionElement):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
 
-        pose_msg.header.frame_id = "map" #self.blackboard.base_footprint_frame
+        pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position = Point(point.x, point.y, 0)
 
