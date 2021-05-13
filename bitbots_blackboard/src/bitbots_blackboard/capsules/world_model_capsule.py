@@ -169,7 +169,21 @@ class WorldModelCapsule:
         twist_stamped.twist = msg.twist.twist
         if twist_stamped.header.frame_id != self.map_frame:
             try:
-                self.ball_twist_map = self.tf_buffer.transform(twist_stamped, self.map_frame, timeout=rospy.Duration(0.3))
+                point_a = PointStamped()
+                point_a.header = msg.header
+                point_b = PointStamped()
+                point_b.header = msg.header
+                point_b.point.x = msg.twist.twist.linear.x
+                point_b.point.y = msg.twist.twist.linear.y
+                point_b.point.z = msg.twist.twist.linear.z
+                point_a = self.tf_buffer.transform(point_a, self.map_frame, timeout=rospy.Duration(0.3))
+                point_b = self.tf_buffer.transform(point_b, self.map_frame, timeout=rospy.Duration(0.3))
+                self.ball_twist_map = TwistStamped()
+                self.ball_twist_map = msg.header
+                self.ball_twist_map.header.frame_id = self.map_frame
+                self.ball_twist_map.twist.linear.x = point_b.point.x - point_a.point.x
+                self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
+                self.ball_twist_map.twist.linear.z = point_b.point.z - point_a.point.z
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
         else:
