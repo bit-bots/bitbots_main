@@ -60,8 +60,10 @@ class GoToBall(AbstractActionElement):
             ball_point = (goal_x, goal_y, goal_angle)
 
         elif 'none' == self.target or 'current_orientation' == self.target:
+            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
             ball_point = (ball_u, ball_v, 0)
         elif 'close' == self.target:
+            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
             ball_point = (ball_u, ball_v, angle)
         else:
