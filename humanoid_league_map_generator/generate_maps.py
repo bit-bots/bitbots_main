@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 
+import argparse
+import math
+import os
+
 import cv2
 import numpy as np
 from scipy import ndimage
-import math
-import os
-import argparse
 
 # Generates .png files for localization
 # Default color scheme: black on white background
 # Scale: 1 px = 1 cm.
 
 parser = argparse.ArgumentParser(description="Generate maps for localization")
-parser.add_argument('output', help="output folder where the models should be saved")
-parser.add_argument('-p', '--package', dest="package", help="ros package where the models maps be saved")
+parser.add_argument('output',
+                    help="output folder where the models should be saved")
+parser.add_argument('-p', '--package', dest="package",
+                    help="ros package where the models maps be saved")
 args = parser.parse_args()
 
 lines = True
@@ -45,6 +48,7 @@ line_width = 5
 
 if args.package:
     import rospkg
+
     # Path to store generated models
     path = os.path.join(rospkg.RosPack().get_path(args.package), args.output)
 else:
@@ -64,36 +68,52 @@ mark_type = 'cross'
 color = (255, 255, 255)  # white
 
 # Size of complete turf field (field with outside borders)
-image_size = (field_width + border_strip_width * 2, field_length + border_strip_width * 2, 3)
+image_size = (field_width + border_strip_width * 2,
+              field_length + border_strip_width * 2,
+              3)
 
 # Calculate important points on the field
 field_outline_start = (border_strip_width, border_strip_width)
-field_outline_end = (field_length + border_strip_width, field_width + border_strip_width)
+field_outline_end = (field_length + border_strip_width,
+                     field_width + border_strip_width)
 
-middle_line_start = (field_length // 2 + border_strip_width, border_strip_width)
-middle_line_end = (field_length // 2 + border_strip_width, field_width + border_strip_width)
+middle_line_start = (field_length // 2 + border_strip_width,
+                     border_strip_width)
+middle_line_end = (field_length // 2 + border_strip_width,
+                   field_width + border_strip_width)
 
-middle_point = (field_length // 2 + border_strip_width, field_width // 2 + border_strip_width)
+middle_point = (field_length // 2 + border_strip_width,
+                field_width // 2 + border_strip_width)
 
-penalty_mark_left = (penalty_mark_distance + border_strip_width, field_width // 2 + border_strip_width)
-penalty_mark_right = (image_size[1] - border_strip_width - penalty_mark_distance, field_width // 2 + border_strip_width)
+penalty_mark_left = (penalty_mark_distance + border_strip_width,
+                     field_width // 2 + border_strip_width)
+penalty_mark_right = (image_size[1] - border_strip_width - penalty_mark_distance,
+                      field_width // 2 + border_strip_width)
 
-goal_area_left_start = (border_strip_width, border_strip_width + field_width // 2 - goal_area_width // 2)
-goal_area_left_end = (
-border_strip_width + goal_area_length, field_width // 2 + border_strip_width + goal_area_width // 2)
+goal_area_left_start = (border_strip_width,
+                        border_strip_width + field_width // 2 - goal_area_width // 2)
+goal_area_left_end = (border_strip_width + goal_area_length,
+                      field_width // 2 + border_strip_width + goal_area_width // 2)
 
-goal_area_right_start = (image_size[1] - goal_area_left_start[0], goal_area_left_start[1])
-goal_area_right_end = (image_size[1] - goal_area_left_end[0], goal_area_left_end[1])
+goal_area_right_start = (image_size[1] - goal_area_left_start[0],
+                         goal_area_left_start[1])
+goal_area_right_end = (image_size[1] - goal_area_left_end[0],
+                       goal_area_left_end[1])
 
-penalty_area_left_start = (border_strip_width, border_strip_width + field_width // 2 - penalty_area_width // 2)
-penalty_area_left_end = (
-border_strip_width + penalty_area_length, field_width // 2 + border_strip_width + penalty_area_width // 2)
+penalty_area_left_start = (border_strip_width,
+                           border_strip_width + field_width // 2 - penalty_area_width // 2)
+penalty_area_left_end = (border_strip_width + penalty_area_length,
+                         field_width // 2 + border_strip_width + penalty_area_width // 2)
 
-penalty_area_right_start = (image_size[1] - penalty_area_left_start[0], penalty_area_left_start[1])
-penalty_area_right_end = (image_size[1] - penalty_area_left_end[0], penalty_area_left_end[1])
+penalty_area_right_start = (image_size[1] - penalty_area_left_start[0],
+                            penalty_area_left_start[1])
+penalty_area_right_end = (image_size[1] - penalty_area_left_end[0],
+                          penalty_area_left_end[1])
 
-goalpost_left_1 = (border_strip_width, border_strip_width + field_width // 2 + goal_width // 2)
-goalpost_left_2 = (border_strip_width, border_strip_width + field_width // 2 - goal_width // 2)
+goalpost_left_1 = (border_strip_width,
+                   border_strip_width + field_width // 2 + goal_width // 2)
+goalpost_left_2 = (border_strip_width,
+                   border_strip_width + field_width // 2 - goal_width // 2)
 
 goalpost_right_1 = (image_size[1] - goalpost_left_1[0], goalpost_left_1[1])
 goalpost_right_2 = (image_size[1] - goalpost_left_2[0], goalpost_left_2[1])
