@@ -13,6 +13,9 @@
     <!-- load the robot description -->
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
 
+    <!-- publish dummy imu -->
+    <node name="dummy_imu" pkg="bitbots_bringup" type="dummy_imu.py" />
+
     <!-- launch motion nodes -->
     <include if="$(arg motion)" file="$(find bitbots_bringup)/launch/motion.launch">
         <arg name="viz" value="true" />
