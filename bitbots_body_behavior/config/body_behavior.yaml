@@ -119,6 +119,9 @@ behavior:
     pathfinding_position_threshold: 0.3
     pathfinding_orientation_threshold: 10
 
+    # don't aim closer to goalpost than this
+    goalpost_safety_distance: 0.1
+
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
 

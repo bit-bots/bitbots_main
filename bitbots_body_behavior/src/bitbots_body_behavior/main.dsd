@@ -7,7 +7,7 @@ $AlignedToGoal
     NO -->  @GoToBall + target:map_goal
 
 #GoAndKickBallDetectionGoal
-$AlignedToGoal
+$AlignedToMoveBaseGoal
     YES --> $BallKickArea
         LEFT --> @Stop, @KickBallDynamic
         RIGHT --> @Stop, @KickBallDynamic
