@@ -41,8 +41,6 @@ class WorldModelCapsule:
         self.odom_frame = rospy.get_param('~odom_frame', 'odom')
         self.map_frame = rospy.get_param('~map_frame', 'map')
         self.ball_frame = rospy.get_param('~ball_frame', 'ball')
-        self.ball_approach_frame = rospy.get_param('~ball_approach_frame', 'ball_approach_frame')
-        self.ball_far_approach_frame = rospy.get_param('~ball_far_approach_frame', 'far_approach_frame')
         self.base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
 
         self.ball = PointStamped()  # The ball in the base footprint frame
