@@ -79,31 +79,18 @@ class ShowWorldModelObjects:
         self.marker_goal_second_post.lifetime = rospy.Duration(self.lifetime_goal)
 
         # init ball kick area markers
-        self.marker_kick_area_right = Marker()
-        self.marker_kick_area_right.id = 3
-        self.marker_kick_area_right.type = Marker.LINE_STRIP
-        self.marker_kick_area_right.scale.x = 0.01
-        self.kick_area_right_color = ColorRGBA()
-        self.kick_area_right_color.a = 0.5
-        self.kick_area_right_color.r = 0.8
-        self.kick_area_right_color.g = 0.8
-        self.kick_area_right_color.b = 0.8
-        self.marker_kick_area_right.color = self.kick_area_right_color
-        self.marker_kick_area_right.lifetime = rospy.Duration(self.lifetime_ball_kick_area)
-        self.marker_kick_area_right.pose.orientation.w = 1.0
-
-        self.marker_kick_area_left = Marker()
-        self.marker_kick_area_left.id = 4
-        self.marker_kick_area_left.type = Marker.LINE_STRIP
-        self.marker_kick_area_left.scale.x = 0.01
-        self.kick_area_left_color = ColorRGBA()
-        self.kick_area_left_color.a = 0.5
-        self.kick_area_left_color.r = 0.8
-        self.kick_area_left_color.g = 0.8
-        self.kick_area_left_color.b = 0.8
-        self.marker_kick_area_left.color = self.kick_area_left_color
-        self.marker_kick_area_left.lifetime = rospy.Duration(self.lifetime_ball_kick_area)
-        self.marker_kick_area_left.pose.orientation.w = 1.0
+        self.marker_kick_area = Marker()
+        self.marker_kick_area.id = 3
+        self.marker_kick_area.type = Marker.LINE_STRIP
+        self.marker_kick_area.scale.x = 0.01
+        self.kick_area_color = ColorRGBA()
+        self.kick_area_color.a = 0.5
+        self.kick_area_color.r = 0.8
+        self.kick_area_color.g = 0.8
+        self.kick_area_color.b = 0.8
+        self.marker_kick_area.color = self.kick_area_color
+        self.marker_kick_area.lifetime = rospy.Duration(self.lifetime_ball_kick_area)
+        self.marker_kick_area.pose.orientation.w = 1.0
 
         # init subscribers
         rospy.Subscriber("debug/viz_ball", PointStamped, self.ball_cb, queue_size=10)
@@ -111,16 +98,11 @@ class ShowWorldModelObjects:
         rospy.Subscriber("debug/viz_ball_kick_area", String, self.kick_area_cb, queue_size=10)
 
         # load kick area info
-        kick_right_max_x = rospy.get_param('behavior/body/right_kick_max_x')
-        kick_right_max_y = rospy.get_param('behavior/body/right_kick_max_y')
-        kick_right_min_x = rospy.get_param('behavior/body/right_kick_min_x')
-        kick_right_min_y = rospy.get_param('behavior/body/right_kick_min_y')
-        kick_left_max_x = rospy.get_param('behavior/body/left_kick_max_x')
-        kick_left_max_y = rospy.get_param('behavior/body/left_kick_max_y')
-        kick_left_min_x = rospy.get_param('behavior/body/left_kick_min_x')
-        kick_left_min_y = rospy.get_param('behavior/body/left_kick_min_y')
-        self.kick_area_info = [[kick_right_max_x, kick_right_max_y, kick_right_min_x, kick_right_min_y],
-                               [kick_left_max_x, kick_left_max_y, kick_left_min_x, kick_left_min_y]]
+        kick_max_x = rospy.get_param('behavior/body/kick_max_x')
+        kick_max_y = rospy.get_param('behavior/body/kick_max_y')
+        kick_min_x = rospy.get_param('behavior/body/kick_min_x')
+        kick_min_y = rospy.get_param('behavior/body/kick_min_y')
+        self.kick_area_info = [kick_max_x, kick_max_y, kick_min_x, kick_min_y]
 
         # init tf listener for ball_kick_area_viz
         self.tfBuffer = tf2_ros.Buffer()
@@ -147,40 +129,30 @@ class ShowWorldModelObjects:
                 continue
 
             # set stamp and frame_id
-            self.marker_kick_area_right.header.stamp = rospy.Time.now()
-            self.marker_kick_area_right.header.frame_id = self.base_footprint_frame
-            self.marker_kick_area_left.header.stamp = rospy.Time.now()
-            self.marker_kick_area_left.header.frame_id = self.base_footprint_frame
+            self.marker_kick_area.header.stamp = rospy.Time.now()
+            self.marker_kick_area.header.frame_id = self.base_footprint_frame
             # set corners of the two square markers
-            kick_areas = []
-            for i in range(2):
-                point1 = Point()
-                point1.x = current_base_link_pose.transform.translation.x + self.kick_area_info[i][0]
-                point1.y = current_base_link_pose.transform.translation.y + self.kick_area_info[i][1]
-                point2 = Point()
-                point2.x = current_base_link_pose.transform.translation.x + self.kick_area_info[i][0]
-                point2.y = current_base_link_pose.transform.translation.y + self.kick_area_info[i][3]
-                point3 = Point()
-                point3.x = current_base_link_pose.transform.translation.x + self.kick_area_info[i][2]
-                point3.y = current_base_link_pose.transform.translation.y + self.kick_area_info[i][3]
-                point4 = Point()
-                point4.x = current_base_link_pose.transform.translation.x + self.kick_area_info[i][2]
-                point4.y = current_base_link_pose.transform.translation.y + self.kick_area_info[i][1]
-                kick_area = [point1, point2, point3, point4, point1]
-                kick_areas.append(kick_area)
-            self.marker_kick_area_right.points = kick_areas[0]
-            self.marker_kick_area_left.points = kick_areas[1]
+            point1 = Point()
+            point1.x = current_base_link_pose.transform.translation.x + self.kick_area_info[0]
+            point1.y = current_base_link_pose.transform.translation.y + self.kick_area_info[1]
+            point2 = Point()
+            point2.x = current_base_link_pose.transform.translation.x + self.kick_area_info[0]
+            point2.y = current_base_link_pose.transform.translation.y + self.kick_area_info[3]
+            point3 = Point()
+            point3.x = current_base_link_pose.transform.translation.x + self.kick_area_info[2]
+            point3.y = current_base_link_pose.transform.translation.y + self.kick_area_info[3]
+            point4 = Point()
+            point4.x = current_base_link_pose.transform.translation.x + self.kick_area_info[2]
+            point4.y = current_base_link_pose.transform.translation.y + self.kick_area_info[1]
+            kick_area = [point1, point2, point3, point4, point1]
+            self.marker_kick_area.points = kick_area
 
             # set color back to grey
             if abs(self.last_received_kick_info - rospy.Time.now()) > rospy.Duration(1):
-                self.marker_kick_area_right.color.r = 0.8
-                self.marker_kick_area_right.color.g = 0.8
-                self.marker_kick_area_right.color.b = 0.8
-                self.marker_kick_area_left.color.r = 0.8
-                self.marker_kick_area_left.color.g = 0.8
-                self.marker_kick_area_left.color.b = 0.8
-            self.marker_publisher.publish(self.marker_kick_area_right)
-            self.marker_publisher.publish(self.marker_kick_area_left)
+                self.marker_kick_area.color.r = 0.8
+                self.marker_kick_area.color.g = 0.8
+                self.marker_kick_area.color.b = 0.8
+            self.marker_publisher.publish(self.marker_kick_area)
 
     def ball_cb(self, msg):
         self.marker_ball.header = msg.header
@@ -203,32 +175,16 @@ class ShowWorldModelObjects:
             self.marker_publisher.publish(self.marker_goal_second_post)
 
     def kick_area_cb(self, msg):
-        # set the marker for the right ball_kick_area to green and the left one to red as the behavior decided the ball
-        # is within this area
-        if msg.data == 'RIGHT':
-            self.marker_kick_area_right.color.r = 0.0
-            self.marker_kick_area_right.color.g = 1.0
-            self.marker_kick_area_right.color.b = 0.0
-            self.marker_kick_area_left.color.r = 1.0
-            self.marker_kick_area_left.color.g = 0.0
-            self.marker_kick_area_left.color.b = 0.0
-        # set the marker for the left ball_kick_area to green and the right one to red as the behavior decided the ball
-        # is within this area
-        elif msg.data == 'LEFT':
-            self.marker_kick_area_left.color.r = 0.0
-            self.marker_kick_area_left.color.g = 1.0
-            self.marker_kick_area_right.color.b = 0.0
-            self.marker_kick_area_right.color.r = 1.0
-            self.marker_kick_area_right.color.g = 0.0
-            self.marker_kick_area_left.color.b = 0.0
-        # set the color of both markers to red as the behavior decided the ball is not within one of the areas
+        # set the marker for the ball_kick_area to green as the behavior decided the ball is within this area
+        if msg.data == 'NEAR':
+            self.marker_kick_area.color.r = 0.0
+            self.marker_kick_area.color.g = 1.0
+            self.marker_kick_area.color.b = 0.0
+        # set the color of the marker to red as the behavior decided the ball is not within the area
         else:
-            self.marker_kick_area_right.color.r = 1.0
-            self.marker_kick_area_right.color.g = 0.0
-            self.marker_kick_area_right.color.b = 0.0
-            self.marker_kick_area_left.color.r = 1.0
-            self.marker_kick_area_left.color.g = 0.0
-            self.marker_kick_area_left.color.b = 0.0
+            self.marker_kick_area.color.r = 1.0
+            self.marker_kick_area.color.g = 0.0
+            self.marker_kick_area.color.b = 0.0
         self.last_received_kick_info = rospy.Time.now()
 
 
