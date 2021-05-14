@@ -47,7 +47,7 @@ class WorldModelCapsule:
 
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
-        self.ball_odom.header.stamp = rospy.Time.now()
+        self.ball_odom.header.stamp = rospy.Time(0)
         self.ball_odom.header.frame_id = self.odom_frame
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
         self.ball_map.header.stamp = rospy.Time(0)
