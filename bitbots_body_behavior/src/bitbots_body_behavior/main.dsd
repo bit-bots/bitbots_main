@@ -157,11 +157,11 @@ $RoleDecider
         ELSE --> $SecondaryStateTeamDecider
             OUR --> $BallSeen
                 YES --> $ClosestToBallNoGoalie
-                    TRUE --> $GameStateDecider
+                    YES --> $GameStateDecider
                         READY --> @LookAtFieldFeatures, @GoToBall + target:map_goal
                         PLAYING --> #GoAndKickBallMapGoal
                         ELSE --> @LookAtFieldFeatures, @StandAndWait
-                    FALSE --> $GameStateDecider
+                    NO --> $GameStateDecider
                         READY --> @LookAtFieldFeatures, @GoToRolePosition
                         PLAYING --> #OffenseBehavior
                         ELSE --> @LookAtFieldFeatures, @StandAndWait
