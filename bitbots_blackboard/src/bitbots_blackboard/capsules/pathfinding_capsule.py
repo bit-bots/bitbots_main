@@ -22,9 +22,6 @@ class PathfindingCapsule:
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
         self.status = -1 # Current status of movebase
-        self.ACTIVE = 1
-        self.CANCELED = 2
-        self.SUCCEEDED = 3
         self.avoid_ball = True
 
     def publish(self, msg):
@@ -71,12 +68,7 @@ class PathfindingCapsule:
         self.current_pose = msg.feedback.base_position
 
     def status_callback(self, msg):
-        if msg.status.status == self.ACTIVE:
-            self.status = self.ACTIVE
-        elif msg.status.status == self.CANCELED:
-            self.status = self.CANCELED
-        elif msg.status.status == self.SUCCEEDED:
-            self.status = self.SUCCEEDED
+        self.status = msg.status.status
 
     def get_goal(self):
         # type: () -> PoseStamped

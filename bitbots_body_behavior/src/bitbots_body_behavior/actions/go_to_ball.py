@@ -8,6 +8,7 @@ from tf.transformations import quaternion_from_euler
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Vector3
 from std_msgs.msg import ColorRGBA
+from actionlib_msgs.msg import GoalStatus
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -97,5 +98,5 @@ class GoToBall(AbstractActionElement):
 
         self.blackboard.pathfinding.approach_marker_pub.publish(approach_marker)
 
-        if self.blackboard.pathfinding.status == self.blackboard.pathfinding.SUCCEEDED or not self.blocking:
+        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED]  or not self.blocking:
             self.pop()
