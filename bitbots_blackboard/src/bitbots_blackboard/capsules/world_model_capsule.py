@@ -82,8 +82,13 @@ class WorldModelCapsule:
         return self.ball_seen_time
 
     def get_ball_position_xy(self):
-        """Return the ball saved in the map frame"""
-        return self.ball_map.point.x, self.ball_map.point.y
+        """Return the ball saved in the map or odom frame"""
+        if self.use_localization and \
+                self.localization_precision_in_threshold():
+            ball = self.ball_map
+        else:
+            ball = self.ball_odom
+        return ball.point.x, ball.point.y
 
     def get_ball_stamped(self):
         return self.ball
