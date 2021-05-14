@@ -106,8 +106,6 @@ walking:
     joint_min_effort: 35
     effort_phase_reset_active: False
 
-    publish_odom_tf: False
-
   pid_trunk_fused_pitch:
     p: 0.25
     i: 0

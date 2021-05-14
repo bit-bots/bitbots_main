@@ -5,7 +5,6 @@ https://github.com/Rhoban/model/
 */
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
-#define M_TAU M_PI * 2
 
 #include <iostream>
 #include <string>
@@ -69,8 +68,14 @@ class WalkNode {
    */
   geometry_msgs::Pose get_left_foot_pose();
 
+  /**
+   * Reset everything to initial idle state.
+   */
   void reset();
 
+  /**
+   * Reset walk to any given state. Necessary for using this as reference in learning.
+   */
   void reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
 
   /**
@@ -160,7 +165,6 @@ class WalkNode {
   double imu_pitch_vel_threshold_;
   double imu_roll_vel_threshold_;
 
-  bool publish_odom_tf_;
   int odom_pub_factor_;
   double last_ros_update_time_;
 
