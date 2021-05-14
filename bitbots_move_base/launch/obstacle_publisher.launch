@@ -1,3 +1,6 @@
 <launch>
-    <node name="obstacle_publisher" pkg="bitbots_move_base" type="obstacle_publisher.py" output="screen"/>
+    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+    <node name="obstacle_publisher" pkg="bitbots_move_base" type="obstacle_publisher.py" output="screen">
+        <param name="map_frame" value="$(arg tf_prefix)map"/>
+    </node>
 </launch>

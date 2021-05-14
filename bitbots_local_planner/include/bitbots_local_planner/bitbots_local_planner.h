@@ -84,6 +84,8 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
   tf2::Stamped<tf2::Transform> goal_pose_;
   // true if the robot should rotate to gobal plan if new global goal set
   tf2::Stamped<tf2::Transform> old_goal_pose_;
+  // The final pose
+  tf2::Stamped<tf2::Transform> end_pose_;
   //for dynamic reconfigure
   dynamic_reconfigure::Server<BBPlannerConfig> *dsrv_;
   //start config
@@ -92,12 +94,10 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
   bitbots_local_planner::BBPlannerConfig config_;
   //true if the goal point is reache and orientation of goal is reached
   bool goal_reached_;
-  //true if the goal point is reache and orientation of goal isn't reached
-  bool stand_at_goal_;
   //publisher where the local plan for visulatation is published
   ros::Publisher local_plan_publisher_;
 
   costmap_2d::Costmap2DROS *costmap_ros_;
 };
-};
+}
 #endif

@@ -6,11 +6,14 @@ ObstaclePublisher
 This node publishes the ball and other obstacles as an obstacle to avoid walking through it
 """
 import rospy
+import tf2_ros as tf2
+import tf2_geometry_msgs
 from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray
+from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_srvs.srv import Empty
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Bool
 
 
 class ObstaclePublisher:
@@ -21,21 +24,79 @@ class ObstaclePublisher:
         self.clearer.wait_for_service()
         rospy.logwarn("Found Service clear_costmap")
 
-        rospy.Subscriber("balls_relative", PoseWithCertaintyArray, self._balls_callback, queue_size=1)
+        self.tf_buffer = tf2.Buffer(rospy.Duration(5))
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+
+        self.map_frame = rospy.get_param('~map_frame', 'map')
+
+        rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, self._balls_callback, queue_size=1)
+        rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
 
         self.obstacle_publisher = rospy.Publisher("obstacles", PointCloud2, queue_size=10)
 
+        self.publish_timer = rospy.Timer(rospy.Duration(1/20), self.publish_obstacles)
+
+        self.ball = None
+        self.ball_active = True
+
+        self.robots = []
+
+        self.robots_storage_time = 10
+
         rospy.spin()
 
+    def publish_obstacles(self, event):
+
+        # Publish balls
+        if self.ball_active and self.ball is not None:
+            self.obstacle_publisher.publish(create_cloud_xyz32(
+                self.ball.header,
+                [[self.ball.pose.pose.position.x, self.ball.pose.pose.position.y, self.ball.pose.pose.position.z]]))
+
+        # Cleanup robot obstacles
+        self.robots = list(filter(
+            lambda robot: abs((rospy.Time.now() - robot.header.stamp).to_sec()) < self.robots_storage_time,
+            self.robots))
+
+        # Enlarge robots
+        width = 0.1
+        points = []
+        for o in self.robots:
+            points.append([o.point.x, o.point.y, o.point.z])
+            points.append([o.point.x - width/2, o.point.y - width/2, o.point.z])
+            points.append([o.point.x - width/2, o.point.y + width/2, o.point.z])
+            points.append([o.point.x + width/2, o.point.y - width/2, o.point.z])
+            points.append([o.point.x + width/2, o.point.y + width/2, o.point.z])
+
+        # Set current timespamp and frame
+        dummy_header = Header()
+        dummy_header.stamp = rospy.Time.now()
+        dummy_header.frame_id = self.map_frame
+
+        self.obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
+
     def _balls_callback(self, msg):
-        balls = msg.poses
-        for ball in balls:
-            self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, [[ball.pose.pose.position.x, ball.pose.pose.position.y, ball.pose.pose.position.z]]))
+        self.ball = msg
 
     def _obstacle_callback(self, msg):
-        self.obstacle_publisher.publish(create_cloud_xyz32(msg.header, \
-            [[o.pose.pose.pose.position.x, o.pose.pose.pose.position.y, o.pose.pose.pose.position.z] for o in msg.obstacles]))
+        try:
+            transform = self.tf_buffer.lookup_transform(self.map_frame,
+                                    msg.header.frame_id,
+                                    msg.header.stamp,
+                                    rospy.Duration(1.0))
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return
+        for o in msg.obstacles:
+            point = PointStamped()
+            point.header = msg.header
+            point.point = o.pose.pose.pose.position
+            point = tf2_geometry_msgs.do_transform_point(point, transform)
+            self.robots.append(point)
+
+    def _ball_active_callback(self, msg):
+        self.ball_active = msg.data
 
 if __name__ == "__main__":
     ObstaclePublisher()
