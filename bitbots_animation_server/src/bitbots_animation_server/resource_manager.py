@@ -163,18 +163,23 @@ class ResourceManager(object):
         returns a list of all animation-paths in the system.
         """
         if not self.files or force_reload:
-            def add_anim(arg, dirnames, fnames):
-                """ Reiht die aufgefundenen Dateien auf,
-                vorausgesetzt es sind .jsons :)
-                """
-                for f in fnames:
+            path = self.find_resource('animations/')
+            for root, _, filenames in os.walk(path):
+                for f in filenames:
                     name, dot, extension = f.rpartition('.')
                     if extension == 'json':
-                        self.files.append(os.path.join(dirnames, f))
+                        self.files.append(os.path.join(root, f))
                         self.names.append(name)
-            path = find_resource('animations/')
-            os.path.walk(path, add_anim, None)
         return self.files
+
+    def find_all_animations_by_name(self, force_reload=False):
+        """Finds all animations in the animations directory.
+
+        returns a dict from animation names to animation paths
+        """
+        if not self.files or force_reload:
+            self.find_all_animations(force_reload)
+        return dict(zip(self.names, self.files))
 
     def find_all_animation_names(self, force_reload=False):
         """ Same as find_all_animations, but returns a sorted set of the animations
@@ -193,8 +198,8 @@ class ResourceManager(object):
 
 _RM = None  # type: ResourceManager
 # Shortcut to search for animations
-def find_animation(*args, **kwargs):
+def find_all_animations_by_name(*args, **kwargs):
     global _RM
     if not _RM:
         _RM = ResourceManager()
-    return _RM.find_animation(*args, **kwargs)
+    return _RM.find_all_animations_by_name(*args, **kwargs)

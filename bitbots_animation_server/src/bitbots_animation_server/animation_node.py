@@ -18,7 +18,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
 
 from bitbots_animation_server.animation import parse
 from sensor_msgs.msg import Imu, JointState
-from bitbots_animation_server.resource_manager import find_animation
+from bitbots_animation_server.resource_manager import find_all_animations_by_name
 from humanoid_league_msgs.msg import RobotControlState
 from bitbots_animation_server.spline_animator import SplineAnimator
 
@@ -49,8 +49,18 @@ class PlayAnimationAction(object):
         self.hcm_state = 0
         self.current_animation = None
         self.animation_cache = {}
-
-        self.parsed_animation = {}
+        all_animations = find_all_animations_by_name()
+        for animation_name, animation_file in all_animations.items():
+            try:
+                with open(animation_file) as fp:
+                    self.animation_cache[animation_name] = parse(json.load(fp))
+            except IOError:
+                rospy.logwarn("Animation '%s' could not be loaded" % animation_name)
+            except ValueError:
+                rospy.logwarn(
+                    "Animation '%s' had a ValueError. Probably there is a syntax error in the animation file. "
+                    "See traceback" % animation_name)
+                traceback.print_exc()
 
         # pre defiened messages for performance
         self.anim_msg = AnimationMsg()
@@ -130,22 +140,12 @@ class PlayAnimationAction(object):
 
     def get_animation_splines(self, animation_name):
         if animation_name not in self.animation_cache:
-            try:
-                with open(find_animation(animation_name)) as fp:
-                    self.animation_cache[animation_name] = parse(json.load(fp))
-            except IOError:
-                rospy.logwarn("Animation '%s' not found" % animation_name)
-                self._as.set_aborted(False, "Animation not found")
-                return
-            except ValueError:
-                rospy.logwarn("Animation '%s' had an ValueError. Propably there is a syntax error in the animation file. "
-                              "See traceback" % animation_name)
-                traceback.print_exc()
-                self._as.set_aborted(False, "Animation not found")
-                return
+            rospy.logwarn("Animation '%s' not found" % animation_name)
+            self._as.set_aborted(False, "Animation not found")
+            return
 
-        self.parsed_animation = self.animation_cache[animation_name]
-        return SplineAnimator(self.parsed_animation, self.current_joint_states)
+        parsed_animation = self.animation_cache[animation_name]
+        return SplineAnimator(parsed_animation, self.current_joint_states)
 
     def check_for_new_goal(self):
         if self._as.is_new_goal_available():
