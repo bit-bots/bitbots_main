@@ -57,7 +57,7 @@ class TeamDataCapsule:
         sorted_times = dict(sorted(self.times_to_ball, key=lambda item: item[1]))
         rank = 1
         for key, time in sorted_times:
-            if not self.team_strategy[key] == Strategy.ROLE_GOALIE or count_goalies:
+            if self.team_strategy[key] != Strategy.ROLE_GOALIE or count_goalies:
                 if own_time < time:
                     return rank
                 rank += 1
