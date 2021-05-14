@@ -14,8 +14,8 @@ class TeamDataCapsule:
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
         self.team_data = TeamData()
-        self.team_strategy = defaultdict(lambda: Strategy.ROLE_IDLING)
-        self.times_to_ball = defaultdict(None)
+        self.team_strategy = dict()
+        self.times_to_ball = dict()
         self.strategy = Strategy()
         self.last_update_team_data = None
         self.strategy_update = None
@@ -29,7 +29,7 @@ class TeamDataCapsule:
         """
         i = 0
         for state in self.team_data.state:
-            if state is TeamData.ROLE_GOALIE: #TODO: should this be Strategy.ROLE_GOALIE?
+            if state == Strategy.ROLE_GOALIE:
                 return (self.team_data.ball_relative[i].x, self.team_data.ball_relative[i].y), self.last_update_team_data
             i += 1
         return None
@@ -56,7 +56,7 @@ class TeamDataCapsule:
         sorted_times = dict(sorted(self.times_to_ball.items(), key=lambda item: item[1]))
         rank = 1
         for key, time in sorted_times.items():
-            if not self.team_strategy[key] == Strategy.ROLE_GOALIE or count_goalies:
+            if self.team_strategy[key] != Strategy.ROLE_GOALIE or count_goalies:
                 if own_time < time:
                     return rank
                 rank += 1
