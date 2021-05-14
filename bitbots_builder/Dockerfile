@@ -1,4 +1,4 @@
-# Use upstream noetic images as base
+# Use upstream ubuntu images as base
 FROM ubuntu:18.04 AS bitbots-builder
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=melodic
@@ -18,7 +18,7 @@ RUN apt-get install -y git sudo dia python3-pip python3-coverage python3-rospkg 
 RUN python3 -m pip install exhale
 RUN python3 -m pip install git+https://github.com/catkin/catkin_tools
 
-# Setup libraries in dedicated workspace and install it into /opt/ros/noetice
+# Setup libraries in dedicated workspace and install it into /opt/ros/melodic
 WORKDIR /lib_ws
 RUN . /opt/ros/melodic/setup.sh && \
     mkdir src && \
@@ -30,7 +30,6 @@ RUN git clone --depth 1 https://github.com/bit-bots/DynamixelSDK.git src/dynamix
 RUN git clone --depth 1 https://github.com/bit-bots/dynamixel-workbench.git src/dynamixel_workbench
 RUN git clone --depth 1 https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git src/dynamixel_workbench_msgs
 RUN git clone --depth 1 https://github.com/bit-bots/rot_conv_lib.git src/rot_conv_lib
-RUN git clone --depth 1 -b noetic-devel https://github.com/SteveMacenski/spatio_temporal_voxel_layer.git src/spatio_temporal_voxel_layer
 RUN rosdep init && rosdep update
 RUN rosdep install -iry --from-paths src
 RUN catkin build
