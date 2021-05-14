@@ -557,7 +557,7 @@ class YoloXIntersectionDetector(YoloDetector):
 
     def get_candidates(self):
         """
-        :return: all found goalpost candidates
+        :return: all found X-Intersection candidates
         """
         return self._yolo.get_candidates("X-Intersection")
 
