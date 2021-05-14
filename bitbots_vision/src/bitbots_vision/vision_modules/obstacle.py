@@ -345,7 +345,7 @@ class ColorObstacleDetector(CandidateFinder):
                     if colorness > self._color_threshold:
                         obstacles.append(obstacle)
 
-            # Get the ignored obstacles
+            # Get the ignored obstacles. This way an obstacle can not be a red and blue obstacle, as this would be filtered.
             ignored_obstacles = itertools.chain.from_iterable(sub_det.get_candidates() for sub_det in self._subtractors)
             # Subtract them from our detections
             self._obstacles =  list(set(obstacles) - set(ignored_obstacles))
