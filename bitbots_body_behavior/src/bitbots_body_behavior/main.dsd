@@ -108,9 +108,9 @@ $LocalizationAvailable
                 YES --> #Positioning
                 NO --> $BallSeen
                     YES --> $BallInDefensiveArea
-                        YES --> #GoAndKickBallAway
+                        YES --> #GoAndKickBallMapGoal
                         NO -->  $BallClose
-                            YES --> #GoAndKickBallAway
+                            YES --> #GoAndKickBallMapGoal
                             NO --> @GoToDefensePosition
                     NO --> @Stop, @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
