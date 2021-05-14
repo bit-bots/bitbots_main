@@ -24,7 +24,7 @@ namespace bitbots_local_planner
         dynamic_reconfigure::Server<BBPlannerConfig>::CallbackType cb = boost::bind(&BBPlanner::reconfigureCB, this, _1, _2);
         dsrv_->setCallback(cb);
 
-        ROS_INFO("BBPlanner: Version 2 Init.");
+        ROS_DEBUG("BBPlanner: Version 2 Init.");
     }
 
     void BBPlanner::reconfigureCB(BBPlannerConfig &config, uint32_t level)
@@ -150,7 +150,7 @@ namespace bitbots_local_planner
     {
         if (goal_reached_)
         {
-            ROS_INFO("BBPlanner: Goal reached.");
+            ROS_DEBUG("BBPlanner: Goal reached.");
         }
         return goal_reached_;
     }
