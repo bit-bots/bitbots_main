@@ -60,14 +60,14 @@ class ObstaclePublisher:
             self.robots))
 
         # Enlarge robots
-        distance = 0.05
+        width = 0.1
         points = []
         for o in self.robots:
             points.append([o.point.x, o.point.y, o.point.z])
-            points.append([o.point.x - distance, o.point.y - distance, o.point.z])
-            points.append([o.point.x - distance, o.point.y + distance, o.point.z])
-            points.append([o.point.x + distance, o.point.y - distance, o.point.z])
-            points.append([o.point.x + distance, o.point.y + distance, o.point.z])
+            points.append([o.point.x - width/2, o.point.y - width/2, o.point.z])
+            points.append([o.point.x - width/2, o.point.y + width/2, o.point.z])
+            points.append([o.point.x + width/2, o.point.y - width/2, o.point.z])
+            points.append([o.point.x + width/2, o.point.y + width/2, o.point.z])
 
         # Set current timespamp and frame
         dummy_header = Header()
