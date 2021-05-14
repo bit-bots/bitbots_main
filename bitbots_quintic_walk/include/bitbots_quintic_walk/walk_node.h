@@ -54,18 +54,29 @@ namespace bitbots_quintic_walk {
 
 class WalkNode {
  public:
-  WalkNode();
+  explicit WalkNode(const std::string ns);
+  bitbots_msgs::JointCommand step(double dt);
   bitbots_msgs::JointCommand step(
       double dt,
       const geometry_msgs::Twist &cmdvel_msg,
       const sensor_msgs::Imu &imu_msg,
-      const sensor_msgs::JointState &jointstate_msg);
+      const sensor_msgs::JointState &jointstate_msg,
+      const bitbots_msgs::FootPressure &pressure_left,
+      const bitbots_msgs::FootPressure &pressure_right);
   /**
    * Small helper method to get foot position via python wrapper
    */
   geometry_msgs::Pose get_left_foot_pose();
 
+  /**
+   * Reset everything to initial idle state.
+   */
   void reset();
+
+  /**
+   * Reset walk to any given state. Necessary for using this as reference in learning.
+   */
+  void reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
@@ -94,6 +105,8 @@ class WalkNode {
   void robotStateCb(humanoid_league_msgs::RobotControlState msg);
 
   WalkEngine *getEngine();
+
+  nav_msgs::Odometry getOdometry();
 
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
@@ -152,13 +165,16 @@ class WalkNode {
   double imu_pitch_vel_threshold_;
   double imu_roll_vel_threshold_;
 
-  bool publish_odom_tf_;
   int odom_pub_factor_;
   double last_ros_update_time_;
 
   int robot_state_;
 
   char current_support_foot_;
+
+  WalkResponse current_response_;
+  WalkResponse current_stabilized_response_;
+  bitbots_splines::JointGoals motor_goals_;
 
   bitbots_quintic_walk_paramsConfig params_;
 
@@ -174,6 +190,10 @@ class WalkNode {
    */
   double max_step_xy_;
   bitbots_quintic_walk::WalkEngine walk_engine_;
+
+  double x_speed_multiplier_;
+  double y_speed_multiplier_;
+  double yaw_speed_multiplier_;
 
   bitbots_msgs::JointCommand command_msg_;
   nav_msgs::Odometry odom_msg_;

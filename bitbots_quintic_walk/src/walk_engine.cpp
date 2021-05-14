@@ -7,7 +7,7 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-WalkEngine::WalkEngine() :
+WalkEngine::WalkEngine(const std::string ns) :
     phase_(0.0),
     last_phase_(0.0),
     pause_requested_(false),
@@ -30,14 +30,14 @@ WalkEngine::WalkEngine() :
   // init dynamic reconfigure
   dyn_reconf_server_ =
       new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
-              "walking/engine"));
+          ns + "walking/engine"));
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
 
   // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
-  right_in_world_.setOrigin(tf2::Vector3{0, -1* params_.foot_distance / 2, 0});
+  right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
   // create splines one time to have no empty splines during first idle phase
   buildStartMovementTrajectories();
 }
@@ -81,7 +81,7 @@ WalkResponse WalkEngine::update(double dt) {
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
-      ROS_WARN("PHASE REST");
+      ROS_WARN_THROTTLE(1, "PHASE REST");
       return createResponse();
     }
   }
@@ -229,39 +229,119 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  request_.linear_orders = {0, 0, 0};
-  request_.angular_z = 0;
-  request_.walkable_state = false;
-  engine_state_ = WalkState::IDLE;
-  phase_ = 0.0;
+  reset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
+}
+
+void WalkEngine::reset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
+                              bool walkable_state, bool reset_odometry) {
+  request_.linear_orders = linear_orders;
+  request_.angular_z = angular_z;
+  request_.walkable_state = walkable_state;
+  engine_state_ = state;
   time_paused_ = 0.0;
+  pause_requested_ = false;
 
-  is_left_support_foot_ = false;
-  support_to_last_.setIdentity();
-  support_to_next_.setIdentity();
-  if (is_left_support_foot_) {
-    support_to_next_.getOrigin()[1] = -params_.foot_distance;
-  } else {
-    support_to_next_.getOrigin()[1] = params_.foot_distance;
-  }
+  if (state == WalkState::IDLE) {
+    // we dont need to build trajectories in idle, just reset everything
+    if (phase < 0.5) {
+      is_left_support_foot_ = false;
+      last_phase_ = 0.49999;
+    } else {
+      is_left_support_foot_ = true;
+      last_phase_ = 1.0;
+    }
+    phase_ = phase;
 
-  //Reset the trunk saved state
-  if (is_left_support_foot_) {
-    trunk_pos_at_foot_change_ = tf2::Vector3(
-        params_.trunk_x_offset,
-        -params_.foot_distance / 2.0 + params_.trunk_y_offset,
-        params_.trunk_height);
+    support_to_last_.setIdentity();
+    support_to_next_.setIdentity();
+    if (is_left_support_foot_) {
+      support_to_next_.getOrigin()[1] = -params_.foot_distance;
+    } else {
+      support_to_next_.getOrigin()[1] = params_.foot_distance;
+    }
+
+    //Reset the trunk saved state
+    if (is_left_support_foot_) {
+      trunk_pos_at_foot_change_ = tf2::Vector3(
+          params_.trunk_x_offset,
+          -params_.foot_distance / 2.0 + params_.trunk_y_offset,
+          params_.trunk_height);
+    } else {
+      trunk_pos_at_foot_change_ = tf2::Vector3(
+          params_.trunk_x_offset,
+          params_.foot_distance / 2.0 + params_.trunk_y_offset,
+          params_.trunk_height);
+    }
+
+    trunk_pos_vel_at_foot_change_.setZero();
+    trunk_pos_acc_at_foot_change_.setZero();
+    trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
+    trunk_orientation_vel_at_last_foot_change_.setZero();
+    trunk_orientation_acc_at_foot_change_.setZero();
+
   } else {
-    trunk_pos_at_foot_change_ = tf2::Vector3(
-        params_.trunk_x_offset,
-        params_.foot_distance / 2.0 + params_.trunk_y_offset,
-        params_.trunk_height);
+
+    if (phase >= 0.5) {
+      is_left_support_foot_ = false;
+      last_phase_ = 0.49999;
+    } else {
+      is_left_support_foot_ = true;
+      last_phase_ = 1.0;
+    }
+    phase_ = phase;
+
+    // build trajectories for this state once to get correct start point for new trajectory
+    if (state == WalkState::WALKING) {
+      buildNormalTrajectories();
+    } else if (state == WalkState::START_MOVEMENT) {
+      buildStartMovementTrajectories();
+    } else if (state == WalkState::START_STEP) {
+      buildStartStepTrajectories();
+    } else if (state == WalkState::STOP_MOVEMENT) {
+      buildStopMovementTrajectories();
+    } else if (state == WalkState::START_STEP) {
+      buildStopStepTrajectories();
+    } else if (state == WalkState::KICK) {
+      buildKickTrajectories();
+    } else {
+      ROS_ERROR("walk reset state not known");
+    }
+
+    // now switch them again
+    if (phase >= 0.5) {
+      is_left_support_foot_ = true;
+      last_phase_ = 1.0;
+    } else {
+      is_left_support_foot_ = false;
+      last_phase_ = 0.49999;
+    }
+
+   if (reset_odometry) {
+     // move left and right in world by foot distance for correct initialization
+     left_in_world_.setIdentity();
+     right_in_world_.setIdentity();
+     left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
+     right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
+   }
+
+    // build trajectories one more time with end state of previously build trajectories as a start
+    if (state == WalkState::WALKING) {
+      buildNormalTrajectories();
+    } else if (state == WalkState::START_MOVEMENT) {
+      buildStartMovementTrajectories();
+    } else if (state == WalkState::START_STEP) {
+      buildStartStepTrajectories();
+    } else if (state == WalkState::STOP_MOVEMENT) {
+      buildStopMovementTrajectories();
+    } else if (state == WalkState::START_STEP) {
+      buildStopStepTrajectories();
+    } else if (state == WalkState::KICK) {
+      buildKickTrajectories();
+    } else {
+      ROS_ERROR("walk reset state not known");
+    }
   }
-  trunk_pos_vel_at_foot_change_.setZero();
-  trunk_pos_acc_at_foot_change_.setZero();
-  trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
-  trunk_orientation_vel_at_last_foot_change_.setZero();
-  trunk_orientation_acc_at_foot_change_.setZero();
+  last_phase_ = phase_;
 }
 
 void WalkEngine::saveCurrentRobotState() {
@@ -356,7 +436,8 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   } else {
     // reset all foot change parameters
     // when we do start step, only transform the y coordinate since we stand still and only move trunk sideward
-    trunk_pos_at_foot_change_ = {0.0, trunk_pos_at_foot_change_.y() - support_to_next_.getOrigin().y(), params_.trunk_height};
+    trunk_pos_at_foot_change_ =
+        {0.0, trunk_pos_at_foot_change_.y() - support_to_next_.getOrigin().y(), params_.trunk_height};
     trunk_pos_vel_at_foot_change_.setZero();
     trunk_pos_acc_at_foot_change_.setZero();
     trunk_orientation_pos_at_last_foot_change_ = {0.0, params_.trunk_pitch, 0.0};
@@ -899,9 +980,9 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
   tmp_diff.getOrigin()[2] = linear_orders.z();
   //Add lateral foot offset
   if (is_left_support_foot_) {
-    tmp_diff.getOrigin()[1] += params_.foot_distance;
+    tmp_diff.getOrigin()[1] = params_.foot_distance;
   } else {
-    tmp_diff.getOrigin()[1] -= params_.foot_distance;
+    tmp_diff.getOrigin()[1] = -1 * params_.foot_distance;
   }
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
@@ -911,8 +992,7 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
       ) {
     tmp_diff.getOrigin()[1] += linear_orders.y();
   }
-  //No change in turn (in order to
-  //rotate around trunk center)
+  //No change in turn (in order to rotate around trunk center)
   tf2::Quaternion quat;
   quat.setRPY(0, 0, angular_z);
   tmp_diff.setRotation(quat);

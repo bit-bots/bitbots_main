@@ -1,7 +1,3 @@
-//
-// Created by nfiedler on 6/13/20.
-//
-
 #include "bitbots_quintic_walk/walk_pywrapper.h"
 
 /* Read a ROS message from a serialized string.
@@ -35,25 +31,33 @@ std::string to_python(const M &msg) {
   return str_msg;
 }
 
-void init_ros() {
-  std::map<std::string, std::string> empty;
-  ros::init(empty, "walking", ros::init_options::AnonymousName);
+void init_ros(std::string ns) {
+  // remap clock
+  std::map<std::string, std::string> remap = {{"/clock", "/" + ns + "clock"}};
+  ros::init(remap, "walking", ros::init_options::AnonymousName);
 }
 
-PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>()) {
+void spin_once() {
+  ros::spinOnce();
+}
+
+PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
   set_robot_state(0);
 }
 
 moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt,
                                                           const std::string &cmdvel_msg,
                                                           const std::string &imu_msg,
-                                                          const std::string &jointstate_msg) {
-  std::string result = to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt,
-                                                                              from_python<geometry_msgs::Twist>(
-                                                                                  cmdvel_msg),
-                                                                              from_python<sensor_msgs::Imu>(imu_msg),
-                                                                              from_python<sensor_msgs::JointState>(
-                                                                                  jointstate_msg)));
+                                                          const std::string &jointstate_msg,
+                                                          const std::string &pressure_left,
+                                                          const std::string &pressure_right) {
+  std::string result =
+      to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt,
+                                                             from_python<geometry_msgs::Twist>(cmdvel_msg),
+                                                             from_python<sensor_msgs::Imu>(imu_msg),
+                                                             from_python<sensor_msgs::JointState>(jointstate_msg),
+                                                             from_python<bitbots_msgs::FootPressure>(pressure_left),
+                                                             from_python<bitbots_msgs::FootPressure>(pressure_right)));
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
@@ -62,8 +66,37 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::get_left_foot_pose() {
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
+moveit::py_bindings_tools::ByteString PyWalkWrapper::get_odom() {
+  std::string result = to_python<nav_msgs::Odometry>(walk_node_->getOdometry());
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+
 void PyWalkWrapper::reset() {
   walk_node_->reset();
+}
+
+void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd_vel, bool reset_odometry) {
+  bitbots_quintic_walk::WalkState walk_state;
+  if (state == 0) {
+    walk_state = bitbots_quintic_walk::WalkState::PAUSED;
+  } else if (state == 1) {
+    walk_state = bitbots_quintic_walk::WalkState::WALKING;
+  } else if (state == 2) {
+    walk_state = bitbots_quintic_walk::WalkState::IDLE;
+  } else if (state == 3) {
+    walk_state = bitbots_quintic_walk::WalkState::START_MOVEMENT;
+  } else if (state == 4) {
+    walk_state = bitbots_quintic_walk::WalkState::STOP_MOVEMENT;
+  } else if (state == 5) {
+    walk_state = bitbots_quintic_walk::WalkState::START_STEP;
+  } else if (state == 6) {
+    walk_state = bitbots_quintic_walk::WalkState::STOP_STEP;
+  } else if (state == 7) {
+    walk_state = bitbots_quintic_walk::WalkState::KICK;
+  } else {
+    ROS_WARN("state in special reset not clear");
+  }
+  walk_node_->reset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
 }
 
 float PyWalkWrapper::get_phase() {
@@ -197,8 +230,6 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
       dyn_conf.pressure_phase_reset_active = string2bool(valstr);
     } else if (keystr == "ground_min_pressure") {
       dyn_conf.ground_min_pressure = std::stof(valstr);
-    } else if (keystr == "phase_reset_phase") {
-      dyn_conf.phase_reset_phase = std::stof(valstr);
     } else if (keystr == "joint_min_effort") {
       dyn_conf.joint_min_effort = std::stof(valstr);
     } else if (keystr == "effort_phase_reset_active") {
@@ -245,12 +276,15 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
         .def("get_left_foot_pose", &PyWalkWrapper::get_left_foot_pose)
         .def("set_robot_state", &PyWalkWrapper::set_robot_state)
         .def("reset", &PyWalkWrapper::reset)
+        .def("special_reset", &PyWalkWrapper::special_reset)
         .def("set_engine_dyn_reconf",
         &PyWalkWrapper::set_engine_dyn_reconf)
         .def("set_node_dyn_reconf",
         &PyWalkWrapper::set_node_dyn_reconf)
         .def("get_phase", &PyWalkWrapper::get_phase)
-        .def("get_freq", &PyWalkWrapper::get_freq);
+        .def("get_freq", &PyWalkWrapper::get_freq)
+        .def("get_odom", &PyWalkWrapper::get_odom);
 
         def("init_ros", &init_ros);
+        def("spin_once", &spin_once);
     }
