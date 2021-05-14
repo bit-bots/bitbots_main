@@ -48,11 +48,14 @@ class ObstaclePublisher:
 
     def publish_obstacles(self, event):
 
+        # Set current timespamp and frame
+        dummy_header = Header()
+        dummy_header.stamp = rospy.Time.now()
+        dummy_header.frame_id = self.map_frame
+
         # Publish balls
         if self.ball_active and self.ball is not None:
-            self.obstacle_publisher.publish(create_cloud_xyz32(
-                self.ball.header,
-                [[self.ball.pose.pose.position.x, self.ball.pose.pose.position.y, self.ball.pose.pose.position.z]]))
+            self.obstacle_publisher.publish(create_cloud_xyz32(dummy_header, [[self.ball.point.x, self.ball.point.y, self.ball.point.z]]))
 
         # Cleanup robot obstacles
         self.robots = list(filter(
@@ -69,15 +72,22 @@ class ObstaclePublisher:
             points.append([o.point.x + width/2, o.point.y - width/2, o.point.z])
             points.append([o.point.x + width/2, o.point.y + width/2, o.point.z])
 
-        # Set current timespamp and frame
-        dummy_header = Header()
-        dummy_header.stamp = rospy.Time.now()
-        dummy_header.frame_id = self.map_frame
-
         self.obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
 
     def _balls_callback(self, msg):
-        self.ball = msg
+        try:
+            transform = self.tf_buffer.lookup_transform(self.map_frame,
+                                    msg.header.frame_id,
+                                    msg.header.stamp,
+                                    rospy.Duration(1.0))
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return
+        point = PointStamped()
+        point.header = msg.header
+        point.point = msg.pose.pose.position
+        point = tf2_geometry_msgs.do_transform_point(point, transform)
+        self.ball = point
 
     def _obstacle_callback(self, msg):
         try:
