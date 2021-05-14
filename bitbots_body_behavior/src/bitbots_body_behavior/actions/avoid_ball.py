@@ -14,3 +14,16 @@ class AvoidBall(AbstractActionElement):
         self.blackboard.pathfinding.avoid_ball = self.active
         self.publish_debug_data("avoid_ball", self.blackboard.pathfinding.avoid_ball)
         self.pop()
+
+
+class AvoidBallActive(AvoidBall):
+    def __init__(self, blackboard, dsd, parameters):
+        parameters['active'] = True
+        super(AvoidBallActive, self).__init__(blackboard, dsd, parameters)
+
+
+class AvoidBallInactive(AvoidBall):
+    def __init__(self, blackboard, dsd, parameters):
+        parameters['active'] = False
+        super(AvoidBallInactive, self).__init__(blackboard, dsd, parameters)
+
