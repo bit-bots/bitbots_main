@@ -10,7 +10,7 @@ $AvoidBall
         NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBall + active:true
     YES --> $ReachedMovebaseGoalPosition + thres:0.2
         YES --> @AvoidBall + active:false
-        NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:distance:%behavior/body/ball_far_approach_dist
+        NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
 
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
