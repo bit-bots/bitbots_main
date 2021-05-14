@@ -19,8 +19,13 @@
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <depend>dynamic_reconfigure</depend>
 
 
   <export>
+    <bitbots_documentation>
+      <language>python3</language>
+      <status>unknown</status>
+    </bitbots_documentation>
   </export>
 </package>

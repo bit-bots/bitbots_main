@@ -1,14 +1,20 @@
 #! /usr/bin/env python3
 
+import numpy as np
 import rospy
 import tf2_ros as tf2
-import numpy as np
-from filterpy.kalman import KalmanFilter
+from dynamic_reconfigure.server import Server
 from filterpy.common import Q_discrete_white_noise
-from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from filterpy.kalman import KalmanFilter
+from geometry_msgs.msg import (PoseWithCovarianceStamped,
+                               TwistWithCovarianceStamped)
+from humanoid_league_msgs.msg import (PoseWithCertainty,
+                                      PoseWithCertaintyArray,
+                                      PoseWithCertaintyStamped)
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertaintyStamped, PoseWithCertainty
+
+from bitbots_ball_filter.cfg import BallFilterConfig
 
 
 class BallFilter:
@@ -18,6 +24,22 @@ class BallFilter:
         """
         rospy.init_node('ball_filter')
 
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(2))
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+
+        # Setup dynamic reconfigure config
+        self.config = {}
+        Server(BallFilterConfig, self._dynamic_reconfigure_callback)  # This also calls the callback once
+
+        rospy.spin()
+
+    def _dynamic_reconfigure_callback(self, config, level):
+        """
+        Callback for the dynamic reconfigure configuration.
+
+        :param config: New _config
+        :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
+        """
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_initialized = False
@@ -25,51 +47,48 @@ class BallFilter:
         self.ball_header = None  # type: Header
         self.last_ball_msg = None  # type: PoseWithCertainty
 
-
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(2))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
-
-        self.filter_rate = rospy.get_param('~filter_rate')
+        self.filter_rate = config['filter_rate']
         self.filter_time_step = 1.0 / self.filter_rate
-        self.filter_reset_duration = rospy.Duration(secs=rospy.get_param('~filter_reset_time'))
+        self.filter_reset_duration = rospy.Duration(secs=config['filter_reset_time'])
 
-        self.filter_frame = rospy.get_param('~filter_frame', 'odom')
+        self.filter_frame = config.get('filter_frame', 'odom')
 
         # adapt velocity factor to frequency
-        self.velocity_factor = rospy.get_param('~velocity_reduction') ** (1 / self.filter_rate)
+        self.velocity_factor = config['velocity_reduction'] ** (1 / self.filter_rate)
 
+        self.process_noise_variance = config['process_noise_variance']
 
         # publishes positions of ball
         self.ball_pose_publisher = rospy.Publisher(
-            rospy.get_param('~ball_position_publish_topic'),
+            config['ball_position_publish_topic'],
             PoseWithCovarianceStamped,
             queue_size=1
         )
 
         # publishes velocity of ball
         self.ball_movement_publisher = rospy.Publisher(
-            rospy.get_param('~ball_movement_publish_topic'),
+            config['ball_movement_publish_topic'],
             TwistWithCovarianceStamped,
             queue_size=1
         )
 
         # publishes ball
         self.ball_publisher = rospy.Publisher(
-            rospy.get_param('~ball_publish_topic'),
+            config['ball_publish_topic'],
             PoseWithCertaintyStamped,
             queue_size=1
         )
 
         # setup subscriber
         self.subscriber = rospy.Subscriber(
-            rospy.get_param('~ball_subscribe_topic'),
+            config['ball_subscribe_topic'],
             PoseWithCertaintyArray,
             self.ball_callback,
             queue_size=1
         )
-
+        self.config = config
         self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
-        rospy.spin()
+        return config
 
     def ball_callback(self, msg: PoseWithCertaintyArray):
         """handles incoming ball messages"""
@@ -149,7 +168,7 @@ class BallFilter:
                              [0, 1]]) * 0.1
 
         # assigning process noise
-        self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=rospy.get_param('~process_noise_variance'), block_size=2, order_by_dim=False)
+        self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False)
 
     def publish_data(self, state: np.array, cov_mat: np.array) -> None:
         """
