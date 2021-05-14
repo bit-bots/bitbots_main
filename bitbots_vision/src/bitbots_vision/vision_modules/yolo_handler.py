@@ -20,7 +20,7 @@ except NameError:
     rospy.logerr("Please install/source OpenVino environment to use the NCS2 YOLO Handler.", logger_name="vision_yolo")
 
 
-class YoloHandler():
+class YoloHandler:
     """
     Defines an abstract YoloHandler, which runs/manages the YOLO inference.
 
@@ -77,8 +77,12 @@ class YoloHandler():
 
         :param class_name: The name of the class you want to query
         """
+        assert class_name in self._class_names, f"Class '{class_name}' is not available for the current yolo model!"
         self.predict()
         return self._candidates[class_name]
+
+    def get_classes(self):
+        return self._class_names
 
 
 class YoloHandlerDarknet(YoloHandler):
@@ -104,7 +108,7 @@ class YoloHandlerDarknet(YoloHandler):
 
         # Setup detector
         self._net = Detector(bytes(configpath, encoding="utf-8"), bytes(weightpath, encoding="utf-8"), 0.5, bytes(datapath, encoding="utf-8"))
-        super(YoloHandlerDarknet, self).__init__(config, model_path)
+        super().__init__(config, model_path)
 
     def _generate_dummy_obj_data_file(self, obj_name_path):
         """
@@ -165,7 +169,7 @@ class YoloHandlerOpenCV(YoloHandler):
         self._net = cv2.dnn.readNet(weightpath, configpath)
         # Set default state to all cached values
         self._image = None
-        super(YoloHandlerOpenCV, self).__init__(config, model_path)
+        super().__init__(config, model_path)
 
     def _get_output_layers(self):
         """
@@ -292,7 +296,7 @@ class YoloHandlerNCS2(YoloHandler):
 
     def __init__(self, config, model_path):
         # Init parent constructor
-        super(YoloHandlerNCS2, self).__init__(config, model_path)
+        super().__init__(config, model_path)
 
         # Create model file paths
         model_xml = os.path.join(model_path, "yolo.xml")
@@ -459,23 +463,20 @@ class YoloHandlerNCS2(YoloHandler):
                     self._candidates[class_name].append(c)
 
 
-class YoloBallDetector(CandidateFinder):
+class YoloDetector(CandidateFinder):
     """
-    A ball detector using the yolo neural network.
+    An abstract object detector using the yolo neural network.
     This layer connects a single YOLO network with multiple candidate finders for the different classes,
-    in this case the ball class.
     """
     def __init__(self, config, yolo):
         """
-        Constructor for the YoloBallDetector.
+        Constructor for the YoloDetector.
 
         :param config: The vision config
         :param yolo: An YoloHandler implementation that runs the yolo network
         """
-        # Set the yolo network
-        self._yolo = yolo
-        # Set the config. Not needed at the moment
         self._config = config
+        self._yolo = yolo
 
     def set_image(self, image):
         """
@@ -484,6 +485,28 @@ class YoloBallDetector(CandidateFinder):
         :param image: current vision image
         """
         self._yolo.set_image(image)
+
+    @abc.abstractmethod
+    def get_candidates(self):
+        """
+        :return: all found candidates
+        """
+        raise NotImplementedError
+
+    def compute(self):
+        """
+        Runs the yolo network
+        """
+        self._yolo.predict()
+
+class YoloBallDetector(YoloDetector):
+    """
+    A ball detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the ball class.
+    """
+    def __init__(self, config, yolo):
+        super().__init__(config, yolo)
 
     def get_candidates(self):
         """
@@ -491,35 +514,14 @@ class YoloBallDetector(CandidateFinder):
         """
         return self._yolo.get_candidates("ball")
 
-    def compute(self):
-        """
-        Runs the yolo network
-        """
-        self._yolo.predict()
-
-class YoloGoalpostDetector(CandidateFinder):
+class YoloGoalpostDetector(YoloDetector):
     """
     A goalpost detector using the yolo neural network.
     This layer connects a single YOLO network with multiple candidate finders for the different classes,
     in this case the goalpost class.
     """
     def __init__(self, config, yolo):
-        """
-        Constructor for the YoloGoalpostDetector.
-
-        :param config: The vision config
-        :param yolo: An YoloHandler implementation that runs the yolo network
-        """
-        self._config = config
-        self._yolo = yolo
-
-    def set_image(self, image):
-        """
-        Set a image for yolo. This is cached.
-
-        :param image: current vision image
-        """
-        self._yolo.set_image(image)
+        super().__init__(config, yolo)
 
     def get_candidates(self):
         """
@@ -527,45 +529,65 @@ class YoloGoalpostDetector(CandidateFinder):
         """
         return self._yolo.get_candidates("goalpost")
 
-    def compute(self):
-        """
-        Runs the yolo network
-        """
-        self._yolo.predict()
 
-
-class YoloDetector(CandidateFinder):
+class YoloRobotDetector(YoloDetector):
     """
-    A goalpost detector using the yolo neural network.
+    A robot detector using the yolo neural network.
     This layer connects a single YOLO network with multiple candidate finders for the different classes,
-    in this case the goalpost class.
+    in this case the robot class.
     """
     def __init__(self, config, yolo):
-        """
-        Constructor for the YoloGoalpostDetector.
-
-        :param config: The vision config
-        :param yolo: An YoloHandler implementation that runs the yolo network
-        """
-        self._config = config
-        self._yolo = yolo
-
-    def set_image(self, image):
-        """
-        Set a image for yolo. This is cached.
-
-        :param image: current vision image
-        """
-        self._yolo.set_image(image)
+        super().__init__(config, yolo)
 
     def get_candidates(self):
         """
-        :return: all found goalpost candidates
+        :return: all found robot candidates
         """
-        return self._yolo.get_candidates("goalpost")
+        return self._yolo.get_candidates("robot")
 
-    def compute(self):
+class YoloXIntersectionDetector(YoloDetector):
+    """
+    A X-Intersection detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the X-Intersection class.
+    """
+    def __init__(self, config, yolo):
+        super().__init__(config, yolo)
+
+    def get_candidates(self):
         """
-        Runs the yolo network
+        :return: all found X-Intersection candidates
         """
-        self._yolo.predict()
+        return self._yolo.get_candidates("X-Intersection")
+
+
+class YoloLIntersectionDetector(YoloDetector):
+    """
+    A L-Intersection detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the L-Intersection class.
+    """
+    def __init__(self, config, yolo):
+        super().__init__(config, yolo)
+
+    def get_candidates(self):
+        """
+        :return: all found L-Intersection candidates
+        """
+        return self._yolo.get_candidates("L-Intersection")
+
+
+class YoloTIntersectionDetector(YoloDetector):
+    """
+    A T-Intersection detector using the yolo neural network.
+    This layer connects a single YOLO network with multiple candidate finders for the different classes,
+    in this case the T-Intersection class.
+    """
+    def __init__(self, config, yolo):
+        super().__init__(config, yolo)
+
+    def get_candidates(self):
+        """
+        :return: all found T-Intersection candidates
+        """
+        return self._yolo.get_candidates("T-Intersection")
