@@ -33,7 +33,7 @@ class BallFilter:
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rospy.Duration(secs=rospy.get_param('~filter_reset_time'))
 
-        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
+        self.filter_frame = rospy.get_param('~filter_frame', 'odom')
 
         # adapt velocity factor to frequency
         self.velocity_factor = rospy.get_param('~velocity_reduction') ** (1 / self.filter_rate)
@@ -82,7 +82,7 @@ class BallFilter:
             self.last_ball_msg = ball
             ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
             try:
-                self.ball = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=rospy.Duration(0.3))
+                self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame, timeout=rospy.Duration(0.3))
                 self.ball_header = msg.header
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
@@ -160,7 +160,7 @@ class BallFilter:
         """
         # position
         pose_msg = PoseWithCovarianceStamped()
-        pose_msg.header.frame_id = self.odom_frame
+        pose_msg.header.frame_id = self.filter_frame
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.pose.pose.position.x = state[0]
         pose_msg.pose.pose.position.y = state[1]
