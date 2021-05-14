@@ -57,21 +57,13 @@ behavior:
     # the duration after which a ball_twist is considered irrelevant.
     ball_twist_lost_time: 2
 
-    # An area in which the ball can be kicked with the right foot
+    # An area in which the ball can be kicked
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
-    right_kick_min_x: 0
-    right_kick_min_y: -0.15
-    right_kick_max_x: 0.3
-    right_kick_max_y: 0
-
-    # An area in which the ball can be kicked with the left foot
-    # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
-    # http://www.ros.org/reps/rep-0103.html#axis-orientation
-    left_kick_min_x: 0
-    left_kick_min_y: 0
-    left_kick_max_x: 0.3
-    left_kick_max_y: 0.15
+    kick_min_x: 0
+    kick_min_y: -0.20
+    kick_max_x: 0.35
+    kick_max_y: 0.20
 
     # defines the radius around the goal (in form of a box)
     # in this area, the goalie will react to the ball.
