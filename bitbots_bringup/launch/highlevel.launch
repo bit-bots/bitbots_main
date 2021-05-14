@@ -57,6 +57,9 @@
     <!-- launch pathplanning -->
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
 
+    <!-- launch world model-->
+    <include file="$(find bitbots_ball_filter)/launch/ball_filter.launch" />
+
     <!-- launch behavior -->
     <group if="$(arg behavior)">
         <include file="$(find bitbots_body_behavior)/launch/behavior.launch">
