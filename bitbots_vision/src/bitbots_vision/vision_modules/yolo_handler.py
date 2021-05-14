@@ -542,7 +542,7 @@ class YoloRobotDetector(YoloDetector):
 
     def get_candidates(self):
         """
-        :return: all found goalpost candidates
+        :return: all found robot candidates
         """
         return self._yolo.get_candidates("robot")
 
