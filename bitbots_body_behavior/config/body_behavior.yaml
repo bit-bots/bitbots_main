@@ -33,6 +33,9 @@ behavior:
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0
 
+    # Time to wait in ready state before moving to role position to give the localization time to converge.
+    ready_wait_time: 4
+
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
     ball_lost_time: 15
