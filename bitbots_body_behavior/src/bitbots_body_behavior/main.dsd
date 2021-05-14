@@ -161,15 +161,17 @@ $RoleDecider
             ELSE --> @LookAtBall, @StandAndWait
         TIMEOUT -->  @StandAndWait
         ELSE --> $SecondaryStateTeamDecider
-            OUR --> $ClosestToBallNoGoalie
-                TRUE --> $GameStateDecider
-                    READY --> @GoToBall
-                    PLAYING --> @KickBallDynamic
-                    ELSE --> @LookAtBall, @StandAndWait
-                FALSE --> $GameStateDecider
-                    READY --> @GoToRolePosition
-                    PLAYING --> #OffenseBehavior
-                    ELSE --> @LookAtBall, @StandAndWait
+            OUR --> $BallSeen
+                YES --> $ClosestToBallNoGoalie
+                    TRUE --> $GameStateDecider
+                        READY --> @GoToBall
+                        PLAYING --> @KickBallDynamic
+                        ELSE --> @LookAtBall, @StandAndWait
+                    FALSE --> $GameStateDecider
+                        READY --> @GoToRolePosition
+                        PLAYING --> #OffenseBehavior
+                        ELSE --> @LookAtBall, @StandAndWait
+                NO --> @SearchBall
             OTHER --> $GameStateDecider
                 READY --> @GoToDefensePosition
                 PLAYING --> #OffenseBehavior
