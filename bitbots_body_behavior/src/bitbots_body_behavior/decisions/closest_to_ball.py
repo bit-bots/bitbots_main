@@ -9,15 +9,15 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
         super(ClosestToBallNoGoalie, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        if self.blackboard.team_data.team_rank_to_ball(self.blackboard.world_model.get_ball_distance() ,count_goalies=False) == 1:
-            return True
-        return False
+        if self.blackboard.team_data.team_rank_to_ball(count_goalies=False) == 1:
+            return "YES"
+        return "NO"
 
 class ClosestToBall(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(ClosestToBall, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        if self.blackboard.team_data.team_rank_to_ball(self.blackboard.world_model.get_ball_distance() ,count_goalies=True) == 1:
-            return True
-        return False
+        if self.blackboard.team_data.team_rank_to_ball(count_goalies=True) == 1:
+            return "YES"
+        return "NO"
