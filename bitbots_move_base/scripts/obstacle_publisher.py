@@ -7,6 +7,7 @@ This node publishes the ball and other obstacles as an obstacle to avoid walking
 """
 import rospy
 from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_srvs.srv import Empty
@@ -21,7 +22,7 @@ class ObstaclePublisher:
         self.clearer.wait_for_service()
         rospy.logwarn("Found Service clear_costmap")
 
-        rospy.Subscriber("balls_relative", PoseWithCertaintyArray, self._balls_callback, queue_size=1)
+        rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, self._balls_callback, queue_size=1)
         rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
 
@@ -29,8 +30,7 @@ class ObstaclePublisher:
 
         self.publish_timer = rospy.Timer(rospy.Duration(1/20), self.publish_obstacles)
 
-        self.balls = []
-        self.balls_header = None
+        self.ball = None
         self.ball_active = True
 
         self.obstacles = []
@@ -41,9 +41,10 @@ class ObstaclePublisher:
     def publish_obstacles(self, event):
 
         # Publish balls
-        if self.ball_active:
-            for ball in self.balls:  # TODO timespamp aware and transfroms
-                self.obstacle_publisher.publish(create_cloud_xyz32(self.balls_header, [[ball.pose.pose.position.x, ball.pose.pose.position.y, ball.pose.pose.position.z]]))
+        if self.ball_active and self.ball is not None:
+            self.obstacle_publisher.publish(create_cloud_xyz32(
+                self.ball.header,
+                [[self.ball.pose.pose.position.x, self.ball.pose.pose.position.y, self.ball.pose.pose.position.z]]))
 
         # Publish other obstacles
         distance = 0.05  # TODO remove after time not new message
@@ -57,8 +58,7 @@ class ObstaclePublisher:
         self.obstacle_publisher.publish(create_cloud_xyz32(self.obstacles_header, points))
 
     def _balls_callback(self, msg):
-        self.balls = msg.poses
-        self.balls_header = msg.header
+        self.ball = msg
 
     def _obstacle_callback(self, msg):
         self.obstacles = msg.obstacles
