@@ -29,7 +29,7 @@ class TeamDataCapsule:
         """
         i = 0
         for state in self.team_data.state:
-            if state is TeamData.ROLE_GOALIE: #TODO: should this be Strategy.ROLE_GOALIE?
+            if state == Strategy.ROLE_GOALIE:
                 return (self.team_data.ball_relative[i].x, self.team_data.ball_relative[i].y), self.last_update_team_data
             i += 1
         return None
