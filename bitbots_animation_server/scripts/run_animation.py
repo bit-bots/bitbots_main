@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf8 -*-
 import actionlib
 from actionlib_msgs.msg import GoalStatus
 import rospy
@@ -52,7 +51,6 @@ def anim_run(anim=None, hcm=False):
 
 if __name__ == '__main__':
     # run with "rosrun bitbots_animation_server run_animation.py NAME"
-    #print("Deactivate evaluation of state machine in hcm befor using this, maybe")
     if len(sys.argv) > 1:
         # Support for _anim:=NAME -style execution for legacy reasons
         if sys.argv[1].startswith('_anim:=') or sys.argv[1].startswith('anim:='):

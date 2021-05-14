@@ -1,11 +1,10 @@
-#-*- coding:utf-8 -*-
 """
 ResourceManager
 ^^^^^^^^^^^^^^^
 
 The ResourceManager module provides functions for file searching in a
 Darwin Project. Thus, it is possible to find resources without knowing
-the currend location in the file system.
+the current location in the file system.
 
 This module provides the global methods :func:`find_resource`,
 :func:`find_anim` and :func:`find` which use a single global instance
@@ -16,10 +15,8 @@ discovered do not have to be searched again.
 import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
-# get an instance of RosPack with the default search paths
 import rospkg as rospkg
 import rospy
-
 
 
 class ResourceManager(object):
@@ -48,7 +45,7 @@ class ResourceManager(object):
         :type filename: String
         :raises: IOError
         :return: absolute path to the file
-        :returntype: String
+        :rtype: String
 
         This method searches in all folders in `path` recursively for the file
         specified in folders + filename. If folders is a list, every item of the list will
@@ -98,7 +95,7 @@ class ResourceManager(object):
         :type filename: String
         :raises: IOError
         :return: Absolute path to the file
-        :returntype: String
+        :rtype: String
 
         Searches the requested resource using :func:`search` with
         folders = name and filename = filename, and saves the result to
@@ -190,7 +187,7 @@ class ResourceManager(object):
         return sorted(set(self.names))
 
     def is_animation_name(self, name, force_reload=False):
-        """Check if a name belongs to a safed animation
+        """Check if a name belongs to a saved animation
         """
         if not self.names or force_reload:
             self.find_all_animations(force_reload=True)

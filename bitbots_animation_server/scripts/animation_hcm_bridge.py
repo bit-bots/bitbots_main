@@ -36,5 +36,6 @@ class AnimationHcmBridge:
 
         self.joint_publisher.publish(self.joint_command_msg)
 
+
 if __name__ == '__main__':
     bridge = AnimationHcmBridge()

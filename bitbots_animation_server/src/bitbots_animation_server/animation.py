@@ -1,14 +1,7 @@
-# -*- coding:utf-8 -*-
-
-import time
-
-import math
-import rospy
-
 class Keyframe:
-    '''
+    """
     A pose which the robot reaches at :attr:`duration` seconds in the future.
-    '''
+    """
 
     def __init__(self, goals, torque={}, duration=1.0, pause=0.0, p={}):
         self.duration = float(duration)
@@ -19,10 +12,10 @@ class Keyframe:
 
 
 class Animation:
-    '''
+    """
     An animation is constructed by an array of goal positions (:class:`Keyframe`).
     Between two keyframes, the goal positions are interpolated by an  :class:`Interpolator`.
-    '''
+    """
 
     def __init__(self, name, keyframes, default_interpolator=None):
         self.name = name
@@ -31,10 +24,10 @@ class Animation:
 
 
 def parse(info):
-    '''
+    """
     This method is parsing an animation from a :class:`dict`
     instance *info*, as created by :func:`as_dict`.
-    '''
+    """
     anim = Animation(info["name"], ())
 
     keyframes = info.get("keyframes", ())
@@ -45,10 +38,10 @@ def parse(info):
 
 
 def as_dict(anim):
-    '''
+    """
     Convert an animation to builtin python types to
     make it serializable to formats like ``json``.
-    '''
+    """
     return {
         "name": anim.name,
         "default_interpolator": anim.default_interpolator.__name__,

@@ -6,15 +6,11 @@ import traceback
 
 import numpy as np
 import rospy
-import time
-
 
 from humanoid_league_msgs.msg import PlayAnimationResult, PlayAnimationFeedback
 from humanoid_league_msgs.msg import PlayAnimationAction as PlayAction
 from humanoid_league_msgs.msg import Animation as AnimationMsg
-from bitbots_animation_server.animation import Keyframe, Animation
 from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
-
 
 from bitbots_animation_server.animation import parse
 from sensor_msgs.msg import Imu, JointState
@@ -22,17 +18,17 @@ from bitbots_animation_server.resource_manager import find_all_animations_by_nam
 from humanoid_league_msgs.msg import RobotControlState
 from bitbots_animation_server.spline_animator import SplineAnimator
 
+
 class AnimationNode:
     def __init__(self):
         """Starts a simple action server and waits for requests."""
-        # currently we set log level to info since the action server is spamming to much
+        # currently we set log level to info since the action server is spamming too much
         log_level = rospy.INFO if rospy.get_param("debug_active", False) else rospy.INFO
         rospy.init_node("animation", log_level=log_level, anonymous=False)
         rospy.on_shutdown(self.on_shutdown_hook)
         rospy.logdebug("Starting Animation Server")
         server = PlayAnimationAction(rospy.get_name())
         rospy.spin()
-
 
     def on_shutdown_hook(self):
         # we got external shutdown, let's still wait a bit, since we propably want to do a shut down animation
@@ -62,10 +58,10 @@ class PlayAnimationAction(object):
                     "See traceback" % animation_name)
                 traceback.print_exc()
 
-        # pre defiened messages for performance
+        # predefined messages for performance
         self.anim_msg = AnimationMsg()
-        # AnimationMsg takes a JointTrajectory message to also be able to process trajectorys. To keep this functionality, we use
-        # this message type, even though we only need a single joint goal in this case.
+        # AnimationMsg takes a JointTrajectory message to also be able to process trajectories. To keep this
+        # functionality, we use this message type, even though we only need a single joint goal in this case.
         self.traj_msg = JointTrajectory()
         self.traj_point = JointTrajectoryPoint()
 
@@ -86,12 +82,12 @@ class PlayAnimationAction(object):
         # publish info to the console for the user
         rospy.loginfo("Request to play animation %s", goal.animation)
 
-        if self.hcm_state != 0 and not goal.hcm:  # 0 means controlable
+        if self.hcm_state != 0 and not goal.hcm:  # 0 means controllable
             # we cant play an animation right now
             # but we send a request, so that we may can soon
             self.send_animation_request()
-            rospy.loginfo("HCM not controlable. Only sended request to make it come controlable.")
-            self._as.set_aborted(text="HCM not controlable. Will now come controlable. Try again later.")
+            rospy.loginfo("HCM not controllable. Only sent request to make it come controllable.")
+            self._as.set_aborted(text="HCM not controllable. Will now become controllable. Try again later.")
             return
 
         animator = self.get_animation_splines(self.current_animation)
@@ -127,14 +123,14 @@ class PlayAnimationAction(object):
             self.send_animation(first, False, goal.hcm, pose, animator.get_torque(t))
             first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((rospy.get_time() - animator.get_start_time()) / animator.get_duration()) * 100)
-            perc_done = max(0,min(perc_done, 100))
+            perc_done = max(0, min(perc_done, 100))
             self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
 
             try:
-                # catch exeption of moving backwarts in time, when restarting simulator
+                # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException:
-                rospy.logwarn("We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
+                rospy.logwarn("We moved backwards in time. This is probably because the simulation was reset.")
             except rospy.exceptions.ROSInterruptException:
                 exit()
 
@@ -185,7 +181,7 @@ class PlayAnimationAction(object):
         if pose is not None:
             self.traj_msg.joint_names = []
             self.traj_msg.points = [JointTrajectoryPoint()]
-            # We are only using a single point in the trajectory message, since we don't want to send a trajectory, but a single joint goal
+            # We are only using a single point in the trajectory message, since we only want to send a single joint goal
             self.traj_msg.points[0].positions = []
             self.traj_msg.points[0].effort = []
             for joint in pose:
