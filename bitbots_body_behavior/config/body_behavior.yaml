@@ -49,6 +49,14 @@ behavior:
     # it is in a reachable area of the robot
     ball_close_distance: 1.5
 
+    # the maximal allowed standard deviation of the ball twist.
+    ball_twist_precision_threshold:
+      x_sdev: 0.3
+      y_sdev: 0.3
+
+    # the duration after which a ball_twist is considered irrelevant.
+    ball_twist_lost_time: 2
+
     # An area in which the ball can be kicked with the right foot
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
@@ -119,6 +127,9 @@ behavior:
 
     # Distance at which the ball is normally approached
     ball_approach_dist: 0.2
+
+    # topics the behavior subscribes to
+    ball_movement_subscribe_topic: 'ball_relative_movement'
 
 
 role: "offense"

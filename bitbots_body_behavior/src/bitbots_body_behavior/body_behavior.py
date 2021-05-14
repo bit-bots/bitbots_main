@@ -11,7 +11,6 @@ Starts the body behavior
 import actionlib
 import os
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
     RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
@@ -22,6 +21,7 @@ from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
+from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
 
 
 if __name__ == "__main__":
@@ -50,6 +50,10 @@ if __name__ == "__main__":
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
     rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, D.blackboard.world_model.pose_callback)
     rospy.Subscriber("robot_state", RobotControlState, D.blackboard.blackboard.robot_state_callback)
+    rospy.Subscriber(
+        rospy.get_param("behavior/body/ball_movement_subscribe_topic"),
+        TwistWithCovarianceStamped,
+        D.blackboard.world_model.ball_twist_callback)
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
 
