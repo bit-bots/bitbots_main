@@ -8,7 +8,6 @@
         <param name="r_toe_frame" value="$(arg tf_prefix)r_toe"/>
         <param name="l_toe_frame" value="$(arg tf_prefix)l_toe"/>
         <param name="approach_frame" value="$(arg tf_prefix)approach_frame"/>
-        <param name="ball_approach_frame" value="$(arg tf_prefix)ball_approach_frame"/>
         <param name="ball_frame" value="$(arg tf_prefix)ball"/>
         <param name="right_post_frame" value="$(arg tf_prefix)right_post"/>
         <param name="left_post_frame" value="$(arg tf_prefix)left_post"/>

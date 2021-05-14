@@ -9,7 +9,6 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
   pnh.param<std::string>("r_toe_frame", r_toe_frame_, "r_toe");
   pnh.param<std::string>("l_toe_frame", l_toe_frame_, "l_toe");
   pnh.param<std::string>("approach_frame", approach_frame_, "approach_frame");
-  pnh.param<std::string>("ball_approach_frame", ball_approach_frame_, "ball_approach_frame");
   pnh.param<std::string>("ball_frame", ball_frame_, "ball");
   pnh.param<std::string>("right_post_frame", right_post_frame_, "right_post");
   pnh.param<std::string>("left_post_frame", left_post_frame_, "left_post");
@@ -141,16 +140,6 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() {
         tf_.transform.translation.y = approach_frame.pose.position.y;
         tf_.transform.translation.z = approach_frame.pose.position.z;
         tf_.transform.rotation = approach_frame.pose.orientation;
-        broadcaster_.sendTransform(tf_);
-
-        // publish ball_approach_frame 10 cm in front of approach_frame
-        tf_.header.frame_id = approach_frame_;
-        tf_.child_frame_id = ball_approach_frame_;
-        tf_.transform.translation.x = 0.10;
-        tf_.transform.translation.y = 0;
-        tf_.transform.translation.z = 0;
-        tf2::Quaternion rotation_baf = tf2::Quaternion(0, 0, 0, 1);
-        tf_.transform.rotation = tf2::toMsg(rotation_baf);
         broadcaster_.sendTransform(tf_);
       }
     } catch (...) {
