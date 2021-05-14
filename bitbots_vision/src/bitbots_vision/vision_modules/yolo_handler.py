@@ -77,7 +77,7 @@ class YoloHandler:
 
         :param class_name: The name of the class you want to query
         """
-        assert class_name in self._class_names, f"Class '{class_name}' is not avalabile for the current yolo model!"
+        assert class_name in self._class_names, f"Class '{class_name}' is not available for the current yolo model!"
         self.predict()
         return self._candidates[class_name]
 
