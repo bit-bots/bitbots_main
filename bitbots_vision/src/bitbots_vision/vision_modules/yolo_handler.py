@@ -470,8 +470,8 @@ class YoloHandlerPytorchYolo(YoloHandler):
         """
         Initialization of PytorchYolo
 
-        :param config:
-        :param model_path:
+        :param config: vision config dict
+        :param model_path: path to the yolo model
         """
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
