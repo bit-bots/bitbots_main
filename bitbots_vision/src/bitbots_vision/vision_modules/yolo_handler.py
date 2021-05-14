@@ -467,7 +467,6 @@ class YoloDetector(CandidateFinder):
     """
     An abstract object detector using the yolo neural network.
     This layer connects a single YOLO network with multiple candidate finders for the different classes,
-    in this case the goalpost class.
     """
     def __init__(self, config, yolo):
         """
