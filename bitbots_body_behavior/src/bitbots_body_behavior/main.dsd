@@ -14,15 +14,13 @@ $AvoidBall
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
     YES --> $BallKickArea
-        LEFT --> @Stop, @LookForward, @KickBallDynamic
-        RIGHT --> @Stop, @LookForward, @KickBallDynamic
+        NEAR --> @Stop, @LookForward, @KickBallDynamic
         FAR --> @GoToBall + target:detection_goal
     NO --> @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
-    LEFT --> @Stop, @LookForward, @KickBallDynamic
-    RIGHT --> @Stop, @LookForward, @KickBallDynamic
+    NEAR --> @Stop, @LookForward, @KickBallDynamic
     FAR --> @GoToBall + target:close
 
 #NoLocalizationPlayerBehavior
@@ -124,8 +122,7 @@ $LocalizationAvailable
 #PenaltyBehavior
 $BallSeen
     YES --> $BallKickArea
-        RIGHT --> @Stop, @LookForward, @KickBallDynamic + type:penalty
-        LEFT --> @Stop, @LookForward, @KickBallDynamic + type:penalty
+        NEAR --> @Stop, @LookForward, @KickBallDynamic + type:penalty
         FAR --> $GoalSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:close
