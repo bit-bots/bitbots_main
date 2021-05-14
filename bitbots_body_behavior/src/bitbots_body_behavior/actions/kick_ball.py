@@ -55,8 +55,8 @@ class KickBallDynamic(AbstractKickAction):
 
                 # TODO evaluate whether the dynamic kick is good enough to actually use the ball position
                 # currently we use a tested left or right kick
-                ball_u, ball_v, ball_frame = self.blackboard.world_model.get_ball_position_uv_ball_approach_frame()
-                goal.header.frame_id = ball_frame  # the ball position is stated in this frame
+                ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+                goal.header.frame_id = self.blackboard.world_model.base_footprint_frame  # the ball position is stated in this frame
                 goal.ball_position.x = ball_u
                 goal.ball_position.y = ball_v
                 goal.ball_position.z = 0
