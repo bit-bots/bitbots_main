@@ -56,13 +56,7 @@
     </group>
     <group unless="$(arg localization)">
         <!-- simulate map frame -->
-        <group if="$(arg sim)">
-            <include file="$(find wolfgang_webots_sim)/launch/fake_localization.launch">
-            </include>
-        </group>
-        <group unless="$(arg sim)">
-            <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" />
-        </group>
+        <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" />
         <!-- publish perfect covariance -->
         <node name="localization_covariance" pkg="bitbots_localization" type="rviz_localization_sim.py" output="screen" />
     </group>
