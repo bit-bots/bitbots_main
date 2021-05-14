@@ -1,15 +1,15 @@
 #GoAndKickBallMapGoal
 $AvoidBall
-    NO --> $BallClose + distance:1
+    NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist
         YES --> $AlignedToGoal
             YES --> $BallKickArea
                 LEFT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
                 RIGHT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
                 FAR --> @LookAtBall, @GoToBall + target:map_goal
             NO --> @LookAtBall, @GoToBall + target:map_goal
-        NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBall + active:true
-    YES --> $ReachedMovebaseGoalPosition + thres:0.2
-        YES --> @AvoidBall + active:false
+        NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBallActive
+    YES --> $ReachedMovebaseGoalPosition + thres:%behavior/body/ball_far_approach_position_thresh
+        YES --> @AvoidBallInactive
         NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
 
 #GoAndKickBallDetectionGoal
@@ -44,12 +44,12 @@ $BallSeen
 
 #Positioning
 $LocalizationAvailable
-    YES --> @LookAtFieldFeatures, @AvoidBall, @GoToRolePosition
+    YES --> @LookAtFieldFeatures, @AvoidBallActive, @GoToRolePosition
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
 #PositioningReady
 $LocalizationAvailable
-    YES --> @LookAtFieldFeatures, @AvoidBall, @GoToRolePosition
+    YES --> @LookAtFieldFeatures, @AvoidBallActive, @GoToRolePosition
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
 
 #GoalieBehavior
