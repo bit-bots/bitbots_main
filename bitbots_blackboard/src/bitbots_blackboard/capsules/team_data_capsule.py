@@ -50,13 +50,12 @@ class TeamDataCapsule:
         Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
         For example, we do not want our goalie to perform a throw in against our empty goal.
 
-        :param own_ball_relative: the ball relative to this robot
         :return the rank from 1 (nearest) to the number of robots
         """
         own_time = self.team_data.time_to_position_at_ball
-        sorted_times = dict(sorted(self.times_to_ball, key=lambda item: item[1]))
+        sorted_times = dict(sorted(self.times_to_ball.items(), key=lambda item: item[1]))
         rank = 1
-        for key, time in sorted_times:
+        for key, time in sorted_times.items():
             if not self.team_strategy[key] == Strategy.ROLE_GOALIE or count_goalies:
                 if own_time < time:
                     return rank
