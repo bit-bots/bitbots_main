@@ -54,7 +54,7 @@ namespace bitbots_quintic_walk {
 
 class WalkNode {
  public:
-  WalkNode(const std::string ns);
+  explicit WalkNode(const std::string ns);
   bitbots_msgs::JointCommand step(double dt);
   bitbots_msgs::JointCommand step(
       double dt,
