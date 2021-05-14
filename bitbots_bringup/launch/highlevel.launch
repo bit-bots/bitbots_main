@@ -9,6 +9,7 @@
     <arg name="transformer" default="true"/>
     <arg name="use_game_settings" default="true"/>
     <arg name="vision" default="true"/>
+    <arg name="ball_filter" default="true"/>
     <arg name="vision_debug" default="false" doc="activates the debug output of the vision pipeline"/>
 
 
@@ -35,10 +36,16 @@
         </include>
     </group>
 
+    <!-- launch teamcom -->
     <group if="$(arg teamcom)">
         <include file="$(find humanoid_league_team_communication)/launch/team_comm.launch">
             <arg name="use_game_settings" value="$(arg use_game_settings)"/>
         </include>
+    </group>
+
+    <!-- launch ball_filter -->
+    <group if="$(arg ball_filter)">
+        <include file="$(find bitbots_ball_filter)/launch/ball_filter.launch"/>
     </group>
 
     <!-- launch localization or fake localization -->
@@ -56,9 +63,6 @@
 
     <!-- launch pathplanning -->
     <include file="$(find bitbots_move_base)/launch/pathfinding_move_base.launch" />
-
-    <!-- launch world model-->
-    <include file="$(find bitbots_ball_filter)/launch/ball_filter.launch" />
 
     <!-- launch behavior -->
     <group if="$(arg behavior)">
