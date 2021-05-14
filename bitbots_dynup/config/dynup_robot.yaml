@@ -3,12 +3,13 @@ dynup:
   engine_rate: 240
 
   # end pose
-  arm_extended_length:0.3
+  arm_extended_length: 0.3
   trunk_height: 0.4
   trunk_pitch: 0
   foot_distance: 0.2
   trunk_x_final: -0.025
-  hand_walkready_pitch: -60
+  hand_walkready_pitch: -25.0
+  hand_walkready_height: -0.35
 
   # Back
   leg_min_length_back: 0.22
@@ -51,6 +52,8 @@ dynup:
   # Stabilier
   stabilizing: True
   minimal_displacement: False
+  stable_threshold: 0.05
+  stable_duration: 100
 
   # Visualizer
   spline_smoothness: 100

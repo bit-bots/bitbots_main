@@ -1,3 +1,5 @@
+#define M_TAU M_PI * 2
+
 #include "bitbots_quintic_walk/walk_node.h"
 
 #include <memory>
@@ -212,9 +214,9 @@ void WalkNode::reset() {
   stabilizer_.reset();
 }
 
-void WalkNode::specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry) {
+void WalkNode::reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry) {
   cmdVelCb(cmd_vel);
-  walk_engine_.specialReset(state, phase, true, reset_odometry);
+  walk_engine_.reset(state, phase, true, reset_odometry);
   stabilizer_.reset();
 }
 

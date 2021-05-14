@@ -28,7 +28,7 @@ namespace bitbots_quintic_walk {
  */
 class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
-  WalkEngine(const std::string ns);
+  explicit WalkEngine(const std::string ns);
 
   // methods from abstract engine class
   WalkResponse update(double dt) override;
@@ -36,10 +36,10 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   void reset() override;
   int getPercentDone() const override;
 
-  void specialReset(WalkState state,
-                    double phase,
-                    bool walkable_state,
-                    bool reset_odometry);
+  /**
+   * Resets the engine to any given state. Necessary for using it as reference in learning.
+   */
+  void reset(WalkState state, double phase, bool walkable_state, bool reset_odometry);
 
   /**
    * Return current walk phase between 0 and 1

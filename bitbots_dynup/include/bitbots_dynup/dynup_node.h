@@ -81,6 +81,8 @@ class DynUpNode {
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
+  DynUpConfig params_;
+  int stable_duration_;
   int engine_rate_;
   double last_ros_update_time_;
   bool debug_;

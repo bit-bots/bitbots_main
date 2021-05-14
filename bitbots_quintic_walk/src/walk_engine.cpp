@@ -229,10 +229,10 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  specialReset(WalkState::IDLE, 0, false, false);
+  reset(WalkState::IDLE, 0.0, false, false);
 }
 
-void WalkEngine::specialReset(WalkState state, double phase, bool walkable_state, bool reset_odometry) {
+void WalkEngine::reset(WalkState state, double phase, bool walkable_state, bool reset_odometry) {
   request_.walkable_state = walkable_state;
   engine_state_ = state;
   time_paused_ = 0.0;

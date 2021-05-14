@@ -79,6 +79,11 @@ class KickNode {
    * Get the current pose of the trunk, relative to the support foot
    */
   geometry_msgs::Pose getTrunkPose();
+
+  /**
+   * Whether the left foot is the current kicking foot
+   */
+  bool isLeftKick();
  private:
   ros::NodeHandle node_handle_;
   ros::Publisher joint_goal_publisher_;

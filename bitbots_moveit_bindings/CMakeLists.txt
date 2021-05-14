@@ -4,6 +4,8 @@ project(bitbots_moveit_bindings)
 find_package(catkin REQUIRED COMPONENTS
     moveit_core
     moveit_ros_planning
+    moveit_ros_planning_interface
+    bitbots_docs
 )
 
 find_package(PythonLibs COMPONENTS Interpreter Development)
@@ -18,6 +20,8 @@ catkin_package(CATKIN_DEPENDS
 )
 
 catkin_python_setup()
+
+enable_bitbots_docs()
 
 add_library(bitbots_moveit_bindings SHARED src/bitbots_moveit_bindings.cpp)
 target_include_directories(bitbots_moveit_bindings PRIVATE ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})

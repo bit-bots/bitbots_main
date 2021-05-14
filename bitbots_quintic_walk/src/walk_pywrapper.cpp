@@ -107,7 +107,7 @@ void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd
   } else {
     ROS_WARN("state in special reset not clear");
   }
-  walk_node_->specialReset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
+  walk_node_->reset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
 }
 
 float PyWalkWrapper::get_phase() {

@@ -57,11 +57,11 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   engine_rate_ = config.engine_rate;
   debug_ = config.display_debug;
 
-  DynUpConfig params = config;
+  params_ = config;
 
-  engine_.setParams(params);
+  engine_.setParams(params_);
 
-  stabilizer_.useStabilizing(config.stabilizing);
+  stabilizer_.setParams(params_);
 
   ik_.useStabilizing(config.stabilizing);
 
@@ -150,7 +150,13 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
         if(goals.first.empty()) {
           failed_tick_counter++;
         }
-        if (feedback.percent_done >= 100) {
+        if(stabilizer_.isStable()) {
+            stable_duration_ += 1;
+        }
+        else {
+            stable_duration_ = 0;
+        }
+        if(feedback.percent_done >= 100 &&(stable_duration_ >= params_.stable_duration || !(params_.stabilizing))) {
           ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
           break;
         }

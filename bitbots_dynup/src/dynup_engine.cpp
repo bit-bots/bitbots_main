@@ -150,6 +150,7 @@ void DynupEngine::publishArrowMarker(std::string name_space,
 }
 
 DynupResponse DynupEngine::update(double dt) {
+  time_ = std::min(time_, duration_);
   // TODO what happens when splines for foot and trunk are not present?
   /* Get should-be pose from planned splines (every axis) at current time */
   tf2::Transform l_foot_pose = l_foot_spline_.getTfTransform(time_);
@@ -191,7 +192,7 @@ double DynupEngine::calcFrontSplines() {
   /*
   calculates splines for front up
   */
-  
+
   /*
    * Pose 0: Extend hands to the side, for later turning
    */
@@ -561,13 +562,13 @@ double DynupEngine::calcRiseSplines(double time) {
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, 0);
+  l_hand_spline_.z()->addPoint(time, params_.hand_walkready_height);
   l_hand_spline_.roll()->addPoint(time, 0);
   l_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, 0);
+  r_hand_spline_.z()->addPoint(time, params_.hand_walkready_height);
   r_hand_spline_.roll()->addPoint(time, 0);
   r_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
   r_hand_spline_.yaw()->addPoint(time, 0);
@@ -675,7 +676,7 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
                                         params_.time_full_squat_legs) ||
-           (direction_ == 2) || (direction_ == 3)) && getPercentDone() < 99;
+           (direction_ == 2) || (direction_ == 3));
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
