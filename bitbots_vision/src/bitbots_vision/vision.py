@@ -311,7 +311,7 @@ class Vision:
                 self._ball_detector = fcnn_handler.FcnnHandler(
                     config,
                     self._ball_fcnn)
-                # If we don't use YOLO set the conventional goalpost detector.
+                # When using the FCNN, set the conventional goalpost detector.
                 self._goalpost_detector = obstacle.ColorObstacleDetector(
                     self._obstacle_detector,
                     self._white_color_detector,
