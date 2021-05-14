@@ -46,25 +46,22 @@ class GoToBall(AbstractActionElement):
 
             goal_angle = math.atan2(y_dist, x_dist)
 
-            ball_x, ball_y = self.blackboard.world_model.get_ball_position_uv()
-            goal_x = ball_x + math.cos(goal_angle) * self.distance
-            goal_y = ball_y + math.sin(goal_angle) * self.distance
+            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+            goal_u = ball_u + math.cos(goal_angle) * self.distance
+            goal_v = ball_v + math.sin(goal_angle) * self.distance
 
-            ball_point = (goal_x, goal_y, goal_angle, self.blackboard.world_model.odom_frame)
+            ball_point = (goal_u, goal_v, goal_angle, self.blackboard.world_model.base_footprint_frame)
 
         elif 'none' == self.target or 'current_orientation' == self.target:
 
-            ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
-            ball_point = (ball_x, ball_y, 0, self.blackboard.world_model.odom_frame)
+            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+            ball_point = (ball_u, ball_v, 0, self.blackboard.world_model.base_footprint_frame)
 
         elif 'close' == self.target:
 
             ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
-
-            ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
-
-            ball_point = (ball_x, ball_y, angle, self.blackboard.world_model.odom_frame)
+            ball_point = (ball_u, ball_v, angle, self.blackboard.world_model.base_footprint_frame)
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
             return
