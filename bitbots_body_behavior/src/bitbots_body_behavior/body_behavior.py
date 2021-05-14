@@ -11,15 +11,17 @@ Starts the body behavior
 import actionlib
 import os
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
     RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
-from move_base_msgs.msg import MoveBaseActionFeedback
+from move_base_msgs.msg import MoveBaseActionFeedback, MoveBaseActionResult
 from actionlib_msgs.msg import GoalID
+from std_msgs.msg import Bool
+from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
+from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
 
 
 if __name__ == "__main__":
@@ -30,6 +32,8 @@ if __name__ == "__main__":
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_mode", HeadMode, queue_size=10)
     D.blackboard.pathfinding.pathfinding_pub = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
     D.blackboard.pathfinding.pathfinding_cancel_pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
+    D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
+    D.blackboard.pathfinding.approach_marker_pub = rospy.Publisher("debug/approach_point", Marker, queue_size=10)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
@@ -46,7 +50,12 @@ if __name__ == "__main__":
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
     rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, D.blackboard.world_model.pose_callback)
     rospy.Subscriber("robot_state", RobotControlState, D.blackboard.blackboard.robot_state_callback)
+    rospy.Subscriber(
+        rospy.get_param("behavior/body/ball_movement_subscribe_topic"),
+        TwistWithCovarianceStamped,
+        D.blackboard.world_model.ball_twist_callback)
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
+    rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
 
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():

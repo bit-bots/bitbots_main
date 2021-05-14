@@ -1,0 +1,17 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_blackboard'
+depends:
+- bitbots_msgs
+- geometry_msgs
+- humanoid_league_msgs
+- rospy
+- tf2
+- tf2_geometry_msgs
+exec-path: bitbots_behavior-master/bitbots_blackboard
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_blackboard'
+uri: https://github.com/bit-bots/bitbots_behavior/archive/refs/heads/master.tar.gz

@@ -17,11 +17,16 @@ class PathfindingCapsule:
         self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
+        self.ball_obstacle_active_pub = None
+        self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
+        self.status = -1 # Current status of movebase
+        self.avoid_ball = True
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
+        self.status = -1
         map_goal = self.transform_goal_to_map(msg)
         if map_goal:
             self.goal = map_goal
@@ -61,6 +66,9 @@ class PathfindingCapsule:
     def feedback_callback(self, msg):
         # type: (PoseStamped) -> None
         self.current_pose = msg.feedback.base_position
+
+    def status_callback(self, msg):
+        self.status = msg.status.status
 
     def get_goal(self):
         # type: () -> PoseStamped
