@@ -18,6 +18,7 @@ class PathfindingCapsule:
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.ball_obstacle_active_pub = None
+        self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
         self.status = -1 # Current status of movebase
