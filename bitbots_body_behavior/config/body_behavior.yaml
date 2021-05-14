@@ -132,7 +132,6 @@ behavior:
     ball_movement_subscribe_topic: 'ball_relative_movement'
 
 
-
 role: "offense"
 
 # Field measurements in meters
