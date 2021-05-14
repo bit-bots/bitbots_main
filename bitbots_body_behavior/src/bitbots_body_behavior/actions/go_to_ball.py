@@ -20,7 +20,7 @@ class GoToBall(AbstractActionElement):
             self.target = parameters['target']
 
         self.blocking = parameters.get('blocking', True)
-        self.distance = parameters.get('distance', 0.2)
+        self.distance = parameters.get('distance', self.blackboard.config['ball_approach_dist'])
 
 
     def perform(self, reevaluate=False):
@@ -60,7 +60,7 @@ class GoToBall(AbstractActionElement):
             angle = math.atan2(ball_v, ball_u)
 
             ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
-            
+
             ball_point = (ball_x, ball_y, angle, self.blackboard.world_model.odom_frame)
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
