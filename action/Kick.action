@@ -1,5 +1,5 @@
 # goal definition
-# header.stamp should be base_footprint and the positions and directions should be in that frame
+# the kick tries to kick the ball at ball_position, wherever that position may be
 std_msgs/Header header
 geometry_msgs/Point ball_position
 geometry_msgs/Quaternion kick_direction
