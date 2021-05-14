@@ -3,8 +3,8 @@ $AvoidBall
     NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist
         YES --> $AlignedToGoal
             YES --> $BallKickArea
-                LEFT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
-                RIGHT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @KickBallDynamic
+                LEFT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @LookForward, @KickBallDynamic
+                RIGHT --> @Stop, @LookAtBall, @StandAndWait + duration:1, @LookForward, @KickBallDynamic
                 FAR --> @LookAtBall, @GoToBall + target:map_goal
             NO --> @LookAtBall, @GoToBall + target:map_goal
         NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBallActive
@@ -15,15 +15,15 @@ $AvoidBall
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
     YES --> $BallKickArea
-        LEFT --> @Stop, @KickBallDynamic
-        RIGHT --> @Stop, @KickBallDynamic
+        LEFT --> @Stop, @LookForward, @KickBallDynamic
+        RIGHT --> @Stop, @LookForward, @KickBallDynamic
         FAR --> @GoToBall + target:detection_goal
     NO --> @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
-    LEFT --> @Stop, @KickBallDynamic
-    RIGHT --> @Stop, @KickBallDynamic
+    LEFT --> @Stop, @LookForward, @KickBallDynamic
+    RIGHT --> @Stop, @LookForward, @KickBallDynamic
     FAR --> @GoToBall + target:close
 
 #NoLocalizationPlayerBehavior
@@ -125,8 +125,8 @@ $LocalizationAvailable
 #PenaltyBehavior
 $BallSeen
     YES --> $BallKickArea
-        RIGHT --> @Stop, @KickBallDynamic + type:penalty
-        LEFT --> @Stop, @KickBallDynamic + type:penalty
+        RIGHT --> @Stop, @LookForward, @KickBallDynamic + type:penalty
+        LEFT --> @Stop, @LookForward, @KickBallDynamic + type:penalty
         FAR --> $GoalSeen
             YES --> @GoToBall + target:detection_goal
             NO --> @GoToBall + target:close
