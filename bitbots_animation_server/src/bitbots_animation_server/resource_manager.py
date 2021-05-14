@@ -1,11 +1,10 @@
-#-*- coding:utf-8 -*-
 """
 ResourceManager
 ^^^^^^^^^^^^^^^
 
 The ResourceManager module provides functions for file searching in a
 Darwin Project. Thus, it is possible to find resources without knowing
-the currend location in the file system.
+the current location in the file system.
 
 This module provides the global methods :func:`find_resource`,
 :func:`find_anim` and :func:`find` which use a single global instance
@@ -16,10 +15,8 @@ discovered do not have to be searched again.
 import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
-# get an instance of RosPack with the default search paths
 import rospkg as rospkg
 import rospy
-
 
 
 class ResourceManager(object):
@@ -48,7 +45,7 @@ class ResourceManager(object):
         :type filename: String
         :raises: IOError
         :return: absolute path to the file
-        :returntype: String
+        :rtype: String
 
         This method searches in all folders in `path` recursively for the file
         specified in folders + filename. If folders is a list, every item of the list will
@@ -98,7 +95,7 @@ class ResourceManager(object):
         :type filename: String
         :raises: IOError
         :return: Absolute path to the file
-        :returntype: String
+        :rtype: String
 
         Searches the requested resource using :func:`search` with
         folders = name and filename = filename, and saves the result to
@@ -163,18 +160,23 @@ class ResourceManager(object):
         returns a list of all animation-paths in the system.
         """
         if not self.files or force_reload:
-            def add_anim(arg, dirnames, fnames):
-                """ Reiht die aufgefundenen Dateien auf,
-                vorausgesetzt es sind .jsons :)
-                """
-                for f in fnames:
+            path = self.find_resource('animations/')
+            for root, _, filenames in os.walk(path):
+                for f in filenames:
                     name, dot, extension = f.rpartition('.')
                     if extension == 'json':
-                        self.files.append(os.path.join(dirnames, f))
+                        self.files.append(os.path.join(root, f))
                         self.names.append(name)
-            path = find_resource('animations/')
-            os.path.walk(path, add_anim, None)
         return self.files
+
+    def find_all_animations_by_name(self, force_reload=False):
+        """Finds all animations in the animations directory.
+
+        returns a dict from animation names to animation paths
+        """
+        if not self.files or force_reload:
+            self.find_all_animations(force_reload)
+        return dict(zip(self.names, self.files))
 
     def find_all_animation_names(self, force_reload=False):
         """ Same as find_all_animations, but returns a sorted set of the animations
@@ -185,7 +187,7 @@ class ResourceManager(object):
         return sorted(set(self.names))
 
     def is_animation_name(self, name, force_reload=False):
-        """Check if a name belongs to a safed animation
+        """Check if a name belongs to a saved animation
         """
         if not self.names or force_reload:
             self.find_all_animations(force_reload=True)
@@ -193,8 +195,8 @@ class ResourceManager(object):
 
 _RM = None  # type: ResourceManager
 # Shortcut to search for animations
-def find_animation(*args, **kwargs):
+def find_all_animations_by_name(*args, **kwargs):
     global _RM
     if not _RM:
         _RM = ResourceManager()
-    return _RM.find_animation(*args, **kwargs)
+    return _RM.find_all_animations_by_name(*args, **kwargs)
