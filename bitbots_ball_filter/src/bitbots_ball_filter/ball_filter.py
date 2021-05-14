@@ -51,7 +51,12 @@ class BallFilter:
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rospy.Duration(secs=config['filter_reset_time'])
 
-        self.filter_frame = config.get('filter_frame', 'odom')
+        use_frame = config.get('use_frame')
+        if use_frame == "odom":
+            self.filter_frame = rospy.get_param('~odom_frame')
+        elif use_frame == "map":
+            self.filter_frame = rospy.get_param('~map_frame')
+        rospy.loginfo(f"Using frame '{self.filter_frame}' for ball filtering", logger_name="ball_filter")
 
         # adapt velocity factor to frequency
         self.velocity_factor = config['velocity_reduction'] ** (1 / self.filter_rate)
@@ -139,7 +144,10 @@ class BallFilter:
 
     def get_ball_measurement(self):
         """extracts filter measurement from ball message"""
-        return np.array([self.ball.point.x, self.ball.point.y])
+        try:
+            return np.array([self.ball.point.x, self.ball.point.y])
+        except AttributeError as e:
+            rospy.logwarn(f"Did you reconfigure? Something went wrong... {e}", logger_name="ball_filter")
 
     def init_filter(self, x, y):
         """
