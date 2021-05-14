@@ -36,7 +36,10 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   void reset() override;
   int getPercentDone() const override;
 
-  void specialReset(WalkState state,
+  /**
+   * Resets the engine to any given state. Necessary for using it as reference in learning.
+   */
+  void reset(WalkState state,
                     double phase,
                     tf2::Vector3 linear_orders,
                     double angular_z,

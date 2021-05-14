@@ -71,7 +71,7 @@ class WalkNode {
 
   void reset();
 
-  void specialReset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
+  void reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.

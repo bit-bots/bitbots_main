@@ -229,10 +229,10 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  specialReset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
+  reset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
 }
 
-void WalkEngine::specialReset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
+void WalkEngine::reset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
                               bool walkable_state, bool reset_odometry) {
   request_.linear_orders = linear_orders;
   request_.angular_z = angular_z;
