@@ -41,12 +41,12 @@ $BallSeen
 
 #Positioning
 $LocalizationAvailable
-    YES --> @LookAtFieldFeatures, @AvoidBallActive, @GoToRolePosition
+    YES --> @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0
 
 #PositioningReady
 $LocalizationAvailable
-    YES --> @LookAtFieldFeatures, @AvoidBallActive, @GoToRolePosition
+    YES --> @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
     NO --> @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
 
 #GoalieBehavior
