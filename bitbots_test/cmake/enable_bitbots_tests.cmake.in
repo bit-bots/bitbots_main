@@ -1,7 +1,7 @@
 #
 # Enable tests for this package according to bitbots conventions.
 #
-# :param TEST_DIR: Directory where unit and integration tests are located.
+# :param TEST_DIR: Directory where unit and rostests are located.
 #   (default: test)
 # :type TEST_DIR: string
 #
@@ -9,9 +9,9 @@
 #   (default: ${TEST_DIR}/unit_tests)
 # :type UNIT_DIR: string
 #
-# :param INTEGRATION_DIR: Directory where integration tests are located.
-#   (default: ${TEST_DIR}/integration_tests)
-# :type INTEGRATION_DIR: string
+# :param ROSTEST_DIR: Directory where rostests are located.
+#   (default: ${TEST_DIR}/rostests)
+# :type ROSTEST_DIR: string
 #
 # :param CXX_SOURCES: List of extra sources which are needed by C++ tests.
 #   This should not be the test file itself but rather the project's original sources.
@@ -26,7 +26,7 @@ function(enable_bitbots_tests)
 
     # parse function arguments
     set(options "")
-    set(oneValueArgs TEST_DIR UNIT_DIR INTEGRATION_DIR CXX_SOURCES)
+    set(oneValueArgs TEST_DIR UNIT_DIR ROSTEST_DIR CXX_SOURCES)
     set(multiValueArgs "")
     cmake_parse_arguments(PARSE_ARGV 0 ENABLE_BITBOTS_TESTS "${options}" "${oneValueArgs}" "${multiValueArgs}")
     # set argument default values
@@ -36,26 +36,26 @@ function(enable_bitbots_tests)
     if(NOT DEFINED ENABLE_BITBOTS_TESTS_UNIT_DIR)
         set(ENABLE_BITBOTS_TESTS_UNIT_DIR ${ENABLE_BITBOTS_TESTS_TEST_DIR}/unit_tests)
     endif()
-    if(NOT DEFINED ENABLE_BITBOTS_TESTS_INTEGRATION_DIR)
-        set(ENABLE_BITBOTS_TESTS_INTEGRATION_DIR ${ENABLE_BITBOTS_TESTS_TEST_DIR}/integration_tests)
+    if(NOT DEFINED ENABLE_BITBOTS_TESTS_ROSTEST_DIR)
+        set(ENABLE_BITBOTS_TESTS_ROSTEST_DIR ${ENABLE_BITBOTS_TESTS_TEST_DIR}/rostests)
     endif()
     if(NOT DEFINED ENABLE_BITBOTS_TESTS_CXX_SOURCES)
         set(ENABLE_BITBOTS_TESTS_CXX_SOURCES "")
     endif()
 
-    # create unit and integration test directories
-    file(MAKE_DIRECTORY ${ENABLE_BITBOTS_TESTS_UNIT_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR})
+    # create unit and rostest directories
+    file(MAKE_DIRECTORY ${ENABLE_BITBOTS_TESTS_UNIT_DIR} ${ENABLE_BITBOTS_TESTS_ROSTEST_DIR})
 
-    # find a list of integration and unit tests
-    file(GLOB_RECURSE integration_tests_launch LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/*.launch)
-    file(GLOB_RECURSE integration_tests_py LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/*.py)
-    file(GLOB_RECURSE integration_tests_cxx LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_INTEGRATION_DIR}/*.cpp)
+    # find a list of rostests and unit tests
+    file(GLOB_RECURSE rostest_tests_launch LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_ROSTEST_DIR}/*.launch)
+    file(GLOB_RECURSE rostest_tests_py LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_ROSTEST_DIR}/*.py)
+    file(GLOB_RECURSE rostest_tests_cxx LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_ROSTEST_DIR}/*.cpp)
     file(GLOB_RECURSE unit_tests_py LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_UNIT_DIR}/*.py)
     file(GLOB_RECURSE unit_tests_cxx LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} ${ENABLE_BITBOTS_TESTS_UNIT_DIR}/*.cpp)
 
     message(VERBOSE "discovered bitbots python unit tests: ${unit_tests_py}")
     message(VERBOSE "discovered bitbots c++ unit tests: ${unit_tests_cxx}")
-    message(VERBOSE "discovered bitbots integration tests: ${integration_tests_launch}")
+    message(VERBOSE "discovered bitbots rostests: ${rostest_tests_launch}")
 
     # check that unit tests are not executable
     foreach(i ${unit_tests_py})
@@ -65,17 +65,17 @@ function(enable_bitbots_tests)
         endif()
     endforeach()
 
-    # check that integration tests are executable
-    foreach(i ${integration_tests_py})
+    # check that rostests are executable
+    foreach(i ${rostest_tests_py})
         execute_process(COMMAND test -x "${i}" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} RESULT_VARIABLE result)
         if(${result} EQUAL 1)
-            message(WARNING "integration test ${i} is not executable but integrations tests should be")
+            message(WARNING "rostest ${i} is not executable but rostests should be")
         endif()
     endforeach()
 
-    # check that integration tests are only written in python
-    if (NOT integration_tests_cxx STREQUAL "")
-        message(WARNING "only python integration tests are currently supported but the following C++ files were found: ${integration_tests_cxx}")
+    # check that rostests are only written in python
+    if (NOT rostest_tests_cxx STREQUAL "")
+        message(WARNING "only python rostests are currently supported but the following C++ files were found: ${rostest_tests_cxx}")
     endif ()
 
     # register all tests with cmake
@@ -85,7 +85,7 @@ function(enable_bitbots_tests)
         get_filename_component(i_name ${i} NAME_WE)
         catkin_add_gtest(${PROJECT_NAME}_${i_name} ${i} ${ENABLE_BITBOTS_TESTS_CXX_SOURCES})
     endforeach()
-    foreach(i ${integration_tests_launch})
+    foreach(i ${rostest_tests_launch})
         add_rostest(${i})
     endforeach()
 endfunction()
