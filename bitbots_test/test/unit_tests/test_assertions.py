@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+
+import rospy
+
 from bitbots_test.test_case import TestCase
 
 

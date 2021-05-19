@@ -10,6 +10,7 @@ depends:
 - roscpp
 - rostest
 - rosunit
+- rosgraph_msgs
 exec-path: bitbots_tools-master/bitbots_test
 install-script: '#!/bin/bash
 

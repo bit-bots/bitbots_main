@@ -19,6 +19,7 @@
   <depend>rostest</depend>
   <depend>roscpp</depend>
   <depend>rosunit</depend>
+  <depend>rosgraph_msgs</depend>
 
   <test_depend>boost</test_depend>
   <test_depend>python3-hypothesis</test_depend>
