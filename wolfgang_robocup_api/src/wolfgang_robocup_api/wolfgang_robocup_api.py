@@ -60,6 +60,9 @@ class WolfgangRobocupApi():
         s_m.ParseFromString(msg)
 
         self.handle_time(s_m.time)
+        self.handle_real_time(s_m.real_time)
+        self.handle_messages(s_m.messages)
+        self.handle_accelerometer_measurements(s_m.accelerometers)
 
     def handle_time(self, time):
         # time stamp at which the measurements were performed expressed in [ms]
@@ -72,3 +75,17 @@ class WolfgangRobocupApi():
     def handle_real_time(self, time):
         # real unix time stamp at which the measurements were performed in [ms]
         self.real_time = time
+
+    def handle_messages(self, messages):
+        for message in messages:
+            text = message.text
+            if message.message_type == messages_pb2.Message.ERROR_MESSAGE:
+                rospy.logerr(f"RECEIVED ERROR: '{text}'", logger_name="rc_api")
+            elif message.message_type == messages_pb2.Message.WARNING_MESSAGE:
+                rospy.logwarn(f"RECEIVED WARNING: '{text}'", logger_name="rc_api")
+            else:
+                rospy.logwarn(f"RECEIVED UNKNOWN MESSAGE: '{text}'", logger_name="rc_api")
+
+    def handle_accelerometer_measurements(self, accelerometers):
+        for accelerometer in accelerometers:
+            pass
