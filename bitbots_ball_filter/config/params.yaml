@@ -5,14 +5,15 @@ ball_movement_publish_topic: 'ball_relative_movement'
 ball_publish_topic: 'ball_relative_filtered'
 
 filter_frame: 'odom'
+# filter_frame: 'map'
 
 # Filtering rate in Hz
 filter_rate: 10
 
-# velocity reduction (per axis) factor of the ball per second
+# Velocity reduction (per axis) factor of the ball per second
 velocity_reduction: 0.95
 
 process_noise_variance: 0.005
 
-# max ball not seen time in Seconds
+# Max ball not seen time in Seconds
 filter_reset_time: 20

@@ -1,5 +1,9 @@
 <launch>
+    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+
     <node pkg="bitbots_ball_filter" type="ball_filter.py" name="ball_filter" output="screen">
         <rosparam command="load" file="$(find bitbots_ball_filter)/config/params.yaml"/>
+        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+        <param name="map_frame" value="$(arg tf_prefix)map"/>
     </node>
 </launch>

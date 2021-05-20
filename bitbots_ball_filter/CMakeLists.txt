@@ -8,6 +8,16 @@ project(bitbots_ball_filter)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   rospy
+  dynamic_reconfigure
+)
+
+catkin_python_setup()
+
+#add dynamic reconfigure api
+#find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/BallFilter.cfg
+  #...
 )
 
 catkin_package(
@@ -16,4 +26,3 @@ catkin_package(
 #  CATKIN_DEPENDS geometry_msgs rospy
 #  DEPENDS system_lib
 )
-
