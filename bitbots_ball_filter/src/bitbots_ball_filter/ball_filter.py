@@ -60,7 +60,7 @@ class BallFilter:
         rospy.loginfo(f"Using frame '{self.filter_frame}' for ball filtering", logger_name="ball_filter")
 
         # adapt velocity factor to frequency
-        self.velocity_factor = config['velocity_reduction'] ** (1 / self.filter_rate)
+        self.velocity_factor = (1 - config['velocity_reduction']) ** (1 / self.filter_rate)
 
         self.process_noise_variance = config['process_noise_variance']
 
@@ -162,10 +162,10 @@ class BallFilter:
         self.kf.x = np.array([x, y, 0, 0])
 
         # transition matrix
-        self.kf.F = np.array([[1.0, 0.0, self.velocity_factor, 0.0],
-                             [0.0, 1.0, 0.0, self.velocity_factor],
-                             [0.0, 0.0, 1.0, 0.0],
-                             [0.0, 0.0, 0.0, 1.0]])
+        self.kf.F = np.array([[1.0, 0.0, 1.0, 0.0],
+                             [0.0, 1.0, 0.0, 1.0],
+                             [0.0, 0.0, self.velocity_factor, 0.0],
+                             [0.0, 0.0, 0.0, self.velocity_factor]])
         # measurement function
         self.kf.H = np.array([[1.0, 0.0, 0.0, 0.0],
                               [0.0, 1.0, 0.0, 0.0]])
