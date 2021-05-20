@@ -28,7 +28,7 @@
     <node pkg="wolfgang_webots_sim" type="start_simulator.sh" name="webots_sim"
           output="screen" required="true" args="$(arg multi_robot_flag) $(arg gui_flag) $(arg headless_flag)"/>
     <node pkg="wolfgang_webots_sim" type="start_webots_ros_supervisor.sh" name="webots_ros_supervisor"
-          output="screen" required="true"/>
+          output="screen" respawn="true"/>
 
     <group unless="$(arg multi_robot)">
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch">
