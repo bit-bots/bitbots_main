@@ -161,10 +161,10 @@ class BallFilter:
         self.kf.x = np.array([x, y, 0, 0])
 
         # transition matrix
-        self.kf.F = np.array([[1.0, 0.0, self.velocity_factor, 0.0],
-                             [0.0, 1.0, 0.0, self.velocity_factor],
-                             [0.0, 0.0, 1.0, 0.0],
-                             [0.0, 0.0, 0.0, 1.0]])
+        self.kf.F = np.array([[1.0, 0.0, 1.0, 0.0],
+                             [0.0, 1.0, 0.0, 1.0],
+                             [0.0, 0.0, self.velocity_factor, 0.0],
+                             [0.0, 0.0, 0.0, self.velocity_factor]])
         # measurement function
         self.kf.H = np.array([[1.0, 0.0, 0.0, 0.0],
                               [0.0, 1.0, 0.0, 0.0]])
