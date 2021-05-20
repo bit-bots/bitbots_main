@@ -48,6 +48,7 @@ class BallFilter:
         self.last_ball_msg = None  # type: PoseWithCertainty
 
         self.filter_rate = config['filter_rate']
+        self.measurement_certainty = config['measurement_certainty']
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rospy.Duration(secs=config['filter_reset_time'])
 
@@ -173,7 +174,7 @@ class BallFilter:
 
         # assigning measurement noise
         self.kf.R = np.array([[1, 0],
-                             [0, 1]]) * 0.1
+                             [0, 1]]) * self.measurement_certainty
 
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False)
