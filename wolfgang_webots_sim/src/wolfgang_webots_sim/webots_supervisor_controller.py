@@ -3,10 +3,10 @@ from controller import Supervisor
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetRobotPose
+from bitbots_msgs.srv import SetRobotPose, SetRobotPoseResponse
 
 from rosgraph_msgs.msg import Clock
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty, EmptyResponse
 
 import transforms3d
 import numpy as np
@@ -115,6 +115,7 @@ class SupervisorController:
     def reset(self, req=None):
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
+        return EmptyResponse()
 
     def set_initial_poses(self, req=None):
         self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
@@ -122,14 +123,17 @@ class SupervisorController:
         self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
         self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
         self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
+        return EmptyResponse()
 
     def robot_pose_callback(self, req=None):
         self.reset_robot_pose_rpy([req.position.x, req.position.y, req.position.z], [0, 0, 0], req.robot_name)
+        return SetRobotPoseResponse()
 
     def reset_ball(self, req=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
         self.ball.getField("rotation").setSFRotation([0, 0, 1, 0])
         self.ball.resetPhysics()
+        return EmptyResponse()
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))
