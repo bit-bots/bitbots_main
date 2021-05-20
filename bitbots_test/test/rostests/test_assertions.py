@@ -50,5 +50,6 @@ class RosoutAssertionMixinTestCase(RosNodeTestCase):
 
 
 if __name__ == "__main__":
-    from bitbots_test import run_integration_tests
-    run_integration_tests(RosoutAssertionMixinTestCase)
+    from bitbots_test import run_rostests
+
+    run_rostests(RosoutAssertionMixinTestCase)

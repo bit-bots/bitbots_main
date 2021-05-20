@@ -74,5 +74,6 @@ class MockSubscriberTestCase(RosNodeTestCase):
 
 
 if __name__ == "__main__":
-    from bitbots_test import run_integration_tests
-    run_integration_tests(MockSubscriberTestCase)
+    from bitbots_test import run_rostests
+
+    run_rostests(MockSubscriberTestCase)
