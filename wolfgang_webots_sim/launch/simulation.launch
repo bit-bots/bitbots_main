@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="gui" default="true" doc="Whether or not to launch webots with rendering"/>
+    <arg name="headless" default="false"
+         doc="If true, launches webots completely headless with a virtual frame buffer"/>
     <arg name="num_robots" default="4"
          doc="Number of robots for which a ROS controller is started. 1 if multi_robot=True "/>
     <arg name="imu_filter" default="true"
@@ -14,22 +16,26 @@
 
     <arg name="multi_robot_flag" value="$(eval '--multi-robot' if arg('multi_robot') else '')"
          doc="do not set, used internally"/>
+    <arg name="gui_flag" value="$(eval '' if arg('gui') else '--nogui')"
+         doc="do not set, used internally"/>
+    <arg name="headless_flag" value="$(eval '--headless' if arg('headless') else '')"
+         doc="do not set, used internally"/>
 
     <!-- delete ros parameter "/webots_pid" + sim_id since its used to communicate the process id of the simulation -->
     <rosparam command="delete" param="/webots_pid$(arg sim_id)"/>
 
     <!-- start simulation and supervisor either with or without gui -->
-    <node if="$(arg gui)" pkg="wolfgang_webots_sim" type="start.sh" name="webots_sim"
-          output="screen" required="true" args="$(arg multi_robot_flag)"/>
-    <node unless="$(arg gui)" pkg="wolfgang_webots_sim" type="start.sh" name="webots_sim"
-          output="screen" required="true" args="--nogui $(arg multi_robot_flag)"/>
+    <node pkg="wolfgang_webots_sim" type="start_simulator.sh" name="webots_sim"
+          output="screen" required="true" args="$(arg multi_robot_flag) $(arg gui_flag) $(arg headless_flag)"/>
+    <node pkg="wolfgang_webots_sim" type="start_webots_ros_supervisor.sh" name="webots_ros_supervisor"
+          output="screen" required="true"/>
 
     <group unless="$(arg multi_robot)">
         <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch">
             <arg name="camera" value="$(arg camera)"/>
             <arg name="recognition" value="$(arg recognition)"/>
         </include>
-        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
+        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
     </group>
 
     <!-- case for multiple robots -->
@@ -65,7 +71,7 @@
         </include>
 
         <!-- imu filter for each robot, does not cost performance if there are no messages coming in -->
-        <group if ="$(arg imu_filter)">
+        <group if="$(arg imu_filter)">
             <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="amy"/>
             <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="rory"/>
             <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="jack"/>

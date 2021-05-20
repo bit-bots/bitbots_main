@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>wolfgang_webots_sim</name>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
   <description>Simulation environment using Webots for Wolfgang robot.</description>
   
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann </maintainer>
@@ -23,6 +23,7 @@
   <depend>std_msgs</depend>
   <depend>bitbots_docs</depend>
   <exec_depend>imu_complementary_filter</exec_depend>
+  <exec_depend>xvfb</exec_depend>
 
   <export>
       <bitbots_documentation>
