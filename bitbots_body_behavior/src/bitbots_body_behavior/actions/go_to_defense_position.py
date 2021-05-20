@@ -7,6 +7,16 @@ class GoToDefensePosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToDefensePosition, self).__init__(blackboard, dsd, parameters)
 
+        # Also apply offset from the ready positions to the defense positions
+        role_positions = self.blackboard.config['role_positions']
+        try:
+            generalized_role_position = \
+                role_positions[self.blackboard.blackboard.duty][role_positions['pos_number']]
+        except KeyError:
+            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
+
+        self.y_offset = generalized_role_position[1] * self.blackboard.world_model.field_width / 2
+
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.
         # TODO: in the case of two defensive players, they should use an offset,
@@ -32,8 +42,8 @@ class GoToDefensePosition(AbstractActionElement):
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
-        pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) /2
-        pose_msg.pose.position.y = ball_position[1] / 2
+        pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
+        pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
         pose_msg.pose.orientation.w = 1
 
         self.blackboard.pathfinding.publish(pose_msg)

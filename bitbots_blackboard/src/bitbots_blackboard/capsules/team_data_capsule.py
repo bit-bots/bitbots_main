@@ -13,6 +13,8 @@ class TeamDataCapsule:
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
         self.team_data = TeamData()
+        self.team_strategy = dict()
+        self.times_to_ball = dict()
         self.strategy = Strategy()
         self.last_update_team_data = None
         self.strategy_update = None
@@ -26,7 +28,7 @@ class TeamDataCapsule:
         """
         i = 0
         for state in self.team_data.state:
-            if state is TeamData.ROLE_GOALIE:
+            if state == Strategy.ROLE_GOALIE:
                 return (self.team_data.ball_relative[i].x, self.team_data.ball_relative[i].y), self.last_update_team_data
             i += 1
         return None
@@ -42,21 +44,21 @@ class TeamDataCapsule:
         else:
             return None
 
-    def team_rank_to_ball(self, own_ball_relative):
-        """Returns the rank of this robot compared to the team robots concerning ball distance
+    def team_rank_to_ball(self, count_goalies=True):
+        """Returns the rank of this robot compared to the team robots concerning ball distance.
+        Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
+        For example, we do not want our goalie to perform a throw in against our empty goal.
 
-        :param own_ball_relative: the ball relative to this robot
         :return the rank from 1 (nearest) to the number of robots
         """
-        own_distance = math.sqrt(own_ball_relative[0] ** 2 + own_ball_relative[1] ** 2)
-        relative_balls = self.team_data.ball_relative
-        ball_distances = [math.sqrt(ball.x ** 2 + ball.y ** 2) for ball in relative_balls]
-        ball_distances.sort()
+        own_time = self.team_data.time_to_position_at_ball
+        sorted_times = dict(sorted(self.times_to_ball.items(), key=lambda item: item[1]))
         rank = 1
-        for distance in ball_distances:
-            if own_distance < distance:
-                return rank
-            rank += 1
+        for key, time in sorted_times.items():
+            if self.team_strategy[key] != Strategy.ROLE_GOALIE or count_goalies:
+                if own_time < time:
+                    return rank
+                rank += 1
         return rank
 
     def set_role(self, role):
@@ -98,4 +100,6 @@ class TeamDataCapsule:
 
     def team_data_callback(self, msg):
         self.team_data = msg
+        self.times_to_ball[team_data.robot_id] = team_data.time_to_position_at_ball
+        self.team_strategy[team_data.robot_id] = team_data.strategy.role
         self.last_update_team_data = rospy.get_time()
