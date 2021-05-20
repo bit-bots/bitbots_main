@@ -6,7 +6,6 @@ import math
 
 import rospy
 from humanoid_league_msgs.msg import Strategy, TeamData
-from collections import defaultdict
 
 
 class TeamDataCapsule:
