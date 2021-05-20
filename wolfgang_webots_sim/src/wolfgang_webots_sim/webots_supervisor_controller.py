@@ -1,8 +1,7 @@
-from controller import Robot, Node, Supervisor, Field
+from controller import Supervisor
 
-import os
 import rospy
-from geometry_msgs.msg import Quaternion, PointStamped, Pose, Point, Twist
+from geometry_msgs.msg import Quaternion, Pose, Point
 from gazebo_msgs.msg import ModelStates
 from bitbots_msgs.srv import SetRobotPose
 
