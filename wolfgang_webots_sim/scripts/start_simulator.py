@@ -76,4 +76,7 @@ if __name__ == "__main__":
     rospy.set_param("/webots_pid" + args.sim_id, str(webots_pid))
 
     # join with child process
-    exit(sim_proc.wait())
+    try:
+        exit(sim_proc.wait())
+    except KeyboardInterrupt:
+        exit(sim_proc.returncode)
