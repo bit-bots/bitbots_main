@@ -11,8 +11,6 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
     pid_param_name = "/webots_pid" + args.sim_id
 
-    rospy.init_node("webots_ros_supervisor", argv=['clock:=/clock'])
-
     while not rospy.has_param(pid_param_name):
         rospy.logdebug("Waiting for parameter " + pid_param_name + " to be set..")
         time.sleep(2.0)
