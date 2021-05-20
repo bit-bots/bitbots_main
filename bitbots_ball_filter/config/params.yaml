@@ -13,7 +13,11 @@ filter_rate: 10
 # Velocity reduction (per axis) factor of the ball per second
 velocity_reduction: 0.95
 
+# Noise which is added to the estimated position without new measurements
 process_noise_variance: 0.005
+
+# Ball measurement certainty in filter
+measurement_certainty: 0.1
 
 # Max ball not seen time in Seconds
 filter_reset_time: 20
