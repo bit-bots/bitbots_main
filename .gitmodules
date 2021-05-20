@@ -3,10 +3,10 @@
 	url = https://github.com/TAMS-Group/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
-	url = git@github.com:bit-bots/DynamixelSDK.git
+	url = ../../bit-bots/DynamixelSDK.git
 [submodule "lib/dynamixel-workbench"]
 	path = lib/dynamixel-workbench
-	url = git@github.com:bit-bots/dynamixel-workbench.git
+	url = ../../bit-bots/dynamixel-workbench.git
 [submodule "lib/dynamixel-workbench-msgs"]
 	path = lib/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
@@ -15,58 +15,58 @@
 	url = https://github.com/TAMS-Group/bio_ik_service.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
-	url = git@github.com:bit-bots/dynamic_stack_decider.git
+	url = ../../bit-bots/dynamic_stack_decider.git
 [submodule "center_of_mass"]
 	path = center_of_mass
-	url = git@github.com:bit-bots/center_of_mass.git
+	url = ../../bit-bots/center_of_mass.git
 [submodule "humanoid_base_footprint"]
 	path = humanoid_base_footprint
-	url = git@github.com:bit-bots/humanoid_base_footprint.git
+	url = ../../bit-bots/humanoid_base_footprint.git
 [submodule "bitbots_lowlevel"]
 	path = bitbots_lowlevel
-	url = git@github.com:bit-bots/bitbots_lowlevel.git
+	url = ../../bit-bots/bitbots_lowlevel.git
 [submodule "bitbots_navigation"]
 	path = bitbots_navigation
-	url = git@github.com:bit-bots/bitbots_navigation.git
+	url = ../../bit-bots/bitbots_navigation.git
 [submodule "bitbots_motion"]
 	path = bitbots_motion
-	url = git@github.com:bit-bots/bitbots_motion.git
+	url = ../../bit-bots/bitbots_motion.git
 [submodule "bitbots_behavior"]
 	path = bitbots_behavior
-	url = git@github.com:bit-bots/bitbots_behavior.git
+	url = ../../bit-bots/bitbots_behavior.git
 [submodule "humanoid_league_visualization"]
 	path = humanoid_league_visualization
-	url = git@github.com:bit-bots/humanoid_league_visualization.git
+	url = ../../bit-bots/humanoid_league_visualization.git
 [submodule "bitbots_misc"]
 	path = bitbots_misc
-	url = git@github.com:bit-bots/bitbots_misc.git
+	url = ../../bit-bots/bitbots_misc.git
 [submodule "humanoid_league_misc"]
 	path = humanoid_league_misc
-	url = git@github.com:bit-bots/humanoid_league_misc.git
+	url = ../../bit-bots/humanoid_league_misc.git
 [submodule "wolfgang_robot"]
 	path = wolfgang_robot
-	url = git@github.com:bit-bots/wolfgang_robot.git
+	url = ../../bit-bots/wolfgang_robot.git
 [submodule "bitbots_vision"]
 	path = bitbots_vision
-	url = git@github.com:bit-bots/bitbots_vision.git
+	url = ../../bit-bots/bitbots_vision.git
 [submodule "humanoid_league_msgs"]
 	path = humanoid_league_msgs
-	url = git@github.com:bit-bots/humanoid_league_msgs.git
+	url = ../../bit-bots/humanoid_league_msgs.git
 [submodule "bitbots_msgs"]
 	path = bitbots_msgs
-	url = git@github.com:bit-bots/bitbots_msgs.git
+	url = ../../bit-bots/bitbots_msgs.git
 [submodule "udp_bridge"]
 	path = udp_bridge
-	url = git@github.com:bit-bots/udp_bridge.git
+	url = ../../bit-bots/udp_bridge.git
 [submodule "bitbots_tools"]
 	path = bitbots_tools
-	url = git@github.com:bit-bots/bitbots_tools.git
+	url = ../../bit-bots/bitbots_tools.git
 [submodule "lib/particle_filter"]
 	path = lib/particle_filter
-	url = git@github.com:bit-bots/particle_filter.git
+	url = ../../bit-bots/particle_filter.git
 [submodule "lib/rot_conv_lib"]
 	path = lib/rot_conv_lib
-	url = git@github.com:bit-bots/rot_conv_lib.git
+	url = ../../bit-bots/rot_conv_lib.git
 [submodule "bitbots_world_model"]
 	path = bitbots_world_model
-	url = git@github.com:bit-bots/bitbots_world_model.git
+	url = ../../bit-bots/bitbots_world_model.git
