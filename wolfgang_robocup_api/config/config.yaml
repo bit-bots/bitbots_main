@@ -1,0 +1,8 @@
+min_frame_step: 16,  # ms
+min_control_step: 8,  # ms
+
+
+##########
+# TOPICS #
+##########
+clock_topic: "/clock"
