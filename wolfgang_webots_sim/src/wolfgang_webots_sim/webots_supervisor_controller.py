@@ -73,7 +73,7 @@ class SupervisorController:
             self.clock_publisher = rospy.Publisher(clock_topic, Clock, queue_size=1)
             self.model_state_publisher = rospy.Publisher(model_topic, ModelStates, queue_size=1)
             self.reset_service = rospy.Service(base_ns + "reset", Empty, self.reset)
-            self.initial_poses_service = rospy.Service(base_ns + "initial_pose", Empty, self.set_initial_poses)
+            self.reset_pose_service = rospy.Service(base_ns + "reset_pose", Empty, self.set_initial_poses)
             self.set_robot_position_service = rospy.Service(base_ns + "set_robot_position", SetRobotPose,
                                                             self.robot_pose_callback)
             self.reset_ball_service = rospy.Service(base_ns + "reset_ball", Empty, self.reset_ball)
