@@ -59,7 +59,7 @@ class BallFilter:
         rospy.loginfo(f"Using frame '{self.filter_frame}' for ball filtering", logger_name="ball_filter")
 
         # adapt velocity factor to frequency
-        self.velocity_factor = config['velocity_reduction'] ** (1 / self.filter_rate)
+        self.velocity_factor = (1 - config['velocity_reduction']) ** (1 / self.filter_rate)
 
         self.process_noise_variance = config['process_noise_variance']
 

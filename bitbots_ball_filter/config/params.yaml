@@ -11,7 +11,7 @@ filter_frame: 'odom'
 filter_rate: 10
 
 # Velocity reduction (per axis) factor of the ball per second
-velocity_reduction: 0.95
+velocity_reduction: 0.4
 
 process_noise_variance: 0.005
 
