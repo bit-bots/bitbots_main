@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="wolfgang_webots_sim" type="wolfgang_robocup_api.py" name="wolfgang_robocup_api" output="screen">
+    <node pkg="wolfgang_robocup_api" type="wolfgang_robocup_api.py" name="wolfgang_robocup_api" output="screen">
         <rosparam command="load" file="$(find wolfgang_robocup_api)/config/config.yaml" />
     </node>
 </launch>

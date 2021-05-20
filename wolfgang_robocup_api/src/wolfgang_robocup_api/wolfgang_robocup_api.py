@@ -4,13 +4,15 @@ import os
 import socket
 import yaml
 import rospy
+import rospkg
+import struct
 
 from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from bitbots_msgs.msg import FootPressure, JointCommand
 
-from wolfgang_robocup_api import messages_pb2
+import messages_pb2
 
 
 class WolfgangRobocupApi():
@@ -29,6 +31,14 @@ class WolfgangRobocupApi():
 
         addr = os.environ.get('ROBOCUP_SIMULATOR_ADDR')
         self.socket = self.get_connection(addr)
+        self.run()
+
+    def run(self):
+        while not rospy.is_shutdown():
+            msg_size = self.socket.recv(4)
+            msg_size = struct.unpack("<L", msg_size)[0]
+            msg = self.socket.recv(msg_size)
+            self.handle_sensor_measurements_msg(msg)
 
     def create_publishers(self):
         self.pub_clock = rospy.Publisher(
@@ -40,14 +50,16 @@ class WolfgangRobocupApi():
         pass
 
     def get_connection(self, addr):
-        rospy.info(f"Connecting to '{addr}'", logger_name="rc_api")
+        host, port = addr.split(':')
+        port = int(port)
+        rospy.loginfo(f"Connecting to '{addr}'", logger_name="rc_api")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(addr)
+        sock.connect((host, port))
         response = sock.recv(8).decode('utf8')
-        if response == "Welcome":
-            rospy.info(f"Successfully connect to '{addr}'", logger_name="rc_api")
+        if response == "Welcome\0":
+            rospy.loginfo(f"Successfully connected to '{addr}'", logger_name="rc_api")
             return sock
-        elif response == "Refused":
+        elif response == "Refused\0":
             rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
         else:
             rospy.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
@@ -68,8 +80,8 @@ class WolfgangRobocupApi():
         # time stamp at which the measurements were performed expressed in [ms]
         self.time = time
         msg = Clock()
-        msg.secs = time // 1000
-        msg.nsecs = (time % 1000) * 10**6
+        msg.clock.secs = time // 1000
+        msg.clock.nsecs = (time % 1000) * 10**6
         self.pub_clock.publish(msg)
 
     def handle_real_time(self, time):
@@ -89,3 +101,6 @@ class WolfgangRobocupApi():
     def handle_accelerometer_measurements(self, accelerometers):
         for accelerometer in accelerometers:
             pass
+
+if __name__ == '__main__':
+    WolfgangRobocupApi()
