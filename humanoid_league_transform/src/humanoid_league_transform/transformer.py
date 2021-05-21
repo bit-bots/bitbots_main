@@ -427,7 +427,7 @@ class Transformer(object):
     def _check_if_not_bottom_of_the_image(self, position, thresh):
         image_height = self._camera_info.height / max(self._camera_info.binning_y, 1)
         scaled_thresh = thresh * image_height
-        return image_height - position.x < scaled_thresh
+        return image_height - position < scaled_thresh
 
 
 if __name__ == "__main__":
