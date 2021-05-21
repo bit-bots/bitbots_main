@@ -64,6 +64,10 @@ class WolfgangRobocupApi():
 
         addr = os.environ.get('ROBOCUP_SIMULATOR_ADDR')
         self.socket = self.get_connection(addr)
+
+        self.first_run = True
+        self.published_camera_info = False
+
         self.run()
 
     def receive_msg(self):
@@ -79,7 +83,6 @@ class WolfgangRobocupApi():
         return data
 
     def run(self):
-        self.first_run = True
         while not rospy.is_shutdown():
             # Parse sensor
             msg = self.receive_msg()
@@ -232,8 +235,9 @@ class WolfgangRobocupApi():
                 quality = camera.quality  # 1 = raw image, 100 = no compression, 0 = high compression
                 image = camera.image  # RAW or JPEG encoded data (note: JPEG is not yet implemented)
 
-                if self.first_run:  # Publish CameraInfo once, it will be latched
-                    self.pub_camera_info(height, width)
+                if not self.published_camera_info:  # Publish CameraInfo once, it will be latched
+                    self.publish_camera_info(height, width)
+                    self.published_camera_info = True
 
                 img_msg = Image()
                 img_msg.header.stamp = self.stamp
