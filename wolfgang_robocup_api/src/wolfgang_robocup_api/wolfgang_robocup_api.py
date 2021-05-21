@@ -396,7 +396,7 @@ class WolfgangRobocupApi():
             motor_velocity = messages_pb2.MotorVelocity()
             motor_velocity.name = name
             if len(self.joint_command.velocities) == 0 or self.joint_command.velocities[i] == -1:
-                motor_velocity.velocity = self.velocity_limits
+                motor_velocity.velocity = self.velocity_limits[name]
             else:
                 motor_velocity.velocity = self.joint_command.velocities[i]
             actuator_requests.motor_velocities.append(motor_velocity)
