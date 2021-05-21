@@ -18,6 +18,7 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
+  <depend>tf2_sensor_msgs</depend>
   <depend>tf_conversions</depend>
   <depend>message_generation</depend>
   <depend>geometry_msgs</depend>
