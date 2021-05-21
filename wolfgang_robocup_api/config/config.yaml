@@ -1,8 +1,11 @@
-min_frame_step: 16,  # ms
-min_control_step: 8,  # ms
+min_frame_step: 16  # ms
+min_control_step: 8  # ms
 
 
 ##########
 # TOPICS #
 ##########
 clock_topic: "/clock"
+server_time_clock_topic: "/server_time_clock"
+imu_topic: "imu/data_raw"
+imu_head_topic: "imu_head/data"
