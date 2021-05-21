@@ -106,7 +106,7 @@ class WolfgangRobocupApi():
         self.stamp = ros_time
         msg = Clock()
         msg.clock.secs = ros_time.secs
-        msg.clock.nsecs = ros_time.nsec
+        msg.clock.nsecs = ros_time.nsecs
         self.pub_clock.publish(msg)
 
     def handle_real_time(self, time):
