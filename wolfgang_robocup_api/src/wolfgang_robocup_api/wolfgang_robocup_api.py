@@ -33,8 +33,26 @@ class WolfgangRobocupApi():
         urdf_path = os.path.join(rospack.get_path('wolfgang_description'), 'urdf', 'robot.urdf')
         urdf = URDF.from_xml_file(urdf_path)
         joints = [joint for joint in urdf.joints if joint.type == 'revolute']
-        self.velocity_limits = {joint.name: joint.limits.velocity for joint in joints}
+        self.velocity_limits = {joint.name: joint.limit.velocity for joint in joints}
         self.joint_names = [joint.name for joint in joints]
+
+        self.position_sensors = [name + "_sensor" for name in self.joint_names]
+        self.sensors_names = [
+            "camera",
+            "imu accelerometer",
+            "imu gyro",
+            "imu_head accelerometer",
+            "imu_head gyro",
+            "r_cleat_l_back",
+            "r_cleat_l_front",
+            "r_cleat_r_front",
+            "r_cleat_r_back",
+            "l_cleat_l_back",
+            "l_cleat_l_front",
+            "l_cleat_r_front",
+            "l_cleat_r_back",
+            ]
+        self.sensors_names.extend(self.position_sensors)
 
         self.joint_command = JointCommand()
 
@@ -46,13 +64,20 @@ class WolfgangRobocupApi():
         self.run()
 
     def run(self):
+        first_run = True
         while not rospy.is_shutdown():
+            # Parse sensor
             msg_size = self.socket.recv(4)
             msg_size = struct.unpack(">L", msg_size)[0]
             msg = self.socket.recv(msg_size)
             self.handle_sensor_measurements_msg(msg)
-            self.send_actuator_requests(self.socket)
-        self.close(self.socket)
+
+            sensor_time_steps = None
+            if first_run:
+                sensor_time_steps = self.get_sensor_time_steps(active=True)
+            self.send_actuator_requests(sensor_time_steps)
+            first_run = False
+        self.close_connection()
 
     def create_publishers(self):
         self.pub_clock = rospy.Publisher(rospy.get_param('~clock_topic'), Clock, queue_size=1)
@@ -81,8 +106,8 @@ class WolfgangRobocupApi():
         else:
             rospy.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
 
-    def close(self, sock):
-        sock.close()
+    def close_connection(self):
+        self.socket.close()
 
     def handle_sensor_measurements_msg(self, msg):
         s_m = messages_pb2.SensorMeasurements()
@@ -201,25 +226,30 @@ class WolfgangRobocupApi():
         for position_sensor in position_sensors:
             pass
 
-    def activate_sensors(self):
-        sensor_time_step = messages_pb2.SensorTimeStep()
-        sensor_time_step.name = "imu accelerometer"
-        sensor_time_step.timeStep = self.MIN_CONTROL_STEP
+    def get_sensor_time_steps(self, active=True):
+        sensor_time_steps = []
+        for sensor_name in self.sensors_names:
+            time_step = self.MIN_CONTROL_STEP
+            if sensor_name == "camera":
+                time_step = self.MIN_FRAME_STEP
+            if not active:
+                time_step = 0
+            sensor_time_step = messages_pb2.SensorTimeStep()
+            sensor_time_step.name = sensor_name
+            sensor_time_step.timeStep = time_step
+            sensor_time_steps.append(sensor_time_step)
+        return sensor_time_steps
 
-        a_r = messages_pb2.ActuatorRequests()
-        a_r.sensor_time_steps.append(sensor_time_step)
-        msg = a_r.SerializeToString()
-        msg_size = struct.pack(">L", len(msg))
-        self.socket.send(msg_size + msg)
-
-    def send_actuator_requests(self, sock):
-        a_r = messages_pb2.ActuatorRequests()
+    def send_actuator_requests(self, sensor_time_steps=None):
+        actuator_requests = messages_pb2.ActuatorRequests()
+        if sensor_time_steps is not None:
+            actuator_requests.sensor_time_steps.extend(sensor_time_steps)
 
         for i, name in enumerate(self.joint_command.joint_names):
             motor_position = messages_pb2.MotorPosition()
             motor_position.name = name
             motor_position.position = self.joint_command.positions[i]
-            a_r.motor_positions.append(motor_position)
+            actuator_requests.motor_positions.append(motor_position)
 
             motor_velocity = messages_pb2.MotorVelocity()
             motor_velocity.name = name
@@ -227,11 +257,11 @@ class WolfgangRobocupApi():
                 motor_velocity.velocity = self.velocity_limits
             else:
                 motor_velocity.velocity = self.joint_command.velocities[i]
-            a_r.motor_velocities.append(motor_velocity)
+            actuator_requests.motor_velocities.append(motor_velocity)
 
-        msg = a_r.SerializeToString()
+        msg = actuator_requests.SerializeToString()
         msg_size = struct.pack(">L", len(msg))
-        sock.send(msg_size + msg)
+        self.socket.send(msg_size + msg)
 
 
 if __name__ == '__main__':
