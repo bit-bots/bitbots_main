@@ -46,14 +46,14 @@ class WolfgangRobocupApi():
             "imu gyro",
             "imu_head accelerometer",
             "imu_head gyro",
-            "r_cleat_l_back",
-            "r_cleat_l_front",
-            "r_cleat_r_front",
-            "r_cleat_r_back",
-            "l_cleat_l_back",
-            "l_cleat_l_front",
-            "l_cleat_r_front",
-            "l_cleat_r_back",
+            "rlb",
+            "rlf",
+            "rrf",
+            "rrb",
+            "llb",
+            "llf",
+            "lrf",
+            "lrb",
             ]
         self.sensors_names.extend(self.position_sensors)
 
@@ -66,13 +66,23 @@ class WolfgangRobocupApi():
         self.socket = self.get_connection(addr)
         self.run()
 
+    def receive_msg(self):
+        msg_size = self.socket.recv(4)
+        msg_size = struct.unpack(">L", msg_size)[0]
+
+        data = bytearray()
+        while len(data) < msg_size:
+            packet = self.socket.recv(msg_size - len(data))
+            if not packet:
+                return None
+            data.extend(packet)
+        return data
+
     def run(self):
         self.first_run = True
         while not rospy.is_shutdown():
             # Parse sensor
-            msg_size = self.socket.recv(4)
-            msg_size = struct.unpack(">L", msg_size)[0]
-            msg = self.socket.recv(msg_size)
+            msg = self.receive_msg()
             self.handle_sensor_measurements_msg(msg)
 
             sensor_time_steps = None
@@ -176,41 +186,42 @@ class WolfgangRobocupApi():
             value = accelerometer.value
             if name == "imu accelerometer":
                 imu_accel = True
-                imu_msg.linear_acceleration.x = value[0]
-                imu_msg.linear_acceleration.y = value[1]
-                imu_msg.linear_acceleration.z = value[2]
+                imu_msg.linear_acceleration.x = value.X
+                imu_msg.linear_acceleration.y = value.Y
+                imu_msg.linear_acceleration.z = value.Z
             elif name == "imu_head accelerometer":
                 head_imu_accel = True
-                head_imu_msg.linear_acceleration.x = value[2]
-                head_imu_msg.linear_acceleration.y = value[0]
-                head_imu_msg.linear_acceleration.z = value[1]
+                head_imu_msg.linear_acceleration.x = value.Z
+                head_imu_msg.linear_acceleration.y = value.X
+                head_imu_msg.linear_acceleration.z = value.Y
             else:
                 rospy.logwarn(f"Unknown accelerometer: '{name}'", logger_name="rc_api")
 
         for gyro in gyros:
-            name = gyros.name
-            value = gyros.value
+            name = gyro.name
+            value = gyro.value
             if name == "imu gyro":
                 imu_gyro = True
-                imu_msg.linear_acceleration.x = value[0]
-                imu_msg.linear_acceleration.y = value[1]
-                imu_msg.linear_acceleration.z = value[2]
+                imu_msg.linear_acceleration.x = value.X
+                imu_msg.linear_acceleration.y = value.Y
+                imu_msg.linear_acceleration.z = value.Z
             elif name == "imu_head gyro":
                 head_imu_gyro = True
-                head_imu_msg.linear_acceleration.x = value[2]
-                head_imu_msg.linear_acceleration.y = value[0]
-                head_imu_msg.linear_acceleration.z = value[1]
+                head_imu_msg.linear_acceleration.x = value.Z
+                head_imu_msg.linear_acceleration.y = value.X
+                head_imu_msg.linear_acceleration.z = value.Y
             else:
                 rospy.logwarn(f"Unknown gyro: '{name}'", logger_name="rc_api")
 
         if imu_accel and imu_gyro:
-            self.pub_imu(imu_msg)
+            self.pub_imu.publish(imu_msg)
         if head_imu_accel and head_imu_gyro:
-            self.pub_head_imu(head_imu_msg)
+            self.pub_head_imu.publish(head_imu_msg)
 
     def handle_bumper_measurements(self, bumpers):
         for bumper in bumpers:
-            pass
+            name = bumper.name
+            rospy.logwarn(f"Unknown bumper: '{name}'", logger_name="rc_api")
 
     def handle_camera_measurements(self, cameras):
         for camera in cameras:
@@ -229,10 +240,10 @@ class WolfgangRobocupApi():
                 img_msg.header.frame_id = self.camera_optical_frame
                 img_msg.height = height
                 img_msg.width = width
-                img_msg.encoding = "rgb8"
+                img_msg.encoding = "bgr8"
                 img_msg.step = 3 * width
                 img_msg.data = image
-                self.pub_cam.publish(img_msg)
+                self.pub_camera.publish(img_msg)
             else:
                 rospy.logwarn(f"Unknown camera: '{name}'", logger_name="rc_api")
 
@@ -274,8 +285,9 @@ class WolfgangRobocupApi():
 
     def handle_position_sensor_measurements(self, position_sensors):
         state_msg = JointState()
+        state_msg.header.stamp = self.stamp
         for position_sensor in position_sensors:
-            state_msg.name.append(position_sensor.name)
+            state_msg.name.append(position_sensor.name[:-len('_sensor')])
             state_msg.position.append(position_sensor.value)
         self.pub_joint_states.publish(state_msg)
 
