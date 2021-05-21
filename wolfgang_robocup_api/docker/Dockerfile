@@ -45,11 +45,15 @@ RUN echo 1 && cd src && \
     python3 -m pip install -r bitbots_meta/requirements.txt && \
     python3 -m pip uninstall -y PyQt5 pydot silx && \
     rm -rf ~/.cache
+# Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
     rm -rf bitbots_tools/bitbots_jenkins_library bitbots_tools/bitbots_test bitbots_tools/containers \
     humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
     wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
-    lib/dynamixel_workbench_msgs
+    lib/dynamixel_workbench_msgs bitbots_misc/bitbots_live_tool_rqt bitbots_motion/bitbots_recordui_rqt \
+    humanoid_league_misc/humanoid_league_speaker && \
+    sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
+    sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml
 RUN sudo rosdep init && rosdep update
 RUN rosdep install -iry --from-paths src && \
     sudo apt-get clean && \
