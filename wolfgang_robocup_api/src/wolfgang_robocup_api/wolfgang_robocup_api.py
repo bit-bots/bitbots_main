@@ -3,6 +3,7 @@
 import os
 import sys
 import math
+import re
 import socket
 import rospy
 import rospkg
@@ -40,9 +41,9 @@ class WolfgangRobocupApi():
         urdf = URDF.from_xml_file(urdf_path)
         joints = [joint for joint in urdf.joints if joint.type == 'revolute']
         self.velocity_limits = {joint.name: joint.limit.velocity for joint in joints}
-        self.joint_names = [joint.name for joint in joints]
+        joint_names = [joint.name for joint in joints]
 
-        self.position_sensors = [name + "_sensor" for name in self.joint_names]
+        self.position_sensors = [self.joint_to_webots(name) + "_sensor" for name in joint_names]
         self.force3d_sensors = [
             "llb",
             "llf",
@@ -369,7 +370,7 @@ class WolfgangRobocupApi():
         state_msg = JointState()
         state_msg.header.stamp = self.stamp
         for position_sensor in position_sensors:
-            state_msg.name.append(position_sensor.name[:-len('_sensor')])
+            state_msg.name.append(self.webots_to_joint(position_sensor.name))
             state_msg.position.append(position_sensor.value)
         self.pub_joint_states.publish(state_msg)
 
@@ -394,12 +395,12 @@ class WolfgangRobocupApi():
 
         for i, name in enumerate(self.joint_command.joint_names):
             motor_position = messages_pb2.MotorPosition()
-            motor_position.name = name
+            motor_position.name = self.joint_to_webots(name)
             motor_position.position = self.joint_command.positions[i]
             actuator_requests.motor_positions.append(motor_position)
 
             motor_velocity = messages_pb2.MotorVelocity()
-            motor_velocity.name = name
+            motor_velocity.name = self.joint_to_webots(name)
             if len(self.joint_command.velocities) == 0 or self.joint_command.velocities[i] == -1:
                 motor_velocity.velocity = self.velocity_limits[name]
             else:
@@ -410,6 +411,16 @@ class WolfgangRobocupApi():
         msg_size = struct.pack(">L", len(msg))
         self.socket.send(msg_size + msg)
 
+    def joint_to_webots(self, joint):
+        if joint in ('RHipRoll', 'LHipRoll'):
+            return joint + ' [hip]'
+        elif joint in ('RShoulderPitch', 'LShoulderPitch'):
+            return joint + ' [shoulder]'
+        else:
+            return joint
+
+    def webots_to_joint(self, name):
+        return re.sub(r'( \[\w+\])?_sensor', '', name)
 
 if __name__ == '__main__':
     WolfgangRobocupApi()
