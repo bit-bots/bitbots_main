@@ -8,6 +8,7 @@ matplotlib
 numpy
 opencv-python
 pip
+protobuf
 psutil
 pydot
 pyopencl
