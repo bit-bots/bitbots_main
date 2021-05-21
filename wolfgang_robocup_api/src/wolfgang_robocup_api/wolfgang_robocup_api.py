@@ -184,10 +184,6 @@ class WolfgangRobocupApi():
         for force6d in force6ds:
             pass
 
-    def handle_gyro_measurements(self, gyros):
-        for gyro in gyros:
-            pass
-
     def handle_position_sensor_measurements(self, position_sensors):
         for position_sensor in position_sensors:
             pass
