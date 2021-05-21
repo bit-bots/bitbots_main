@@ -175,12 +175,14 @@ class WolfgangRobocupApi():
         imu_msg = Imu()
         imu_msg.header.stamp = self.stamp
         imu_msg.header.frame_id = self.imu_frame
+        imu_msg.orientation.w = 1
         imu_accel = imu_gyro = False
 
         # Head IMU
         head_imu_msg = Imu()
         head_imu_msg.header.stamp = self.stamp
         head_imu_msg.header.frame_id = self.head_imu_frame
+        head_imu_msg.orientation.w = 1
         head_imu_accel = head_imu_gyro = False
 
         # Extract data from message
@@ -205,14 +207,14 @@ class WolfgangRobocupApi():
             value = gyro.value
             if name == "imu gyro":
                 imu_gyro = True
-                imu_msg.linear_acceleration.x = value.X
-                imu_msg.linear_acceleration.y = value.Y
-                imu_msg.linear_acceleration.z = value.Z
+                imu_msg.angular_velocity.x = value.X
+                imu_msg.angular_velocity.y = value.Y
+                imu_msg.angular_velocity.z = value.Z
             elif name == "imu_head gyro":
                 head_imu_gyro = True
-                head_imu_msg.linear_acceleration.x = value.Z
-                head_imu_msg.linear_acceleration.y = value.X
-                head_imu_msg.linear_acceleration.z = value.Y
+                head_imu_msg.angular_velocity.x = value.Z
+                head_imu_msg.angular_velocity.y = value.X
+                head_imu_msg.angular_velocity.z = value.Y
             else:
                 rospy.logwarn(f"Unknown gyro: '{name}'", logger_name="rc_api")
 
