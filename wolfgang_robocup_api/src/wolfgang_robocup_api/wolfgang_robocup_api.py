@@ -28,6 +28,8 @@ class WolfgangRobocupApi():
         self.imu_frame = rospy.get_param('~imu_frame')
         self.head_imu_frame = rospy.get_param('~head_imu_frame')
 
+        self.joint_command = JointCommand()
+
         self.create_publishers()
         self.create_subscribers()
 
@@ -51,7 +53,10 @@ class WolfgangRobocupApi():
         self.pub_head_imu = rospy.Publisher(rospy.get_param('~imu_head_topic'), Imu, queue_size=1)
 
     def create_subscribers(self):
-        pass
+        self.sub_joint_command = rospy.Subscriber(rospy.get_param('~joint_command_topic'), JointCommand, self.joint_command_cb, queue_size=1)
+
+    def joint_command_cb(self, msg):
+        self.joint_command = msg
 
     def get_connection(self, addr):
         host, port = addr.split(':')
@@ -188,21 +193,30 @@ class WolfgangRobocupApi():
         for position_sensor in position_sensors:
             pass
 
-    def send_actuator_requests(self, sock):
+    def activate_sensors(self):
         sensor_time_step = messages_pb2.SensorTimeStep()
         sensor_time_step.name = "imu accelerometer"
         sensor_time_step.timeStep = self.MIN_CONTROL_STEP
-        motor_velocity = messages_pb2.MotorVelocity()
-        motor_velocity.name = "HeadTilt"
-        motor_velocity.velocity = 8.17
-        motor_position = messages_pb2.MotorPosition()
-        motor_position.name = "HeadTilt"
-        motor_position.position = -1.0
 
         a_r = messages_pb2.ActuatorRequests()
-        #a_r.sensor_time_steps.append(sensor_time_step)
-        a_r.motor_positions.append(motor_position)
-        a_r.motor_velocities.append(motor_velocity)
+        a_r.sensor_time_steps.append(sensor_time_step)
+        msg = a_r.SerializeToString()
+        msg_size = struct.pack(">L", len(msg))
+        self.socket.send(msg_size + msg)
+
+    def send_actuator_requests(self, sock):
+        a_r = messages_pb2.ActuatorRequests()
+
+        for name, pos in zip(self.joint_command.joint_names, self.joint_command.positions):
+            motor_velocity = messages_pb2.MotorVelocity()
+            motor_velocity.name = name
+            motor_velocity.velocity = 8.17
+            motor_position = messages_pb2.MotorPosition()
+            motor_position.name = name
+            motor_position.position = pos
+            a_r.motor_positions.append(motor_position)
+            a_r.motor_velocities.append(motor_velocity)
+
         msg = a_r.SerializeToString()
         msg_size = struct.pack(">L", len(msg))
         sock.send(msg_size + msg)
