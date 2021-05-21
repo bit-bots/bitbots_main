@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import math
 import socket
 import rospy
 import rospkg
@@ -25,7 +26,9 @@ class WolfgangRobocupApi():
 
         self.MIN_FRAME_STEP = rospy.get_param('~min_frame_step')  # ms
         self.MIN_CONTROL_STEP = rospy.get_param('~min_control_step')  # ms
+        self.camera_FOV = rospy.get_param('~camera_FOV')
 
+        self.camera_optical_frame = rospy.get_param('~camera_optical_frame')
         self.imu_frame = rospy.get_param('~imu_frame')
         self.head_imu_frame = rospy.get_param('~head_imu_frame')
 
@@ -64,7 +67,7 @@ class WolfgangRobocupApi():
         self.run()
 
     def run(self):
-        first_run = True
+        self.first_run = True
         while not rospy.is_shutdown():
             # Parse sensor
             msg_size = self.socket.recv(4)
@@ -73,15 +76,17 @@ class WolfgangRobocupApi():
             self.handle_sensor_measurements_msg(msg)
 
             sensor_time_steps = None
-            if first_run:
+            if self.first_run:
                 sensor_time_steps = self.get_sensor_time_steps(active=True)
             self.send_actuator_requests(sensor_time_steps)
-            first_run = False
+            self.first_run = False
         self.close_connection()
 
     def create_publishers(self):
         self.pub_clock = rospy.Publisher(rospy.get_param('~clock_topic'), Clock, queue_size=1)
         self.pub_server_time_clock = rospy.Publisher(rospy.get_param('~server_time_clock_topic'), Clock, queue_size=1)
+        self.pub_camera = rospy.Publisher(rospy.get_param('~camera_topic'), Image, queue_size=1)
+        self.pub_camera_info = rospy.Publisher(rospy.get_param('~camera_info_topic'), CameraInfo, queue_size=1, latch=True)
         self.pub_imu = rospy.Publisher(rospy.get_param('~imu_topic'), Imu, queue_size=1)
         self.pub_head_imu = rospy.Publisher(rospy.get_param('~imu_head_topic'), Imu, queue_size=1)
         self.pub_joint_states = rospy.Publisher(rospy.get_param('~joint_states_topic'), JointState, queue_size=1)
@@ -209,7 +214,51 @@ class WolfgangRobocupApi():
 
     def handle_camera_measurements(self, cameras):
         for camera in cameras:
-            pass
+            name = camera.name
+            if name == "camera":
+                width = camera.width
+                height = camera.height
+                quality = camera.quality  # 1 = raw image, 100 = no compression, 0 = high compression
+                image = camera.image  # RAW or JPEG encoded data (note: JPEG is not yet implemented)
+
+                if self.first_run:  # Publish CameraInfo once, it will be latched
+                    self.pub_camera_info(height, width)
+
+                img_msg = Image()
+                img_msg.header.stamp = self.stamp
+                img_msg.header.frame_id = self.camera_optical_frame
+                img_msg.height = height
+                img_msg.width = width
+                img_msg.encoding = "rgb8"
+                img_msg.step = 3 * width
+                img_msg.data = image
+                self.pub_cam.publish(img_msg)
+            else:
+                rospy.logwarn(f"Unknown camera: '{name}'", logger_name="rc_api")
+
+    def publish_camera_info(self, height, width):
+        camera_info_msg = CameraInfo()
+        camera_info_msg.header.stamp = self.step
+        camera_info_msg.header.frame_id = self.camera_optical_frame
+        camera_info_msg.height = height
+        camera_info_msg.width = width
+        f_y = self.mat_from_fov_and_resolution(
+            self.h_fov_to_v_fov(self.camera_FOV, height, width),
+            height)
+        f_x = self.mat_from_fov_and_resolution(self.camera_FOV, width)
+        camera_info_msg.K = [f_x, 0, width / 2,
+                        0, f_y, height / 2,
+                        0, 0, 1]
+        camera_info_msg.P = [f_x, 0, width / 2, 0,
+                        0, f_y, height / 2, 0,
+                        0, 0, 1, 0]
+        self.pub_camera_info.publish(camera_info_msg)
+
+    def mat_from_fov_and_resolution(self, fov, res):
+        return 0.5 * res * (math.cos((fov / 2)) / math.sin((fov / 2)))
+
+    def h_fov_to_v_fov(self, h_fov, height, width):
+        return 2 * math.atan(math.tan(h_fov * 0.5) * (height / width))
 
     def handle_force_measurements(self, forces):
         for force in forces:

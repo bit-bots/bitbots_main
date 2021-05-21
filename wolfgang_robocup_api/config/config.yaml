@@ -1,12 +1,16 @@
 min_frame_step: 16  # ms
 min_control_step: 8  # ms
 
+camera_FOV: 1.04
+
 
 ##########
 # TOPICS #
 ##########
 clock_topic: "/clock"
 server_time_clock_topic: "/server_time_clock"
+camera_topic: "camera/image_proc"
+camera_info_topic: "camera/camera_info"
 imu_topic: "imu/data_raw"
 imu_head_topic: "imu_head/data"
 joint_command_topic: "DynamixelController/command"
@@ -16,5 +20,6 @@ joint_states_topic: "joint_states"
 ##########
 # FRAMES #
 ##########
+camera_optical_frame: "camera_optical_frame"
 imu_frame: "imu_frame"
 head_imu_frame: "imu_frame_2"
