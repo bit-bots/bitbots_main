@@ -25,6 +25,9 @@ class WolfgangRobocupApi():
         self.MIN_FRAME_STEP = rospy.get_param('~min_frame_step')  # ms
         self.MIN_CONTROL_STEP = rospy.get_param('~min_control_step')  # ms
 
+        self.imu_frame = rospy.get_param('~imu_frame')
+        self.head_imu_frame = rospy.get_param('~head_imu_frame')
+
         self.create_publishers()
         self.create_subscribers()
 
@@ -71,52 +74,30 @@ class WolfgangRobocupApi():
     def handle_sensor_measurements_msg(self, msg):
         s_m = messages_pb2.SensorMeasurements()
         s_m.ParseFromString(msg)
-        print(s_m)
 
         self.handle_time(s_m.time)
         self.handle_real_time(s_m.real_time)
         self.handle_messages(s_m.messages)
-        self.handle_accelerometer_measurements(s_m.accelerometers)
+        self.handle_imu_data(s_m.accelerometers, s_m.gyros)
         self.handle_bumper_measurements(s_m.bumpers)
         self.handle_camera_measurements(s_m.cameras)
         self.handle_force_measurements(s_m.forces)
         self.handle_force3D_measurements(s_m.force3ds)
         self.handle_force6D_measurements(s_m.force6ds)
-        self.handle_gyro_measurements(s_m.gyros)
         self.handle_position_sensor_measurements(s_m.position_sensors)
-
-        # self.publish_imus()
-
-    def send_actuator_requests(self, sock):
-        sensor_time_step = messages_pb2.SensorTimeStep()
-        sensor_time_step.name = "imu accelerometer"
-        sensor_time_step.timeStep = self.MIN_CONTROL_STEP
-        motor_velocity = messages_pb2.MotorVelocity()
-        motor_velocity.name = "HeadTilt"
-        motor_velocity.velocity = 8.17
-        motor_position = messages_pb2.MotorPosition()
-        motor_position.name = "HeadTilt"
-        motor_position.position = -1.0
-
-        a_r = messages_pb2.ActuatorRequests()
-        #a_r.sensor_time_steps.append(sensor_time_step)
-        a_r.motor_positions.append(motor_position)
-        a_r.motor_velocities.append(motor_velocity)
-        msg = a_r.SerializeToString()
-        msg_size = struct.pack(">L", len(msg))
-        sock.send(msg_size + msg)
 
     def handle_time(self, time):
         # time stamp at which the measurements were performed expressed in [ms]
-        self.time = time
+        secs = time / 1000
+        ros_time = rospy.Time.from_seconds(secs)
+        self.stamp = ros_time
         msg = Clock()
-        msg.clock.secs = time // 1000
-        msg.clock.nsecs = (time % 1000) * 10**6
+        msg.clock.secs = ros_time.secs
+        msg.clock.nsecs = ros_time.nsec
         self.pub_clock.publish(msg)
 
     def handle_real_time(self, time):
         # real unix time stamp at which the measurements were performed in [ms]
-        self.server_time = time
         msg = Clock()
         msg.clock.secs = time // 1000
         msg.clock.nsecs = (time % 1000) * 10**6
@@ -132,9 +113,56 @@ class WolfgangRobocupApi():
             else:
                 rospy.logwarn(f"RECEIVED UNKNOWN MESSAGE: '{text}'", logger_name="rc_api")
 
-    def handle_accelerometer_measurements(self, accelerometers):
+    def handle_imu_data(self, accelerometers, gyros):
+        # Body IMU
+        imu_msg = Imu()
+        imu_msg.header.stamp = self.stamp
+        imu_msg.header.frame_id = self.imu_frame
+        imu_accel = imu_gyro = False
+
+        # Head IMU
+        head_imu_msg = Imu()
+        head_imu_msg.header.stamp = self.stamp
+        head_imu_msg.header.frame_id = self.head_imu_frame
+        head_imu_accel = head_imu_gyro = False
+
+        # Extract data from message
         for accelerometer in accelerometers:
-            pass
+            name = accelerometer.name
+            value = accelerometer.value
+            if name == "imu accelerometer":
+                imu_accel = True
+                imu_msg.linear_acceleration.x = value[0]
+                imu_msg.linear_acceleration.y = value[1]
+                imu_msg.linear_acceleration.z = value[2]
+            elif name == "imu_head accelerometer":
+                head_imu_accel = True
+                head_imu_msg.linear_acceleration.x = value[2]
+                head_imu_msg.linear_acceleration.y = value[0]
+                head_imu_msg.linear_acceleration.z = value[1]
+            else:
+                rospy.logwarn(f"Unknown accelerometer: '{name}'", logger_name="rc_api")
+
+        for gyro in gyros:
+            name = gyros.name
+            value = gyros.value
+            if name == "imu gyro":
+                imu_gyro = True
+                imu_msg.linear_acceleration.x = value[0]
+                imu_msg.linear_acceleration.y = value[1]
+                imu_msg.linear_acceleration.z = value[2]
+            elif name == "imu_head gyro":
+                head_imu_gyro = True
+                head_imu_msg.linear_acceleration.x = value[2]
+                head_imu_msg.linear_acceleration.y = value[0]
+                head_imu_msg.linear_acceleration.z = value[1]
+            else:
+                rospy.logwarn(f"Unknown gyro: '{name}'", logger_name="rc_api")
+
+        if imu_accel and imu_gyro:
+            self.pub_imu(imu_msg)
+        if head_imu_accel and head_imu_gyro:
+            self.pub_head_imu(head_imu_msg)
 
     def handle_bumper_measurements(self, bumpers):
         for bumper in bumpers:
@@ -164,41 +192,24 @@ class WolfgangRobocupApi():
         for position_sensor in position_sensors:
             pass
 
-    def get_imu_msg(self, head=False):
-        msg = Imu()
-        msg.header.stamp = rospy.Time.from_seconds(self.time)
-        if head:
-            msg.header.frame_id = self.head_imu_frame
-        else:
-            msg.header.frame_id = self.imu_frame
+    def send_actuator_requests(self, sock):
+        sensor_time_step = messages_pb2.SensorTimeStep()
+        sensor_time_step.name = "imu accelerometer"
+        sensor_time_step.timeStep = self.MIN_CONTROL_STEP
+        motor_velocity = messages_pb2.MotorVelocity()
+        motor_velocity.name = "HeadTilt"
+        motor_velocity.velocity = 8.17
+        motor_position = messages_pb2.MotorPosition()
+        motor_position.name = "HeadTilt"
+        motor_position.position = -1.0
 
-        # change order because webots has different axis
-        if head:
-            accel_vels = self.accel_head.getValues()
-            msg.linear_acceleration.x = accel_vels[2]
-            msg.linear_acceleration.y = -accel_vels[0]
-            msg.linear_acceleration.z = -accel_vels[1]
-        else:
-            accel_vels = self.accel.getValues()
-            msg.linear_acceleration.x = accel_vels[0]
-            msg.linear_acceleration.y = accel_vels[1]
-            msg.linear_acceleration.z = accel_vels[2]
-
-        if head:
-            gyro_vels = self.gyro_head.getValues()
-            msg.angular_velocity.x = gyro_vels[2]
-            msg.angular_velocity.y = -gyro_vels[0]
-            msg.angular_velocity.z = -gyro_vels[1]
-        else:
-            gyro_vels = self.gyro.getValues()
-            msg.angular_velocity.x = gyro_vels[0]
-            msg.angular_velocity.y = gyro_vels[1]
-            msg.angular_velocity.z = gyro_vels[2]
-        return msg
-
-    def publish_imus(self):
-        self.pub_imu(self.get_imu_msg(head=False))
-        self.pub_head_imu(self.get_imu_msg(head=True))
+        a_r = messages_pb2.ActuatorRequests()
+        #a_r.sensor_time_steps.append(sensor_time_step)
+        a_r.motor_positions.append(motor_position)
+        a_r.motor_velocities.append(motor_velocity)
+        msg = a_r.SerializeToString()
+        msg_size = struct.pack(">L", len(msg))
+        sock.send(msg_size + msg)
 
 
 if __name__ == '__main__':
