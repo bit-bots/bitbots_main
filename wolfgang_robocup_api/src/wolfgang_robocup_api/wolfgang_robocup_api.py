@@ -107,8 +107,8 @@ class WolfgangRobocupApi():
         self.pub_camera_info = rospy.Publisher(rospy.get_param('~camera_info_topic'), CameraInfo, queue_size=1, latch=True)
         self.pub_imu = rospy.Publisher(rospy.get_param('~imu_topic'), Imu, queue_size=1)
         self.pub_head_imu = rospy.Publisher(rospy.get_param('~imu_head_topic'), Imu, queue_size=1)
-        self.pub_pressure_left = rospy.Publisher(rospy.get_param('~foot_pressure_left_topic'), FootPressure, queue_size=1))
-        self.pub_pressure_right = rospy.Publisher(rospy.get_param('~foot_pressure_right_topic'), FootPressure, queue_size=1))
+        self.pub_pressure_left = rospy.Publisher(rospy.get_param('~foot_pressure_left_topic'), FootPressure, queue_size=1)
+        self.pub_pressure_right = rospy.Publisher(rospy.get_param('~foot_pressure_right_topic'), FootPressure, queue_size=1)
         self.pub_cop_l = rospy.Publisher(rospy.get_param('~cop_left_topic'), PointStamped, queue_size=1)
         self.pub_cop_r_ = rospy.Publisher(rospy.get_param('~cop_right_topic'), PointStamped, queue_size=1)
         self.pub_joint_states = rospy.Publisher(rospy.get_param('~joint_states_topic'), JointState, queue_size=1)
@@ -290,7 +290,6 @@ class WolfgangRobocupApi():
             rospy.logwarn(f"Unknown force measurement: '{force.name}'", logger_name="rc_api")
 
     def handle_force3D_measurements(self, force3ds):
-        dim = 2  # Dimension of the force value in the vector3
         data = {}
         for force3d in force3ds:
             name = force3d.name
@@ -302,18 +301,18 @@ class WolfgangRobocupApi():
         left_pressure_msg = FootPressure()
         left_pressure_msg.header.stamp = self.stamp
         # TODO: Frame IDs
-        left_pressure_msg.left_back = data['llb'][dim]
-        left_pressure_msg.left_front = data['llf'][dim]
-        left_pressure_msg.right_front = data['lrf'][dim]
-        left_pressure_msg.right_back = data['lrb'][dim]
+        left_pressure_msg.left_back = data['llb'].Z
+        left_pressure_msg.left_front = data['llf'].Z
+        left_pressure_msg.right_front = data['lrf'].Z
+        left_pressure_msg.right_back = data['lrb'].Z
 
         right_pressure_msg = FootPressure()
         right_pressure_msg.header.stamp = self.stamp
         # TODO: Frame IDs
-        right_pressure_msg.left_back = data['rlb'][dim]
-        right_pressure_msg.left_front = data['rlf'][dim]
-        right_pressure_msg.right_front = data['rrf'][dim]
-        right_pressure_msg.right_back = data['rrb'][dim]
+        right_pressure_msg.left_back = data['rlb'].Z
+        right_pressure_msg.left_front = data['rlf'].Z
+        right_pressure_msg.right_front = data['rrf'].Z
+        right_pressure_msg.right_back = data['rrb'].Z
 
         # compute center of pressures of the feet
         pos_x = 0.085
