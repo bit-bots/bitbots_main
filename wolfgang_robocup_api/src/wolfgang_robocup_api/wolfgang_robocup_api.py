@@ -84,6 +84,7 @@ class WolfgangRobocupApi():
         self.pub_server_time_clock = rospy.Publisher(rospy.get_param('~server_time_clock_topic'), Clock, queue_size=1)
         self.pub_imu = rospy.Publisher(rospy.get_param('~imu_topic'), Imu, queue_size=1)
         self.pub_head_imu = rospy.Publisher(rospy.get_param('~imu_head_topic'), Imu, queue_size=1)
+        self.pub_joint_states = rospy.Publisher(rospy.get_param('~joint_states_topic'), JointState, queue_size=1)
 
     def create_subscribers(self):
         self.sub_joint_command = rospy.Subscriber(rospy.get_param('~joint_command_topic'), JointCommand, self.joint_command_cb, queue_size=1)
@@ -223,8 +224,11 @@ class WolfgangRobocupApi():
             pass
 
     def handle_position_sensor_measurements(self, position_sensors):
+        state_msg = JointState()
         for position_sensor in position_sensors:
-            pass
+            state_msg.name.append(position_sensor.name)
+            state_msg.position.append(position_sensor.value)
+        self.pub_joint_states.publish(state_msg)
 
     def get_sensor_time_steps(self, active=True):
         sensor_time_steps = []
