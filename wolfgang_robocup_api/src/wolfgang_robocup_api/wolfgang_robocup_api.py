@@ -5,6 +5,7 @@ import socket
 import rospy
 import rospkg
 import struct
+from urdf_parser_py.urdf import URDF
 
 from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import PointStamped
@@ -27,6 +28,12 @@ class WolfgangRobocupApi():
 
         self.imu_frame = rospy.get_param('~imu_frame')
         self.head_imu_frame = rospy.get_param('~head_imu_frame')
+
+        # Parse URDF
+        urdf_path = os.path.join(rospack.get_path('wolfgang_description'), 'urdf', 'robot.urdf')
+        urdf = URDF.from_xml_file(urdf_path)
+        joints = [joint for joint in urdf.joints if joint.type == 'revolute']
+        self.velocity_limits = {joint.name: joint.limits.velocity for joint in joints}
 
         self.joint_command = JointCommand()
 
@@ -207,14 +214,18 @@ class WolfgangRobocupApi():
     def send_actuator_requests(self, sock):
         a_r = messages_pb2.ActuatorRequests()
 
-        for name, pos in zip(self.joint_command.joint_names, self.joint_command.positions):
-            motor_velocity = messages_pb2.MotorVelocity()
-            motor_velocity.name = name
-            motor_velocity.velocity = 8.17
+        for i, name in enumerate(self.joint_command.joint_names):
             motor_position = messages_pb2.MotorPosition()
             motor_position.name = name
-            motor_position.position = pos
+            motor_position.position = self.joint_command.positions[i]
             a_r.motor_positions.append(motor_position)
+
+            motor_velocity = messages_pb2.MotorVelocity()
+            motor_velocity.name = name
+            if len(self.joint_command.velocities) == 0 or self.joint_command.velocities[i] == -1:
+                motor_velocity.velocity = self.velocity_limits
+            else:
+                motor_velocity.velocity = self.joint_command.velocities[i]
             a_r.motor_velocities.append(motor_velocity)
 
         msg = a_r.SerializeToString()
