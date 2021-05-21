@@ -44,11 +44,14 @@ class RobotController:
         self.pressure_sensors = None
         if robot == 'wolfgang':
             self.is_wolfgang = True
-            self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
-                                "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch", "LHipPitch",
+            self.motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll", "LShoulderRoll", "RElbow",
+                                "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]", "LHipRoll [hip]", "RHipPitch", "LHipPitch",
                                 "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan",
                                 "HeadTilt"]
-            self.external_motor_names = self.motor_names
+            self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
+                                         "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
+                                         "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
+                                         "LAnkleRoll", "HeadPan", "HeadTilt"]
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
