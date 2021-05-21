@@ -207,7 +207,7 @@ class Transformer(object):
             # Check if footpoint is not in the bottom area of the image, to filter out goal posts without visible footpoint
             image_vertical_resolution =  self._camera_info.height / max(self._camera_info.binning_y, 1)
             # Check if post is not going out of the image at the bottom
-            if self._check_if_not_bottom_of_the_image(
+            if not self._object_at_bottom_of_image(
                     goal_post_in_image.foot_point.y,
                     rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 0.8)):
                 # Transform footpoint
@@ -243,7 +243,7 @@ class Transformer(object):
             point.x = o.top_left.x + o.width/2
             point.y = o.top_left.y + o.height
             # Check if post is not going out of the image at the bottom
-            if self._check_if_not_bottom_of_the_image(
+            if not self._object_at_bottom_of_image(
                     point.y,
                     rospy.get_param("~obstacles/footpoint_out_of_image_threshold", 0.8)):
                 position = self._transform_point(point, field, msg.header.stamp)
@@ -424,10 +424,16 @@ class Transformer(object):
 
         return ray_directions
 
-    def _check_if_not_bottom_of_the_image(self, position, thresh):
+    def _object_at_bottom_of_image(self, position, thresh):
+        """
+        Checks if the objects y position is at the bottom of the image.
+
+        :param position: Y-position of the object
+        :param thresh: Thrshol defining the region at the bottom of the image which is counted as 'the bottom'
+        """
         image_height = self._camera_info.height / max(self._camera_info.binning_y, 1)
         scaled_thresh = thresh * image_height
-        return image_height - position < scaled_thresh
+        return position > scaled_thresh
 
 
 if __name__ == "__main__":
