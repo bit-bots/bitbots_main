@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import math
 import socket
 import rospy
@@ -131,8 +132,10 @@ class WolfgangRobocupApi():
             return sock
         elif response == "Refused\0":
             rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
+            sys.exit(1)
         else:
             rospy.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
+            sys.exit(1)
 
     def close_connection(self):
         self.socket.close()
