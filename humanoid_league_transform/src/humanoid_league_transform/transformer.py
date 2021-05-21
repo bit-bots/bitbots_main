@@ -432,7 +432,7 @@ class Transformer(object):
         Checks if the objects y position is at the bottom of the image.
 
         :param position: Y-position of the object
-        :param thresh: Thrshol defining the region at the bottom of the image which is counted as 'the bottom'
+        :param thresh: Threshold defining the region at the bottom of the image which is counted as 'the bottom' as a fraction of the image height
         """
         image_height = self._camera_info.height / max(self._camera_info.binning_y, 1)
         scaled_thresh = thresh * image_height
