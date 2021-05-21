@@ -290,6 +290,9 @@ class WolfgangRobocupApi():
             rospy.logwarn(f"Unknown force measurement: '{force.name}'", logger_name="rc_api")
 
     def handle_force3D_measurements(self, force3ds):
+        if not force3ds:
+            return
+
         data = {}
         for force3d in force3ds:
             name = force3d.name
