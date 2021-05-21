@@ -225,7 +225,7 @@ class CandidateFinder(object):
     :meth:`.get_candidates` and :meth:`.compute`.
 
     Examples of such subclasses are :class:`bitbots_vision.vision_modules.obstcle.ObstacleDetector` and
-    :class:`bibtots_vision.vision_modules.fcnn_handler.FcnnHandler`.
+    :class:`bibtots_vision.vision_modules.yolo_handler.YoloBallDetector`.
     They produce a set of so called *Candidates* which are instances of the class :class:`bitbots_vision.vision_modules.candidate.Candidate`.
     """
     def __init__(self):

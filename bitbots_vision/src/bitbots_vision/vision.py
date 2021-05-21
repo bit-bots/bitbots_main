@@ -14,7 +14,7 @@ from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
     ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
     GoalPostInImageArray, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
-    fcnn_handler, live_fcnn_03, obstacle, yolo_handler, ros_utils, candidate
+    obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorLookupTable
 try:
@@ -54,9 +54,7 @@ class Vision:
         self._pub_line_mask = None
         self._pub_obstacle = None
         self._pub_goal_posts = None
-        self._pub_ball_fcnn = None
         self._pub_debug_image = None
-        self._pub_debug_fcnn_image = None
         self._pub_convex_field_boundary = None
         self._pub_white_mask_image = None
         self._pub_red_mask_image = None
@@ -186,22 +184,6 @@ class Vision:
             # Create debug drawer
             self._debug_image_creator = debug.DebugImage(config['vision_publish_debug_image'])
 
-        # Should the fcnn output (only under the field boundary) be published?
-        if ros_utils.config_param_change(self._config, config, 'ball_fcnn_publish_output'):
-            self._ball_fcnn_publish_output = config['ball_fcnn_publish_output']
-            if self._ball_fcnn_publish_output:
-                rospy.loginfo('ball FCNN output publishing is enabled', logger_name="vision")
-            else:
-                rospy.loginfo('ball FCNN output publishing is disabled', logger_name="vision")
-
-        # Should the whole fcnn output be published?
-        if ros_utils.config_param_change(self._config, config, 'ball_fcnn_publish_debug_img'):
-            self._publish_fcnn_debug_image = config['ball_fcnn_publish_debug_img']
-            if self._publish_fcnn_debug_image:
-                rospy.loginfo('Ball FCNN debug image publishing is enabled', logger_name="vision_fcnn")
-            else:
-                rospy.loginfo('Ball FCNN debug image publishing is disabled', logger_name="vision_fcnn")
-
         # Should the HSV mask images be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_HSV_mask_image'):
             self._publish_HSV_mask_image = config['vision_publish_HSV_mask_image']
@@ -291,31 +273,6 @@ class Vision:
                 self._obstacle_detector,
                 self._white_color_detector,
                 threshold=config['obstacle_color_threshold'])
-
-        # Check if the fcnn is activated
-        if config['neural_network_type'] == 'fcnn':
-            # Check if its the first callback, the fcnn is newly activated or the model has changed
-            if ros_utils.config_param_change(self._config, config, ['fcnn_model_path', 'neural_network_type']):
-                # Build absolute model path
-                ball_fcnn_path = os.path.join(self._package_path, 'models', config['fcnn_model_path'])
-                # Check if it exists
-                if not os.path.exists(os.path.join(ball_fcnn_path, "model_final.index")):
-                    rospy.logerr('AAAAHHHH! The specified fcnn model file doesn\'t exist! Maybe its a YOLO model? Look twice.', logger_name="vision_fcnn")
-                else:
-                    self._ball_fcnn = live_fcnn_03.FCNN03(ball_fcnn_path)
-                    rospy.loginfo("FCNN vision is running now", logger_name="vision_fcnn")
-            #Check if ball_fcnn _config or the neural network type has changed
-            if ros_utils.config_param_change(self._config, config, r'^ball_fcnn_') or \
-                    ros_utils.config_param_change(self._config, config, 'neural_network_type'):
-                # Set fcnn handler
-                self._ball_detector = fcnn_handler.FcnnHandler(
-                    config,
-                    self._ball_fcnn)
-                # When using the FCNN, set the conventional goalpost detector.
-                self._goalpost_detector = obstacle.ColorObstacleDetector(
-                    self._obstacle_detector,
-                    self._white_color_detector,
-                    threshold=config['obstacle_color_threshold'])
 
         # Check if the yolo ball/goalpost detector is activated and if the non tpu version is used
         if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
@@ -419,10 +376,8 @@ class Vision:
         self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
         self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
         self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
-        self._pub_ball_fcnn = ros_utils.create_or_update_publisher(self._config, config, self._pub_ball_fcnn, 'ROS_fcnn_img_msg_topic', RegionOfInterestWithImage)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
-        self._pub_debug_fcnn_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_fcnn_image, 'ROS_debug_fcnn_image_msg_topic', Image)
         self._pub_white_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
         self._pub_red_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
         self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
@@ -511,16 +466,16 @@ class Vision:
         # Check if the vision should run the conventional and neural net part parallel
         if self._config['vision_parallelize']:
             # Create and start threads for conventional calculation and neural net
-            fcnn_thread = Thread(target=self._ball_detector.compute)
+            neural_network_thread = Thread(target=self._ball_detector.compute)
 
             conventional_thread = Thread(target=self._conventional_precalculation())
 
             conventional_thread.start()
-            fcnn_thread.start()
+            neural_network_thread.start()
 
             # Wait for both threads
             conventional_thread.join()
-            fcnn_thread.join()
+            neural_network_thread.join()
         else:
             # Calc conventional calculation and neural net
             self._ball_detector.compute()
@@ -684,20 +639,6 @@ class Vision:
         #########
         # Debug #
         #########
-
-        if self._config['neural_network_type'] == 'fcnn':
-            # Publish fcnn output for the region of interest under the field boundary (for the world model)
-            if self._ball_fcnn_publish_output:
-                roi_msg = ros_utils.build_fcnn_region_of_interest(
-                    self._ball_detector.get_fcnn_output(),
-                    self._field_boundary_detector,
-                    image_msg.header,
-                    self._config['ball_fcnn_publish_field_boundary_offset'])
-                self._pub_ball_fcnn.publish(roi_msg)
-
-            # Publish whole fcnn output for debug purposes
-            if self._publish_fcnn_debug_image:
-                self._pub_debug_fcnn_image.publish(self._ball_detector.get_debug_image())
 
         # Check, if HSV mask images should be published
         if self._publish_HSV_mask_image:
