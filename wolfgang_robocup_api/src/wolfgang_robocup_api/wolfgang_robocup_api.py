@@ -31,6 +31,8 @@ class WolfgangRobocupApi():
         self.camera_optical_frame = rospy.get_param('~camera_optical_frame')
         self.imu_frame = rospy.get_param('~imu_frame')
         self.head_imu_frame = rospy.get_param('~head_imu_frame')
+        self.l_sole_frame = rospy.get_param('~l_sole_frame')
+        self.r_sole_frame = rospy.get_param('~r_sole_frame')
 
         # Parse URDF
         urdf_path = os.path.join(rospack.get_path('wolfgang_description'), 'urdf', 'robot.urdf')
@@ -40,22 +42,25 @@ class WolfgangRobocupApi():
         self.joint_names = [joint.name for joint in joints]
 
         self.position_sensors = [name + "_sensor" for name in self.joint_names]
+        self.force3d_sensors = [
+            "llb",
+            "llf",
+            "lrf",
+            "lrb",
+            "rlb",
+            "rlf",
+            "rrf",
+            "rrb",
+        ]
         self.sensors_names = [
             "camera",
             "imu accelerometer",
             "imu gyro",
             "imu_head accelerometer",
             "imu_head gyro",
-            "rlb",
-            "rlf",
-            "rrf",
-            "rrb",
-            "llb",
-            "llf",
-            "lrf",
-            "lrb",
             ]
         self.sensors_names.extend(self.position_sensors)
+        self.sensors_names.extend(self.force3d_sensors)
 
         self.joint_command = JointCommand()
 
@@ -102,6 +107,10 @@ class WolfgangRobocupApi():
         self.pub_camera_info = rospy.Publisher(rospy.get_param('~camera_info_topic'), CameraInfo, queue_size=1, latch=True)
         self.pub_imu = rospy.Publisher(rospy.get_param('~imu_topic'), Imu, queue_size=1)
         self.pub_head_imu = rospy.Publisher(rospy.get_param('~imu_head_topic'), Imu, queue_size=1)
+        self.pub_pressure_left = rospy.Publisher(rospy.get_param('~foot_pressure_left_topic'), FootPressure, queue_size=1))
+        self.pub_pressure_right = rospy.Publisher(rospy.get_param('~foot_pressure_right_topic'), FootPressure, queue_size=1))
+        self.pub_cop_l = rospy.Publisher(rospy.get_param('~cop_left_topic'), PointStamped, queue_size=1)
+        self.pub_cop_r_ = rospy.Publisher(rospy.get_param('~cop_right_topic'), PointStamped, queue_size=1)
         self.pub_joint_states = rospy.Publisher(rospy.get_param('~joint_states_topic'), JointState, queue_size=1)
 
     def create_subscribers(self):
@@ -225,8 +234,7 @@ class WolfgangRobocupApi():
 
     def handle_bumper_measurements(self, bumpers):
         for bumper in bumpers:
-            name = bumper.name
-            rospy.logwarn(f"Unknown bumper: '{name}'", logger_name="rc_api")
+            rospy.logwarn(f"Unknown bumper: '{bumper.name}'", logger_name="rc_api")
 
     def handle_camera_measurements(self, cameras):
         for camera in cameras:
@@ -279,15 +287,78 @@ class WolfgangRobocupApi():
 
     def handle_force_measurements(self, forces):
         for force in forces:
-            pass
+            rospy.logwarn(f"Unknown force measurement: '{force.name}'", logger_name="rc_api")
 
     def handle_force3D_measurements(self, force3ds):
+        dim = 2  # Dimension of the force value in the vector3
+        data = {}
         for force3d in force3ds:
-            pass
+            name = force3d.name
+            if name in self.force3d_sensors:
+                data[name] = force3d.value
+            else:
+                rospy.logwarn(f"Unknown force3d measurement: '{name}'", logger_name="rc_api")
+
+        left_pressure_msg = FootPressure()
+        left_pressure_msg.header.stamp = self.stamp
+        # TODO: Frame IDs
+        left_pressure_msg.left_back = data['llb'][dim]
+        left_pressure_msg.left_front = data['llf'][dim]
+        left_pressure_msg.right_front = data['lrf'][dim]
+        left_pressure_msg.right_back = data['lrb'][dim]
+
+        right_pressure_msg = FootPressure()
+        right_pressure_msg.header.stamp = self.stamp
+        # TODO: Frame IDs
+        right_pressure_msg.left_back = data['rlb'][dim]
+        right_pressure_msg.left_front = data['rlf'][dim]
+        right_pressure_msg.right_front = data['rrf'][dim]
+        right_pressure_msg.right_back = data['rrb'][dim]
+
+        # compute center of pressures of the feet
+        pos_x = 0.085
+        pos_y = 0.045
+        # we can take a very small threshold, since simulation gives more accurate values than reality
+        threshold = 1
+
+        cop_l_msg = PointStamped()
+        cop_l_msg.header.stamp = self.stamp
+        cop_l_msg.header.frame_id = self.l_sole_frame
+        sum = left_pressure_msg.left_back + left_pressure_msg.left_front + left_pressure_msg.right_front + left_pressure_msg.right_back
+        if sum > threshold:
+            cop_l_msg.point.x = (left_pressure_msg.left_front + left_pressure_msg.right_front -
+                             left_pressure_msg.left_back - left_pressure_msg.right_back) * pos_x / sum
+            cop_l_msg.point.x = max(min(cop_l_msg.point.x, pos_x), -pos_x)
+            cop_l_msg.point.y = (left_pressure_msg.left_front + left_pressure_msg.left_back -
+                             left_pressure_msg.right_front - left_pressure_msg.right_back) * pos_y / sum
+            cop_l_msg.point.y = max(min(cop_l_msg.point.x, pos_y), -pos_y)
+        else:
+            cop_l_msg.point.x = 0
+            cop_l_msg.point.y = 0
+
+        cop_r_msg = PointStamped()
+        cop_r_msg.header.stamp = self.stamp
+        cop_r_msg.header.frame_id = self.r_sole_frame
+        sum = right_pressure_msg.right_back + right_pressure_msg.right_front + right_pressure_msg.right_front + right_pressure_msg.right_back
+        if sum > threshold:
+            cop_r_msg.point.x = (right_pressure_msg.left_front + right_pressure_msg.right_front -
+                             right_pressure_msg.left_back - right_pressure_msg.right_back) * pos_x / sum
+            cop_r_msg.point.x = max(min(cop_r_msg.point.x, pos_x), -pos_x)
+            cop_r_msg.point.y = (right_pressure_msg.left_front + right_pressure_msg.left_back -
+                             right_pressure_msg.right_front - right_pressure_msg.right_back) * pos_y / sum
+            cop_r_msg.point.y = max(min(cop_r_msg.point.x, pos_y), -pos_y)
+        else:
+            cop_r_msg.point.x = 0
+            cop_r_msg.point.y = 0
+
+        self.pub_pressure_left.publish(left_pressure_msg)
+        self.pub_pressure_right.publish(right_pressure_msg)
+        self.pub_cop_l.publish(cop_l_msg)
+        self.pub_cop_r_.publish(cop_r_msg)
 
     def handle_force6D_measurements(self, force6ds):
         for force6d in force6ds:
-            pass
+            rospy.logwarn(f"Unknown force6d measurement: '{force6d.name}'", logger_name="rc_api")
 
     def handle_position_sensor_measurements(self, position_sensors):
         state_msg = JointState()

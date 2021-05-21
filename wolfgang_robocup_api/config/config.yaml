@@ -13,6 +13,12 @@ camera_topic: "camera/image_proc"
 camera_info_topic: "camera/camera_info"
 imu_topic: "imu/data_raw"
 imu_head_topic: "imu_head/data"
+
+foot_pressure_left_topic: "foot_pressure_left/filtered"
+foot_pressure_right_topic: "foot_pressure_right/filtered"
+cop_left_topic: "cop_l"
+cop_right_topic: "cop_r"
+
 joint_command_topic: "DynamixelController/command"
 joint_states_topic: "joint_states"
 
@@ -23,3 +29,5 @@ joint_states_topic: "joint_states"
 camera_optical_frame: "camera_optical_frame"
 imu_frame: "imu_frame"
 head_imu_frame: "imu_frame_2"
+l_sole_frame: "l_sole"
+r_sole_frame: "r_sole"
