@@ -4,8 +4,8 @@ ball_position_publish_topic: 'ball_position_relative_filtered'
 ball_movement_publish_topic: 'ball_relative_movement'
 ball_publish_topic: 'ball_relative_filtered'
 
-filter_frame: 'odom'
-# filter_frame: 'map'
+#filter_frame: 'odom'
+filter_frame: 'map'
 
 # Filtering rate in Hz
 filter_rate: 10
