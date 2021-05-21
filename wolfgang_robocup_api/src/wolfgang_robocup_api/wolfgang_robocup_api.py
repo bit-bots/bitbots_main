@@ -39,6 +39,7 @@ class WolfgangRobocupApi():
             msg_size = struct.unpack("<L", msg_size)[0]
             msg = self.socket.recv(msg_size)
             self.handle_sensor_measurements_msg(msg)
+        self.close(self.socket)
 
     def create_publishers(self):
         self.pub_clock = rospy.Publisher(
@@ -64,8 +65,8 @@ class WolfgangRobocupApi():
         else:
             rospy.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
 
-    def close(self):
-        self.socket.close()
+    def close(self, sock):
+        sock.close()
 
     def handle_sensor_measurements_msg(self, msg):
         s_m = messages_pb2.SensorMeasurements()
@@ -75,6 +76,13 @@ class WolfgangRobocupApi():
         self.handle_real_time(s_m.real_time)
         self.handle_messages(s_m.messages)
         self.handle_accelerometer_measurements(s_m.accelerometers)
+        self.handle_bumper_measurements(s_m.bumpers)
+        self.handle_camera_measurements(s_m.cameras)
+        self.handle_force_measurements(s_m.forces)
+        self.handle_force3D_measurements(s_m.force3ds)
+        self.handle_force6D_measurements(s_m.force6ds)
+        self.handle_gyro_measurements(s_m.gyros)
+        self.handle_position_sensor_measurements(s_m.position_sensors)
 
     def handle_time(self, time):
         # time stamp at which the measurements were performed expressed in [ms]
@@ -101,6 +109,35 @@ class WolfgangRobocupApi():
     def handle_accelerometer_measurements(self, accelerometers):
         for accelerometer in accelerometers:
             pass
+
+    def handle_bumper_measurements(self, bumpers):
+        for bumper in bumpers:
+            pass
+
+    def handle_camera_measurements(self, cameras):
+        for camera in cameras:
+            pass
+
+    def handle_force_measurements(self, forces):
+        for force in forces:
+            pass
+
+    def handle_force3D_measurements(self, force3ds):
+        for force3d in force3ds:
+            pass
+
+    def handle_force6D_measurements(self, force6ds):
+        for force6d in force6ds:
+            pass
+
+    def handle_gyro_measurements(self, gyros):
+        for gyro in gyros:
+            pass
+
+    def handle_position_sensor_measurements(self, position_sensors):
+        for position_sensor in position_sensors:
+            pass
+
 
 if __name__ == '__main__':
     WolfgangRobocupApi()
