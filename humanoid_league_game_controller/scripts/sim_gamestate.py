@@ -59,7 +59,11 @@ if __name__ == "__main__":
 
     rospy.init_node('sim_gamestate')
 
-    state_publisher = rospy.Publisher('gamestate', GameStateMsg, queue_size=1, latch=True)
+    namespaces = ['amy/', 'rory/', 'jack/', 'donna/', '']
+    publishers = [
+            rospy.Publisher(n + 'gamestate', GameStateMsg, queue_size=1, latch=True)
+            for n in namespaces
+    ]
 
     gameState = GameStateMsg()
     gameState.header.stamp = rospy.Time.now()
@@ -94,7 +98,9 @@ if __name__ == "__main__":
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
-            state_publisher.publish(gameState)
+            for publisher in publishers:
+                publisher.publish(gameState)
+
             print("Allowed to move:      " + str(gameState.allowedToMove) + "       \nGamestate:            " + str(
                 gameState.gameState) + "       \nSecondary State:      " + str(
                 gameState.secondaryState) + "       \nSecondary State Team: " + str(
