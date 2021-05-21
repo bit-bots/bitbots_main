@@ -36,7 +36,7 @@ class WolfgangRobocupApi():
     def run(self):
         while not rospy.is_shutdown():
             msg_size = self.socket.recv(4)
-            msg_size = struct.unpack("<L", msg_size)[0]
+            msg_size = struct.unpack(">L", msg_size)[0]
             msg = self.socket.recv(msg_size)
             self.handle_sensor_measurements_msg(msg)
         self.close(self.socket)
