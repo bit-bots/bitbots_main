@@ -14,9 +14,15 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4C4EDF8933745916876
 RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /etc/apt/sources.list.d/ros.list'
 RUN apt-get update
 RUN apt-get install -y build-essential git sudo dia python3-pip python3-coverage python3-rospkg python3-catkin-pkg \
-    python3-catkin-lint python3-rosdep python3-sphinx python3-sphinx-rtd-theme python3-breathe ros-melodic-ros-base
-RUN python3 -m pip install exhale
-RUN python3 -m pip install git+https://github.com/catkin/catkin_tools
+    python3-catkin-lint python3-rosdep python3-sphinx python3-sphinx-rtd-theme python3-breathe ros-melodic-ros-base \
+    locales
+RUN pip3 install -U pip git+https://github.com/catkin/catkin_tools.git
+
+# Set up locale
+RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # Add user
 ARG UID=150
@@ -35,7 +41,8 @@ RUN . /opt/ros/melodic/setup.sh && \
     catkin config --profile default --extend /opt/ros/melodic -DPYTHON_VERSION=3 -DCMAKE_BUILD_TYPE=Release
 RUN cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
-    git -C bitbots_meta submodule foreach git checkout master
+    git -C bitbots_meta submodule foreach git checkout master && \
+    python3 -m pip install -r bitbots_meta/requirements.txt
 RUN sudo rosdep init && rosdep update
 RUN rosdep install -iry --from-paths src
 RUN catkin build
