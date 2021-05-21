@@ -39,12 +39,21 @@ RUN . /opt/ros/melodic/setup.sh && \
     mkdir src && \
     catkin init && \
     catkin config --profile default --extend /opt/ros/melodic -DPYTHON_VERSION=3 -DCMAKE_BUILD_TYPE=Release
-RUN cd src && \
+RUN echo 1 && cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
-    python3 -m pip install -r bitbots_meta/requirements.txt
+    python3 -m pip install -r bitbots_meta/requirements.txt && \
+    python3 -m pip uninstall -y PyQt5 pydot silx && \
+    rm -rf ~/.cache
+RUN cd src/bitbots_meta && \
+    rm -rf bitbots_tools/bitbots_jenkins_library bitbots_tools/bitbots_test bitbots_tools/containers \
+    humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
+    wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
+    lib/dynamixel_workbench_msgs
 RUN sudo rosdep init && rosdep update
-RUN rosdep install -iry --from-paths src
+RUN rosdep install -iry --from-paths src && \
+    sudo apt-get clean && \
+    sudo rm -rf /var/lib/apt/lists/*
 RUN catkin build
 
 # Setup runtime
