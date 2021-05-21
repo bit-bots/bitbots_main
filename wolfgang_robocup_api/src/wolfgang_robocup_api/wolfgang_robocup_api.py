@@ -253,7 +253,7 @@ class WolfgangRobocupApi():
 
     def publish_camera_info(self, height, width):
         camera_info_msg = CameraInfo()
-        camera_info_msg.header.stamp = self.step
+        camera_info_msg.header.stamp = self.stamp
         camera_info_msg.header.frame_id = self.camera_optical_frame
         camera_info_msg.height = height
         camera_info_msg.width = width
