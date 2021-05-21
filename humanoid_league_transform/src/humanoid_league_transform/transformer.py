@@ -242,7 +242,8 @@ class Transformer(object):
             point = Point()
             point.x = o.top_left.x + o.width/2
             point.y = o.top_left.y + o.height
-            # Check if post is not going out of the image at the bottom
+            
+            # Check if obstacle is not going out of the image at the bottom
             if not self._object_at_bottom_of_image(
                     point.y,
                     rospy.get_param("~obstacles/footpoint_out_of_image_threshold", 0.8)):
