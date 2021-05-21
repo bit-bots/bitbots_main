@@ -29,6 +29,10 @@ class Transformer(object):
         self._bar_height = rospy.get_param("~goalposts/bar_height", 2.0)
         self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
         self._base_footprint_frame = rospy.get_param("~base_footprint_frame", "base_footprint")
+        self._obstacle_footpoint_out_of_image_threshold = \
+            rospy.get_param("~obstacles/footpoint_out_of_image_threshold", 0.8)
+        self._goalpost_footpoint_out_of_image_threshold = \
+            rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 0.8)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "camera/camera_info")
         ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "balls_in_image")
@@ -208,8 +212,7 @@ class Transformer(object):
             image_vertical_resolution =  self._camera_info.height / max(self._camera_info.binning_y, 1)
             # Check if post is not going out of the image at the bottom
             if not self._object_at_bottom_of_image(
-                    goal_post_in_image.foot_point.y,
-                    rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 0.8)):
+                    goal_post_in_image.foot_point.y, self._goalpost_footpoint_out_of_image_threshold):
                 # Transform footpoint
                 relative_foot_point = self._transform_point(goal_post_in_image.foot_point, field, msg.header.stamp)
                 if relative_foot_point is None:
@@ -245,8 +248,7 @@ class Transformer(object):
             
             # Check if obstacle is not going out of the image at the bottom
             if not self._object_at_bottom_of_image(
-                    point.y,
-                    rospy.get_param("~obstacles/footpoint_out_of_image_threshold", 0.8)):
+                    point.y, _obstacle_footpoint_out_of_image_threshold):
                 position = self._transform_point(point, field, msg.header.stamp)
                 if position is not None:
                     obstacle.pose.pose.pose.position = position
