@@ -11,11 +11,12 @@ lines:
 
 goalposts:
   goalposts_topic: 'goal_posts_in_image'
-  footpoint_out_of_image_threshold: 30
+  footpoint_out_of_image_threshold: 0.8
   bar_height: 2.0
 
 obstacles:
   obstacles_topic: 'obstacles_in_image'
+  footpoint_out_of_image_threshold: 0.8
 
 field_boundary:
   field_boundary_topic: 'field_boundary_in_image'

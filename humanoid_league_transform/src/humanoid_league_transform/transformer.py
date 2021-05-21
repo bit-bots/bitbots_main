@@ -29,8 +29,10 @@ class Transformer(object):
         self._bar_height = rospy.get_param("~goalposts/bar_height", 2.0)
         self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
         self._base_footprint_frame = rospy.get_param("~base_footprint_frame", "base_footprint")
+        self._obstacle_footpoint_out_of_image_threshold = \
+            rospy.get_param("~obstacles/footpoint_out_of_image_threshold", 0.8)
         self._goalpost_footpoint_out_of_image_threshold = \
-            rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 30)
+            rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 0.8)
 
         camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "camera/camera_info")
         ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "balls_in_image")
@@ -208,7 +210,9 @@ class Transformer(object):
         for goal_post_in_image in msg.posts:
             # Check if footpoint is not in the bottom area of the image, to filter out goal posts without visible footpoint
             image_vertical_resolution =  self._camera_info.height / max(self._camera_info.binning_y, 1)
-            if goal_post_in_image.foot_point.y < image_vertical_resolution - self._goalpost_footpoint_out_of_image_threshold:
+            # Check if post is not going out of the image at the bottom
+            if not self._object_at_bottom_of_image(
+                    goal_post_in_image.foot_point.y, self._goalpost_footpoint_out_of_image_threshold):
                 # Transform footpoint
                 relative_foot_point = self._transform_point(goal_post_in_image.foot_point, field, msg.header.stamp)
                 if relative_foot_point is None:
@@ -241,12 +245,16 @@ class Transformer(object):
             point = Point()
             point.x = o.top_left.x + o.width/2
             point.y = o.top_left.y + o.height
-            position = self._transform_point(point, field, msg.header.stamp)
-            if position is not None:
-                obstacle.pose.pose.pose.position = position
-                obstacles.obstacles.append(obstacle)
-            else:
-                rospy.logwarn_throttle(5.0, rospy.get_name() + ": Got an obstacle I could not transform")
+
+            # Check if obstacle is not going out of the image at the bottom
+            if not self._object_at_bottom_of_image(
+                    point.y, self._obstacle_footpoint_out_of_image_threshold):
+                position = self._transform_point(point, field, msg.header.stamp)
+                if position is not None:
+                    obstacle.pose.pose.pose.position = position
+                    obstacles.obstacles.append(obstacle)
+                else:
+                    rospy.logwarn_throttle(5.0, rospy.get_name() + ": Got an obstacle I could not transform")
 
         self._obstacle_relative_pub.publish(obstacles)
 
@@ -418,6 +426,17 @@ class Transformer(object):
         ray_directions[:,2] = np.multiply(relative_ray_distance, ray_directions[:,2])
 
         return ray_directions
+
+    def _object_at_bottom_of_image(self, position, thresh):
+        """
+        Checks if the objects y position is at the bottom of the image.
+
+        :param position: Y-position of the object
+        :param thresh: Threshold defining the region at the bottom of the image which is counted as 'the bottom' as a fraction of the image height
+        """
+        image_height = self._camera_info.height / max(self._camera_info.binning_y, 1)
+        scaled_thresh = thresh * image_height
+        return position > scaled_thresh
 
 
 if __name__ == "__main__":
