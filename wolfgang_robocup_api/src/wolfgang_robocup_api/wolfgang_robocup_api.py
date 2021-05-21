@@ -34,6 +34,7 @@ class WolfgangRobocupApi():
         urdf = URDF.from_xml_file(urdf_path)
         joints = [joint for joint in urdf.joints if joint.type == 'revolute']
         self.velocity_limits = {joint.name: joint.limits.velocity for joint in joints}
+        self.joint_names = [joint.name for joint in joints]
 
         self.joint_command = JointCommand()
 
