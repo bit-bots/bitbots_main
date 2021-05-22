@@ -79,19 +79,9 @@ namespace bitbots_local_planner
 
         // Query the current robot pose as a transform
         tf2::Stamped<tf2::Transform> current_pose;
-        geometry_msgs::PoseStamped msg;
-        costmap_ros_->getRobotPose(msg);
-        current_pose.setData(
-            tf2::Transform(
-                tf2::Quaternion(
-                    msg.pose.orientation.x,
-                    msg.pose.orientation.y,
-                    msg.pose.orientation.z,
-                    msg.pose.orientation.w),
-                tf2::Vector3(
-                    msg.pose.position.x,
-                    msg.pose.position.y,
-                    msg.pose.position.z)));
+        geometry_msgs::PoseStamped current_pose_gm;
+        costmap_ros_->getRobotPose(current_pose_gm);
+        tf2::fromMsg(current_pose_gm, current_pose);
 
         // Calculate the heading angle from our current position to the carrot
         double walk_angle = std::fmod(
