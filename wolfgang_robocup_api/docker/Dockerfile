@@ -41,8 +41,8 @@ RUN . /opt/ros/melodic/setup.sh && \
 RUN echo 1 && cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
+    sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
     python3 -m pip install -r bitbots_meta/requirements.txt && \
-    python3 -m pip uninstall -y PyQt5 pydot silx && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
