@@ -2326,7 +2326,7 @@
     <axis xyz="-0.0 -1.0 -0.0"/>
     <parent link="r_upper_leg"/>
     <child link="r_lower_leg"/>
-    <limit effort="8.775" lower="-2.96706" upper="0.0" velocity="4.82"/>
+    <limit effort="8.775" lower="-2.96706" upper="0.0" velocity="3.87"/>
     <dynamics damping="1.82" friction="0.0"/>
   </joint>
   <joint name="RHipPitch" type="revolute">
@@ -3502,7 +3502,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="l_upper_leg"/>
     <child link="l_lower_leg"/>
-    <limit effort="8.775" lower="0.0" upper="2.96706" velocity="4.82"/>
+    <limit effort="8.775" lower="0.0" upper="2.96706" velocity="3.87"/>
     <dynamics damping="1.82" friction="0.0"/>
   </joint>
   <joint name="LHipPitch" type="revolute">
