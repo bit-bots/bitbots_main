@@ -13,7 +13,6 @@
     <rosparam file="$(find bitbots_move_base)/config/local_costmap_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/global_costmap_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/move_base_config.yaml" command="load" />
-    <rosparam file="$(find bitbots_move_base)/config/dwa_local_planner_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/bitbots_local_planner_config.yaml" command="load" />
     <rosparam file="$(find bitbots_move_base)/config/global_planner_config.yaml" command="load" />
 
