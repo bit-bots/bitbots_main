@@ -1,0 +1,25 @@
+{
+  "name": "Bit-Bots",
+  "players": {
+    "1": {
+      "proto": "Wolfgang",
+      "robotStartCmd": "roslaunch wolfgang_robocup_api robocup_walk.launch",
+      "halfTimeStartingPose": {
+        "translation": [-3.5, -3.06, 0.45],
+        "rotation": [0.13, -0.13, -0.98, -1.57]
+      },
+      "reentryStartingPose": {
+        "translation": [-3.5, -3.06, 0.45],
+        "rotation": [0.13, -0.13, -0.98, -1.57]
+      },
+      "shootoutStartingPose": {
+        "translation": [2.6, 0, 0.45],
+        "rotation": [0, 0.98, 0.13, 0.26]
+      },
+      "goalKeeperStartingPose": {
+        "translation": [-4.47, 0, 0.45],
+        "rotation": [-0.13, 0, 0.98, 3.14]
+      }
+    }
+  }
+}
