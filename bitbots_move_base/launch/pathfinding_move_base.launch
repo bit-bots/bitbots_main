@@ -1,5 +1,4 @@
 <launch>
-  <!-- <include file="$(find bitbots_move_base)/launch/velocity_smoother.launch"/> -->
   <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
   <arg name="odom_frame_id"   default="$(arg tf_prefix)odom"/>
   <arg name="base_frame_id"   default="$(arg tf_prefix)base_footprint"/>
