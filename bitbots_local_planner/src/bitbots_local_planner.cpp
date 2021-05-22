@@ -37,16 +37,7 @@ namespace bitbots_local_planner
 	bool BBPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &plan) {
 	    global_plan_ = plan;
 
-	    int carrot_distance = 10;
-	    if (global_plan_.size() > 10)
-	    {
-	        carrot_distance = 10;
-	    }
-	    else
-	    {
-	        carrot_distance = global_plan_.size() - 1;
-	    }
-
+	    int carrot_distance = std::min(global_plan_.size() - 1, config_.carrot_distance);
 
         // Querys the pose of our carrot which we want to follow
         bitbots_local_planner::getXPose(
