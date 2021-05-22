@@ -67,10 +67,9 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
   void reconfigureCB(BBPlannerConfig &config, uint32_t level);
 
   /**
-  *@brief Publish the global plan for visulatation.
-  *@param points where jused to calculate plan.
+  *@brief Publish the global plan for visualization.
   */
-  void publishPlan(int max_point);
+  void publishPlan();
 
   //used for transformation
   tf2_ros::Buffer *tf_buffer_;

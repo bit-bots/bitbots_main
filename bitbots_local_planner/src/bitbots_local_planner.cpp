@@ -138,7 +138,7 @@ namespace bitbots_local_planner
             goal_reached_ = false;
         }
 
-        publishPlan(0);
+        publishPlan();
 
         ros::Time end = ros::Time::now();
         ros::Duration duration = end - begin;
@@ -155,26 +155,18 @@ namespace bitbots_local_planner
         return goal_reached_;
     }
 
-    void BBPlanner::publishPlan(int max_point)
+    void BBPlanner::publishPlan()
     {
-        std::vector<geometry_msgs::PoseStamped> path;
-        path = transformed_global_plan_;
-
-        //given an empty path we won't do anything
-        if (path.empty())
-            return;
-
         //create a path message
         nav_msgs::Path gui_path;
-        gui_path.poses.resize(path.size());
-        gui_path.header.frame_id = path[0].header.frame_id;
-        gui_path.header.stamp = path[0].header.stamp;
-
-        // Extract the plan in world co-ordinates, we assume the path is all in the same frame
-        for (unsigned int i = 0; i < path.size(); i++)
-        {
-            gui_path.poses[i] = path[i];
-        }
+        geometry_msgs::PoseStamped robot_pose, carrot_pose;
+        costmap_ros_->getRobotPose(robot_pose);
+        gui_path.poses.resize(2);
+        gui_path.header.frame_id = costmap_ros_->getGlobalFrameID();
+        gui_path.header.stamp = ros::Time::now();
+        tf2::toMsg(goal_pose_, carrot_pose);
+        gui_path.poses[0].pose.position = robot_pose.pose.position;
+        gui_path.poses[1].pose.position = carrot_pose.pose.position;
 
         local_plan_publisher_.publish(gui_path);
     }
