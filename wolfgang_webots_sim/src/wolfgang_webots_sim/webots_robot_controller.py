@@ -346,7 +346,7 @@ class RobotController:
         left_pressure.right_back = self.pressure_sensors[3].getValues()[2]
 
         right_pressure = FootPressure()
-        left_pressure.header.stamp = current_time
+        right_pressure.header.stamp = current_time
         right_pressure.left_back = self.pressure_sensors[4].getValues()[2]
         right_pressure.left_front = self.pressure_sensors[5].getValues()[2]
         right_pressure.right_front = self.pressure_sensors[6].getValues()[2]
