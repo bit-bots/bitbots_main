@@ -13,9 +13,8 @@ RUN apt-get install -y gnupg2
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4C4EDF893374591687621C75C2F8DBB6A37B2874
 RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /etc/apt/sources.list.d/ros.list'
 RUN apt-get update
-RUN apt-get install -y build-essential git sudo dia python3-pip python3-coverage python3-rospkg python3-catkin-pkg \
-    python3-catkin-lint python3-rosdep python3-sphinx python3-sphinx-rtd-theme python3-breathe ros-melodic-ros-base \
-    locales
+RUN apt-get install -y build-essential git sudo python3-pip python3-rospkg python3-catkin-pkg \
+    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales
 RUN pip3 install -U pip git+https://github.com/catkin/catkin_tools.git
 
 # Set up locale
