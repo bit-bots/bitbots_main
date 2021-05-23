@@ -340,17 +340,17 @@ class RobotController:
 
         left_pressure = FootPressure()
         left_pressure.header.stamp = current_time
-        left_pressure.left_back = self.pressure_sensors[0].getValues()[2]
-        left_pressure.left_front = self.pressure_sensors[1].getValues()[2]
-        left_pressure.right_front = self.pressure_sensors[2].getValues()[2]
-        left_pressure.right_back = self.pressure_sensors[3].getValues()[2]
+        left_pressure.left_back = self.pressure_sensors[0].getValue()
+        left_pressure.left_front = self.pressure_sensors[1].getValue()
+        left_pressure.right_front = self.pressure_sensors[2].getValue()
+        left_pressure.right_back = self.pressure_sensors[3].getValue()
 
         right_pressure = FootPressure()
         right_pressure.header.stamp = current_time
-        right_pressure.left_back = self.pressure_sensors[4].getValues()[2]
-        right_pressure.left_front = self.pressure_sensors[5].getValues()[2]
-        right_pressure.right_front = self.pressure_sensors[6].getValues()[2]
-        right_pressure.right_back = self.pressure_sensors[7].getValues()[2]
+        right_pressure.left_back = self.pressure_sensors[4].getValue()
+        right_pressure.left_front = self.pressure_sensors[5].getValue()
+        right_pressure.right_front = self.pressure_sensors[6].getValue()
+        right_pressure.right_back = self.pressure_sensors[7].getValue()
 
         # compute center of pressures of the feet
         pos_x = 0.085
