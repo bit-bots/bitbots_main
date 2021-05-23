@@ -3,7 +3,8 @@
   "players": {
     "1": {
       "proto": "Wolfgang",
-      "robotStartCmd": "roslaunch wolfgang_robocup_api robocup_walk.launch",
+      "dockerTag": "latest",
+      "dockerCmd": "roslaunch wolfgang_robocup_api robocup_walk.launch",
       "halfTimeStartingPose": {
         "translation": [-3.5, -3.06, 0.45],
         "rotation": [0.13, -0.13, -0.98, -1.57]
