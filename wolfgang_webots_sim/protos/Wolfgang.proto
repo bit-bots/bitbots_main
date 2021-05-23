@@ -204,7 +204,7 @@ PROTO Wolfgang [
         children [
           Shape {
             appearance WolfgangMarker{
-              textureUrl [ %{='"textures/number_' .. number .. '.png"'}% ]
+              textureUrl [ %{='"Wolfgang_textures/number_' .. number .. '.png"'}% ]
                 %{ if color == "red" then }%
                   baseColor  1.0, 0.0, 0.0
                 %{ elseif color == "blue" then }%
@@ -225,7 +225,7 @@ PROTO Wolfgang [
         children [
           Shape {
             appearance WolfgangMarker{
-              textureUrl [ %{='"textures/number_' .. number .. '.png"'}% ]
+              textureUrl [ %{='"Wolfgang_textures/number_' .. number .. '.png"'}% ]
                 %{ if color == "red" then }%
                   baseColor  1.0, 0.0, 0.0
                 %{ elseif color == "blue" then }%
