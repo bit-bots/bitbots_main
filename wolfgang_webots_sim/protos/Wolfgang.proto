@@ -8,7 +8,7 @@ PROTO Wolfgang [
   field  SFVec3f     translation     0 0 0
   field  SFRotation  rotation        0 1 0 0
   field  SFString    name            "red player 1"  # Is `Robot.name`.
-  field  SFString    controller      "void"      # Is `Robot.controller`.
+  field  SFString    controller      "player"      # Is `Robot.controller`.
   field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
   field  SFString    customData      ""          # Is `Robot.customData`.
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
@@ -591,7 +591,7 @@ PROTO Wolfgang [
                         DEF r_wrist Solid {
                           translation 0.000000 -0.226182 -0.023500
                           rotation 0.577350 -0.577352 -0.577350 2.094399
-                          name "r_wrist"
+                          name "r_wrist [hand]"
                         }
                       ]
                       name "r_lower_arm [arm]"
@@ -1134,7 +1134,7 @@ PROTO Wolfgang [
                         DEF l_wrist Solid {
                           translation -0.000000 -0.225182 -0.023500
                           rotation -0.577350 0.577352 -0.577350 2.094399
-                          name "l_wrist"
+                          name "l_wrist [hand]"
                         }
                       ]
                       name "l_lower_arm [arm]"
