@@ -1980,7 +1980,7 @@ PROTO Wolfgang [
                                           DEF rlb TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation -0.030000 0.177000 -0.034000
+                                            translation -0.030000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -2034,7 +2034,7 @@ PROTO Wolfgang [
                                           DEF rlf TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation 0.060000 0.177000 -0.034000
+                                            translation -0.030000 0.177000 -0.034000
                                             rotation -0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -2088,7 +2088,7 @@ PROTO Wolfgang [
                                           DEF rrf TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation 0.060000 -0.007000 -0.034000
+                                            translation 0.060000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -2142,7 +2142,7 @@ PROTO Wolfgang [
                                           DEF rrb TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation -0.030000 -0.007000 -0.034000
+                                            translation 0.060000 -0.007000 -0.034000
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -3611,7 +3611,7 @@ PROTO Wolfgang [
                                           DEF llb TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation -0.060000 0.177000 -0.034000
+                                            translation -0.060000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -3665,7 +3665,7 @@ PROTO Wolfgang [
                                           DEF llf TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation 0.030000 0.177000 -0.034000
+                                            translation -0.060000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -3719,7 +3719,7 @@ PROTO Wolfgang [
                                           DEF lrf TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation 0.030000 -0.007000 -0.034000
+                                            translation 0.030000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
@@ -3773,7 +3773,7 @@ PROTO Wolfgang [
                                           DEF lrb TouchSensor {
                                             type "force"
                                             resolution 0.00005
-                                            translation -0.060000 -0.007000 -0.034000
+                                            translation 0.030000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Transform {
