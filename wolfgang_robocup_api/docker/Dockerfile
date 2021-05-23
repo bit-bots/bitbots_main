@@ -13,9 +13,8 @@ RUN apt-get install -y gnupg2
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4C4EDF893374591687621C75C2F8DBB6A37B2874
 RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /etc/apt/sources.list.d/ros.list'
 RUN apt-get update
-RUN apt-get install -y build-essential git sudo dia python3-pip python3-coverage python3-rospkg python3-catkin-pkg \
-    python3-catkin-lint python3-rosdep python3-sphinx python3-sphinx-rtd-theme python3-breathe ros-melodic-ros-base \
-    locales
+RUN apt-get install -y build-essential git sudo python3-pip python3-rospkg python3-catkin-pkg \
+    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales
 RUN pip3 install -U pip git+https://github.com/catkin/catkin_tools.git
 
 # Set up locale
@@ -42,16 +41,15 @@ RUN . /opt/ros/melodic/setup.sh && \
 RUN echo 1 && cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
+    sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
     python3 -m pip install -r bitbots_meta/requirements.txt && \
-    python3 -m pip uninstall -y PyQt5 pydot silx && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
     rm -rf bitbots_tools/bitbots_jenkins_library bitbots_tools/bitbots_test bitbots_tools/containers \
     humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
     wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
-    lib/dynamixel_workbench_msgs bitbots_misc/bitbots_live_tool_rqt bitbots_motion/bitbots_recordui_rqt \
-    humanoid_league_misc/humanoid_league_speaker && \
+    lib/dynamixel_workbench_msgs bitbots_misc/bitbots_live_tool_rqt bitbots_motion/bitbots_recordui_rqt && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
     sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml
 RUN sudo rosdep init && rosdep update

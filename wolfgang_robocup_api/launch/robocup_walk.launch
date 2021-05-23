@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find wolfgang_robocup_api)/launch/wolfgang_robocup_api_bridge.launch" />
+
+    <include file="$(find bitbots_bringup)/launch/motion_standalone.launch">
+        <arg name="sim" value="true" />
+    </include>
+
+    <node name="walk_goals" pkg="rostopic" type="rostopic" args="pub cmd_vel geometry_msgs/Twist
+        '{linear: {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'"/>
+
+</launch>
