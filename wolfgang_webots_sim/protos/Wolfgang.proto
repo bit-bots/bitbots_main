@@ -13,10 +13,10 @@ PROTO Wolfgang [
   field  SFString    customData      ""          # Is `Robot.customData`.
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
-  field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
+  field  SFBool      selfCollision   TRUE        # Is `Robot.selfCollision`.
   field  SFFloat     cameraFOV       1.04
-  field  SFInt32     cameraWidth     640
-  field  SFInt32     cameraHeight    480
+  field  SFInt32     cameraWidth     1440
+  field  SFInt32     cameraHeight    1080
   field  SFFloat     MX64-torque     7.3
   field  SFFloat     MX64-vel        8.17
   field  SFFloat     MX64-damping    0.65
@@ -191,14 +191,6 @@ PROTO Wolfgang [
         ]
       }
       Transform {
-        translation 0.028000 0.000000 0.108000
-        rotation -0.707105 -0.707108 0.000001 3.141591
-        children [
-          Wolfgang_odroid_xu4Mesh {
-          }
-        ]
-      }
-      Transform {
         translation -0.062000 0.075000 0.003000
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
@@ -212,7 +204,7 @@ PROTO Wolfgang [
         children [
           Shape {
             appearance WolfgangMarker{
-              textureUrl [ %{='"textures/number_' .. number .. '.png"'}% ]
+              textureUrl [ %{='"Wolfgang_textures/number_' .. number .. '.png"'}% ]
                 %{ if color == "red" then }%
                   baseColor  1.0, 0.0, 0.0
                 %{ elseif color == "blue" then }%
@@ -233,7 +225,7 @@ PROTO Wolfgang [
         children [
           Shape {
             appearance WolfgangMarker{
-              textureUrl [ %{='"textures/number_' .. number .. '.png"'}% ]
+              textureUrl [ %{='"Wolfgang_textures/number_' .. number .. '.png"'}% ]
                 %{ if color == "red" then }%
                   baseColor  1.0, 0.0, 0.0
                 %{ elseif color == "blue" then }%
@@ -374,13 +366,65 @@ PROTO Wolfgang [
         children [
           Accelerometer {
             name "imu accelerometer"
-            lookupTable [ -156.96 -156.96 0,
-                           156.96  156.96 0, ]
+            lookupTable [
+              -156.960000 -156.960000 0.000210,
+              -78.480000 -78.480000 0.000419,
+              -39.240000 -39.240000 0.000839,
+              -19.620000 -19.620000 0.001677,
+              -9.810000 -9.810000 0.003354,
+              -4.905000 -4.905000 0.006708,
+              -2.452500 -2.452500 0.013416,
+              -1.226250 -1.226250 0.026833,
+              -0.613125 -0.613125 0.053666,
+              -0.306563 -0.306563 0.107331,
+              -0.153281 -0.153281 0.214663,
+              -0.076641 -0.076641 0.429325,
+              0 0 0
+              0.076641 0.076641 0.429325,
+              0.153281 0.153281 0.214663,
+              0.306563 0.306563 0.107331,
+              0.613125 0.613125 0.053666,
+              1.226250 1.226250 0.026833,
+              2.452500 2.452500 0.013416,
+              4.905000 4.905000 0.006708,
+              9.810000 9.810000 0.003354,
+              19.620000 19.620000 0.001677,
+              39.240000 39.240000 0.000839,
+              78.480000 78.480000 0.000419,
+              156.960000 156.960000 0.000210,
+            ]
+            resolution 0.00479003906
           }
           Gyro {
             name "imu gyro"
-            lookupTable [ -34.90659 -34.90659 0,
-                           34.90659  34.90659 0, ]
+            lookupTable [
+              -34.906590 -34.906590 0.000031,
+              -17.453295 -17.453295 0.000061,
+              -8.726648 -8.726648 0.000122,
+              -4.363324 -4.363324 0.000244,
+              -2.181662 -2.181662 0.000488,
+              -1.090831 -1.090831 0.000977,
+              -0.545415 -0.545415 0.001953,
+              -0.272708 -0.272708 0.003906,
+              -0.136354 -0.136354 0.007812,
+              -0.068177 -0.068177 0.015625,
+              -0.034088 -0.034088 0.031250,
+              -0.017044 -0.017044 0.062500,
+              0 0 0
+              0.017044 0.017044 0.062500,
+              0.034088 0.034088 0.031250,
+              0.068177 0.068177 0.015625,
+              0.136354 0.136354 0.007812,
+              0.272708 0.272708 0.003906,
+              0.545415 0.545415 0.001953,
+              1.090831 1.090831 0.000977,
+              2.181662 2.181662 0.000488,
+              4.363324 4.363324 0.000244,
+              8.726648 8.726648 0.000122,
+              17.453295 17.453295 0.000061,
+              34.906590 34.906590 0.000031,
+            ]
+            resolution 0.00106526458
           }
         ]
       }
@@ -1934,7 +1978,8 @@ PROTO Wolfgang [
                                             name "r_toe"
                                           }
                                           DEF rlb TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation -0.030000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -1987,7 +2032,8 @@ PROTO Wolfgang [
                                             }
                                           }
                                           DEF rlf TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation -0.030000 0.177000 -0.034000
                                             rotation -0.000000 0.000000 -1.000000 1.570800
                                             children [
@@ -2040,7 +2086,8 @@ PROTO Wolfgang [
                                             }
                                           }
                                           DEF rrf TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation 0.060000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -2093,7 +2140,8 @@ PROTO Wolfgang [
                                             }
                                           }
                                           DEF rrb TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation 0.060000 -0.007000 -0.034000
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
@@ -3561,7 +3609,8 @@ PROTO Wolfgang [
                                             name "l_toe"
                                           }
                                           DEF llb TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation -0.060000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -3614,7 +3663,8 @@ PROTO Wolfgang [
                                             }
                                           }
                                           DEF llf TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation -0.060000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -3667,7 +3717,8 @@ PROTO Wolfgang [
                                             }
                                           }
                                           DEF lrf TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation 0.030000 0.177000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -3720,7 +3771,8 @@ PROTO Wolfgang [
                                             }
                                           }
                                           DEF lrb TouchSensor {
-                                            type "force-3d"
+                                            type "force"
+                                            resolution 0.00005
                                             translation 0.030000 -0.007000 -0.034000
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
@@ -4874,13 +4926,65 @@ PROTO Wolfgang [
                     children [
                       Accelerometer {
                         name "imu_head accelerometer"
-                        lookupTable [ -156.96 -156.96 0,
-                                       156.96  156.96 0, ]
+                        lookupTable [
+                          -156.960000 -156.960000 0.000210,
+                          -78.480000 -78.480000 0.000419,
+                          -39.240000 -39.240000 0.000839,
+                          -19.620000 -19.620000 0.001677,
+                          -9.810000 -9.810000 0.003354,
+                          -4.905000 -4.905000 0.006708,
+                          -2.452500 -2.452500 0.013416,
+                          -1.226250 -1.226250 0.026833,
+                          -0.613125 -0.613125 0.053666,
+                          -0.306563 -0.306563 0.107331,
+                          -0.153281 -0.153281 0.214663,
+                          -0.076641 -0.076641 0.429325,
+                          0 0 0
+                          0.076641 0.076641 0.429325,
+                          0.153281 0.153281 0.214663,
+                          0.306563 0.306563 0.107331,
+                          0.613125 0.613125 0.053666,
+                          1.226250 1.226250 0.026833,
+                          2.452500 2.452500 0.013416,
+                          4.905000 4.905000 0.006708,
+                          9.810000 9.810000 0.003354,
+                          19.620000 19.620000 0.001677,
+                          39.240000 39.240000 0.000839,
+                          78.480000 78.480000 0.000419,
+                          156.960000 156.960000 0.000210,
+                        ]
+                        resolution 0.00479003906
                       }
                       Gyro {
                         name "imu_head gyro"
-                        lookupTable [ -34.90659 -34.90659 0,
-                                       34.90659  34.90659 0, ]
+                        lookupTable [
+                          -34.906590 -34.906590 0.000031,
+                          -17.453295 -17.453295 0.000061,
+                          -8.726648 -8.726648 0.000122,
+                          -4.363324 -4.363324 0.000244,
+                          -2.181662 -2.181662 0.000488,
+                          -1.090831 -1.090831 0.000977,
+                          -0.545415 -0.545415 0.001953,
+                          -0.272708 -0.272708 0.003906,
+                          -0.136354 -0.136354 0.007812,
+                          -0.068177 -0.068177 0.015625,
+                          -0.034088 -0.034088 0.031250,
+                          -0.017044 -0.017044 0.062500,
+                          0 0 0
+                          0.017044 0.017044 0.062500,
+                          0.034088 0.034088 0.031250,
+                          0.068177 0.068177 0.015625,
+                          0.136354 0.136354 0.007812,
+                          0.272708 0.272708 0.003906,
+                          0.545415 0.545415 0.001953,
+                          1.090831 1.090831 0.000977,
+                          2.181662 2.181662 0.000488,
+                          4.363324 4.363324 0.000244,
+                          8.726648 8.726648 0.000122,
+                          17.453295 17.453295 0.000061,
+                          34.906590 34.906590 0.000031,
+                        ]
+                        resolution 0.00106526458
                       }
                     ]
                   }

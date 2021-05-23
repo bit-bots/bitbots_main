@@ -290,36 +290,32 @@ class WolfgangRobocupApi():
         return 2 * math.atan(math.tan(h_fov * 0.5) * (height / width))
 
     def handle_force_measurements(self, forces):
-        for force in forces:
-            rospy.logwarn(f"Unknown force measurement: '{force.name}'", logger_name="rc_api")
-
-    def handle_force3D_measurements(self, force3ds):
-        if not force3ds:
+        if not forces:
             return
 
         data = {}
-        for force3d in force3ds:
-            name = force3d.name
+        for force in forces:
+            name = force.name
             if name in self.force3d_sensors:
-                data[name] = force3d.value
+                data[name] = force.value
             else:
-                rospy.logwarn(f"Unknown force3d measurement: '{name}'", logger_name="rc_api")
+                rospy.logwarn(f"Unknown force measurement: '{name}'", logger_name="rc_api")
 
         left_pressure_msg = FootPressure()
         left_pressure_msg.header.stamp = self.stamp
         # TODO: Frame IDs
-        left_pressure_msg.left_back = data['llb'].Z
-        left_pressure_msg.left_front = data['llf'].Z
-        left_pressure_msg.right_front = data['lrf'].Z
-        left_pressure_msg.right_back = data['lrb'].Z
+        left_pressure_msg.left_back = data['llb']
+        left_pressure_msg.left_front = data['llf']
+        left_pressure_msg.right_front = data['lrf']
+        left_pressure_msg.right_back = data['lrb']
 
         right_pressure_msg = FootPressure()
         right_pressure_msg.header.stamp = self.stamp
         # TODO: Frame IDs
-        right_pressure_msg.left_back = data['rlb'].Z
-        right_pressure_msg.left_front = data['rlf'].Z
-        right_pressure_msg.right_front = data['rrf'].Z
-        right_pressure_msg.right_back = data['rrb'].Z
+        right_pressure_msg.left_back = data['rlb']
+        right_pressure_msg.left_front = data['rlf']
+        right_pressure_msg.right_front = data['rrf']
+        right_pressure_msg.right_back = data['rrb']
 
         # compute center of pressures of the feet
         pos_x = 0.085
@@ -361,6 +357,10 @@ class WolfgangRobocupApi():
         self.pub_pressure_right.publish(right_pressure_msg)
         self.pub_cop_l.publish(cop_l_msg)
         self.pub_cop_r_.publish(cop_r_msg)
+
+    def handle_force3D_measurements(self, force3ds):
+        for force3d in force3ds:
+            rospy.logwarn(f"Unknown force3d measurement: '{force3d.name}'", logger_name="rc_api")
 
     def handle_force6D_measurements(self, force6ds):
         for force6d in force6ds:
