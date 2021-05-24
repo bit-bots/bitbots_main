@@ -143,3 +143,18 @@ def restrict(restriction: TestRestriction):
             return skip(restriction.get_reason())(decorated)
 
     return decorator
+
+
+def error2failure(func: Callable) -> Callable:
+    """
+    Decorator which catches all exceptions thrown by the test and transforms them into `AssertionError` so that the
+    test is not marked as having an error but as having failed.
+    """
+    @wraps(func)
+    def result(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise AssertionError("test caused an unhandled error") from e
+
+    return result
