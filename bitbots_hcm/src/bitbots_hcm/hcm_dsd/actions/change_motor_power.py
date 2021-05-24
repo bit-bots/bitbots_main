@@ -1,8 +1,5 @@
 import rospy
-import humanoid_league_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-import bitbots_hcm.hcm_dsd.hcm_blackboard
-from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_HARDWARE_PROBLEM
 from std_srvs.srv import SetBool
 
 
