@@ -22,6 +22,7 @@
   <depend>rosgraph_msgs</depend>
   <depend>std_msgs</depend>
   <depend>bitbots_docs</depend>
+  <depend>gazebo_msgs</depend>
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>xvfb</exec_depend>
 
