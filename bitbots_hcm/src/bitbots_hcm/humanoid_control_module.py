@@ -167,11 +167,11 @@ class HardwareControlManager:
 
         if msg.first:
             if msg.hcm:
-                # comming from ourselves
+                # coming from ourselves
                 # we don't have to do anything, since we must be in the right state
                 pass
             else:
-                # comming from outside
+                # coming from outside
                 # check if we can run an animation now
                 if self.blackboard.current_state != RobotControlState.CONTROLLABLE:
                     rospy.logwarn("HCM is not controllable, animation refused.")
@@ -186,7 +186,7 @@ class HardwareControlManager:
                 self.blackboard.hcm_animation_finished = True
                 pass
             else:
-                # this is the last frame, we want to tell the DSD, that we're finished with the animations
+                # this is the last frame, we want to tell the DSD that we're finished with the animations
                 self.blackboard.external_animation_running = False
                 if msg.position is None:
                     # probably this was just to tell us we're finished
@@ -205,7 +205,7 @@ class HardwareControlManager:
             if msg.position.points[0].effort:
                 out_msg.max_currents = [-x for x in msg.position.points[0].effort]
             if self.blackboard.shut_down_request:
-                # there are sometimes transmittions errors during shutdown due to race conditions
+                # there are sometimes transmission errors during shutdown due to race conditions
                 # there is nothing we can do so just ignore the errors in this case
                 try:
                     self.joint_goal_publisher.publish(out_msg)
