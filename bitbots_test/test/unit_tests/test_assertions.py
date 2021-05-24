@@ -30,6 +30,25 @@ class GeneralAssertionMixinTestCase(TestCase):
             # verification
             self.assertTrue(now + timedelta(milliseconds=100) < datetime.now())
 
+    def test_assert_ranges(self):
+        # assertInRange
+        self.assertInRange(0, range(0, 1))
+        self.assertInRange(0, range(-10, 10))
+        self.assertInRange(0, range(10, -10, -1))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(0, range(5, 10)))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(20, range(5, 10)))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(0, range(10, 5, -1)))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(20, range(10, 5, -1)))
+
+        # assertNotInRange
+        self.assertNotInRange(0, range(5, 10))
+        self.assertNotInRange(20, range(5, 10))
+        self.assertNotInRange(0, range(10, 5, -1))
+        self.assertNotInRange(20, range(10, 5, -1))
+        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, range(0, 1)))
+        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, range(-10, 10)))
+        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, range(10, -10, -1)))
+
 
 if __name__ == "__main__":
     from bitbots_test import run_unit_tests
