@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 
-import rospy
-
 from bitbots_test.test_case import TestCase
 
 
@@ -32,22 +30,22 @@ class GeneralAssertionMixinTestCase(TestCase):
 
     def test_assert_ranges(self):
         # assertInRange
-        self.assertInRange(0, range(0, 1))
-        self.assertInRange(0, range(-10, 10))
-        self.assertInRange(0, range(10, -10, -1))
-        self.assertRaises(AssertionError, lambda: self.assertInRange(0, range(5, 10)))
-        self.assertRaises(AssertionError, lambda: self.assertInRange(20, range(5, 10)))
-        self.assertRaises(AssertionError, lambda: self.assertInRange(0, range(10, 5, -1)))
-        self.assertRaises(AssertionError, lambda: self.assertInRange(20, range(10, 5, -1)))
+        self.assertInRange(0, (0, 1))
+        self.assertInRange(0, (-10, 10))
+        self.assertInRange(0, (10, -10))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(0, (5, 10)))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(20, (5, 10)))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(0, (10, 5)))
+        self.assertRaises(AssertionError, lambda: self.assertInRange(20, (10, 5)))
 
         # assertNotInRange
-        self.assertNotInRange(0, range(5, 10))
-        self.assertNotInRange(20, range(5, 10))
-        self.assertNotInRange(0, range(10, 5, -1))
-        self.assertNotInRange(20, range(10, 5, -1))
-        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, range(0, 1)))
-        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, range(-10, 10)))
-        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, range(10, -10, -1)))
+        self.assertNotInRange(0, (5, 10))
+        self.assertNotInRange(20, (5, 10))
+        self.assertNotInRange(0, (10, 5))
+        self.assertNotInRange(20, (10, 5))
+        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, (0, 1)))
+        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, (-10, 10)))
+        self.assertRaises(AssertionError, lambda: self.assertNotInRange(0, (10, -10)))
 
 
 if __name__ == "__main__":

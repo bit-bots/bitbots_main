@@ -34,32 +34,30 @@ class GeneralAssertionMixins:
 
                 time.sleep(min(10, int(t / 10)) / 1000)
 
-    def assertInRange(self, value: Union[int, float], range_limit: range):
+    def assertInRange(self, value: Union[int, float], range: Tuple[Union[int, float], Union[int, float]]):
         """
         Assert that a value is inside a given range.
 
         :param value: The value which is verified to be in the range.
-        :param range_limit: Enclosing range in which *value* is verified to be inside.
+        :param range: Range in which *value* should be. Specified as a two element tuple that contains the two inclusive
+            ends of the range.
         """
-        # note: python ranges start values are inclusive and stop values are exclusive
-        if range_limit.step > 0:
-            # ranges with positive steps
-            if value < range_limit.start or value >= range_limit.stop:
-                raise AssertionError(f"value {value} is not in range {range_limit}")
-        else:
-            # ranges with negative steps
-            if value > range_limit.start or value <= range_limit.stop:
-                raise AssertionError(f"value {value} is not in range {range_limit}")
+        min_value = min(range[0], range[1])
+        max_value = max(range[0], range[1])
 
-    def assertNotInRange(self, value: Union[int, float], range_limit: range):
+        if value < min_value or value > max_value:
+            raise AssertionError(f"value {value} is not in range {range}")
+
+    def assertNotInRange(self, value: Union[int, float], range: Tuple[Union[int, float], Union[int, float]]):
         """
         Assert that a value is not inside a given range.
 
         :param value: The value which is verified to not be in the range.
-        :param range_limit: A range object in which *value* is verified to **not** be inside
+        :param range: Range in which *value* should **not** be. Specified as a two element tuple that contains the two
+            inclusive ends of the range.
         """
-        with self.assertRaises(AssertionError, msg=f"value {value} is in range {range_limit}"):
-            self.assertInRange(value, range_limit)
+        with self.assertRaises(AssertionError, msg=f"value {value} is in range {range}"):
+            self.assertInRange(value, range)
 
 
 class RosLogAssertionMixins:
