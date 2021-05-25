@@ -15,9 +15,9 @@ RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /et
 RUN apt-get update
 RUN apt-get install -y build-essential git sudo dia python3-pip python3-coverage python3-rospkg python3-catkin-pkg \
     python3-catkin-lint python3-sphinx python3-sphinx-rtd-theme python3-breathe ros-melodic-ros-base
-RUN python3 -m pip install exhale
-RUN python3 -m pip install git+https://github.com/catkin/catkin_tools
-RUN python3 -m pip install git+https://github.com/bit-bots/rosdep.git
+RUN python3 -m pip install --force-reinstall exhale
+RUN python3 -m pip install --force-reinstall git+https://github.com/catkin/catkin_tools
+RUN python3 -m pip install --force-reinstall git+https://github.com/bit-bots/rosdep.git
 
 # Setup libraries in dedicated workspace and install it into /opt/ros/melodic
 WORKDIR /lib_ws
