@@ -22,7 +22,7 @@ class GeneralAssertionMixins:
         has exceeded.
 
         :param f: The function which gets repeatedly called. Any raised AssertionErrors are caught.
-            All additional parameters from *args and **kwargs are passed to this function.
+            All additional parameters from *args* and *kwargs* are passed to this function.
         :param t: Grace period time in milliseconds
         """
         start = datetime.now()
@@ -61,34 +61,39 @@ class GeneralAssertionMixins:
             self.assertInRange(value, range)
 
 
+class TestCase(GeneralAssertionMixins, BaseTestCase):
+    """A Bit-Bots specific TestCase class from which all other TestCases should inherit"""
+    pass
+
+
 class RosLogAssertionMixins:
     """Supplementary assertions for roslog """
-    rosout_subscriber: rospy.Subscriber
-    rosout_buffer: List[LogMsg]
-    rosout_max_size: int
+    _sub_rosout: rospy.Subscriber
+    _rosout_buffer: List[LogMsg]
+    _rosout_buffer_max_size: int
 
     def setup_roslog_assertions(self, aggregator_max_size: int = 4096):
         """
-        Setup :class:`RosLogAssertionMixins`s internal subscriber.
+        Setup internal subscriber and buffer.
 
         This is necessary for logging assertions to work because the internal subscriber puts rosout messages
         in a buffer which all rosout assertions use.
 
         :param aggregator_max_size: How many messages form rosout to keep in the internal buffer
         """
-        self.rosout_max_size = aggregator_max_size
-        self.rosout_buffer = []
+        self._rosout_buffer_max_size = aggregator_max_size
+        self._rosout_buffer = []
         # http://wiki.ros.org/rosout
-        self.rosout_subscriber = rospy.Subscriber("/rosout", LogMsg, callback=self._rosout_callback, queue_size=10)
+        self._sub_rosout = rospy.Subscriber("/rosout", LogMsg, callback=self._rosout_callback, queue_size=10)
 
     def teardown_roslog_assertions(self):
-        self.rosout_subscriber.unregister()
-        self.rosout_buffer.clear()
+        self._sub_rosout.unregister()
+        self._rosout_buffer.clear()
 
     def _rosout_callback(self, msg: LogMsg):
-        self.rosout_buffer.append(msg)
-        while len(self.rosout_buffer) > self.rosout_max_size:
-            self.rosout_buffer.pop(0)
+        self._rosout_buffer.append(msg)
+        while len(self._rosout_buffer) > self._rosout_buffer_max_size:
+            self._rosout_buffer.pop(0)
 
     def assertRosLogs(self, node: str = r'.*', msg: str = r'.*', level: List[int] = None):
         """
@@ -105,7 +110,7 @@ class RosLogAssertionMixins:
         if level is None:
             level = [LogMsg.DEBUG, LogMsg.INFO, LogMsg.WARN, LogMsg.ERROR, LogMsg.FATAL]
 
-        for i_msg in self.rosout_buffer:
+        for i_msg in self._rosout_buffer:
             if re.search(node, i_msg.name) is not None and re.search(msg,
                                                                      i_msg.msg) is not None and i_msg.level in level:
                 return
@@ -129,7 +134,7 @@ class RosLogAssertionMixins:
         if level is None:
             level = [LogMsg.DEBUG, LogMsg.INFO, LogMsg.WARN, LogMsg.ERROR, LogMsg.FATAL]
 
-        for i_msg in self.rosout_buffer:
+        for i_msg in self._rosout_buffer:
             if re.search(node, i_msg.name) is not None and re.search(msg,
                                                                      i_msg.msg) is not None and i_msg.level in level:
                 raise AssertionError(f"Roslog entry {i_msg} was logged")
@@ -156,11 +161,6 @@ class RosNodeAssertionMixins:
             node.getPid(rospy.get_name())  # this is the ping
         except (rosgraph.MasterError, ConnectionError) as e:
             raise AssertionError(f"ros node {node_name} is not running") from e
-
-
-class TestCase(GeneralAssertionMixins, BaseTestCase):
-    """A Bit-Bots specific TestCase class from which all other TestCases should inherit"""
-    pass
 
 
 class RosNodeTestCase(RosLogAssertionMixins, RosNodeAssertionMixins, TestCase):
@@ -198,8 +198,7 @@ class RosNodeTestCase(RosLogAssertionMixins, RosNodeAssertionMixins, TestCase):
 
 class WebotsTestCase(RosNodeTestCase):
     """A specific TestCase class which offers utility methods when running in a webots simulator"""
-    SUPERVISOR_NODE_NAME = "/webots_ros_supervisor"
-    SUPERVISOR_NODE_SERVICES = ["/reset_pose", "/reset_ball", "/reset"]
+    _SUPERVISOR_NODE_NAME = "/webots_ros_supervisor"
 
     _ros_master: rosgraph.Master
     _latest_model_states: Optional[gazebo_msgs.msg.ModelStates] = None
@@ -253,13 +252,13 @@ class WebotsTestCase(RosNodeTestCase):
 
         :param timeout: Timout in seconds after which this method aborts
 
-        :raise TimeoutError when aborting after *timeout* has expired
+        :raise TimeoutError: when aborting after *timeout* has expired
         """
         start_time = time.time()
         while True:
             try:
                 remaining_timeout = timeout - (time.time() - start_time)
-                self.assertNodeRunning(self.SUPERVISOR_NODE_NAME)
+                self.assertNodeRunning(self._SUPERVISOR_NODE_NAME)
                 self._svc_reset_pose.wait_for_service(timeout=remaining_timeout)
                 self._svc_reset_ball.wait_for_service(timeout=remaining_timeout)
                 self._svc_set_robot_position.wait_for_service(timeout=remaining_timeout)
@@ -279,7 +278,7 @@ class WebotsTestCase(RosNodeTestCase):
         :param timeout: Timout in seconds after which this method aborts
         :param num_updates: How many updates to wait for
 
-        :raise TimeoutError when aborting after *timeout* has expired
+        :raise TimeoutError: when aborting after *timeout* has expired
         """
         start_time = time.time()
         n = 0
@@ -326,7 +325,7 @@ class WebotsTestCase(RosNodeTestCase):
         :param robot_name: Name of the robot whose pose should be returned.
             Defaults to amy which is the only robot in single-robot simulations
 
-        :raise AttributeError if the pose lookup is not successful
+        :raise AttributeError: if the pose lookup is not successful
         """
         if robot_name not in self._latest_model_states.name:
             raise AttributeError(f"no model states have been received for {robot_name}")
