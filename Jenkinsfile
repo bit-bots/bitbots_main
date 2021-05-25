@@ -4,4 +4,5 @@ defineProperties()
 
 def pipeline = new BitbotsPipeline(this, env, currentBuild, scm)
 pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_docs")))
+pipeline.configurePipelineForPackage(new PackagePipelineSettings(new PackageDefinition("bitbots_test")))
 pipeline.execute()
