@@ -36,7 +36,8 @@ class HardwareControlManager:
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
-        rospy.on_shutdown(self.on_shutdown_hook)
+        if not rospy.get_param("simulation_active"):
+            rospy.on_shutdown(self.on_shutdown_hook)
 
         # stack machine
         self.blackboard = HcmBlackboard()
