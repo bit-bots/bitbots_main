@@ -13,6 +13,13 @@ Description
    cppapi/library_root
    pyapi/modules
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Manuals
+   :glob:
+
+   manual/*
+
 
 Indices and tables
 ==================
