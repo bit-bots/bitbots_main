@@ -17,7 +17,7 @@ RUN apt-get install -y build-essential git sudo dia python3-pip python3-coverage
     python3-catkin-lint python3-sphinx python3-sphinx-rtd-theme python3-breathe ros-melodic-ros-base
 RUN python3 -m pip install --force-reinstall exhale
 RUN python3 -m pip install --force-reinstall git+https://github.com/catkin/catkin_tools
-RUN python3 -m pip install --force-reinstall git+https://github.com/bit-bots/rosdep.git
+RUN python3 -m pip install --force-reinstall --upgrade git+https://github.com/bit-bots/rosdep.git
 
 # Setup libraries in dedicated workspace and install it into /opt/ros/melodic
 WORKDIR /lib_ws
