@@ -12,7 +12,7 @@
   <arg name="camera_disable_flag" value="$(eval '--disable-camera' if not arg('camera') else '')"
        doc="do not set, used internally"/>
 
-  <node pkg="wolfgang_webots_sim" type="start_single.sh" name="webots_ros_interface"
+  <node pkg="wolfgang_webots_sim" type="start_single.sh" name="webots_ros_interface" respawn="true"
         args="--robot_name $(arg robot_name) $(arg void_flag) $(arg recognition_flag) $(arg camera_disable_flag)">
     <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
     <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
