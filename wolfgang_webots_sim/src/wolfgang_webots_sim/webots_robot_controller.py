@@ -44,8 +44,10 @@ class RobotController:
         self.pressure_sensors = None
         if robot == 'wolfgang':
             self.is_wolfgang = True
-            self.motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll", "LShoulderRoll", "RElbow",
-                                "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]", "LHipRoll [hip]", "RHipPitch", "LHipPitch",
+            self.motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll",
+                                "LShoulderRoll", "RElbow",
+                                "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]", "LHipRoll [hip]", "RHipPitch",
+                                "LHipPitch",
                                 "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan",
                                 "HeadTilt"]
             self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
@@ -121,12 +123,12 @@ class RobotController:
         self.camera = self.robot_node.getDevice(camera_name)
         self.camera_counter = 0
         if self.camera_active:
-            self.camera.enable(self.timestep*CAMERA_DIVIDER)
+            self.camera.enable(self.timestep * CAMERA_DIVIDER)
         if self.recognize:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
-            self.img_save_dir = "/tmp/webots/images" +\
-                                time.strftime("%Y-%m-%d-%H-%M-%S") +\
+            self.img_save_dir = "/tmp/webots/images" + \
+                                time.strftime("%Y-%m-%d-%H-%M-%S") + \
                                 os.getenv('WEBOTS_ROBOT_NAME')
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
@@ -178,7 +180,7 @@ class RobotController:
             # start pose
             command = JointCommand()
             command.joint_names = ["r_sho_roll", "l_sho_roll"]
-            command.positions = [-math.tau/8, math.tau/8]
+            command.positions = [-math.tau / 8, math.tau / 8]
             self.command_cb(command)
 
     def mat_from_fov_and_resolution(self, fov, res):
@@ -266,6 +268,11 @@ class RobotController:
             msg.linear_acceleration.y = accel_vels[1]
             msg.linear_acceleration.z = accel_vels[2]
 
+        # make sure that acceleration is not completely zero or we will get error in filter.
+        # Happens if robot is moved manually in the simulation
+        if msg.linear_acceleration.x == 0 and msg.linear_acceleration.y == 0 and msg.linear_acceleration.z == 0:
+            msg.linear_acceleration.z = 0.001
+
         if head:
             gyro_vels = self.gyro_head.getValues()
             msg.angular_velocity.x = gyro_vels[2]
@@ -312,20 +319,20 @@ class RobotController:
             size = recognized_objects[e].get_size_on_image()
             if model == b"soccer ball":
                 found_ball = True
-                vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
+                vector = f"""{{"x1": {position[0] - 0.5 * size[0]}, "y1": {position[1] - 0.5 * size[1]}, "x2": {position[0] + 0.5 * size[0]}, "y2": {position[1] + 0.5 * size[1]}}}"""
                 annotation += f"{img_name}|"
                 annotation += "ball|"
                 annotation += vector
                 annotation += "\n"
             if model == b"wolfgang":
                 found_wolfgang = True
-                vector = f"""{{"x1": {position[0] - 0.5*size[0]}, "y1": {position[1] - 0.5*size[1]}, "x2": {position[0] + 0.5*size[0]}, "y2": {position[1] + 0.5*size[1]}}}"""
+                vector = f"""{{"x1": {position[0] - 0.5 * size[0]}, "y1": {position[1] - 0.5 * size[1]}, "x2": {position[0] + 0.5 * size[0]}, "y2": {position[1] + 0.5 * size[1]}}}"""
                 annotation += f"{img_name}|"
                 annotation += "robot|"
                 annotation += vector
                 annotation += "\n"
         if not found_ball:
-            annotation +=  f"{img_name}|ball|not in image\n"
+            annotation += f"{img_name}|ball|not in image\n"
         if not found_wolfgang:
             annotation += f"{img_name}|robot|not in image\n"
         with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
