@@ -155,6 +155,8 @@ def error2failure(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except Exception as e:
+            if isinstance(e, AssertionError):
+                raise e
             raise AssertionError(f"test caused an unhandled error: {e}") from e
 
     return result
