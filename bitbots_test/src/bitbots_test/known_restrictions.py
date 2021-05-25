@@ -17,3 +17,20 @@ class NotOnRobot(TestRestriction):
 
     def get_reason(self) -> str:
         return "this test is not executed on robots"
+
+
+class InCi(TestRestriction):
+    def should_execute(self) -> bool:
+        return os.environ.get("CI", "false") == "true"
+
+    def get_reason(self) -> str:
+        return "this test is only executed in CI"
+
+
+class NotInCi(TestRestriction):
+    def should_execute(self) -> bool:
+        return os.environ.get("CI", "false") != "true"
+
+    def get_reason(self) -> str:
+        return "this test is not executed in CI"
+
