@@ -27,7 +27,7 @@ def run_unit_tests(*test_cases: type):
 
 
 def run_rostests(*test_cases: type):
-    """Run all the specified integration TestCases"""
+    """Run all the specified rostest TestCases"""
     for i in test_cases:
         assert issubclass(i, TestCase), f"Test case {i} does not inherit from base bitbots TestCase"
         rostest.rosrun(_get_package_name(i), i.__name__, i)
