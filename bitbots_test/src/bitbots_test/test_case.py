@@ -1,20 +1,21 @@
 """Base classes for TestCases as well as useful assertions and ros integrations"""
-import socket
 from typing import *
 import time
+import rospy
+import re
+import rosgraph
+import geometry_msgs.msg
+from rosgraph_msgs.msg import Log as LogMsg
+import std_srvs.srv
+import bitbots_msgs.srv
+import gazebo_msgs.msg
 from datetime import datetime, timedelta
 from unittest.case import TestCase as BaseTestCase
 from xmlrpc.client import ServerProxy
 
-import rospy
-import re
-from rosgraph_msgs.msg import Log as LogMsg
-import rosgraph
-
 
 class GeneralAssertionMixins:
     """Supplementary ROS independent assertions"""
-
     def with_assertion_grace_period(self, f: Callable, t: int = 500, *args, **kwargs):
         """
         Execute the provided callable repeatedly while suppressing AssertionErrors until the grace period
@@ -136,11 +137,11 @@ class RosLogAssertionMixins:
 
 class RosNodeAssertionMixins:
     """Supplementary assertions for validating the state of other ROS nodes"""
-    ros_master: rosgraph.Master
+    _ros_master: rosgraph.Master
 
     @classmethod
     def setup_ros_node_assertions(cls):
-        cls.ros_master = rosgraph.Master(rospy.get_name())
+        cls._ros_master = rosgraph.Master(rospy.get_name())
 
     @classmethod
     def assertNodeRunning(cls, node_name: str):
@@ -150,7 +151,7 @@ class RosNodeAssertionMixins:
         :arg node_name: The name of the node which should be running
         """
         try:
-            node_api = cls.ros_master.lookupNode(node_name)
+            node_api = cls._ros_master.lookupNode(node_name)
             node = ServerProxy(node_api)
             node.getPid(rospy.get_name())  # this is the ping
         except (rosgraph.MasterError, ConnectionError) as e:
@@ -198,34 +199,163 @@ class RosNodeTestCase(RosLogAssertionMixins, RosNodeAssertionMixins, TestCase):
 class WebotsTestCase(RosNodeTestCase):
     """A specific TestCase class which offers utility methods when running in a webots simulator"""
     SUPERVISOR_NODE_NAME = "/webots_ros_supervisor"
+    SUPERVISOR_NODE_SERVICES = ["/reset_pose", "/reset_ball", "/reset"]
 
-    ros_master: rosgraph.Master
-
-    def reset_simulation(self):
-        pass
-
-    @classmethod
-    def wait_for_simulator(cls, timeout: int = 120):
-        """
-        Wait until the webots supervisor node is running because this implies that webots is running
-
-        :param timeout: Timout in seconds after which this method aborts
-        """
-        start_time = time.time()
-        while True:
-            try:
-                cls.assertNodeRunning(cls.SUPERVISOR_NODE_NAME)
-                break
-            except AssertionError:
-                if start_time + timeout < time.time():
-                    raise
-                time.sleep(0.01)
+    _ros_master: rosgraph.Master
+    _latest_model_states: Optional[gazebo_msgs.msg.ModelStates] = None
+    _latest_model_states_time: Optional[rospy.Time] = None
+    _sub_model_states: Optional[rospy.Subscriber] = None
+    _svc_reset_pose: Optional[rospy.ServiceProxy] = None
+    _svc_reset_ball: Optional[rospy.ServiceProxy] = None
+    _svc_set_robot_position: Optional[rospy.ServiceProxy] = None
 
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        cls.wait_for_simulator()
 
     def setUp(self) -> None:
         super().setUp()
+        self._svc_reset_pose = rospy.ServiceProxy("/reset_pose", std_srvs.srv.Empty)
+        self._svc_reset_ball = rospy.ServiceProxy("/reset_ball", std_srvs.srv.Empty)
+        self._svc_set_robot_position = rospy.ServiceProxy("/set_robot_position", bitbots_msgs.srv.SetRobotPose)
+
+        self.wait_for_simulator()
         self.reset_simulation()
+
+        self._sub_model_states = rospy.Subscriber("/model_states", gazebo_msgs.msg.ModelStates,
+                                                  callback=self._model_state_cb, queue_size=1)
+        self._latest_model_states = None
+        self._latest_model_states_time = None
+        self.wait_for_model_state_update()
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        self._sub_model_states.unregister()
+
+        self._svc_reset_pose.close()
+        self._svc_reset_ball.close()
+        self._svc_set_robot_position.close()
+
+    def _model_state_cb(self, model_states: gazebo_msgs.msg.ModelStates):
+        self._latest_model_states = model_states
+        self._latest_model_states_time = rospy.Time.now()
+
+    def reset_simulation(self):
+        # TODO Call the /reset service after it has been fixed
+        # rospy.ServiceProxy("/reset", std_srvs.srv.Empty)()
+
+        self._svc_reset_pose(std_srvs.srv.EmptyRequest())
+        self._svc_reset_ball(std_srvs.srv.EmptyRequest())
+
+    def wait_for_simulator(self, timeout: float = 120):
+        """
+        Wait until the webots supervisor node is running because this implies that webots is running
+
+        :param timeout: Timout in seconds after which this method aborts
+
+        :raise TimeoutError when aborting after *timeout* has expired
+        """
+        start_time = time.time()
+        while True:
+            try:
+                remaining_timeout = timeout - (time.time() - start_time)
+                self.assertNodeRunning(self.SUPERVISOR_NODE_NAME)
+                self._svc_reset_pose.wait_for_service(timeout=remaining_timeout)
+                self._svc_reset_ball.wait_for_service(timeout=remaining_timeout)
+                self._svc_set_robot_position.wait_for_service(timeout=remaining_timeout)
+                break
+            except AssertionError:
+                if start_time + timeout < time.time():
+                    raise TimeoutError("timed out waiting for the simulator supervisor node")
+                time.sleep(0.01)
+
+    def wait_for_model_state_update(self, timeout: float = 2, num_updates: int = 1):
+        """
+        Wait until new model states have been received.
+
+        This is useful to do after doing some action in the simulator before calling `assert*` methods so that
+        the assertions work on the new data.
+
+        :param timeout: Timout in seconds after which this method aborts
+        :param num_updates: How many updates to wait for
+
+        :raise TimeoutError when aborting after *timeout* has expired
+        """
+        start_time = time.time()
+        n = 0
+        while n < num_updates:
+            n += 1
+
+            # if we have not received any updates yet, we wait until any one has been received at all
+            if self._latest_model_states_time is None:
+                while self._latest_model_states_time is None:
+                    time.sleep(0.01)
+                    if start_time + timeout < time.time():
+                        raise TimeoutError("timed out waiting for new model states")
+
+            # if we have already received an update, we wait until there is a newer one
+            else:
+                model_state_start_time = self._latest_model_states_time
+                while not self._latest_model_states_time > model_state_start_time:
+                    time.sleep(0.01)
+                    if start_time + timeout < time.time():
+                        raise TimeoutError("timed out waiting for new model states")
+
+    def set_robot_position(self, position: Optional[geometry_msgs.msg.Point] = None, robot_name: str = "amy"):
+        """
+        Set the robot position in simulator
+
+        :param robot_name: Name of the robot whose position should be set.
+            Defaults to amy which is the only robot in single-robot simulations
+        :param position: Position to which the robot should be teleported.
+            If None, resets the robot to its original pose
+        """
+        if position:
+            self._svc_set_robot_position(robot_name, position)
+        else:
+            self._svc_reset_pose(std_srvs.srv.EmptyRequest())
+
+        self.wait_for_model_state_update(num_updates=2)
+
+    def get_robot_pose(self, robot_name: str = "amy") -> geometry_msgs.msg.Pose:
+        """
+        Return the current pose of a robot.
+        This is the *correct* pose as published by the simulator and not a result which stems from components like
+        localization.
+
+        :param robot_name: Name of the robot whose pose should be returned.
+            Defaults to amy which is the only robot in single-robot simulations
+
+        :raise AttributeError if the pose lookup is not successful
+        """
+        if robot_name not in self._latest_model_states.name:
+            raise AttributeError(f"no model states have been received for {robot_name}")
+
+        i = self._latest_model_states.name.index(robot_name)
+        return self._latest_model_states.pose[i]
+
+    def assertRobotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *, threshold: int = 0.5, x_threshold: int = None, y_threshold: int = None, z_threshold: int = None):
+        """
+        Assert that a robot is at the specified position or at least close to it.
+
+        :param position: Absolute position in webots coordinates at which the robot should be.
+        :param robot_name: The robot of which the position should be verified.
+            Defaults to amy which is the only robot in single-robot simulations
+        :param threshold: Threshold which defines the amount of allowed derivation in meters from the specified position.
+            By default, this means equal allowed derivation in all three axes. Each axis can be overwritten by the
+            axis-specific argument.
+        :param x_threshold: Maximum allowed derivation from the position on the x axis
+        :param y_threshold: Maximum allowed derivation from the position on the y axis
+        :param z_threshold: Maximum allowed derivation from the position on the z axis
+        """
+        x_threshold = x_threshold if x_threshold else threshold
+        y_threshold = y_threshold if y_threshold else threshold
+        z_threshold = z_threshold if z_threshold else threshold
+        real_position = self.get_robot_pose(robot_name).position
+
+        try:
+            self.assertInRange(position.x, (real_position.x - x_threshold, real_position.x + x_threshold))
+            self.assertInRange(position.y, (real_position.y - y_threshold, real_position.y + y_threshold))
+            self.assertInRange(position.z, (real_position.z - z_threshold, real_position.z + z_threshold))
+        except AssertionError:
+            raise AssertionError(f"robot is not at (or close to) position {position}")
