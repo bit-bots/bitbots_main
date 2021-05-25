@@ -202,3 +202,10 @@ humanoid_league_transform:
       uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_misc/master/humanoid_league_transform/.rdmanifest
   debian: *humanoid_league_transform
   fedora: *humanoid_league_transform
+
+wolfgang_webots_sim:
+  ubuntu: &wolfgang_webots_sim
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/wolfgang_robot/master/wolfgang_webots_sim/.rdmanifest
+  debian: *wolfgang_webots_sim
+  fedora: *wolfgang_webots_sim
