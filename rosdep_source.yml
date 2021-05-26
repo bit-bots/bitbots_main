@@ -28,6 +28,13 @@ bitbots_live_tool_rqt:
   debian: *bitbots_live_tool_rqt
   fedora: *bitbots_live_tool_rqt
 
+bitbots_test:
+  ubuntu: &bitbots_test
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_tools/master/bitbots_test/.rdmanifest
+  debian: *bitbots_test
+  fedora: *bitbots_test
+
 bitbots_time_constraint:
   ubuntu: &bitbots_time_constraint
     source:
