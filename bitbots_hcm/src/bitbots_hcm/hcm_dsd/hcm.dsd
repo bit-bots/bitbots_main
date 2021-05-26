@@ -31,10 +31,10 @@ $StartHCM
                                 FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup + direction:back
                                 FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup + direction:back
                                 NOT_FALLEN --> $Falling
-                                    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
-                                    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
-                                    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
-                                    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
+                                    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft
+                                    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight
+                                    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront
+                                    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack
                                     NOT_FALLING --> $Sitting
                                         YES --> @PlayAnimationDynup + direction:rise
                                         NO --> $ExternalAnimation
