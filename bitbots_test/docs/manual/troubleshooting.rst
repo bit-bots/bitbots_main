@@ -31,6 +31,18 @@ Include directories need not be given because they are added automatically via `
    endif()
 
 
+Newly added test files don't get run
+------------------------------------
+When you add a test file (either Unit Test or rostest) they might not immediately get picked up by the build system
+and don't get run when :doc:`executing tests <./executing_tests>`.
+
+This is because most test execution will not re-execute CMake but test discovery is implemented in *bitbots_test* in
+CMake.
+
+To fix this, run your ``catkin test <package>`` call with ``--force-cmake``.
+It should also be possible to call ``catkin build --force-cmake <package>``.
+
+
 .. _Xvfb: https://en.wikipedia.org/wiki/Xvfb
 .. _include_directories(): https://cmake.org/cmake/help/latest/command/include_directories.html
 

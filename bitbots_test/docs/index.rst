@@ -14,7 +14,7 @@ Description
    pyapi/modules
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Manuals
 
    manual/enable_testing
