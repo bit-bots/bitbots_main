@@ -20,7 +20,7 @@ class MockSubscriber(rospy.Subscriber):
 
     __init__.__doc__ = rospy.Subscriber.__init__.__doc__
 
-    def assert_message_received(self, message: Any = None):
+    def assertMessageReceived(self, message: Any = None):
         """
         Assert that at least one message was received.
 
@@ -32,7 +32,7 @@ class MockSubscriber(rospy.Subscriber):
         else:
             self.mock.assert_called()
 
-    def assert_one_message_received(self, message: Any = None):
+    def assertOneMessageReceived(self, message: Any = None):
         """
         Assert that exactly one message was received.
 
@@ -44,7 +44,7 @@ class MockSubscriber(rospy.Subscriber):
         else:
             self.mock.assert_called_once()
 
-    def assert_messages_received(self, messages: Sequence[Any], any_order: bool = False):
+    def assertMessagesReceived(self, messages: Sequence[Any], any_order: bool = False):
         """
         Assert that all message in `messages` have been received.
 
@@ -56,7 +56,7 @@ class MockSubscriber(rospy.Subscriber):
         """
         self.mock.assert_has_calls([call(m) for m in messages], any_order=any_order)
 
-    def assert_nothing_received(self):
+    def assertNothingReceived(self):
         """Assert that no messages have been received"""
         self.mock.assert_not_called()
 

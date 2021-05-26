@@ -26,9 +26,9 @@ class MockSubscriberTestCase(RosNodeTestCase):
         self.pub.publish(String("this is a test"))
 
         # verification
-        self.with_assertion_grace_period(t=200, f=self.sub.assert_message_received)
-        self.sub.assert_message_received(String("this is a test"))
-        self.assertRaises(AssertionError, lambda: self.sub.assert_message_received(String("something else")))
+        self.with_assertion_grace_period(t=200, f=self.sub.assertMessageReceived)
+        self.sub.assertMessageReceived(String("this is a test"))
+        self.assertRaises(AssertionError, lambda: self.sub.assertMessageReceived(String("something else")))
 
     def test_assert_messages_received(self):
         # execution
@@ -37,40 +37,40 @@ class MockSubscriberTestCase(RosNodeTestCase):
         self.pub.publish(String("test 3"))
 
         # verification
-        self.with_assertion_grace_period(t=200, f=self.sub.assert_message_received)
-        self.sub.assert_messages_received([String("test 1"), String("test 2"), String("test 3")])
-        self.sub.assert_messages_received([String("test 2"), String("test 1"), String("test 3")], any_order=True)
-        self.assertRaises(AssertionError, lambda: self.sub.assert_messages_received([String("test2"), String("test1")]))
+        self.with_assertion_grace_period(t=200, f=self.sub.assertMessageReceived)
+        self.sub.assertMessagesReceived([String("test 1"), String("test 2"), String("test 3")])
+        self.sub.assertMessagesReceived([String("test 2"), String("test 1"), String("test 3")], any_order=True)
+        self.assertRaises(AssertionError, lambda: self.sub.assertMessagesReceived([String("test2"), String("test1")]))
 
     def test_assert_nothing_received(self):
         # verification
-        self.sub.assert_nothing_received()
+        self.sub.assertNothingReceived()
 
     def test_assert_one_message_received(self):
         # execution
         self.pub.publish(String("test"))
 
         # verification
-        self.with_assertion_grace_period(t=200, f=self.sub.assert_one_message_received)
-        self.sub.assert_one_message_received()
-        self.sub.assert_one_message_received(String("test"))
+        self.with_assertion_grace_period(t=200, f=self.sub.assertOneMessageReceived)
+        self.sub.assertOneMessageReceived()
+        self.sub.assertOneMessageReceived(String("test"))
 
         self.pub.publish(String("another test"))
         time.sleep(0.2)
-        self.assertRaises(AssertionError, lambda: self.sub.assert_one_message_received())
+        self.assertRaises(AssertionError, lambda: self.sub.assertOneMessageReceived())
 
     def test_reset(self):
         # setup
         self.pub.publish(String("test"))
-        self.with_assertion_grace_period(t=200, f=self.sub.assert_one_message_received)
+        self.with_assertion_grace_period(t=200, f=self.sub.assertOneMessageReceived)
 
         # execution
         self.sub.reset()
 
         # verification
-        self.sub.assert_nothing_received()
-        self.assertRaises(AssertionError, lambda: self.sub.assert_one_message_received())
-        self.assertRaises(AssertionError, lambda: self.sub.assert_message_received())
+        self.sub.assertNothingReceived()
+        self.assertRaises(AssertionError, lambda: self.sub.assertOneMessageReceived())
+        self.assertRaises(AssertionError, lambda: self.sub.assertMessageReceived())
 
 
 if __name__ == "__main__":
