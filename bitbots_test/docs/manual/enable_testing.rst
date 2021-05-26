@@ -35,7 +35,7 @@ This guide describes how the *bitbots_test* library can be used in any package t
    .. todo:: Add exact documentation for the ``enable_bitbots_test`` function.
 
 
-#) Call ``catkin build --make-args test -- --no-deps --force-cmake <package>`` to create the necessary directories
+#) Call ``catkin build --no-deps --force-cmake <package>`` to create the necessary directories
    in which tests are located.
 
    This can also be done manually.

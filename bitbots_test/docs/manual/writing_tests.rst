@@ -36,7 +36,13 @@ Writing Unit-Tests in Python
 
    .. seealso:: :doc:`./executing_tests` on how to do the executing.
 
-#) Call one of the provided ``assert_`` methods defined on your derived class.
+#) Call one of the provided ``assert`` methods defined on your derived class.
+
+   The easiest way to see which assertions are available is through IDE autocomplete.
+   Otherwise some documentation is available through the :class:`unittest.TestCase` documentation and the
+   various assertion mixins in :mod:`bitbots_test.test_case`.
+   Which assertion exactly are available depends on the *TestCase* type you are subclassing though (i.e. simulator
+   assertions are only available when subclassing :class:`bitbots_test.test_case.WebotsTestCase`).
 
 Here is an example:
 

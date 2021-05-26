@@ -13,16 +13,16 @@ This is the default way to simply execute all tests for a project and is also ho
 
 :Simple Version:
 
-   ``catkin test <package>`` is a *catkin* alias which will run all tests for the given package as well as all
+   ``catkin run_tests <package>`` is a *catkin* alias which will run all tests for the given package as well as all
    dependencies.
 
 :Without Dependencies:
 
-   ``catkin test --no-deps <package>`` will only run tests for the provided package.
+   ``catkin run_tests --no-deps <package>`` will only run tests for the provided package.
 
 :Forcing Test Discovery:
 
-   ``catkin test --force-cmake <package>`` will force catkin to re-run cmake which will rerun the
+   ``catkin run_tests --force-cmake <package>`` will force catkin to re-run cmake which will rerun the
    ``enable_bitbots_docs()`` cmake function which in turn will rerun test discovery.
 
 
