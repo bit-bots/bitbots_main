@@ -16,9 +16,11 @@ Description
 .. toctree::
    :maxdepth: 1
    :caption: Manuals
-   :glob:
 
-   manual/*
+   manual/enable_testing
+   manual/writing_tests
+   manual/executing_tests
+   manual/troubleshooting
 
 
 Indices and tables

@@ -25,6 +25,13 @@ This guide describes how the *bitbots_test* library can be used in any package t
 
    This function is defined in `enable_bitbots_test.cmake.in`_.
 
+   If you want to test C++ code, you need to pass a list of C++ source files to ``enable_bitbots_test()`` like so:
+
+   .. code-block:: cmake
+
+        set(SOURCES src/my_source.cpp)
+        enable_bitbots_tests(CXX_SOURCES "${SOURCES}")
+
    .. todo:: Add exact documentation for the ``enable_bitbots_test`` function.
 
 
