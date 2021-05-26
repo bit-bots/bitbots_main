@@ -1,0 +1,18 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_test'
+depends:
+- bitbots_docs
+- boost
+- python3-hypothesis
+- roscpp
+- rostest
+- rosunit
+- rosgraph_msgs
+exec-path: bitbots_tools-master/bitbots_test
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_test'
+uri: https://github.com/bit-bots/bitbots_tools/archive/refs/heads/master.tar.gz

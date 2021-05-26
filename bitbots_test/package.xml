@@ -1,0 +1,28 @@
+<package format="2">
+  <name>bitbots_test</name>
+  <version>1.0.0</version>
+  <description>
+    Used in our other packages to provide common testing functionality and utility like test-discovery and assertion
+    helpers for working with ROS.
+  </description>
+
+  <author email="dev@finn-thorben.me">Finn-Thorben Sell</author>
+  <maintainer email="dev@finn-thorben.me">Finn-Thorben Sell</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <license>MIT</license>
+  <url type="website">http://doku.bit-bots.de/package/bitbots_test/latest/</url>
+  <url type="repository">https://github.com/bit-bots/bitbots_tools</url>
+  <url type="bugtracker">https://github.com/bit-bots/bitbots_tools/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>bitbots_docs</build_depend>
+  <depend>rostest</depend>
+  <depend>roscpp</depend>
+  <depend>rosunit</depend>
+  <depend>rosgraph</depend>
+  <depend>rosgraph_msgs</depend>
+
+  <test_depend>boost</test_depend>
+  <test_depend>python3-hypothesis</test_depend>
+  <test_depend>wolfgang_webots_sim</test_depend>
+</package>

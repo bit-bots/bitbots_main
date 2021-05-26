@@ -1,0 +1,7 @@
+<launch>
+    <test pkg="bitbots_test" type="test_webots_simulator.py" test-name="test_webots_simulator" time-limit="300" />
+
+    <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
+        <arg name="headless" value="true" />
+    </include>
+</launch>
