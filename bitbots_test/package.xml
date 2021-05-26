@@ -1,6 +1,6 @@
 <package format="2">
   <name>bitbots_test</name>
-  <version>0.0.2</version>
+  <version>1.0.0</version>
   <description>
     Used in our other packages to provide common testing functionality and utility like test-discovery and assertion
     helpers for working with ROS.
