@@ -1,6 +1,5 @@
 #include "bitbots_dynup/dynup_node.h"
 
-
 namespace bitbots_dynup {
 
 DynUpNode::DynUpNode() :
@@ -25,7 +24,7 @@ DynUpNode::DynUpNode() :
   init_state.reset(new robot_state::RobotState(kinematic_model));
   // set elbows to make arms straight, in a stupid way since moveit is annoying
   std::vector<std::string> names_vec = {"LElbow", "RElbow"};
-  std::vector<double> pos_vec = {-M_PI/2, M_PI/2};
+  std::vector<double> pos_vec = {-M_PI / 2, M_PI / 2};
   init_state->setJointPositions(names_vec[0], &pos_vec[0]);
   init_state->setJointPositions(names_vec[1], &pos_vec[1]);
   init_state->updateLinkTransforms();
@@ -46,11 +45,11 @@ DynUpNode::DynUpNode() :
 }
 
 void DynUpNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
-    ik_.setCurrentJointStates(jointstates);
+  ik_.setCurrentJointStates(jointstates);
 }
 
 void DynUpNode::imuCallback(const sensor_msgs::Imu &msg) {
-    stabilizer_.setImu(msg);
+  stabilizer_.setImu(msg);
 }
 
 void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
@@ -77,7 +76,8 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   ik_.reset();
   stabilizer_.reset();
   last_ros_update_time_ = 0;
-  if (std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> poses = getCurrentPoses()) {
+  if (std::optional < std::tuple < geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose,
+      geometry_msgs::Pose >> poses = getCurrentPoses()) {
     DynupRequest request;
     request.l_foot_pose = std::get<0>(poses.value());
     request.direction = goal->direction;
@@ -86,21 +86,21 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
     request.l_hand_pose = std::get<2>(poses.value());
     request.r_hand_pose = std::get<3>(poses.value());
     engine_.setGoals(request);
-    if(debug_) {
+    if (debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), base_link_frame_);
       visualizer_.displaySplines(engine_.getLFootSplines(), r_sole_frame_);
       // Workaround for an error in the Visualizer. TODO
-      if(request.direction == "front" || request.direction == "back") {
-          visualizer_.displaySplines(engine_.getLHandSplines(), base_link_frame_);
-          visualizer_.displaySplines(engine_.getRHandSplines(), base_link_frame_);
+      if (request.direction == "front" || request.direction == "back") {
+        visualizer_.displaySplines(engine_.getLHandSplines(), base_link_frame_);
+        visualizer_.displaySplines(engine_.getRHandSplines(), base_link_frame_);
       }
     }
     ros::Rate loop_rate(engine_rate_);
     loopEngine(loop_rate);
     bitbots_msgs::DynUpResult r;
-    if(server_.isPreemptRequested()){
+    if (server_.isPreemptRequested()) {
       r.successful = false;
-    }else{
+    } else {
       r.successful = true;
     }
     server_.setSucceeded(r);
@@ -118,14 +118,15 @@ double DynUpNode::getTimeDelta() {
   double current_ros_time = ros::Time::now().toSec();
 
   // first call needs to be handled specially
-  if (last_ros_update_time_==0){
+  if (last_ros_update_time_ == 0) {
     last_ros_update_time_ = current_ros_time;
     return 0.001;
   }
   dt = current_ros_time - last_ros_update_time_;
   // this can happen due to floating point precision or simulation issues. will be catched later
   if (dt == 0) {
-    ROS_WARN_ONCE("dt was 0. this can happen in simulation if your update rate is higher than the simulators. This warning is only displayed once!");
+    ROS_WARN_ONCE(
+        "dt was 0. this can happen in simulation if your update rate is higher than the simulators. This warning is only displayed once!");
   }
   last_ros_update_time_ = current_ros_time;
   return dt;
@@ -138,28 +139,27 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   while (server_.isActive() && !server_.isPreemptRequested()) {
     dt = getTimeDelta();
     // catch weird time glitches and dont do anything in this case
-    if(dt > 0){
-        DynupResponse response = engine_.update(dt);
-        stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
-        DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
-        bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-        bitbots_msgs::DynUpFeedback feedback;
-        feedback.percent_done = engine_.getPercentDone();
-        server_.publishFeedback(feedback);
-        publishGoals(goals);
-        if(goals.first.empty()) {
-          failed_tick_counter++;
-        }
-        if(stabilizer_.isStable()) {
-            stable_duration_ += 1;
-        }
-        else {
-            stable_duration_ = 0;
-        }
-        if(feedback.percent_done >= 100 &&(stable_duration_ >= params_.stable_duration || !(params_.stabilizing))) {
-          ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
-          break;
-        }
+    if (dt > 0) {
+      DynupResponse response = engine_.update(dt);
+      stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
+      DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+      bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+      bitbots_msgs::DynUpFeedback feedback;
+      feedback.percent_done = engine_.getPercentDone();
+      server_.publishFeedback(feedback);
+      publishGoals(goals);
+      if (goals.first.empty()) {
+        failed_tick_counter++;
+      }
+      if (stabilizer_.isStable()) {
+        stable_duration_ += 1;
+      } else {
+        stable_duration_ = 0;
+      }
+      if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing))) {
+        ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
+        break;
+      }
     }
     /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
@@ -167,7 +167,10 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   }
 }
 
-std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
+std::optional<std::tuple<geometry_msgs::Pose,
+                         geometry_msgs::Pose,
+                         geometry_msgs::Pose,
+                         geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
   ros::Time time = ros::Time::now();
 
   /* Construct zero-positions for all poses in their respective local frames */
@@ -196,7 +199,10 @@ std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs
     tf_buffer_.transform(r_foot_origin, r_foot_transformed, base_link_frame_, ros::Duration(0.2));
     tf_buffer_.transform(l_hand_origin, l_hand_transformed, base_link_frame_, ros::Duration(0.2));
     tf_buffer_.transform(r_hand_origin, r_hand_transformed, base_link_frame_, ros::Duration(0.2));
-    return std::make_tuple(l_foot_transformed.pose, r_foot_transformed.pose, l_hand_transformed.pose, r_hand_transformed.pose);
+    return std::make_tuple(l_foot_transformed.pose,
+                           r_foot_transformed.pose,
+                           l_hand_transformed.pose,
+                           r_hand_transformed.pose);
   } catch (tf2::TransformException &exc) {
     ROS_ERROR_STREAM(exc.what());
     return std::nullopt;

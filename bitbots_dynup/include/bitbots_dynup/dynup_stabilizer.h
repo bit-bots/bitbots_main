@@ -17,7 +17,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_eigen/tf2_eigen.h>
 
-
 namespace bitbots_dynup {
 
 class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
@@ -26,13 +25,12 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
   void setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk);
   void setParams(DynUpConfig params);
-  void setRobotModel(moveit::core::RobotModelPtr model); 
+  void setRobotModel(moveit::core::RobotModelPtr model);
   void reset() override;
   void setImu(sensor_msgs::Imu imu);
   bool isStable();
 
-
-private:
+ private:
   sensor_msgs::Imu imu_;
   control_toolbox::Pid pid_trunk_pitch_;
   control_toolbox::Pid pid_trunk_roll_;

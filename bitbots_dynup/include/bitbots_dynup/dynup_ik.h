@@ -8,7 +8,6 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/robot_state.h>
 
-
 namespace bitbots_dynup {
 class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
  public:
@@ -17,7 +16,7 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void reset() override;
   void useStabilizing(bool use);
   void setCurrentJointStates(sensor_msgs::JointState jointStates);
-    void setDirection(std::string direction);
+  void setDirection(std::string direction);
 
  private:
   sensor_msgs::JointState current_joint_states_;

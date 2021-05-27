@@ -110,6 +110,7 @@ if __name__ == "__main__":
         if msg.angular_velocity.x > 0.15 or msg.angular_velocity.y > 0.15:
             last_move_time = rospy.Time.now().to_sec()
 
+
     rospy.init_node('dynup_dummy_client', anonymous=True)
     print('[..] Connecting to action server \'dynup\'', end='')
     sys.stdout.flush()
