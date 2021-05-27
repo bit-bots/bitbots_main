@@ -27,6 +27,17 @@ Through the different levels an orientation is given about what has to be tested
 In the following, this will be explained in more detail.
 
 
+Automated Testing
+=================
+
+The below guide describes how our software can be tested manually however we also use automated tests via the package
+`bitbots_test`_.
+
+.. seealso:: `bitbots_test`_ Documentation
+
+.. _bitbots_test: http://doku.bit-bots.de/package/bitbots_test/latest/
+
+
 Unit vs. Integration Testing
 ============================
 
