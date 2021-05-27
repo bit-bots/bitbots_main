@@ -308,19 +308,23 @@ class Falling(AbstractDecisionElement):
 class FallingClassifier(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
-        prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg,
-                                                                self.blackboard.current_joint_state,
-                                                                self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
-        if prediction == 0:
-            return "NOT_FALLING"
-        elif prediction == 1:
-            return "FALLING_FRONT"
-        elif prediction == 2:
-            return "FALLING_BACK"
-        elif prediction == 3:
-            return "FALLING_LEFT"
-        elif prediction == 4:
-            return "FALLING_RIGHT"
+        if self.blackboard.falling_detection_active:
+            prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg,
+                                                                    self.blackboard.current_joint_state,
+                                                                    self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
+            if prediction == 0:
+                return "NOT_FALLING"
+            else:
+                if not reevaluate:
+                    self.blackboard.current_state = RobotControlState.FALLING
+                if prediction == 1:
+                    return "FALLING_FRONT"
+                elif prediction == 2:
+                    return "FALLING_BACK"
+                elif prediction == 3:
+                    return "FALLING_LEFT"
+                elif prediction == 4:
+                    return "FALLING_RIGHT"
         else:
             return "NOT_FALLING"
 
@@ -369,7 +373,8 @@ class Fallen(AbstractDecisionElement):
         # check if the robot is currently laying on the ground
         fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.quaternion, self.blackboard.gyro)
         if self.blackboard.is_stand_up_active and fallen_side is not None:
-            self.blackboard.current_state = RobotControlState.FALLEN
+            if not reevaluate:
+                self.blackboard.current_state = RobotControlState.FALLEN
             # we play a stand up animation
             if fallen_side == self.blackboard.fall_checker.FRONT:
                 return "FALLEN_FRONT"
