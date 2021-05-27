@@ -15,8 +15,8 @@ PROTO Wolfgang [
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
   field  SFBool      selfCollision   TRUE        # Is `Robot.selfCollision`.
   field  SFFloat     cameraFOV       1.04
-  field  SFInt32     cameraWidth     1440
-  field  SFInt32     cameraHeight    1080
+  field  SFInt32     cameraWidth     800
+  field  SFInt32     cameraHeight    600
   field  SFFloat     MX64-torque     7.3
   field  SFFloat     MX64-vel        8.17
   field  SFFloat     MX64-damping    0.65
