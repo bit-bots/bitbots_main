@@ -333,7 +333,7 @@ class Vision:
                         # Load Darknet implementation (uses CUDA)
                         self._yolo = yolo_handler.YoloHandlerDarknet(config, yolo_darknet_model_path)
                     elif config['neural_network_type'] == 'yolo_pytorch':
-                        self._yolo = yolo_handler.YoloHandlerPytorchYolo(config, yolo_darknet_model_path)
+                        self._yolo = yolo_handler.YoloHandlerPytorch(config, yolo_darknet_model_path)
                     # Set both ball and goalpost detector
                     self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
                     self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)

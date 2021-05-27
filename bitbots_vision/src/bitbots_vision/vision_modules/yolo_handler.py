@@ -19,7 +19,7 @@ try:
 except NameError:
     rospy.logerr("Please install/source OpenVino environment to use the NCS2 YOLO Handler.", logger_name="vision_yolo")
 try:
-    from pytorchyolo import models, detect
+    from pytorchyolo import models as torch_models, detect as torch_detect
 except ImportError:
     rospy.logerr("Not able to import pytorchyolo. This might be fine if you use another method.", logger_name="vision_yolo")
 
@@ -462,7 +462,7 @@ class YoloHandlerNCS2(YoloHandler):
                     self._candidates[class_name].append(c)
 
 
-class YoloHandlerPytorchYolo(YoloHandler):
+class YoloHandlerPytorch(YoloHandler):
     """
     Using Pytorch to get YOLO predictions
     """
@@ -476,16 +476,16 @@ class YoloHandlerPytorchYolo(YoloHandler):
         weightpath = os.path.join(model_path, "yolo_weights.weights")
         configpath = os.path.join(model_path, "config.cfg")
 
-        self.model = models.load_model(configpath, weightpath)
+        self.model = torch_models.load_model(configpath, weightpath)
 
         self._image = None
 
-        super(YoloHandlerPytorchYolo, self).__init__(config, model_path)
+        super(YoloHandlerPytorch, self).__init__(config, model_path)
 
     def predict(self):
         if self._candidates is None or not self._caching:
             self._candidates = defaultdict(list)
-            boxes = detect.detect_image(self.model, cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB),
+            boxes = torch_detect.detect_image(self.model, cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB),
                                         conf_thres=self._confidence_threshold,
                                         nms_thres=self._nms_threshold)
             for box in boxes:
