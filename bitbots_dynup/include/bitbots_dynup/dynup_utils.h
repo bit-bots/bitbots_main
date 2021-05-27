@@ -9,6 +9,7 @@ struct DynupResponse {
   tf2::Transform l_hand_goal_pose;
   tf2::Transform r_hand_goal_pose;
   bool is_stabilizing_needed;
+  bool is_head_zero;
 };
 
 struct DynupRequest {

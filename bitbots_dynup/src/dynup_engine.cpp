@@ -164,6 +164,7 @@ DynupResponse DynupEngine::update(double dt) {
   goals_.l_hand_goal_pose = offset_left_ * l_hand_pose;
   goals_.r_hand_goal_pose = offset_right_ * r_hand_pose;
   goals_.is_stabilizing_needed = isStabilizingNeeded();
+  goals_.is_head_zero = isHeadZero();
 
   publishDebug();
 
@@ -676,6 +677,26 @@ bool DynupEngine::isStabilizingNeeded() const {
                                         params_.time_foot_ground_back +
                                         params_.time_full_squat_hands +
                                         params_.time_full_squat_legs) ||
+           (direction_ == 2) || (direction_ == 3));
+}
+
+bool DynupEngine::isHeadZero() const{
+    // set heads zero in the middle of rise phase
+    return ((direction_ == 1 && time_ >= params_.time_hands_side +
+                                        params_.time_hands_rotate +
+                                        params_.time_foot_close +
+                                        params_.time_hands_front +
+                                        params_.time_foot_ground_front +
+                                        params_.time_torso_45 +
+                                        params_.time_to_squat +
+                                        params_.wait_in_squat_front +
+                                        0.5*params_.rise_time) ||
+           (direction_ == 0 && time_ >= params_.time_legs_close +
+                                        params_.time_foot_ground_back +
+                                        params_.time_full_squat_hands +
+                                        params_.time_full_squat_legs +
+                                        params_.wait_in_squat_back+
+                                        0.5*params_.rise_time) ||
            (direction_ == 2) || (direction_ == 3));
 }
 

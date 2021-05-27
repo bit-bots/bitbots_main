@@ -29,7 +29,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   ik_options.return_approximate_solution = true;
 
   geometry_msgs::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
-  
+
   tf2::toMsg(ik_goals.r_foot_goal_pose, right_foot_goal_msg);
   tf2::toMsg(ik_goals.l_foot_goal_pose, left_foot_goal_msg);
   tf2::toMsg(ik_goals.r_hand_goal_pose, right_hand_goal_msg);
@@ -78,24 +78,28 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     bitbots_splines::JointGoals result;
     result.first = joint_names;
     result.second = joint_goals;
-    /* sets head motor positions to 0, as the IK will return random values for those unconstrained motors. */
+    /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
     for(int i = 0; i  < result.first.size(); i++)
     {
         if(result.first[i] == "HeadPan") {
             result.second[i] = 0;
         }
         else if(result.first[i] ==  "HeadTilt") {
-            if (direction_ == "front")
-            {
-                result.second[i] = 0.785398;
-            }
-            else if (direction_ == "back")
-            {
-                result.second[i] = -0.785398;
-            }
-            else
-            {
+            if (ik_goals.is_head_zero){
                 result.second[i] = 0;
+            }else{
+                if (direction_ == "front")
+                {
+                    result.second[i] = 1.0;
+                }
+                else if (direction_ == "back")
+                {
+                    result.second[i] = -1.5;
+                }
+                else
+                {
+                    result.second[i] = 0;
+                }
             }
         }
     }

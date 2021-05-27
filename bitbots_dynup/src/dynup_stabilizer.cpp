@@ -71,6 +71,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
     response.l_foot_goal_pose = left_foot_goal;
     response.r_hand_goal_pose = right_hand_goal;
     response.l_hand_goal_pose = left_hand_goal;
+    response.is_head_zero = ik_goals.is_head_zero;
 
     return response;
 }
