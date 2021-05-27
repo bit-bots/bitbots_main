@@ -16,8 +16,6 @@
 
 namespace bitbots_dynup {
 
-
-
 class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupResponse> {
  public:
   DynupEngine();
@@ -133,7 +131,6 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    *  @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
   double calcDescendSplines(double time);
-
 
 };
 

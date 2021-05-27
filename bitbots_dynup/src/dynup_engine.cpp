@@ -29,98 +29,110 @@ void DynupEngine::reset() {
 }
 
 void DynupEngine::publishDebug() {
-    if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
-        return;
+  if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
+    return;
+  }
+
+  bitbots_dynup::DynupEngineDebug msg;
+  msg.header.stamp = ros::Time::now();
+
+  msg.time = time_;
+  msg.stabilization_active = isStabilizingNeeded();
+  if (direction_ == 1) {
+    if (time_ < params_.time_hands_side) {
+      msg.state_number = 0;
+    } else if (time_ < params_.time_hands_side + params_.time_hands_rotate) {
+      msg.state_number = 1;
+    } else if (time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front) {
+      msg.state_number = 2;
+    } else if (time_
+        < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close) {
+      msg.state_number = 3;
+    } else if (time_
+        < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close
+            + params_.time_foot_ground_front) {
+      msg.state_number = 4;
+    } else if (time_
+        < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close
+            + params_.time_foot_ground_front + params_.time_torso_45) {
+      msg.state_number = 5;
+    } else if (time_
+        < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close
+            + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat) {
+      msg.state_number = 6;
+    } else if (time_
+        < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close
+            + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat
+            + params_.wait_in_squat_front) {
+      msg.state_number = 7;
+    } else {
+      msg.state_number = 8;
     }
-
-    bitbots_dynup::DynupEngineDebug msg;
-    msg.header.stamp = ros::Time::now();
-
-    msg.time = time_;
-    msg.stabilization_active = isStabilizingNeeded();
-    if (direction_ == 1){
-      if(time_ < params_.time_hands_side){
-          msg.state_number = 0;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate){
-          msg.state_number = 1;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front){
-          msg.state_number = 2;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close ){
-          msg.state_number = 3;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close + params_.time_foot_ground_front){
-          msg.state_number = 4;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close + params_.time_foot_ground_front + params_.time_torso_45){
-          msg.state_number = 5;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat){
-          msg.state_number = 6;
-      }else if(time_ < params_.time_hands_side + params_.time_hands_rotate + params_.time_hands_front + params_.time_foot_close + params_.time_foot_ground_front + params_.time_torso_45 + params_.time_to_squat + params_.wait_in_squat_front){
-          msg.state_number = 7;
-      }else {
-          msg.state_number = 8;
-      }
-    }else if (direction_ == 0) {
-      if(time_ < params_.time_legs_close){
-          msg.state_number = 0;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back){
-          msg.state_number = 1;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands){
-          msg.state_number = 2;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands +  params_.time_full_squat_legs ){
-        msg.state_number = 3;
-      }else if(time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands +  params_.time_full_squat_legs + params_.wait_in_squat_back){
-        msg.state_number = 4;
-      }else{
-          msg.state_number = 5;
-      }
-    }else{
-          msg.state_number = -1;
+  } else if (direction_ == 0) {
+    if (time_ < params_.time_legs_close) {
+      msg.state_number = 0;
+    } else if (time_ < params_.time_legs_close + params_.time_foot_ground_back) {
+      msg.state_number = 1;
+    } else if (time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands) {
+      msg.state_number = 2;
+    } else if (time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands
+        + params_.time_full_squat_legs) {
+      msg.state_number = 3;
+    } else if (time_ < params_.time_legs_close + params_.time_foot_ground_back + params_.time_full_squat_hands
+        + params_.time_full_squat_legs + params_.wait_in_squat_back) {
+      msg.state_number = 4;
+    } else {
+      msg.state_number = 5;
     }
+  } else {
+    msg.state_number = -1;
+  }
 
-    geometry_msgs::Pose l_arm_pose;
-    tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
-    msg.l_arm_pose = l_arm_pose;
-    publishArrowMarker("l_arm", "base_link", l_arm_pose, 1, 0, 0, 1);
+  geometry_msgs::Pose l_arm_pose;
+  tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
+  msg.l_arm_pose = l_arm_pose;
+  publishArrowMarker("l_arm", "base_link", l_arm_pose, 1, 0, 0, 1);
 
-    geometry_msgs::Pose l_arm_from_shoulder;
-    tf2::toMsg(l_hand_spline_.getTfTransform(time_), l_arm_from_shoulder);
-    msg.l_arm_pose_from_shoulder = l_arm_from_shoulder;
+  geometry_msgs::Pose l_arm_from_shoulder;
+  tf2::toMsg(l_hand_spline_.getTfTransform(time_), l_arm_from_shoulder);
+  msg.l_arm_pose_from_shoulder = l_arm_from_shoulder;
 
-    geometry_msgs::Pose r_arm_pose;
-    tf2::toMsg(goals_.r_hand_goal_pose, r_arm_pose);
-    msg.r_arm_pose = r_arm_pose;
-    publishArrowMarker("r_arm", "base_link", r_arm_pose, 0, 1, 0, 1);
+  geometry_msgs::Pose r_arm_pose;
+  tf2::toMsg(goals_.r_hand_goal_pose, r_arm_pose);
+  msg.r_arm_pose = r_arm_pose;
+  publishArrowMarker("r_arm", "base_link", r_arm_pose, 0, 1, 0, 1);
 
-    geometry_msgs::Pose r_arm_from_shoulder;
-    tf2::toMsg(r_hand_spline_.getTfTransform(time_), r_arm_from_shoulder);
-    msg.r_arm_pose_from_shoulder = r_arm_from_shoulder;
+  geometry_msgs::Pose r_arm_from_shoulder;
+  tf2::toMsg(r_hand_spline_.getTfTransform(time_), r_arm_from_shoulder);
+  msg.r_arm_pose_from_shoulder = r_arm_from_shoulder;
 
-    geometry_msgs::Pose l_leg_pose;
-    tf2::toMsg(goals_.l_foot_goal_pose, l_leg_pose);
-    msg.l_leg_pose = l_leg_pose;
+  geometry_msgs::Pose l_leg_pose;
+  tf2::toMsg(goals_.l_foot_goal_pose, l_leg_pose);
+  msg.l_leg_pose = l_leg_pose;
 
-    geometry_msgs::Pose l_leg_pose_in_base_link;
-    tf2::toMsg(goals_.r_foot_goal_pose * goals_.l_foot_goal_pose, l_leg_pose_in_base_link);
-    publishArrowMarker("l_leg_pose", "base_link", l_leg_pose_in_base_link, 0, 0, 1, 1);
+  geometry_msgs::Pose l_leg_pose_in_base_link;
+  tf2::toMsg(goals_.r_foot_goal_pose * goals_.l_foot_goal_pose, l_leg_pose_in_base_link);
+  publishArrowMarker("l_leg_pose", "base_link", l_leg_pose_in_base_link, 0, 0, 1, 1);
 
-    geometry_msgs::Pose r_leg_pose;
-    tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
-    msg.r_leg_pose = r_leg_pose;
-    publishArrowMarker("r_leg_pose", "base_link", r_leg_pose, 0, 1, 1, 1);
+  geometry_msgs::Pose r_leg_pose;
+  tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
+  msg.r_leg_pose = r_leg_pose;
+  publishArrowMarker("r_leg_pose", "base_link", r_leg_pose, 0, 1, 1, 1);
 
-    double r,p,y;
-    tf2::Quaternion q;
-    tf2::convert(r_leg_pose.orientation, q);
-    tf2::Matrix3x3(q).getRPY(r, p, y);
-    msg.foot_roll = r;
-    msg.foot_pitch = p;
-    msg.foot_yaw = y;
+  double r, p, y;
+  tf2::Quaternion q;
+  tf2::convert(r_leg_pose.orientation, q);
+  tf2::Matrix3x3(q).getRPY(r, p, y);
+  msg.foot_roll = r;
+  msg.foot_pitch = p;
+  msg.foot_yaw = y;
 
-    pub_engine_debug_.publish(msg);
+  pub_engine_debug_.publish(msg);
 }
 
 void DynupEngine::publishArrowMarker(std::string name_space,
-                                        std::string frame,
-                                        geometry_msgs::Pose pose, float r, float g, float b, float a) {
+                                     std::string frame,
+                                     geometry_msgs::Pose pose, float r, float g, float b, float a) {
   visualization_msgs::Marker marker_msg;
   marker_msg.header.stamp = ros::Time::now();
   marker_msg.header.frame_id = frame;
@@ -173,20 +185,21 @@ DynupResponse DynupEngine::update(double dt) {
   return goals_;
 }
 
-bitbots_splines::PoseSpline DynupEngine::initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline) {
-    double r,p,y;
-    tf2::Quaternion q;
+bitbots_splines::PoseSpline DynupEngine::initializeSpline(geometry_msgs::Pose pose,
+                                                          bitbots_splines::PoseSpline spline) {
+  double r, p, y;
+  tf2::Quaternion q;
 
-    spline.x()->addPoint(0.0, pose.position.x);
-    spline.y()->addPoint(0.0, pose.position.y);
-    spline.z()->addPoint(0.0, pose.position.z);
-    tf2::convert(pose.orientation, q);
-    tf2::Matrix3x3(q).getRPY(r, p, y);
-    spline.roll()->addPoint(0.0, r);
-    spline.pitch()->addPoint(0.0, p);
-    spline.yaw()->addPoint(0.0, y);
+  spline.x()->addPoint(0.0, pose.position.x);
+  spline.y()->addPoint(0.0, pose.position.y);
+  spline.z()->addPoint(0.0, pose.position.z);
+  tf2::convert(pose.orientation, q);
+  tf2::Matrix3x3(q).getRPY(r, p, y);
+  spline.roll()->addPoint(0.0, r);
+  spline.pitch()->addPoint(0.0, p);
+  spline.yaw()->addPoint(0.0, y);
 
-    return spline;
+  return spline;
 }
 
 double DynupEngine::calcFrontSplines() {
@@ -203,31 +216,31 @@ double DynupEngine::calcFrontSplines() {
   l_hand_spline_.z()->addPoint(time, 0);
   l_hand_spline_.roll()->addPoint(time, 0);
   l_hand_spline_.pitch()->addPoint(time, 0);
-  l_hand_spline_.yaw()->addPoint(time, M_PI/2);
+  l_hand_spline_.yaw()->addPoint(time, M_PI / 2);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, -params_.arm_extended_length);
   r_hand_spline_.z()->addPoint(time, 0);
   r_hand_spline_.roll()->addPoint(time, 0);
   r_hand_spline_.pitch()->addPoint(time, 0);
-  r_hand_spline_.yaw()->addPoint(time, -M_PI/2);
+  r_hand_spline_.yaw()->addPoint(time, -M_PI / 2);
 
   /*
    * Pose 1: Rotate hands to the orientation that we will need later
    */
-  double pitch_offset = params_.hands_pitch /180 * M_PI;
+  double pitch_offset = params_.hands_pitch / 180 * M_PI;
   time += params_.time_hands_rotate;
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, params_.arm_extended_length);
   l_hand_spline_.z()->addPoint(time, 0);
-  l_hand_spline_.roll()->addPoint(time, -M_PI/2);
+  l_hand_spline_.roll()->addPoint(time, -M_PI / 2);
   l_hand_spline_.pitch()->addPoint(time, 0);
-  l_hand_spline_.yaw()->addPoint(time, M_PI/2);
+  l_hand_spline_.yaw()->addPoint(time, M_PI / 2);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, -params_.arm_extended_length);
   r_hand_spline_.z()->addPoint(time, 0);
-  r_hand_spline_.roll()->addPoint(time, M_PI/2);
+  r_hand_spline_.roll()->addPoint(time, M_PI / 2);
   r_hand_spline_.pitch()->addPoint(time, 0);
-  r_hand_spline_.yaw()->addPoint(time, -M_PI/2);
+  r_hand_spline_.yaw()->addPoint(time, -M_PI / 2);
 
   /*
    * Pose 2: Move hands to the front
@@ -239,13 +252,13 @@ double DynupEngine::calcFrontSplines() {
   r_hand_spline_.y()->addPoint(time, -params_.arm_side_offset);
   r_hand_spline_.z()->addPoint(time, cos(pitch_offset) * params_.arm_extended_length);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, -M_PI/2 + pitch_offset);
+  r_hand_spline_.pitch()->addPoint(time, -M_PI / 2 + pitch_offset);
   r_hand_spline_.yaw()->addPoint(time, 0);
   l_hand_spline_.x()->addPoint(time, sin(pitch_offset) * x_offset);
   l_hand_spline_.y()->addPoint(time, params_.arm_side_offset);
   l_hand_spline_.z()->addPoint(time, cos(pitch_offset) * params_.arm_extended_length);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, -M_PI/2 + pitch_offset);
+  l_hand_spline_.pitch()->addPoint(time, -M_PI / 2 + pitch_offset);
   l_hand_spline_.yaw()->addPoint(time, 0);
 
   //keep feet on initial pose till this point, otherwise robot will tilt and arms will collide with floor
@@ -284,11 +297,11 @@ double DynupEngine::calcFrontSplines() {
    * Pose 4: Position feet under body
    */
   // compute foot position while standing up
-  double foot_x = sin(M_PI * -params_.max_leg_angle /180) * -params_.leg_min_length_front;
-  double foot_z = cos(M_PI * -params_.max_leg_angle /180) * -params_.leg_min_length_front;
-  double foot_pitch = -M_PI * params_.max_leg_angle /180;
+  double foot_x = sin(M_PI * -params_.max_leg_angle / 180) * -params_.leg_min_length_front;
+  double foot_z = cos(M_PI * -params_.max_leg_angle / 180) * -params_.leg_min_length_front;
+  double foot_pitch = -M_PI * params_.max_leg_angle / 180;
   time += params_.time_foot_ground_front;
-  r_foot_spline_.x()->addPoint(time, foot_x -params_.trunk_x_front);
+  r_foot_spline_.x()->addPoint(time, foot_x - params_.trunk_x_front);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, foot_z);
   r_foot_spline_.roll()->addPoint(time, 0);
@@ -325,7 +338,7 @@ double DynupEngine::calcFrontSplines() {
   l_foot_spline_.roll()->addPoint(time, 0);
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
-  r_foot_spline_.x()->addPoint(time, foot_x -params_.trunk_x_front);
+  r_foot_spline_.x()->addPoint(time, foot_x - params_.trunk_x_front);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, foot_z);
   r_foot_spline_.roll()->addPoint(time, 0);
@@ -335,21 +348,21 @@ double DynupEngine::calcFrontSplines() {
   /*
    * Pose 6: Move to squat position
    */
-  double angle_foot = -M_PI * params_.trunk_overshoot_angle_front /180;
+  double angle_foot = -M_PI * params_.trunk_overshoot_angle_front / 180;
   time += params_.time_to_squat;
   //r_hand_spline_.x()->addPoint(time, 0, -1);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, -params_.arm_side_offset);
   r_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   r_hand_spline_.yaw()->addPoint(time, 0);
   //l_hand_spline_.x()->addPoint(time, 0, -1);
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, params_.arm_side_offset);
   l_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   l_hand_spline_.yaw()->addPoint(time, 0);
 
   l_foot_spline_.x()->addPoint(time, 0);
@@ -360,7 +373,8 @@ double DynupEngine::calcFrontSplines() {
   l_foot_spline_.yaw()->addPoint(time, 0);
   r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_.trunk_x_front);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
-  r_foot_spline_.z()->addPoint(time, -sin(angle_foot) * params_.trunk_x_front - cos(angle_foot) * params_.leg_min_length_front);
+  r_foot_spline_.z()
+      ->addPoint(time, -sin(angle_foot) * params_.trunk_x_front - cos(angle_foot) * params_.leg_min_length_front);
   r_foot_spline_.roll()->addPoint(time, 0);
   r_foot_spline_.pitch()->addPoint(time, angle_foot);
   r_foot_spline_.yaw()->addPoint(time, 0);
@@ -379,20 +393,20 @@ double DynupEngine::calcFrontSplines() {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.leg_min_length_front);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch / 180);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, params_.arm_side_offset);
   l_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, -params_.arm_side_offset);
   r_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   r_hand_spline_.yaw()->addPoint(time, 0);
   return time;
 }
@@ -426,13 +440,13 @@ double DynupEngine::calcBackSplines() {
   l_hand_spline_.y()->addPoint(time, params_.arm_side_offset);
   l_hand_spline_.z()->addPoint(time, -params_.hands_behind_back_z);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, -params_.hands_behind_back_x);
   r_hand_spline_.y()->addPoint(time, -params_.arm_side_offset);
   r_hand_spline_.z()->addPoint(time, -params_.hands_behind_back_z);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   /*
@@ -441,21 +455,25 @@ double DynupEngine::calcBackSplines() {
   time += params_.time_foot_ground_back;
   // length(upper arm) == length(lower arm) -> Isosceles triangle with length of one side := params_.arm_extended_length/2
   // set elbow to 90°, we can get x by Pythagorean theorem
-  l_hand_spline_.x()->addPoint(time, sin(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(params_.arm_extended_length/2, 2)));
+  l_hand_spline_.x()
+      ->addPoint(time, sin(params_.arms_angle_back * M_PI / 180) * -sqrt(2 * pow(params_.arm_extended_length / 2, 2)));
   l_hand_spline_.y()->addPoint(time, 0);
-  l_hand_spline_.z()->addPoint(time, cos(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(params_.arm_extended_length/2, 2)));
+  l_hand_spline_.z()
+      ->addPoint(time, cos(params_.arms_angle_back * M_PI / 180) * -sqrt(2 * pow(params_.arm_extended_length / 2, 2)));
   l_hand_spline_.roll()->addPoint(time, 0);
   // angle has to be 45° due to arms being a Isosceles triangle with gamma = 90°
-  l_hand_spline_.pitch()->addPoint(time, params_.arms_angle_back*M_PI/180);
+  l_hand_spline_.pitch()->addPoint(time, params_.arms_angle_back * M_PI / 180);
   l_hand_spline_.yaw()->addPoint(time, 0);
-  r_hand_spline_.x()->addPoint(time, sin(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(params_.arm_extended_length/2, 2)));
+  r_hand_spline_.x()
+      ->addPoint(time, sin(params_.arms_angle_back * M_PI / 180) * -sqrt(2 * pow(params_.arm_extended_length / 2, 2)));
   r_hand_spline_.y()->addPoint(time, 0);
-  r_hand_spline_.z()->addPoint(time, cos(params_.arms_angle_back*M_PI/180)*-sqrt(2* pow(params_.arm_extended_length/2, 2)));
+  r_hand_spline_.z()
+      ->addPoint(time, cos(params_.arms_angle_back * M_PI / 180) * -sqrt(2 * pow(params_.arm_extended_length / 2, 2)));
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, params_.arms_angle_back*M_PI/180);
+  r_hand_spline_.pitch()->addPoint(time, params_.arms_angle_back * M_PI / 180);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
-  double angle_foot = M_PI * params_.foot_angle /180;
+  double angle_foot = M_PI * params_.foot_angle / 180;
   // trunk needs to be kept high enough to avoid collisions
   // since angle between torso and foot changes, we need to apply sin/cos to compute in relation to feet.
   // this is necessary since it will be the correct frame again after next torso rotation
@@ -464,7 +482,7 @@ double DynupEngine::calcBackSplines() {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.com_shift_1);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time,angle_foot);
+  r_foot_spline_.pitch()->addPoint(time, angle_foot);
   r_foot_spline_.yaw()->addPoint(time, 0);
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.foot_distance);
@@ -496,7 +514,7 @@ double DynupEngine::calcBackSplines() {
    */
   time += params_.time_full_squat_legs;
   // angle foot now changed based on different parameter
-  angle_foot = -M_PI * params_.trunk_overshoot_angle_back /180;
+  angle_foot = -M_PI * params_.trunk_overshoot_angle_back / 180;
   r_foot_spline_.x()->addPoint(time, -params_.com_shift_2);
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.trunk_height_back);
@@ -524,20 +542,20 @@ double DynupEngine::calcBackSplines() {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.trunk_height_back);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch / 180);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, params_.arm_side_offset);
   l_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, -params_.arm_side_offset);
   r_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   r_hand_spline_.yaw()->addPoint(time, 0);
   return time;
 }
@@ -558,20 +576,20 @@ double DynupEngine::calcRiseSplines(double time) {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2.0);
   r_foot_spline_.z()->addPoint(time, -params_.trunk_height);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch / 180);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, 0);
   l_hand_spline_.z()->addPoint(time, params_.hand_walkready_height);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
+  l_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI / 180);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, 0);
   r_hand_spline_.z()->addPoint(time, params_.hand_walkready_height);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI/180);
+  r_hand_spline_.pitch()->addPoint(time, params_.hand_walkready_pitch * M_PI / 180);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   return time;
@@ -592,20 +610,20 @@ double DynupEngine::calcDescendSplines(double time) {
   r_foot_spline_.y()->addPoint(time, -params_.foot_distance / 2);
   r_foot_spline_.z()->addPoint(time, -params_.leg_min_length_front);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch /180);
+  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_.trunk_pitch / 180);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   l_hand_spline_.x()->addPoint(time, 0);
   l_hand_spline_.y()->addPoint(time, params_.arm_side_offset);
   l_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   l_hand_spline_.roll()->addPoint(time, 0);
-  l_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  l_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   l_hand_spline_.yaw()->addPoint(time, 0);
   r_hand_spline_.x()->addPoint(time, 0);
   r_hand_spline_.y()->addPoint(time, -params_.arm_side_offset);
   r_hand_spline_.z()->addPoint(time, -params_.arm_extended_length);
   r_hand_spline_.roll()->addPoint(time, 0);
-  r_hand_spline_.pitch()->addPoint(time, M_PI/2);
+  r_hand_spline_.pitch()->addPoint(time, M_PI / 2);
   r_hand_spline_.yaw()->addPoint(time, 0);
 
   return time;
@@ -629,33 +647,30 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     double time = calcFrontSplines();
     duration_ = calcRiseSplines(time);
     direction_ = 1;
-  }else if(goals.direction == "back"){
+  } else if (goals.direction == "back") {
     // add back and rise splines together
     double time = calcBackSplines();
     duration_ = calcRiseSplines(time);
     direction_ = 0;
-  }
-  else if(goals.direction == "front-only"){
-      duration_ = calcFrontSplines();
-      direction_ = 1;
-  }
-  else if(goals.direction == "back-only"){
-      duration_ = calcBackSplines();
-      direction_ = 0;
-  }
-  else if(goals.direction == "rise"){
+  } else if (goals.direction == "front-only") {
+    duration_ = calcFrontSplines();
+    direction_ = 1;
+  } else if (goals.direction == "back-only") {
+    duration_ = calcBackSplines();
+    direction_ = 0;
+  } else if (goals.direction == "rise") {
     duration_ = calcRiseSplines(0);
     direction_ = 2;
-  }else if(goals.direction == "descend"){
+  } else if (goals.direction == "descend") {
     duration_ = calcDescendSplines(0);
     direction_ = 3;
-  }else if(goals.direction == "front_only"){
+  } else if (goals.direction == "front_only") {
     duration_ = calcFrontSplines();
     direction_ = 4;
-  }else if(goals.direction == "back_only"){
+  } else if (goals.direction == "back_only") {
     duration_ = calcBackSplines();
     direction_ = 5;
-  }else{
+  } else {
     ROS_ERROR("Provided direction not known");
   }
 }
@@ -666,38 +681,38 @@ int DynupEngine::getPercentDone() const {
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
 bool DynupEngine::isStabilizingNeeded() const {
-    return ((direction_ == 1 && time_ >= params_.time_hands_side +
-                                        params_.time_hands_rotate +
-                                        params_.time_foot_close +
-                                        params_.time_hands_front +
-                                        params_.time_foot_ground_front +
-                                        params_.time_torso_45 +
-                                        params_.time_to_squat) ||
-           (direction_ == 0 && time_ >= params_.time_legs_close +
-                                        params_.time_foot_ground_back +
-                                        params_.time_full_squat_hands +
-                                        params_.time_full_squat_legs) ||
-           (direction_ == 2) || (direction_ == 3));
+  return ((direction_ == 1 && time_ >= params_.time_hands_side +
+      params_.time_hands_rotate +
+      params_.time_foot_close +
+      params_.time_hands_front +
+      params_.time_foot_ground_front +
+      params_.time_torso_45 +
+      params_.time_to_squat) ||
+      (direction_ == 0 && time_ >= params_.time_legs_close +
+          params_.time_foot_ground_back +
+          params_.time_full_squat_hands +
+          params_.time_full_squat_legs) ||
+      (direction_ == 2) || (direction_ == 3));
 }
 
-bool DynupEngine::isHeadZero() const{
-    // set heads zero in the middle of rise phase
-    return ((direction_ == 1 && time_ >= params_.time_hands_side +
-                                        params_.time_hands_rotate +
-                                        params_.time_foot_close +
-                                        params_.time_hands_front +
-                                        params_.time_foot_ground_front +
-                                        params_.time_torso_45 +
-                                        params_.time_to_squat +
-                                        params_.wait_in_squat_front +
-                                        0.5*params_.rise_time) ||
-           (direction_ == 0 && time_ >= params_.time_legs_close +
-                                        params_.time_foot_ground_back +
-                                        params_.time_full_squat_hands +
-                                        params_.time_full_squat_legs +
-                                        params_.wait_in_squat_back+
-                                        0.5*params_.rise_time) ||
-           (direction_ == 2) || (direction_ == 3));
+bool DynupEngine::isHeadZero() const {
+  // set heads zero in the middle of rise phase
+  return ((direction_ == 1 && time_ >= params_.time_hands_side +
+      params_.time_hands_rotate +
+      params_.time_foot_close +
+      params_.time_hands_front +
+      params_.time_foot_ground_front +
+      params_.time_torso_45 +
+      params_.time_to_squat +
+      params_.wait_in_squat_front +
+      0.5 * params_.rise_time) ||
+      (direction_ == 0 && time_ >= params_.time_legs_close +
+          params_.time_foot_ground_back +
+          params_.time_full_squat_hands +
+          params_.time_full_squat_legs +
+          params_.wait_in_squat_back +
+          0.5 * params_.rise_time) ||
+      (direction_ == 2) || (direction_ == 3));
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
@@ -705,22 +720,22 @@ bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const {
 }
 
 bitbots_splines::PoseSpline DynupEngine::getLFootSplines() const {
-    return l_foot_spline_;
+  return l_foot_spline_;
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRHandSplines() const {
-    return r_hand_spline_;
+  return r_hand_spline_;
 }
 
 bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const {
-    return l_hand_spline_;
+  return l_hand_spline_;
 }
 
 void DynupEngine::setParams(DynUpConfig params) {
   params_ = params;
   arm_offset_y_ = shoulder_offset_y_;
-  offset_left_ = tf2::Transform(tf2::Quaternion(0,0,0,1), {0, arm_offset_y_, arm_offset_z_});
-  offset_right_ = tf2::Transform(tf2::Quaternion(0,0,0,1), {0, -arm_offset_y_, arm_offset_z_});
+  offset_left_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, arm_offset_y_, arm_offset_z_});
+  offset_right_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, -arm_offset_y_, arm_offset_z_});
 }
 
 }
