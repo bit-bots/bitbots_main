@@ -1,8 +1,9 @@
+import itertools
+import numpy as np
+import rospy
 from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .field_boundary import FieldBoundaryDetector
-import numpy as np
-import rospy
 
 
 class ObstacleDetector(CandidateFinder):
@@ -14,21 +15,15 @@ class ObstacleDetector(CandidateFinder):
     Alternatively objects can be found by measuring the distance between the ordinary field boundary and
     the convex field boundary which is a slightly less efficient but more accurate method.
     """
-    def __init__(self, config, red_color_detector, blue_color_detector, white_color_detector, field_boundary_detector):
+    def __init__(self, config, field_boundary_detector):
         """
         Initialization of the ObstacleDetector.
 
         :param config: Configuration as defined in visionparams.yaml
-        :param red_color_detector: checks whether a color is part of the red color mask
-        :param blue_color_detector: checks whether a color is part of the blue color mask
-        :param white_color_detector: checks whether a color is part of the white color mask
         :param field_boundary_detector: locates the field_boundary
         """
         # type: (dict, ColorDetector, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
         # Set used detectors
-        self._red_color_detector = red_color_detector
-        self._blue_color_detector = blue_color_detector
-        self._white_color_detector = white_color_detector
         self._field_boundary_detector = field_boundary_detector
 
         # Set own config parameters
@@ -36,23 +31,14 @@ class ObstacleDetector(CandidateFinder):
 
         # Set values to None needed for caching
         self._image = None
-        self._blue_mask = None
-        self._red_mask = None
-        self._white_mask = None
 
         # Set output to None
         self._obstacles = None
-        self._blue_obstacles = None
-        self._red_obstacles = None
-        self._white_obstacles = None
-        self._other_obstacles = None
 
         # Set if values should be cached
         self._caching = config['caching']
 
     def set_config(self, config):
-        self._color_threshold = config['obstacle_color_threshold']
-        self._white_threshold = config['obstacle_white_threshold']
         self._field_boundary_diff_threshold = config['obstacle_field_boundary_diff_threshold']
         self._candidate_field_boundary_offset = config['obstacle_candidate_field_boundary_offset']
         self._candidate_min_width = config['obstacle_candidate_min_width']
@@ -75,10 +61,6 @@ class ObstacleDetector(CandidateFinder):
         self._image = image
         # Reset cached values
         self._obstacles = None
-        self._blue_obstacles = None
-        self._red_obstacles = None
-        self._white_obstacles = None
-        self._other_obstacles = None
 
     def get_top_candidates(self, count=1):
         """
@@ -294,141 +276,81 @@ class ObstacleDetector(CandidateFinder):
             # Append with new candidate
             self._obstacles.append(Candidate(x, y, w, h, 1))
 
-    def get_all_obstacles(self):
-        # type: () -> list[Candidate]
-        """
-        Get all obstale candidates.
-
-        :return: list of obstacles candidates
-        """
-        return self.get_candidates()
-
-    def get_red_obstacles(self):
-        # type: () -> list[Candidate]
-        """
-        Get red obstale candidates.
-
-        :return: list of red obstacles candidates
-        """
-        if self._red_obstacles is None or not self._caching:
-            self.compute()
-        return self._red_obstacles
-
-    def get_blue_obstacles(self):
-        # type: () -> list[Candidate]
-        """
-        Get blue obstale candidates.
-
-        :return: list of blue obstacles candidates
-        """
-        if self._blue_obstacles is None or not self._caching:
-            self.compute()
-        return self._blue_obstacles
-
-    def get_white_obstacles(self):
-        # type: () -> list[Candidate]
-        """
-        Get white obstale candidates.
-
-        :return: list of white obstacles candidates
-        """
-        if self._white_obstacles is None or not self._caching:
-            self.compute()
-        return self._white_obstacles
-
-    def get_other_obstacles(self):
-        # type: () -> list[Candidate]
-        """
-        Get other obstale candidates.
-
-        :return: list of other obstacles candidates
-        """
-        if self._other_obstacles is None or not self._caching:
-            self.compute()
-        return self._other_obstacles
-
     def compute(self):
         """
         Calculate all obstacles and sorts them by colors.
         """
-        # Reset the obstacles
-        self._red_obstacles = list()
-        self._blue_obstacles = list()
-        self._white_obstacles = list()
-        self._other_obstacles = list()
+        self.get_candidates()
 
-        # Check if detector is active
-        if self.active:
-            # Calculate HSV masks
-            self._blue_mask = self._blue_color_detector.get_mask_image()
-            self._red_mask = self._red_color_detector.get_mask_image()
-            self._white_mask = self._white_color_detector.get_mask_image()
-        # Iterate over all found obstacles
-        for obstacle in self.get_candidates():
-            # Calc the blueness of the candidate
-            blueness = np.mean(
-                self._blue_mask[
-                    obstacle.get_upper_left_y():obstacle.get_lower_right_y(),
-                    obstacle.get_upper_left_x():obstacle.get_lower_right_x()
-                ]
-            )
-            # Calc the redness of the candidate
-            redness = np.mean(
-                self._red_mask[
-                    obstacle.get_upper_left_y():obstacle.get_lower_right_y(),
-                    obstacle.get_upper_left_x():obstacle.get_lower_right_x()
-                ]
-            )
-            # Calc the whiteness of the candidate
-            whiteness = np.mean(
-                self._white_mask[
-                    obstacle.get_upper_left_y():obstacle.get_lower_right_y(),
-                    obstacle.get_upper_left_x():obstacle.get_lower_right_x()
-                ]
-            )
+class ColorObstacleDetector(CandidateFinder):
+    """
+    Wraps an obstacle detector to return only obstacles of a certain color.
+    """
+    def __init__(self, obstacle_detector, color_detector=None, threshold=0, subtractors=[]):
+        # type: (ObstacleDetector) -> None
+        """
+        Initialization of the color obstacle detector.
 
-            # Players are the priority here, so we check for red/blue first
-            if redness > self._color_threshold and redness > blueness:
-                self._red_obstacles.append(obstacle)
-                continue
-            elif blueness > self._color_threshold:
-                self._blue_obstacles.append(obstacle)
-                continue
-            elif whiteness > self._white_threshold:
-                self._white_obstacles.append(obstacle)
-                continue
+        :param color_detector: checks whether a color is part of the color mask
+        :param subtractors: list of obstacle detectors. Their detections will be excluded from this detector
+        """
+        # Set used detectors
+        self._obstacle_detector = obstacle_detector
+        self._color_detector = color_detector
+
+        # Init obstacle list
+        self._obstacles = None
+
+        # List of subtractors
+        self._subtractors = subtractors
+
+        self._color_threshold = threshold
+
+    def set_image(self, image):
+        # type: (np.ndarray) -> None
+        """
+        Set the current vision image.
+
+        :param image: image the current image vision
+        """
+        self._obstacle_detector.set_image(image)
+
+        # Reset cache
+        self._obstacles = None
+
+    def get_candidates(self):
+        # type: () -> list(Candidate)
+        """
+        :return: list with all obstacles of this color
+        """
+        if self._obstacles is None:
+            obstacles = []
+            # Check if we filter for a color
+            if self._color_detector is None:
+                # If not pass the obstacle detector output
+                obstacles = self._obstacle_detector.get_candidates()
             else:
-                self._other_obstacles.append(obstacle)
+                # Calculate HSV masks
+                self._color_mask = self._color_detector.get_mask_image()
+                # Iterate over all found obstacles
+                for obstacle in self._obstacle_detector.get_candidates():
+                    # Calc the colorness of the candidate
+                    colorness = np.mean(
+                        self._color_mask[
+                            obstacle.get_upper_left_y():obstacle.get_lower_right_y(),
+                            obstacle.get_upper_left_x():obstacle.get_lower_right_x()
+                        ]
+                    )
+                    # Add obstacles over the threshold to the output list
+                    if colorness > self._color_threshold:
+                        obstacles.append(obstacle)
 
+            # Get the ignored obstacles. This way an obstacle can not be a red and blue obstacle, as this would be filtered.
+            ignored_obstacles = itertools.chain.from_iterable(sub_det.get_candidates() for sub_det in self._subtractors)
+            # Subtract them from our detections
+            self._obstacles =  list(set(obstacles) - set(ignored_obstacles))
 
-class RedObstacleDetector(CandidateFinder):
-    """
-    Detects red obstacles.
-    """
-    def __init__(self, obstacle_detector):
-        # type: (ObstacleDetector) -> None
-        """
-        Initialization of the red obstacle detector.
-
-        :param obstacle_detector: obstacle_detector instance held by the vision
-        """
-        self._obstacle_detector = obstacle_detector
-
-    def set_image(self, image):
-        # type: (np.ndarray) -> None
-        """
-        Set the current vision image.
-
-        :param image: image the current image vision
-        """
-        self._obstacle_detector.set_image(image)
-
-    def get_candidates(self):
-        # type: () -> list(Candidate)
-        """
-        :return: list with all red obstacles
-        """
-        return self._obstacle_detector.get_red_obstacles()
+        return self._obstacles
 
     def compute(self):
         # type: () -> None
@@ -436,114 +358,4 @@ class RedObstacleDetector(CandidateFinder):
         Starts computation of the obstacles (cached).
         """
         self._obstacle_detector.compute()
-
-
-class BlueObstacleDetector(CandidateFinder):
-    """
-    Detects blue obstacles.
-    """
-    def __init__(self, obstacle_detector):
-        # type: (ObstacleDetector) -> None
-        """
-        Initialization of the blue obstacle detector.
-
-        :param obstacle_detector: obstacle_detector instance held by the vision
-        """
-        self._obstacle_detector = obstacle_detector
-
-    def set_image(self, image):
-        # type: (np.ndarray) -> None
-        """
-        Set the current vision image.
-
-        :param image: image the current image vision
-        """
-        self._obstacle_detector.set_image(image)
-
-    def get_candidates(self):
-        # type: () -> list(Candidate)
-        """
-        :return: list with all blue obstacles
-        """
-        return self._obstacle_detector.get_blue_obstacles()
-
-    def compute(self):
-        # type: () -> None
-        """
-        Starts computation of the obstacles (cached).
-        """
-        self._obstacle_detector.compute()
-
-
-class WhiteObstacleDetector(CandidateFinder):
-    """
-    Detects white obstacles.
-    """
-    def __init__(self, obstacle_detector):
-        # type: (ObstacleDetector) -> None
-        """
-        Initialization of the white obstacle detector.
-
-        :param obstacle_detector: obstacle_detector instance held by the vision
-        """
-        self._obstacle_detector = obstacle_detector
-
-    def set_image(self, image):
-        # type: (np.ndarray) -> None
-        """
-        Set the current vision image.
-
-        :param image: image the current image vision
-        """
-        self._obstacle_detector.set_image(image)
-
-    def get_candidates(self):
-        # type: () -> list(Candidate)
-        """
-        :return: list with all white obstacles
-        """
-        return self._obstacle_detector.get_white_obstacles()
-
-    def compute(self):
-        # type: () -> None
-        """
-        Starts computation of the obstacles (cached).
-        """
-        self._obstacle_detector.compute()
-
-
-class UnknownObstacleDetector(CandidateFinder):
-    """
-    Detects unidentified obstacles.
-    """
-    def __init__(self, obstacle_detector):
-        # type: (ObstacleDetector) -> None
-        """
-        Initialization of the unknown obstacle detector.
-
-        :param obstacle_detector: obstacle_detector instance held by the vision
-        """
-        self._obstacle_detector = obstacle_detector
-
-    def set_image(self, image):
-        # type: (np.ndarray) -> None
-        """
-        Set the current vision image.
-
-        :param image: image the current image vision
-        """
-        self._obstacle_detector.set_image(image)
-
-    def get_candidates(self):
-        # type: () -> list(Candidate)
-        """
-        :return: list with all unidentified obstacles
-        """
-        return self._obstacle_detector.get_other_obstacles()
-
-    def compute(self):
-        # type: () -> None
-        """
-        Starts computation of the obstacles (cached).
-        """
-        self._obstacle_detector.compute()
+        self.get_candidates()

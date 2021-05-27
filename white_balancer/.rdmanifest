@@ -1,0 +1,19 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/white_balancer'
+depends:
+- image_transport
+- roscpp
+- sensor_msgs
+- std_msgs
+- cv_bridge
+- bitbots_docs
+- pluginlib
+- nodelet
+exec-path: bitbots_vision-master/white_balancer
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/white_balancer'
+uri: https://github.com/bit-bots/bitbots_vision/archive/refs/heads/master.tar.gz
