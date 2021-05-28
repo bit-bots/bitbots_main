@@ -18,7 +18,10 @@ try:
     ie = IECore()
 except NameError:
     rospy.logerr("Please install/source OpenVino environment to use the NCS2 YOLO Handler.", logger_name="vision_yolo")
-
+try:
+    from pytorchyolo import models as torch_models, detect as torch_detect
+except ImportError:
+    rospy.logerr("Not able to import pytorchyolo. This might be fine if you use another method.", logger_name="vision_yolo")
 
 class YoloHandler:
     """
@@ -188,7 +191,7 @@ class YoloHandlerOpenCV(YoloHandler):
         # Check if cached
         if self._candidates is None or not self._caching:
             # Set image
-            blob = cv2.dnn.blobFromImage(self._image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+            blob = cv2.dnn.blobFromImage(self._image, 1/255.0, (416, 416), swapRB=True, crop=False)
             self._net.setInput(blob)
             self._width = self._image.shape[1]
             self._height = self._image.shape[0]
@@ -463,6 +466,38 @@ class YoloHandlerNCS2(YoloHandler):
                     self._candidates[class_name].append(c)
 
 
+class YoloHandlerPytorch(YoloHandler):
+    """
+    Using Pytorch to get YOLO predictions
+    """
+    def __init__(self, config, model_path):
+        """
+        Initialization of PytorchYolo
+
+        :param config: vision config dict
+        :param model_path: path to the yolo model
+        """
+        weightpath = os.path.join(model_path, "yolo_weights.weights")
+        configpath = os.path.join(model_path, "config.cfg")
+
+        self.model = torch_models.load_model(configpath, weightpath)
+
+        self._image = None
+
+        super(YoloHandlerPytorch, self).__init__(config, model_path)
+
+    def predict(self):
+        if self._candidates is None or not self._caching:
+            self._candidates = defaultdict(list)
+            boxes = torch_detect.detect_image(self.model, cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB),
+                                        conf_thres=self._confidence_threshold,
+                                        nms_thres=self._nms_threshold)
+            for box in boxes:
+                # x1, y1, x2, y2, confidence, class
+                c = Candidate.from_x1y1x2y2(*box[0:4].astype(int), box[4].astype(float))
+                self._candidates[self._class_names[int(box[5])]].append(c)
+
+                
 class YoloDetector(CandidateFinder):
     """
     An abstract object detector using the yolo neural network.
@@ -499,6 +534,7 @@ class YoloDetector(CandidateFinder):
         """
         self._yolo.predict()
 
+        
 class YoloBallDetector(YoloDetector):
     """
     A ball detector using the yolo neural network.
@@ -514,6 +550,7 @@ class YoloBallDetector(YoloDetector):
         """
         return self._yolo.get_candidates("ball")
 
+      
 class YoloGoalpostDetector(YoloDetector):
     """
     A goalpost detector using the yolo neural network.
@@ -529,7 +566,7 @@ class YoloGoalpostDetector(YoloDetector):
         """
         return self._yolo.get_candidates("goalpost")
 
-
+      
 class YoloRobotDetector(YoloDetector):
     """
     A robot detector using the yolo neural network.
@@ -545,6 +582,7 @@ class YoloRobotDetector(YoloDetector):
         """
         return self._yolo.get_candidates("robot")
 
+      
 class YoloXIntersectionDetector(YoloDetector):
     """
     A X-Intersection detector using the yolo neural network.
@@ -560,7 +598,7 @@ class YoloXIntersectionDetector(YoloDetector):
         """
         return self._yolo.get_candidates("X-Intersection")
 
-
+      
 class YoloLIntersectionDetector(YoloDetector):
     """
     A L-Intersection detector using the yolo neural network.
