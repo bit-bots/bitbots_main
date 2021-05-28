@@ -195,5 +195,5 @@ $SecondaryStateDecider
 $RoleDecider
     GOALIE --> #GoalieRole
     OFFENSE --> #OffenseRole
-    DEFENSE --> #DefenceRole
+    DEFENSE --> #DefenseRole
     PENALTY --> @LookAtFieldFeatures, @StandAndWait
