@@ -275,7 +275,9 @@ class WebotsTestCase(RosNodeTestCase):
                 break
             except AssertionError:
                 if start_time + timeout < time.time():
-                    raise TimeoutError("timed out waiting for the simulator supervisor node")
+                    raise TimeoutError(
+                        "Timed out waiting for the simulator supervisor node. "
+                        "Did you start the simulator in your test launch?")
                 time.sleep(0.01)
 
     def wait_for_model_state_update(self, timeout: float = 2, num_updates: int = 1):
@@ -326,6 +328,9 @@ class WebotsTestCase(RosNodeTestCase):
 
         self.wait_for_model_state_update(num_updates=2)
 
+    def set_ball_position(self, position: Optional[geometry_msgs.msg.Point] = None):
+        self.set_robot_position(position=position, robot_name="ball")
+
     def get_robot_pose(self, robot_name: str = "amy") -> geometry_msgs.msg.Pose:
         """
         Return the current pose of a robot.
@@ -342,6 +347,10 @@ class WebotsTestCase(RosNodeTestCase):
 
         i = self._latest_model_states.name.index(robot_name)
         return self._latest_model_states.pose[i]
+
+    def get_ball_position(self) -> geometry_msgs.msg.Point:
+        return self.get_robot_pose("ball").position
+
 
     def assertRobotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *, threshold: float = 0.5,
                             x_threshold: float = None, y_threshold: float = None, z_threshold: float = None):
