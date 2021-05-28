@@ -161,7 +161,12 @@ class PlayAnimationDynup(AbstractActionElement):
         super(PlayAnimationDynup, self).__init__(blackboard, dsd, parameters=None)
         self.direction = parameters.get('direction')
         self.first_perform = True
-        self.blackboard.current_state = RobotControlState.GETTING_UP
+
+        # A parameter 'initial' is passed when dynup is called during the startup phase,
+        # in this case we do not want to set the state to GETTING_UP.
+        initial = parameters.get('initial', False)
+        if not initial:
+            self.blackboard.current_state = RobotControlState.GETTING_UP
 
     def perform(self, reevaluate=False):
         # deactivate falling since it will be wrongly detected
