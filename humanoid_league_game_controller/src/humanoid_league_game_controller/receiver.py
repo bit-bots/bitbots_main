@@ -188,9 +188,9 @@ class GameStateReceiver(object):
                     'STATE_DIRECT_FREEKICK',
                     'STATE_INDIRECT_FREEKICK',
                     'STATE_PENALTYKICK',
-                    'STATE_CORNER_KICK',
-                    'STATE_GOAL_KICK',
-                    'STATE_THROW_IN'):
+                    'STATE_CORNERKICK',
+                    'STATE_GOALKICK',
+                    'STATE_THROWIN'):
                 if state.secondary_state_info[1] in (0, 2):
                     msg.allowedToMove = False
                 else:
