@@ -16,6 +16,7 @@ from xmlrpc.client import ServerProxy
 
 class GeneralAssertionMixins:
     """Supplementary ROS independent assertions"""
+
     def with_assertion_grace_period(self, f: Callable, t: int = 500, *args, **kwargs):
         """
         Execute the provided callable repeatedly while suppressing AssertionErrors until the grace period
@@ -138,6 +139,15 @@ class RosLogAssertionMixins:
             if re.search(node, i_msg.name) is not None and re.search(msg,
                                                                      i_msg.msg) is not None and i_msg.level in level:
                 raise AssertionError(f"Roslog entry {i_msg} was logged")
+
+    def assertNoNegativeRosLogs(self, node: str = r'.*', msg: str = r'.*'):
+        """
+        Wrapper for assertNotRosLogs. Asserts that no warnings, errors or fatals are produced.
+        :param node: A regex which is matched against a roslog entries originating node
+        :param msg: A regex which is matched against a roslog entries content
+        :return:
+        """
+        self.assertNotRosLogs(node=node, msg=msg, level=[LogMsg.WARN, LogMsg.ERROR, LogMsg.FATAL])
 
 
 class RosNodeAssertionMixins:
@@ -333,7 +343,8 @@ class WebotsTestCase(RosNodeTestCase):
         i = self._latest_model_states.name.index(robot_name)
         return self._latest_model_states.pose[i]
 
-    def assertRobotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *, threshold: int = 0.5, x_threshold: int = None, y_threshold: int = None, z_threshold: int = None):
+    def assertRobotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *, threshold: float = 0.5,
+                            x_threshold: float = None, y_threshold: float = None, z_threshold: float = None):
         """
         Assert that a robot is at the specified position or at least close to it.
 
@@ -358,3 +369,23 @@ class WebotsTestCase(RosNodeTestCase):
             self.assertInRange(position.z, (real_position.z - z_threshold, real_position.z + z_threshold))
         except AssertionError:
             raise AssertionError(f"robot is not at (or close to) position {position}")
+
+    def assertRobotNotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *,
+                               threshold: float = 0.5, x_threshold: float = None, y_threshold: float = None,
+                               z_threshold: float = None):
+        """
+        Assert that a robot is NOT at the specified position or at least close to it.
+
+        :param position: Absolute position in webots coordinates at which the robot should not be.
+        :param robot_name: The robot of which the position should be verified.
+            Defaults to amy which is the only robot in single-robot simulations
+        :param threshold: Threshold which defines the amount of minimum derivation in meters from the specified position.
+            By default, this means equal allowed derivation in all three axes. Each axis can be overwritten by the
+            axis-specific argument.
+        :param x_threshold: Minimum derivation from the position on the x axis
+        :param y_threshold: Minimum derivation from the position on the y axis
+        :param z_threshold: Minimum derivation from the position on the z axis
+        """
+        self.assertRaises(self.assertRobotPosition(position=position, robot_name=robot_name, threshold=threshold,
+                                                   x_threshold=x_threshold, y_threshold=y_threshold,
+                                                   z_threshold=z_threshold))
