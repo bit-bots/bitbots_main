@@ -41,6 +41,8 @@
   <depend>opencv</depend>
   <depend>roslib</depend>
 
+  <test_depend>bitbots_test</test_depend>
+
   <export>
 
   </export>
