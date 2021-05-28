@@ -77,12 +77,12 @@ class GettingUpState(AbstractDecisionElement):
     """
     Checks if the robot falls, stands up or is freshly standing
     """
-    
+
     def __init__(self, blackboard, dsd, parameters=None):
         super(GettingUpState, self).__init__(blackboard, dsd, parameters)
         self.get_up_states = [
-            RobotControlState.FALLING, 
-            RobotControlState.FALLEN, 
+            RobotControlState.FALLING,
+            RobotControlState.FALLEN,
             RobotControlState.GETTING_UP]
 
     def perform(self, reevaluate=False):
