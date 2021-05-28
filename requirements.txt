@@ -12,6 +12,7 @@ protobuf
 psutil
 pydot
 pyopencl
+pytorchyolo
 rosdep
 rospkg
 setuptools
