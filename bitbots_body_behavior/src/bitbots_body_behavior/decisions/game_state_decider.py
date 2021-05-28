@@ -26,7 +26,17 @@ class GameStateDecider(AbstractDecisionElement):
             return "NOT_ALLOWED_TO_MOVE"
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
-        return self.game_states[game_state_number]
+        #todo this is a temporary hack to make GUI work
+        if game_state_number == 0:
+            return "INITIAL"
+        elif game_state_number == 1:
+            return "READY"
+        elif game_state_number == 2:
+            return "SET"
+        elif game_state_number == 3:
+            return "PLAYING"
+        elif game_state_number == 4:
+            return "FINISHED"
 
     def get_reevaluate(self):
         """
