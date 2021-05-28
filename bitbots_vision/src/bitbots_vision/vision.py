@@ -275,7 +275,7 @@ class Vision:
                 threshold=config['obstacle_color_threshold'])
 
         # Check if the yolo ball/goalpost detector is activated and if the non tpu version is used
-        if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet']:
+        if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet', 'yolo_pytorch']:
             if ros_utils.config_param_change(self._config, config, ['yolo_darknet_model_path', 'neural_network_type']):
                 # Build absolute model path
                 yolo_darknet_model_path = os.path.join(self._package_path, 'models', config['yolo_darknet_model_path'])
@@ -290,6 +290,8 @@ class Vision:
                     elif config['neural_network_type'] == 'yolo_darknet':
                         # Load Darknet implementation (uses CUDA)
                         self._yolo = yolo_handler.YoloHandlerDarknet(config, yolo_darknet_model_path)
+                    elif config['neural_network_type'] == 'yolo_pytorch':
+                        self._yolo = yolo_handler.YoloHandlerPytorch(config, yolo_darknet_model_path)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
 
             # For other changes only modify the config

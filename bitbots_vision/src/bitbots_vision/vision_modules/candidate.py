@@ -218,6 +218,11 @@ class Candidate:
         """
         return f"x1,y1: {self.get_upper_left_x()},{self.get_upper_left_y()} | width,height: {self.get_width()},{self.get_height()} | rating: {self._rating}"
 
+    @classmethod
+    def from_x1y1x2y2(cls, x1, y1, x2, y2, rating=None):
+        width = abs(x1 - x2)
+        height = abs(y1 - y2)
+        return cls(min(x1, x2), min(y1, y2), width, height, rating)
 
 class CandidateFinder(object):
     """
