@@ -6,7 +6,7 @@
     <arg name="behavior" default="true"/>
     <arg name="simple" default="false" doc="whether to use the simple behavior" />
     <arg name="game_controller" default="true" doc="Sets whether the Gamecontroller should be started"/>
-    <arg name="localization" default="false"/>
+    <arg name="localization" default="true"/>
     <arg name="teamcom" default="false"/>
     <arg name="vision" default="true"/>
 
