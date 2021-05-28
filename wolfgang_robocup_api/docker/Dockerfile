@@ -57,6 +57,7 @@ RUN rosdep install -iry --from-paths src && \
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 RUN catkin build
+RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh /usr/local/bin/start
 
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline

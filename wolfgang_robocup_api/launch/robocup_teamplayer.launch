@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- load the robocup api -->
+    <include file="$(find wolfgang_robocup_api)/launch/wolfgang_robocup_api_bridge.launch" />
+
+    <!-- load the robot description -->
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
+        <arg name="sim" value="true" />
+    </include>
+
+    <!-- load the motion -->
+    <include file="$(find bitbots_bringup)/launch/motion.launch">
+        <arg name="sim" value="true"/>
+        <arg name="use_game_settings" value="true"/>
+    </include>
+
+    <!-- load the highlevel stuff -->
+    <include file="$(find bitbots_bringup)/launch/highlevel.launch">
+        <arg name="behavior" value="true" />
+        <arg name="game_controller" value="true" />
+        <arg name="localization" value="true" />
+        <arg name="sim" value="true" />
+        <arg name="simple" value="false" />
+        <arg name="teamcom" value="true" />
+        <arg name="vision" value="true" />
+    </include>
+</launch>
