@@ -26,6 +26,8 @@
   <depend>roslib</depend>
   <exec_depend>map_server</exec_depend>
 
+  <test_depend>bitbots_test</test_depend>
+
   <export>
 
   </export>

@@ -3,7 +3,7 @@
   # MISC #
   ########
 
-  init_mode: 1
+  init_mode: 0
 
   field_boundary_interpolation_steps: 1
 

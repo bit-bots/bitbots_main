@@ -111,3 +111,9 @@ add_dependencies(localization ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 target_link_libraries(localization
     ${OpenCV_LIBRARIES} ${PROJECT_NAME}_lib ${catkin_LIBRARIES}
 )
+
+## Testing
+if (CATKIN_ENABLE_TESTING)
+    find_package(catkin REQUIRED COMPONENTS bitbots_test)
+    enable_bitbots_tests()
+endif()
