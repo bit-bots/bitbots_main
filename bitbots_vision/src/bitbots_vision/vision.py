@@ -281,7 +281,7 @@ class Vision:
                 yolo_darknet_model_path = os.path.join(self._package_path, 'models', config['yolo_darknet_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_darknet_model_path, "yolo_weights.weights")):
-                    rospy.logerr('The specified yolo darknet model file doesn\'t exist! Maybe its a fcnn model?', logger_name="vision_yolo")
+                    rospy.logerr('The specified yolo darknet model file doesn\'t exist!', logger_name="vision_yolo")
                 else:
                     # Decide which yolo implementation should be used
                     if config['neural_network_type'] == 'yolo_opencv':
@@ -311,7 +311,7 @@ class Vision:
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.bin")) \
                         or not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.xml")):
-                    rospy.logerr('The specified yolo openvino model file doesn\'t exist! Maybe its a fcnn model?', logger_name="vision_yolo")
+                    rospy.logerr('The specified yolo openvino model file doesn\'t exist!', logger_name="vision_yolo")
                 else:
                     self._yolo = yolo_handler.YoloHandlerNCS2(config, yolo_openvino_model_path)
                     rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")

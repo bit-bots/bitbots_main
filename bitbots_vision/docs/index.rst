@@ -26,7 +26,7 @@ When you use this pipeline or parts of it, please cite it.
 
 The Bit-Bots vision pipeline architecture is modular allowing easy implementation of new approaches resulting in a high grade of customizability.
 
-For ball detection, you can choose between an FCNN or multiple yolo implementations.
+For ball detection, you can choose between multiple yolo implementations (or a legacy FCNN architecture).
 The goalpost detection also runs via yolo or a conventional detection method, which is also used for obstacle and robot detection.
 
 The whole system is embedded in the ROS environment and able to run on many devices including the Intel Neural Compute Stick 2 (and the Nvidia Jetson TX2, legacy) in our Wolfgang robots.
