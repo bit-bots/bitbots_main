@@ -14,7 +14,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4C4EDF8933745916876
 RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /etc/apt/sources.list.d/ros.list'
 RUN apt-get update
 RUN apt-get install -y build-essential git sudo python3-pip python3-rospkg python3-catkin-pkg \
-    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales
+    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales wget
 RUN pip3 install -U pip git+https://github.com/catkin/catkin_tools.git
 
 # Set up locale
@@ -57,6 +57,7 @@ RUN rosdep install -iry --from-paths src && \
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 RUN catkin build
+RUN cd src/bitbots_meta && make vision-files
 RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh /usr/local/bin/start
 
 # Setup runtime
