@@ -26,6 +26,6 @@ line_detector_field_boundary_offset: -15  # Threshold in which we are also searc
 
 line_detector_use_line_mask: true
 
-neural_network_type: 'yolo_opencv'
-yolo_darknet_model_path: '2021_04_28_jonas_torso21_sim_tiny'  # Name of the yolo model
+neural_network_type: 'yolo_pytorch'
+yolo_darknet_model_path: '2021_04_22_jonas_torso21_full'  # Name of the yolo model
 yolo_confidence_threshold: 0.25
