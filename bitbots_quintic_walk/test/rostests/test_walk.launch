@@ -1,7 +1,11 @@
 <launch>
+    <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
+        <arg name="headless" value="false"/>
+    </include>
+
     <include file="$(find bitbots_quintic_walk)/launch/test.launch">
         <arg name="sim" value="true"/>
     </include>
 
-    <test pkg="bitbots_quintic_walk" type="test_walk.py" test-name="test_walk"/>
+    <test pkg="bitbots_quintic_walk" type="test_walk.py" test-name="test_walk" time-limit="300.0"/>
 </launch>

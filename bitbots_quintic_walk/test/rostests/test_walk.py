@@ -3,10 +3,11 @@ import time
 
 import rospy
 from bitbots_msgs.msg import JointCommand
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point
 
 from bitbots_test.mocks import MockSubscriber
-from bitbots_test.test_case import WebotsTestCase
+from bitbots_test.test_case import WebotsTestCase, RosNodeTestCase
+from nav_msgs.msg import Odometry
 
 
 class TestWalk(WebotsTestCase):
@@ -15,17 +16,20 @@ class TestWalk(WebotsTestCase):
         """ test if node starts correctly without warnings/errors/criticals
         and if it is still there after some time (did not crash by itself)"""
         # wait to make sure node is up
-        time.sleep(1)
-        self.assertNotNegativeRosLogs()
+        sub = MockSubscriber("DynamixelController/command", JointCommand, tcp_nodelay=True)
+        sub.wait_until_connected()
+        time.sleep(2)
+
+        self.assertNoNegativeRosLogs()
 
     def test_no_joint_goals(self):
         """test if joint goals are published when walking is activated and only then"""
         # setup
         sub = MockSubscriber("DynamixelController/command", JointCommand, tcp_nodelay=True)
+        sub.wait_until_connected()
 
         # execution
         # wait some time
-        sub.wait_until_connected()
         time.sleep(1)
 
         # verification
@@ -35,11 +39,13 @@ class TestWalk(WebotsTestCase):
         # setup
         pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
         sub = MockSubscriber("DynamixelController/command", JointCommand, tcp_nodelay=True)
+        sub.wait_until_connected()
 
         # execution
         cmd_vel = Twist()
         cmd_vel.linear.x = 0.1
         pub.publish(cmd_vel)
+        rospy.sleep(1)
 
         # verification
         # make sure something is published
@@ -54,40 +60,61 @@ class TestWalk(WebotsTestCase):
         """test if the walking is really moving the robot around in the simulation"""
         # setup
         pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
-        start_pose = self.get_robot_pose()
+        self.set_ball_position(Point(10, 0, 0))
+        self.set_robot_position(Point(0, 0, 0.42))
 
         # execution
         cmd_vel = Twist()
         cmd_vel.linear.x = 0.1
         pub.publish(cmd_vel)
         rospy.sleep(10)
+        cmd_vel = Twist()
+        pub.publish(cmd_vel)
+        rospy.sleep(2)
 
         # verification
         # should have moved away
-        self.assertRobotNotPosition(start_pose.position, threshold=0.5)
+        self.assertRobotNotPosition(Point(0, 0, 0), threshold=0.5)
         # but still standing
         self.assertRobotStanding()
 
-        # destruct
-        cmd_vel.linear.x = 0.0
+    def test_walk_odometry(self):
+        """test if the walk odometry is correct"""
+        # setup
+        current_odom = None
+
+        def odom_cb(msg):
+            nonlocal current_odom
+            current_odom = msg
+
+        sub = MockSubscriber("walk_engine_odometry", Odometry, odom_cb, tcp_nodelay=True)
+        sub.wait_until_connected()
+        pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
+        self.set_ball_position(Point(10, 0, 0))
+        self.set_robot_position(Point(0, 0, 0.42))
+
+        # execution
+        cmd_vel = Twist()
+        cmd_vel.linear.x = 0.1
+        cmd_vel.linear.y = 0.05
+        cmd_vel.angular.z = 0.1
         pub.publish(cmd_vel)
-        rospy.sleep(1)
+        rospy.sleep(10)
+        cmd_vel = Twist()
+        pub.publish(cmd_vel)
+        rospy.sleep(2)
+
+        # verification
+        # robot should be at odom position
+        self.assertRobotPosition(current_odom.pose.pose.position, threshold=0.5)
+        # todo should also test orientation
 
     def test_speed(self):
         """test if the robot actually walks with the correct commanded speed"""
-        pass
-
-    def test_walk_odometry(self):
-        """test if the walk odometry is correct"""
-        pass
-
-
-class DummyTest(WebotsTestCase):
-
-    def test_nothing(self):
-        self.assertInRange(0.5, 0, 1)
+        pass  # todo
 
 
 if __name__ == "__main__":
     from bitbots_test import run_rostests
-    run_rostests(DummyTest)
+
+    run_rostests(TestWalk)
