@@ -172,7 +172,7 @@ $SecondaryStateTeamDecider
         PLAYING --> #OffenseBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
 
-#DefenceRole
+#DefenseRole
 $SecondaryStateDecider
     NORMAL --> $GameStateDecider
         INITIAL --> @LookAtFieldFeatures, @StandAndWait
