@@ -3,7 +3,8 @@
 
     <!-- load the general simulator and motion -->
     <include file="$(find bitbots_bringup)/launch/simulator.launch">
-        <arg name="fake_walk" default="false"/>
+        <arg name="fake_walk" value="false" />
+        <arg name="headless" value="true" />
     </include>
 
     <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
