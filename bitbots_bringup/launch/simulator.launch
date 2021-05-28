@@ -2,6 +2,7 @@
 <launch>
     <!-- set parameters -->
     <arg name="fake_walk" default="false"/>
+    <arg name="headless" default="false"/>
 
     <param name="/simulation_active" value="true"/>
     <param name="/use_sim_time" value="true" />
@@ -19,6 +20,7 @@
     <!-- launch motion and webots with soccer field -->
     <group if="$(arg fake_walk)">
         <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
+            <arg name="headless" value="$(arg headless)" />
         </include>
         <!-- launch the motion without the walking -->
         <include file="$(find bitbots_bringup)/launch/motion.launch">
@@ -28,6 +30,7 @@
     </group>
     <group unless="$(arg fake_walk)">
         <include file="$(find wolfgang_webots_sim)/launch/simulation.launch">
+            <arg name="headless" value="$(arg headless)" />
         </include>
         <!-- launch the motion including the walking -->
         <include file="$(find bitbots_bringup)/launch/motion.launch">
