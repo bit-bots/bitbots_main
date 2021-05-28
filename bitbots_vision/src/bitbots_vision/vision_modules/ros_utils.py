@@ -130,7 +130,6 @@ def add_model_enums(cfg_type, package_path):
     # All models
     model_names = os.listdir(models_directory)
 
-    fcnn_paths = []
     yolo_darknet_paths = []
     yolo_openvino_paths = []
 
@@ -139,15 +138,8 @@ def add_model_enums(cfg_type, package_path):
 
     # Iterate over every model directory
     for folder in model_names:
-        # Is this model an fcnn model
-        if os.path.exists(os.path.join(models_directory, folder, "model_final.index")):
-            # Append list with a new enum item
-            fcnn_paths.append({
-                'name': folder,
-                'value': folder,
-                'description': f'fcnn {folder}'})
         # Is this model a yolo darknet model
-        elif os.path.exists(os.path.join(models_directory, folder, "yolo_weights.weights")):
+        if os.path.exists(os.path.join(models_directory, folder, "yolo_weights.weights")):
             # Append list with a new enum item
             yolo_darknet_paths.append({
                 'name': folder,
@@ -163,7 +155,6 @@ def add_model_enums(cfg_type, package_path):
         else:
             rospy.logwarn(f"Directory '{folder}' contains unknown model type. Please remove all non model directories from the 'models' directory!", logger_name="vision_ros_utils")
     # Add enums to configuration
-    _change_enum_items(cfg_type, 'fcnn_model_path', fcnn_paths)
     _change_enum_items(cfg_type, 'yolo_darknet_model_path', yolo_darknet_paths)
     _change_enum_items(cfg_type, 'yolo_openvino_model_path', yolo_openvino_paths)
 
@@ -515,27 +506,3 @@ def publish_vision_config(config, publisher):
     msg.data = yaml.dump(config_cleaned)
     # Publish config
     publisher.publish(msg)
-
-def build_fcnn_region_of_interest(fcnn_output, field_boundary_detector, header, offset):
-    """
-    Returns a region of interest with the fcnn heatmap under the field boundary.
-
-    :param fcnn_output: the fcnn output
-    :param field_boundary_detector: the field boundary detector
-    :param header: ros header of the new message. Mostly the header of the image
-    :param offset: an offset for the field boundary
-    :return: fcnn heatmap under the field boundary
-    """
-    msg = RegionOfInterestWithImage()
-    msg.header.frame_id = header.frame_id
-    msg.header.stamp = header.stamp
-    field_boundary_top = field_boundary_detector.get_upper_bound(y_offset=offset)
-    image_cropped = fcnn_output[field_boundary_top:]  # cut off at field_boundary
-    msg.image = _cv_bridge.cv2_to_imgmsg(image_cropped, "mono8")
-    msg.regionOfInterest.x_offset = 0
-    msg.regionOfInterest.y_offset = field_boundary_top
-    msg.regionOfInterest.height = fcnn_output.shape[0] - 1 - field_boundary_top
-    msg.regionOfInterest.width = fcnn_output.shape[1] - 1
-    msg.original_width = fcnn_output.shape[1]
-    msg.original_height = fcnn_output.shape[0]
-    return msg

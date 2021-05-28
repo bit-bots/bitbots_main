@@ -19,7 +19,6 @@
         <param name="vision_publish_debug_image" value="$(arg debug)" />
         <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
         <param name="vision_publish_field_mask_image" value="$(arg debug)" />
-        <param name="ball_fcnn_publish_debug_img" value="$(arg debug)" />
 
         <!-- Start vision without ball detection-->
         <param name="neural_network_type" value="dummy" if="$(arg dummyball)"/>

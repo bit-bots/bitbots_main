@@ -12,7 +12,6 @@ A script to save dynamic reconfigured params into the visionparams.yaml
 
 # Parameters for debug purposes that should be ignored if the -id or --ignore-debug flag is set
 debug_params = [
-    'ball_fcnn_publish_debug_img',
     'vision_publish_debug_image',
     'vision_publish_field_mask_image',
     'vision_publish_HSV_mask_image',
