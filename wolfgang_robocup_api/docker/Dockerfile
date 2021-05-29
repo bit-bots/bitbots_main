@@ -14,8 +14,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4C4EDF8933745916876
 RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /etc/apt/sources.list.d/ros.list'
 RUN apt-get update
 RUN apt-get install -y build-essential git sudo python3-pip python3-rospkg python3-catkin-pkg \
-    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales wget
-RUN pip3 install -U pip git+https://github.com/catkin/catkin_tools.git
+    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales wget python3-catkin-tools
 
 # Set up locale
 RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8
@@ -42,7 +41,7 @@ RUN echo 1 && cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
     sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
-    python3 -m pip install -r bitbots_meta/requirements.txt && \
+    python3 -m pip install --no-warn-script-location -r bitbots_meta/requirements.txt && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
