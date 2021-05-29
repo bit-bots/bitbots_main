@@ -232,8 +232,17 @@ class WolfgangRobocupApi():
                 rospy.logwarn(f"Unknown gyro: '{name}'", logger_name="rc_api")
 
         if imu_accel and imu_gyro:
+            # Make sure that acceleration is not completely zero or we will get error in filter.
+            # Happens if robot is moved manually in the simulation
+            if imu_msg.linear_acceleration.x == 0 and imu_msg.linear_acceleration.y == 0 and imu_msg.linear_acceleration.z == 0:
+                imu_msg.linear_acceleration.z = 0.001
+
             self.pub_imu.publish(imu_msg)
         if head_imu_accel and head_imu_gyro:
+            # Same as above
+            if head_imu_msg.linear_acceleration.x == 0 and head_imu_msg.linear_acceleration.y == 0 and head_imu_msg.linear_acceleration.z == 0:
+                head_imu_msg.linear_acceleration.z = 0.001
+
             self.pub_head_imu.publish(head_imu_msg)
 
     def handle_bumper_measurements(self, bumpers):
