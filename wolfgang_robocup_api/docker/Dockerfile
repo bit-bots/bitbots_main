@@ -1,5 +1,5 @@
 # Use upstream ubuntu images as base
-FROM ubuntu:18.04 AS bitbots
+FROM nvidia/cuda:10.2-cudnn7-devel
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=melodic
 ENV ROS_PYTHON_VERSION=3
@@ -43,7 +43,7 @@ RUN cd src && \
     git -C bitbots_meta submodule foreach git checkout master && \
     sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
     python3 -m pip install -U pip && \
-    pip3 install -r bitbots_meta/requirements.txt && \
+    pip3 install -r bitbots_meta/requirements.txt pytorchyolo && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
