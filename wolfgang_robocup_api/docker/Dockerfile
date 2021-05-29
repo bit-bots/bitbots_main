@@ -38,7 +38,7 @@ RUN . /opt/ros/melodic/setup.sh && \
     mkdir src && \
     catkin init && \
     catkin config --profile default --extend /opt/ros/melodic -DPYTHON_VERSION=3 -DCMAKE_BUILD_TYPE=Release
-RUN echo 1 && cd src && \
+RUN cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
     sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
