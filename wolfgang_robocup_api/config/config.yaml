@@ -1,4 +1,4 @@
-min_frame_step: 64  # ms
+min_frame_step: 16  # ms
 min_control_step: 8  # ms
 
 camera_FOV: 1.04
