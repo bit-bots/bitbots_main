@@ -32,6 +32,7 @@ ADD sudoers /etc/sudoers
 WORKDIR /catkin_ws
 RUN chown robot:robot /catkin_ws
 USER robot:robot
+ENV PATH=$PATH:/catkin_ws/.local/bin
 
 RUN . /opt/ros/melodic/setup.sh && \
     mkdir src && \
@@ -41,7 +42,7 @@ RUN echo 1 && cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
     sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
-    python3 -m pip install --no-warn-script-location -r bitbots_meta/requirements.txt && \
+    python3 -m pip install -r bitbots_meta/requirements.txt && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
@@ -57,7 +58,7 @@ RUN rosdep install -iry --from-paths src && \
     sudo rm -rf /var/lib/apt/lists/*
 RUN catkin build
 RUN cd src/bitbots_meta && make vision-files
-RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh /usr/local/bin/start
+RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
 
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
