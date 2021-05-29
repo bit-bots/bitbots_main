@@ -100,6 +100,6 @@ class TeamDataCapsule:
 
     def team_data_callback(self, msg):
         self.team_data = msg
-        self.times_to_ball[team_data.robot_id] = team_data.time_to_position_at_ball
-        self.team_strategy[team_data.robot_id] = team_data.strategy.role
+        self.times_to_ball[msg.robot_id] = msg.time_to_position_at_ball
+        self.team_strategy[msg.robot_id] = msg.strategy.role
         self.last_update_team_data = rospy.get_time()
