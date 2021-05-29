@@ -6,19 +6,19 @@
       "dockerTag": "latest",
       "dockerCmd": "roslaunch wolfgang_robocup_api robocup_walk.launch",
       "halfTimeStartingPose": {
-        "translation": [-3.5, -3.06, 0.45],
+        "translation": [-3.6, -3.56, 0.43],
         "rotation": [0.13, -0.13, -0.98, -1.57]
       },
       "reentryStartingPose": {
-        "translation": [-3.5, -3.06, 0.45],
+        "translation": [-3.6, -3.56, 0.43],
         "rotation": [0.13, -0.13, -0.98, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [2.6, 0, 0.45],
+        "translation": [2.6, 0, 0.43],
         "rotation": [0, 0.98, 0.13, 0.26]
       },
       "goalKeeperStartingPose": {
-        "translation": [-4.47, 0, 0.45],
+        "translation": [-4.47, 0, 0.43],
         "rotation": [-0.13, 0, 0.98, 3.14]
       }
     }
