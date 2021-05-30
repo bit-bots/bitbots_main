@@ -101,7 +101,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_), support_state_cache_(
       geometry_msgs::TransformStamped imu_mounting_transform = tf_buffer_.lookupTransform(
         base_link_frame_, imu_frame_, fused_time_);
       fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
-    } catch (tf2::TransformException ex) {
+    } catch (tf2::TransformException &ex) {
       ROS_ERROR("Not able to use the IMU%s", ex.what());
     }
 
@@ -202,7 +202,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       rotation_point = tf_buffer_.lookupTransform(base_link_frame_, support_frame,
                                                   fused_time_);
       fromMsg(rotation_point.transform, rotation_point_tf);
-    } catch (tf2::TransformException ex) {
+    } catch (tf2::TransformException &ex) {
       ROS_ERROR("%s", ex.what());
     }
   } else if (current_support_state == bitbots_msgs::SupportState::DOUBLE) {

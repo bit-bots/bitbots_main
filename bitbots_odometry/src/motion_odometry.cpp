@@ -22,7 +22,6 @@ MotionOdometry::MotionOdometry() {
   ros::Subscriber odom_subscriber = n.subscribe("walk_engine_odometry", 1, &MotionOdometry::odomCallback, this);
 
   ros::Publisher pub_odometry = n.advertise<nav_msgs::Odometry>("motion_odometry", 1);
-  odometry_to_support_foot_ = tf2::Transform();
   // set the origin to 0. will be set correctly on recieving first support state
   odometry_to_support_foot_.setOrigin({0, 0, 0});
   odometry_to_support_foot_.setRotation(tf2::Quaternion(0, 0, 0, 1));
@@ -152,7 +151,7 @@ void MotionOdometry::supportCallback(const bitbots_msgs::SupportState msg) {
                 base_to_current_support_msg = tf_buffer_.lookupTransform(base_link_frame_, current_support_link, ros::Time(0), ros::Duration(10.0));
         odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                             -1 * base_to_current_support_msg.transform.translation.y, 0});
-    }catch (tf2::TransformException ex){
+    }catch (tf2::TransformException &ex){
         ROS_WARN("Could not initialize motion odometry correctly, since there were no transforms available fast enough on startup. Will initialize with 0,0,0");
     }
   }
