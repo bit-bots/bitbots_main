@@ -2145,7 +2145,7 @@
     </inertial>
   </link>
   <joint name="r_cleat_l_back_frame" type="fixed">
-    <origin rpy="-1.17224e-15 -1.58433e-17 -3.14159" xyz="0.0 -0.0005 -0.016"/>
+    <origin rpy="-1.17224e-15 -1.58433e-17 -3.14159" xyz="0.0 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rlb"/>
     <child link="r_cleat_l_back"/>
@@ -2194,7 +2194,7 @@
     </inertial>
   </link>
   <joint name="r_cleat_l_front_frame" type="fixed">
-    <origin rpy="2.44346e-16 2.736e-16 -3.14159" xyz="-1.38778e-17 -0.0005 -0.016"/>
+    <origin rpy="2.44346e-16 2.736e-16 -3.14159" xyz="-1.38778e-17 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rlf"/>
     <child link="r_cleat_l_front"/>
@@ -2243,7 +2243,7 @@
     </inertial>
   </link>
   <joint name="r_cleat_r_front_frame" type="fixed">
-    <origin rpy="6.44157e-16 8.47782e-16 -3.14159" xyz="-6.93889e-17 -0.0005 -0.016"/>
+    <origin rpy="6.44157e-16 8.47782e-16 -3.14159" xyz="-6.93889e-17 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rrf"/>
     <child link="r_cleat_r_front"/>
@@ -2292,7 +2292,7 @@
     </inertial>
   </link>
   <joint name="r_cleat_r_back_frame" type="fixed">
-    <origin rpy="3.0848e-17 -1.36062e-15 3.14159" xyz="-1.38778e-17 -0.0005 -0.016"/>
+    <origin rpy="3.0848e-17 -1.36062e-15 3.14159" xyz="-1.38778e-17 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="rrb"/>
     <child link="r_cleat_r_back"/>
@@ -3321,7 +3321,7 @@
     </inertial>
   </link>
   <joint name="l_cleat_l_back_frame" type="fixed">
-    <origin rpy="1.67348e-16 -4.15297e-16 3.14159" xyz="1.38778e-17 -0.0005 -0.016"/>
+    <origin rpy="1.67348e-16 -4.15297e-16 3.14159" xyz="1.38778e-17 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="llb"/>
     <child link="l_cleat_l_back"/>
@@ -3370,7 +3370,7 @@
     </inertial>
   </link>
   <joint name="l_cleat_l_front_frame" type="fixed">
-    <origin rpy="3.06162e-16 -4.4319e-17 -3.14159" xyz="0.0 -0.0005 -0.016"/>
+    <origin rpy="3.06162e-16 -4.4319e-17 -3.14159" xyz="0.0 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="llf"/>
     <child link="l_cleat_l_front"/>
@@ -3419,7 +3419,7 @@
     </inertial>
   </link>
   <joint name="l_cleat_r_front_frame" type="fixed">
-    <origin rpy="3.00788e-16 -1.03785e-15 -3.14159" xyz="0.0 -0.0005 -0.016"/>
+    <origin rpy="3.00788e-16 -1.03785e-15 -3.14159" xyz="0.0 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="lrf"/>
     <child link="l_cleat_r_front"/>
@@ -3468,7 +3468,7 @@
     </inertial>
   </link>
   <joint name="l_cleat_r_back_frame" type="fixed">
-    <origin rpy="2.92719e-16 -4.05989e-17 -3.14159" xyz="0.0 -0.0005 -0.016"/>
+    <origin rpy="2.92719e-16 -4.05989e-17 -3.14159" xyz="0.0 -0.0005 -0.014"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="lrb"/>
     <child link="l_cleat_r_back"/>
