@@ -5,8 +5,8 @@ namespace bitbots_dynup {
 DynUpNode::DynUpNode() :
     server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
     visualizer_("debug/dynup"),
-    robot_model_loader_("robot_description", false),
-    listener_(tf_buffer_) {
+    listener_(tf_buffer_),
+    robot_model_loader_("robot_description", false) {
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
   pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");

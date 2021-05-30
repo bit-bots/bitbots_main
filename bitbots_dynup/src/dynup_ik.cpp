@@ -13,7 +13,7 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 void DynupIK::reset() {
-  for (int i = 0; i < current_joint_states_.name.size(); i++) {
+  for (size_t i = 0; i < current_joint_states_.name.size(); i++) {
     goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
   }
 }
@@ -78,7 +78,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     result.first = joint_names;
     result.second = joint_goals;
     /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
-    for (int i = 0; i < result.first.size(); i++) {
+    for (size_t i = 0; i < result.first.size(); i++) {
       if (result.first[i] == "HeadPan") {
         result.second[i] = 0;
       } else if (result.first[i] == "HeadTilt") {
