@@ -77,4 +77,4 @@ EOF
 # Start ROS #
 #############
 
-exec roslaunch wolfgang_robocup_api robocup_teamplayer.launch
+exec roslaunch wolfgang_robocup_api robocup_teamplayer.launch record:=true
