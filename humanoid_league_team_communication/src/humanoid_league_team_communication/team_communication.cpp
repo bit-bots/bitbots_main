@@ -57,6 +57,7 @@ void TeamCommunication::run() {
 
 void *TeamCommunication::startRecvThread(void *context) {
   ((TeamCommunication *) context)->recvThread();
+  return nullptr;
 }
 
 void TeamCommunication::recvThread() {
@@ -65,7 +66,7 @@ void TeamCommunication::recvThread() {
     Message recv_msg;
     recv_msg = udp_connection_->receive_data();
     // do not publish the robot's own data
-    if (recv_msg.current_pose().player_id() != player_) {
+    if (int(recv_msg.current_pose().player_id()) != player_) {
       publishData(recv_msg);
     }
     thread_rate.sleep();

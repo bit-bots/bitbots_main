@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(humanoid_league_team_communication)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
