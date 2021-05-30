@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_head_behavior)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 find_package(Eigen3 REQUIRED)
 find_package(PythonLibs)

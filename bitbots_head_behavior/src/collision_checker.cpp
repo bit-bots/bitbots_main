@@ -30,7 +30,7 @@ void CollisionChecker::set_head_motors(double pan, double tilt) {
 
 void CollisionChecker::set_joint_states(std::string msg) {
   sensor_msgs::JointState joint_states = from_python<sensor_msgs::JointState>(msg);
-  for (int i = 0; i < joint_states.name.size(); ++i) {
+  for (size_t i = 0; i < joint_states.name.size(); ++i) {
     robot_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
   }
 }
