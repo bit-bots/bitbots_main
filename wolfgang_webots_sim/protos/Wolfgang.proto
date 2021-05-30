@@ -1998,26 +1998,13 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rlb"
-                                            boundingObject Group {
+                                            boundingObject DEF CLEAT_CAPSULE Transform {
+                                              translation 0.000000 0.000000 -0.005000
+                                              rotation 1.000000 -0.000000 0.000000 1.570796
                                               children [
-                                                Transform {
-                                                  translation 0.000000 0.000000 -0.005000
-                                                  rotation 1.000000 -0.000000 0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation 0.000000 0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
+                                                Capsule {
+                                                  radius 0.006
+                                                  height 0.014
                                                 }
                                               ]
                                             }
@@ -2052,29 +2039,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rlf"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation -0.000000 -0.000000 -0.005000
-                                                  rotation 1.000000 0.000000 -0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
@@ -2106,29 +2071,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rrf"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.005000
-                                                  rotation 1.000000 -0.000000 0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
@@ -2160,29 +2103,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rrb"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation -0.000000 -0.000000 -0.005000
-                                                  rotation 1.000000 -0.000000 0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
@@ -3629,29 +3550,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "llb"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation 0.000000 -0.000000 -0.005000
-                                                  rotation 1.000000 -0.000000 0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation 0.000000 -0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
@@ -3683,29 +3582,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "llf"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.005000
-                                                  rotation 1.000000 0.000000 -0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
@@ -3737,29 +3614,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "lrf"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation 0.000000 -0.000000 -0.005000
-                                                  rotation 1.000000 0.000000 -0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation 0.000000 -0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
@@ -3791,29 +3646,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "lrb"
-                                            boundingObject Group {
-                                              children [
-                                                Transform {
-                                                  translation -0.000000 -0.000000 -0.005000
-                                                  rotation 1.000000 0.000000 -0.000000 1.570796
-                                                  children [
-                                                    Cylinder {
-                                                      radius 0.006
-                                                      height 0.01
-                                                    }
-                                                  ]
-                                                }
-                                                Transform {
-                                                  translation -0.000000 0.000000 -0.010000
-                                                  rotation 0.000000 1.000000 0.000000 0.000000
-                                                  children [
-                                                    Sphere {
-                                                      radius 0.006
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
+                                            boundingObject USE CLEAT_CAPSULE
                                             physics Physics {
                                               density -1
                                               mass 0.001660
