@@ -8,16 +8,16 @@ https://github.com/Rhoban/model/
 namespace bitbots_quintic_walk {
 
 WalkEngine::WalkEngine(const std::string ns) :
+    engine_state_(WalkState::IDLE),
     phase_(0.0),
     last_phase_(0.0),
-    pause_requested_(false),
-    left_kick_requested_(false),
-    right_kick_requested_(false),
     time_paused_(0.0),
     pause_duration_(0.0),
+    pause_requested_(false),
     phase_rest_active_(false),
+    left_kick_requested_(false),
+    right_kick_requested_(false),
     is_left_support_foot_(false),
-    engine_state_(WalkState::IDLE),
     foot_pos_vel_at_foot_change_({0.0, 0.0, 0.0}),
     foot_pos_acc_at_foot_change_({0.0, 0.0, 0.0}),
     foot_orientation_pos_at_last_foot_change_({0, 0, 0}),

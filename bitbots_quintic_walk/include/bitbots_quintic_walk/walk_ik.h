@@ -3,7 +3,6 @@
 #include "bitbots_quintic_walk/walk_utils.h"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <moveit/robot_state/robot_state.h>
-#include "bitbots_splines/reference_goals.h"
 #include "bitbots_splines/abstract_ik.h"
 namespace bitbots_quintic_walk {
 
