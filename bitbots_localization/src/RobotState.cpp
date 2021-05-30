@@ -5,20 +5,20 @@
 #include "../include/bitbots_localization/RobotState.h"
 
 RobotState::RobotState() :
+    is_explorer_(false),
     m_XPos(0.0),
     m_YPos(0.0),
     m_SinTheta(0.0),
-    m_CosTheta(1.0),
-    is_explorer_(false) {
+    m_CosTheta(1.0) {
 
 }
 
 RobotState::RobotState(double x, double y, double T) :
+    is_explorer_(false),
     m_XPos(x),
     m_YPos(y),
     m_SinTheta(sin(T)),
-    m_CosTheta(cos(T)),
-    is_explorer_(false) {
+    m_CosTheta(cos(T)) {
 
 }
 
@@ -117,7 +117,7 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
   } else {
     matrix.resize(particle_list.size(), 3);
 //#pragma parallel for
-    for (int i = 0; i < particle_list.size(); i++) {
+    for (size_t i = 0; i < particle_list.size(); i++) {
       matrix(i, 0) = particle_list[i]->getState().getXPos();
       matrix(i, 1) = particle_list[i]->getState().getYPos();
       matrix(i, 2) = particle_list[i]->getState().getTheta();

@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_localization)
 
 ## Compile as C++17
-add_compile_options(-std=c++17)
+set(CMAKE_CXX_STANDARD 17)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)

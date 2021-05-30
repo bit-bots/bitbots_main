@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-Localization::Localization() : line_points_(), tfListener(tfBuffer) {
+Localization::Localization() : tfListener(tfBuffer), line_points_() {
   ROS_DEBUG("localization");
   pnh_ = ros::NodeHandle("~");
   nh_ = ros::NodeHandle();
@@ -229,7 +229,7 @@ void Localization::FieldboundaryCallback(const gm::PolygonStamped &msg) {
   fieldboundary_relative_.header = msg.header;
   for (gm::PolygonStamped fBinImage : fieldboundary_in_image_) { // find corresponding fb_in_image message
     if (fBinImage.header.stamp == msg.header.stamp) {
-      for (int i = 1; i < msg.polygon.points.size() - 2; i++) { //ignore most left and right point
+      for (size_t i = 1; i < msg.polygon.points.size() - 2; i++) { //ignore most left and right point
         if (fBinImage.polygon.points[i].y > 0 && fBinImage.polygon.points[i + 1].y
             > 0) { //ignore points that form a line on uppermost row in image
           std::vector<gm::Point32> vector = interpolateFieldboundaryPoints(msg.polygon.points[i],
@@ -242,7 +242,7 @@ void Localization::FieldboundaryCallback(const gm::PolygonStamped &msg) {
     }
   }
 
-  for (int i = 1; i < fieldboundary_in_image_.size(); i++) {
+  for (size_t i = 1; i < fieldboundary_in_image_.size(); i++) {
     if (fieldboundary_in_image_[i].header.stamp <= msg.header.stamp) {
       fieldboundary_in_image_.erase(fieldboundary_in_image_.begin() + i);
     }
