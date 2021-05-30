@@ -121,9 +121,9 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorq
   }
 
   // we save the goal torque value. It will be set during write process
-  for (int i = 0; i < msg.joint_names.size(); i++) {
+  for (size_t i = 0; i < msg.joint_names.size(); i++) {
     bool success = false;
-    for (int j = 0; j < joint_names_.size(); j++) {
+    for (size_t j = 0; j < joint_names_.size(); j++) {
       if (msg.joint_names[i] == joint_names_[j]) {
         if (i < msg.joint_names.size()) {
           goal_torque_individual_[j] = msg.on[i];
@@ -149,7 +149,7 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::BoolConstPtr enabled
   for (ServoBusInterface *bus: bus_interfaces_) {
     bus->goal_torque_ = enabled->data;
   }
-  for (int j = 0; j < joint_names_.size(); j++) {
+  for (size_t j = 0; j < joint_names_.size(); j++) {
     goal_torque_individual_[j] = enabled->data;
   }
 }

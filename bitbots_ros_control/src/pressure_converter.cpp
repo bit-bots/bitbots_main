@@ -160,7 +160,7 @@ void PressureConverter::resetZeroAndScaleValues() {
 
 void PressureConverter::collectMessages() {
   save_zero_and_scale_values_ = true;
-  while (zero_and_scale_values_[0].size() < scale_and_zero_average_) {
+  while (int(zero_and_scale_values_[0].size()) < scale_and_zero_average_) {
     ROS_WARN_THROTTLE(0.25, "%ld of %d msgs", zero_and_scale_values_[0].size(), scale_and_zero_average_);
     ros::spinOnce();
   }

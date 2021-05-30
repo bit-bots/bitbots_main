@@ -77,7 +77,7 @@ bool LedsHardwareInterface::setLeds(bitbots_msgs::LedsRequest &req, bitbots_msgs
     return false;
   }
 
-  for (int i = 0; i < leds_.size(); i++) {
+  for (size_t i = 0; i < leds_.size(); i++) {
     // return current state of LEDs
     resp.previous_leds.push_back(leds_[i]);
 
