@@ -177,7 +177,7 @@ void ConvenienceFramesBroadcaster::goalCallback(const humanoid_league_msgs::Pose
 }
 
 void ConvenienceFramesBroadcaster::goalPostsCallback(const humanoid_league_msgs::PoseWithCertaintyArray::ConstPtr &msg) {
-  for (long i = 0; i < msg->poses.size(); i++) {
+  for (size_t i = 0; i < msg->poses.size(); i++) {
     publishTransform(msg->header.frame_id,
                      general_post_frame_ + std::to_string(i),
                      msg->poses[i].pose.pose.position.x,
