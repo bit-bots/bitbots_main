@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import time
 
 import actionlib
 import traceback
@@ -93,47 +94,52 @@ class PlayAnimationAction(object):
 
         animator = self.get_animation_splines(self.current_animation)
         # start animation
-        rate = rospy.Rate(200)
-        start_time = rospy.get_time()
+        rate = rospy.Rate(500)
+        current_time = rospy.Time()
 
         while not rospy.is_shutdown() and animator:
-            # first check if we have another goal
-            self.check_for_new_goal()
-            new_goal = self._as.current_goal.goal.goal.animation
-            # if there is a new goal, calculate new splines and reset the time
-            if new_goal != self.current_animation:
-                self.current_animation = new_goal
-                animator = self.get_animation_splines(self.current_animation)
-                first = True
+            last_time = current_time
+            current_time = rospy.Time.now()
+            if last_time != current_time:
+                # first check if we have another goal
+                self.check_for_new_goal()
+                new_goal = self._as.current_goal.goal.goal.animation
+                # if there is a new goal, calculate new splines and reset the time
+                if new_goal != self.current_animation:
+                    self.current_animation = new_goal
+                    animator = self.get_animation_splines(self.current_animation)
+                    first = True
 
-            # if we're here we want to play the next keyframe, cause there is no other goal
-            # compute next pose
-            t = rospy.get_time() - animator.get_start_time()
-            pose = animator.get_positions_rad(t)
-            if pose is None:
-                # see walking node reset
+                # if we're here we want to play the next keyframe, cause there is no other goal
+                # compute next pose
+                t = rospy.get_time() - animator.get_start_time()
+                pose = animator.get_positions_rad(t)
+                if pose is None:
+                    # see walking node reset
 
-                # animation is finished
-                # tell it to the hcm
-                self.send_animation(False, True, goal.hcm, None, None)
-                self._as.publish_feedback(PlayAnimationFeedback(percent_done=100))
-                # we give a positive result
-                self._as.set_succeeded(PlayAnimationResult(True))
-                return
+                    # animation is finished
+                    # tell it to the hcm
+                    self.send_animation(False, True, goal.hcm, None, None)
+                    self._as.publish_feedback(PlayAnimationFeedback(percent_done=100))
+                    # we give a positive result
+                    self._as.set_succeeded(PlayAnimationResult(True))
+                    return
 
-            self.send_animation(first, False, goal.hcm, pose, animator.get_torque(t))
-            first = False  # we have sent the first frame, all frames after this can't be the first
-            perc_done = int(((rospy.get_time() - animator.get_start_time()) / animator.get_duration()) * 100)
-            perc_done = max(0, min(perc_done, 100))
-            self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
+                self.send_animation(first, False, goal.hcm, pose, animator.get_torque(t))
+                first = False  # we have sent the first frame, all frames after this can't be the first
+                perc_done = int(((rospy.get_time() - animator.get_start_time()) / animator.get_duration()) * 100)
+                perc_done = max(0, min(perc_done, 100))
+                self._as.publish_feedback(PlayAnimationFeedback(percent_done=perc_done))
 
-            try:
-                # catch exception of moving backwards in time, when restarting simulator
-                rate.sleep()
-            except rospy.exceptions.ROSTimeMovedBackwardsException:
-                rospy.logwarn("We moved backwards in time. This is probably because the simulation was reset.")
-            except rospy.exceptions.ROSInterruptException:
-                exit()
+                try:
+                    # catch exception of moving backwards in time, when restarting simulator
+                    rate.sleep()
+                except rospy.exceptions.ROSTimeMovedBackwardsException:
+                    rospy.logwarn("We moved backwards in time. This is probably because the simulation was reset.")
+                except rospy.exceptions.ROSInterruptException:
+                    exit()
+            else:
+                time.sleep(0.0001)
 
     def get_animation_splines(self, animation_name):
         if animation_name not in self.animation_cache:

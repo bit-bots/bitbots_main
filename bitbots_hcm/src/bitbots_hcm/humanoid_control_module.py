@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 import math
 import sys
+import time
 
 import numpy
 
@@ -235,23 +236,28 @@ class HardwareControlManager:
         rate = rospy.Rate(500)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
+            last_time = self.blackboard.current_time
             self.blackboard.current_time = rospy.Time.now()
-            try:
-                self.dsd.update()
-                self.hcm_state_publisher.publish(self.blackboard.current_state)
-            except IndexError:
-                # this error will happen during shutdown procedure, just ignore it
-                pass
+            # in simulation rospy rate does not work correctly, so we have to manually check this
+            if last_time != self.blackboard.current_time:
+                try:
+                    self.dsd.update()
+                    self.hcm_state_publisher.publish(self.blackboard.current_state)
+                except IndexError:
+                    # this error will happen during shutdown procedure, just ignore it
+                    pass
 
-            try:
-                # catch exception of moving backwards in time, when restarting simulator
-                rate.sleep()
-            except rospy.exceptions.ROSTimeMovedBackwardsException:
-                rospy.logwarn(
-                    "We moved backwards in time. I hope you just reset the simulation. If not there is something "
-                    "wrong")
-            except rospy.exceptions.ROSInterruptException:
-                exit()
+                try:
+                    # catch exception of moving backwards in time, when restarting simulator
+                    rate.sleep()
+                except rospy.exceptions.ROSTimeMovedBackwardsException:
+                    rospy.logwarn(
+                        "We moved backwards in time. I hope you just reset the simulation. If not there is something "
+                        "wrong")
+                except rospy.exceptions.ROSInterruptException:
+                    exit()
+            else:
+                time.sleep(0.0001)
 
     def on_shutdown_hook(self):
         if not self.blackboard:
