@@ -6,7 +6,7 @@
 
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "localization");
+  ros::init(argc, argv, "bitbots_localization");
   Localization localization;
 
   // dynamic reconfigure
