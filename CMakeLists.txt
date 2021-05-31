@@ -39,6 +39,7 @@ add_service_files(
    AccelerometerCalibration.srv
    SetAccelerometerCalibrationThreshold.srv
    SetRobotPose.srv
+   SetBallPosition.srv
 )
 
 
