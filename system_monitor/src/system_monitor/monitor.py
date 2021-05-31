@@ -5,6 +5,7 @@ import rospy
 from system_monitor.msg import Workload as WorkloadMsg
 from system_monitor import cpus, memory, network_interfaces
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
+import time
 
 
 def validate_params():
@@ -45,7 +46,7 @@ if __name__ == '__main__':
 
         hostname = socket.gethostname()
         config = rospy.get_param('~')
-        rate = rospy.Rate(config['update_frequency'])
+        rate = config['update_frequency']
 
         diag_array = DiagnosticArray()
         diag_cpu = DiagnosticStatus()
@@ -57,6 +58,7 @@ if __name__ == '__main__':
         diag_cpu.hardware_id = "Memory"
 
         while not rospy.is_shutdown():
+            last_send_time = time.time()
             running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if config['do_cpu'] else (
                 -1, [], 0)
             memory_available, memory_used, memory_total = memory.collect_all() if config['do_memory'] else (-1, -1, -1)
@@ -105,4 +107,5 @@ if __name__ == '__main__':
             diag_array.header.stamp = rospy.Time.now()
             diagnostic_pub.publish(diag_array)
 
-            rate.sleep()
+            # sleep to have correct rate. we dont use ROS time since we are interested in system things
+            time.sleep(max(0, (1 / rate) - time.time() - last_send_time))
