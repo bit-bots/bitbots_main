@@ -43,7 +43,7 @@ RUN cd src && \
     git -C bitbots_meta submodule foreach git checkout master && \
     sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
     python3 -m pip install -U pip && \
-    pip3 install -r bitbots_meta/requirements.txt pytorchyolo && \
+    pip3 install -U -r bitbots_meta/requirements.txt && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
@@ -60,6 +60,9 @@ RUN rosdep install -iry --from-paths src && \
 RUN catkin build
 RUN cd src/bitbots_meta && make vision-files
 RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
+
+# Volume for logs
+VOLUME /robocup-logs
 
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
