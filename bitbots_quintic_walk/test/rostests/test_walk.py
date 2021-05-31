@@ -91,7 +91,10 @@ class TestWalk(WebotsTestCase):
         self.assertRobotStanding()
 
     def test_walk_odometry(self):
-        """test if the walk odometry is correct"""
+        """
+        Test if the walk odometry is correct.
+        This means also that the robot is walking with the correct speed.
+        """
         # setup
         current_odom = None
 
@@ -120,10 +123,6 @@ class TestWalk(WebotsTestCase):
         # robot should be at odom position
         self.assertRobotPose(current_odom.pose.pose)
         self.assertRobotStanding()
-
-    def test_speed(self):
-        """test if the robot actually walks with the correct commanded speed"""
-        pass  # todo
 
 
 if __name__ == "__main__":
