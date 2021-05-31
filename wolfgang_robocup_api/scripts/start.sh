@@ -11,7 +11,7 @@
 #########
 
 if [[ -z $1 || -z $2 ]]; then
-    echo "Usage: $0 role position_number"
+    echo "Usage: $0 role position_number [--no-bag]"
     echo "       role: [offense | defense | goalie]"
     echo "       position_number: [0 | 1 | 2]"
     exit 1
@@ -77,4 +77,10 @@ EOF
 # Start ROS #
 #############
 
-exec roslaunch wolfgang_robocup_api robocup_teamplayer.launch record:=true
+if [[ "$3" == "--no-bag" ]]; then
+    RECORD=false
+else
+    RECORD=true
+fi
+
+exec roslaunch wolfgang_robocup_api robocup_teamplayer.launch record:=$RECORD
