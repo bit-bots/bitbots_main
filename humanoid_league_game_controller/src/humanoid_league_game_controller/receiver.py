@@ -70,13 +70,11 @@ class GameStateReceiver(object):
 
     def receive_forever(self):
         """ Waits in a loop that is terminated by setting self.running = False """
-        r = rospy.Rate(5)
         while not rospy.is_shutdown():
             try:
                 self.receive_once()
             except IOError as e:
                 rospy.logwarn("Error while sending keepalive: " + str(e))
-            r.sleep()
 
     def receive_once(self):
         """ Receives a package and interprets it.
