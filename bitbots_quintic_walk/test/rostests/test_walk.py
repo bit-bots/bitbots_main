@@ -2,8 +2,8 @@
 import time
 
 import rospy
-from bitbots_msgs.msg import JointCommand
-from geometry_msgs.msg import Twist, Point
+from bitbots_msgs.msg import JointCommand, SupportState
+from geometry_msgs.msg import Twist, Point, Pose, Quaternion
 
 from bitbots_test.mocks import MockSubscriber
 from bitbots_test.test_case import WebotsTestCase, RosNodeTestCase
@@ -20,7 +20,7 @@ class TestWalk(WebotsTestCase):
         sub.wait_until_connected()
         time.sleep(2)
 
-        self.assertNoNegativeRosLogs()
+        self.assertNoNegativeRosLogs(node="walking")
 
     def test_no_joint_goals(self):
         """test if joint goals are published when walking is activated and only then"""
@@ -40,12 +40,16 @@ class TestWalk(WebotsTestCase):
         pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
         sub = MockSubscriber("DynamixelController/command", JointCommand, tcp_nodelay=True)
         sub.wait_until_connected()
+        # wait for support state to make sure the walking is started
+        sub_support_state = MockSubscriber("walk_support_state", SupportState, tcp_nodelay=True)
+        sub_support_state.wait_until_connected()
+        time.sleep(10)
 
         # execution
         cmd_vel = Twist()
         cmd_vel.linear.x = 0.1
         pub.publish(cmd_vel)
-        rospy.sleep(1)
+        rospy.sleep(5)
 
         # verification
         # make sure something is published
@@ -61,10 +65,18 @@ class TestWalk(WebotsTestCase):
         # setup
         pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
         self.set_ball_position(Point(10, 0, 0))
-        self.set_robot_position(Point(0, 0, 0.42))
+        self.set_robot_pose(Pose(Point(0, 0, 0.42), Quaternion(0, 0, 0, 1)))
+        # let robot walk a bit to get into walkready
+        cmd_vel = Twist()
+        cmd_vel.linear.x = 0.1
+        pub.publish(cmd_vel)
+        rospy.sleep(1)
+        cmd_vel.linear.x = 0.0
+        pub.publish(cmd_vel)
+        rospy.sleep(5)
+        self.set_robot_pose(Pose(Point(0, 0, 0.42), Quaternion(0, 0, 0, 1)))
 
         # execution
-        cmd_vel = Twist()
         cmd_vel.linear.x = 0.1
         pub.publish(cmd_vel)
         rospy.sleep(10)
@@ -91,7 +103,7 @@ class TestWalk(WebotsTestCase):
         sub.wait_until_connected()
         pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
         self.set_ball_position(Point(10, 0, 0))
-        self.set_robot_position(Point(0, 0, 0.42))
+        self.set_robot_pose(Pose(Point(0, 0, 0.42), Quaternion(0, 0, 0, 1)))
 
         # execution
         cmd_vel = Twist()
@@ -106,8 +118,8 @@ class TestWalk(WebotsTestCase):
 
         # verification
         # robot should be at odom position
-        self.assertRobotPosition(current_odom.pose.pose.position, threshold=0.5)
-        # todo should also test orientation
+        self.assertRobotPose(current_odom.pose.pose)
+        self.assertRobotStanding()
 
     def test_speed(self):
         """test if the robot actually walks with the correct commanded speed"""
