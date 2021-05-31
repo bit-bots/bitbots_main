@@ -1,4 +1,5 @@
 """Base classes for TestCases as well as useful assertions and ros integrations"""
+import math
 from typing import *
 import time
 import rospy
@@ -12,6 +13,8 @@ import gazebo_msgs.msg
 from datetime import datetime, timedelta
 from unittest.case import TestCase as BaseTestCase
 from xmlrpc.client import ServerProxy
+
+from transforms3d.euler import quat2euler
 
 
 class GeneralAssertionMixins:
@@ -216,7 +219,8 @@ class WebotsTestCase(RosNodeTestCase):
     _sub_model_states: Optional[rospy.Subscriber] = None
     _svc_reset_pose: Optional[rospy.ServiceProxy] = None
     _svc_reset_ball: Optional[rospy.ServiceProxy] = None
-    _svc_set_robot_position: Optional[rospy.ServiceProxy] = None
+    _svc_set_robot_pose: Optional[rospy.ServiceProxy] = None
+    _svc_set_ball_position: Optional[rospy.ServiceProxy] = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -226,7 +230,8 @@ class WebotsTestCase(RosNodeTestCase):
         super().setUp()
         self._svc_reset_pose = rospy.ServiceProxy("/reset_pose", std_srvs.srv.Empty)
         self._svc_reset_ball = rospy.ServiceProxy("/reset_ball", std_srvs.srv.Empty)
-        self._svc_set_robot_position = rospy.ServiceProxy("/set_robot_position", bitbots_msgs.srv.SetRobotPose)
+        self._svc_set_robot_pose = rospy.ServiceProxy("/set_robot_pose", bitbots_msgs.srv.SetRobotPose)
+        self._svc_set_ball_position = rospy.ServiceProxy("/set_ball_position", bitbots_msgs.srv.SetBallPosition)
 
         self.wait_for_simulator()
         self.reset_simulation()
@@ -243,7 +248,8 @@ class WebotsTestCase(RosNodeTestCase):
 
         self._svc_reset_pose.close()
         self._svc_reset_ball.close()
-        self._svc_set_robot_position.close()
+        self._svc_set_robot_pose.close()
+        self._svc_set_ball_position.close()
 
     def _model_state_cb(self, model_states: gazebo_msgs.msg.ModelStates):
         self._latest_model_states = model_states
@@ -271,7 +277,8 @@ class WebotsTestCase(RosNodeTestCase):
                 self.assertNodeRunning(self._SUPERVISOR_NODE_NAME)
                 self._svc_reset_pose.wait_for_service(timeout=remaining_timeout)
                 self._svc_reset_ball.wait_for_service(timeout=remaining_timeout)
-                self._svc_set_robot_position.wait_for_service(timeout=remaining_timeout)
+                self._svc_set_robot_pose.wait_for_service(timeout=remaining_timeout)
+                self._svc_set_ball_position.wait_for_service(timeout=remaining_timeout)
                 break
             except AssertionError:
                 if start_time + timeout < time.time():
@@ -312,9 +319,25 @@ class WebotsTestCase(RosNodeTestCase):
                     if start_time + timeout < time.time():
                         raise TimeoutError("timed out waiting for new model states")
 
-    def set_robot_position(self, position: Optional[geometry_msgs.msg.Point] = None, robot_name: str = "amy"):
+    def set_robot_pose(self, pose: Optional[geometry_msgs.msg.Pose] = None, robot_name: str = "amy"):
         """
         Set the robot position in simulator
+
+        :param robot_name: Name of the robot whose position should be set.
+            Defaults to amy which is the only robot in single-robot simulations
+        :param pose: Pose to which the robot should be teleported.
+            If None, resets the robot to its original pose
+        """
+        if pose:
+            self._svc_set_robot_pose(robot_name, pose)
+        else:
+            self._svc_reset_pose(std_srvs.srv.EmptyRequest())
+
+        self.wait_for_model_state_update(num_updates=2)
+
+    def set_ball_position(self, position: Optional[geometry_msgs.msg.Point] = None):
+        """
+        Set the ball position in simulator
 
         :param robot_name: Name of the robot whose position should be set.
             Defaults to amy which is the only robot in single-robot simulations
@@ -322,14 +345,11 @@ class WebotsTestCase(RosNodeTestCase):
             If None, resets the robot to its original pose
         """
         if position:
-            self._svc_set_robot_position(robot_name, position)
+            self._svc_set_ball_position(position)
         else:
-            self._svc_reset_pose(std_srvs.srv.EmptyRequest())
+            self._svc_reset_ball(std_srvs.srv.EmptyRequest())
 
         self.wait_for_model_state_update(num_updates=2)
-
-    def set_ball_position(self, position: Optional[geometry_msgs.msg.Point] = None):
-        self.set_robot_position(position=position, robot_name="ball")
 
     def get_robot_pose(self, robot_name: str = "amy") -> geometry_msgs.msg.Pose:
         """
@@ -350,7 +370,6 @@ class WebotsTestCase(RosNodeTestCase):
 
     def get_ball_position(self) -> geometry_msgs.msg.Point:
         return self.get_robot_pose("ball").position
-
 
     def assertRobotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *, threshold: float = 0.5,
                             x_threshold: float = None, y_threshold: float = None, z_threshold: float = None):
@@ -377,7 +396,29 @@ class WebotsTestCase(RosNodeTestCase):
             self.assertInRange(position.y, (real_position.y - y_threshold, real_position.y + y_threshold))
             self.assertInRange(position.z, (real_position.z - z_threshold, real_position.z + z_threshold))
         except AssertionError:
-            raise AssertionError(f"robot is not at (or close to) position {position}")
+            raise AssertionError(
+                f"robot is not at (or close to) position:\n{position}\nActual position is:\n{real_position}")
+
+    def assertRobotPose(self, pose: geometry_msgs.msg.Pose, robot_name: str = "amy", *, lin_threshold: float = 0.5,
+                        x_threshold: float = None, y_threshold: float = None, z_threshold: float = None,
+                        ang_threshold: float = math.tau / 8, roll_threshold: float = None,
+                        pitch_threshold: float = math.tau / 8, yaw_threshold: float = None):
+        self.assertRobotPosition(position=pose.position, robot_name=robot_name, threshold=lin_threshold,
+                                 x_threshold=x_threshold, y_threshold=y_threshold, z_threshold=z_threshold)
+        roll_threshold = roll_threshold if roll_threshold else ang_threshold
+        pitch_threshold = pitch_threshold if pitch_threshold else ang_threshold
+        yaw_threshold = yaw_threshold if yaw_threshold else ang_threshold
+        real_orientation = self.get_robot_pose().orientation
+        real_rpy = quat2euler(real_orientation.w, real_orientation.x, real_orientation.y, real_orientation.z)
+        goal_rpy = quat2euler(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z)
+
+        try:
+            self.assertInRange(goal_rpy[0], (real_rpy[0] - roll_threshold, real_rpy[0] + roll_threshold))
+            self.assertInRange(goal_rpy[1], (real_rpy[1] - pitch_threshold, real_rpy[1] + pitch_threshold))
+            self.assertInRange(goal_rpy[2], (real_rpy[2] - yaw_threshold, real_rpy[2] + yaw_threshold))
+        except AssertionError:
+            raise AssertionError(
+                f"Robot pose is not at (or close to) pose:\n{pose}\n Actual pose is:\n{real_orientation}")
 
     def assertRobotNotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *,
                                threshold: float = 0.5, x_threshold: float = None, y_threshold: float = None,
@@ -395,6 +436,27 @@ class WebotsTestCase(RosNodeTestCase):
         :param y_threshold: Minimum derivation from the position on the y axis
         :param z_threshold: Minimum derivation from the position on the z axis
         """
-        self.assertRaises(self.assertRobotPosition(position=position, robot_name=robot_name, threshold=threshold,
-                                                   x_threshold=x_threshold, y_threshold=y_threshold,
-                                                   z_threshold=z_threshold))
+        x_threshold = x_threshold if x_threshold else threshold
+        y_threshold = y_threshold if y_threshold else threshold
+        z_threshold = z_threshold if z_threshold else threshold
+        real_position = self.get_robot_pose(robot_name).position
+
+        x_far = position.x < real_position.x - x_threshold or position.x > real_position.x + x_threshold
+        y_far = position.y < real_position.y - y_threshold or position.y > real_position.y + y_threshold
+        z_far = position.z < real_position.z - z_threshold or position.z > real_position.z + z_threshold
+
+        if not (x_far or y_far or z_far):
+            raise AssertionError(
+                f"robot is to close to position:\n{position}\nActual position is:\n{real_position}")
+
+    def assertRobotStanding(self, robot_name: str = "amy"):
+        """
+        Assert that the robot is standing and has not fallen down.
+
+        :param robot_name: The robot of which the position should be verified.
+            Defaults to amy which is the only robot in single-robot simulations
+        """
+        pose = self.get_robot_pose(robot_name)
+        rpy = quat2euler((pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z))
+        if abs(rpy[0]) > math.tau / 8 or abs(rpy[1]) > math.tau / 8:
+            raise AssertionError(f"Robot has fallen down")
