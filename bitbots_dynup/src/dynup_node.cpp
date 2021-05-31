@@ -137,33 +137,35 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
   double dt;
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    dt = getTimeDelta();
-    // catch weird time glitches and dont do anything in this case
-    if (dt > 0) {
-      DynupResponse response = engine_.update(dt);
-      stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
-      DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
-      bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-      bitbots_msgs::DynUpFeedback feedback;
-      feedback.percent_done = engine_.getPercentDone();
-      server_.publishFeedback(feedback);
-      publishGoals(goals);
-      if (goals.first.empty()) {
-        failed_tick_counter++;
-      }
-      if (stabilizer_.isStable()) {
-        stable_duration_ += 1;
-      } else {
-        stable_duration_ = 0;
-      }
-      if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing))) {
-        ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
-        break;
-      }
-    }
-    /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
-    loop_rate.sleep();
+    if (loop_rate.sleep()) {
+      dt = getTimeDelta();
+      // catch weird time glitches and dont do anything in this case
+      if (dt > 0) {
+        DynupResponse response = engine_.update(dt);
+        stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
+        DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+        bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+        bitbots_msgs::DynUpFeedback feedback;
+        feedback.percent_done = engine_.getPercentDone();
+        server_.publishFeedback(feedback);
+        publishGoals(goals);
+        if (goals.first.empty()) {
+          failed_tick_counter++;
+        }
+        if (stabilizer_.isStable()) {
+          stable_duration_ += 1;
+        } else {
+          stable_duration_ = 0;
+        }
+        if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing))) {
+          ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
+          break;
+        }
+      }
+    } else {
+      sleep(0.0001);
+    }
   }
 }
 
