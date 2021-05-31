@@ -6,7 +6,7 @@ from bitbots_msgs.msg import JointCommand, SupportState
 from geometry_msgs.msg import Twist, Point, Pose, Quaternion
 
 from bitbots_test.mocks import MockSubscriber
-from bitbots_test.test_case import WebotsTestCase, RosNodeTestCase
+from bitbots_test.test_case import WebotsTestCase
 from nav_msgs.msg import Odometry
 
 
