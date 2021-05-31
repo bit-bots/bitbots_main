@@ -81,6 +81,7 @@ bool ServoBusInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
     }
   }
   writeTorque(nh.param("servos/auto_torque", false));
+  return true;
 }
 
 ServoBusInterface::~ServoBusInterface(){
@@ -242,7 +243,7 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
     // when the servos have a goal position which is not the current position on startup
     // they will rapidly move to this position, possibly damaging the robot
     // therefore the goal position is set to the current position of the motors
-    for (int i = 0; i < current_position_.size(); i++) {
+    for (size_t i = 0; i < current_position_.size(); i++) {
       goal_position_[i] = current_position_[i];
     }
     first_cycle_ = false;
@@ -407,7 +408,7 @@ void ServoBusInterface::processVte(bool success) {
   std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
   array_msg.header.stamp = ros::Time::now();
 
-  for (int i = 0; i < joint_names_.size(); i++) {
+  for (size_t i = 0; i < joint_names_.size(); i++) {
     char level = diagnostic_msgs::DiagnosticStatus::OK;
     std::string message = "OK";
     std::map<std::string, std::string> map;

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_ros_control)
 set(CMAKE_CXX_STANDARD 17)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp

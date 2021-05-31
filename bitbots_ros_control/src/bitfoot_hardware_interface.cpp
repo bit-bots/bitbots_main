@@ -77,7 +77,7 @@ void BitFootHardwareInterface::read(const ros::Time &t, const ros::Duration &dt)
 
       bool okay = false;
       double last = 0;
-      for (int j = 0; j < current_pressure_[i].size(); j++) {
+      for (size_t j = 0; j < current_pressure_[i].size(); j++) {
         if (last != current_pressure_[0][j]) {
           okay = true;
           break;
