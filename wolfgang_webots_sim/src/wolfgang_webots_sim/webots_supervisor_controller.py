@@ -3,7 +3,7 @@ from controller import Supervisor
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetRobotPose, SetRobotPoseResponse
+from bitbots_msgs.srv import SetRobotPose, SetRobotPoseResponse, SetBallPosition, SetBallPositionResponse
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty, EmptyResponse
@@ -74,9 +74,11 @@ class SupervisorController:
             self.model_state_publisher = rospy.Publisher(model_topic, ModelStates, queue_size=1)
             self.reset_service = rospy.Service(base_ns + "reset", Empty, self.reset)
             self.reset_pose_service = rospy.Service(base_ns + "reset_pose", Empty, self.set_initial_poses)
-            self.set_robot_position_service = rospy.Service(base_ns + "set_robot_position", SetRobotPose,
-                                                            self.robot_pose_callback)
+            self.set_robot_pose_service = rospy.Service(base_ns + "set_robot_pose", SetRobotPose,
+                                                        self.robot_pose_callback)
             self.reset_ball_service = rospy.Service(base_ns + "reset_ball", Empty, self.reset_ball)
+            self.set_ball_position_service = rospy.Service(base_ns + "set_ball_position", SetBallPosition,
+                                                           self.ball_pos_callback)
 
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
@@ -126,7 +128,9 @@ class SupervisorController:
         return EmptyResponse()
 
     def robot_pose_callback(self, req=None):
-        self.reset_robot_pose_rpy([req.position.x, req.position.y, req.position.z], [0, 0, 0], req.robot_name)
+        self.reset_robot_pose([req.pose.position.x, req.pose.position.y, req.pose.position.z],
+                              [req.pose.orientation.x, req.pose.orientation.y, req.pose.orientation.z,
+                               req.pose.orientation.w], req.robot_name)
         return SetRobotPoseResponse()
 
     def reset_ball(self, req=None):
@@ -134,6 +138,10 @@ class SupervisorController:
         self.ball.getField("rotation").setSFRotation([0, 0, 1, 0])
         self.ball.resetPhysics()
         return EmptyResponse()
+
+    def ball_pos_callback(self, req=None):
+        self.set_ball_pose([req.position.x, req.position.y, req.position.z])
+        return SetBallPositionResponse()
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))
