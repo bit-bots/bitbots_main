@@ -22,7 +22,7 @@ from visualization_msgs.msg import Marker
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
-
+from bitbots_ros_patches.rate import Rate
 
 if __name__ == "__main__":
     rospy.init_node("Bodybehavior")
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
 
-    rate = rospy.Rate(5)
+    rate = Rate(5)
     while not rospy.is_shutdown():
         D.update()
         rate.sleep()

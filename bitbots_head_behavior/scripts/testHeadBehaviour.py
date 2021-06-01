@@ -4,7 +4,7 @@
 import rospy
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-
+from bitbots_ros_patches.rate import Rate
 
 def run():
     pub_ball = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
@@ -24,7 +24,7 @@ def run():
     rospy.init_node("bitbots_testHeadBehaviour")
     pub_hmg.publish(hmg)
 
-    rate = rospy.Rate(4)
+    rate = Rate(4)
     rospy.logdebug("Laeuft...")
     while not rospy.is_shutdown():
         # Ball in Image

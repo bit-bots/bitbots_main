@@ -16,6 +16,8 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 
+from bitbots_ros_patches.rate import Rate
+
 
 def run(dsd):
     """
@@ -23,7 +25,7 @@ def run(dsd):
 
     :returns: Never
     """
-    rate = rospy.Rate(15)
+    rate = Rate(15)
     while not rospy.is_shutdown():
         dsd.update()
         rate.sleep()
