@@ -230,8 +230,8 @@ class WebotsTestCase(RosNodeTestCase):
         super().setUp()
         self._svc_reset_pose = rospy.ServiceProxy("/reset_pose", std_srvs.srv.Empty)
         self._svc_reset_ball = rospy.ServiceProxy("/reset_ball", std_srvs.srv.Empty)
-        self._svc_set_robot_pose = rospy.ServiceProxy("/set_robot_pose", bitbots_msgs.srv.SetRobotPose)
-        self._svc_set_ball_position = rospy.ServiceProxy("/set_ball_position", bitbots_msgs.srv.SetBallPosition)
+        self._svc_set_robot_pose = rospy.ServiceProxy("/set_robot_pose", bitbots_msgs.srv.SetObjectPose)
+        self._svc_set_ball_position = rospy.ServiceProxy("/set_ball_position", bitbots_msgs.srv.SetObjectPosition)
 
         self.wait_for_simulator()
         self.reset_simulation()
