@@ -21,7 +21,7 @@ fi
 # Configuration #
 #################
 
-TEAM_ID=18
+TEAM_ID=7
 
 ##########
 # Checks #
