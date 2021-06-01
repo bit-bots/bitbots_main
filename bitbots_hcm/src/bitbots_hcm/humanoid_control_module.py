@@ -4,7 +4,6 @@ import math
 import sys
 import time
 
-import bitbots_ros_patches
 import numpy
 
 import rospy
