@@ -3,7 +3,7 @@ from controller import Supervisor
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetObjectPose, SetRobotPoseResponse, SetObjectPosition, SetBallPositionResponse
+from bitbots_msgs.srv import SetObjectPose, SetRobotPoseResponse, SetObjectPosition, SetObjectPositionResponse
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty, EmptyResponse
@@ -141,7 +141,7 @@ class SupervisorController:
 
     def ball_pos_callback(self, req=None):
         self.set_ball_pose([req.position.x, req.position.y, req.position.z])
-        return SetBallPositionResponse()
+        return SetObjectPositionResponse()
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))
