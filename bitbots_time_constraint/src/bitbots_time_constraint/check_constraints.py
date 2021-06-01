@@ -7,6 +7,7 @@ import rospkg
 import yaml
 import socket
 import os
+from bitbots_ros_patches.rate import Rate
 
 class AutoSubscriber:
     """
@@ -79,7 +80,7 @@ class ConstraintChecker:
         self._main_loop()
     
     def _main_loop(self):
-        r = rospy.Rate(self.rate)
+        r = Rate(self.rate)
         while not rospy.is_shutdown():
             self._check_constraints()
             r.sleep()

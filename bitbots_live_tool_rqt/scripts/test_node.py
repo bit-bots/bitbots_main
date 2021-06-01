@@ -11,7 +11,7 @@ import yaml
 import rospkg
 import os
 import tf
-
+from bitbots_ros_patches.rate import Rate
 
 
 # Dictonary for roles
@@ -52,7 +52,7 @@ def publisher_main():
     pubTarget = rospy.Publisher('move_base_simple/goal', Pose2D, queue_size = 10)
 
 
-    rate = rospy.Rate(10)
+    rate = Rate(10)
 
     timeCounter = 30
     roboActionCounter = 30

@@ -7,6 +7,7 @@ from gazebo_msgs.srv import SetModelState, SetModelStateRequest
 
 import tf
 
+from bitbots_ros_patches.rate import Rate
 
 position = None
 roll = None
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     ball_request.model_state.model_name = "teensize_ball"
     # wait because we want to be called
     rospy.sleep(1.0)
-    rate = rospy.Rate(10)
+    rate = Rate(10)
     while not rospy.is_shutdown():
         try:
             # check if we have values already, otherwise we will do math with none
