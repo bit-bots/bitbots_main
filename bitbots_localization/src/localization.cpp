@@ -157,7 +157,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       config.initial_robot_y,
       config.initial_robot_t));
 
-  resampling_.reset(new pf::ImportanceResampling<RobotState>());
+  resampling_.reset(new pf::ImportanceResampling<RobotState>(true, config.min_resampling_weight));
 
   config_ = config;
 
