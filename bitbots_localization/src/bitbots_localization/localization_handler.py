@@ -7,7 +7,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from dynamic_stack_decider.dsd import DSD
 from bitbots_localization.localization_dsd.localization_blackboard import LocalizationBlackboard
 import os
-
+from bitbots_ros_patches.rate import Rate
 
 class LocalizationHandler(object):
     def __init__(self):
@@ -56,7 +56,7 @@ class LocalizationHandler(object):
 
     def main_loop(self):
         """  """
-        rate = rospy.Rate(25)
+        rate = Rate(25)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()

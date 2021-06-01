@@ -5,13 +5,13 @@ import rospy
 from geometry_msgs.msg import TransformStamped
 from gazebo_msgs.msg import ModelStates
 import tf
-
+from bitbots_ros_patches.rate import Rate
 
 class TFWorld(object):
     def __init__(self):
         rospy.init_node("map")
         br = tf.TransformBroadcaster()
-        r = rospy.Rate(30)
+        r = Rate(30)
         while not rospy.is_shutdown():
             transform = TransformStamped()
             transform.header.frame_id = "map"
