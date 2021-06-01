@@ -7,6 +7,7 @@ import random
 import time
 import tkinter
 import threading
+from bitbots_ros_patches.rate import Rate
 
 parser = argparse.ArgumentParser()
 
@@ -97,7 +98,7 @@ rospy.init_node("foot_pressure_tester")
 pub_r = rospy.Publisher("/foot_pressure_right/raw", FootPressure, queue_size=1, tcp_nodelay=True)
 pub_l = rospy.Publisher("/foot_pressure_left/raw", FootPressure, queue_size=1, tcp_nodelay=True)
 
-rate = rospy.Rate(args.rate)
+rate = Rate(args.rate)
 msg_l = FootPressure()
 msg_r = FootPressure()
 
