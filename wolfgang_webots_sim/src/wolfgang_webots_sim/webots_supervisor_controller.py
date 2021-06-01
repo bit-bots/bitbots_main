@@ -3,7 +3,7 @@ from controller import Supervisor
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetRobotPose, SetRobotPoseResponse, SetBallPosition, SetBallPositionResponse
+from bitbots_msgs.srv import SetObjectPose, SetRobotPoseResponse, SetObjectPosition, SetBallPositionResponse
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty, EmptyResponse
@@ -74,10 +74,10 @@ class SupervisorController:
             self.model_state_publisher = rospy.Publisher(model_topic, ModelStates, queue_size=1)
             self.reset_service = rospy.Service(base_ns + "reset", Empty, self.reset)
             self.reset_pose_service = rospy.Service(base_ns + "reset_pose", Empty, self.set_initial_poses)
-            self.set_robot_pose_service = rospy.Service(base_ns + "set_robot_pose", SetRobotPose,
+            self.set_robot_pose_service = rospy.Service(base_ns + "set_robot_pose", SetObjectPose,
                                                         self.robot_pose_callback)
             self.reset_ball_service = rospy.Service(base_ns + "reset_ball", Empty, self.reset_ball)
-            self.set_ball_position_service = rospy.Service(base_ns + "set_ball_position", SetBallPosition,
+            self.set_ball_position_service = rospy.Service(base_ns + "set_ball_position", SetObjectPosition,
                                                            self.ball_pos_callback)
 
         self.world_info = self.supervisor.getFromDef("world_info")
@@ -130,7 +130,7 @@ class SupervisorController:
     def robot_pose_callback(self, req=None):
         self.reset_robot_pose([req.pose.position.x, req.pose.position.y, req.pose.position.z],
                               [req.pose.orientation.x, req.pose.orientation.y, req.pose.orientation.z,
-                               req.pose.orientation.w], req.robot_name)
+                               req.pose.orientation.w], req.object_name)
         return SetRobotPoseResponse()
 
     def reset_ball(self, req=None):
