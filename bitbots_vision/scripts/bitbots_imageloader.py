@@ -5,6 +5,7 @@ import cv2
 import os
 import sys
 import rospy
+from bitbots_ros_patches.rate import Rate
 # Check if progressbar is installed
 try:
     import progressbar
@@ -30,7 +31,7 @@ class LoadImages:
         listdir = list(os.listdir(path))
 
         # Set fps
-        rate = rospy.Rate(fps)
+        rate = Rate(fps)
 
         # Make generator to determine if the loop runs once or infinite times
         if loop:
