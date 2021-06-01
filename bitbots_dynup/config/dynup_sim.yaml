@@ -69,7 +69,7 @@ dynup:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
-    publish_state: True
+    publish_state: False
   pid_trunk_pitch:
     p: -0.42
     i: -5.31646
@@ -78,4 +78,4 @@ dynup:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
-    publish_state: True
+    publish_state: False
