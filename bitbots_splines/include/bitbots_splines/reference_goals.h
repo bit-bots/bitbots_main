@@ -10,7 +10,7 @@ class ReferenceLinkGoalBase : public bio_ik::Goal {
   std::string reference_link_name_;
  public:
   ReferenceLinkGoalBase()
-      : link_name_(""), reference_link_name_(""), Goal() {}
+      : Goal(), link_name_(""), reference_link_name_("") {}
   ReferenceLinkGoalBase(const std::string &link_name, const std::string &reference_link_name, double weight = 1.0)
       : link_name_(link_name), reference_link_name_(reference_link_name) {
     weight_ = weight;
@@ -33,7 +33,7 @@ class ReferenceOrientationGoal : public ReferenceLinkGoalBase {
 
  public:
   ReferenceOrientationGoal()
-      : orientation_(0, 0, 0, 1), ReferenceLinkGoalBase() {}
+      : ReferenceLinkGoalBase(), orientation_(0, 0, 0, 1) {}
   ReferenceOrientationGoal(const std::string &link_name, const std::string &reference_link_name,
                            const tf2::Quaternion &orientation, double weight = 1.0)
       : ReferenceLinkGoalBase(link_name, reference_link_name, weight), orientation_(orientation.normalized()) {}

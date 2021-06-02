@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_splines)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp

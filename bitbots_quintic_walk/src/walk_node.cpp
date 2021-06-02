@@ -8,9 +8,9 @@
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns) :
+    walk_engine_(ns),
     robot_model_loader_(ns + "robot_description", false),
-    stabilizer_(ns),
-    walk_engine_(ns) {
+    stabilizer_(ns) {
   nh_ = ros::NodeHandle(ns);
   pnh_ = ros::NodeHandle("~");
 
@@ -384,7 +384,7 @@ void WalkNode::robotStateCb(const humanoid_league_msgs::RobotControlState msg) {
 void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
   std::vector<std::string> names = msg.name;
   std::vector<double> goals = msg.position;
-  for (int i = 0; i < names.size(); i++) {
+  for (size_t i = 0; i < names.size(); i++) {
     // besides its name, this method only changes a single joint position...
     current_state_->setJointPositions(names[i], &goals[i]);
   }
@@ -395,7 +395,7 @@ void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
     double effort_sum = 0;
     const std::vector<std::string>
         &fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
-    for (int i = 0; i < names.size(); i++) {
+    for (size_t i = 0; i < names.size(); i++) {
       // add effort on this joint to sum, if it is part of the flying leg
       if (std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()) {
         effort_sum = effort_sum + abs(msg.effort[i]);

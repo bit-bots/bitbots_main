@@ -95,6 +95,7 @@ void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd
     walk_state = bitbots_quintic_walk::WalkState::KICK;
   } else {
     ROS_WARN("state in special reset not clear");
+    return;
   }
   walk_node_->reset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
 }

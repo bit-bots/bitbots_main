@@ -4,8 +4,8 @@ namespace bitbots_dynamic_kick {
 
 KickNode::KickNode(const std::string &ns) :
     server_(node_handle_, "dynamic_kick", boost::bind(&KickNode::executeCb, this, _1), false),
-    listener_(tf_buffer_),
     visualizer_(ns + "debug/dynamic_kick"),
+    listener_(tf_buffer_),
     robot_model_loader_(ns + "robot_description", false) {
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
@@ -53,7 +53,7 @@ void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
 }
 
 void KickNode::jointStateCallback(const sensor_msgs::JointState &joint_states) {
-  for (int i = 0; i < joint_states.name.size(); ++i) {
+  for (size_t i = 0; i < joint_states.name.size(); ++i) {
     current_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
   }
 }
@@ -226,7 +226,7 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
 
   /* visualization of the values calculated above */
-  for (int i = 0; i < motor_goals.first.size(); ++i) {
+  for (size_t i = 0; i < motor_goals.first.size(); ++i) {
     goal_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
   }
   visualizer_.publishGoals(positions, stabilized_positions, goal_state_, engine_.getPhase());

@@ -170,7 +170,7 @@ moveit::py_bindings_tools::ByteString getPositionFK(const std::string& request_s
 
   static moveit::core::RobotState robot_state(robot_model);
   sensor_msgs::JointState joint_state = request.robot_state.joint_state;
-  for (int i = 0; i < joint_state.name.size(); ++i) {
+  for (size_t i = 0; i < joint_state.name.size(); ++i) {
     robot_state.setJointPositions(joint_state.name[i], &joint_state.position[i]);
   }
   robot_state.update();

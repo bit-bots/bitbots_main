@@ -120,7 +120,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_fused_roll:
     p: 0.111
@@ -130,4 +130,4 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
