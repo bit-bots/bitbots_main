@@ -275,7 +275,7 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
       std::max(std::min(current_request_.angular_z, max_step_angular_), max_step_angular_ * -1);
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_ != 0) {
-    double scaling_factor = (current_request_.linear_orders[0] + current_request_.linear_orders[1]) / max_step_xy_;
+    double scaling_factor = sqrt(pow(current_request_.linear_orders[0], 2) + pow(current_request_.linear_orders[1], 2)) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
       current_request_.linear_orders[i] = current_request_.linear_orders[i] / std::max(scaling_factor, 1.0);
     }
