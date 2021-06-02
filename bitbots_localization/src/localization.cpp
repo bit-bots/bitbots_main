@@ -103,7 +103,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
                            config.diffusion_x_std_dev,
                            config.diffusion_y_std_dev,
                            config.diffusion_t_std_dev,
-                           config.diffusion_multiplicator,
+                           config.starting_diffusion,
                            drift_cov));
 
   robot_state_distribution_start_left_.reset(
@@ -157,7 +157,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
       config.initial_robot_y,
       config.initial_robot_t));
 
-  resampling_.reset(new pf::ImportanceResampling<RobotState>());
+  resampling_.reset(new pf::ImportanceResampling<RobotState>(true, config.min_resampling_weight));
 
   config_ = config;
 
@@ -166,7 +166,6 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
 
   if (first_configuration_) {
     first_configuration_ = false;
-  
     reset_service_ = nh_.advertiseService("reset_localization", &Localization::reset_filter_callback, this);
     pause_service_ = nh_.advertiseService("pause_localization", &Localization::set_paused_callback, this);
   }
@@ -186,6 +185,12 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
   // Get the odometry offset since the last cycle
   getMotion();
 
+  // Drops the diffusion noise back to normal if it was bumped by a reset/init.
+  // Increasing the noise helps with the initial localization.
+  if (timer_callback_count_ > config_.starting_steps_with_higher_diffusion) {
+    robot_motion_model_->diffuse_multiplicator_ = config_.diffusion_multiplicator;
+  }
+
   if ((config_.filter_only_with_motion and robot_moved) or (!config_.filter_only_with_motion)) {
     robot_pf_->drift(linear_movement_, rotational_movement_);
     robot_pf_->diffuse();
@@ -197,7 +202,6 @@ void Localization::run_filter_one_step(const ros::TimerEvent &e) {
   // Check if its resampling time!
   if (timer_callback_count_ % config_.resampling_interval == 0) {
     robot_pf_->resample();
-    timer_callback_count_ = 0;
     resampled_ = true;
   }
   // Publish transforms
@@ -301,6 +305,11 @@ void Localization::reset_filter(int distribution) {
 
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
       config_.particle_number, robot_pose_observation_model_, robot_motion_model_));
+
+  timer_callback_count_ = 0;
+
+  // Increasing the noise helps with the initial localization.
+  robot_motion_model_->diffuse_multiplicator_ = config_.starting_diffusion;
 
   robot_pf_->setResamplingStrategy(resampling_);
   if (distribution == 0) {

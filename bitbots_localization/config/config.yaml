@@ -20,7 +20,7 @@
 
   particle_publishing_topic: 'pose_particles'
 
-  publishing_frequency: 25
+  publishing_frequency: 10
 
   #################
   # Visualization #
@@ -34,13 +34,15 @@
   ###################
 
 
-  particle_number: 200
-  resampling_interval: 5
+  particle_number: 300
+  resampling_interval: 2
 
   diffusion_x_std_dev: 0.8
   diffusion_y_std_dev: 0.8
   diffusion_t_std_dev: 0.9
   diffusion_multiplicator: 0.001
+  starting_diffusion: 0.05
+  starting_steps_with_higher_diffusion: 40
 
   drift_distance_to_direction: 3.0
   drift_roation_to_direction: 0.0
