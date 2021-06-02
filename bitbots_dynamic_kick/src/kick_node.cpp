@@ -30,7 +30,8 @@ KickNode::KickNode(const std::string &ns) :
   engine_.setRobotState(current_state_);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
-  support_foot_publisher_ = node_handle_.advertise<bitbots_msgs::SupportState>("dynamic_kick_support_state", 1, /* latch = */ true);
+  support_foot_publisher_ =
+      node_handle_.advertise<bitbots_msgs::SupportState>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
   joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &KickNode::jointStateCallback, this);
@@ -196,24 +197,25 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
   /* Do the loop as long as nothing cancels it */
   double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    dt = getTimeDelta();
-    std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
-
-    /* Publish feedback to the client */
-    bitbots_msgs::KickFeedback feedback;
-    feedback.percent_done = engine_.getPercentDone();
-    feedback.chosen_foot = engine_.isLeftKick() ?
-                           bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
-    server_.publishFeedback(feedback);
-
-    if (feedback.percent_done >= 100) {
-      break;
-    }
-    joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
-
-    /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
-    loop_rate.sleep();
+    if (loop_rate.sleep()) {
+      dt = getTimeDelta();
+      std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
+
+      /* Publish feedback to the client */
+      bitbots_msgs::KickFeedback feedback;
+      feedback.percent_done = engine_.getPercentDone();
+      feedback.chosen_foot = engine_.isLeftKick() ?
+                             bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
+      server_.publishFeedback(feedback);
+
+      if (feedback.percent_done >= 100) {
+        break;
+      }
+      joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
+    } else {
+      sleep(0.0001);
+    }
   }
 }
 

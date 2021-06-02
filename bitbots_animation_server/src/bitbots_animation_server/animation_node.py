@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import time
 
 import actionlib
 import traceback
@@ -17,7 +18,7 @@ from sensor_msgs.msg import Imu, JointState
 from bitbots_animation_server.resource_manager import find_all_animations_by_name
 from humanoid_league_msgs.msg import RobotControlState
 from bitbots_animation_server.spline_animator import SplineAnimator
-
+from bitbots_ros_patches.rate import Rate
 
 class AnimationNode:
     def __init__(self):
@@ -93,8 +94,7 @@ class PlayAnimationAction(object):
 
         animator = self.get_animation_splines(self.current_animation)
         # start animation
-        rate = rospy.Rate(200)
-        start_time = rospy.get_time()
+        rate = Rate(500)
 
         while not rospy.is_shutdown() and animator:
             # first check if we have another goal

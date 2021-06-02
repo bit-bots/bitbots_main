@@ -7,6 +7,7 @@ from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import Imu, JointState
 
 from bitbots_hcm.training.dataset import Dataset, Frame
+from bitbots_ros_patches.rate import Rate
 
 imu = None
 joint_states = None
@@ -61,7 +62,7 @@ keyboard.add_hotkey('4', key_cb, args='4')
 keyboard.add_hotkey('s', key_cb, args='s')
 
 frequency = 200
-rate = rospy.Rate(frequency)
+rate = Rate(frequency)
 print("Press \'s\' top stop. 0,1,2,3,4 to label stable,front,back,left,right")
 while True:
     frame = Frame(rospy.Time.now(), joint_states=joint_states, imu=imu, cop_l=cop_left, cop_r=cop_right, image=None)
