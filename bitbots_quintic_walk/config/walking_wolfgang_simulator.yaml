@@ -41,12 +41,11 @@ walking:
     # -0.4
     max_step_x: 0.18
     # 0.12
-    max_step_y: 10.05
-
-    max_step_xy: 10.09
+    max_step_y: 0.11
+    max_step_xy: 0
     max_step_z: 10.05
     # 0.5
-    max_step_angular: 10.45
+    max_step_angular: 0.425
 
     x_speed_multiplier: 1.33
     y_speed_multiplier: 1.5
@@ -80,8 +79,8 @@ walking:
     publish_state: False
 
   pid_trunk_fused_roll:
-    p: 0.1
-    i: 01
+    p: 1.0
+    i: 0.1
     d: 0
     i_clamp: 0
     i_clamp_min: -1.0

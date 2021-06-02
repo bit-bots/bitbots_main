@@ -89,6 +89,7 @@ void WalkNode::run() {
 
   ros::Rate loop_rate(engine_frequency_);
   double dt;
+  WalkRequest last_request;
   while (ros::ok()) {
     ros::spinOnce();
     if (loop_rate.sleep()) {
@@ -106,6 +107,13 @@ void WalkNode::run() {
         current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
             robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
             robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+
+        // reset when we start walking, otherwise PID controller will use old I value
+        if((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0) &&
+           (current_request_.linear_orders.x() != 0 || current_request_.linear_orders.y() != 0 || current_request_.angular_z != 0)){
+          stabilizer_.reset();
+        }
+        last_request = current_request_;
 
         // perform all the actual calculations
         bitbots_msgs::JointCommand joint_goals = step(dt);
