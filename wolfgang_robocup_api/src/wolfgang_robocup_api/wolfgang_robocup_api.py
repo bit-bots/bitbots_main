@@ -8,6 +8,8 @@ import socket
 import rospy
 import rospkg
 import struct
+import copy
+from threading import Lock
 from urdf_parser_py.urdf import URDF
 
 from rosgraph_msgs.msg import Clock
@@ -75,6 +77,8 @@ class WolfgangRobocupApi():
         self.first_run = True
         self.published_camera_info = False
 
+        self.joint_command_mutex = Lock()
+
         self.run()
 
     def receive_msg(self):
@@ -119,7 +123,8 @@ class WolfgangRobocupApi():
         self.sub_joint_command = rospy.Subscriber(rospy.get_param('~joint_command_topic'), JointCommand, self.joint_command_cb, queue_size=1)
 
     def joint_command_cb(self, msg):
-        self.joint_command = msg
+        with self.joint_command_mutex:
+            self.joint_command = msg
 
     def get_connection(self, addr):
         host, port = addr.split(':')
@@ -402,18 +407,22 @@ class WolfgangRobocupApi():
         if sensor_time_steps is not None:
             actuator_requests.sensor_time_steps.extend(sensor_time_steps)
 
-        for i, name in enumerate(self.joint_command.joint_names):
+        # Makes this this thread safe
+        with self.joint_command_mutex:
+            joint_command = copy.deepcopy(self.joint_command)
+
+        for i, name in enumerate(joint_command.joint_names):
             motor_position = messages_pb2.MotorPosition()
             motor_position.name = self.joint_to_webots(name)
-            motor_position.position = self.joint_command.positions[i]
+            motor_position.position = joint_command.positions[i]
             actuator_requests.motor_positions.append(motor_position)
 
             motor_velocity = messages_pb2.MotorVelocity()
             motor_velocity.name = self.joint_to_webots(name)
-            if len(self.joint_command.velocities) == 0 or self.joint_command.velocities[i] == -1:
+            if len(joint_command.velocities) == 0 or joint_command.velocities[i] == -1:
                 motor_velocity.velocity = self.velocity_limits[name]
             else:
-                motor_velocity.velocity = self.joint_command.velocities[i]
+                motor_velocity.velocity = joint_command.velocities[i]
             actuator_requests.motor_velocities.append(motor_velocity)
 
         msg = actuator_requests.SerializeToString()
