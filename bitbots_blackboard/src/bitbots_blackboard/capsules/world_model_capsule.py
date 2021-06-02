@@ -33,8 +33,6 @@ class GoalRelative:
 
 class WorldModelCapsule:
     def __init__(self):
-        self.config = rospy.get_param("behavior/body")
-
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
@@ -53,7 +51,8 @@ class WorldModelCapsule:
         self.ball_map.header.stamp = rospy.Time(0)
         self.ball_map.header.frame_id = self.map_frame
         self.ball_twist_map = None
-        self.ball_twist_lost_time = rospy.Duration(self.config["ball_twist_lost_time"])
+        self.ball_twist_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_twist_lost_time', 2))
+        self.ball_twist_precision_threshold = rospy.get_param('behavior/body/ball_twist_precision_threshold', None)
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
@@ -153,13 +152,10 @@ class WorldModelCapsule:
     def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
         x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
         y_sdev = msg.twist.covariance[7]  # position 1,1 in a 6x6-matrix
-        if x_sdev > self.config['ball_twist_precision_threshold']['x_sdev'] or \
-           y_sdev > self.config['ball_twist_precision_threshold']['y_sdev']:
+        if x_sdev > self.ball_twist_precision_threshold['x_sdev'] or \
+           y_sdev > self.ball_twist_precision_threshold['y_sdev']:
             return
-        twist_stamped = TwistStamped()
-        twist_stamped.header = msg.header
-        twist_stamped.twist = msg.twist.twist
-        if twist_stamped.header.frame_id != self.map_frame:
+        if msg.header.frame_id != self.map_frame:
             try:
                 # point (0,0,0)
                 point_a = PointStamped()
@@ -174,8 +170,7 @@ class WorldModelCapsule:
                 point_a = self.tf_buffer.transform(point_a, self.map_frame, timeout=rospy.Duration(0.3))
                 point_b = self.tf_buffer.transform(point_b, self.map_frame, timeout=rospy.Duration(0.3))
                 # build new twist using transform vector
-                self.ball_twist_map = TwistStamped()
-                self.ball_twist_map.header = msg.header
+                self.ball_twist_map = TwistStamped(header=msg.header)
                 self.ball_twist_map.header.frame_id = self.map_frame
                 self.ball_twist_map.twist.linear.x = point_b.point.x - point_a.point.x
                 self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
@@ -183,7 +178,7 @@ class WorldModelCapsule:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
         else:
-            self.ball_twist_map = twist_stamped
+            self.ball_twist_map = TwistStamped(header=msg.header, twist=msg.twist.twist)
         self.ball_twist_publisher.publish(self.ball_twist_map)
 
     def forget_ball(self):
