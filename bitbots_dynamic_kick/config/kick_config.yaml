@@ -7,7 +7,7 @@ foot_rise: 0.08
 foot_distance: 0.2
 kick_windup_distance: 0.5
 trunk_height: 0.41
-trunk_roll: 0.237
+trunk_roll: 0.1
 trunk_pitch: -0.141
 trunk_yaw: 0.0611
 
