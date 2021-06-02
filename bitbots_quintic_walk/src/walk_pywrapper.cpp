@@ -259,6 +259,12 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
       dyn_conf.max_step_z = std::stof(valstr);
     } else if (keystr == "max_step_angular") {
       dyn_conf.max_step_angular = std::stof(valstr);
+    } else if (keystr == "x_speed_multiplier") {
+      dyn_conf.x_speed_multiplier = std::stof(valstr);
+    } else if (keystr == "y_speed_multiplier") {
+      dyn_conf.y_speed_multiplier = std::stof(valstr);
+    } else if (keystr == "yaw_speed_multiplier") {
+      dyn_conf.yaw_speed_multiplier = std::stof(valstr);
     } else {
       std::cout << keystr << " not known. WILL BE IGNORED\n";
     }
