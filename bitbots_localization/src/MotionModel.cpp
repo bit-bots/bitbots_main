@@ -12,11 +12,11 @@ RobotMotionModel::RobotMotionModel(
   double diffuse_multiplicator,
   Eigen::Matrix<double, 3, 2>  drift_cov
   ) : particle_filter::MovementModel<RobotState>(),
+      diffuse_multiplicator_(diffuse_multiplicator),
       random_number_generator_(random_number_generator),
       diffuse_xStdDev_(diffuse_xStdDev),
       diffuse_yStdDev_(diffuse_yStdDev),
       diffuse_tStdDev_(diffuse_tStdDev),
-      diffuse_multiplicator_(diffuse_multiplicator),
       drift_cov_(drift_cov) {
 
 }
