@@ -503,7 +503,10 @@ class WorldModelCapsule:
 
     def get_gradient_map_goal(self):
         position = self.get_ball_position_xy()
-        print(self.gardient_map[0].shape, min(90-1, max(0, int((position[0] + 4.5)) * 10)), int(min(60-1,max(0, (position[1] + 3)) * 10)), self.gardient_map[1][min(9, max(0, int((position[0] + 4.5)))) * 10, int(min(6,max(0, (position[1] + 3)) * 10))], self.gardient_map[0][min(9, max(0, int((position[0] + 4.5)))) * 10, int(min(6,max(0, (position[1] + 3)) * 10))])
+
+        x_map_point = int(min(90-1, max(0, (position[0] + 4.5) * 10)))
+        y_map_point = int(min(60-1,max(0, (position[1] + 3) * 10)))
+
         return math.atan2(
-            self.gardient_map[0][min(90-1, max(0, int((position[0] + 4.5)) * 10)), int(min(60-1,max(0, (position[1] + 3)) * 10))],
-            -self.gardient_map[1][min(90-1, max(0, int((position[0] + 4.5)) * 10)), int(min(60-1,max(0, (position[1] + 3)) * 10))])
+            -self.gardient_map[1][x_map_point, y_map_point],
+            -self.gardient_map[0][x_map_point, y_map_point])

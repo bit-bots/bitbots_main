@@ -30,7 +30,7 @@ class GoToBall(AbstractActionElement):
     def perform(self, reevaluate=False):
 
         if 'map_goal' == self.target:
-            goal_angle = self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball()  # self.blackboard.world_model.get_gradient_map_goal()
+            goal_angle = self.blackboard.world_model.get_gradient_map_goal()
 
             ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
 
