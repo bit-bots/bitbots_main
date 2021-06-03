@@ -68,7 +68,7 @@ class ObstaclePublisher:
         # Clear robots that are close together
         for i_a, robot_a in enumerate(self.robots):
             for i_b, robot_b in enumerate(self.robots):
-                # Check that its the same robot instance and if there is another robot im memory close to it
+                # Check that its not the same robot instance and if there is another robot in memory close to it
                 if robot_a != robot_b and np.linalg.norm(ros_numpy.numpify(robot_a.point) - ros_numpy.numpify(robot_b.point)) < self.robot_merge_distance:
                     if robot_a.header.stamp > robot_b.header.stamp:
                         del self.robots[i_b]
