@@ -8,6 +8,8 @@ import math
 import ros_numpy
 import numpy as np
 from scipy.ndimage import gaussian_filter
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
 
 import rospy
 import tf2_ros as tf2
@@ -82,6 +84,8 @@ class WorldModelCapsule:
         self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
 
         self.local_obstacle_map = None
+
+        self.calc_gradient_map()
 
     ############
     ### Ball ###
@@ -431,8 +435,75 @@ class WorldModelCapsule:
             round((point.point.y - self.local_obstacle_map.info.origin.position.y) / self.local_obstacle_map.info.resolution))
 
         try:
-            print(numpy_map[costmap_y, costmap_x].mean(), numpy_map[costmap_y, costmap_x], costmap_y, costmap_x)
             return numpy_map[costmap_y, costmap_x].mean()
         except IndexError as e:
             rospy.logwarn("Index out of range while accessing local costmap!")
             return 0.0
+
+
+    def calc_gradient_map(self):
+
+        goal_width = rospy.get_param("goal_width", 2)
+        field_width = rospy.get_param("field_width", 6)
+        field_length = rospy.get_param("field_length", 9)
+        goal_factor = 0.5
+        keep_out_border = 0.2
+        in_field_value_x = 0.5
+        in_field_value_y = 0.2
+
+        # Create Grid
+        grid_x, grid_y = np.mgrid[0:field_length:field_length*10j, 0:field_width:field_width*10j]
+
+        fix_points = []
+
+        # Add base points
+        fix_points.extend([
+            # Corner points of the field
+            [[0,            0],             [1,   1]],
+            [[field_length, 0],             [1,   1]],
+            [[0,            field_width],   [1,   1]],
+            [[field_length, field_width],   [1,   1]],
+            # Points in the field that pull the gradient down, so we dont play allways in the middle
+            [[keep_out_border,                  keep_out_border],                 [in_field_value_x,  0]],
+            [[field_length - keep_out_border,   keep_out_border],                 [0.1,  0]],
+            [[keep_out_border,                  field_width - keep_out_border],   [in_field_value_x,  0]],
+            [[field_length - keep_out_border,   field_width - keep_out_border],   [0.1,  0]]
+        ])
+
+        # Add goal area (including the dangerous parts on the side of the goal)
+        fix_points.extend([
+            [[field_length, field_width/2 - goal_width/2],                 [0,   0]],
+            [[field_length, field_width/2 - goal_width/2 + goal_factor],   [0,   0]],
+            [[field_length, field_width/2 + goal_width/2 - goal_factor],   [0,   0]],
+            [[field_length, field_width/2 + goal_width/2],                 [0,   0]],
+        ])
+
+        interpolated_x = griddata([p[0] for p in fix_points], [p[1][0] for p in fix_points], (grid_x, grid_y), method='linear')
+        interpolated_y = griddata([p[0] for p in fix_points], [p[1][1] for p in fix_points], (grid_x, grid_y), method='linear')
+
+        combined_costmap = (interpolated_x + interpolated_y) / 2
+
+        combined_costmap = gaussian_filter(combined_costmap, 2)
+
+        gradient = np.gradient(combined_costmap)
+        norms = np.linalg.norm(gradient,axis=0)
+        gradient = [np.where(norms==0,0,i/norms) for i in gradient]
+
+        self.gardient_map = gradient
+        #return
+        # Viz
+        plt.quiver(grid_x, grid_y, -gradient[0], -gradient[1])
+        plt.show()
+        plt.imshow(combined_costmap.T, origin='lower')
+        plt.show()
+        plt.imshow(interpolated_x.T, origin='lower')
+        plt.show()
+        plt.imshow(interpolated_y.T, origin='lower')
+        plt.show()
+
+    def get_gradient_map_goal(self):
+        position = self.get_ball_position_xy()
+        print(self.gardient_map[0].shape, min(90-1, max(0, int((position[0] + 4.5)) * 10)), int(min(60-1,max(0, (position[1] + 3)) * 10)), self.gardient_map[1][min(9, max(0, int((position[0] + 4.5)))) * 10, int(min(6,max(0, (position[1] + 3)) * 10))], self.gardient_map[0][min(9, max(0, int((position[0] + 4.5)))) * 10, int(min(6,max(0, (position[1] + 3)) * 10))])
+        return math.atan2(
+            self.gardient_map[0][min(90-1, max(0, int((position[0] + 4.5)) * 10)), int(min(60-1,max(0, (position[1] + 3)) * 10))],
+            -self.gardient_map[1][min(90-1, max(0, int((position[0] + 4.5)) * 10)), int(min(60-1,max(0, (position[1] + 3)) * 10))])
