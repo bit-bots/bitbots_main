@@ -5,6 +5,9 @@ WorldModelCapsule
 Provides information about the world model.
 """
 import math
+import ros_numpy
+import numpy as np
+from scipy.ndimage import gaussian_filter
 
 import rospy
 import tf2_ros as tf2
@@ -77,6 +80,8 @@ class WorldModelCapsule:
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
         self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
+
+        self.local_obstacle_map = None
 
     ############
     ### Ball ###
@@ -390,3 +395,44 @@ class WorldModelCapsule:
         u, v = self.get_uv_from_xy(x, y)
         dist = math.sqrt(u ** 2 + v ** 2)
         return dist
+
+    ############
+    # Obstacle #
+    ############
+
+    def local_costmap_callback(self, msg):
+        self.local_obstacle_map = msg
+
+    def obstacle_value_at_relative_xy(self, x, y, area=1):
+        if self.local_obstacle_map is None:
+            return 0.0
+
+        point = PointStamped()
+        point.header.stamp = self.local_obstacle_map.header.stamp
+        point.header.frame_id = self.base_footprint_frame
+        point.point.x = x
+        point.point.y = y
+
+
+        try:
+            # Transform point of interest to odom
+            point = self.tf_buffer.transform(point, self.odom_frame, timeout=rospy.Duration(0.3))
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return 0.0
+
+        numpy_map = ros_numpy.numpify(self.local_obstacle_map)
+
+        numpy_map = gaussian_filter(numpy_map, 5)
+
+        costmap_x = int(
+            round((point.point.x - self.local_obstacle_map.info.origin.position.x) / self.local_obstacle_map.info.resolution))
+        costmap_y = int(
+            round((point.point.y - self.local_obstacle_map.info.origin.position.y) / self.local_obstacle_map.info.resolution))
+
+        try:
+            print(numpy_map[costmap_y, costmap_x].mean(), numpy_map[costmap_y, costmap_x], costmap_y, costmap_x)
+            return numpy_map[costmap_y, costmap_x].mean()
+        except IndexError as e:
+            rospy.logwarn("Index out of range while accessing local costmap!")
+            return 0.0
