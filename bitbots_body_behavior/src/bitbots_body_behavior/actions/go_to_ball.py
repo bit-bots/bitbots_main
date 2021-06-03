@@ -29,13 +29,23 @@ class GoToBall(AbstractActionElement):
 
     def perform(self, reevaluate=False):
 
-        if 'map_goal' == self.target:
+        if 'gradient_goal' == self.target:
             goal_angle = self.blackboard.world_model.get_gradient_map_goal()
 
             ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
 
-            #if abs(ball_y) < self.goal_width / 2:
-            #    goal_angle = 0
+            goal_x = ball_x - math.cos(goal_angle) * self.distance
+            goal_y = ball_y - math.sin(goal_angle) * self.distance
+
+            ball_point = (goal_x, goal_y, goal_angle, self.blackboard.map_frame)
+
+        if 'map_goal' == self.target:
+            goal_angle = self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
+
+            ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
+
+            if abs(ball_y) < self.goal_width / 2:
+                goal_angle = 0
 
             goal_x = ball_x - math.cos(goal_angle) * self.distance
             goal_y = ball_y - math.sin(goal_angle) * self.distance
