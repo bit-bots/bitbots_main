@@ -48,6 +48,17 @@ class RosoutAssertionMixinTestCase(RosNodeTestCase):
         self.assertRaises(AssertionError, lambda: self.assertNotRosLogs(node=rospy.get_name()))
         self.assertNotRosLogs(node="/non_existing")
 
+    def test_assert_no_negative_ros_logs(self):
+        # assert when nothing was published
+        self.assertNoNegativeRosLogs()
+
+        # execute
+        rospy.logerr("evil error")
+        self.with_assertion_grace_period(self.assertRosLogs, t=1000)
+
+        # assert when something was published
+        self.assertRaises(AssertionError, self.assertNoNegativeRosLogs)
+
 
 if __name__ == "__main__":
     from bitbots_test import run_rostests

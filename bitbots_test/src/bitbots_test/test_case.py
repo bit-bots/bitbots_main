@@ -13,7 +13,7 @@ import gazebo_msgs.msg
 from datetime import datetime, timedelta
 from unittest.case import TestCase as BaseTestCase
 from xmlrpc.client import ServerProxy
-
+from deprecated.sphinx import versionadded
 from transforms3d.euler import quat2euler
 
 
@@ -143,12 +143,15 @@ class RosLogAssertionMixins:
                                                                      i_msg.msg) is not None and i_msg.level in level:
                 raise AssertionError(f"Roslog entry {i_msg} was logged")
 
+    @versionadded(version="1.1.0")
     def assertNoNegativeRosLogs(self, node: str = r'.*', msg: str = r'.*'):
         """
-        Wrapper for assertNotRosLogs. Asserts that no warnings, errors or fatals are produced.
-        :param node: A regex which is matched against a roslog entries originating node
+        Asserts that no warnings, errors or fatals are produced.
+
+        :param node: A regex which is matched against a roslog entries originating node.
+            If defined, only that node is asserted to not having logged anything negative.
         :param msg: A regex which is matched against a roslog entries content
-        :return:
+            If defined, it is only asserted that no message matching this regex was logged as warning or higher.
         """
         self.assertNotRosLogs(node=node, msg=msg, level=[LogMsg.WARN, LogMsg.ERROR, LogMsg.FATAL])
 
