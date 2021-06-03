@@ -168,6 +168,20 @@ bitbots_splines:
   debian: *bitbots_splines
   fedora: *bitbots_splines
 
+bitbots_localization:
+  ubuntu: &bitbots_localization
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_navigation/master/bitbots_localization/.rdmanifest
+  debian: *bitbots_localization
+  fedora: *bitbots_localization
+
+bitbots_move_base:
+  ubuntu: &bitbots_move_base
+    source:
+      uri: https://raw.githubusercontent.com/bit-bots/bitbots_navigation/master/bitbots_move_base/.rdmanifest
+  debian: *bitbots_move_base
+  fedora: *bitbots_move_base
+
 white_balancer:
   ubuntu: &white_balancer
     source:
