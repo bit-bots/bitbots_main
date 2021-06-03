@@ -3,6 +3,7 @@ PyYAML
 breathe
 construct
 defusedxml
+deprecated
 filterpy
 matplotlib
 numpy
