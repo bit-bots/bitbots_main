@@ -6,6 +6,8 @@ ObstaclePublisher
 This node publishes the ball and other obstacles as an obstacle to avoid walking through it
 """
 import rospy
+import ros_numpy
+import numpy as np
 import tf2_ros as tf2
 import tf2_geometry_msgs
 from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray
@@ -43,6 +45,7 @@ class ObstaclePublisher:
         self.robots = []
 
         self.robots_storage_time = 10
+        self.robot_merge_distance = 0.5
 
         rospy.spin()
 
@@ -61,6 +64,16 @@ class ObstaclePublisher:
         self.robots = list(filter(
             lambda robot: abs((rospy.Time.now() - robot.header.stamp).to_sec()) < self.robots_storage_time,
             self.robots))
+
+        # Clear robots that are close together
+        for i_a, robot_a in enumerate(self.robots):
+            for i_b, robot_b in enumerate(self.robots):
+                # Check that its not the same robot instance and if there is another robot in memory close to it
+                if robot_a != robot_b and np.linalg.norm(ros_numpy.numpify(robot_a.point) - ros_numpy.numpify(robot_b.point)) < self.robot_merge_distance:
+                    if robot_a.header.stamp > robot_b.header.stamp:
+                        del self.robots[i_b]
+                    else:
+                        del self.robots[i_a]
 
         # Enlarge robots
         width = 0.1
