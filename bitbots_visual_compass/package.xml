@@ -22,7 +22,7 @@
   <depend>message_runtime</depend>
   <depend>message_generation</depend>
   <depend>dynamic_reconfigure</depend>
-  <depend>beignet</depend>
+  <depend>beignet-dev</depend>
   <depend>tf2</depend>
   <depend>tf_conversions</depend>
   <depend>humanoid_league_msgs</depend>

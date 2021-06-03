@@ -1,0 +1,21 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_move_base'
+depends:
+- base_local_planner
+- bitbots_docs
+- gazebo_msgs
+- humanoid_league_msgs
+- message_generation
+- message_runtime
+- move_base
+- rospy
+- spatio_temporal_voxel_layer
+- std_msgs
+exec-path: bitbots_navigation-master/bitbots_move_base
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_move_base'
+uri: https://github.com/bit-bots/bitbots_navigation/archive/refs/heads/master.tar.gz
