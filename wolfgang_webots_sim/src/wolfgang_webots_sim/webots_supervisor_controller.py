@@ -3,7 +3,7 @@ from controller import Supervisor
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetObjectPose, SetRobotPoseResponse, SetObjectPosition, SetObjectPositionResponse
+from bitbots_msgs.srv import SetObjectPose, SetObjectPoseResponse, SetObjectPosition, SetObjectPositionResponse
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty, EmptyResponse
@@ -131,7 +131,7 @@ class SupervisorController:
         self.reset_robot_pose([req.pose.position.x, req.pose.position.y, req.pose.position.z],
                               [req.pose.orientation.x, req.pose.orientation.y, req.pose.orientation.z,
                                req.pose.orientation.w], req.object_name)
-        return SetRobotPoseResponse()
+        return SetObjectPoseResponse()
 
     def reset_ball(self, req=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
