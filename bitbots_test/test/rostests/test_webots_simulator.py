@@ -16,10 +16,13 @@ class TestSimulationSupervisorControls(WebotsTestCase):
         self.reset_simulation()
 
     @error2failure
-    def test_set_robot_position(self):
+    def test_set_robot_pose(self):
         # execution
         original_pose = self.get_robot_pose()
-        self.set_robot_position(geometry_msgs.msg.Point(x=original_pose.position.x, y=0, z=original_pose.position.z))
+        self.set_robot_pose(geometry_msgs.msg.Pose(
+            position=geometry_msgs.msg.Point(x=original_pose.position.x, y=0, z=original_pose.position.z),
+            orientation=original_pose.orientation
+        ))
 
         # verification
         self.assertRaises(AssertionError, lambda: self.assertRobotPosition(original_pose.position))

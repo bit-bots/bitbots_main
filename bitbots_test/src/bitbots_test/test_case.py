@@ -13,7 +13,7 @@ import gazebo_msgs.msg
 from datetime import datetime, timedelta
 from unittest.case import TestCase as BaseTestCase
 from xmlrpc.client import ServerProxy
-from deprecated.sphinx import versionadded
+from deprecated.sphinx import deprecated
 from transforms3d.euler import quat2euler
 
 
@@ -143,7 +143,6 @@ class RosLogAssertionMixins:
                                                                      i_msg.msg) is not None and i_msg.level in level:
                 raise AssertionError(f"Roslog entry {i_msg} was logged")
 
-    @versionadded(version="1.1.0")
     def assertNoNegativeRosLogs(self, node: str = r'.*', msg: str = r'.*'):
         """
         Asserts that no warnings, errors or fatals are produced.
@@ -322,11 +321,19 @@ class WebotsTestCase(RosNodeTestCase):
                     if start_time + timeout < time.time():
                         raise TimeoutError("timed out waiting for new model states")
 
-    def set_robot_pose(self, pose: Optional[geometry_msgs.msg.Pose] = None, robot_name: str = "amy"):
+    @deprecated(reason="replaced by :func:`set_robot_pose`", version="1.1.0")
+    def set_robot_position(self, position: Optional[geometry_msgs.msg.Point] = None, robot_name: str = "amy"):
         """
         Set the robot position in simulator
+        """
+        self.set_robot_pose(geometry_msgs.msg.Pose(position=position, orientation=geometry_msgs.msg.Quaternion(w=1)),
+                            robot_name)
 
-        :param robot_name: Name of the robot whose position should be set.
+    def set_robot_pose(self, pose: Optional[geometry_msgs.msg.Pose] = None, robot_name: str = "amy"):
+        """
+        Set the robot pose in simulator
+
+        :param robot_name: Name of the robot whose pose should be set.
             Defaults to amy which is the only robot in single-robot simulations
         :param pose: Pose to which the robot should be teleported.
             If None, resets the robot to its original pose
