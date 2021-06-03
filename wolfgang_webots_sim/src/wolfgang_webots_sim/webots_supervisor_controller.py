@@ -104,6 +104,9 @@ class SupervisorController:
         else:
             self.world_info.getField("gravity").setSFFloat(0)
 
+    def set_self_collision(self, active, name="amy"):
+        self.robot_nodes[name].getField("selfCollision").setSFBool(active)
+
     def reset_robot_pose(self, pos, quat, name="amy"):
         self.set_robot_pose_quat(pos, quat, name)
         if name in self.robot_nodes:
