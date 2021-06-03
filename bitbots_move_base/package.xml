@@ -23,6 +23,7 @@
   <depend>move_base</depend>
   <depend>base_local_planner</depend>
   <depend>spatio_temporal_voxel_layer</depend>
+  <depend>ros_numpy</depend>
   <depend>bitbots_docs</depend>
 
   <export>
