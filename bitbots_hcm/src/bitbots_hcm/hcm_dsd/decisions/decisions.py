@@ -30,7 +30,7 @@ class StartHCM(AbstractDecisionElement):
         """
         We check if any joint is has an offset from the walkready pose which is higher than a threshold
         """
-        if self.blackboard.current_joint_state is None:
+        if self.blackboard.current_joint_state is None or self.blackboard.current_joint_state == []:
             return False
         i = 0
         for joint_name in self.blackboard.current_joint_state.name:

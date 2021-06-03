@@ -670,6 +670,9 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   } else if (goals.direction == "back_only") {
     duration_ = calcBackSplines();
     direction_ = 5;
+  } else if (goals.direction == "walkready") {
+    duration_ = calcRiseSplines(params_.time_walkready);
+    direction_ = 6;
   } else {
     ROS_ERROR("Provided direction not known");
   }
