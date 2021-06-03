@@ -58,7 +58,8 @@ $LocalizationAvailable
                 YES --> #Positioning
                 NO --> $BallSeen
                     YES --> $BallDangerous
-                        YES --> #GoAndKickBallMapGoal
+                        LEFT --> @Stop, @PlayAnimationGoalieFallLeft
+                        RIGHT --> @Stop, @PlayAnimationGoalieFallRight
                         NO --> @GoToBlockPosition, @LookAtFieldFeatures
                     NO --> @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause

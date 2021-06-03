@@ -10,8 +10,12 @@ class BallDangerous(AbstractDecisionElement):
         """"
         Determines whether the position is in the dangerous area (in a radius close to the goal)
         """
-        if self._in_dangerous_area(self.blackboard.world_model.get_ball_position_xy()):
-            return 'YES'
+        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        if self._in_dangerous_area(ball_position):
+            robot_position = self.blackboard.world_model.get_current_position()
+            if ball_position[1] > robot_position[1]:
+                return 'LEFT'
+            return 'RIGHT'
         return 'NO'
 
     def _in_dangerous_area(self, position):
@@ -27,6 +31,8 @@ class BallDangerous(AbstractDecisionElement):
         if abs(position[1]) <= (self.blackboard.world_model.goal_width / 2 + self.goal_radius):
             return True
         return False
+
+
 
     def get_reevaluate(self):
         return True

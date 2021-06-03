@@ -17,6 +17,8 @@ Animations:
     throwLeft: ""
     throwRight: ""
     throwMiddle: ""
+    fallLeft: "goalie_falling_left"
+    fallRight: "goalie_falling_right"
 
   Penalty:
     # Penalty kicks to the left/right
