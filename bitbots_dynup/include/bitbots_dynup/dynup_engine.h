@@ -37,6 +37,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   int getPercentDone() const override;
 
+  double getDuration() const;
+
   bool isStabilizingNeeded() const;
 
   bool isHeadZero() const;

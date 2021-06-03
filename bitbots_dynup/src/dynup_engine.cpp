@@ -682,6 +682,10 @@ int DynupEngine::getPercentDone() const {
   return int(time_ / duration_ * 100);
 }
 
+double DynupEngine::getDuration() const{
+  return duration_;
+}
+
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice
 bool DynupEngine::isStabilizingNeeded() const {
   return ((direction_ == 1 && time_ >= params_.time_hands_side +
