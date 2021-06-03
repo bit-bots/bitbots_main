@@ -63,8 +63,6 @@ class KickBallDynamic(AbstractKickAction):
                 goal.ball_position.y = ball_v
                 goal.ball_position.z = 0
 
-                #rospy.logerr((self.blackboard.world_model.obstacle_value_at_relative_xy(1, 0, 2), self.blackboard.world_model.obstacle_value_at_relative_xy(0.5, -0.5, 2), self.blackboard.world_model.obstacle_value_at_relative_xy(0.5, 0.5, 2)))
-
                 check_positions = [(1, 0), (0, -1), (0, 1)]
                 kick_directions = [0, -1.2, 1.2]
 
