@@ -5,3 +5,9 @@
 beignet-dev:
   ubuntu: beignet-dev
   debian: beignet-dev
+
+python3-deprecated:
+  ubuntu:
+    pip:
+      packages: [deprecated]
+  debian: [python3-deprecated]

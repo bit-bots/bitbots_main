@@ -1,6 +1,6 @@
 <package format="2">
   <name>bitbots_test</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>
     Used in our other packages to provide common testing functionality and utility like test-discovery and assertion
     helpers for working with ROS.
@@ -21,6 +21,7 @@
   <depend>rosunit</depend>
   <depend>rosgraph</depend>
   <depend>rosgraph_msgs</depend>
+  <depend>python3-deprecated</depend>
 
   <test_depend>boost</test_depend>
   <test_depend>python3-hypothesis</test_depend>
