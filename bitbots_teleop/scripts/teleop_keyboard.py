@@ -88,8 +88,13 @@ w/s: forward/back       j/l: left/right
 Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
 
-y: kick left    Y: walk kick left
-c: kick right   C: walk kick right
+y: kick left forward   Y: walk kick left forward
+c: kick right forward  C: walk kick right forward
+<: side kick left 1    >: side kick left 2
+v: side kick right 1   V: side kick right 2
+x: kick center forward X: kick center backward
+b: kick left backward  n: kick right backward
+B: kick left outward   N: kick right outward
 
 f: play walkready animation
 r: reset robot in simulation
@@ -198,25 +203,18 @@ if __name__ == "__main__":
 
     print(msg)
 
-    goal_left = KickGoal()
-    goal_left.header.stamp = rospy.Time.now()
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
-    goal_left.header.frame_id = frame_prefix + "base_footprint"
-    goal_left.ball_position.x = 0.2
-    goal_left.ball_position.y = 0.1
-    goal_left.ball_position.z = 0
-    goal_left.kick_direction = Quaternion(*quaternion_from_euler(0, 0, 0))
-    goal_left.kick_speed = 1
+    def generate_kick_goal(x, y, direction):
+        kick_goal = KickGoal()
+        kick_goal.header.stamp = rospy.Time.now()
+        kick_goal.header.frame_id = frame_prefix + "base_footprint"
+        kick_goal.ball_position.x = x
+        kick_goal.ball_position.y = y
+        kick_goal.ball_position.z = 0
+        kick_goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, direction))
+        kick_goal.kick_speed = 1
+        return kick_goal
 
-    goal_right = KickGoal()
-    goal_right.header.stamp = rospy.Time.now()
-    frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
-    goal_right.header.frame_id = frame_prefix + "base_footprint"
-    goal_right.ball_position.x = 0.2
-    goal_right.ball_position.y = -0.1
-    goal_right.ball_position.z = 0
-    goal_right.kick_direction = Quaternion(*quaternion_from_euler(0, 0, 0))
-    goal_right.kick_speed = 1
 
     client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
 
@@ -241,11 +239,41 @@ if __name__ == "__main__":
                 head_msg.positions[1] = 0
                 head_pub.publish(head_msg)
             elif key == 'y':
-                # kick left
-                client.send_goal(goal_left)
+                # kick left forward
+                client.send_goal(generate_kick_goal(0.2, 0.1, 0))
+            elif key == '<':
+                # kick left side ball left
+                client.send_goal(generate_kick_goal(0.2, 0.1, -1.57))
+            elif key == '>':
+                # kick left side ball center
+                client.send_goal(generate_kick_goal(0.2, 0, -1.57))
             elif key == 'c':
-                # kick right
-                client.send_goal(goal_right)
+                # kick right forward
+                client.send_goal(generate_kick_goal(0.2, -0.1, 0))
+            elif key == 'v':
+                # kick right side ball right
+                client.send_goal(generate_kick_goal(0.2, -0.1, 1.57))
+            elif key == 'V':
+                # kick right side ball center
+                client.send_goal(generate_kick_goal(0.2, 0, 1.57))
+            elif key == "x":
+                # kick center forward
+                client.send_goal(generate_kick_goal(0.2, 0, 0))
+            elif key == "X":
+                # kick center backwards
+                client.send_goal(generate_kick_goal(-0.2, 0, 0))
+            elif key == "b":
+                # kick left backwards
+                client.send_goal(generate_kick_goal(-0.2, 0.1, 0))
+            elif key == "n":
+                # kick right backwards
+                client.send_goal(generate_kick_goal(-0.2, -0.1, 0))
+            elif key == "B":
+                # kick left backwards
+                client.send_goal(generate_kick_goal(0, 0.14, -1.57))
+            elif key == "N":
+                # kick right backwards
+                client.send_goal(generate_kick_goal(0, -0.14, 1.57))
             elif key == 'Y':
                 # kick left walk
                 walk_kick_pub.publish(False)
