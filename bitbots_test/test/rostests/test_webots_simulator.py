@@ -36,6 +36,20 @@ class TestSimulationSupervisorControls(WebotsTestCase):
         self.assertIsNotNone(pose)
         self.assertRobotPosition(pose.position)
 
+    @error2failure
+    def test_set_ball_position(self):
+        # setup
+        original_position = self.get_ball_position()
+
+        # execution
+        self.set_ball_position(geometry_msgs.msg.Point(x=original_position.x, y=original_position.y + 1, z=original_position.z))
+
+        # verification
+        new_position = self.get_ball_position()
+        self.assertInRange(new_position.x, (original_position.x - 0.2, original_position.x + 0.2))
+        self.assertInRange(new_position.z, (original_position.z - 0.2, original_position.z + 0.2))
+        self.assertNotInRange(new_position.y, (original_position.y - 0.2, original_position.y + 0.2))
+
 
 if __name__ == "__main__":
     from bitbots_test import run_rostests

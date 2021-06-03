@@ -349,10 +349,8 @@ class WebotsTestCase(RosNodeTestCase):
         """
         Set the ball position in simulator
 
-        :param robot_name: Name of the robot whose position should be set.
-            Defaults to amy which is the only robot in single-robot simulations
-        :param position: Position to which the robot should be teleported.
-            If None, resets the robot to its original pose
+        :param position: Position to which the ball should be teleported.
+            If None, resets it to its original pose
         """
         if position:
             self._svc_set_ball_position(position)
@@ -381,8 +379,14 @@ class WebotsTestCase(RosNodeTestCase):
     def get_ball_position(self) -> geometry_msgs.msg.Point:
         return self.get_robot_pose("ball").position
 
-    def assertRobotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *, threshold: float = 0.5,
-                            x_threshold: float = None, y_threshold: float = None, z_threshold: float = None):
+    def assertRobotPosition(self,
+                            position: geometry_msgs.msg.Point,
+                            robot_name: str = "amy",
+                            *,
+                            threshold: float = 0.5,
+                            x_threshold: float = None,
+                            y_threshold: float = None,
+                            z_threshold: float = None):
         """
         Assert that a robot is at the specified position or at least close to it.
 
@@ -408,27 +412,6 @@ class WebotsTestCase(RosNodeTestCase):
         except AssertionError:
             raise AssertionError(
                 f"robot is not at (or close to) position:\n{position}\nActual position is:\n{real_position}")
-
-    def assertRobotPose(self, pose: geometry_msgs.msg.Pose, robot_name: str = "amy", *, lin_threshold: float = 0.5,
-                        x_threshold: float = None, y_threshold: float = None, z_threshold: float = None,
-                        ang_threshold: float = math.tau / 8, roll_threshold: float = None,
-                        pitch_threshold: float = math.tau / 8, yaw_threshold: float = None):
-        self.assertRobotPosition(position=pose.position, robot_name=robot_name, threshold=lin_threshold,
-                                 x_threshold=x_threshold, y_threshold=y_threshold, z_threshold=z_threshold)
-        roll_threshold = roll_threshold if roll_threshold else ang_threshold
-        pitch_threshold = pitch_threshold if pitch_threshold else ang_threshold
-        yaw_threshold = yaw_threshold if yaw_threshold else ang_threshold
-        real_orientation = self.get_robot_pose().orientation
-        real_rpy = quat2euler(real_orientation.w, real_orientation.x, real_orientation.y, real_orientation.z)
-        goal_rpy = quat2euler(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z)
-
-        try:
-            self.assertInRange(goal_rpy[0], (real_rpy[0] - roll_threshold, real_rpy[0] + roll_threshold))
-            self.assertInRange(goal_rpy[1], (real_rpy[1] - pitch_threshold, real_rpy[1] + pitch_threshold))
-            self.assertInRange(goal_rpy[2], (real_rpy[2] - yaw_threshold, real_rpy[2] + yaw_threshold))
-        except AssertionError:
-            raise AssertionError(
-                f"Robot pose is not at (or close to) pose:\n{pose}\n Actual pose is:\n{real_orientation}")
 
     def assertRobotNotPosition(self, position: geometry_msgs.msg.Point, robot_name: str = "amy", *,
                                threshold: float = 0.5, x_threshold: float = None, y_threshold: float = None,
@@ -458,6 +441,62 @@ class WebotsTestCase(RosNodeTestCase):
         if not (x_far or y_far or z_far):
             raise AssertionError(
                 f"robot is to close to position:\n{position}\nActual position is:\n{real_position}")
+
+    def assertRobotPose(self,
+                        pose: geometry_msgs.msg.Pose,
+                        robot_name: str = "amy",
+                        *,
+                        lin_threshold: float = 0.5,
+                        x_threshold: float = None,
+                        y_threshold: float = None,
+                        z_threshold: float = None,
+                        ang_threshold: float = math.tau / 8,
+                        roll_threshold: float = None,
+                        pitch_threshold: float = None,
+                        yaw_threshold: float = None):
+        """
+        Assert that a robot is in a specified pose or at least close to it.
+
+        Use :func:`assertRobotPosition` if only a position assertion is needed since it is way simpler.
+
+        :param pose: Absolute pose in webots coordinates in which the robot should be.
+        :param robot_name: The robot whose pose should be verified.
+            Defaults to amy which is the only robot in single-robot simulations.
+        :param lin_threshold: Threshold which defines the amount of linear (position) derivation from the specified
+            position that is still allowed.
+            By default this means equal allowed derivation in all three axes although each axis can be overwritten by
+            the axis-specific argument.
+        :param x_threshold: Maximum allowed derivation from the position on the x axis
+        :param y_threshold: Maximum allowed derivation from the position on the y axis
+        :param z_threshold: Maximum allowed derivation from the position on the z axis
+        :param ang_threshold: Threshold which defines the amount of angular (rotation) derivation in radians from
+            the specified rotation that is still allowed.
+            By default this means equal allowed derivation in all three rotations although each rotation can be
+            overwritten by the specific argument.
+        :param roll_threshold: Maximum allowed roll derivation
+        :param pitch_threshold: Maximum allowed pitch derivation
+        :param yaw_threshold: Maximum allowed yaw derivation
+        """
+        # set defaults
+        roll_threshold = roll_threshold if roll_threshold else ang_threshold
+        pitch_threshold = pitch_threshold if pitch_threshold else ang_threshold
+        yaw_threshold = yaw_threshold if yaw_threshold else ang_threshold
+
+        # calculate rpy values from quaternions
+        real_orientation = self.get_robot_pose().orientation
+        real_rpy = quat2euler(real_orientation.w, real_orientation.x, real_orientation.y, real_orientation.z)
+        goal_rpy = quat2euler(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z)
+
+        # assert pose
+        try:
+            self.assertRobotPosition(position=pose.position, robot_name=robot_name, threshold=lin_threshold,
+                                     x_threshold=x_threshold, y_threshold=y_threshold, z_threshold=z_threshold)
+            self.assertInRange(goal_rpy[0], (real_rpy[0] - roll_threshold, real_rpy[0] + roll_threshold))
+            self.assertInRange(goal_rpy[1], (real_rpy[1] - pitch_threshold, real_rpy[1] + pitch_threshold))
+            self.assertInRange(goal_rpy[2], (real_rpy[2] - yaw_threshold, real_rpy[2] + yaw_threshold))
+        except AssertionError:
+            raise AssertionError(
+                f"Robot pose is not at (or close to) target pose:\n{pose}\nActual pose:\n{real_orientation}")
 
     def assertRobotStanding(self, robot_name: str = "amy"):
         """
