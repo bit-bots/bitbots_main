@@ -428,7 +428,7 @@ class WorldModelCapsule:
         gradient = np.gradient(self.base_costmap)
         norms = np.linalg.norm(gradient,axis=0)
         gradient = [np.where(norms==0,0,i/norms) for i in gradient]
-        self.gardient_map = gradient
+        self.gradient_map = gradient
 
     def cost_at_relative_xy(self, x, y):
         if self.costmap is None:
@@ -515,7 +515,7 @@ class WorldModelCapsule:
         field_length = rospy.get_param("field_length", 9)
         x_map = int(min((field_length * 10)-1, max(0, (x + field_length / 2) * 10)))
         y_map = int(min((field_width * 10)-1,max(0, (y + field_width / 2) * 10)))
-        return -self.gardient_map[0][x_map, y_map], -self.gardient_map[1][x_map, y_map]
+        return -self.gradient_map[0][x_map, y_map], -self.gradient_map[1][x_map, y_map]
 
     def get_cost_at_field_position(self, x, y):
         """
@@ -551,7 +551,7 @@ class WorldModelCapsule:
             grid_x, grid_y = np.mgrid[0:field_length:field_length*10j, 0:field_width:field_width*10j]
             plt.imshow(self.costmap.T, origin='lower')
             plt.show()
-            plt.quiver(grid_x, grid_y, -self.gardient_map[0], -self.gardient_map[1])
+            plt.quiver(grid_x, grid_y, -self.gradient_map[0], -self.gradient_map[1])
             plt.show()
         grad = self.get_gradient_at_field_position(x, y)
         return math.atan2(grad[1], grad[0])
