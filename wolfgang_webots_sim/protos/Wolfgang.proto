@@ -1618,8 +1618,8 @@ PROTO Wolfgang [
                   HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
-                    position 0.12
                     jointParameters HingeJointParameters {
+                      position 0.12
                       axis -1.000000 -0.000004 0.000004
                       anchor -0.026500 -0.000000 -0.069100
                       dampingConstant IS MX106-damping
@@ -1809,8 +1809,8 @@ PROTO Wolfgang [
                               HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
-                                position -0.12
                                 jointParameters HingeJointParameters {
+                                  position -0.12
                                   axis 0.000000 -1.000000 0.000004
                                   anchor 0.000000 0.050500 -0.170000
                                   dampingConstant IS MX106-damping
@@ -3172,8 +3172,8 @@ PROTO Wolfgang [
                   HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
-                    position -0.12
                     jointParameters HingeJointParameters {
+                      position -0.12
                       axis 1.000000 -0.000000 0.000004
                       anchor 0.026000 0.000000 -0.069100
                       dampingConstant IS MX106-damping
@@ -3363,8 +3363,8 @@ PROTO Wolfgang [
                               HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
-                                position 0.12
                                 jointParameters HingeJointParameters {
+                                  position 0.12
                                   axis 0.000003 1.000000 0.000004
                                   anchor 0.000000 -0.050500 -0.170000
                                   dampingConstant IS MX106-damping
