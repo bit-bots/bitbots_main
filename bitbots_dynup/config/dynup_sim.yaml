@@ -45,6 +45,7 @@ dynup:
   wait_in_squat_front: 0.165
 
 
+  time_walkready: 2.0
   # Rise
   rise_time: 0.84
 
