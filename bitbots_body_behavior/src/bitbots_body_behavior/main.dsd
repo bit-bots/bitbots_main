@@ -119,7 +119,7 @@ $LocalizationAvailable
 
 #PenaltyBehavior
 $SecondaryStateTeamDecider
-    OUR --> $GameStateDecider
+    OUR --> $GameStateDecider //in penalty we use the main game states to start the positioning and the kicks
         READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> @LookAtFieldFeatures, @StandAndWait
@@ -129,12 +129,20 @@ $SecondaryStateTeamDecider
 -->BodyBehavior
 $RoleDecider
     GOALIE --> $SecondaryStateDecider
-        PENALTYSHOOT --> #PenaltyBehavior
-        TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
-        ELSE --> $GameStateDecider
+        NORMAL --> $GameStateDecider
             INITIAL --> @LookAtFieldFeatures, @StandAndWait
             READY --> #PositioningReady
             PLAYING --> #GoalieBehavior
+            ELSE --> @LookAtFieldFeatures, @StandAndWait
+        PENALTYSHOOT --> #PenaltyBehavior
+        OVERTIME --> $GameStateDecider
+            INITIAL --> @LookAtFieldFeatures, @StandAndWait
+            READY --> #PositioningReady
+            PLAYING --> #GoalieBehavior
+            ELSE --> @LookAtFieldFeatures, @StandAndWait
+        TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
+        ELSE --> $SecondaryStateModeDecider
+            PLACING --> #PositioningReady
             ELSE --> @LookAtFieldFeatures, @StandAndWait
     OFFENSE --> $SecondaryStateDecider
         NORMAL --> $GameStateDecider
@@ -152,18 +160,17 @@ $RoleDecider
         ELSE --> $SecondaryStateTeamDecider
             OUR --> $BallSeen
                 YES --> $ClosestToBallNoGoalie
-                    YES --> $GameStateDecider
-                        READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
-                        PLAYING --> #GoAndKickBallMapGoal
+                    YES --> $SecondaryStateModeDecider
+                        PLACING --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
                         ELSE --> @LookAtFieldFeatures, @StandAndWait
-                    NO --> $GameStateDecider
-                        READY --> @LookAtFieldFeatures, @GoToRolePosition
-                        PLAYING --> #OffenseBehavior
+                    NO --> $SecondaryStateModeDecider
+                        PLACING --> @LookAtFieldFeatures, @GoToRolePosition
                         ELSE --> @LookAtFieldFeatures, @StandAndWait
                 NO --> @LookAtFieldFeatures, @SearchBall
-            OTHER --> $GameStateDecider
-                READY --> @GoToDefensePosition
-                PLAYING --> #OffenseBehavior
+            OTHER --> $SecondaryStateModeDecider
+                PLACING --> $BallSeen
+                    YES --> @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:2
+                    NO --> @LookAtFieldFeatures, @SearchBall
                 ELSE --> @LookAtFieldFeatures, @StandAndWait
     DEFENSE --> $SecondaryStateDecider
         NORMAL --> $GameStateDecider
@@ -178,8 +185,7 @@ $RoleDecider
             PLAYING --> #DefenseBehavior
             ELSE --> @LookAtFieldFeatures, @StandAndWait
         TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
-        ELSE --> $GameStateDecider
-            READY --> @GoToDefensePosition
-            PLAYING --> #DefenseBehavior
+        ELSE --> $SecondaryStateModeDecider
+            PLACING --> @GoToDefensePosition
             ELSE --> @LookAtFieldFeatures, @StandAndWait
     PENALTY --> @LookAtFieldFeatures, @StandAndWait

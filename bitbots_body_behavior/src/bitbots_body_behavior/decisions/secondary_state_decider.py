@@ -2,6 +2,7 @@
 import rospy
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from humanoid_league_msgs.msg import GameState
 
 
 class SecondaryStateDecider(AbstractDecisionElement):
@@ -9,6 +10,7 @@ class SecondaryStateDecider(AbstractDecisionElement):
     Decides in which secondary state the game is currently in. The mode of the secondary state is handled in the
     game controller receiver, so the behavior does ont need to deal with this.
     """
+
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateDecider, self).__init__(blackboard, dsd, parameters)
         self.secondary_game_states = {
@@ -45,12 +47,40 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         self.team_id = self.blackboard.gamestate.team_id
 
     def perform(self, reevaluate=False):
-        if self.blackboard.gamestate.has_kickoff():
-            return 'OUR'
-        return 'OTHER'
+        state_number = self.blackboard.gamestate.get_secondary_state()
+        # we have to handle penalty shoot differently because the message is strange
+        if state_number == GameState.STATE_PENALTYSHOOT:
+            if self.blackboard.gamestate.has_kickoff():
+                return 'OUR'
+            return 'OTHER'
+        else:
+            if self.blackboard.gamestate.get_secondary_team == self.team_id:
+                return 'OUR'
+            return 'OTHER'
 
     def get_reevaluate(self):
         """
         Secondary state Team can change during the game
         """
+        return True
+
+
+class SecondaryStateModeDecider(AbstractDecisionElement):
+    """
+    Decides which mode in the secondary state we are.
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
+        self.modes = {
+            0: 'PREPARATION',
+            1: 'PLACING',  # should not happen during halftime or extra time
+            2: 'END',
+        }
+
+    def perform(self, reevaluate=False):
+        state_mode = self.blackboard.gamestate.get_secondary_state_mode()
+        return self.modes[state_mode]
+
+    def get_reevaluate(self):
         return True
