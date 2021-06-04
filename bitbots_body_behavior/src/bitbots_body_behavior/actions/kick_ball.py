@@ -63,11 +63,11 @@ class KickBallDynamic(AbstractKickAction):
                 goal.ball_position.y = ball_v
                 goal.ball_position.z = 0
 
-                check_positions = [(1, 0), (0, -1), (0, 1)]
-                kick_directions = [0, -1.2, 1.2]
+                check_positions = [(1, 0), (0.5, -0.5), (0.5, 0.5)]
+                kick_directions = [0, -1.4 / 2, 1.4 / 2]
 
                 kick_direction = kick_directions[np.argmin(
-                    list(map(lambda t: self.blackboard.world_model.obstacle_value_at_relative_xy(*t, 3), check_positions)))]
+                   list(map(lambda t: self.blackboard.world_model.cost_at_relative_xy(*t), check_positions)))]
 
                 goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 

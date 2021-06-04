@@ -83,8 +83,6 @@ class WorldModelCapsule:
         self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
         self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
 
-        self.local_obstacle_map = None
-
         self.calc_gradient_map()
 
     ############
@@ -404,41 +402,52 @@ class WorldModelCapsule:
     # Obstacle #
     ############
 
-    def local_costmap_callback(self, msg):
+    def global_costmap_callback(self, msg):
         self.local_obstacle_map = msg
+        self.local_obstacle_map_numpy = ros_numpy.numpify(self.local_obstacle_map)
+        self.add_obstacles_costmap()
 
-    def obstacle_value_at_relative_xy(self, x, y, area=1):
-        if self.local_obstacle_map is None:
+    def global_costmap_update_callback(self, msg):
+        data_np = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
+        self.local_obstacle_map_numpy[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = data_np
+        self.add_obstacles_costmap()
+
+    def add_obstacles_costmap(self):
+        scale = 1 / self.local_obstacle_map.info.resolution / 2
+        obstacle = self.local_obstacle_map_numpy.T[
+                    int(self.local_obstacle_map_numpy.shape[0] / 2 - 9 * scale) : int(self.local_obstacle_map_numpy.shape[0] / 2 + 9 * scale) : 2,
+                    int(self.local_obstacle_map_numpy.shape[1] / 2 - 6 * scale) : int(self.local_obstacle_map_numpy.shape[1] / 2 + 6 * scale) : 2].astype(np.float) / 100 * 0.4
+        x, y = self.get_ball_position_xy()
+        x = int((x - 4.5) * 10)
+        y = int((y - 3) * 10)
+        obstacle[x - 2 : x + 2, y - 2: y + 2] = 0
+        self.costmap = self.base_costmap.copy() + gaussian_filter(obstacle, 3)
+        self.calc_gradients()
+
+    def calc_gradients(self):
+        gradient = np.gradient(self.base_costmap)
+        norms = np.linalg.norm(gradient,axis=0)
+        gradient = [np.where(norms==0,0,i/norms) for i in gradient]
+        self.gardient_map = gradient
+
+    def cost_at_relative_xy(self, x, y):
+        if self.costmap is None:
             return 0.0
 
         point = PointStamped()
-        point.header.stamp = self.local_obstacle_map.header.stamp
+        point.header.stamp = rospy.Time(0)
         point.header.frame_id = self.base_footprint_frame
         point.point.x = x
         point.point.y = y
 
-
         try:
-            # Transform point of interest to odom
-            point = self.tf_buffer.transform(point, self.odom_frame, timeout=rospy.Duration(0.3))
+            # Transform point of interest to the map
+            point = self.tf_buffer.transform(point, self.map_frame, timeout=rospy.Duration(0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return 0.0
 
-        numpy_map = ros_numpy.numpify(self.local_obstacle_map)
-
-        numpy_map = gaussian_filter(numpy_map, 5)
-
-        costmap_x = int(
-            round((point.point.x - self.local_obstacle_map.info.origin.position.x) / self.local_obstacle_map.info.resolution))
-        costmap_y = int(
-            round((point.point.y - self.local_obstacle_map.info.origin.position.y) / self.local_obstacle_map.info.resolution))
-
-        try:
-            return numpy_map[costmap_y, costmap_x].mean()
-        except IndexError as e:
-            rospy.logwarn("Index out of range while accessing local costmap!")
-            return 0.0
+        return self.get_cost_at_field_position(point.point.x, point.point.y)
 
 
     def calc_gradient_map(self):
@@ -449,7 +458,7 @@ class WorldModelCapsule:
         goal_factor = 0.2
         keep_out_border = 0.2
         in_field_value_our_side = 0.8
-        in_field_value_enemy_side = 0.2
+        in_field_value_enemy_side = 0.4
 
         # Create Grid
         grid_x, grid_y = np.mgrid[0:field_length:field_length*10j, 0:field_width:field_width*10j]
@@ -465,46 +474,27 @@ class WorldModelCapsule:
             [[field_length, field_width],   1],
             # Points in the field that pull the gradient down, so we dont play allways in the middle
             [[keep_out_border,                  keep_out_border],                 in_field_value_our_side],
-            [[field_length - keep_out_border,   keep_out_border],                 in_field_value_enemy_side],
+            #[[field_length - keep_out_border,   keep_out_border],                 in_field_value_enemy_side],
             [[keep_out_border,                  field_width - keep_out_border],   in_field_value_our_side],
-            [[field_length - keep_out_border,   field_width - keep_out_border],   in_field_value_enemy_side]
+            #[[field_length - keep_out_border,   field_width - keep_out_border],   in_field_value_enemy_side]
         ])
 
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
-            [[field_length, field_width/2 - goal_width/2],                 0.2],
-            [[field_length + 1, field_width/2 - goal_width/2 + goal_factor],   0],
-            [[field_length + 1, field_width/2 + goal_width/2 - goal_factor],   0],
-            [[field_length, field_width/2 + goal_width/2],                 0.2],
+            [[field_length, field_width/2 - goal_width/2],                      0.4],
+            [[field_length, field_width/2 - goal_width/2 + goal_factor],    0],
+            [[field_length, field_width/2 + goal_width/2 - goal_factor],    0],
+            [[field_length, field_width/2 + goal_width/2],                      0.4],
         ])
 
         # Interpolate the keypoints from above to form the costmap
         interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y), method='linear')
 
-        size = 40
-        sigma_x = 4.
-        sigma_y = 4.
-
-        x = np.linspace(-10, 10, size)
-        y = np.linspace(-10, 10, size)
-
-        x, y = np.meshgrid(x, y)
-        z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-(x**2/(2*sigma_x**2)
-            + y**2/(2*sigma_y**2))))
-
-
-
-        print(z.shape)
-
         # Smooth the costmap to get more continus gradients
         self.base_costmap = gaussian_filter(interpolated, 4)
-        self.costamp = self.base_costmap.copy()
+        self.costmap = self.base_costmap.copy()
 
-        gradient = np.gradient(self.costamp)
-        norms = np.linalg.norm(gradient,axis=0)
-        gradient = [np.where(norms==0,0,i/norms) for i in gradient]
-
-        self.gardient_map = gradient
+        self.calc_gradients()
 
         return
         # Viz
@@ -527,11 +517,41 @@ class WorldModelCapsule:
         y_map = int(min((field_width * 10)-1,max(0, (y + field_width / 2) * 10)))
         return -self.gardient_map[0][x_map, y_map], -self.gardient_map[1][x_map, y_map]
 
+    def get_cost_at_field_position(self, x, y):
+        """
+        Gets the costmap value at a given field position
+        :param x: Field coordiante in the x direction
+        :param y: Field coordiante in the y direction
+        """
+        field_width = rospy.get_param("field_width", 6)
+        field_length = rospy.get_param("field_length", 9)
+        x_map = int(min((field_length * 10)-1, max(0, (x + field_length / 2) * 10)))
+        y_map = int(min((field_width * 10)-1,max(0, (y + field_width / 2) * 10)))
+
+        #plt.imshow(self.costmap[x_map - 20 : x_map + 20, y_map - 20 : y_map + 20], origin='lower')
+        #plt.show()
+        return self.costmap[x_map, y_map]
+
     def get_gradient_direction_at_field_position(self, x, y):
         """
         Returns the gradient direction at the given position
         :param x: Field coordiante in the x direction
         :param y: Field coordiante in the y direction
         """
+        if self.costmap.sum() > 0 and False:
+            goal_width = rospy.get_param("goal_width", 2)
+            field_width = rospy.get_param("field_width", 6)
+            field_length = rospy.get_param("field_length", 9)
+            goal_factor = 0.2
+            keep_out_border = 0.2
+            in_field_value_our_side = 0.8
+            in_field_value_enemy_side = 0.2
+
+            # Create Grid
+            grid_x, grid_y = np.mgrid[0:field_length:field_length*10j, 0:field_width:field_width*10j]
+            plt.imshow(self.costmap.T, origin='lower')
+            plt.show()
+            plt.quiver(grid_x, grid_y, -self.gardient_map[0], -self.gardient_map[1])
+            plt.show()
         grad = self.get_gradient_at_field_position(x, y)
         return math.atan2(grad[1], grad[0])
