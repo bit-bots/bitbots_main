@@ -54,7 +54,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
                 return 'OUR'
             return 'OTHER'
         else:
-            if self.blackboard.gamestate.get_secondary_team == self.team_id:
+            if self.blackboard.gamestate.get_secondary_team() == self.team_id:
                 return 'OUR'
             return 'OTHER'
 
@@ -71,7 +71,7 @@ class SecondaryStateModeDecider(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
+        super(SecondaryStateModeDecider, self).__init__(blackboard, dsd)
         self.modes = {
             0: 'PREPARATION',
             1: 'PLACING',  # should not happen during halftime or extra time
