@@ -9,6 +9,9 @@ from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
 
+import actionlib
+from humanoid_league_msgs.msg import PlayAnimationAction
+
 
 class BodyBlackboard:
     def __init__(self):
@@ -24,6 +27,7 @@ class BodyBlackboard:
         self.world_model = WorldModelCapsule()
         self.team_data = TeamDataCapsule()
         # animations
+        self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
         self.goalie_falling_right_animation = rospy.get_param("/Animations/Goalie/fallRight")
         self.goalie_falling_left_animation = rospy.get_param("/Animations/Goalie/fallLeft")
 
