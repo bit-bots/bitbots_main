@@ -10,7 +10,7 @@ PROTO WolfgangRobocup [
   field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
 ]
 {
-  Darwin-opHinge2Robocup {
+  Wolfgang {
     translation IS translation
     rotation IS rotation
     name IS name
