@@ -45,7 +45,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         self.team_id = self.blackboard.gamestate.team_id
 
     def perform(self, reevaluate=False):
-        if self.team_id == self.blackboard.gamestate.get_secondary_team():
+        if self.blackboard.gamestate.has_kickoff():
             return 'OUR'
         return 'OTHER'
 
