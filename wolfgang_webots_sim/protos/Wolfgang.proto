@@ -1619,6 +1619,7 @@ PROTO Wolfgang [
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
+                      position 0.12
                       axis -1.000000 -0.000004 0.000004
                       anchor -0.026500 -0.000000 -0.069100
                       dampingConstant IS MX106-damping
@@ -1640,7 +1641,7 @@ PROTO Wolfgang [
                     ]
                     endPoint DEF r_upper_leg Solid {
                       translation -0.026500 -0.000000 -0.069100
-                      rotation -0.577350 0.577350 0.577352 2.094399
+                      rotation 0.59909 -0.59909 -0.53120 -2.16501
                       children [
                         Transform {
                           translation 0.018236 -0.022653 -0.130164
@@ -1809,6 +1810,7 @@ PROTO Wolfgang [
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
+                                  position -0.12
                                   axis 0.000000 -1.000000 0.000004
                                   anchor 0.000000 0.050500 -0.170000
                                   dampingConstant IS MX106-damping
@@ -1830,7 +1832,7 @@ PROTO Wolfgang [
                                 ]
                                 endPoint DEF r_ankle Solid {
                                   translation 0.000000 0.050500 -0.170000
-                                  rotation -1.000000 0.000000 0.000000 1.570800
+                                  rotation -0.99641 0.05986 0.05986 1.57440
                                   children [
                                     Transform {
                                       translation -0.026100 -0.021000 -0.040500
@@ -3171,6 +3173,7 @@ PROTO Wolfgang [
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
+                      position -0.12
                       axis 1.000000 -0.000000 0.000004
                       anchor 0.026000 0.000000 -0.069100
                       dampingConstant IS MX106-damping
@@ -3192,7 +3195,7 @@ PROTO Wolfgang [
                     ]
                     endPoint DEF l_upper_leg Solid {
                       translation 0.026000 0.000000 -0.069100
-                      rotation 0.000000 -1.000000 0.000000 1.570800
+                      rotation 0.05986 0.99641 -0.05986 -1.57440
                       children [
                         Transform {
                           translation -0.018236 -0.130164 0.028347
@@ -3361,6 +3364,7 @@ PROTO Wolfgang [
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
+                                  position 0.12
                                   axis 0.000003 1.000000 0.000004
                                   anchor 0.000000 -0.050500 -0.170000
                                   dampingConstant IS MX106-damping
@@ -3382,7 +3386,7 @@ PROTO Wolfgang [
                                 ]
                                 endPoint DEF l_ankle Solid {
                                   translation 0.000000 -0.050500 -0.170000
-                                  rotation -0.000001 -0.707108 0.707105 3.141591
+                                  rotation 0.04244 -0.70647 0.70647 3.05676
                                   children [
                                     Transform {
                                       translation 0.026100 0.007000 -0.040500
