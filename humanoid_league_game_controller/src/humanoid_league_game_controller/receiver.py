@@ -163,6 +163,7 @@ class GameStateReceiver(object):
         msg.header.stamp = rospy.Time.now()
         msg.gameState = state.game_state.intvalue
         msg.secondaryState = state.secondary_state.intvalue
+        msg.secondaryStateMode = state.secondary_state_info[1]
         msg.firstHalf = state.first_half
         msg.ownScore = own_team.score
         msg.rivalScore = rival_team.score
@@ -189,7 +190,7 @@ class GameStateReceiver(object):
                     'STATE_CORNERKICK',
                     'STATE_GOALKICK',
                     'STATE_THROWIN'):
-                if state.secondary_state_info[1] in (0, 2):
+                if state.secondary_state_info[1] in (0, 2): #todo 2 können wir bewegen wenn wir dran sind
                     msg.allowedToMove = False
                 else:
                     msg.allowedToMove = True
