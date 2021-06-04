@@ -8,7 +8,7 @@ PROTO WolfgangRobocup [
   field  SFRotation  rotation        0 1 0 0
   field  SFString    name            "red player 1"  # Is `Robot.name`.
   field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
-  field  SFString    customData      ""      
+  field  SFString    customData      ""
 ]
 {
   Wolfgang {
@@ -18,6 +18,5 @@ PROTO WolfgangRobocup [
     controllerArgs IS controllerArgs
     customData IS customData
     controller "player"
-    customData IS customData
   }
 }
