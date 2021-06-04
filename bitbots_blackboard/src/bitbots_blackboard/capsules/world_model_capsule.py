@@ -472,7 +472,7 @@ class WorldModelCapsule:
             [[field_length, 0],             1],
             [[0,            field_width],   1],
             [[field_length, field_width],   1],
-            # Points in the field that pull the gradient down, so we dont play allways in the middle
+            # Points in the field that pull the gradient down, so we don't play always in the middle
             [[keep_out_border,                  keep_out_border],                 in_field_value_our_side],
             #[[field_length - keep_out_border,   keep_out_border],                 in_field_value_enemy_side],
             [[keep_out_border,                  field_width - keep_out_border],   in_field_value_our_side],
