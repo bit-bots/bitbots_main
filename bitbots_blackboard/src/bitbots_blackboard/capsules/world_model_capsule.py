@@ -520,8 +520,8 @@ class WorldModelCapsule:
     def get_cost_at_field_position(self, x, y):
         """
         Gets the costmap value at a given field position
-        :param x: Field coordiante in the x direction
-        :param y: Field coordiante in the y direction
+        :param x: Field coordinate in the x direction
+        :param y: Field coordinate in the y direction
         """
         field_width = rospy.get_param("field_width", 6)
         field_length = rospy.get_param("field_length", 9)
