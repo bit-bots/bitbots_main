@@ -31,6 +31,7 @@ class BodyBlackboard:
         self.goalie_falling_right_animation = rospy.get_param("/Animations/Goalie/fallRight")
         self.goalie_falling_left_animation = rospy.get_param("/Animations/Goalie/fallLeft")
 
+        self.dynup_action_client = None
 
 class HeadBlackboard:
     def __init__(self):

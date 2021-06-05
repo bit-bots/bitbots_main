@@ -52,13 +52,11 @@ $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
-            NO --> $JustUnpenalized
-                YES --> #Positioning
-                NO --> $BallSeen
-                    YES --> $BallDangerous
-                        NO --> @GoToBlockPosition, @LookAtFieldFeatures
-                        ELSE --> #GoAndKickBallMapGoal
-                    NO --> @LookAtFieldFeatures
+            NO --> $BallSeen
+                YES --> $BallDangerous
+                    NO --> @GoToBlockPosition, @LookAtFieldFeatures
+                    ELSE --> #GoAndKickBallMapGoal
+                NO --> @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
             YES --> $TimerRunning + name:reorientation
@@ -66,49 +64,37 @@ $LocalizationAvailable
                     YES --> @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
                     NO --> @LookAtFieldFeatures, @Stop
                 NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
-    NO --> $JustUnpenalized
-        YES --> @GoToRelativePosition + x:2 + y:0 + t:0
-        NO --> #NoLocalizationGoalieBehavior
-
-#NoLocalizationOffenseBehavior
-$JustUnpenalized
-    YES --> @GoToRelativePosition + x:2 + y:0 + t:0
-    NO --> #NoLocalizationPlayerBehavior
-
+    NO --> #NoLocalizationGoalieBehavior
 
 #OffenseBehavior
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
-            NO --> $JustUnpenalized
-                YES --> #Positioning
-                NO --> $BallSeen
-                    YES --> #GoAndKickBallMapGoal
-                    NO --> @Stop, @LookAtFieldFeatures, @SearchBall
+            NO --> $BallSeen
+                YES --> #GoAndKickBallMapGoal
+                NO --> @Stop, @LookAtFieldFeatures, @SearchBall
         LOW --> $TimerEnded + name:reorientation_pause
-            NO --> #NoLocalizationOffenseBehavior
+            NO --> #NoLocalizationPlayerBehavior
             YES --> $TimerRunning + name:reorientation
                 YES --> $TimerEnded + name:reorientation
                     YES --> @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
                     NO --> @LookAtFieldFeatures, @Stop
                 NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
-    NO --> #NoLocalizationOffenseBehavior
+    NO --> #NoLocalizationPlayerBehavior
 
 #DefenseBehavior
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
-            NO --> $JustUnpenalized
-                YES --> #Positioning
-                NO --> $BallSeen
-                    YES --> $BallInDefensiveArea
+            NO --> $BallSeen
+                YES --> $BallInDefensiveArea
+                    YES --> #GoAndKickBallMapGoal
+                    NO -->  $BallClose
                         YES --> #GoAndKickBallMapGoal
-                        NO -->  $BallClose
-                            YES --> #GoAndKickBallMapGoal
-                            NO --> @GoToDefensePosition
-                    NO --> @Stop, @LookAtFieldFeatures
+                        NO --> @GoToDefensePosition
+                NO --> @Stop, @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationPlayerBehavior
             YES --> $TimerRunning + name:reorientation
@@ -131,6 +117,11 @@ $SecondaryStateTeamDecider
 
 #GoalieRole
 $SecondaryStateDecider
+    NORMAL --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #GoalieBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
     PENALTYSHOOT --> #PenaltyBehavior
     TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
     OVERTIME --> $GameStateDecider
@@ -194,27 +185,13 @@ $SecondaryStateDecider
         PLACING --> @GoToDefensePosition
         ELSE --> @LookAtFieldFeatures, @StandAndWait
 
-#DefenseRole
-$SecondaryStateDecider
-    NORMAL --> $GameStateDecider
-        INITIAL --> @LookAtFieldFeatures, @StandAndWait
-        READY --> #PositioningReady
-        PLAYING --> #DefenseBehavior
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
-    PENALTYSHOOT --> #PenaltyBehavior
-    OVERTIME --> $GameStateDecider
-        INITIAL --> @LookAtFieldFeatures, @StandAndWait
-        READY --> #PositioningReady
-        PLAYING --> #DefenseBehavior
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
-    TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
-    ELSE --> $SecondaryStateModeDecider
-        PLACING --> @GoToDefensePosition
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
-
 -->BodyBehavior
-$RoleDecider
-    GOALIE --> #GoalieRole
-    OFFENSE --> #OffenseRole
-    DEFENSE --> #DefenseRole
-    PENALTY --> @LookAtFieldFeatures, @StandAndWait
+$AllowedToMove
+    NO_MOVEMENT --> @LookForward, @StandAndWait
+    ONLY_HEAD --> @LookAtFieldFeatures, @StandAndWait
+    JUST_UNPENALIZED --> @GetWalkready
+    NORMAL --> $RoleDecider
+        GOALIE --> #GoalieRole
+        OFFENSE --> #OffenseRole
+        DEFENSE --> #DefenseRole
+        PENALTY --> @LookAtFieldFeatures, @StandAndWait

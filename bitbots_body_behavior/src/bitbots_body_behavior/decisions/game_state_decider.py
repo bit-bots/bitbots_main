@@ -22,9 +22,6 @@ class GameStateDecider(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        if not self.blackboard.gamestate.is_allowed_to_move():
-            rospy.loginfo_throttle(3.0, "Not allowed to move")
-            return "NOT_ALLOWED_TO_MOVE"
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
         #todo this is a temporary hack to make GUI work
