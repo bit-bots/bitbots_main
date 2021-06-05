@@ -71,7 +71,7 @@ class GameStatusCapsule:
     def is_allowed_to_move(self):
         return self.gamestate.allowedToMove
 
-    def recived_gamestate(self):
+    def received_gamestate(self):
         return self.last_update != 0
 
     def get_team_id(self):
