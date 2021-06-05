@@ -13,8 +13,18 @@ RUN apt-get install -y gnupg2
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4C4EDF893374591687621C75C2F8DBB6A37B2874
 RUN sh -c 'echo "deb [arch=amd64] http://packages.bit-bots.de bionic main" > /etc/apt/sources.list.d/ros.list'
 RUN apt-get update
+
+# Install a lot of apt packages. They would also be installed with rosdep, but we want them to be cached
 RUN apt-get install -y build-essential git sudo python3-pip python3-rospkg python3-catkin-pkg \
-    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales wget python3-catkin-tools
+    python3-catkin-lint python3-rosdep ros-melodic-ros-base locales wget python3-catkin-tools \
+    ros-melodic-urdf ros-melodic-tf2 ros-melodic-tf2-sensor-msgs ros-melodic-tf-conversions \
+    python3-opencv ros-melodic-gazebo-msgs ros-melodic-imu-complementary-filter xvfb ros-melodic-ros-numpy \
+    ros-melodic-map-msgs ros-melodic-move-base ros-melodic-spatio-temporal-voxel-layer ros-melodic-moveit-core \
+    ros-melodic-moveit-ros-planning ros-melodic-moveit-ros-planning-interface ros-melodic-robot-state-publisher \
+    python3-sphinx-rtd-theme ros-melodic-image-transport ros-melodic-eigen-conversions python-hypothesis \
+    python3-protobuf espeak ros-melodic-xacro ros-melodic-cv-bridge ros-melodic-moveit-ros-robot-interaction \
+    ros-melodic-control-toolbox libprotobuf-dev protobuf-compiler libprotoc-dev ros-melodic-map-server \
+    python3-psutil python3-hypothesis
 
 # Set up locale
 RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8
@@ -38,11 +48,18 @@ RUN . /opt/ros/melodic/setup.sh && \
     mkdir src && \
     catkin init && \
     catkin config --profile default --extend /opt/ros/melodic -DPYTHON_VERSION=3 -DCMAKE_BUILD_TYPE=Release
+# Add some requirements already here so that they are cached
+RUN python3 -m pip install -U pip && \
+    pip3 install -U PyYAML construct defusedxml filterpy matplotlib numpy opencv-python \
+    protobuf psutil pytorchyolo rosdep rospkg setuptools sklearn transforms3d
+
+# From here on, we don't want to cache anything. That's achieved by adding the current time.
+ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
+
 RUN cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
     git -C bitbots_meta submodule foreach git checkout master && \
     sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
-    python3 -m pip install -U pip && \
     pip3 install -U -r bitbots_meta/requirements.txt && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
@@ -62,6 +79,8 @@ RUN cd src/bitbots_meta && make vision-files
 RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
 # Set respawn="true" for all nodes
 RUN bash -c "find -name '*.launch' | xargs sed -i '/<node/s/ respawn=\"\w\+\"//;/<node/s/ required=\"\w\+\"//;/<node/s/<node/<node respawn=\"true\"/'"
+# In the robocup api, set required="true"
+RUN sed -i "/<node/s/respawn/required/" src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/launch/wolfgang_robocup_api_bridge.launch
 
 # Volume for logs
 VOLUME /robocup-logs
