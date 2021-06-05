@@ -1,6 +1,7 @@
 int64 init_mode
 float32 x
 float32 y
+float32 angle
 
 # Constants
 int64 START_RIGHT=0
