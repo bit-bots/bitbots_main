@@ -190,7 +190,7 @@ class GameStateReceiver(object):
                     'STATE_CORNERKICK',
                     'STATE_GOALKICK',
                     'STATE_THROWIN'):
-                if state.secondary_state_info[1] in (0, 2): #todo 2 können wir bewegen wenn wir dran sind
+                if state.secondary_state_info[1] in (0, 2):
                     msg.allowedToMove = False
                 else:
                     msg.allowedToMove = True
