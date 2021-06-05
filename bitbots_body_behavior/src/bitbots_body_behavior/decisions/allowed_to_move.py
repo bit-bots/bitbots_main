@@ -23,5 +23,4 @@ class AllowedToMove(AbstractDecisionElement):
             return 'NO'
 
     def get_reevaluate(self):
-        # Do not reevaluate, should only be reevaluated when the position was reached
         return True
