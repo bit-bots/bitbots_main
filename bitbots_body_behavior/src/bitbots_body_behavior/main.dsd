@@ -125,9 +125,9 @@ $SecondaryStateTeamDecider
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> @LookAtFieldFeatures, @StandAndWait
     OTHER --> $BallDangerous
-        LEFT --> @Stop, @PlayAnimationGoalieFallLeft
-        RIGHT --> @Stop, @PlayAnimationGoalieFallRight
-        ELSE --> @Stop
+        LEFT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallLeft
+        RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
+        ELSE --> @Stop, @LookAtBall
 
 #GoalieRole
 $SecondaryStateDecider
