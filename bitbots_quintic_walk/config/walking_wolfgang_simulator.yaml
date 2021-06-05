@@ -36,7 +36,7 @@ walking:
     trunk_height: 0.40
     # Trunk pitch orientation
     # (in rad)
-    trunk_pitch: 0.12
+    trunk_pitch: 0.13
     # Phase offset of trunk oscillation
     # (half cycle phase, [-1:1])
     trunk_phase: -0.1
