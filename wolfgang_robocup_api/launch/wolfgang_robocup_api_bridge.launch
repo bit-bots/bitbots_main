@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="wolfgang_robocup_api" type="wolfgang_robocup_api.py" name="wolfgang_robocup_api" respawn="true" respawn_delay="1" output="screen">
+    <node pkg="wolfgang_robocup_api" type="wolfgang_robocup_api.py" name="wolfgang_robocup_api" required="true" output="screen">
         <rosparam command="load" file="$(find wolfgang_robocup_api)/config/config.yaml" />
     </node>
     <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" />

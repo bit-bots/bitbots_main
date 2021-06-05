@@ -5,6 +5,8 @@ import sys
 import math
 import re
 import socket
+import time
+
 import rospy
 import rospkg
 import struct
@@ -72,7 +74,11 @@ class WolfgangRobocupApi():
         self.create_subscribers()
 
         addr = os.environ.get('ROBOCUP_SIMULATOR_ADDR')
-        self.socket = self.get_connection(addr)
+        # we will try multiple times till we manage to get a connection
+        self.socket = None
+        while not rospy.is_shutdown() and self.socket is None:
+            self.socket = self.get_connection(addr)
+            time.sleep(1) #dont use ros time since it is maybe not available
 
         self.first_run = True
         self.published_camera_info = False
@@ -131,17 +137,21 @@ class WolfgangRobocupApi():
         port = int(port)
         rospy.loginfo(f"Connecting to '{addr}'", logger_name="rc_api")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, port))
-        response = sock.recv(8).decode('utf8')
+        try:
+            sock.connect((host, port))
+            response = sock.recv(8).decode('utf8')
+        except ConnectionRefusedError:
+            rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
+            return None
         if response == "Welcome\0":
             rospy.loginfo(f"Successfully connected to '{addr}'", logger_name="rc_api")
             return sock
         elif response == "Refused\0":
             rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
-            sys.exit(1)
+            return None
         else:
             rospy.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
-            sys.exit(1)
+            return None
 
     def close_connection(self):
         self.socket.close()
