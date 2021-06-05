@@ -2,6 +2,7 @@
 import rospy
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from humanoid_league_msgs.msg import GameState
 
 
 class GameStateDecider(AbstractDecisionElement):
@@ -26,7 +27,17 @@ class GameStateDecider(AbstractDecisionElement):
             return "NOT_ALLOWED_TO_MOVE"
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
-        return self.game_states[game_state_number]
+        #todo this is a temporary hack to make GUI work
+        if game_state_number == GameState.GAMESTATE_INITAL:
+            return "INITIAL"
+        elif game_state_number == GameState.GAMESTATE_READY:
+            return "READY"
+        elif game_state_number == GameState.GAMESTATE_SET:
+            return "SET"
+        elif game_state_number == GameState.GAMESTATE_PLAYING:
+            return "PLAYING"
+        elif game_state_number == GameState.GAMESTATE_FINISHED:
+            return "FINISHED"
 
     def get_reevaluate(self):
         """
