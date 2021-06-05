@@ -105,14 +105,13 @@ class GameStateReceiver(object):
             rospy.logerr(ae.message)
         except socket.timeout:
             rospy.loginfo_throttle(5.0, "No GameController message received (socket timeout)")
-        except ConstError: 
+        except ConstError:
             rospy.logwarn("Parse Error: Probably using an old protocol!")
         finally:
             if self.get_time_since_last_package() > self.game_controller_lost_time:
                 self.time += 5  # Resend message every five seconds
                 rospy.logwarn_throttle(5.0, 'No game controller messages received, allowing robot to move')
                 msg = GameStateMsg()
-                msg.allowedToMove = True
                 msg.gameState = 3  # PLAYING
                 self.state_publisher.publish(msg)
                 msg2 = Bool()
@@ -131,7 +130,7 @@ class GameStateReceiver(object):
             message=return_message)
         try:
             destination = peer[0], self.answer_port
-            rospy.logdebug('Sending answer to {} port {}'.format(destination[0], destination[1]))
+            rospy.loginfo('Sending answer to {} port {}'.format(destination[0], destination[1]))
             self.socket.sendto(ReturnData.build(data), destination)
         except Exception as e:
             rospy.logerr("Network Error: %s" % str(e))
@@ -172,45 +171,7 @@ class GameStateReceiver(object):
         msg.hasKickOff = state.kick_of_team == self.team
         msg.penalized = me.penalty != 0
         msg.secondsTillUnpenalized = me.secs_till_unpenalized
-
-        if me.penalty != 0:
-            msg.allowedToMove = False
-        elif state.game_state in ('STATE_INITIAL', 'STATE_SET'):
-            msg.allowedToMove = False
-        elif state.game_state == 'STATE_READY':
-            msg.allowedToMove = True
-        elif state.game_state == 'STATE_PLAYING':
-            if state.kick_of_team >= 128:
-                # Drop ball
-                msg.allowedToMove = True
-            elif state.secondary_state in (
-                    'STATE_DIRECT_FREEKICK',
-                    'STATE_INDIRECT_FREEKICK',
-                    'STATE_PENALTYKICK',
-                    'STATE_CORNERKICK',
-                    'STATE_GOALKICK',
-                    'STATE_THROWIN'):
-                if state.secondary_state_info[1] in (0, 2):
-                    msg.allowedToMove = False
-                else:
-                    msg.allowedToMove = True
-                msg.secondaryStateTeam = state.secondary_state_info[0]
-            elif state.secondary_state == 'STATE_PENALTYSHOOT':
-                # we have penalty kick
-                if state.kick_of_team == self.team:
-                    msg.allowedToMove = True
-                else:
-                    msg.allowedToMove = False
-            elif state.kick_of_team == self.team:
-                msg.allowedToMove = True
-            else:
-                # Other team has kickoff
-                if msg.secondary_seconds_remaining != 0:
-                    msg.allowedToMove = False
-                else:
-                    # We have waited the kickoff time
-                    msg.allowedToMove = True
-
+        msg.secondaryStateTeam = state.secondary_state_info[0]
         msg.teamColor = own_team.team_color.intvalue
         msg.dropInTeam = state.drop_in_team
         msg.dropInTime = state.drop_in_time
