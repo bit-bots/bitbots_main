@@ -64,7 +64,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
-        self.team_id = self.blackboard.gamestate.team_id
+        self.team_id = self.blackboard.gamestate.get_team_id()
 
     def perform(self, reevaluate=False):
         state_number = self.blackboard.gamestate.get_secondary_state()

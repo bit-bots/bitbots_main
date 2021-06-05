@@ -121,10 +121,10 @@ $LocalizationAvailable
 #PenaltyBehavior
 $SecondaryStateTeamDecider
     OUR --> $GameStateDecider //in penalty we use the main game states to start the positioning and the kicks
-        READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
+        READY --> @LookAtBall, @GoToBall + target:gradient_goal + distance:%behavior/body/ball_far_approach_dist
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> @LookAtFieldFeatures, @StandAndWait
-    OTHER --> #GoalieBehavior
+    OTHER --> @LookAtFieldFeatures, @Stop
 
 #GoalieRole
 $SecondaryStateDecider
