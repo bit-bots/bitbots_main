@@ -158,7 +158,7 @@ $SecondaryStateTeamDecider
         ELSE --> @LookAtFieldFeatures, @StandAndWait
 
 #OffenseRole
-$SecondaryStateDecider
+$SecondaryStateTeamDecider
     OUR --> $BallSeen
         YES --> $ClosestToBallNoGoalie
             YES --> $SecondaryStateModeDecider
