@@ -141,7 +141,7 @@ class WolfgangRobocupApi():
             sock.connect((host, port))
             response = sock.recv(8).decode('utf8')
         except ConnectionRefusedError:
-            rospy.loginfo(rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api"))
+            rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
             return None
         if response == "Welcome\0":
             rospy.loginfo(f"Successfully connected to '{addr}'", logger_name="rc_api")
