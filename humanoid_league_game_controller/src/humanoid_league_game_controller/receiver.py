@@ -130,7 +130,7 @@ class GameStateReceiver(object):
             message=return_message)
         try:
             destination = peer[0], self.answer_port
-            rospy.loginfo('Sending answer to {} port {}'.format(destination[0], destination[1]))
+            rospy.logdebug('Sending answer to {} port {}'.format(destination[0], destination[1]))
             self.socket.sendto(ReturnData.build(data), destination)
         except Exception as e:
             rospy.logerr("Network Error: %s" % str(e))
