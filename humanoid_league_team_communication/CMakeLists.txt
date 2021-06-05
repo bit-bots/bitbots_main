@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         bitbots_docs
 )
+
 catkin_python_setup()
 
 catkin_package()

@@ -8,7 +8,12 @@ import struct
 import copy
 from threading import Lock
 
+import transforms3d.euler
+from geometry_msgs.msg import PoseWithCovariance, Twist, Pose
+from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray
+
 import robocup_extension_pb2
+from google.protobuf.timestamp_pb2 import Timestamp
 
 
 class HumanoidLeagueTeamCommunication:
@@ -24,14 +29,22 @@ class HumanoidLeagueTeamCommunication:
         self.host = self.config['host']
         self.port = self.config['port']
 
+        self.player_id = rospy.get_param('bot_id')
+        self.team_id = rospy.get_param('team_id')
+
         self.create_publishers()
         self.create_subscribers()
+
+        self.gamestate = None  # type: GameState
+        self.pose = None  # type: PoseWithCovariance
+        self.cmd_vel = None  # type: Twist
+        self.ball = None  # type: PoseWithCertainty
 
         # we will try multiple times till we manage to get a connection
         self.socket = None
         while not rospy.is_shutdown() and self.socket is None:
             self.socket = self.get_connection()
-            rospy.time.sleep(1)
+            rospy.sleep(1)
 
         self.run()
 
@@ -39,7 +52,10 @@ class HumanoidLeagueTeamCommunication:
         pass
 
     def create_subscribers(self):
-        pass
+        rospy.Subscriber('gamestate', GameState, self.gamestate_cb, queue_size=1)
+        rospy.Subscriber('pose_with_covariance', PoseWithCovariance, self.pose_cb, queue_size=1)
+        rospy.Subscriber('cmd_vel', Twist, self.cmd_vel_cb, queue_size=1)
+        rospy.Subscriber('balls_relative', PoseWithCertaintyArray, self.ball_cb, queue_size=1)
 
     def get_connection(self):
         rospy.loginfo(f"Connecting to '{self.host}:{self.port}'", logger_name="team_comm")
@@ -66,6 +82,18 @@ class HumanoidLeagueTeamCommunication:
         #     data.extend(packet)
         # return data
 
+    def gamestate_cb(self, msg):
+        self.gamestate = msg
+
+    def pose_cb(self, msg):
+        self.pose = msg
+
+    def cmd_vel_cb(self, msg):
+        self.cmd_vel = msg
+
+    def ball_cb(self, msg):
+        self.ball = msg
+
     def run(self):
         while not rospy.is_shutdown():
             # Parse sensor
@@ -78,6 +106,37 @@ class HumanoidLeagueTeamCommunication:
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
         print(message)
+
+    def send_message(self):
+        message = robocup_extension_pb2.Message()
+        message.timestamp = Timestamp()
+        now = rospy.Time.now()
+        message.timestamp.set_seconds(now.to_sec())
+        message.timestamp.set_nanos(now.to_nsec())
+
+        if self.gamestate.penalized:
+            message.state = robocup_extension_pb2.State.PENALISED
+        else:
+            message.state = robocup_extension_pb2.State.UNPENALISED
+
+        current_pose = robocup_extension_pb2.Robot()
+        current_pose.player_id = self.player_id
+        current_pose.position.x = self.pose.pose.position.x
+        current_pose.position.y = self.pose.pose.position.y
+        q = self.pose.pose.orientation
+        # z is theta
+        current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+        current_pose.team = self.team_id
+        message.current_pose = current_pose
+
+        message.walk_command.x = self.cmd_vel.linear.x
+        message.walk_command.y = self.cmd_vel.linear.y
+        message.walk_command.z = self.cmd_vel.angular.z
+
+        # message.target_pose is currently not used
+        # message.kick_target is currently not used
+
+        ball = robocup_extension_pb2.Ball()
 
 
 if __name__ == '__main__':
