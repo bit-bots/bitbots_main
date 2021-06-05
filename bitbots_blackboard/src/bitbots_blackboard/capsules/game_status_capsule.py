@@ -71,6 +71,12 @@ class GameStatusCapsule:
     def get_is_penalized(self):
         return self.gamestate.penalized
 
+    def received_gamestate(self):
+        return self.last_update != 0
+
+    def get_team_id(self):
+        return self.team_id
+
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:
             self.unpenalized_time = rospy.get_time()

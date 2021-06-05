@@ -54,8 +54,8 @@ $LocalizationAvailable
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $BallSeen
                 YES --> $BallDangerous
-                    YES --> #GoAndKickBallMapGoal
                     NO --> @GoToBlockPosition, @LookAtFieldFeatures
+                    ELSE --> #GoAndKickBallMapGoal
                 NO --> @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
@@ -107,10 +107,13 @@ $LocalizationAvailable
 #PenaltyBehavior
 $SecondaryStateTeamDecider
     OUR --> $GameStateDecider //in penalty we use the main game states to start the positioning and the kicks
-        READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
+        READY --> @LookAtBall, @GoToBall + target:gradient_goal + distance:%behavior/body/ball_far_approach_dist
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> @LookAtFieldFeatures, @StandAndWait
-    OTHER --> #GoalieBehavior
+    OTHER --> $BallDangerous
+        LEFT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallLeft
+        RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
+        ELSE --> @Stop, @LookAtBall
 
 #GoalieRole
 $SecondaryStateDecider
@@ -158,6 +161,24 @@ $SecondaryStateDecider
     TIMEOUT -->  @LookAtFieldFeatures, @StandAndWait
     ELSE --> #OffenseSecondaryState
 
+
+#DefenseRole
+$SecondaryStateDecider
+    NORMAL --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #DefenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    PENALTYSHOOT --> #PenaltyBehavior
+    OVERTIME --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #DefenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
+    ELSE --> $SecondaryStateModeDecider
+        PLACING --> @GoToDefensePosition
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
 
 #DefenseRole
 $SecondaryStateDecider
