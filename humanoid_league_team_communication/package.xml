@@ -4,11 +4,13 @@
   <version>2.0.0</version>
   <description>The humanoid_league_team_communication package provides a ROS wrapper for the Protobuf RoboCup protocol.
     This is the standard communication protocol developed by the NUbots. </description>
-  
+
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <author email="5flemmin@informatik.uni-hamburg.de">Tanja Flemming</author>
+  <author email="7engelke@informatik.uni-hamburg.de">Timon Engelke</author>
+  <author email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</author>
 
   <license>MIT</license>
 
@@ -16,7 +18,7 @@
 
   <depend>std_msgs</depend>
   <depend>humanoid_league_msgs</depend>
-  <depend>roscpp</depend>
+  <depend>rospy</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
@@ -26,8 +28,8 @@
 
   <export>
     <bitbots_documentation>
-        <status>tested_viz</status>
-      <language>c++</language>
+        <status>unknown</status>
+      <language>python</language>
     </bitbots_documentation>
   </export>
 </package>
