@@ -75,7 +75,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def animation_finished(self):
         state = self.blackboard.animation_action_client.get_state()
-        return state == 3
+        return state >= 1
 
 
 class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
