@@ -38,6 +38,7 @@ j: STATE_THROW_IN = 9
 p:     toggle penalized
 space: toggle allowed_to_move
 t:     toggle secondary state team
+m:     toggle secondary state mode     
 
 CTRL-C to quit
 
@@ -87,6 +88,8 @@ if __name__ == "__main__":
                 gameState.penalized = not gameState.penalized
             elif key in [chr(ord('a')+x) for x in range(10)]:
                 gameState.secondaryState = ord(key) - ord('a')
+            elif key == 'm':
+                gameState.secondaryStateMode = (gameState.secondaryStateMode + 1) % 3
             elif key == 't':
                 if gameState.secondaryStateTeam == ourTeamID:
                     gameState.secondaryStateTeam = ourTeamID + 1

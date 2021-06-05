@@ -163,6 +163,7 @@ class GameStateReceiver(object):
         msg.header.stamp = rospy.Time.now()
         msg.gameState = state.game_state.intvalue
         msg.secondaryState = state.secondary_state.intvalue
+        msg.secondaryStateMode = state.secondary_state_info[1]
         msg.firstHalf = state.first_half
         msg.ownScore = own_team.score
         msg.rivalScore = rival_team.score
