@@ -28,7 +28,7 @@ class AllowedToMove(AbstractDecisionElement):
         elif self.blackboard.gamestate.get_gamestate() == GameState.GAMESTATE_READY:
             return 'NORMAL'
         elif self.blackboard.gamestate.get_gamestate() == GameState.GAMESTATE_PLAYING:
-            if not self.blackboard.gamestate.has_kickoff() and self.blackboard.secondary_seconds_remaining() != 0:
+            if not self.blackboard.gamestate.has_kickoff() and self.blackboard.gamestate.get_gamestate() != 0:
                 return 'ONLY_HEAD'
             else:
                 self.publish_debug_data("Seconds since unpenalized",
