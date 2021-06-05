@@ -76,6 +76,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   ik_.reset();
   stabilizer_.reset();
   last_ros_update_time_ = 0;
+  start_time_ = ros::Time::now().toSec();
   if (std::optional < std::tuple < geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose,
       geometry_msgs::Pose >> poses = getCurrentPoses()) {
     DynupRequest request;
@@ -158,7 +159,8 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
         } else {
           stable_duration_ = 0;
         }
-        if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing))) {
+        if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing) ||
+           (ros::Time::now().toSec() - start_time_ >= engine_.getDuration() + params_.stabilization_timeout))) {
           ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter);
           break;
         }
