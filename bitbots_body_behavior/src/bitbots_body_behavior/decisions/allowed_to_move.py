@@ -13,7 +13,7 @@ class AllowedToMove(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        if self.blackboard.gamestate.get_is_penalized() or self.blackboard.get_gamestate() in (
+        if self.blackboard.gamestate.get_is_penalized() or self.blackboard.gamestate.get_gamestate() in (
                 GameState.GAMESTATE_FINISHED):
             return 'NO_MOVEMENT'
         elif self.blackboard.gamestate.get_gamestate() in (GameState.GAMESTATE_INITAL, GameState.GAMESTATE_SET):
