@@ -14,12 +14,12 @@
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [-1, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [2.5, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-3.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [-4.475, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     },
     "2": {
@@ -35,12 +35,12 @@
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [-1, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [2.5, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-3.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [-4.475, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     },
     "3": {
@@ -56,12 +56,12 @@
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [-1, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [2.5, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-3.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [-4.475, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     },
     "4": {
@@ -77,12 +77,12 @@
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [-1, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [2.5, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-3.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
+        "translation": [-4.475, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     }
   }
