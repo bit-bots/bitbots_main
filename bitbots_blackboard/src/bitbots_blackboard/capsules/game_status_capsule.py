@@ -68,8 +68,8 @@ class GameStatusCapsule:
     def get_seconds_since_unpenalized(self):
         return rospy.get_time() - self.unpenalized_time
 
-    def is_allowed_to_move(self):
-        return self.gamestate.allowedToMove
+    def get_is_penalized(self):
+        return self.gamestate.penalized
 
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:

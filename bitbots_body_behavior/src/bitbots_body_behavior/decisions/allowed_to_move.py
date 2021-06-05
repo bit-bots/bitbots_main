@@ -1,5 +1,6 @@
 import rospy
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from humanoid_league_msgs.msg import GameState
 
 
 class AllowedToMove(AbstractDecisionElement):
@@ -12,15 +13,32 @@ class AllowedToMove(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        if self.blackboard.gamestate.is_allowed_to_move():
-            self.publish_debug_data("Seconds since unpenalized", self.blackboard.gamestate.get_seconds_since_unpenalized())
-            rospy.logwarn(self.blackboard.gamestate.get_seconds_since_unpenalized())
-            if self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
-                return 'JUST_UNPENALIZED'
+        if self.blackboard.gamestate.get_is_penalized() or self.blackboard.get_gamestate() in (
+                GameState.GAMESTATE_FINISHED):
+            return 'NO_MOVEMENT'
+        elif self.blackboard.gamestate.get_gamestate() in (GameState.GAMESTATE_INITAL, GameState.GAMESTATE_SET):
+            return 'ONLY_HEAD'
+        elif self.blackboard.get_secondary_state() in (GameState.STATE_DIRECT_FREEKICK,
+                                                       GameState.STATE_INDIRECT_FREEKICK,
+                                                       GameState.STATE_PENALTYKICK,
+                                                       GameState.STATE_CORNER_KICK,
+                                                       GameState.STATE_GOAL_KICK,
+                                                       GameState.STATE_THROW_IN) and \
+                self.blackboard.get_secondary_state_mode() in (0, 2):
+            return 'ONLY_HEAD'
+        elif self.blackboard.gamestate.get_gamestate() == GameState.GAMESTATE_PLAYING:
+            if not self.blackboard.has_kickoff() and self.blackboard.secondary_seconds_remaining() != 0:
+                return 'ONLY_HEAD'
             else:
-                return 'YES'
+                self.publish_debug_data("Seconds since unpenalized",
+                                        self.blackboard.gamestate.get_seconds_since_unpenalized())
+                if self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
+                    return 'JUST_UNPENALIZED'
+                else:
+                    return 'NORMAL'
         else:
-            return 'NO'
+            rospy.logerr("UNKNOWN STATE !!!")
+            return 'NORMAL'
 
     def get_reevaluate(self):
         return True

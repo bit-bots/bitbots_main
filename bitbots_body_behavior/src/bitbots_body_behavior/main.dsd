@@ -179,9 +179,10 @@ $SecondaryStateDecider
 
 -->BodyBehavior
 $AllowedToMove
-    NO --> @LookForward, @StandAndWait
+    NO_MOVEMENT --> @LookForward, @StandAndWait
+    ONLY_HEAD --> @LookAtFieldFeatures, @StandAndWait
     JUST_UNPENALIZED --> @GetWalkready
-    YES --> $RoleDecider
+    NORMAL --> $RoleDecider
         GOALIE --> #GoalieRole
         OFFENSE --> #OffenseRole
         DEFENSE --> #DefenseRole
