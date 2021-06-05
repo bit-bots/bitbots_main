@@ -23,7 +23,7 @@
  "RKnee" : -63.81746642070242,
  "RAnklePitch" : 31.9689807724419,
  "RAnkleRoll" : -6.850795653242464,
- "RShoulderPitch" : 180,
+ "RShoulderPitch" : 179,
  "RShoulderRoll" : 0.0,
  "RElbow" : 90
 },
@@ -50,7 +50,7 @@
  "RKnee" : -120.81746642070242,
  "RAnklePitch" : 51.9689807724419,
  "RAnkleRoll" : -6.850795653242464,
- "RShoulderPitch" : 180,
+ "RShoulderPitch" : 179,
  "RShoulderRoll" : 0.0,
  "RElbow" : 90
 },
