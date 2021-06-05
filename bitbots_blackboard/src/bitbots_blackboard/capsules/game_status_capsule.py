@@ -66,7 +66,7 @@ class GameStatusCapsule:
             return self.gamestate.dropInTime + (rospy.get_time() - self.last_update)
 
     def get_seconds_since_unpenalized(self):
-            return rospy.get_time() - self.unpenalized_time
+        return rospy.get_time() - self.unpenalized_time
 
     def is_allowed_to_move(self):
         return self.gamestate.allowedToMove
