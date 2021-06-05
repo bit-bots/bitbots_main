@@ -1,3 +1,10 @@
+#InitSet
+$SecondaryStateDecider
+    PENALTYSHOOT --> $SecondaryStateTeamDecider
+        OTHER --> @InitGoal, @DoNothing   // Init as kicker
+        OUR --> @InitPenaltyKick, @DoNothing   // Init as goalie
+    ELSE --> @DoNothing
+
 -->Localization
 $CheckPickup
     UP --> @LocalizationStop
@@ -8,9 +15,8 @@ $CheckPickup
         NO --> $CheckGameStateReceived
             NO_GAMESTATE_INIT --> @InitSide, @DoNothing
             DO_NOTHING --> @DoNothing
-            GAMESTATE_RECEIVED --> $CheckGameState
-                INIT --> @InitSide, @DoNothing
-                SET --> @DoNothing
-                PLAYING --> @DoNothing
+            GAMESTATE_RECEIVED --> $GameStateDecider
+                INITIAL --> @InitSide, @DoNothing
+                SET --> #InitSet
                 PENALTY --> @InitSide, @DoNothing
-                NO_INFORMATION --> @DoNothing
+                ELSE --> @DoNothing
