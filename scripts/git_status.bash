@@ -21,6 +21,7 @@ for folder in $folders; do
     branch=$(git -C $folder rev-parse --abbrev-ref HEAD)
     modified=$(git -C $folder status --ignore-submodules --porcelain | grep -c "^ M ")
     untracked=$(git -C $folder status --ignore-submodules --porcelain | grep -c "^?? ")
+    deleted=$(git -C $folder status --ignore-submodules --porcelain | grep -c "^ D")
     unpushed=$(git -C $folder log --oneline origin/$branch..$branch | wc -l)
     echo_bold $module
     echo -n ":  "
@@ -32,6 +33,7 @@ for folder in $folders; do
     echo -n "On branch $branch"
     [[ $modified != 0 ]] && echo -n ", $modified modified"
     [[ $untracked != 0 ]] && echo -n ", $untracked untracked"
+    [[ $deleted != 0 ]] && echo -n ", $deleted deleted"
     if [[ $unpushed == 1 ]]; then
         echo -n ", "
         echo_bold "1 unpushed commit"
