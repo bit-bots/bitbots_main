@@ -24,6 +24,7 @@ class BodyBlackboard:
         self.world_model = WorldModelCapsule()
         self.team_data = TeamDataCapsule()
 
+        self.dynup_action_client = None
 
 class HeadBlackboard:
     def __init__(self):

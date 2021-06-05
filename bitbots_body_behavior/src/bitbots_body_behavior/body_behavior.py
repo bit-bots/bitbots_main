@@ -11,6 +11,7 @@ Starts the body behavior
 import actionlib
 import os
 import rospy
+from bitbots_msgs.msg import DynUpAction
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
     RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
@@ -44,6 +45,7 @@ if __name__ == "__main__":
 
     D.load_behavior(os.path.join(dirname, "main.dsd"))
 
+    D.blackboard.dynup_action_client = actionlib.SimpleActionClient('dynup', DynUpAction)
 
     # TODO: callbacks away from the blackboard!
     rospy.Subscriber("balls_relative", PoseWithCertaintyArray, D.blackboard.world_model.balls_callback)

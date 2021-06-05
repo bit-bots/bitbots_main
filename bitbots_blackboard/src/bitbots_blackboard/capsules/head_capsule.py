@@ -121,9 +121,10 @@ class HeadCapsule:
         buf = BytesIO()
         msg.serialize(buf)
         self.collision_checker.set_joint_states(buf.getvalue())
-        head_pan = msg.position[msg.name.index('HeadPan')]
-        head_tilt = msg.position[msg.name.index('HeadTilt')]
-        self.current_head_position = [head_pan, head_tilt]
+        if 'HeadPan' in msg.name and 'HeadTilt' in msg.name:
+            head_pan = msg.position[msg.name.index('HeadPan')]
+            head_tilt = msg.position[msg.name.index('HeadTilt')]
+            self.current_head_position = [head_pan, head_tilt]
 
     def get_head_position(self):
         return self.current_head_position
