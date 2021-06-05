@@ -1,15 +1,13 @@
 #GoAndKickBallMapGoal
 $AvoidBall
     NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist
-        YES --> $AlignedToGoal
-            YES --> $BallKickArea
-                NEAR --> @Stop, @LookAtBall, @StandAndWait + duration:1, @LookForward, @KickBallDynamic
-                FAR --> @LookAtBall, @GoToBall + target:map_goal
-            NO --> @LookAtBall, @GoToBall + target:map_goal
-        NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBallActive
+        YES --> $BallKickArea
+            NEAR --> @Stop + r:false, @LookAtBall + r:false, @StandAndWait + duration:1 + r:false, @LookForward + r:false, @KickBallDynamic
+            FAR --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
+        NO --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBallActive
     YES --> $ReachedMovebaseGoalPosition + thres:%behavior/body/ball_far_approach_position_thresh
         YES --> @AvoidBallInactive
-        NO --> @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
+        NO --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal + distance:%behavior/body/ball_far_approach_dist
 
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
@@ -123,7 +121,7 @@ $LocalizationAvailable
 #PenaltyBehavior
 $SecondaryStateTeamDecider
     OUR --> $GameStateDecider
-        READY --> @LookAtFieldFeatures, @GoToBall + target:map_goal
+        READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> @LookAtFieldFeatures, @StandAndWait
     OTHER --> #GoalieBehavior
@@ -159,7 +157,7 @@ $SecondaryStateTeamDecider
     OUR --> $BallSeen
         YES --> $ClosestToBallNoGoalie
             YES --> $GameStateDecider
-                READY --> @LookAtFieldFeatures, @GoToBall + target:map_goal
+                READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
                 PLAYING --> #GoAndKickBallMapGoal
                 ELSE --> @LookAtFieldFeatures, @StandAndWait
             NO --> $GameStateDecider
