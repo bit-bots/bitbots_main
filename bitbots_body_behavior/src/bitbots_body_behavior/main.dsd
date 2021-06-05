@@ -56,8 +56,8 @@ $LocalizationAvailable
                 YES --> #Positioning
                 NO --> $BallSeen
                     YES --> $BallDangerous
-                        YES --> #GoAndKickBallMapGoal
                         NO --> @GoToBlockPosition, @LookAtFieldFeatures
+                        ELSE --> #GoAndKickBallMapGoal
                     NO --> @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
@@ -124,7 +124,10 @@ $SecondaryStateTeamDecider
         READY --> @LookAtBall, @GoToBall + target:gradient_goal + distance:%behavior/body/ball_far_approach_dist
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> @LookAtFieldFeatures, @StandAndWait
-    OTHER --> @LookAtFieldFeatures, @Stop
+    OTHER --> $BallDangerous
+        LEFT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallLeft
+        RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
+        ELSE --> @Stop, @LookAtBall
 
 #GoalieRole
 $SecondaryStateDecider
@@ -172,6 +175,24 @@ $SecondaryStateDecider
     TIMEOUT -->  @LookAtFieldFeatures, @StandAndWait
     ELSE --> #OffenseSecondaryState
 
+
+#DefenseRole
+$SecondaryStateDecider
+    NORMAL --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #DefenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    PENALTYSHOOT --> #PenaltyBehavior
+    OVERTIME --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #DefenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
+    ELSE --> $SecondaryStateModeDecider
+        PLACING --> @GoToDefensePosition
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
 
 #DefenseRole
 $SecondaryStateDecider
