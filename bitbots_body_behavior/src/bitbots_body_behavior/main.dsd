@@ -143,24 +143,6 @@ $SecondaryStateDecider
 $SecondaryStateTeamDecider
     OUR --> $BallSeen
         YES --> $ClosestToBallNoGoalie
-            YES --> $GameStateDecider
-                READY --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
-                PLAYING --> #GoAndKickBallMapGoal
-                ELSE --> @LookAtFieldFeatures, @StandAndWait
-            NO --> $GameStateDecider
-                READY --> @LookAtFieldFeatures, @GoToRolePosition
-                PLAYING --> #OffenseBehavior
-                ELSE --> @LookAtFieldFeatures, @StandAndWait
-        NO --> @LookAtFieldFeatures, @SearchBall
-    OTHER --> $GameStateDecider
-        READY --> @GoToDefensePosition
-        PLAYING --> #OffenseBehavior
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
-
-#OffenseRole
-$SecondaryStateTeamDecider
-    OUR --> $BallSeen
-        YES --> $ClosestToBallNoGoalie
             YES --> $SecondaryStateModeDecider
                 PLACING --> @LookAtFieldFeatures, @GoToBall + target:gradient_goal
                 ELSE --> @LookAtFieldFeatures, @StandAndWait
@@ -173,6 +155,23 @@ $SecondaryStateTeamDecider
             YES --> @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:2
             NO --> @LookAtFieldFeatures, @SearchBall
         ELSE --> @LookAtFieldFeatures, @StandAndWait
+
+#OffenseRole
+$SecondaryStateDecider
+    NORMAL --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #OffenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    PENALTYSHOOT --> #PenaltyBehavior
+    OVERTIME --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #OffenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    TIMEOUT -->  @LookAtFieldFeatures, @StandAndWait
+    ELSE --> #OffenseSecondaryState
+
 
 #DefenseRole
 $SecondaryStateDecider
