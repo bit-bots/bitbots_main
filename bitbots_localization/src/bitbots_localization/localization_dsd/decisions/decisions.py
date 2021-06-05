@@ -240,3 +240,24 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         Secondary state Team can change during the game
         """
         return True
+
+
+class CheckPenalized(AbstractDecisionElement):
+    """
+    Decides if we are penalized.
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(CheckPenalized, self).__init__(blackboard, dsd, parameters)
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.gamestate.get_is_penalized():
+            return "YES"
+        else:
+            return "NO"
+
+    def get_reevaluate(self):
+        """
+        The state can change during the game
+        """
+        return True
