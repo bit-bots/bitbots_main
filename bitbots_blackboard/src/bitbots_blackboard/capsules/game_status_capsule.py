@@ -28,6 +28,9 @@ class GameStatusCapsule:
     def get_secondary_state(self):
         return self.gamestate.secondaryState
 
+    def get_secondary_state_mode(self):
+        return self.gamestate.secondaryStateMode
+
     def get_secondary_team(self):
         return self.gamestate.secondaryStateTeam
 
@@ -67,6 +70,12 @@ class GameStatusCapsule:
 
     def is_allowed_to_move(self):
         return self.gamestate.allowedToMove
+
+    def received_gamestate(self):
+        return self.last_update != 0
+
+    def get_team_id(self):
+        return self.team_id
 
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:

@@ -30,7 +30,7 @@ behavior:
         pan_speed: 3
 
         # Max values for the search pattern
-        pan_max: [120, -120]
+        pan_max: [135, -135]
         tilt_max: [-10, -60]
 
         # Number of scan lines for the search pattern
@@ -60,14 +60,14 @@ behavior:
     search_pattern_goal:
         tilt_speed: 1
         pan_speed: 1.5
-        pan_max: [120, -120]
+        pan_max: [135, -135]
         tilt_max: [7, -7]
         scan_lines: 2
 
     search_pattern_field_features:
         tilt_speed: 3
         pan_speed: 3
-        pan_max: [-120, 120]
+        pan_max: [-135, 135]
         tilt_max: [-10, -60]
         scan_lines: 2
         reduce_last_scanline: 0.2

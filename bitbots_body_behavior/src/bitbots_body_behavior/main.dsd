@@ -194,6 +194,24 @@ $SecondaryStateDecider
         PLACING --> @GoToDefensePosition
         ELSE --> @LookAtFieldFeatures, @StandAndWait
 
+#DefenseRole
+$SecondaryStateDecider
+    NORMAL --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #DefenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    PENALTYSHOOT --> #PenaltyBehavior
+    OVERTIME --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #DefenseBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+    TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
+    ELSE --> $SecondaryStateModeDecider
+        PLACING --> @GoToDefensePosition
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
+
 -->BodyBehavior
 $RoleDecider
     GOALIE --> #GoalieRole
