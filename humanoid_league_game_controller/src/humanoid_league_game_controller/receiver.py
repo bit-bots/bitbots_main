@@ -172,6 +172,7 @@ class GameStateReceiver(object):
         msg.penalized = me.penalty != 0
         msg.secondsTillUnpenalized = me.secs_till_unpenalized
         msg.secondaryStateTeam = state.secondary_state_info[0]
+        msg.secondaryStateMode = state.secondary_state_info[1]
         msg.teamColor = own_team.team_color.intvalue
         msg.dropInTeam = state.drop_in_team
         msg.dropInTime = state.drop_in_time
