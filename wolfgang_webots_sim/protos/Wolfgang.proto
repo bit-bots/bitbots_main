@@ -4625,8 +4625,8 @@ PROTO Wolfgang [
           RotationalMotor {
             name "HeadPan"
             maxVelocity IS MX64-vel
-            minPosition -2.0944
-            maxPosition 2.0944
+            minPosition -2.35619
+            maxPosition 2.35619
             maxTorque IS MX64-torque
             controlPID IS pid
           }
