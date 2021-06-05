@@ -28,7 +28,27 @@ class SecondaryStateDecider(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         state_number = self.blackboard.gamestate.get_secondary_state()
-        return self.secondary_game_states[state_number]
+        # todo this is a temporary hack to make GUI work
+        if state_number == GameState.STATE_NORMAL:
+            return "NORMAL"
+        elif state_number == GameState.STATE_PENALTYSHOOT:
+            return "PENALTYSHOOT"
+        elif state_number == GameState.STATE_OVERTIME:
+            return "OVERTIME"
+        elif state_number == GameState.STATE_TIMEOUT:
+            return "TIMEOUT"
+        elif state_number == GameState.STATE_DIRECT_FREEKICK:
+            return "DIRECT_FREEKICK"
+        elif state_number == GameState.STATE_INDIRECT_FREEKICK:
+            return "INDIRECT_FREEKICK"
+        elif state_number == GameState.STATE_PENALTYKICK:
+            return "PENALTYKICK"
+        elif state_number == GameState.STATE_CORNER_KICK:
+            return "CORNER_KICK"
+        elif state_number == GameState.STATE_GOAL_KICK:
+            return "GOAL_KICK"
+        elif state_number == GameState.STATE_THROW_IN:
+            return "THROW_IN"
 
     def get_reevaluate(self):
         """
