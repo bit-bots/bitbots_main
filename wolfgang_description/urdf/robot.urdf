@@ -3752,7 +3752,7 @@
     <axis xyz="-0.0 -0.0 1.0"/>
     <parent link="neck"/>
     <child link="head"/>
-    <limit effort="5.475" lower="-1.5708" upper="1.0472" velocity="8.17"/>
+    <limit effort="5.475" lower="-1.57" upper="1.0472" velocity="8.17"/>
     <dynamics damping="0.67" friction="0.0"/>
   </joint>
   <joint name="HeadPan" type="revolute">
@@ -3760,7 +3760,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="torso"/>
     <child link="neck"/>
-    <limit effort="5.475" lower="-2.0944" upper="2.0944" velocity="8.17"/>
+    <limit effort="5.475" lower="-2.36" upper="2.36" velocity="8.17"/>
     <dynamics damping="0.67" friction="0.0"/>
   </joint>
   <transmission name="HeadPanTransmission">
