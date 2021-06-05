@@ -28,7 +28,7 @@ class LocalizationHandler(object):
         self.dsd.load_behavior(os.path.join(dirname, 'localization.dsd'))
 
         rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, self._callback_pose, queue_size=1)
-        rospy.Subscriber("gamestate", GameState, self._callback_game_state, queue_size=1)
+        rospy.Subscriber("gamestate", GameState, self.blackboard.gamestate.gamestate_callback)
         rospy.Subscriber("robot_state", RobotControlState, self._callback_robot_control_state, queue_size=1)
 
         self.main_loop()
@@ -41,15 +41,6 @@ class LocalizationHandler(object):
         self.blackboard.poseY = msg.pose.pose.position.y
         self.blackboard.orientation = msg.pose.pose.orientation
         self.blackboard.covariance = msg.pose.covariance
-
-    def _callback_game_state(self, msg):
-        self.blackboard.game_state_received = True
-        self.blackboard.game_state = msg.gameState
-        self.blackboard.secondary_state = msg.secondaryState
-        self.blackboard.first_half = msg.firstHalf
-        self.blackboard.has_kickoff = msg.hasKickOff
-        self.blackboard.penalized = msg.penalized
-        self.blackboard.secondsTillUnpenalized = msg.secondsTillUnpenalized
 
     def _callback_robot_control_state(self, msg):
         self.blackboard.robot_control_state = msg.state

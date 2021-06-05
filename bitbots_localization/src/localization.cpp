@@ -293,6 +293,8 @@ bool Localization::reset_filter_callback(bl::ResetFilter::Request &req,
                                          bl::ResetFilter::Response &res) {
   if (req.init_mode == 3) {
     reset_filter(req.init_mode, req.x, req.y);
+  } else if (req.init_mode == 4) {
+    reset_filter(req.init_mode, req.x, req.y, req.angle);
   } else {
     reset_filter(req.init_mode);
   }
@@ -336,7 +338,19 @@ void Localization::reset_filter(int distribution, double x, double y) {
     robot_state_distribution_position_.reset(new RobotStateDistributionPosition(random_number_generator_, x, y));
     robot_pf_->drawAllFromDistribution(robot_state_distribution_position_);
   }
+}
 
+void Localization::reset_filter(int distribution, double x, double y, double angle) {
+
+  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
+      config_.particle_number, robot_pose_observation_model_, robot_motion_model_));
+
+  robot_pf_->setResamplingStrategy(resampling_);
+
+  if (distribution == 4) {
+    robot_state_distribution_pose_.reset(new RobotStateDistributionPose(random_number_generator_, x, y, angle));
+    robot_pf_->drawAllFromDistribution(robot_state_distribution_pose_);
+  }
 }
 
 void Localization::updateMeasurements() {

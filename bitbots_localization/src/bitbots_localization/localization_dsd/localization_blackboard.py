@@ -1,6 +1,7 @@
 import rospy
 import numpy
 from humanoid_league_msgs.msg import GameState, RobotControlState
+from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 
 class LocalizationBlackboard:
 
@@ -19,13 +20,7 @@ class LocalizationBlackboard:
         self.covariance = numpy.array([])
 
         #GameState
-        self.game_state_received = False
-        self.game_state = None
-        self.secondary_state = None
-        self.first_half = None
-        self.has_kickoff = None
-        self.penalized = None
-        self.secondsTillUnpenalized = None
+        self.gamestate = GameStatusCapsule()
 
         #Robot Control State
         self.robot_control_state = None
@@ -36,4 +31,3 @@ class LocalizationBlackboard:
 
         #Picked up
         self.last_state_pickup = False
-        

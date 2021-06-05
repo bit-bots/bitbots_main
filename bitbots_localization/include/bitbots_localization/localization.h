@@ -85,7 +85,7 @@ class Localization {
    * Callback for the pause service
    * @param req Request.
    * @param res Response.
-   */ 
+   */
   bool set_paused_callback( bl::SetPaused::Request &req,
                             bl::SetPaused::Response &res);
 
@@ -93,7 +93,7 @@ class Localization {
    * Callback for the filter reset service
    * @param req Request.
    * @param res Response.
-   */ 
+   */
   bool reset_filter_callback(bl::ResetFilter::Request &req,
                              bl::ResetFilter::Response &res);
 
@@ -101,43 +101,43 @@ class Localization {
    * Callback for ros dynamic reconfigure
    * @param config the updated config.
    * @param config_level Not used.
-   */ 
+   */
   void dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level);
 
   /**
    * Callback for the line messurements
    * @param msg Message containing the line points.
-   */ 
+   */
   void LineCallback(const hlm::LineInformationRelative &msg);
 
   /**
    * Callback for the line point cloud messurements
    * @param msg Message containing the line point cloud.
-   */ 
+   */
   void LinePointcloudCallback(const sm::PointCloud2 &msg);
 
   /**
    * Callback for goal posts messurements
    * @param msg Message containing the goal posts.
-   */ 
+   */
   void GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg); //TODO
 
   /**
    * Callback for the relative field boundary messurements
    * @param msg Message containing the field boundary points.
-   */ 
+   */
   void FieldboundaryCallback(const gm::PolygonStamped &msg);
 
   /**
    * Callback for the field boundary in image the imagespace
    * @param msg Message containing the field boundary points.
-   */ 
+   */
   void FieldBoundaryInImageCallback(const gm::PolygonStamped &msg);
 
   /**
    * Resets the state distribution of the state space
    * @param distribution The type of the distribution
-   */ 
+   */
   void reset_filter(int distribution);
 
   /**
@@ -145,8 +145,17 @@ class Localization {
    * @param distribution The type of the distribution
    * @param x Position of the new state distribution
    * @param y Position of the new state distribution
-   */ 
+   */
   void reset_filter(int distribution, double x, double y);
+
+  /**
+   * Resets the state distribution of the state space
+   * @param distribution The type of the distribution
+   * @param x Position of the new state distribution
+   * @param y Position of the new state distribution
+   * @param angle Angle in which the particle distribution is centered
+   */
+  void reset_filter(int distribution, double x, double y, double angle);
 
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
@@ -215,8 +224,8 @@ class Localization {
 
   /**
    * Runs the filter for one step
-   * @param e ROS Timer event 
-   */ 
+   * @param e ROS Timer event
+   */
   void run_filter_one_step(const ros::TimerEvent &e);
 
   std::shared_ptr<Map> lines_;
@@ -234,28 +243,28 @@ class Localization {
   bool first_configuration_ = true;
 
   /**
-   * Publishes the position as a transform 
-   */ 
+   * Publishes the position as a transform
+   */
   void publish_transforms();
 
   /**
-   * Publishes the position as a message 
-   */ 
+   * Publishes the position as a message
+   */
   void publish_pose_with_covariance();
 
   /**
    * Debug publisher
-   */ 
+   */
   void publish_debug();
 
   /**
    * Publishes the visualization markers for each particle
-   */ 
+   */
   void publish_particle_markers();
 
   /**
    * Publishes the rating visualizations for each meassurement class
-   */ 
+   */
   void publish_ratings();
 
   /**
@@ -265,7 +274,7 @@ class Localization {
    * @param name name of the class
    * @param map map for this class
    * @param publisher ros publisher for the type visualization_msgs::Marker
-   */ 
+   */
   void publish_debug_rating(
     std::vector<std::pair<double, double>>    measurements,
     double scale,
@@ -275,12 +284,12 @@ class Localization {
 
   /**
    * Updates the messurements for all classes
-   */ 
+   */
   void updateMeasurements();
 
   /**
-   * Gets the and convert motion / odometry information 
-   */ 
+   * Gets the and convert motion / odometry information
+   */
   void getMotion();
 
   geometry_msgs::TransformStamped transformOdomBaseLink;
