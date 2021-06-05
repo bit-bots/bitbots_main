@@ -25,6 +25,8 @@ class AllowedToMove(AbstractDecisionElement):
                                                        GameState.STATE_THROW_IN) and \
                 self.blackboard.get_secondary_state_mode() in (GameState.MODE_PREPARATION, GameState.MODE_END):
             return 'ONLY_HEAD'
+        elif self.blackboard.gamestate.get_gamestate() == GameState.GAMESTATE_READY:
+            return 'NORMAL'
         elif self.blackboard.gamestate.get_gamestate() == GameState.GAMESTATE_PLAYING:
             if not self.blackboard.gamestate.has_kickoff() and self.blackboard.secondary_seconds_remaining() != 0:
                 return 'ONLY_HEAD'
