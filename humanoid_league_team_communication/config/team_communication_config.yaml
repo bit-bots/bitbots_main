@@ -1,4 +1,4 @@
-# The port to be used
+host: 127.0.0.1
 port: 12321
 
 # Rate of published messages in Hz
