@@ -133,7 +133,9 @@ $SecondaryStateTeamDecider
 -->BodyBehavior
 $RoleDecider
     GOALIE --> $SecondaryStateDecider
-        PENALTYSHOOT --> #PenaltyBehavior
+        PENALTYSHOOT --> @GameStateDecider
+            PLAYING --> #GoalieBehavior
+            ELSE --> @LookAtFieldFeatures, @StandAndWait
         TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
         ELSE --> $GameStateDecider
             INITIAL --> @LookAtFieldFeatures, @StandAndWait
