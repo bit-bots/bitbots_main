@@ -51,9 +51,11 @@ class HumanoidLeagueTeamCommunication:
         self.gamestate = None  # type: GameState
         self.pose = None  # type: PoseWithCovarianceStamped
         self.cmd_vel = None  # type: Twist
+        self.cmd_vel_time = rospy.Time(0)
         self.ball = None  # type: Optional[PointStamped]
         self.ball_confidence = 0
         self.strategy = None  # type: Strategy
+        self.strategy_time = rospy.Time(0)
         self.obstacles = None  # type: ObstacleRelativeArray
         self.move_base_goal = None  # type: PoseStamped
 
@@ -132,9 +134,11 @@ class HumanoidLeagueTeamCommunication:
 
     def cmd_vel_cb(self, msg):
         self.cmd_vel = msg
+        self.cmd_vel_time = rospy.Time.now()
 
     def strategy_cb(self, msg):
         self.strategy = msg
+        self.strategy_time = rospy.Time.now()
 
     def move_base_goal_cb(self, msg):
         self.move_base_goal = msg
@@ -310,7 +314,10 @@ class HumanoidLeagueTeamCommunication:
         message.timestamp.seconds = now.secs
         message.timestamp.nanos = now.nsecs
 
-        if self.gamestate:
+        message.current_pose.player_id = self.player_id
+        message.current_pose.team = self.team_id
+
+        if self.gamestate and rospy.Time.now() - self.gamestate.header.stamp < rospy.Duration(self.config['lifetime']):
             if self.gamestate.penalized:
                 message.state = robocup_extension_pb2.State.PENALISED
             else:
@@ -318,10 +325,7 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.state = robocup_extension_pb2.State.UNKNOWN_STATE
 
-        message.current_pose.player_id = self.player_id
-        message.current_pose.team = self.team_id
-
-        if self.pose:
+        if self.pose and rospy.Time.now() - self.pose.header.stamp < rospy.Duration(self.config['lifetime']):
             message.current_pose.position.x = self.pose.pose.pose.position.x
             message.current_pose.position.y = self.pose.pose.pose.position.y
             q = self.pose.pose.pose.orientation
@@ -331,20 +335,21 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.position_confidence = 0
 
-        if self.cmd_vel:
+        if self.cmd_vel and rospy.Time.now() - self.cmd_vel_time < rospy.Duration(self.config['lifetime']):
             message.walk_command.x = self.cmd_vel.linear.x
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        message.target_pose.position.x = self.move_base_goal.pose.position.x
-        message.target_pose.position.y = self.move_base_goal.pose.position.y
-        q = self.move_base_goal.pose.orientation
-        message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+        if rospy.Time.now() - self.move_base_goal.header.stamp < rospy.Duration(self.config['lifetime']):
+            message.target_pose.position.x = self.move_base_goal.pose.position.x
+            message.target_pose.position.y = self.move_base_goal.pose.position.y
+            q = self.move_base_goal.pose.orientation
+            message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
 
         # message.kick_target is currently not used
 
         # TODO add a timeout to the ball?
-        if self.ball is not None:
+        if self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']):
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
             message.ball.position.z = self.ball.point.z
@@ -354,35 +359,37 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.ball_confidence = 0
 
-        for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
-            if obstacle.type in (ObstacleRelative.ROBOT_CYAN,
-                                 ObstacleRelative.ROBOT_MAGENTA,
-                                 ObstacleRelative.ROBOT_UNDEFINED):
-                robot = robocup_extension_pb2.Robot()
-                robot.player_id = obstacle.playerNumber
+        if rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
+            for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
+                if obstacle.type in (ObstacleRelative.ROBOT_CYAN,
+                                     ObstacleRelative.ROBOT_MAGENTA,
+                                     ObstacleRelative.ROBOT_UNDEFINED):
+                    robot = robocup_extension_pb2.Robot()
+                    robot.player_id = obstacle.playerNumber
 
-                robot.position.x = obstacle.pose.pose.pose.position.x
-                robot.position.y = obstacle.pose.pose.pose.position.y
-                q = obstacle.pose.pose.pose.orientation
-                robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-                get_covariance(obstacle.pose.pose.covariance, robot.covariance)
-                team_mapping = dict((b, a for a, b in self.team_mapping))
-                robot.team = team_mapping[obstacle.type]
-                message.others.append(robot)
-                # TODO maybe rename obstacle_confidence to robot_confidences
-                message.obstacle_confidence.append(obstacle.pose.confidence)
+                    robot.position.x = obstacle.pose.pose.pose.position.x
+                    robot.position.y = obstacle.pose.pose.pose.position.y
+                    q = obstacle.pose.pose.pose.orientation
+                    robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+                    get_covariance(obstacle.pose.pose.covariance, robot.covariance)
+                    team_mapping = dict((b, a for a, b in self.team_mapping))
+                    robot.team = team_mapping[obstacle.type]
+                    message.others.append(robot)
+                    # TODO maybe rename obstacle_confidence to robot_confidences
+                    message.obstacle_confidence.append(obstacle.pose.confidence)
 
         # message.max_walking_speed is currently not set
         # how should message.time_to_ball be calculated?
 
-        role_mapping = dict((b, a for a, b in self.role_mapping))
-        message.role = role_mapping[self.strategy.role]
+        if rospy.Time.now() - self.strategy_time < rospy.Duration(self.config['lifetime']):
+            role_mapping = dict((b, a for a, b in self.role_mapping))
+            message.role = role_mapping[self.strategy.role]
 
-        action_mapping = dict((b, a for a, b in self.action_mapping))
-        message.action = action_mapping[self.strategy.action]
+            action_mapping = dict((b, a for a, b in self.action_mapping))
+            message.action = action_mapping[self.strategy.action]
 
-        side_mapping = dict((b, a for a, b in self.side_mapping))
-        message.offensive_side = side_mapping[self.strategy.offensive_side]
+            side_mapping = dict((b, a for a, b in self.side_mapping))
+            message.offensive_side = side_mapping[self.strategy.offensive_side]
 
         msg = message.SerializeToString()
         for port in self.target_ports:
