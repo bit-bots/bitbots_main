@@ -61,14 +61,14 @@ class HumanoidLeagueTeamCommunication:
 
         # Protobuf / Message mappings
         self.team_mapping = (
-            (robocup_extension_pb2.Team.UNKOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
+            (robocup_extension_pb2.Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
             (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
             (robocup_extension_pb2.Team.RED, ObstacleRelative.ROBOT_MAGENTA)
         )
         self.role_mapping = (
             (robocup_extension_pb2.Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
             (robocup_extension_pb2.Role.ROLE_IDLING, Strategy.ROLE_IDLING),
-            (robocup_extension_pb2.Role.ROLE_Other, Strategy.ROLE_OTHER),
+            (robocup_extension_pb2.Role.ROLE_OTHER, Strategy.ROLE_OTHER),
             (robocup_extension_pb2.Role.ROLE_STRIKER, Strategy.ROLE_STRIKER),
             (robocup_extension_pb2.Role.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
             (robocup_extension_pb2.Role.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
@@ -340,7 +340,7 @@ class HumanoidLeagueTeamCommunication:
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        if rospy.Time.now() - self.move_base_goal.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.move_base_goal and rospy.Time.now() - self.move_base_goal.header.stamp < rospy.Duration(self.config['lifetime']):
             message.target_pose.position.x = self.move_base_goal.pose.position.x
             message.target_pose.position.y = self.move_base_goal.pose.position.y
             q = self.move_base_goal.pose.orientation
@@ -359,7 +359,7 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.ball_confidence = 0
 
-        if rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.obstacles and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
                 if obstacle.type in (ObstacleRelative.ROBOT_CYAN,
                                      ObstacleRelative.ROBOT_MAGENTA,
@@ -372,7 +372,7 @@ class HumanoidLeagueTeamCommunication:
                     q = obstacle.pose.pose.pose.orientation
                     robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
                     get_covariance(obstacle.pose.pose.covariance, robot.covariance)
-                    team_mapping = dict((b, a for a, b in self.team_mapping))
+                    team_mapping = dict(((b, a) for a, b in self.team_mapping))
                     robot.team = team_mapping[obstacle.type]
                     message.others.append(robot)
                     # TODO maybe rename obstacle_confidence to robot_confidences
@@ -381,14 +381,14 @@ class HumanoidLeagueTeamCommunication:
         # message.max_walking_speed is currently not set
         # how should message.time_to_ball be calculated?
 
-        if rospy.Time.now() - self.strategy_time < rospy.Duration(self.config['lifetime']):
-            role_mapping = dict((b, a for a, b in self.role_mapping))
+        if self.strategy and rospy.Time.now() - self.strategy_time < rospy.Duration(self.config['lifetime']):
+            role_mapping = dict(((b, a) for a, b in self.role_mapping))
             message.role = role_mapping[self.strategy.role]
 
-            action_mapping = dict((b, a for a, b in self.action_mapping))
+            action_mapping = dict(((b, a) for a, b in self.action_mapping))
             message.action = action_mapping[self.strategy.action]
 
-            side_mapping = dict((b, a for a, b in self.side_mapping))
+            side_mapping = dict(((b, a) for a, b in self.side_mapping))
             message.offensive_side = side_mapping[self.strategy.offensive_side]
 
         msg = message.SerializeToString()
