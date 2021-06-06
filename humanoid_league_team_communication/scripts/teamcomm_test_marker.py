@@ -8,6 +8,8 @@ import math
 
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from interactive_markers.menu_handler import MenuHandler
+from transforms3d.affines import compose, decompose
+from transforms3d.quaternions import quat2mat, mat2quat
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
 from humanoid_league_msgs.msg import PoseWithCertaintyStamped, PoseWithCertaintyArray, \
     ObstacleRelative, ObstacleRelativeArray, PoseWithCertainty, TeamData
@@ -26,8 +28,6 @@ OBSTACLE_HEIGT = 0.8
 OBSTACLE_DIAMETER = 0.2
 
 rospy.init_node("team_comm_test_marker")
-tf_buffer = tf2_ros.Buffer(rospy.Duration(30))
-tf_listener = tf2_ros.TransformListener(tf_buffer)
 
 
 class TeamCommMarker(object):
@@ -56,23 +56,6 @@ class TeamCommMarker(object):
             self.active = False
         else:
             self.active = True
-            self.menu_handler.setCheckState(item, MenuHandler.CHECKED)
-        self.menu_handler.reApply(self.server)
-        self.server.applyChanges()
-
-    def id_callback(self, feedback):
-        item = feedback.menu_entry_id
-        if self.menu_handler.getCheckState(item) == MenuHandler.CHECKED:
-            # unchecking something should lead to id 1
-            self.robot_id = 1
-            self.menu_handler.setCheckState(item, MenuHandler.UNCHECKED)
-            self.menu_handler.setCheckState(2, MenuHandler.CHECKED)
-        else:
-            items = [2, 3, 4, 5]
-            self.robot_id = item - 1
-            items.remove(item)
-            for item_id in items:
-                self.menu_handler.setCheckState(item_id, MenuHandler.UNCHECKED)
             self.menu_handler.setCheckState(item, MenuHandler.CHECKED)
         self.menu_handler.reApply(self.server)
         self.server.applyChanges()
@@ -127,7 +110,25 @@ class RobotMarker(TeamCommMarker):  # todo change color based on active
         id_3 = self.menu_handler.insert("id 3", callback=self.id_callback)
         id_4 = self.menu_handler.insert("id 4", callback=self.id_callback)
         self.menu_handler.setCheckState(id_1, MenuHandler.CHECKED)
+        self.menu_handler.apply(self.server, self.marker_name)
         self.ball = BallMarker(server, self.robot_id)
+
+    def id_callback(self, feedback):
+        item = feedback.menu_entry_id
+        if self.menu_handler.getCheckState(item) == MenuHandler.CHECKED:
+            # unchecking something should lead to id 1
+            self.robot_id = 1
+            self.menu_handler.setCheckState(item, MenuHandler.UNCHECKED)
+            self.menu_handler.setCheckState(2, MenuHandler.CHECKED)
+        else:
+            items = [3, 4, 5, 6]
+            self.robot_id = item - 2
+            items.remove(item)
+            for item_id in items:
+                self.menu_handler.setCheckState(item_id, MenuHandler.UNCHECKED)
+            self.menu_handler.setCheckState(item, MenuHandler.CHECKED)
+        self.menu_handler.reApply(self.server)
+        self.server.applyChanges()
 
     def make_individual_markers(self, msg):
         marker = Marker()
@@ -147,6 +148,7 @@ class BallMarker(TeamCommMarker):
         self.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
         super().__init__(server)
         self.pose.position.x = 1.0
+        self.pose.position.y = 1.0
 
     def make_individual_markers(self, msg):
         marker = Marker()
@@ -162,95 +164,8 @@ class BallMarker(TeamCommMarker):
         return (marker,)
 
 
-class ObstacleMarker(TeamCommMarker):
-    def __init__(self, server, name):
-        self.marker_name = name
-        self.type = 0  # unknown
-        self.player_number = 0
-        self.confidence = 1.0
-        self.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
-        super(ObstacleMarker, self).__init__(server)
-        sub_menu_handle = self.menu_handler.insert("Color")
-        h_mode_last = self.menu_handler.insert("red", parent=sub_menu_handle, callback=self.colorCb)
-        h_mode_last = self.menu_handler.insert("blue", parent=sub_menu_handle, callback=self.colorCb)
-        h_mode_last = self.menu_handler.insert("unknown", parent=sub_menu_handle, callback=self.colorCb)
-        self.menu_handler.setCheckState(h_mode_last, MenuHandler.CHECKED)
-        self.menu_handler.apply(self.server, self.marker_name)
-        self.pose.position.x = 2.0
-
-    def colorCb(self, feedback):
-        item = feedback.menu_entry_id
-        if self.menu_handler.getCheckState(item) == MenuHandler.CHECKED:
-            # unchecking something should lead to unknown color
-            self.type = 0
-            self.menu_handler.setCheckState(item, MenuHandler.UNCHECKED)
-            self.menu_handler.setCheckState(5, MenuHandler.CHECKED)
-            self.int_marker.controls[1].markers[0].type.r = 0.0
-            self.int_marker.controls[1].markers[0].type.g = 0.0
-            self.int_marker.controls[1].markers[0].type.b = 0.0
-        else:
-            if item == 3:
-                self.type = 2
-                self.menu_handler.setCheckState(4, MenuHandler.UNCHECKED)
-                self.menu_handler.setCheckState(5, MenuHandler.UNCHECKED)
-                self.int_marker.controls[1].markers[0].type.r = 1.0
-                self.int_marker.controls[1].markers[0].type.g = 0.0
-                self.int_marker.controls[1].markers[0].type.b = 0.0
-            elif item == 4:
-                self.type = 3
-                self.menu_handler.setCheckState(3, MenuHandler.UNCHECKED)
-                self.menu_handler.setCheckState(5, MenuHandler.UNCHECKED)
-                self.int_marker.controls[1].markers[0].type.r = 0.0
-                self.int_marker.controls[1].markers[0].type.g = 0.0
-                self.int_marker.controls[1].markers[0].type.b = 1.0
-            elif item == 5:
-                self.type = 0
-                self.menu_handler.setCheckState(3, MenuHandler.UNCHECKED)
-                self.menu_handler.setCheckState(4, MenuHandler.UNCHECKED)
-                self.int_marker.controls[1].markers[0].type.r = 0.0
-                self.int_marker.controls[1].markers[0].type.g = 0.0
-                self.int_marker.controls[1].markers[0].type.b = 0.0
-            self.menu_handler.setCheckState(item, MenuHandler.CHECKED)
-
-        self.menu_handler.reApply(self.server)
-        self.server.applyChanges()
-
-    def make_individual_markers(self, msg):
-        marker = Marker()
-
-        marker.type = Marker.CYLINDER
-        marker.scale = Vector3(POST_DIAMETER, POST_DIAMETER, OBSTACLE_HEIGT)
-        marker.color.r = 0.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
-        marker.color.a = 0.4
-        marker.pose.position = Point(0, 0, OBSTACLE_HEIGT / 2)
-
-        return (marker,)
-
-    def get_absolute_message(self):
-        msg = ObstacleRelative()
-        msg.pose.pose.pose.position = self.pose.position
-        msg.height = OBSTACLE_HEIGT
-        msg.width = OBSTACLE_DIAMETER
-        msg.type = self.type
-        msg.pose.confidence = self.confidence
-        msg.playerNumber = self.player_number
-        return msg
-
-
-class ObstacleMarkerArray:
-    def __init__(self, server, cam_info):
-        self.cam_info = cam_info
-        self.absolute_publisher = rospy.Publisher("obstacles_absolute", ObstacleRelativeArray, queue_size=1)
-        self.relative_publisher = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
-        self.obstacles = []
-        for i in range(0, OBSTACLE_NUMBER):
-            self.obstacles.append(ObstacleMarker(server, cam_info, "obstacle_" + str(i)))
-
-
 class TeamMessage:
-    def __init__(self, robot):  # todo ball, obstacles
+    def __init__(self, robot):
         self.robot = robot
         self.pub = rospy.Publisher("team_data", TeamData, queue_size=1)
 
@@ -265,18 +180,27 @@ class TeamMessage:
 
             if self.robot.ball.active:
                 try:
-                    ball_point_stamped = PointStamped()
-                    ball_point_stamped.header.stamp = rospy.Time.now()
-                    ball_point_stamped.header.frame_id = "map"
-                    ball_point_stamped.point = self.ball.pose.position
-                    ball_in_camera_optical_frame = tf_buffer.transform(ball_point_stamped, "map",
-                                                                       timeout=rospy.Duration(0.5))
-                    ball_in_footprint_frame = tf_buffer.transform(ball_in_camera_optical_frame, "base_footprint",
-                                                                  timeout=rospy.Duration(0.5))
+                    # beware, we use transforms3d here which has quaternion in different format than ros
+                    robot_xyzw = self.robot.pose.orientation
+                    robot_mat_in_world = quat2mat((robot_xyzw.w, robot_xyzw.x, robot_xyzw.y, robot_xyzw.z))
+                    robot_trans_in_world = compose(
+                        (self.robot.pose.position.x, self.robot.pose.position.y, self.robot.pose.position.z),
+                        robot_mat_in_world, [1, 1, 1])
+                    world_trans_in_robot = np.linalg.inv(robot_trans_in_world)
+                    ball_xyzw = self.robot.ball.pose.orientation
+                    mat_in_world = quat2mat((ball_xyzw.w, ball_xyzw.x, ball_xyzw.y, ball_xyzw.z))
+                    trans_in_world = compose((self.robot.ball.pose.position.x, self.robot.ball.pose.position.y,
+                                              self.robot.ball.pose.position.z),
+                                             mat_in_world, [1, 1, 1])
+                    trans_in_robot = np.matmul(world_trans_in_robot, trans_in_world)
+                    pos_in_robot, mat_in_robot, _, _ = decompose(trans_in_robot)
+                    quat_in_robot = mat2quat(mat_in_robot)
+
                     ball_relative = PoseWithCertainty()
-                    ball_relative.pose.pose.position = ball_in_footprint_frame.point
-                    ball_relative.pose.pose.orientation = Quaternion(0, 0, 0, 1)
-                    ball_relative.confidence = self.ball.confidence
+                    ball_relative.pose.pose.position = Point(*pos_in_robot)
+                    ball_relative.pose.pose.orientation = Quaternion(quat_in_robot[1], quat_in_robot[2],
+                                                                     quat_in_robot[3], quat_in_robot[0])
+                    ball_relative.confidence = self.robot.ball.confidence
                     msg.ball_relative = ball_relative
 
                     cartesian_distance = math.sqrt(
@@ -295,7 +219,6 @@ class TeamMessage:
                 msg.time_to_position_at_ball = 0.0
 
             self.pub.publish(msg)
-        # todo obstacles
 
 
 if __name__ == "__main__":

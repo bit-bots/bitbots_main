@@ -1,9 +1,13 @@
 <launch>
+    <arg name="rviz" default="true"/>
+
     <rosparam file="$(find humanoid_league_team_communication)/config/team_communication_config.yaml" command="load"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" output="screen" 
-          args="-d $(find humanoid_league_team_communication)/config/team_comm_marker.rviz">
-    </node>
+    <group if="$(arg rviz)">
+        <node name="rviz" pkg="rviz" type="rviz" output="screen"
+              args="-d $(find humanoid_league_team_communication)/config/team_comm_marker.rviz">
+        </node>
+    </group>
     <node name="team_comm_test_marker" pkg="humanoid_league_team_communication" type="teamcomm_test_marker.py" output="screen"/>
 
 </launch>
