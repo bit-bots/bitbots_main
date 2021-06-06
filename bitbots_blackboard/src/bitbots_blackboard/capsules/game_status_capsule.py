@@ -5,6 +5,7 @@ GameStatusCapsule
 Provides information about the current game state.
 
 """
+import sys
 import rosparam
 import rospy
 from humanoid_league_msgs.msg import GameState
@@ -16,6 +17,7 @@ class GameStatusCapsule:
         self.gamestate = GameState()
         self.last_update = 0
         self.unpenalized_time = 0
+        self.last_goal_from_us_time = rospy.Duration(86400)
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
@@ -47,6 +49,9 @@ class GameStatusCapsule:
 
     def get_opp_goals(self):
         return self.gamestate.rivalScore
+
+    def get_seconds_since_own_goal(self):
+        return rospy.Time.now() - self.last_goal_from_us_time
 
     def get_seconds_remaining(self):
         # Time from the message minus time passed since receiving it
@@ -80,6 +85,9 @@ class GameStatusCapsule:
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:
             self.unpenalized_time = rospy.get_time()
+
+        if gs.ownScore > self.gamestate.ownScore:
+            self.last_goal_from_us_time = rospy.Time.now()
 
         self.last_update = rospy.get_time()
         self.gamestate = gs
