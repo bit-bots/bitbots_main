@@ -12,7 +12,8 @@ from threading import Lock
 import tf2_ros
 import transforms3d.euler
 from geometry_msgs.msg import PoseWithCovariance, Twist
-from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, ObstacleRelative
+from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
+    ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped
 
 import robocup_extension_pb2
@@ -52,6 +53,7 @@ class HumanoidLeagueTeamCommunication:
         self.cmd_vel = None  # type: Twist
         self.ball = None  # type: Optional[PointStamped]
         self.ball_confidence = 0
+        self.strategy = None  # type: Strategy
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
@@ -66,14 +68,14 @@ class HumanoidLeagueTeamCommunication:
         self.receive_forever()
 
     def create_publishers(self):
-        self.pub_team_data = rospy.Publisher(self.config['team_data'], TeamData, queue_size=1)
+        self.pub_team_data = rospy.Publisher(self.config['team_data_topic'], TeamData, queue_size=1)
 
     def create_subscribers(self):
-        # TODO: Use rostopics from config and check all in config
-        rospy.Subscriber('gamestate', GameState, self.gamestate_cb, queue_size=1)
-        rospy.Subscriber('pose_with_covariance', PoseWithCovariance, self.pose_cb, queue_size=1)
-        rospy.Subscriber('cmd_vel', Twist, self.cmd_vel_cb, queue_size=1)
-        rospy.Subscriber('balls_relative', PoseWithCertaintyArray, self.ball_cb, queue_size=1)
+        rospy.Subscriber(self.config['gamestate_topic'], GameState, self.gamestate_cb, queue_size=1)
+        rospy.Subscriber(self.config['pose_topic'], PoseWithCovariance, self.pose_cb, queue_size=1)
+        rospy.Subscriber(self.config['cmd_vel_topic'], Twist, self.cmd_vel_cb, queue_size=1)
+        rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyArray, self.ball_cb, queue_size=1)
+        rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
 
     def get_connection(self):
         rospy.loginfo(f"Binding to port {self.receive_port}", logger_name="team_comm")
@@ -97,6 +99,9 @@ class HumanoidLeagueTeamCommunication:
 
     def cmd_vel_cb(self, msg):
         self.cmd_vel = msg
+
+    def strategy_cb(self, msg):
+        self.strategy = msg
 
     def ball_cb(self, msg: PoseWithCertaintyArray):
         if msg.poses:
