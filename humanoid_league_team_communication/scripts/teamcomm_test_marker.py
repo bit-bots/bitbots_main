@@ -19,10 +19,8 @@ import numpy as np
 
 ROBOT_HEIGHT = 0.8
 ROBOT_DIAMETER = 0.2
+ROBOT_SPEED = 0.3
 BALL_DIAMETER = 0.13
-GOAL_WIDTH = 1.5
-GOAL_HEIGHT = 1.1
-POST_DIAMETER = 0.1
 OBSTACLE_NUMBER = 4
 OBSTACLE_HEIGT = 0.8
 OBSTACLE_DIAMETER = 0.2
@@ -37,18 +35,12 @@ class TeamCommMarker(object):
         self.server = server
         self.pose = Pose()
         self.active = True
-        self.robot_id = 1
         self.confidence = 1.0
         self.int_marker = None
         self.make_marker()
         self.menu_handler = MenuHandler()
         item = self.menu_handler.insert("active", callback=self.menu_callback)
         self.menu_handler.setCheckState(item, MenuHandler.CHECKED)
-        id_1 = self.menu_handler.insert("id 1", callback=self.id_callback)
-        id_2 = self.menu_handler.insert("id 2", callback=self.id_callback)
-        id_3 = self.menu_handler.insert("id 3", callback=self.id_callback)
-        id_4 = self.menu_handler.insert("id 4", callback=self.id_callback)
-        self.menu_handler.setCheckState(id_1, MenuHandler.CHECKED)
         high_conf = self.menu_handler.insert("high confidence", callback=self.conf_callback)
         self.menu_handler.setCheckState(high_conf, MenuHandler.CHECKED)
         self.menu_handler.apply(self.server, self.marker_name)
@@ -123,28 +115,35 @@ class TeamCommMarker(object):
         self.server.insert(self.int_marker, self.feedback)
 
 
-class RobotMarker(TeamCommMarker):
+class RobotMarker(TeamCommMarker):  # todo change color based on active
     def __init__(self, server):
         self.marker_name = "team_robot"
         self.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
         super().__init__(server)
         self.pose.position.x = 3.0
+        self.robot_id = 1
+        id_1 = self.menu_handler.insert("id 1", callback=self.id_callback)
+        id_2 = self.menu_handler.insert("id 2", callback=self.id_callback)
+        id_3 = self.menu_handler.insert("id 3", callback=self.id_callback)
+        id_4 = self.menu_handler.insert("id 4", callback=self.id_callback)
+        self.menu_handler.setCheckState(id_1, MenuHandler.CHECKED)
+        self.ball = BallMarker(server, self.robot_id)
 
     def make_individual_markers(self, msg):
         marker = Marker()
         marker.type = Marker.CUBE
         marker.scale = Vector3(ROBOT_DIAMETER, ROBOT_DIAMETER, ROBOT_HEIGHT)
-        marker.color.r = 0.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        marker.color.r = 1.0
+        marker.color.g = 1.0
+        marker.color.b = 0.5
         marker.color.a = 0.4
         marker.pose.position = Point(0, 0, ROBOT_HEIGHT / 2)
         return (marker,)
 
 
 class BallMarker(TeamCommMarker):
-    def __init__(self, server):
-        self.marker_name = "team_ball"
+    def __init__(self, server, id):
+        self.marker_name = f"team_ball_{id}"
         self.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
         super().__init__(server)
         self.pose.position.x = 1.0
@@ -157,8 +156,8 @@ class BallMarker(TeamCommMarker):
         marker.scale.z = BALL_DIAMETER
         marker.pose.position.z = BALL_DIAMETER / 2
         marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        marker.color.g = 1.0
+        marker.color.b = 0.5
         marker.color.a = 0.4
         return (marker,)
 
@@ -251,13 +250,11 @@ class ObstacleMarkerArray:
 
 
 class TeamMessage:
-    def __init__(self, robot, ball):  # todo ball, obstacles
+    def __init__(self, robot):  # todo ball, obstacles
         self.robot = robot
-        self.ball = ball
-        # self.obstacles = obstacles
         self.pub = rospy.Publisher("team_data", TeamData, queue_size=1)
 
-    def publish(self, e):  # todo check if should be published
+    def publish(self, dt):
         if self.robot.active:
             msg = TeamData()
             msg.header.stamp = rospy.Time.now()
@@ -265,51 +262,49 @@ class TeamMessage:
             msg.robot_id = self.robot.robot_id
             msg.robot_position.pose.pose = self.robot.pose
             msg.robot_position.confidence = self.robot.confidence
+
+            if self.robot.ball.active:
+                try:
+                    ball_point_stamped = PointStamped()
+                    ball_point_stamped.header.stamp = rospy.Time.now()
+                    ball_point_stamped.header.frame_id = "map"
+                    ball_point_stamped.point = self.ball.pose.position
+                    ball_in_camera_optical_frame = tf_buffer.transform(ball_point_stamped, "map",
+                                                                       timeout=rospy.Duration(0.5))
+                    ball_in_footprint_frame = tf_buffer.transform(ball_in_camera_optical_frame, "base_footprint",
+                                                                  timeout=rospy.Duration(0.5))
+                    ball_relative = PoseWithCertainty()
+                    ball_relative.pose.pose.position = ball_in_footprint_frame.point
+                    ball_relative.pose.pose.orientation = Quaternion(0, 0, 0, 1)
+                    ball_relative.confidence = self.ball.confidence
+                    msg.ball_relative = ball_relative
+
+                    cartesian_distance = math.sqrt(
+                        ball_relative.pose.pose.position.x ** 2 + ball_relative.pose.pose.position.y ** 2)
+                    msg.time_to_position_at_ball = cartesian_distance / ROBOT_SPEED
+                except tf2_ros.LookupException as ex:
+                    rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
+                    return None
+                except tf2_ros.ExtrapolationException as ex:
+                    rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
+                    return None
+                self.pub.publish(msg)
+            else:
+                # ball not seen
+                msg.ball_relative.confidence = 0.0
+                msg.time_to_position_at_ball = 0.0
+
             self.pub.publish(msg)
-            # todo add time to ball based on the position where the ball is
-
-
-
-        if self.ball.active: #todo maybe also publish but as not seen
-            msg = TeamData()
-            msg.header.stamp = rospy.Time.now()
-            msg.header.frame_id = "map"
-            msg.robot_id = self.ball.robot_id
-            try:
-                ball_point_stamped = PointStamped()
-                ball_point_stamped.header.stamp = rospy.Time.now()
-                ball_point_stamped.header.frame_id = "map"
-                ball_point_stamped.point = self.ball.pose.position
-                ball_in_camera_optical_frame = tf_buffer.transform(ball_point_stamped, "map", timeout=rospy.Duration(0.5))
-                ball_in_footprint_frame = tf_buffer.transform(ball_in_camera_optical_frame, "base_footprint",
-                                                              timeout=rospy.Duration(0.5))
-                ball_relative = PoseWithCertainty()
-                ball_relative.pose.pose.position = ball_in_footprint_frame.point
-                ball_relative.pose.pose.orientation = Quaternion(0, 0, 0, 1)
-                ball_relative.confidence = self.ball.confidence
-                msg.ball_relative = ball_relative
-            except tf2_ros.LookupException as ex:
-                rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
-                return None
-            except tf2_ros.ExtrapolationException as ex:
-                rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
-                return None
-            self.pub.publish(msg)
-
-        #todo obstacles
+        # todo obstacles
 
 
 if __name__ == "__main__":
     # retrieve InteractiveMarkerServer and setup subscribers and publishers
     server = InteractiveMarkerServer("basic_controls")
     robot = RobotMarker(server)
-    ball = BallMarker(server)
-    # goal = GoalMarker(server)
-    # obstacles = ObstacleMarkerArray(server)
-
     server.applyChanges()
 
-    team_message = TeamMessage(robot, ball)
+    team_message = TeamMessage(robot)
     # create a timer to update the published ball transform
     rospy.Timer(rospy.Duration(0.1), team_message.publish)
     # run and block until finished
