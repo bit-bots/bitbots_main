@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import math
 import socket
 from typing import Optional
 
@@ -378,7 +378,12 @@ class HumanoidLeagueTeamCommunication:
                     message.obstacle_confidence.append(obstacle.pose.confidence)
 
         # message.max_walking_speed is currently not set
-        # how should message.time_to_ball be calculated?
+
+        if (self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']) and
+                self.pose and rospy.Time.now() - self.pose.header.stamp < rospy.Duration(self.config['lifetime'])):
+            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x) ** 2 +
+                                      (self.ball.point.y - self.pose.pose.pose.position.y) ** 2)
+            message.time_to_ball = ball_distance / self.config['avg_walking_speed']
 
         if self.strategy and rospy.Time.now() - self.strategy_time < rospy.Duration(self.config['lifetime']):
             role_mapping = dict(((b, a) for a, b in self.role_mapping))
