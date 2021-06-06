@@ -215,9 +215,12 @@ class HumanoidLeagueTeamCommunication:
 
         team_data = TeamData()
 
-        # TODO: Handle?
         player_id = message.current_pose.player_id
-        player_team = message.current_pose.team
+        team_id = message.current_pose.team
+
+        if player_id == self.player_id or team_id != self.team_id:
+            # Skip information from ourselves or from the other team
+            return
 
         # Handle timestamp
         ##################
@@ -316,6 +319,7 @@ class HumanoidLeagueTeamCommunication:
             message.state = robocup_extension_pb2.State.UNKNOWN_STATE
 
         message.current_pose.player_id = self.player_id
+        message.current_pose.team = self.team_id
 
         if self.pose:
             message.current_pose.position.x = self.pose.pose.position.x
@@ -323,7 +327,6 @@ class HumanoidLeagueTeamCommunication:
             q = self.pose.pose.orientation
             # z is theta
             message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-            message.current_pose.team = self.team_id
             message.position_confidence = 1
         else:
             message.position_confidence = 0
