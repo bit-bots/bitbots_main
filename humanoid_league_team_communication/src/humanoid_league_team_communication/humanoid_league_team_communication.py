@@ -8,17 +8,14 @@ import rospkg
 import struct
 
 import tf2_ros
-import transforms3d.euler
-from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
+import transforms3d
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
     ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped, PoseStamped
 
 import robocup_extension_pb2
 
-
-# TODO: Handle lifetime from config
-# TODO: Handle belief_threshold from config
 
 class HumanoidLeagueTeamCommunication:
     def __init__(self):
@@ -347,7 +344,6 @@ class HumanoidLeagueTeamCommunication:
 
         # message.kick_target is currently not used
 
-        # TODO add a timeout to the ball?
         if self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']):
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
