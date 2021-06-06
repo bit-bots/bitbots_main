@@ -53,9 +53,11 @@ $LocalizationAvailable
         HIGH --> $TimerRunning + name:reorientation
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $BallSeen
-                YES --> $BallDangerous
+                YES --> $ClosestToBall
+                    YES --> $BallDangerous
+                        NO --> @GoToBlockPosition, @LookAtFieldFeatures
+                        ELSE --> #GoAndKickBallMapGoal
                     NO --> @GoToBlockPosition, @LookAtFieldFeatures
-                    ELSE --> #GoAndKickBallMapGoal
                 NO --> @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
@@ -72,7 +74,9 @@ $LocalizationAvailable
         HIGH --> $TimerRunning + name:reorientation
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $BallSeen
-                YES --> #GoAndKickBallMapGoal
+                YES --> $ClosestToBallNoGoalie
+                    YES --> #GoAndKickBallMapGoal
+                    NO --> @GoToBall + distance: 1
                 NO --> @Stop, @LookAtFieldFeatures, @SearchBall
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationPlayerBehavior
@@ -90,7 +94,9 @@ $LocalizationAvailable
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
             NO --> $BallSeen
                 YES --> $BallInDefensiveArea
-                    YES --> #GoAndKickBallMapGoal
+                    YES --> $ClosestToBallNoGoalie
+                        YES --> #GoAndKickBallMapGoal
+                        NO --> @GoToDefensePosition
                     NO -->  $BallClose
                         YES --> #GoAndKickBallMapGoal
                         NO --> @GoToDefensePosition

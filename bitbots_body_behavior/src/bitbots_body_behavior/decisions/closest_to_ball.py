@@ -13,6 +13,7 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
             return "YES"
         return "NO"
 
+
 class ClosestToBall(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(ClosestToBall, self).__init__(blackboard, dsd, parameters)

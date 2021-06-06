@@ -69,7 +69,6 @@ class TeamDataCapsule:
         assert role in [Strategy.ROLE_STRIKER, Strategy.ROLE_SUPPORTER, Strategy.ROLE_DEFENDER,
                         Strategy.ROLE_OTHER, Strategy.ROLE_GOALIE, Strategy.ROLE_IDLING]
         self.strategy.role = role
-        self.strategy_sender.publish(self.strategy)
         self.role_update = rospy.get_time()
 
     def get_role(self):
@@ -82,17 +81,14 @@ class TeamDataCapsule:
         assert action in [TeamData.ACTION_UNDEFINED, TeamData.ACTION_POSITIONING, TeamData.ACTION_GOING_TO_BALL,
                           TeamData.ACTION_TRYING_TO_SCORE, TeamData.ACTION_WAITING]
         self.strategy.action = action
-        self.strategy_sender.publish(self.strategy)
         self.action_update = rospy.get_time()
 
     def get_action(self):
         return self.strategy.action, self.action_update
 
-    def publish_kickoff_strategy(self, strategy):
-        """Set the kickoff strategy"""
+    def set_kickoff_strategy(self, strategy):
         assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
         self.strategy.offensive_side = strategy
-        self.strategy_sender.publish(self.strategy)
         self.strategy_update = rospy.get_time()
 
     def get_kickoff_strategy(self):
@@ -103,3 +99,7 @@ class TeamDataCapsule:
         self.times_to_ball[msg.robot_id] = msg.time_to_position_at_ball
         self.team_strategy[msg.robot_id] = msg.strategy.role
         self.last_update_team_data = rospy.get_time()
+
+    def publish_strategy(self):
+        """Publish for team comm"""
+        self.strategy_sender.publish(self.strategy)

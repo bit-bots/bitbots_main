@@ -66,4 +66,5 @@ if __name__ == "__main__":
     rate = Rate(5)
     while not rospy.is_shutdown():
         D.update()
+        D.blackboard.team_data.publish_strategy()
         rate.sleep()
