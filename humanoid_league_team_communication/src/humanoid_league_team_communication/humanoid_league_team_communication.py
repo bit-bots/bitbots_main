@@ -12,7 +12,7 @@ from threading import Lock
 import tf2_ros
 import transforms3d.euler
 from geometry_msgs.msg import PoseWithCovariance, Twist, PointStamped
-from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData
+from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, ObstacleRelative
 
 import robocup_extension_pb2
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -132,6 +132,31 @@ class HumanoidLeagueTeamCommunication:
             # TODO Send stuff (if all data is available?)
 
     def handle_message(self, msg):
+        def set_covariance(fmat3, ros_covariance):
+            # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
+            ros_covariance[0] = fmat3.x.x
+            ros_covariance[1] = fmat3.y.x
+            ros_covariance[5] = fmat3.z.x
+            ros_covariance[6] = fmat3.x.y
+            ros_covariance[7] = fmat3.y.y
+            ros_covariance[11] = fmat3.z.y
+            ros_covariance[30] = fmat3.x.z
+            ros_covariance[31] = fmat3.y.z
+            ros_covariance[35] = fmat3.z.z
+
+        def set_pose(robot, pose):
+            pose.pose.position.x = robot.position.x
+            pose.pose.position.y = robot.position.y
+
+            quat = transforms3d.euler.euler2quat([0.0, 0.0, robot.position.z])  #wxyz -> ros: xyzw
+            pose.pose.orientation.x = quat[1]
+            pose.pose.orientation.y = quat[2]
+            pose.pose.orientation.z = quat[3]
+            pose.pose.orientation.w = quat[0]
+
+            if pose.covariance:
+                set_covariance(robot.covariance, pose.covariance)
+
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
 
@@ -143,24 +168,73 @@ class HumanoidLeagueTeamCommunication:
         player_team = message.current_pose.team
 
         # Handle timestamp
+        ##################
         team_data.header.stamp.secs = message.timestamp.seconds
         team_data.header.stamp.nsecs = message.timestamp.nanos
         # TODO: FRAME_ID
 
+        # Handle state
+        ##############
         team_data.state = message.state
 
         # Handle pose of current player
-        team_data.robot_position.pose.pose.position.x = message.current_pose.position.x
-        team_data.robot_position.pose.pose.position.y = message.current_pose.position.y
+        ###############################
+        set_pose(message.current_pose, team_data.robot_position.pose)
 
-        quat = transforms3d.euler.euler2quat([0.0, 0.0, message.current_pose.position.z])  #wxyz -> ros: xyzw
-        team_data.robot_position.pose.pose.orientation.x = quat[1]
-        team_data.robot_position.pose.pose.orientation.y = quat[2]
-        team_data.robot_position.pose.pose.orientation.z = quat[3]
-        team_data.robot_position.pose.pose.orientation.w = quat[0]
+        if hasattr(message, "position_confidence"):
+            team_data.robot_position.confidence = message.position_confidence
 
-        if message.current_pose.covariance:
-            team_data.robot_position.pose.covariance = message.current_pose.position.y
+        # Handle ball
+        #############
+        team_data.ball_relative.pose.pose.position.x = message.ball.position.x
+        team_data.ball_relative.pose.pose.position.y = message.ball.position.y
+        team_data.ball_relative.pose.pose.position.z = message.ball.position.z
+
+        # TODO: Ball velocity
+
+        if message.ball.covariance:
+            set_covariance(message.ball.covariance, team_data.ball_relative.pose.covariance)
+
+        # Handle obstacles
+        ##################
+        obstacle_relative_array = ObstacleRelativeArray()
+        # TODO: Header
+
+        obstacles = ()
+        for index, robot in enumerate(message.others):
+            obstacle = ObstacleRelative()
+
+            # Obstacle type
+            team_to_obstacle_type = {
+                robocup_extension_pb2.Team.UNKOWN_TEAM: ObstacleRelative.ROBOT_UNDEFINED,
+                robocup_extension_pb2.Team.BLUE: ObstacleRelative.ROBOT_CYAN,
+                robocup_extension_pb2.Team.RED: ObstacleRelative.ROBOT_MAGENTA,
+            }
+            obstacle.type = team_to_obstacle_type[robot.team]
+
+            obstacle.playerNumber = robot.player_id
+
+            set_pose(robot, obstacle.pose.pose)
+            if hasattr(message, "obstacle_confidence") and index < len(message.obstacle_confidence):
+                obstacle.pose.confidence = message.obstacle_confidence[index]
+
+            # width
+            # heigth
+
+            obstacles.append(obstacle)
+        team_data.obstacles = obstacles
+
+        # Handle time to position at ball
+        #################################
+
+        # Handle strategy
+        #################
+        if hasattr(message, "role"):
+            team_data.strategy.role = message.role
+        if hasattr(message, "action"):
+            team_data.strategy.action = message.action
+        if hasattr(message, "offensive_side"):
+            team_data.strategy.offensive_side = message.offensive_side
 
     def send_message(self, event):
         message = robocup_extension_pb2.Message()
