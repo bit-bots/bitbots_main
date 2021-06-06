@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import socket
+from typing import Optional
 
 import rospy
 import rospkg
@@ -8,8 +9,9 @@ import struct
 import copy
 from threading import Lock
 
+import tf2_ros
 import transforms3d.euler
-from geometry_msgs.msg import PoseWithCovariance, Twist, Pose
+from geometry_msgs.msg import PoseWithCovariance, Twist, PointStamped
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray
 
 import robocup_extension_pb2
@@ -38,7 +40,11 @@ class HumanoidLeagueTeamCommunication:
         self.gamestate = None  # type: GameState
         self.pose = None  # type: PoseWithCovariance
         self.cmd_vel = None  # type: Twist
-        self.ball = None  # type: PoseWithCertainty
+        self.ball = None  # type: Optional[PointStamped]
+        self.ball_confidence = 0
+
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         # we will try multiple times till we manage to get a connection
         self.socket = None
@@ -62,6 +68,10 @@ class HumanoidLeagueTeamCommunication:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             sock.connect((self.host, self.port))
+        # TODO
+        except:
+            return None
+        return sock
 
     def close_connection(self):
         self.socket.close()
@@ -91,8 +101,23 @@ class HumanoidLeagueTeamCommunication:
     def cmd_vel_cb(self, msg):
         self.cmd_vel = msg
 
-    def ball_cb(self, msg):
-        self.ball = msg
+    def ball_cb(self, msg: PoseWithCertaintyArray):
+        if msg.poses:
+            # Sort by confidence
+            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)
+            # Highest confidence
+            ball = balls[0]
+
+            if ball.confidence == 0:
+                self.ball = None
+            else:
+                # Transform to map
+                ball_point = PointStamped(msg.header, ball.pose.pose.position)
+                try:
+                    self.ball = self.tf_buffer.transform(ball_point, "map", timeout=rospy.Duration.from_sec(0.3))
+                    self.ball_confidence = ball.confidence
+                except tf2_ros.TransformException:
+                    self.ball = None
 
     def run(self):
         while not rospy.is_shutdown():
@@ -137,6 +162,47 @@ class HumanoidLeagueTeamCommunication:
         # message.kick_target is currently not used
 
         ball = robocup_extension_pb2.Ball()
+        # TODO add a timeout to the ball?
+        if self.ball is not None:
+            ball.position.x = self.ball.point.x
+            ball.position.y = self.ball.point.y
+            ball.position.z = self.ball.point.z
+            # ball.velocity is currently not set, wait for ball filter
+            # ball.covariance is currently not set, wait for ball filter
+            message.ball_confidence = self.ball_confidence
+        else:
+            # TODO what if we don't see a ball?
+            ball.position.x = 0
+            ball.position.y = 0
+            ball.position.z = 0
+            message.ball_confidence = 0
+
+        message.ball = ball
+
+        # message.others should be set from robot detections
+
+        # message.max_walking_speed is currently not set
+        # message.position_confidence is not available (and partially covered by message.current_pose.covariance)
+        # how should message.time_to_ball be calculated?
+
+        # We ask every time for the role because it might change during the game
+        role = rospy.get_param('role', None)
+        if role == 'goalie':
+            message.role = robocup_extension_pb2.Role.ROLE_GOALIE
+        elif role == 'defense':
+            message.role = robocup_extension_pb2.Role.ROLE_DEFENDER
+        elif role == 'offense':
+            message.role = robocup_extension_pb2.Role.ROLE_STRIKER
+        else:
+            message.role = robocup_extension_pb2.Role.ROLE_OTHER
+
+        # where do we get message.action from?
+        # do we even have an offensive side for message.offensive_side?
+
+        # message.obstacle_confidence should probably be renamed to robot_confidences because we do not
+        # publish general obstacles, only the other robots.
+
+        self.socket.send(message)
 
 
 if __name__ == '__main__':
