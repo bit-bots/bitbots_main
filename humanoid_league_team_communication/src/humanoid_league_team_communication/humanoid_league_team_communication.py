@@ -147,7 +147,7 @@ class HumanoidLeagueTeamCommunication:
             pose.pose.position.x = robot.position.x
             pose.pose.position.y = robot.position.y
 
-            quat = transforms3d.euler.euler2quat([0.0, 0.0, robot.position.z])  #wxyz -> ros: xyzw
+            quat = transforms3d.euler.euler2quat(0.0, 0.0, robot.position.z)  #wxyz -> ros: xyzw
             pose.pose.orientation.x = quat[1]
             pose.pose.orientation.y = quat[2]
             pose.pose.orientation.z = quat[3]
