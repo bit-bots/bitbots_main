@@ -26,13 +26,20 @@ class HumanoidLeagueTeamCommunication:
         rospy.init_node("humanoid_league_team_communication")
         rospy.loginfo("Initializing humanoid_league_team_communication...", logger_name="team_comm")
 
-        self.config = rospy.get_param("~")
-
-        self.host = self.config['host']
-        self.port = self.config['port']
-
         self.player_id = rospy.get_param('bot_id')
         self.team_id = rospy.get_param('team_id')
+
+        self.config = rospy.get_param("~")
+
+        self.local_mode = self.config['local_mode']
+        if self.local_mode:
+            self.target_host = '127.0.0.1'
+            self.target_ports = self.config['local_target_ports']
+            self.receive_port = self.target_ports[self.player_id - 1]
+        else:
+            self.target_host = self.config['host']
+            self.target_ports = [self.config['port']]
+            self.receive_port = self.config['receive_port']
 
         self.create_publishers()
         self.create_subscribers()
@@ -64,13 +71,9 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber('balls_relative', PoseWithCertaintyArray, self.ball_cb, queue_size=1)
 
     def get_connection(self):
-        rospy.loginfo(f"Connecting to '{self.host}:{self.port}'", logger_name="team_comm")
+        rospy.loginfo(f"Binding to port {self.receive_port}'", logger_name="team_comm")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            sock.connect((self.host, self.port))
-        # TODO
-        except:
-            return None
+        sock.bind(('0.0.0.0', self.receive_port))
         return sock
 
     def close_connection(self):
@@ -124,6 +127,7 @@ class HumanoidLeagueTeamCommunication:
             # Parse sensor
             msg = self.receive_msg()
             self.handle_message(msg)
+            self.send_message()
 
         self.close_connection()
 
@@ -202,7 +206,10 @@ class HumanoidLeagueTeamCommunication:
         # message.obstacle_confidence should probably be renamed to robot_confidences because we do not
         # publish general obstacles, only the other robots.
 
-        self.socket.send(message)
+        msg = message.SerializeToString()
+        msg_size = struct.pack('>L', len(msg))
+        for port in self.target_ports:
+            self.socket.sendto(msg_size + msg, (self.target_host, port))
 
 
 if __name__ == '__main__':
