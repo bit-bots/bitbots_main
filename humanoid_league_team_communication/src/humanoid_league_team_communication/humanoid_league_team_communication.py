@@ -71,8 +71,8 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber('balls_relative', PoseWithCertaintyArray, self.ball_cb, queue_size=1)
 
     def get_connection(self):
-        rospy.loginfo(f"Binding to port {self.receive_port}'", logger_name="team_comm")
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        rospy.loginfo(f"Binding to port {self.receive_port}", logger_name="team_comm")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.bind(('0.0.0.0', self.receive_port))
         return sock
 
@@ -138,29 +138,37 @@ class HumanoidLeagueTeamCommunication:
 
     def send_message(self):
         message = robocup_extension_pb2.Message()
-        message.timestamp = Timestamp()
         now = rospy.Time.now()
-        message.timestamp.set_seconds(now.to_sec())
-        message.timestamp.set_nanos(now.to_nsec())
+        message.timestamp.seconds = now.secs
+        message.timestamp.nanos = now.nsecs
 
-        if self.gamestate.penalized:
-            message.state = robocup_extension_pb2.State.PENALISED
+        if self.gamestate:
+            if self.gamestate.penalized:
+                message.state = robocup_extension_pb2.State.PENALISED
+            else:
+                message.state = robocup_extension_pb2.State.UNPENALISED
         else:
-            message.state = robocup_extension_pb2.State.UNPENALISED
+            message.state = robocup_extension_pb2.State.UNKNOWN_STATE
 
         current_pose = robocup_extension_pb2.Robot()
         current_pose.player_id = self.player_id
-        current_pose.position.x = self.pose.pose.position.x
-        current_pose.position.y = self.pose.pose.position.y
-        q = self.pose.pose.orientation
-        # z is theta
-        current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-        current_pose.team = self.team_id
-        message.current_pose = current_pose
 
-        message.walk_command.x = self.cmd_vel.linear.x
-        message.walk_command.y = self.cmd_vel.linear.y
-        message.walk_command.z = self.cmd_vel.angular.z
+        if self.pose:
+            current_pose.position.x = self.pose.pose.position.x
+            current_pose.position.y = self.pose.pose.position.y
+            q = self.pose.pose.orientation
+            # z is theta
+            current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+            current_pose.team = self.team_id
+            message.current_pose = current_pose
+            message.position_confidence = 1
+        else:
+            message.position_confidence = 0
+
+        if self.cmd_vel:
+            message.walk_command.x = self.cmd_vel.linear.x
+            message.walk_command.y = self.cmd_vel.linear.y
+            message.walk_command.z = self.cmd_vel.angular.z
 
         # message.target_pose is currently not used
         # message.kick_target is currently not used
@@ -168,25 +176,18 @@ class HumanoidLeagueTeamCommunication:
         ball = robocup_extension_pb2.Ball()
         # TODO add a timeout to the ball?
         if self.ball is not None:
-            ball.position.x = self.ball.point.x
-            ball.position.y = self.ball.point.y
-            ball.position.z = self.ball.point.z
+            message.ball.position.x = self.ball.point.x
+            message.ball.position.y = self.ball.point.y
+            message.ball.position.z = self.ball.point.z
             # ball.velocity is currently not set, wait for ball filter
             # ball.covariance is currently not set, wait for ball filter
             message.ball_confidence = self.ball_confidence
         else:
-            # TODO what if we don't see a ball?
-            ball.position.x = 0
-            ball.position.y = 0
-            ball.position.z = 0
             message.ball_confidence = 0
-
-        message.ball = ball
 
         # message.others should be set from robot detections
 
         # message.max_walking_speed is currently not set
-        # message.position_confidence is not available (and partially covered by message.current_pose.covariance)
         # how should message.time_to_ball be calculated?
 
         # We ask every time for the role because it might change during the game
@@ -209,6 +210,7 @@ class HumanoidLeagueTeamCommunication:
         msg = message.SerializeToString()
         msg_size = struct.pack('>L', len(msg))
         for port in self.target_ports:
+            rospy.logdebug(f'sending to {port} on {self.target_host}')
             self.socket.sendto(msg_size + msg, (self.target_host, port))
 
 
