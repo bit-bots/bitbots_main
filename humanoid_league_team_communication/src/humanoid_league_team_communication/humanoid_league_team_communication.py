@@ -162,9 +162,11 @@ class HumanoidLeagueTeamCommunication:
 
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
+        # TODO: Somehow handle message without extension
 
         team_data = TeamData()
 
+        # TODO: Handle?
         player_id = message.current_pose.player_id
         player_team = message.current_pose.team
 
@@ -231,11 +233,33 @@ class HumanoidLeagueTeamCommunication:
         # Handle strategy
         #################
         if hasattr(message, "role"):
-            team_data.strategy.role = message.role
+            role_mapping = {
+                robocup_extension_pb2.Role.ROLE_UNDEFINED: Strategy.ROLE_UNDEFINED,
+                robocup_extension_pb2.Role.ROLE_IDLING: Strategy.ROLE_IDLING,
+                robocup_extension_pb2.Role.ROLE_Other: Strategy.ROLE_Other,
+                robocup_extension_pb2.Role.ROLE_STRIKER: Strategy.ROLE_STRIKER,
+                robocup_extension_pb2.Role.ROLE_SUPPORTER: Strategy.ROLE_SUPPORTER,
+                robocup_extension_pb2.Role.ROLE_DEFENDER: Strategy.ROLE_DEFENDER,
+                robocup_extension_pb2.Role.ROLE_GOALIE: Strategy.ROLE_GOALIE,
+            }
+            team_data.strategy.role = role_mapping[message.role]
         if hasattr(message, "action"):
-            team_data.strategy.action = message.action
+            action_mapping = {
+                robocup_extension_pb2.Action.ACTION_UNDEFINED: Strategy.ACTION_UNDEFINED,
+                robocup_extension_pb2.Action.ACTION_POSITIONING: Strategy.ACTION_POSITIONING,
+                robocup_extension_pb2.Action.ACTION_GOING_TO_BALL: Strategy.ACTION_GOING_TO_BALL,
+                robocup_extension_pb2.Action.ACTION_TRYING_TO_SCORE: Strategy.ACTION_TRYING_TO_SCORE,
+                robocup_extension_pb2.Action.ACTION_WAITING: Strategy.ACTION_WAITING,
+            }
+            team_data.strategy.action = action_mapping[message.action]
         if hasattr(message, "offensive_side"):
-            team_data.strategy.offensive_side = message.offensive_side
+            offensive_side_mapping = {
+                robocup_extension_pb2.OffensiveSide.SIDE_UNDEFINED: Strategy.SIDE_UNDEFINED,
+                robocup_extension_pb2.OffensiveSide.SIDE_LEFT: Strategy.SIDE_LEFT,
+                robocup_extension_pb2.OffensiveSide.SIDE_MIDDLE: Strategy.SIDE_MIDDLE,
+                robocup_extension_pb2.OffensiveSide.SIDE_RIGHT: Strategy.SIDE_RIGHT,
+            }
+            team_data.strategy.offensive_side = offensive_side_mapping[message.offensive_side]
 
         self.pub_team_data.publish(team_data)
 
