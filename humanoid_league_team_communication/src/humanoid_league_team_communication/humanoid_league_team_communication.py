@@ -54,6 +54,7 @@ class HumanoidLeagueTeamCommunication:
         self.ball = None  # type: Optional[PointStamped]
         self.ball_confidence = 0
         self.strategy = None  # type: Strategy
+        self.obstacles = None  # type: ObstacleRelativeArray
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
@@ -76,6 +77,7 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber(self.config['cmd_vel_topic'], Twist, self.cmd_vel_cb, queue_size=1)
         rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyArray, self.ball_cb, queue_size=1)
         rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
+        rospy.Subscriber(self.config['obstacle_topic'], ObstacleRelativeArray, self.obstacle_cb, queue_size=1)
 
     def get_connection(self):
         rospy.loginfo(f"Binding to port {self.receive_port}", logger_name="team_comm")
@@ -102,6 +104,19 @@ class HumanoidLeagueTeamCommunication:
 
     def strategy_cb(self, msg):
         self.strategy = msg
+
+    def obstacle_cb(self, msg):
+        self.obstacles = ObstacleRelativeArray(header=msg.header)
+        self.obstacles.header.frame_id = 'map'
+        for obstacle in msg.obstacles:
+            # Transform to map
+            obstacle_pose = PoseWithCertaintyArray(msg.header, obstacle.pose)
+            try:
+                obstacle_map = self.tf_buffer.transform(obstacle_pose, "map", timeout=rospy.Duration.from_sec(0.3))
+                obstacle.pose = obstacle_map
+                self.obstacles.obstacles.append(obstacle)
+            except tf2_ros.TransformException:
+                pass
 
     def ball_cb(self, msg: PoseWithCertaintyArray):
         if msg.poses:
@@ -264,6 +279,18 @@ class HumanoidLeagueTeamCommunication:
         self.pub_team_data.publish(team_data)
 
     def send_message(self, event):
+        def get_covariance(ros_covariance, fmat3):
+            # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
+            fmat3.x.x = ros_covariance[0]
+            fmat3.y.x = ros_covariance[1]
+            fmat3.z.x = ros_covariance[5]
+            fmat3.x.y = ros_covariance[6]
+            fmat3.y.y = ros_covariance[7]
+            fmat3.z.y = ros_covariance[11]
+            fmat3.x.z = ros_covariance[30]
+            fmat3.y.z = ros_covariance[31]
+            fmat3.z.z = ros_covariance[35]
+
         message = robocup_extension_pb2.Message()
         now = rospy.Time.now()
         message.timestamp.seconds = now.secs
@@ -309,7 +336,25 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.ball_confidence = 0
 
-        # message.others should be set from robot detections
+        for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
+            if obstacle.type in (ObstacleRelative.ROBOT_CYAN,
+                                 ObstacleRelative.ROBOT_MAGENTA,
+                                 ObstacleRelative.ROBOT_UNDEFINED):
+                robot = robocup_extension_pb2.Robot()
+                robot.player_id = obstacle.playerNumber
+
+                robot.position.x = obstacle.pose.pose.pose.position.x
+                robot.position.y = obstacle.pose.pose.pose.position.y
+                q = self.pose.pose.orientation
+                robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+                get_covariance(obstacle.pose.pose.covariance, robot.covariance)
+                if obstacle.type == ObstacleRelative.ROBOT_CYAN:
+                    robot.team = robocup_extension_pb2.Team.BLUE
+                elif obstacle.type == ObstacleRelative.ROBOT_MAGENTA:
+                    robot.team = robocup_extension_pb2.Team.RED
+                else:
+                    robot.team = robocup_extension_pb2.Team.UNKNOWN_TEAM
+                message.others.append(robot)
 
         # message.max_walking_speed is currently not set
         # how should message.time_to_ball be calculated?
