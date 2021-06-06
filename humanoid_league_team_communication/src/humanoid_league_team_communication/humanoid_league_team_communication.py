@@ -37,8 +37,8 @@ class HumanoidLeagueTeamCommunication:
             self.target_ports = self.config['local_target_ports']
             self.receive_port = self.target_ports[self.player_id - 1]
         else:
-            self.target_host = self.config['host']
-            self.target_ports = [self.config['port']]
+            self.target_host = self.config['target_host']
+            self.target_ports = [self.config['target_port']]
             self.receive_port = self.config['receive_port']
 
         self.create_publishers()
