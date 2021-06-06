@@ -11,7 +11,7 @@ from threading import Lock
 
 import tf2_ros
 import transforms3d.euler
-from geometry_msgs.msg import PoseWithCovariance, Twist
+from geometry_msgs.msg import PoseWithCovariance, Twist, PoseStamped
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
     ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped
@@ -55,6 +55,7 @@ class HumanoidLeagueTeamCommunication:
         self.ball_confidence = 0
         self.strategy = None  # type: Strategy
         self.obstacles = None  # type: ObstacleRelativeArray
+        self.move_base_goal = None  # type: PoseStamped
 
         # Protobuf / Message mappings
         self.team_mapping = (
@@ -107,6 +108,7 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyArray, self.ball_cb, queue_size=1)
         rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
         rospy.Subscriber(self.config['obstacle_topic'], ObstacleRelativeArray, self.obstacle_cb, queue_size=1)
+        rospy.Subscriber(self.config['move_base_goal_topic'], PoseStamped, self.move_base_goal_cb, queue_size=1)
 
     def get_connection(self):
         rospy.loginfo(f"Binding to port {self.receive_port}", logger_name="team_comm")
@@ -133,6 +135,9 @@ class HumanoidLeagueTeamCommunication:
 
     def strategy_cb(self, msg):
         self.strategy = msg
+
+    def move_base_goal_cb(self, msg):
+        self.move_base_goal = msg
 
     def obstacle_cb(self, msg):
         self.obstacles = ObstacleRelativeArray(header=msg.header)
@@ -328,7 +333,11 @@ class HumanoidLeagueTeamCommunication:
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        # message.target_pose is currently not used
+        message.target_pose.position.x = self.move_base_goal.pose.position.x
+        message.target_pose.position.y = self.move_base_goal.pose.position.y
+        q = self.move_base_goal.pose.orientation
+        message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+
         # message.kick_target is currently not used
 
         # TODO add a timeout to the ball?
@@ -351,7 +360,7 @@ class HumanoidLeagueTeamCommunication:
 
                 robot.position.x = obstacle.pose.pose.pose.position.x
                 robot.position.y = obstacle.pose.pose.pose.position.y
-                q = self.pose.pose.orientation
+                q = obstacle.pose.pose.pose.orientation
                 robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
                 get_covariance(obstacle.pose.pose.covariance, robot.covariance)
                 team_mapping = dict((b, a for a, b in self.team_mapping))
