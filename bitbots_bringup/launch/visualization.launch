@@ -37,5 +37,8 @@
 
     <!-- add some visualization tools -->
     <include file="$(find humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
+    <include file="$(find humanoid_league_team_communication)/launch/team_comm_test_marker.launch" >
+        <arg name="rviz" value="false" />
+    </include>
     <node name="show_world_model_objects" pkg="bitbots_body_behavior" type="show_world_model_objects.py" output="screen"/>
 </launch>
