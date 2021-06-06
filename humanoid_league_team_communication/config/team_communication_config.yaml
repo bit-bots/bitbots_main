@@ -18,10 +18,7 @@ rate: 1
 avg_walking_speed: 0.01
 
 # lifetime of data [s]
-lifetime: 3
-
-# threshold for necessary belief in data to be send to teammates [0,1]
-belief_threshold: 0
+lifetime: 1
 
 # ROS Topics
 team_data_topic: 'team_data'
