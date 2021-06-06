@@ -196,7 +196,6 @@ class HumanoidLeagueTeamCommunication:
         obstacle_relative_array = ObstacleRelativeArray()
         # TODO: Header
 
-        obstacles = ()
         for index, robot in enumerate(message.others):
             obstacle = ObstacleRelative()
 
@@ -217,8 +216,7 @@ class HumanoidLeagueTeamCommunication:
             # width
             # heigth
 
-            obstacles.append(obstacle)
-        team_data.obstacles = obstacles
+            team_data.obstacles.append(obstacle)
 
         # Handle time to position at ball
         #################################
