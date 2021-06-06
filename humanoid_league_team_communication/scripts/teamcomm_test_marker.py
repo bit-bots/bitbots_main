@@ -101,7 +101,7 @@ class TeamCommMarker(object):
 class RobotMarker(TeamCommMarker):  # todo change color based on active
     def __init__(self, server):
         self.marker_name = "team_robot"
-        self.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
+        self.interaction_mode = InteractiveMarkerControl.MOVE_ROTATE
         super().__init__(server)
         self.pose.position.x = 3.0
         self.robot_id = 1
