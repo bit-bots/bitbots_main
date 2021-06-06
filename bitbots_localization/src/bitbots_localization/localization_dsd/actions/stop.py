@@ -21,7 +21,7 @@ class AbstractLocalizationPause(AbstractActionElement):
 class LocalizationStop(AbstractLocalizationPause):
     def __init__(self, blackboard, dsd, parameters=None):
         super(LocalizationStop, self).__init__(blackboard, dsd, parameters=parameters)
-    
+
     def perform(self, reevaluate=False):
         rospy.logdebug("Stop localization")
         self.set_paused(True)
@@ -31,9 +31,13 @@ class LocalizationStop(AbstractLocalizationPause):
 class LocalizationStart(AbstractLocalizationPause):
     def __init__(self, blackboard, dsd, parameters=None):
         super(LocalizationStart, self).__init__(blackboard, dsd, parameters=parameters)
-        
+
     def perform(self, reevaluate=False):
         rospy.logdebug("Start localization")
         self.set_paused(False)
         return self.pop()
-        
+
+class DoNothing(AbstractActionElement):
+    def perform(self, reevaluate=False):
+        rospy.logdebug("doing nothing")
+        return

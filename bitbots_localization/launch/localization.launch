@@ -22,6 +22,8 @@
     </node>
 
     <node pkg="bitbots_localization" type="localization_handler.py" name="bitbots_localization_handler" output="screen">
+        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+        <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
     </node>
 
     <!-- load the map for rviz-->

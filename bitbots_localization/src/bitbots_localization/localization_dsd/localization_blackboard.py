@@ -1,5 +1,8 @@
 import rospy
 import numpy
+import tf2_ros as tf2
+from std_msgs.msg import Header
+from tf2_geometry_msgs import PointStamped
 from humanoid_league_msgs.msg import GameState, RobotControlState
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 
@@ -10,6 +13,12 @@ class LocalizationBlackboard:
         self.shut_down_request = False
         self.last_initialized = None
         self.initialized = False
+
+        # tf stuff
+        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(10))
+        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
+        self.base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
 
         # Pose
         self.pose_timeout_duration = rospy.Time(10)
@@ -31,3 +40,8 @@ class LocalizationBlackboard:
 
         #Picked up
         self.last_state_pickup = False
+
+        #Last init action
+        self.last_init_action_type = False
+        self.last_init_odom_transform = None
+

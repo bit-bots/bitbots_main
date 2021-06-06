@@ -80,3 +80,5 @@
   filter_only_with_motion: false
 
   measurement_out_of_map_punishment: 10.0
+
+  walking_moved_distance: 0.5
