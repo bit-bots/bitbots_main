@@ -11,8 +11,9 @@ from threading import Lock
 
 import tf2_ros
 import transforms3d.euler
-from geometry_msgs.msg import PoseWithCovariance, Twist, PointStamped
+from geometry_msgs.msg import PoseWithCovariance, Twist
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData
+from tf2_geometry_msgs import PointStamped
 
 import robocup_extension_pb2
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -82,16 +83,7 @@ class HumanoidLeagueTeamCommunication:
         rospy.loginfo("Connection closed.", logger_name="team_comm")
 
     def receive_msg(self):
-        msg_size = self.socket.recv(4)
-        msg_size = struct.unpack(">L", msg_size)[0]
-
-        data = bytearray()
-        while len(data) < msg_size:
-            packet = self.socket.recv(msg_size - len(data))
-            if not packet:
-                return None
-            data.extend(packet)
-        return data
+        return self.socket.recv(1024)
 
     def gamestate_cb(self, msg):
         self.gamestate = msg
@@ -125,11 +117,13 @@ class HumanoidLeagueTeamCommunication:
 
     def receive_forever(self):
         while not rospy.is_shutdown():
-            msg = self.receive_msg()
+            try:
+                msg = self.receive_msg()
+            except (struct.error, socket.timeout):
+                continue
+
             if msg:  # Not handle empty messages or None
                 self.handle_message(msg)
-
-            # TODO Send stuff (if all data is available?)
 
     def handle_message(self, msg):
         message = robocup_extension_pb2.Message()
@@ -176,17 +170,15 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.state = robocup_extension_pb2.State.UNKNOWN_STATE
 
-        current_pose = robocup_extension_pb2.Robot()
-        current_pose.player_id = self.player_id
+        message.current_pose.player_id = self.player_id
 
         if self.pose:
-            current_pose.position.x = self.pose.pose.position.x
-            current_pose.position.y = self.pose.pose.position.y
+            message.current_pose.position.x = self.pose.pose.position.x
+            message.current_pose.position.y = self.pose.pose.position.y
             q = self.pose.pose.orientation
             # z is theta
-            current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-            current_pose.team = self.team_id
-            message.current_pose = current_pose
+            message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
+            message.current_pose.team = self.team_id
             message.position_confidence = 1
         else:
             message.position_confidence = 0
@@ -199,7 +191,6 @@ class HumanoidLeagueTeamCommunication:
         # message.target_pose is currently not used
         # message.kick_target is currently not used
 
-        ball = robocup_extension_pb2.Ball()
         # TODO add a timeout to the ball?
         if self.ball is not None:
             message.ball.position.x = self.ball.point.x
@@ -234,10 +225,9 @@ class HumanoidLeagueTeamCommunication:
         # publish general obstacles, only the other robots.
 
         msg = message.SerializeToString()
-        msg_size = struct.pack('>L', len(msg))
         for port in self.target_ports:
             rospy.logdebug(f'sending to {port} on {self.target_host}')
-            self.socket.sendto(msg_size + msg, (self.target_host, port))
+            self.socket.sendto(msg, (self.target_host, port))
 
 
 if __name__ == '__main__':
