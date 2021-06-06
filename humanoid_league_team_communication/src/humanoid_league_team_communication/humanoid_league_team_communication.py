@@ -35,13 +35,12 @@ class HumanoidLeagueTeamCommunication:
 
         self.config = rospy.get_param("~")
 
-        self.local_mode = self.config['local_mode']
-        if self.local_mode:
-            self.target_host = '127.0.0.1'
+        self.target_host = self.config['target_host']
+        if self.target_host == '127.0.0.1':
+            # local mode, bind to port depending on bot id
             self.target_ports = self.config['local_target_ports']
             self.receive_port = self.target_ports[self.player_id - 1]
         else:
-            self.target_host = self.config['target_host']
             self.target_ports = [self.config['target_port']]
             self.receive_port = self.config['receive_port']
 
