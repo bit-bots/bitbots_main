@@ -59,7 +59,8 @@ class HumanoidLeagueTeamCommunication:
             self.socket = self.get_connection()
             rospy.sleep(1)
 
-        self.run()
+        rospy.Timer(rospy.Duration.from_sec(1 / self.config['rate']), self.send_message)
+        self.receive_forever()
 
     def create_publishers(self):
         pass
@@ -122,21 +123,20 @@ class HumanoidLeagueTeamCommunication:
                 except tf2_ros.TransformException:
                     self.ball = None
 
-    def run(self):
+    def __del__(self):
+        self.close_connection()
+
+    def receive_forever(self):
         while not rospy.is_shutdown():
-            # Parse sensor
             msg = self.receive_msg()
             self.handle_message(msg)
-            self.send_message()
-
-        self.close_connection()
 
     def handle_message(self, msg):
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
         print(message)
 
-    def send_message(self):
+    def send_message(self, event):
         message = robocup_extension_pb2.Message()
         now = rospy.Time.now()
         message.timestamp.seconds = now.secs
