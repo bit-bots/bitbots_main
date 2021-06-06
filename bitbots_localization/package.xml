@@ -18,6 +18,7 @@
   <depend>roslib</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
+  <depend>tf2_ros</depend>
   <depend>bitbots_blackboard</depend>
   <depend>visualization_msgs</depend>
 

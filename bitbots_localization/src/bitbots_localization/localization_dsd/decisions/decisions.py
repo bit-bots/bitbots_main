@@ -1,4 +1,8 @@
 import rospy
+import numpy as np
+import tf2_ros as tf2
+from std_msgs.msg import Header
+from tf2_geometry_msgs import PointStamped
 from humanoid_league_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
@@ -113,11 +117,11 @@ class CheckGameStateReceived(AbstractDecisionElement):
         self.clear_debug_data()
 
         if not self.blackboard.gamestate.received_gamestate():
-            if not self.blackboard.initialized:
+            if self.blackboard.initialized:
+                return "DO_NOTHING"
+            else:
                 self.blackboard.initialized = True
                 return "NO_GAMESTATE_INIT"
-            else:
-                return "DO_NOTHING"
 
         return "GAMESTATE_RECEIVED"
 
@@ -255,6 +259,47 @@ class CheckPenalized(AbstractDecisionElement):
             return "YES"
         else:
             return "NO"
+
+    def get_reevaluate(self):
+        """
+        The state can change during the game
+        """
+        return True
+
+
+class WalkedSinceLastInit(AbstractDecisionElement):
+    """
+    Decides if we walked significantly since our last initialization
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(WalkedSinceLastInit, self).__init__(blackboard, dsd, parameters)
+        self.distance_threshold = parameters.get("dist", 0.5)
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.last_init_odom_transform is None:
+            return "YES" # We don't know the last init state so we say that we moved away from it
+
+        try:
+            odom_transform = self.blackboard.tf_buffer.lookup_transform(
+                self.blackboard.odom_frame,
+                self.blackboard.base_footprint_frame,
+                rospy.Time(0))
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+            rospy.logerr(f"Reset localization to last init state, because we got up and have no tf: {e}")
+            # We assume that we didn't walk if the tf lookup fails
+            return "YES"
+
+        walked_distance = np.linalg.norm(
+            np.array([odom_transform.transform.translation.x,
+                      odom_transform.transform.translation.y]) \
+                        - np.array([self.blackboard.last_init_odom_transform.transform.translation.x,
+                                    self.blackboard.last_init_odom_transform.transform.translation.y]))
+
+        if walked_distance < self.distance_threshold:
+            return "NO"
+        else:
+            return "YES"
 
     def get_reevaluate(self):
         """
