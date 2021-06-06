@@ -357,6 +357,8 @@ class HumanoidLeagueTeamCommunication:
                 team_mapping = dict((b, a for a, b in self.team_mapping))
                 robot.team = team_mapping[obstacle.type]
                 message.others.append(robot)
+                # TODO maybe rename obstacle_confidence to robot_confidences
+                message.obstacle_confidence.append(obstacle.pose.confidence)
 
         # message.max_walking_speed is currently not set
         # how should message.time_to_ball be calculated?
@@ -369,9 +371,6 @@ class HumanoidLeagueTeamCommunication:
 
         side_mapping = dict((b, a for a, b in self.side_mapping))
         message.offensive_side = side_mapping[self.strategy.offensive_side]
-
-        # message.obstacle_confidence should probably be renamed to robot_confidences because we do not
-        # publish general obstacles, only the other robots.
 
         msg = message.SerializeToString()
         for port in self.target_ports:
