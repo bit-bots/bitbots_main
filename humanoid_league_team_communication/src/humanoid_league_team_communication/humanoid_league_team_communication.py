@@ -56,6 +56,35 @@ class HumanoidLeagueTeamCommunication:
         self.strategy = None  # type: Strategy
         self.obstacles = None  # type: ObstacleRelativeArray
 
+        # Protobuf / Message mappings
+        self.team_mapping = (
+            (robocup_extension_pb2.Team.UNKOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
+            (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
+            (robocup_extension_pb2.Team.RED, ObstacleRelative.ROBOT_MAGENTA)
+        )
+        self.role_mapping = (
+            (robocup_extension_pb2.Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
+            (robocup_extension_pb2.Role.ROLE_IDLING, Strategy.ROLE_IDLING),
+            (robocup_extension_pb2.Role.ROLE_Other, Strategy.ROLE_OTHER),
+            (robocup_extension_pb2.Role.ROLE_STRIKER, Strategy.ROLE_STRIKER),
+            (robocup_extension_pb2.Role.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
+            (robocup_extension_pb2.Role.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
+            (robocup_extension_pb2.Role.ROLE_GOALIE, Strategy.ROLE_GOALIE),
+        )
+        self.action_mapping = (
+            (robocup_extension_pb2.Action.ACTION_UNDEFINED, Strategy.ACTION_UNDEFINED),
+            (robocup_extension_pb2.Action.ACTION_POSITIONING, Strategy.ACTION_POSITIONING),
+            (robocup_extension_pb2.Action.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
+            (robocup_extension_pb2.Action.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
+            (robocup_extension_pb2.Action.ACTION_WAITING, Strategy.ACTION_WAITING),
+        )
+        self.side_mapping = (
+            (robocup_extension_pb2.OffensiveSide.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
+            (robocup_extension_pb2.OffensiveSide.SIDE_LEFT, Strategy.SIDE_LEFT),
+            (robocup_extension_pb2.OffensiveSide.SIDE_MIDDLE, Strategy.SIDE_MIDDLE),
+            (robocup_extension_pb2.OffensiveSide.SIDE_RIGHT, Strategy.SIDE_RIGHT),
+        )
+
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
@@ -222,11 +251,7 @@ class HumanoidLeagueTeamCommunication:
             obstacle = ObstacleRelative()
 
             # Obstacle type
-            team_to_obstacle_type = {
-                robocup_extension_pb2.Team.UNKOWN_TEAM: ObstacleRelative.ROBOT_UNDEFINED,
-                robocup_extension_pb2.Team.BLUE: ObstacleRelative.ROBOT_CYAN,
-                robocup_extension_pb2.Team.RED: ObstacleRelative.ROBOT_MAGENTA,
-            }
+            team_to_obstacle_type = dict(self.team_mapping)
             obstacle.type = team_to_obstacle_type[robot.team]
 
             obstacle.playerNumber = robot.player_id
@@ -248,32 +273,13 @@ class HumanoidLeagueTeamCommunication:
         # Handle strategy
         #################
         if hasattr(message, "role"):
-            role_mapping = {
-                robocup_extension_pb2.Role.ROLE_UNDEFINED: Strategy.ROLE_UNDEFINED,
-                robocup_extension_pb2.Role.ROLE_IDLING: Strategy.ROLE_IDLING,
-                robocup_extension_pb2.Role.ROLE_Other: Strategy.ROLE_Other,
-                robocup_extension_pb2.Role.ROLE_STRIKER: Strategy.ROLE_STRIKER,
-                robocup_extension_pb2.Role.ROLE_SUPPORTER: Strategy.ROLE_SUPPORTER,
-                robocup_extension_pb2.Role.ROLE_DEFENDER: Strategy.ROLE_DEFENDER,
-                robocup_extension_pb2.Role.ROLE_GOALIE: Strategy.ROLE_GOALIE,
-            }
+            role_mapping = dict(self.role_mapping)
             team_data.strategy.role = role_mapping[message.role]
         if hasattr(message, "action"):
-            action_mapping = {
-                robocup_extension_pb2.Action.ACTION_UNDEFINED: Strategy.ACTION_UNDEFINED,
-                robocup_extension_pb2.Action.ACTION_POSITIONING: Strategy.ACTION_POSITIONING,
-                robocup_extension_pb2.Action.ACTION_GOING_TO_BALL: Strategy.ACTION_GOING_TO_BALL,
-                robocup_extension_pb2.Action.ACTION_TRYING_TO_SCORE: Strategy.ACTION_TRYING_TO_SCORE,
-                robocup_extension_pb2.Action.ACTION_WAITING: Strategy.ACTION_WAITING,
-            }
+            action_mapping = dict(self.action_mapping)
             team_data.strategy.action = action_mapping[message.action]
         if hasattr(message, "offensive_side"):
-            offensive_side_mapping = {
-                robocup_extension_pb2.OffensiveSide.SIDE_UNDEFINED: Strategy.SIDE_UNDEFINED,
-                robocup_extension_pb2.OffensiveSide.SIDE_LEFT: Strategy.SIDE_LEFT,
-                robocup_extension_pb2.OffensiveSide.SIDE_MIDDLE: Strategy.SIDE_MIDDLE,
-                robocup_extension_pb2.OffensiveSide.SIDE_RIGHT: Strategy.SIDE_RIGHT,
-            }
+            offensive_side_mapping = dict(self.side_mapping)
             team_data.strategy.offensive_side = offensive_side_mapping[message.offensive_side]
 
         self.pub_team_data.publish(team_data)
@@ -348,30 +354,21 @@ class HumanoidLeagueTeamCommunication:
                 q = self.pose.pose.orientation
                 robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
                 get_covariance(obstacle.pose.pose.covariance, robot.covariance)
-                if obstacle.type == ObstacleRelative.ROBOT_CYAN:
-                    robot.team = robocup_extension_pb2.Team.BLUE
-                elif obstacle.type == ObstacleRelative.ROBOT_MAGENTA:
-                    robot.team = robocup_extension_pb2.Team.RED
-                else:
-                    robot.team = robocup_extension_pb2.Team.UNKNOWN_TEAM
+                team_mapping = dict((b, a for a, b in self.team_mapping))
+                robot.team = team_mapping[obstacle.type]
                 message.others.append(robot)
 
         # message.max_walking_speed is currently not set
         # how should message.time_to_ball be calculated?
 
-        # We ask every time for the role because it might change during the game
-        role = rospy.get_param('role', None)
-        if role == 'goalie':
-            message.role = robocup_extension_pb2.Role.ROLE_GOALIE
-        elif role == 'defense':
-            message.role = robocup_extension_pb2.Role.ROLE_DEFENDER
-        elif role == 'offense':
-            message.role = robocup_extension_pb2.Role.ROLE_STRIKER
-        else:
-            message.role = robocup_extension_pb2.Role.ROLE_OTHER
+        role_mapping = dict((b, a for a, b in self.role_mapping))
+        message.role = role_mapping[self.strategy.role]
 
-        # where do we get message.action from?
-        # do we even have an offensive side for message.offensive_side?
+        action_mapping = dict((b, a for a, b in self.action_mapping))
+        message.action = action_mapping[self.strategy.action]
+
+        side_mapping = dict((b, a for a, b in self.side_mapping))
+        message.offensive_side = side_mapping[self.strategy.offensive_side]
 
         # message.obstacle_confidence should probably be renamed to robot_confidences because we do not
         # publish general obstacles, only the other robots.
