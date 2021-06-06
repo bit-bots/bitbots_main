@@ -12,7 +12,7 @@ from threading import Lock
 import tf2_ros
 import transforms3d.euler
 from geometry_msgs.msg import PoseWithCovariance, Twist, PointStamped
-from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray
+from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData
 
 import robocup_extension_pb2
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -82,19 +82,16 @@ class HumanoidLeagueTeamCommunication:
         rospy.loginfo("Connection closed.", logger_name="team_comm")
 
     def receive_msg(self):
-        pass
-        # self.socket.recvfrom(GameState.sizeof())
+        msg_size = self.socket.recv(4)
+        msg_size = struct.unpack(">L", msg_size)[0]
 
-        # msg_size = self.socket.recv(4)
-        # msg_size = struct.unpack(">L", msg_size)[0]
-
-        # data = bytearray()
-        # while len(data) < msg_size:
-        #     packet = self.socket.recv(msg_size - len(data))
-        #     if not packet:
-        #         return None
-        #     data.extend(packet)
-        # return data
+        data = bytearray()
+        while len(data) < msg_size:
+            packet = self.socket.recv(msg_size - len(data))
+            if not packet:
+                return None
+            data.extend(packet)
+        return data
 
     def gamestate_cb(self, msg):
         self.gamestate = msg
@@ -129,12 +126,41 @@ class HumanoidLeagueTeamCommunication:
     def receive_forever(self):
         while not rospy.is_shutdown():
             msg = self.receive_msg()
-            self.handle_message(msg)
+            if msg:  # Not handle empty messages or None
+                self.handle_message(msg)
+
+            # TODO Send stuff (if all data is available?)
 
     def handle_message(self, msg):
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
+
+        team_data = TeamData()
+
         print(message)
+
+        player_id = message.current_pose.player_id
+        player_team = message.current_pose.team
+
+        # Handle timestamp
+        team_data.header.stamp.secs = message.timestamp.seconds
+        team_data.header.stamp.nsecs = message.timestamp.nanos
+        # TODO: FRAME_ID
+
+        team_data.state = message.state
+
+        # Handle pose of current player
+        team_data.robot_position.pose.pose.position.x = message.current_pose.position.x
+        team_data.robot_position.pose.pose.position.y = message.current_pose.position.y
+
+        quat = transforms3d.euler.euler2quat([0.0, 0.0, message.current_pose.position.z])  #wxyz -> ros: xyzw
+        team_data.robot_position.pose.pose.orientation.x = quat[1]
+        team_data.robot_position.pose.pose.orientation.y = quat[2]
+        team_data.robot_position.pose.pose.orientation.z = quat[3]
+        team_data.robot_position.pose.pose.orientation.w = quat[0]
+
+        if message.current_pose.covariance:
+            team_data.robot_position.pose.covariance = message.current_pose.position.y
 
     def send_message(self, event):
         message = robocup_extension_pb2.Message()
