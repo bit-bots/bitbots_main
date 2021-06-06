@@ -83,8 +83,9 @@ class HumanoidLeagueTeamCommunication:
         return sock
 
     def close_connection(self):
-        self.socket.close()
-        rospy.loginfo("Connection closed.", logger_name="team_comm")
+        if self.socket:
+            self.socket.close()
+            rospy.loginfo("Connection closed.", logger_name="team_comm")
 
     def receive_msg(self):
         return self.socket.recv(1024)
