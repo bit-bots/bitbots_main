@@ -11,7 +11,7 @@ from threading import Lock
 
 import tf2_ros
 import transforms3d.euler
-from geometry_msgs.msg import PoseWithCovariance, Twist, PoseStamped
+from geometry_msgs.msg import PoseWithCovariance, Twist, PoseStamped, PoseWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
     ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped
@@ -49,7 +49,7 @@ class HumanoidLeagueTeamCommunication:
         self.create_subscribers()
 
         self.gamestate = None  # type: GameState
-        self.pose = None  # type: PoseWithCovariance
+        self.pose = None  # type: PoseWithCovarianceStamped
         self.cmd_vel = None  # type: Twist
         self.ball = None  # type: Optional[PointStamped]
         self.ball_confidence = 0
@@ -103,7 +103,7 @@ class HumanoidLeagueTeamCommunication:
 
     def create_subscribers(self):
         rospy.Subscriber(self.config['gamestate_topic'], GameState, self.gamestate_cb, queue_size=1)
-        rospy.Subscriber(self.config['pose_topic'], PoseWithCovariance, self.pose_cb, queue_size=1)
+        rospy.Subscriber(self.config['pose_topic'], PoseWithCovarianceStamped, self.pose_cb, queue_size=1)
         rospy.Subscriber(self.config['cmd_vel_topic'], Twist, self.cmd_vel_cb, queue_size=1)
         rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyArray, self.ball_cb, queue_size=1)
         rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
@@ -322,9 +322,9 @@ class HumanoidLeagueTeamCommunication:
         message.current_pose.team = self.team_id
 
         if self.pose:
-            message.current_pose.position.x = self.pose.pose.position.x
-            message.current_pose.position.y = self.pose.pose.position.y
-            q = self.pose.pose.orientation
+            message.current_pose.position.x = self.pose.pose.pose.position.x
+            message.current_pose.position.y = self.pose.pose.pose.position.y
+            q = self.pose.pose.pose.orientation
             # z is theta
             message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
             message.position_confidence = 1
