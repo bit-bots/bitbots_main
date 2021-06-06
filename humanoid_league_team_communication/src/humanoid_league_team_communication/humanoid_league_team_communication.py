@@ -161,8 +161,6 @@ class HumanoidLeagueTeamCommunication:
 
         team_data = TeamData()
 
-        print(message)
-
         player_id = message.current_pose.player_id
         player_team = message.current_pose.team
 
