@@ -75,20 +75,22 @@ class StatusMsg:
         :param data:a dictionary with the transmitted information
         :return:
 
-        ROLE_IDLING=0
-        uint8 ROLE_OTHER=1
-        uint8 ROLE_STRIKER=2
-        uint8 ROLE_SUPPORTER=3
-        uint8 ROLE_DEFENDER=4
-        uint8 ROLE_GOALIE=5
+        uint8 ROLE_UNDEFINED=0
+        uint8 ROLE_IDLING=1
+        uint8 ROLE_OTHER=2
+        uint8 ROLE_STRIKER=3
+        uint8 ROLE_SUPPORTER=4
+        uint8 ROLE_DEFENDER=5
+        uint8 ROLE_GOALIE=6
         uint8 ACTION_UNDEFINED=0
         uint8 ACTION_POSITIONING=1
         uint8 ACTION_GOING_TO_BALL=2
         uint8 ACTION_TRYING_TO_SCORE=3
         uint8 ACTION_WAITING=4
-        uint8 SIDE_LEFT=0
-        uint8 SIDE_MIDDLE=1
-        uint8 SIDE_RIGHT=2
+        uint8 SIDE_UNDEFINED=0
+        uint8 SIDE_LEFT=1
+        uint8 SIDE_MIDDLE=2
+        uint8 SIDE_RIGHT=3
         """
 
         self.data[StatusMsg.label_role] = data.role
@@ -126,4 +128,3 @@ class StatusMsg:
             id = rospy.get_param(Name.param_robot_id)
 
         return id + "::" +  StatusMsg.title + "::" + yaml.dump(self.data)
-
