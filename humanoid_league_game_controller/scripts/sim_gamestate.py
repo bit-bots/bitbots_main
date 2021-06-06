@@ -36,7 +36,6 @@ i: STATE_GOAL_KICK = 8
 j: STATE_THROW_IN = 9
 
 p:     toggle penalized
-space: toggle allowed_to_move
 t:     toggle secondary state team
 m:     toggle secondary state mode     
 
@@ -77,9 +76,7 @@ if __name__ == "__main__":
         print(msg)
         while True:
             key = get_key()
-            if key == ' ':
-                gameState.allowedToMove = not gameState.allowedToMove
-            elif key == '\x03':
+            if key == '\x03':
                 break
             elif key in ['0', '1', '2', '3', '4']:
                 int_key = int(key)
@@ -100,11 +97,10 @@ if __name__ == "__main__":
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
             sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
             for publisher in publishers:
                 publisher.publish(gameState)
 
-            print("Allowed to move:      " + str(gameState.allowedToMove) + "       \nGamestate:            " + str(
+            print("Gamestate:            " + str(
                 gameState.gameState) + "       \nSecondary State:      " + str(
                 gameState.secondaryState) + "       \nSecondary State Team: " + str(
                 gameState.secondaryStateTeam) + " \nPenalized:            " + str(gameState.penalized) +
