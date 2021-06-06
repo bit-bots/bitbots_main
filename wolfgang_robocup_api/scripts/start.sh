@@ -42,17 +42,29 @@ if [[ -z "$ROBOCUP_SIMULATOR_ADDR" ]]; then
     exit 2
 fi
 
+if [[ -z "$ROBOCUP_MIRROR_SERVER_IP" ]]; then
+    echo "ROBOCUP_MIRROR_SERVER_IP is not set! Exiting."
+    exit 2
+fi
+
 BRINGUP_DIR=$(rospack find bitbots_bringup)
 
-if [[ -z $BRINGUP_DIR ]]; then
+if [[ -z "$BRINGUP_DIR" ]]; then
     echo "Could not find bitbots_bringup! Did you source ROS?"
     exit 2
 fi
 
 GAME_CONTROLLER_DIR=$(rospack find humanoid_league_game_controller)
 
-if [[ -z $BRINGUP_DIR ]]; then
+if [[ -z "$GAME_CONTROLLER_DIR" ]]; then
     echo "Could not find humanoid_league_game_controller!"
+    exit 2
+fi
+
+TEAM_COMM_DIR=$(rospack find humanoid_league_team_communication)
+
+if [[ -z "$TEAM_COMM_DIR" ]]; then
+    echo "Could not find humanoid_league_team_communication!"
     exit 2
 fi
 
@@ -72,6 +84,8 @@ cat > $GAME_CONTROLLER_DIR/config/game_controller.yaml << EOF
 team_id: $TEAM_ID
 bot_id: $ROBOCUP_ROBOT_ID
 EOF
+
+sed -i "/^target_host:/s/^.*$/target_host: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM_COMM_DIR/config/team_communication_config.yaml
 
 #############
 # Start ROS #
