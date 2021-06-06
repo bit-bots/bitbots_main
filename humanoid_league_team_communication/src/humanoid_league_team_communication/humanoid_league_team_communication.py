@@ -19,6 +19,9 @@ import robocup_extension_pb2
 from google.protobuf.timestamp_pb2 import Timestamp
 
 
+# TODO: Handle lifetime from config
+# TODO: Handle belief_threshold from config
+
 class HumanoidLeagueTeamCommunication:
     def __init__(self):
         rospack = rospkg.RosPack()
@@ -64,9 +67,10 @@ class HumanoidLeagueTeamCommunication:
         self.receive_forever()
 
     def create_publishers(self):
-        pass
+        self.pub_team_data = rospy.Publisher(self.config['team_data'], TeamData, queue_size=1)
 
     def create_subscribers(self):
+        # TODO: Use rostopics from config and check all in config
         rospy.Subscriber('gamestate', GameState, self.gamestate_cb, queue_size=1)
         rospy.Subscriber('pose_with_covariance', PoseWithCovariance, self.pose_cb, queue_size=1)
         rospy.Subscriber('cmd_vel', Twist, self.cmd_vel_cb, queue_size=1)
@@ -220,6 +224,8 @@ class HumanoidLeagueTeamCommunication:
 
         # Handle time to position at ball
         #################################
+        if hasattr(message, "time_to_ball"):
+            team_data.time_to_position_at_ball = message.time_to_ball
 
         # Handle strategy
         #################
@@ -229,6 +235,8 @@ class HumanoidLeagueTeamCommunication:
             team_data.strategy.action = message.action
         if hasattr(message, "offensive_side"):
             team_data.strategy.offensive_side = message.offensive_side
+
+        self.pub_team_data.publish(team_data)
 
     def send_message(self, event):
         message = robocup_extension_pb2.Message()
