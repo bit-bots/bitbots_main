@@ -223,6 +223,8 @@ class HumanoidLeagueTeamCommunication:
             # Skip information from ourselves or from the other team
             return
 
+        team_data.robot_id = player_id
+
         # Handle timestamp
         ##################
         team_data.header.stamp.secs = message.timestamp.seconds
