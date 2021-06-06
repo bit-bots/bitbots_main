@@ -6,18 +6,15 @@ from typing import Optional
 import rospy
 import rospkg
 import struct
-import copy
-from threading import Lock
 
 import tf2_ros
 import transforms3d.euler
-from geometry_msgs.msg import PoseWithCovariance, Twist, PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
     ObstacleRelative, Strategy
-from tf2_geometry_msgs import PointStamped
+from tf2_geometry_msgs import PointStamped, PoseStamped
 
 import robocup_extension_pb2
-from google.protobuf.timestamp_pb2 import Timestamp
 
 
 # TODO: Handle lifetime from config
@@ -148,10 +145,10 @@ class HumanoidLeagueTeamCommunication:
         self.obstacles.header.frame_id = 'map'
         for obstacle in msg.obstacles:
             # Transform to map
-            obstacle_pose = PoseWithCertaintyArray(msg.header, obstacle.pose)
+            obstacle_pose = PoseStamped(msg.header, obstacle.pose.pose.pose)
             try:
                 obstacle_map = self.tf_buffer.transform(obstacle_pose, "map", timeout=rospy.Duration.from_sec(0.3))
-                obstacle.pose = obstacle_map
+                obstacle.pose.pose.pose = obstacle_map
                 self.obstacles.obstacles.append(obstacle)
             except tf2_ros.TransformException:
                 pass
@@ -371,7 +368,7 @@ class HumanoidLeagueTeamCommunication:
                     robot.position.y = obstacle.pose.pose.pose.position.y
                     q = obstacle.pose.pose.pose.orientation
                     robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-                    get_covariance(obstacle.pose.pose.covariance, robot.covariance)
+                    # TODO transform covariance and add it here
                     team_mapping = dict(((b, a) for a, b in self.team_mapping))
                     robot.team = team_mapping[obstacle.type]
                     message.others.append(robot)
