@@ -29,8 +29,8 @@ DEF world_info WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.5822646357855299 -0.5251883903055194 -0.6206005547869271 1.9346482193122416
-  position -4.202834140442779 2.0691769763877104 0.9004083608899398
+  orientation 0.14 -0.605 -0.784 2.78
+  position -2.20 4.06 1.5
 }
 TexturedBackground {
   texture "stadium_dry"
