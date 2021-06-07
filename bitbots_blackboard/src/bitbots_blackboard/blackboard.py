@@ -30,6 +30,7 @@ class BodyBlackboard:
         self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
         self.goalie_falling_right_animation = rospy.get_param("/Animations/Goalie/fallRight")
         self.goalie_falling_left_animation = rospy.get_param("/Animations/Goalie/fallLeft")
+        self.cheering_animation = rospy.get_param("/Animations/Misc/cheering")
 
         self.dynup_action_client = None
 

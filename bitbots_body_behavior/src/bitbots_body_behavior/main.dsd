@@ -119,7 +119,9 @@ $SecondaryStateTeamDecider
 $SecondaryStateDecider
     NORMAL --> $GameStateDecider
         INITIAL --> @LookAtFieldFeatures, @StandAndWait
-        READY --> #PositioningReady
+        READY --> $GoalScoreRecently
+            YES -> @Stop, @PlayAnimationCheering
+            NO -> #PositioningReady
         PLAYING --> #GoalieBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
     PENALTYSHOOT --> #PenaltyBehavior
