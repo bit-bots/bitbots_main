@@ -315,7 +315,8 @@ class HumanoidLeagueTeamCommunication:
 
         if self.gamestate and rospy.Time.now() - self.gamestate.header.stamp < rospy.Duration(self.config['lifetime']):
             if self.gamestate.penalized:
-                message.state = robocup_extension_pb2.State.PENALISED
+                # If we are penalized, we are not allowed to send team communication
+                return
             else:
                 message.state = robocup_extension_pb2.State.UNPENALISED
         else:
