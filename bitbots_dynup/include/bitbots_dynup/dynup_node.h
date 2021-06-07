@@ -54,7 +54,6 @@ class DynUpNode {
  public:
   DynUpNode();
 
-
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level);
 
@@ -85,6 +84,7 @@ class DynUpNode {
   int stable_duration_;
   int engine_rate_;
   double last_ros_update_time_;
+  double start_time_;
   bool debug_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;
@@ -103,7 +103,10 @@ class DynUpNode {
    *
    * @return The pair of (right foot, left foot) poses if transformation was successfull
    */
-  std::optional<std::tuple<geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose>> getCurrentPoses();
+  std::optional<std::tuple<geometry_msgs::Pose,
+                           geometry_msgs::Pose,
+                           geometry_msgs::Pose,
+                           geometry_msgs::Pose>> getCurrentPoses();
 
   /**
    * Publish the current support_foot so that a correct base_footprint can be calculated
@@ -120,7 +123,6 @@ class DynUpNode {
    * Helper method to achieve correctly sampled rate
    */
   double getTimeDelta();
-
 
 };
 

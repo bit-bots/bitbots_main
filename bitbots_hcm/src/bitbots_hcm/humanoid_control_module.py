@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#!/usr/bin/env python3
 import math
 import sys
 
@@ -19,12 +18,12 @@ from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_CONTROLLABLE, STATE_WALKING, STATE_ANIMATION_RUNNING, \
-    STATE_SHUT_DOWN, STATE_HCM_OFF, STATE_FALLEN, STATE_KICKING, STATE_GETTING_UP, STATE_STARTUP
 from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
 import os
+
+from bitbots_ros_patches.rate import Rate
 
 
 class HardwareControlManager:
@@ -38,7 +37,8 @@ class HardwareControlManager:
         rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
         rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
         rospy.loginfo("Starting hcm")
-        rospy.on_shutdown(self.on_shutdown_hook)
+        if not rospy.get_param("simulation_active"):
+            rospy.on_shutdown(self.on_shutdown_hook)
 
         # stack machine
         self.blackboard = HcmBlackboard()
@@ -129,15 +129,17 @@ class HardwareControlManager:
 
     def walking_goal_callback(self, msg):
         self.blackboard.last_walking_goal_time = rospy.Time.now()
-        if self.blackboard.current_state in [STATE_CONTROLLABLE, STATE_WALKING]:
+        if self.blackboard.current_state in [RobotControlState.CONTROLLABLE, RobotControlState.WALKING]:
             self.joint_goal_publisher.publish(msg)
 
     def dynup_callback(self, msg):
-        if self.blackboard.current_state in [STATE_STARTUP, STATE_FALLEN, STATE_GETTING_UP]:
+        if self.blackboard.current_state in [RobotControlState.STARTUP,
+                                             RobotControlState.FALLEN,
+                                             RobotControlState.GETTING_UP]:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):
-        if self.blackboard.current_state in [STATE_CONTROLLABLE, STATE_WALKING]:
+        if self.blackboard.current_state in [RobotControlState.CONTROLLABLE, RobotControlState.WALKING]:
             # we can move our head
             self.joint_goal_publisher.publish(msg)
 
@@ -150,7 +152,7 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def kick_goal_callback(self, msg):
-        if self.blackboard.current_state == STATE_KICKING:
+        if self.blackboard.current_state == RobotControlState.KICKING:
             # we can perform a kick
             self.joint_goal_publisher.publish(msg)
 
@@ -167,13 +169,13 @@ class HardwareControlManager:
 
         if msg.first:
             if msg.hcm:
-                # comming from ourselves
+                # coming from ourselves
                 # we don't have to do anything, since we must be in the right state
                 pass
             else:
-                # comming from outside
+                # coming from outside
                 # check if we can run an animation now
-                if self.blackboard.current_state != STATE_CONTROLLABLE:
+                if self.blackboard.current_state != RobotControlState.CONTROLLABLE:
                     rospy.logwarn("HCM is not controllable, animation refused.")
                     return
                 else:
@@ -186,7 +188,7 @@ class HardwareControlManager:
                 self.blackboard.hcm_animation_finished = True
                 pass
             else:
-                # this is the last frame, we want to tell the DSD, that we're finished with the animations
+                # this is the last frame, we want to tell the DSD that we're finished with the animations
                 self.blackboard.external_animation_running = False
                 if msg.position is None:
                     # probably this was just to tell us we're finished
@@ -205,7 +207,7 @@ class HardwareControlManager:
             if msg.position.points[0].effort:
                 out_msg.max_currents = [-x for x in msg.position.points[0].effort]
             if self.blackboard.shut_down_request:
-                # there are sometimes transmittions errors during shutdown due to race conditions
+                # there are sometimes transmission errors during shutdown due to race conditions
                 # there is nothing we can do so just ignore the errors in this case
                 try:
                     self.joint_goal_publisher.publish(out_msg)
@@ -231,7 +233,7 @@ class HardwareControlManager:
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        rate = rospy.Rate(500)
+        rate = Rate(500)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             self.blackboard.current_time = rospy.Time.now()
@@ -252,6 +254,7 @@ class HardwareControlManager:
             except rospy.exceptions.ROSInterruptException:
                 exit()
 
+
     def on_shutdown_hook(self):
         if not self.blackboard:
             return
@@ -260,7 +263,7 @@ class HardwareControlManager:
         rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")
         speak("Stopping HCM", self.blackboard.speak_publisher, priority=50)
         # now wait for it finishing the shutdown procedure
-        while not self.blackboard.current_state == STATE_HCM_OFF:
+        while not self.blackboard.current_state == RobotControlState.HCM_OFF:
             # we still have to update everything
             self.blackboard.current_time = rospy.Time.now()
             self.dsd.update()

@@ -1,6 +1,6 @@
-from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_PENALTY
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Twist
+from humanoid_league_msgs.msg import RobotControlState
 
 
 class StopWalking(AbstractActionElement):
@@ -29,6 +29,6 @@ class ForceStopWalking(AbstractActionElement):
         msg.linear.y = 0
         msg.angular.z = 0
         self.blackboard.walk_pub.publish(msg)
-        self.blackboard.current_state = STATE_PENALTY
+        self.blackboard.current_state = RobotControlState.PENALTY
         # We can pop immediately because the state is PENALTY on no walking messages will be passed
         self.pop()

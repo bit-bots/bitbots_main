@@ -106,6 +106,7 @@ void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd
     walk_state = bitbots_quintic_walk::WalkState::KICK;
   } else {
     ROS_WARN("state in special reset not clear");
+    return;
   }
   walk_node_->reset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
 }
@@ -269,6 +270,12 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
       dyn_conf.max_step_z = std::stof(valstr);
     } else if (keystr == "max_step_angular") {
       dyn_conf.max_step_angular = std::stof(valstr);
+    } else if (keystr == "x_speed_multiplier") {
+      dyn_conf.x_speed_multiplier = std::stof(valstr);
+    } else if (keystr == "y_speed_multiplier") {
+      dyn_conf.y_speed_multiplier = std::stof(valstr);
+    } else if (keystr == "yaw_speed_multiplier") {
+      dyn_conf.yaw_speed_multiplier = std::stof(valstr);
     } else {
       std::cout << keystr << " not known. WILL BE IGNORED\n";
     }

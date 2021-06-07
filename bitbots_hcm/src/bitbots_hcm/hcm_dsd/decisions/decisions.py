@@ -1,10 +1,7 @@
 import rospy
 import math
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-import humanoid_league_msgs.msg
-from bitbots_hcm.hcm_dsd.hcm_blackboard import STATE_ANIMATION_RUNNING, STATE_CONTROLLABLE, STATE_FALLEN, STATE_FALLING, \
-    STATE_HARDWARE_PROBLEM, STATE_MOTOR_OFF, STATE_PENALTY, STATE_PICKED_UP, STATE_RECORD, STATE_SHUT_DOWN, \
-    STATE_STARTUP, STATE_WALKING, STATE_HCM_OFF, STATE_KICKING
+from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_speaker.speaker import speak
 from humanoid_league_msgs.msg import Audio
 
@@ -16,24 +13,24 @@ class StartHCM(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.shut_down_request:
-            if self.blackboard.current_state == STATE_HARDWARE_PROBLEM:
-                self.blackboard.current_state = STATE_SHUT_DOWN
+            if self.blackboard.current_state == RobotControlState.HARDWARE_PROBLEM:
+                self.blackboard.current_state = RobotControlState.SHUTDOWN
                 return "SHUTDOWN_WHILE_HARDWARE_PROBLEM"
             else:
-                self.blackboard.current_state = STATE_SHUT_DOWN
+                self.blackboard.current_state = RobotControlState.SHUTDOWN
                 return "SHUTDOWN_REQUESTED"
         else:
             if not reevaluate:
                 if not self.is_walkready():
                     return "NOT_WALKREADY"
-                self.blackboard.current_state = STATE_STARTUP
+                self.blackboard.current_state = RobotControlState.STARTUP
             return "RUNNING"
 
     def is_walkready(self):
         """
         We check if any joint is has an offset from the walkready pose which is higher than a threshold
         """
-        if self.blackboard.current_joint_state is None:
+        if self.blackboard.current_joint_state is None or self.blackboard.current_joint_state == []:
             return False
         i = 0
         for joint_name in self.blackboard.current_joint_state.name:
@@ -75,7 +72,7 @@ class Record(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         # check if the robot is currently recording animations
         if self.blackboard.record_active:
-            self.blackboard.current_state = STATE_RECORD
+            self.blackboard.current_state = RobotControlState.RECORD
             return "RECORD_ACTIVE"
         else:
             # robot is not recording
@@ -127,22 +124,22 @@ class CheckMotors(AbstractDecisionElement):
                 self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
             self.publish_debug_data("Time since last motor goals",
                                     self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
-            self.blackboard.current_state = STATE_MOTOR_OFF
+            self.blackboard.current_state = RobotControlState.MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off
             return "TURN_OFF"
 
         # see if we get no messages or always the exact same
         if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
             if self.blackboard.is_power_on:
-                if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
-                        self.blackboard.start_time.to_sec() < 10:
+                if (self.blackboard.current_state == RobotControlState.STARTUP and
+                        self.blackboard.current_time.to_sec() - self.blackboard.start_time.to_sec() < 10):
                     # we are still in startup phase, just wait and dont complain
                     return "MOTORS_NOT_STARTED"
                 else:
                     # tell that we have a hardware problem
                     self.had_problem = True
                     # wait for motors to connect
-                    self.blackboard.current_state = STATE_HARDWARE_PROBLEM
+                    self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
                     return "PROBLEM"
             else:
                 # we have to turn the motors on
@@ -192,12 +189,12 @@ class CheckIMU(AbstractDecisionElement):
                 return "IMU_NOT_STARTED"
 
         if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
-            if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
+            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.to_sec() - \
                     self.blackboard.start_time.to_sec() < 10:
                 # wait for the IMU to start
                 return "IMU_NOT_STARTED"
             else:
-                self.blackboard.current_state = STATE_HARDWARE_PROBLEM
+                self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
                 self.had_problem = True
                 return "PROBLEM"
 
@@ -235,13 +232,13 @@ class CheckPressureSensor(AbstractDecisionElement):
             self.last_different_msg_time = self.blackboard.current_time
 
         if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
-            if self.blackboard.current_state == STATE_STARTUP and self.blackboard.current_time.to_sec() - \
+            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.to_sec() - \
                     self.blackboard.start_time.to_sec() < 10:
                 # wait for the pressure sensors to start
-                self.blackboard.current_state = STATE_STARTUP
+                self.blackboard.current_state = RobotControlState.STARTUP
                 return "PRESSURE_NOT_STARTED"
             else:
-                self.blackboard.current_state = STATE_HARDWARE_PROBLEM
+                self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
                 return "PROBLEM"
 
         if self.had_problem:
@@ -269,7 +266,7 @@ class PickedUp(AbstractDecisionElement):
                 sum(self.blackboard.pressures) < 10 and \
                 abs(self.blackboard.smooth_accel[0]) < self.blackboard.pickup_accel_threshold and \
                 abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
-            self.blackboard.current_state = STATE_PICKED_UP
+            self.blackboard.current_state = RobotControlState.PICKED_UP
             if not reevaluate:
                 speak("Picked up!", self.blackboard.speak_publisher, priority=50)
             # we do an action sequence to go to walkready and stay in picked up state
@@ -291,7 +288,7 @@ class Falling(AbstractDecisionElement):
         # check if the robot is currently falling
         falling_direction = self.blackboard.fall_checker.check_falling(self.blackboard.gyro, self.blackboard.quaternion)
         if self.blackboard.falling_detection_active and falling_direction is not None:
-            self.blackboard.current_state = STATE_FALLING
+            self.blackboard.current_state = RobotControlState.FALLING
 
             if falling_direction == self.blackboard.fall_checker.FRONT:
                 return "FALLING_FRONT"
@@ -311,19 +308,23 @@ class Falling(AbstractDecisionElement):
 class FallingClassifier(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
-        prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg,
-                                                                self.blackboard.current_joint_state,
-                                                                self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
-        if prediction == 0:
-            return "NOT_FALLING"
-        elif prediction == 1:
-            return "FALLING_FRONT"
-        elif prediction == 2:
-            return "FALLING_BACK"
-        elif prediction == 3:
-            return "FALLING_LEFT"
-        elif prediction == 4:
-            return "FALLING_RIGHT"
+        if self.blackboard.falling_detection_active:
+            prediction = self.blackboard.classifier.smooth_classify(self.blackboard.imu_msg,
+                                                                    self.blackboard.current_joint_state,
+                                                                    self.blackboard.cop_l_msg, self.blackboard.cop_r_msg)
+            if prediction == 0:
+                return "NOT_FALLING"
+            else:
+                if not reevaluate:
+                    self.blackboard.current_state = RobotControlState.FALLING
+                if prediction == 1:
+                    return "FALLING_FRONT"
+                elif prediction == 2:
+                    return "FALLING_BACK"
+                elif prediction == 3:
+                    return "FALLING_LEFT"
+                elif prediction == 4:
+                    return "FALLING_RIGHT"
         else:
             return "NOT_FALLING"
 
@@ -372,7 +373,8 @@ class Fallen(AbstractDecisionElement):
         # check if the robot is currently laying on the ground
         fallen_side = self.blackboard.fall_checker.check_fallen(self.blackboard.quaternion, self.blackboard.gyro)
         if self.blackboard.is_stand_up_active and fallen_side is not None:
-            self.blackboard.current_state = STATE_FALLEN
+            if not reevaluate:
+                self.blackboard.current_state = RobotControlState.FALLEN
             # we play a stand up animation
             if fallen_side == self.blackboard.fall_checker.FRONT:
                 return "FALLEN_FRONT"
@@ -397,7 +399,7 @@ class ExternalAnimation(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.external_animation_running:
-            self.blackboard.current_state = STATE_ANIMATION_RUNNING
+            self.blackboard.current_state = RobotControlState.ANIMATION_RUNNING
             return "ANIMATION_RUNNING"
         else:
             return "FREE"
@@ -413,7 +415,7 @@ class Walking(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.current_time.to_sec() - self.blackboard.last_walking_goal_time.to_sec() < 0.1:
-            self.blackboard.current_state = STATE_WALKING
+            self.blackboard.current_state = RobotControlState.WALKING
             if self.blackboard.animation_requested:
                 self.blackboard.animation_requested = False
                 # we are walking but we have to stop to play an animation
@@ -436,7 +438,7 @@ class Kicking(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         if self.blackboard.last_kick_feedback is not None and \
                 (rospy.Time.now() - self.blackboard.last_kick_feedback) < rospy.Duration.from_sec(1):
-            self.blackboard.current_state = STATE_KICKING
+            self.blackboard.current_state = RobotControlState.KICKING
             return 'KICKING'
         else:
             return 'NOT_KICKING'

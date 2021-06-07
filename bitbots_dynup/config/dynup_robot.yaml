@@ -4,56 +4,59 @@ dynup:
 
   # end pose
   arm_extended_length: 0.3
-  trunk_height: 0.4
-  trunk_pitch: 0
   foot_distance: 0.2
-  trunk_x_final: -0.025
   hand_walkready_pitch: -25.0
   hand_walkready_height: -0.35
+  trunk_height: 0.4
+  trunk_pitch: 0.0
+  trunk_x_final: 0
+
+  arm_side_offset: 0.148
 
   # Back
-  leg_min_length_back: 0.22
-  hands_behind_back_x: 0.1
-  hands_behind_back_z: 0.1
-  trunk_height_back: 0.22
-  com_shift_1: 0.15
-  com_shift_2: 0.08
-  foot_angle: 80
-  arms_angle_back: 135
-  trunk_overshoot_angle_back: 10
-  time_legs_close: 0.5
-  time_foot_ground_back: 0.5
-  time_full_squat_hands: 0.5
-  time_full_squat_legs: 0.5
-  wait_in_squat_back: 1
+  arms_angle_back: 120.36
+  com_shift_1: 0.051
+  com_shift_2: 0.0
+  foot_angle: 51.76
+  hands_behind_back_x: 0.162
+  hands_behind_back_z: 0.183
+  leg_min_length_back: 0.253
+  time_foot_ground_back: 0.536
+  time_full_squat_hands: 0.172
+  time_full_squat_legs: 0.196
+  time_legs_close: 0.068
+  trunk_height_back: 0.179
+  trunk_overshoot_angle_back: 5.95
+  wait_in_squat_back: 0.6
 
   # Front
-  arm_side_offset: 0.12
-  leg_min_length_front: 0.25
-  trunk_x_front: 0.0
-  max_leg_angle: 70
-  trunk_overshoot_angle_front: 10
-  hands_pitch: -30
-  time_hands_side: 0.3
-  time_hands_rotate: 0.3
-  time_foot_close: 0.3
-  time_hands_front: 0.3
-  time_foot_ground_front: 0.3 # do at same time as time_hands_front
-  time_torso_45: 0.4
-  time_to_squat: 0.6
-  wait_in_squat_front: 1.0
+  hands_pitch: -65.86
+  leg_min_length_front: 0.244
+  max_leg_angle: 71.71
+  time_foot_close: 0.0
+  time_foot_ground_front: 0.132
+  time_hands_front: 0.396
+  time_hands_rotate: 0.231
+  time_hands_side: 0.132
+  time_to_squat: 0.924
+  time_torso_45: 0.462
+  trunk_overshoot_angle_front: -10.54
+  trunk_x_front: 0.091
+  wait_in_squat_front: 0.165
 
+  time_walkready: 2.0
   # Rise
-  rise_time: 1.0
+  rise_time: 0.84
 
   # Descend
   descend_time: 0.25
 
   # Stabilier
-  stabilizing: True
+  stabilizing: False
   minimal_displacement: False
   stable_threshold: 0.05
   stable_duration: 100
+  stabilization_timeout: 2
 
   # Visualizer
   spline_smoothness: 100
@@ -67,7 +70,7 @@ dynup:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
-    publish_state: True
+    publish_state: False
   pid_trunk_pitch:
     p: -0.42
     i: -5.31646
@@ -76,4 +79,4 @@ dynup:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: True
-    publish_state: True
+    publish_state: False

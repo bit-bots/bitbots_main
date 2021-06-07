@@ -38,6 +38,7 @@
   <depend>moveit_ros_planning_interface</depend>
   <depend>bitbots_docs</depend>
   <depend>rotconv</depend>
+  <depend>control_toolbox</depend>
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>

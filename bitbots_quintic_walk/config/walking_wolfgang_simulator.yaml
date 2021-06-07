@@ -36,7 +36,7 @@ walking:
     trunk_height: 0.40
     # Trunk pitch orientation
     # (in rad)
-    trunk_pitch: 0.12
+    trunk_pitch: 0.13
     # Phase offset of trunk oscillation
     # (half cycle phase, [-1:1])
     trunk_phase: -0.1
@@ -76,7 +76,7 @@ walking:
 
   node:
     # update frequency of the engine
-    engine_freq: 100.0
+    engine_freq: 200.0
 
     # parameters for bioIK
     ik_timeout: 0.01
@@ -120,7 +120,7 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_fused_roll:
     p: 0.111
@@ -130,4 +130,4 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
+    publish_state: False

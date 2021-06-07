@@ -1,6 +1,7 @@
 dynup:
   # necessary to provide
   engine_rate: 240
+  stabilization_timeout: 10
 
   pid_trunk_roll:
     p: 0.0

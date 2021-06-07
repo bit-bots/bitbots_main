@@ -17,7 +17,7 @@
             <group if="$(arg use_game_settings)">
                 <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
             </group>
-        <node name="hcm" pkg="bitbots_hcm" type="humanoid_control_module.py" args="" output="screen" launch-prefix="taskset -c 1">
+        <node name="hcm" pkg="bitbots_hcm" type="humanoid_control_module.py" args="" output="screen" launch-prefix="$(arg taskset)">
         </node>
     </group>
 

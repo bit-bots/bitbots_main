@@ -8,9 +8,9 @@
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns) :
+    walk_engine_(ns),
     robot_model_loader_(ns + "robot_description", false),
-    stabilizer_(ns),
-    walk_engine_(ns) {
+    stabilizer_(ns) {
   nh_ = ros::NodeHandle(ns);
   pnh_ = ros::NodeHandle("~");
 
@@ -76,9 +76,6 @@ WalkNode::WalkNode(const std::string ns) :
   dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig>::CallbackType f;
   f = boost::bind(&bitbots_quintic_walk::WalkNode::reconfCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
-
-  // this has to be done to prevent strange initilization bugs
-  walk_engine_ = WalkEngine(ns);
 }
 
 void WalkNode::run() {
@@ -93,59 +90,63 @@ void WalkNode::run() {
   ros::Rate loop_rate(engine_frequency_);
   double dt;
   while (ros::ok()) {
-    dt = getTimeDelta();
+    ros::spinOnce();
+    if (loop_rate.sleep()) {
+      dt = getTimeDelta();
 
-    if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
-      // the robot fell, we have to reset everything and do nothing else
-      walk_engine_.reset();
-      stabilizer_.reset();
-    } else {
-      // we don't want to walk, even if we have orders, if we are not in the right state
-      /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
-       * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
-      // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-      current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
-          robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
-          robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+      if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING
+      || robot_state_ == humanoid_league_msgs::RobotControlState::GETTING_UP) {
+        // the robot fell, we have to reset everything and do nothing else
+        walk_engine_.reset();
+        stabilizer_.reset();
+      } else {
+        // we don't want to walk, even if we have orders, if we are not in the right state
+        /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
+         * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
+        // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
+        current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
+            robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
+            robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
 
-      // perform all the actual calculations
-      bitbots_msgs::JointCommand joint_goals = step(dt);
+        // perform all the actual calculations
+        bitbots_msgs::JointCommand joint_goals = step(dt);
 
-      // only publish goals if we are not idle
-      if (walk_engine_.getState() != WalkState::IDLE) {
-        pub_controller_command_.publish(joint_goals);
+        // only publish goals if we are not idle
+        if (walk_engine_.getState() != WalkState::IDLE) {
+          pub_controller_command_.publish(joint_goals);
 
-        // publish current support state
-        bitbots_msgs::SupportState support_state;
-        if (walk_engine_.isDoubleSupport()) {
-          support_state.state = bitbots_msgs::SupportState::DOUBLE;
-        } else if (walk_engine_.isLeftSupport()) {
-          support_state.state = bitbots_msgs::SupportState::LEFT;
-        } else {
-          support_state.state = bitbots_msgs::SupportState::RIGHT;
-        }
-        // publish if foot changed
-        if (current_support_foot_ != support_state.state) {
-          pub_support_.publish(support_state);
-          current_support_foot_ = support_state.state;
-        }
+          // publish current support state
+          bitbots_msgs::SupportState support_state;
+          if (walk_engine_.isDoubleSupport()) {
+            support_state.state = bitbots_msgs::SupportState::DOUBLE;
+          } else if (walk_engine_.isLeftSupport()) {
+            support_state.state = bitbots_msgs::SupportState::LEFT;
+          } else {
+            support_state.state = bitbots_msgs::SupportState::RIGHT;
+          }
+          // publish if foot changed
+          if (current_support_foot_ != support_state.state) {
+            pub_support_.publish(support_state);
+            current_support_foot_ = support_state.state;
+          }
 
-        // publish debug information
-        if (debug_active_) {
-          visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
-          visualizer_.publishWalkMarkers(current_stabilized_response_);
-          visualizer_.publishEngineDebug(current_response_);
+          // publish debug information
+          if (debug_active_) {
+            visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
+            visualizer_.publishWalkMarkers(current_stabilized_response_);
+            visualizer_.publishEngineDebug(current_response_);
+          }
         }
       }
+      // always publish odometry to not confuse odometry fuser
+      odom_counter++;
+      if (odom_counter > odom_pub_factor_) {
+        pub_odometry_.publish(getOdometry());
+        odom_counter = 0;
+      }
+    }else{
+      sleep(0.0001);
     }
-    // always publish odometry to not confuse odometry fuser
-    odom_counter++;
-    if (odom_counter > odom_pub_factor_) {
-      pub_odometry_.publish(getOdometry());
-      odom_counter = 0;
-    }
-    ros::spinOnce();
-    loop_rate.sleep();
   }
 }
 
@@ -411,7 +412,7 @@ void WalkNode::robotStateCb(const humanoid_league_msgs::RobotControlState msg) {
 void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
   std::vector<std::string> names = msg.name;
   std::vector<double> goals = msg.position;
-  for (int i = 0; i < names.size(); i++) {
+  for (size_t i = 0; i < names.size(); i++) {
     // besides its name, this method only changes a single joint position...
     current_state_->setJointPositions(names[i], &goals[i]);
   }
@@ -422,7 +423,7 @@ void WalkNode::jointStateCb(const sensor_msgs::JointState &msg) {
     double effort_sum = 0;
     const std::vector<std::string>
         &fly_joint_names = (walk_engine_.isLeftSupport()) ? ik_.getRightLegJointNames() : ik_.getLeftLegJointNames();
-    for (int i = 0; i < names.size(); i++) {
+    for (size_t i = 0; i < names.size(); i++) {
       // add effort on this joint to sum, if it is part of the flying leg
       if (std::find(fly_joint_names.begin(), fly_joint_names.end(), names[i]) != fly_joint_names.end()) {
         effort_sum = effort_sum + abs(msg.effort[i]);

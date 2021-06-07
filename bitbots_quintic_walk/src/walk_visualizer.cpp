@@ -183,7 +183,7 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   goal_state.reset(new robot_state::RobotState(kinematic_model_));
   std::vector<std::string> names = joint_goals.first;
   std::vector<double> goals = joint_goals.second;
-  for (int i = 0; i < names.size(); i++) {
+  for (size_t i = 0; i < names.size(); i++) {
     // besides its name, this method only changes a single joint position...
     goal_state->setJointPositions(names[i], &goals[i]);
   }

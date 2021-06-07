@@ -5,7 +5,7 @@ $PickedUp
 
 -->HCM
 $StartHCM
-    NOT_WALKREADY --> @PlayAnimationDynup + direction:rise
+    NOT_WALKREADY --> @PlayAnimationDynup + direction:walkready + initial:true
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
     SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop
@@ -24,17 +24,17 @@ $StartHCM
                         PRESSURE_NOT_STARTED --> @WaitForPressureStartup
                         PROBLEM --> @WaitForPressure
                         OKAY --> $PickedUp
-                            PICKED_UP --> @PlayAnimationDynup + direction:rise, @StayPickedUp
+                            PICKED_UP --> @PlayAnimationDynup + direction:walkready, @StayPickedUp
                             ON_GROUND --> $Fallen
                                 FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + direction:front
                                 FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + direction:back
                                 FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup + direction:back
                                 FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup + direction:back
                                 NOT_FALLEN --> $Falling
-                                    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft, @WaitNoReevaluate + time:1
-                                    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight, @WaitNoReevaluate + time:1
-                                    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront, @WaitNoReevaluate + time:1
-                                    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack, @WaitNoReevaluate + time:1
+                                    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft
+                                    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight
+                                    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront
+                                    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack
                                     NOT_FALLING --> $Sitting
                                         YES --> @PlayAnimationDynup + direction:rise
                                         NO --> $ExternalAnimation

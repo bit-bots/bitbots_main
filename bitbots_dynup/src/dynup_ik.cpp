@@ -13,13 +13,13 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 void DynupIK::reset() {
-  for (int i = 0; i < current_joint_states_.name.size(); i++) {
-      goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
+  for (size_t i = 0; i < current_joint_states_.name.size(); i++) {
+    goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
   }
 }
 
 void DynupIK::setDirection(std::string direction) {
-    direction_ = direction;
+  direction_ = direction;
 }
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
@@ -29,12 +29,11 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   ik_options.return_approximate_solution = true;
 
   geometry_msgs::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
-  
+
   tf2::toMsg(ik_goals.r_foot_goal_pose, right_foot_goal_msg);
   tf2::toMsg(ik_goals.l_foot_goal_pose, left_foot_goal_msg);
   tf2::toMsg(ik_goals.r_hand_goal_pose, right_hand_goal_msg);
   tf2::toMsg(ik_goals.l_hand_goal_pose, left_hand_goal_msg);
-
 
   bool success;
   goal_state_->updateLinkTransforms();
@@ -48,26 +47,26 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(r_leg_joints_group_,
-                                   right_foot_goal_msg,
-                                   0.005,
-                                   moveit::core::GroupStateValidityCallbackFn(),
-                                   ik_options);
+                                    right_foot_goal_msg,
+                                    0.005,
+                                    moveit::core::GroupStateValidityCallbackFn(),
+                                    ik_options);
 
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(l_arm_joints_group_,
-                                   left_hand_goal_msg,
-                                   0.005,
-                                   moveit::core::GroupStateValidityCallbackFn(),
-                                   ik_options);
+                                    left_hand_goal_msg,
+                                    0.005,
+                                    moveit::core::GroupStateValidityCallbackFn(),
+                                    ik_options);
 
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(r_arm_joints_group_,
-                                   right_hand_goal_msg,
-                                   0.005,
-                                   moveit::core::GroupStateValidityCallbackFn(),
-                                   ik_options);
+                                    right_hand_goal_msg,
+                                    0.005,
+                                    moveit::core::GroupStateValidityCallbackFn(),
+                                    ik_options);
   if (success) {
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = all_joints_group_->getActiveJointModelNames();
@@ -78,26 +77,23 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     bitbots_splines::JointGoals result;
     result.first = joint_names;
     result.second = joint_goals;
-    /* sets head motor positions to 0, as the IK will return random values for those unconstrained motors. */
-    for(int i = 0; i  < result.first.size(); i++)
-    {
-        if(result.first[i] == "HeadPan") {
+    /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
+    for (size_t i = 0; i < result.first.size(); i++) {
+      if (result.first[i] == "HeadPan") {
+        result.second[i] = 0;
+      } else if (result.first[i] == "HeadTilt") {
+        if (ik_goals.is_head_zero) {
+          result.second[i] = 0;
+        } else {
+          if (direction_ == "front") {
+            result.second[i] = 1.0;
+          } else if (direction_ == "back") {
+            result.second[i] = -1.5;
+          } else {
             result.second[i] = 0;
+          }
         }
-        else if(result.first[i] ==  "HeadTilt") {
-            if (direction_ == "front")
-            {
-                result.second[i] = 0.785398;
-            }
-            else if (direction_ == "back")
-            {
-                result.second[i] = -0.785398;
-            }
-            else
-            {
-                result.second[i] = 0;
-            }
-        }
+      }
     }
     return result;
   } else {
@@ -110,8 +106,7 @@ void DynupIK::useStabilizing(bool use) {
 }
 
 void DynupIK::setCurrentJointStates(sensor_msgs::JointState jointStates) {
-    current_joint_states_ = jointStates;
+  current_joint_states_ = jointStates;
 }
-
 
 }

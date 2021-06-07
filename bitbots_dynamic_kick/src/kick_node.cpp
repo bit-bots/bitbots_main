@@ -4,8 +4,8 @@ namespace bitbots_dynamic_kick {
 
 KickNode::KickNode(const std::string &ns) :
     server_(node_handle_, "dynamic_kick", boost::bind(&KickNode::executeCb, this, _1), false),
-    listener_(tf_buffer_),
     visualizer_(ns + "debug/dynamic_kick"),
+    listener_(tf_buffer_),
     robot_model_loader_(ns + "robot_description", false) {
   ros::NodeHandle pnh("~");
   pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
@@ -30,7 +30,8 @@ KickNode::KickNode(const std::string &ns) :
   engine_.setRobotState(current_state_);
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("kick_motor_goals", 1);
-  support_foot_publisher_ = node_handle_.advertise<bitbots_msgs::SupportState>("dynamic_kick_support_state", 1, /* latch = */ true);
+  support_foot_publisher_ =
+      node_handle_.advertise<bitbots_msgs::SupportState>("dynamic_kick_support_state", 1, /* latch = */ true);
   cop_l_subscriber_ = node_handle_.subscribe("cop_l", 1, &KickNode::copLCallback, this);
   cop_r_subscriber_ = node_handle_.subscribe("cop_r", 1, &KickNode::copRCallback, this);
   joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &KickNode::jointStateCallback, this);
@@ -52,7 +53,7 @@ void KickNode::copRCallback(const geometry_msgs::PointStamped &cop) {
 }
 
 void KickNode::jointStateCallback(const sensor_msgs::JointState &joint_states) {
-  for (int i = 0; i < joint_states.name.size(); ++i) {
+  for (size_t i = 0; i < joint_states.name.size(); ++i) {
     current_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
   }
 }
@@ -196,24 +197,25 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
   /* Do the loop as long as nothing cancels it */
   double dt;
   while (server_.isActive() && !server_.isPreemptRequested()) {
-    dt = getTimeDelta();
-    std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
-
-    /* Publish feedback to the client */
-    bitbots_msgs::KickFeedback feedback;
-    feedback.percent_done = engine_.getPercentDone();
-    feedback.chosen_foot = engine_.isLeftKick() ?
-                           bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
-    server_.publishFeedback(feedback);
-
-    if (feedback.percent_done >= 100) {
-      break;
-    }
-    joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
-
-    /* Let ROS do some important work of its own and sleep afterwards */
     ros::spinOnce();
-    loop_rate.sleep();
+    if (loop_rate.sleep()) {
+      dt = getTimeDelta();
+      std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
+
+      /* Publish feedback to the client */
+      bitbots_msgs::KickFeedback feedback;
+      feedback.percent_done = engine_.getPercentDone();
+      feedback.chosen_foot = engine_.isLeftKick() ?
+                             bitbots_msgs::KickFeedback::FOOT_LEFT : bitbots_msgs::KickFeedback::FOOT_RIGHT;
+      server_.publishFeedback(feedback);
+
+      if (feedback.percent_done >= 100) {
+        break;
+      }
+      joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
+    } else {
+      sleep(0.0001);
+    }
   }
 }
 
@@ -224,7 +226,7 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   bitbots_splines::JointGoals motor_goals = ik_.calculate(stabilized_positions);
 
   /* visualization of the values calculated above */
-  for (int i = 0; i < motor_goals.first.size(); ++i) {
+  for (size_t i = 0; i < motor_goals.first.size(); ++i) {
     goal_state_->setJointPositions(motor_goals.first[i], &motor_goals.second[i]);
   }
   visualizer_.publishGoals(positions, stabilized_positions, goal_state_, engine_.getPhase());

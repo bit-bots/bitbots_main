@@ -3,8 +3,10 @@ import actionlib
 import humanoid_league_msgs.msg
 import bitbots_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard, STATE_GETTING_UP
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from time import sleep
+
+from humanoid_league_msgs.msg import RobotControlState
 
 
 class AbstractPlayAnimation(AbstractActionElement):
@@ -84,28 +86,28 @@ class AbstractPlayAnimation(AbstractActionElement):
 
 class PlayAnimationStandUpFront(AbstractPlayAnimation):
     def chose_animation(self):
-        self.blackboard.current_state = STATE_GETTING_UP
+        self.blackboard.current_state = RobotControlState.GETTING_UP
         rospy.loginfo("PLAYING STAND UP FRONT ANIMATION")
         return self.blackboard.stand_up_front_animation
 
 
 class PlayAnimationStandUpBack(AbstractPlayAnimation):
     def chose_animation(self):
-        self.blackboard.current_state = STATE_GETTING_UP
+        self.blackboard.current_state = RobotControlState.GETTING_UP
         rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
         return self.blackboard.stand_up_back_animation
 
 
 class PlayAnimationStandUpLeft(AbstractPlayAnimation):
     def chose_animation(self):
-        self.blackboard.current_state = STATE_GETTING_UP
+        self.blackboard.current_state = RobotControlState.GETTING_UP
         rospy.loginfo("PLAYING STAND UP LEFT ANIMATION")
         return self.blackboard.stand_up_left_animation
 
 
 class PlayAnimationStandUpRight(AbstractPlayAnimation):
     def chose_animation(self):
-        self.blackboard.current_state = STATE_GETTING_UP
+        self.blackboard.current_state = RobotControlState.GETTING_UP
         rospy.loginfo("PLAYING STAND UP RIGHT ANIMATION")
         return self.blackboard.stand_up_right_animation
 
@@ -159,6 +161,12 @@ class PlayAnimationDynup(AbstractActionElement):
         super(PlayAnimationDynup, self).__init__(blackboard, dsd, parameters=None)
         self.direction = parameters.get('direction')
         self.first_perform = True
+
+        # A parameter 'initial' is passed when dynup is called during the startup phase,
+        # in this case we do not want to set the state to GETTING_UP.
+        initial = parameters.get('initial', False)
+        if not initial:
+            self.blackboard.current_state = RobotControlState.GETTING_UP
 
     def perform(self, reevaluate=False):
         # deactivate falling since it will be wrongly detected
