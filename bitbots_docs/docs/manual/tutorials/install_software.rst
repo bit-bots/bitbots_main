@@ -10,7 +10,7 @@ commands). Then, install the required ROS packages:
 
 .. code-block:: bash
 
-    sudo apt install python3-pip ros-melodic-amcl ros-melodic-controller-interface ros-melodic-controller-manager ros-melodic-controller-manager-msgs ros-melodic-desktop-full ros-melodic-gazebo-ros-control ros-melodic-hector-gazebo ros-melodic-hector-gazebo-plugins ros-melodic-imu-sensor-controller ros-melodic-joint-state-controller ros-melodic-joint-trajectory-controller ros-melodic-map-server ros-melodic-move-base ros-melodic-moveit ros-melodic-moveit-core ros-melodic-moveit-resources ros-melodic-moveit-ros-planning ros-melodic-moveit-ros-planning-interface ros-melodic-plotjuggler ros-melodic-pointcloud-to-laserscan ros-melodic-robot-controllers ros-melodic-robot-controllers-interface ros-melodic-robot-controllers-msgs ros-melodic-robot-localization ros-melodic-ros-control ros-melodic-ros-controllers ros-melodic-rqt-controller-manager ros-melodic-rqt-joint-trajectory-controller ros-melodic-yocs-velocity-smoother ros-melodic-spatio-temporal-voxel-layer ros-melodic-rviz-imu-plugin ros-melodic-imu-complementary-filter ros-melodic-joy
+    sudo apt install python3-catkin-tools python3-pip ros-melodic-amcl ros-melodic-controller-interface ros-melodic-controller-manager ros-melodic-controller-manager-msgs ros-melodic-desktop-full ros-melodic-gazebo-ros-control ros-melodic-hector-gazebo ros-melodic-hector-gazebo-plugins ros-melodic-imu-sensor-controller ros-melodic-joint-state-controller ros-melodic-joint-trajectory-controller ros-melodic-map-server ros-melodic-move-base ros-melodic-moveit ros-melodic-moveit-core ros-melodic-moveit-resources ros-melodic-moveit-ros-planning ros-melodic-moveit-ros-planning-interface ros-melodic-plotjuggler ros-melodic-pointcloud-to-laserscan ros-melodic-robot-controllers ros-melodic-robot-controllers-interface ros-melodic-robot-controllers-msgs ros-melodic-robot-localization ros-melodic-ros-control ros-melodic-ros-controllers ros-melodic-rqt-controller-manager ros-melodic-rqt-joint-trajectory-controller ros-melodic-yocs-velocity-smoother ros-melodic-spatio-temporal-voxel-layer ros-melodic-rviz-imu-plugin ros-melodic-imu-complementary-filter ros-melodic-joy
 
 
 After that, create an account on https://github.com/ and get team access to our organization
@@ -33,7 +33,7 @@ We need to install additional python packages, that are not available via apt.
 To do this, run the following command:
 
 .. code-block:: bash
-
+    pip3 install pip -U
     pip3 install --user -r requirements.txt
 
 Next, we need a catkin workspace. Execute ``mkdir -p ~/catkin_ws/src`` to create a workspace and go
