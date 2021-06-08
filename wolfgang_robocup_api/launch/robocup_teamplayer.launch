@@ -36,4 +36,6 @@
         <arg name="teamcom" value="true" />
         <arg name="vision" value="true" />
     </include>
+
+    <include file="$(find system_monitor)/launch/system_monitor.launch" />
 </launch>
