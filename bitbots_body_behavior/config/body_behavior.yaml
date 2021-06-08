@@ -4,7 +4,6 @@ behavior:
       - "goalie"
       - "offense"
       - "defense"
-      - "penalty"
 
     # When False, the behavior will use a simple fallback mode in which only detected image features are
     # used for decision making
