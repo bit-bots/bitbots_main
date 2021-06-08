@@ -213,7 +213,6 @@ class HumanoidLeagueTeamCommunication:
 
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
-        # TODO: Somehow handle message without extension
 
         player_id = message.current_pose.player_id
         team_id = message.current_pose.team
@@ -253,8 +252,6 @@ class HumanoidLeagueTeamCommunication:
         team_data.ball_relative.pose.pose.position.x = message.ball.position.x
         team_data.ball_relative.pose.pose.position.y = message.ball.position.y
         team_data.ball_relative.pose.pose.position.z = message.ball.position.z
-
-        # TODO: Ball velocity
 
         if message.ball.covariance:
             set_covariance(message.ball.covariance, team_data.ball_relative.pose.covariance)
@@ -349,14 +346,11 @@ class HumanoidLeagueTeamCommunication:
             q = self.move_base_goal.pose.orientation
             message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
 
-        # message.kick_target is currently not used
-
         if self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']):
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
             message.ball.position.z = self.ball.point.z
-            # ball.velocity is currently not set, wait for ball filter
-            # ball.covariance is currently not set, wait for ball filter
+
             message.ball_confidence = self.ball_confidence
         else:
             message.ball_confidence = 0
@@ -372,14 +366,10 @@ class HumanoidLeagueTeamCommunication:
                     robot.position.y = obstacle.pose.pose.pose.position.y
                     q = obstacle.pose.pose.pose.orientation
                     robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-                    # TODO transform covariance and add it here
                     team_mapping = dict(((b, a) for a, b in self.team_mapping))
                     robot.team = team_mapping[obstacle.type]
                     message.others.append(robot)
-                    # TODO maybe rename obstacle_confidence to robot_confidences
                     message.obstacle_confidence.append(obstacle.pose.confidence)
-
-        # message.max_walking_speed is currently not set
 
         if (self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']) and
                 self.pose and rospy.Time.now() - self.pose.header.stamp < rospy.Duration(self.config['lifetime'])):
