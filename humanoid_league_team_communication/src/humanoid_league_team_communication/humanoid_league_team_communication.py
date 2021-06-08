@@ -21,6 +21,7 @@ class HumanoidLeagueTeamCommunication:
     def __init__(self):
         rospack = rospkg.RosPack()
         self._package_path = rospack.get_path("humanoid_league_team_communication")
+        self.socket = None
 
         rospy.init_node("humanoid_league_team_communication")
         rospy.loginfo("Initializing humanoid_league_team_communication...", logger_name="team_comm")
@@ -74,6 +75,9 @@ class HumanoidLeagueTeamCommunication:
             (robocup_extension_pb2.Action.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
             (robocup_extension_pb2.Action.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
             (robocup_extension_pb2.Action.ACTION_WAITING, Strategy.ACTION_WAITING),
+            (robocup_extension_pb2.Action.ACTION_KICKING, Strategy.ACTION_KICKING),
+            (robocup_extension_pb2.Action.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
+            (robocup_extension_pb2.Action.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
         )
         self.side_mapping = (
             (robocup_extension_pb2.OffensiveSide.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
@@ -86,7 +90,6 @@ class HumanoidLeagueTeamCommunication:
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         # we will try multiple times till we manage to get a connection
-        self.socket = None
         while not rospy.is_shutdown() and self.socket is None:
             self.socket = self.get_connection()
             rospy.sleep(1)
@@ -145,7 +148,7 @@ class HumanoidLeagueTeamCommunication:
             obstacle_pose = PoseStamped(msg.header, obstacle.pose.pose.pose)
             try:
                 obstacle_map = self.tf_buffer.transform(obstacle_pose, "map", timeout=rospy.Duration.from_sec(0.3))
-                obstacle.pose.pose.pose = obstacle_map
+                obstacle.pose.pose.pose = obstacle_map.pose
                 self.obstacles.obstacles.append(obstacle)
             except tf2_ros.TransformException:
                 pass
@@ -362,7 +365,6 @@ class HumanoidLeagueTeamCommunication:
                                      ObstacleRelative.ROBOT_UNDEFINED):
                     robot = robocup_extension_pb2.Robot()
                     robot.player_id = obstacle.playerNumber
-
                     robot.position.x = obstacle.pose.pose.pose.position.x
                     robot.position.y = obstacle.pose.pose.pose.position.y
                     q = obstacle.pose.pose.pose.orientation

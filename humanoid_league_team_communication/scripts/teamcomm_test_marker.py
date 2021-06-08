@@ -229,6 +229,6 @@ if __name__ == "__main__":
 
     team_message = TeamMessage(robot)
     # create a timer to update the published ball transform
-    rospy.Timer(rospy.Duration(0.1), team_message.publish)
+    rospy.Timer(rospy.Duration(0.05), team_message.publish)
     # run and block until finished
     rospy.spin()
