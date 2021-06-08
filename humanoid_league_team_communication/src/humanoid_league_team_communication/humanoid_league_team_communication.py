@@ -94,6 +94,7 @@ class HumanoidLeagueTeamCommunication:
         while not rospy.is_shutdown() and self.socket is None:
             self.socket = self.get_connection()
             rospy.sleep(1)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         rospy.Timer(rospy.Duration.from_sec(1 / self.config['rate']), self.send_message)
         self.receive_forever()
