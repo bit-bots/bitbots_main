@@ -9,6 +9,7 @@ import struct
 
 import tf2_ros
 import transforms3d
+from std_msgs.msg import Header
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
     ObstacleRelative, Strategy
@@ -54,7 +55,7 @@ class HumanoidLeagueTeamCommunication:
         self.obstacles = None  # type: ObstacleRelativeArray
         self.move_base_goal = None  # type: PoseStamped
 
-        # Protobuf / Message mappings
+        # Protobuf <-> ROS Message mappings
         self.team_mapping = (
             (robocup_extension_pb2.Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
             (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
@@ -214,8 +215,6 @@ class HumanoidLeagueTeamCommunication:
         message.ParseFromString(msg)
         # TODO: Somehow handle message without extension
 
-        team_data = TeamData()
-
         player_id = message.current_pose.player_id
         team_id = message.current_pose.team
 
@@ -223,13 +222,20 @@ class HumanoidLeagueTeamCommunication:
             # Skip information from ourselves or from the other team
             return
 
-        team_data.robot_id = player_id
+        team_data = TeamData()
+
+        header = Header()
+        header.stamp.secs = message.timestamp.seconds
+        header.stamp.nsecs = message.timestamp.nanos
+        header.frame_id = "map"
 
         # Handle timestamp
         ##################
-        team_data.header.stamp.secs = message.timestamp.seconds
-        team_data.header.stamp.nsecs = message.timestamp.nanos
-        # TODO: FRAME_ID
+        team_data.header = header
+
+        # Handle robot ID
+        #################
+        team_data.robot_id = player_id
 
         # Handle state
         ##############
@@ -256,7 +262,7 @@ class HumanoidLeagueTeamCommunication:
         # Handle obstacles
         ##################
         obstacle_relative_array = ObstacleRelativeArray()
-        # TODO: Header
+        obstacle_relative_array.header = header
 
         for index, robot in enumerate(message.others):
             obstacle = ObstacleRelative()
@@ -270,9 +276,6 @@ class HumanoidLeagueTeamCommunication:
             set_pose(robot, obstacle.pose.pose)
             if hasattr(message, "obstacle_confidence") and index < len(message.obstacle_confidence):
                 obstacle.pose.confidence = message.obstacle_confidence[index]
-
-            # width
-            # heigth
 
             team_data.obstacles.append(obstacle)
 
@@ -396,7 +399,7 @@ class HumanoidLeagueTeamCommunication:
 
         msg = message.SerializeToString()
         for port in self.target_ports:
-            rospy.logdebug(f'sending to {port} on {self.target_host}')
+            rospy.logdebug(f'Sending to {port} on {self.target_host}', logger_name="team_comm")
             self.socket.sendto(msg, (self.target_host, port))
 
 
