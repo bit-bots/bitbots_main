@@ -155,7 +155,9 @@ class WolfgangRobocupApi():
             return None
 
     def close_connection(self):
-        self.socket.close()
+        if self.socket:
+            self.socket.close()
+            rospy.loginfo("Connection closed.", logger_name="rc_api")
 
     def handle_sensor_measurements_msg(self, msg):
         s_m = messages_pb2.SensorMeasurements()
