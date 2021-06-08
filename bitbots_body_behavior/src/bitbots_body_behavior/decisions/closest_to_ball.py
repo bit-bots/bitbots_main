@@ -9,9 +9,13 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
         super(ClosestToBallNoGoalie, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        if self.blackboard.team_data.team_rank_to_ball(count_goalies=False) == 1:
+        if self.blackboard.team_data.team_rank_to_ball(self.blackboard.world_model.get_ball_distance(),
+                                                       count_goalies=False) == 1:
             return "YES"
         return "NO"
+
+    def get_reevaluate(self):
+        return True
 
 
 class ClosestToBall(AbstractDecisionElement):
@@ -19,6 +23,10 @@ class ClosestToBall(AbstractDecisionElement):
         super(ClosestToBall, self).__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        if self.blackboard.team_data.team_rank_to_ball(count_goalies=True) == 1:
+        if self.blackboard.team_data.team_rank_to_ball(self.blackboard.world_model.get_ball_distance(),
+                                                       count_goalies=True) == 1:
             return "YES"
         return "NO"
+
+    def get_reevaluate(self):
+        return True

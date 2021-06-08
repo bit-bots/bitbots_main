@@ -15,7 +15,7 @@ class GameStatusCapsule:
         self.team_id = rospy.get_param("team_id", 8)
         self.gamestate = GameState()
         self.last_update = 0
-        self.unpenalized_time = 0
+        self.unpenalized_time = rospy.get_time()
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
