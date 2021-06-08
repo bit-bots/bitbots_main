@@ -53,7 +53,7 @@ class HumanoidLeagueTeamCommunication:
         self.obstacles = None  # type: ObstacleRelativeArray
         self.move_base_goal = None  # type: PoseStamped
 
-        # Protobuf / Message mappings
+        # Protobuf <-> ROS Message mappings
         self.team_mapping = (
             (robocup_extension_pb2.Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
             (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
@@ -394,7 +394,7 @@ class HumanoidLeagueTeamCommunication:
 
         msg = message.SerializeToString()
         for port in self.target_ports:
-            rospy.logdebug(f'sending to {port} on {self.target_host}')
+            rospy.logdebug(f'Sending to {port} on {self.target_host}', logger_name="team_comm")
             self.socket.sendto(msg, (self.target_host, port))
 
 
