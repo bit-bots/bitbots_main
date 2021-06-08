@@ -78,8 +78,8 @@ class TeamDataCapsule:
         """Set the action of this robot
 
         :param action: An action from humanoid_league_msgs/Strategy"""
-        assert action in [TeamData.ACTION_UNDEFINED, TeamData.ACTION_POSITIONING, TeamData.ACTION_GOING_TO_BALL,
-                          TeamData.ACTION_TRYING_TO_SCORE, TeamData.ACTION_WAITING]
+        assert action in [Strategy.ACTION_UNDEFINED, Strategy.ACTION_POSITIONING, Strategy.ACTION_GOING_TO_BALL,
+                          Strategy.ACTION_TRYING_TO_SCORE, Strategy.ACTION_WAITING]
         self.strategy.action = action
         self.action_update = rospy.get_time()
 
