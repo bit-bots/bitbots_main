@@ -64,7 +64,7 @@ $LocalizationAvailable
                     YES --> $BallDangerous
                         NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
                         ELSE --> #GoAndKickBallMapGoal
-                    NO --> @ChangeAction + action:going_to_ball, @GoToBlockPosition, @LookAtFieldFeatures
+                    NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
                 NO --> @ChangeAction + action:searching, @LookAtFieldFeatures
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior

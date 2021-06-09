@@ -57,7 +57,8 @@ class TeamDataCapsule:
         """
         distances = []
         for data in self.team_data[1:]:
-            if not self.outdated(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
+            if not self.outdated(data) and data.state != TeamData.STATE_PENALIZED and (
+                    data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
                     and data.ball_relative.confidence > self.ball_min_confidence:
                 distances.append(math.sqrt(
                     data.ball_relative.pose.pose.position.x ** 2 + data.ball_relative.pose.pose.position.y ** 2))
