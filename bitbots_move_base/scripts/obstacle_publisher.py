@@ -17,6 +17,8 @@ from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_srvs.srv import Empty
 from std_msgs.msg import Header, Bool
 
+from bitbots_ros_patches.rate import Rate
+
 
 class ObstaclePublisher:
     def __init__(self):
@@ -31,13 +33,12 @@ class ObstaclePublisher:
 
         self.map_frame = rospy.get_param('~map_frame', 'map')
 
-        rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, self._balls_callback, queue_size=1)
+        rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, self._balls_callback,
+                         queue_size=1)
         rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
 
         self.obstacle_publisher = rospy.Publisher("obstacles", PointCloud2, queue_size=10)
-
-        self.publish_timer = rospy.Timer(rospy.Duration(1/20), self.publish_obstacles)
 
         self.ball = None
         self.ball_active = True
@@ -47,10 +48,12 @@ class ObstaclePublisher:
         self.robots_storage_time = 10
         self.robot_merge_distance = 0.5
 
-        rospy.spin()
+        rate = Rate(20)
+        while not rospy.is_shutdown():
+            self.publish_obstacles()
+            rate.sleep()
 
-    def publish_obstacles(self, event):
-
+    def publish_obstacles(self):
         # Set current timespamp and frame
         dummy_header = Header()
         dummy_header.stamp = rospy.Time.now()
@@ -58,7 +61,8 @@ class ObstaclePublisher:
 
         # Publish balls
         if self.ball_active and self.ball is not None:
-            self.obstacle_publisher.publish(create_cloud_xyz32(dummy_header, [[self.ball.point.x, self.ball.point.y, self.ball.point.z]]))
+            self.obstacle_publisher.publish(
+                create_cloud_xyz32(dummy_header, [[self.ball.point.x, self.ball.point.y, self.ball.point.z]]))
 
         # Cleanup robot obstacles
         self.robots = list(filter(
@@ -69,7 +73,8 @@ class ObstaclePublisher:
         for i_a, robot_a in enumerate(self.robots):
             for i_b, robot_b in enumerate(self.robots):
                 # Check that its not the same robot instance and if there is another robot in memory close to it
-                if robot_a != robot_b and np.linalg.norm(ros_numpy.numpify(robot_a.point) - ros_numpy.numpify(robot_b.point)) < self.robot_merge_distance:
+                if robot_a != robot_b and np.linalg.norm(ros_numpy.numpify(robot_a.point) - ros_numpy.numpify(
+                        robot_b.point)) < self.robot_merge_distance:
                     if robot_a.header.stamp > robot_b.header.stamp:
                         del self.robots[i_b]
                     else:
@@ -80,19 +85,19 @@ class ObstaclePublisher:
         points = []
         for o in self.robots:
             points.append([o.point.x, o.point.y, o.point.z])
-            points.append([o.point.x - width/2, o.point.y - width/2, o.point.z])
-            points.append([o.point.x - width/2, o.point.y + width/2, o.point.z])
-            points.append([o.point.x + width/2, o.point.y - width/2, o.point.z])
-            points.append([o.point.x + width/2, o.point.y + width/2, o.point.z])
+            points.append([o.point.x - width / 2, o.point.y - width / 2, o.point.z])
+            points.append([o.point.x - width / 2, o.point.y + width / 2, o.point.z])
+            points.append([o.point.x + width / 2, o.point.y - width / 2, o.point.z])
+            points.append([o.point.x + width / 2, o.point.y + width / 2, o.point.z])
 
         self.obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
 
     def _balls_callback(self, msg):
         try:
             transform = self.tf_buffer.lookup_transform(self.map_frame,
-                                    msg.header.frame_id,
-                                    msg.header.stamp,
-                                    rospy.Duration(1.0))
+                                                        msg.header.frame_id,
+                                                        msg.header.stamp,
+                                                        rospy.Duration(1.0))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return
@@ -105,9 +110,9 @@ class ObstaclePublisher:
     def _obstacle_callback(self, msg):
         try:
             transform = self.tf_buffer.lookup_transform(self.map_frame,
-                                    msg.header.frame_id,
-                                    msg.header.stamp,
-                                    rospy.Duration(1.0))
+                                                        msg.header.frame_id,
+                                                        msg.header.stamp,
+                                                        rospy.Duration(1.0))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return
@@ -120,6 +125,7 @@ class ObstaclePublisher:
 
     def _ball_active_callback(self, msg):
         self.ball_active = msg.data
+
 
 if __name__ == "__main__":
     ObstaclePublisher()
