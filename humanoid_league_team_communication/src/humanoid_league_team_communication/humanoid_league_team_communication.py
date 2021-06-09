@@ -10,9 +10,9 @@ import struct
 import tf2_ros
 import transforms3d
 from std_msgs.msg import Header
-from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
-from humanoid_league_msgs.msg import GameState, PoseWithCertaintyArray, TeamData, ObstacleRelativeArray, \
-    ObstacleRelative, Strategy
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy, \
+    PoseWithCertaintyStamped
 from tf2_geometry_msgs import PointStamped, PoseStamped
 
 import robocup_extension_pb2
@@ -49,6 +49,7 @@ class HumanoidLeagueTeamCommunication:
         self.cmd_vel = None  # type: Twist
         self.cmd_vel_time = rospy.Time(0)
         self.ball = None  # type: Optional[PointStamped]
+        self.ball_vel = (0, 0, 0)
         self.ball_confidence = 0
         self.strategy = None  # type: Strategy
         self.strategy_time = rospy.Time(0)
@@ -106,7 +107,8 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber(self.config['gamestate_topic'], GameState, self.gamestate_cb, queue_size=1)
         rospy.Subscriber(self.config['pose_topic'], PoseWithCovarianceStamped, self.pose_cb, queue_size=1)
         rospy.Subscriber(self.config['cmd_vel_topic'], Twist, self.cmd_vel_cb, queue_size=1)
-        rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyArray, self.ball_cb, queue_size=1)
+        rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyStamped, self.ball_cb, queue_size=1)
+        rospy.Subscriber(self.config['ball_velocity_topic'], TwistWithCovarianceStamped, self.ball_vel_cb, queue_size=1)
         rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
         rospy.Subscriber(self.config['obstacle_topic'], ObstacleRelativeArray, self.obstacle_cb, queue_size=1)
         rospy.Subscriber(self.config['move_base_goal_topic'], PoseStamped, self.move_base_goal_cb, queue_size=1)
@@ -155,23 +157,20 @@ class HumanoidLeagueTeamCommunication:
             except tf2_ros.TransformException:
                 pass
 
-    def ball_cb(self, msg: PoseWithCertaintyArray):
-        if msg.poses:
-            # Sort by confidence
-            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)
-            # Highest confidence
-            ball = balls[0]
-
-            if ball.confidence == 0:
+    def ball_cb(self, msg: PoseWithCertaintyStamped):
+        if msg.pose.confidence == 0:
+            self.ball = None
+        else:
+            # Transform to map
+            ball_point = PointStamped(msg.header, msg.pose.pose.pose.position)
+            try:
+                self.ball = self.tf_buffer.transform(ball_point, "map", timeout=rospy.Duration.from_sec(0.3))
+                self.ball_confidence = msg.pose.confidence
+            except tf2_ros.TransformException:
                 self.ball = None
-            else:
-                # Transform to map
-                ball_point = PointStamped(msg.header, ball.pose.pose.position)
-                try:
-                    self.ball = self.tf_buffer.transform(ball_point, "map", timeout=rospy.Duration.from_sec(0.3))
-                    self.ball_confidence = ball.confidence
-                except tf2_ros.TransformException:
-                    self.ball = None
+
+    def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
+        self.ball_vel = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
 
     def __del__(self):
         self.close_connection()
@@ -203,7 +202,7 @@ class HumanoidLeagueTeamCommunication:
             pose.pose.position.x = robot.position.x
             pose.pose.position.y = robot.position.y
 
-            quat = transforms3d.euler.euler2quat(0.0, 0.0, robot.position.z)  #wxyz -> ros: xyzw
+            quat = transforms3d.euler.euler2quat(0.0, 0.0, robot.position.z)  # wxyz -> ros: xyzw
             pose.pose.orientation.x = quat[1]
             pose.pose.orientation.y = quat[2]
             pose.pose.orientation.z = quat[3]
@@ -341,7 +340,8 @@ class HumanoidLeagueTeamCommunication:
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        if self.move_base_goal and rospy.Time.now() - self.move_base_goal.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.move_base_goal and rospy.Time.now() - self.move_base_goal.header.stamp < rospy.Duration(
+                self.config['lifetime']):
             message.target_pose.position.x = self.move_base_goal.pose.position.x
             message.target_pose.position.y = self.move_base_goal.pose.position.y
             q = self.move_base_goal.pose.orientation
@@ -351,6 +351,9 @@ class HumanoidLeagueTeamCommunication:
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
             message.ball.position.z = self.ball.point.z
+            message.ball.velocity.x = self.ball_vel[0]
+            message.ball.velocity.y = self.ball_vel[1]
+            message.ball.velocity.z = self.ball_vel[2]
 
             message.ball_confidence = self.ball_confidence
         else:
