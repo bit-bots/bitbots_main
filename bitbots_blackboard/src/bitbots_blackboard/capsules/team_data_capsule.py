@@ -3,6 +3,7 @@ TeamDataCapsule
 ^^^^^^^^^^^^^^^
 """
 import math
+from collections import defaultdict
 
 import rospy
 from humanoid_league_msgs.msg import Strategy, TeamData
@@ -13,7 +14,9 @@ class TeamDataCapsule:
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
         # indexed with one to match robot ids
-        self.team_data = [None, TeamData(), TeamData(), TeamData(), TeamData(), TeamData(), TeamData()]
+        self.team_data = {}
+        for i in range(1, 7):
+            self.team_data[i] = TeamData()
         self.team_strategy = dict()
         self.times_to_ball = dict()
         self.strategy = Strategy()
@@ -31,7 +34,7 @@ class TeamDataCapsule:
 
         :return a tuple with the relative ball and the last update time
         """
-        for data in self.team_data[1:]:
+        for data in self.team_data.values():
             role = data.strategy.role
             if role == Strategy.ROLE_GOALIE and not self.outdated(data):
                 return data.ball_relative.x, data.ball_relative.y
@@ -56,7 +59,7 @@ class TeamDataCapsule:
         :return the rank from 1 (nearest) to the number of robots
         """
         distances = []
-        for data in self.team_data[1:]:
+        for data in self.team_data.values():
             if not self.outdated(data) and data.state != TeamData.STATE_PENALIZED and (
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
                     and data.ball_relative.confidence > self.ball_min_confidence:
