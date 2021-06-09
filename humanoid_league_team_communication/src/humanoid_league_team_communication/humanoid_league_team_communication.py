@@ -275,7 +275,7 @@ class HumanoidLeagueTeamCommunication:
             if hasattr(message, "obstacle_confidence") and index < len(message.obstacle_confidence):
                 obstacle.pose.confidence = message.obstacle_confidence[index]
 
-            team_data.obstacles.append(obstacle)
+            team_data.obstacles.obstacles.append(obstacle)
 
         # Handle time to position at ball
         #################################
