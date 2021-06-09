@@ -252,6 +252,7 @@ class HumanoidLeagueTeamCommunication:
         team_data.ball_relative.pose.pose.position.x = message.ball.position.x
         team_data.ball_relative.pose.pose.position.y = message.ball.position.y
         team_data.ball_relative.pose.pose.position.z = message.ball.position.z
+        team_data.ball_relative.confidence = message.ball_confidence
 
         if message.ball.covariance:
             set_covariance(message.ball.covariance, team_data.ball_relative.pose.covariance)
@@ -331,7 +332,10 @@ class HumanoidLeagueTeamCommunication:
             q = self.pose.pose.pose.orientation
             # z is theta
             message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-            message.position_confidence = 1
+            x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+            y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+            theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
+            message.position_confidence = (x_sdev + y_sdev + theta_sdev)/3
         else:
             message.position_confidence = 0
 
