@@ -48,7 +48,7 @@ class ObstaclePublisher:
         self.robots_storage_time = 10
         self.robot_merge_distance = 0.5
 
-        rate = Rate(5)
+        rate = Rate(20)
         while not rospy.is_shutdown():
             self.publish_obstacles()
             rate.sleep()
