@@ -533,7 +533,7 @@ class Vision:
         list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
                                                                    self._blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.UNDEFINED,
+        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.ROBOT_UNDEFINED,
                                                                    self._unknown_obstacle_detector.get_candidates()))
         # Build obstacles msgs containing all obstacles
         obstacles_msg = ros_utils.build_obstacle_array_msg(image_msg.header, list_of_obstacle_msgs)
