@@ -120,7 +120,7 @@ behavior:
     pathfinding_orientation_threshold: 10
 
     # don't aim closer to goalpost than this
-    goalpost_safety_distance: 0.1
+    goalpost_safety_distance: 0.15
 
     # Distance at which the ball is first approached before the ball obstacle is deactivated and we approach closer for the kick
     ball_far_approach_dist: 0.5
@@ -137,6 +137,33 @@ behavior:
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
 
+    ##################
+    # costmap params #
+    ##################
+
+    # sigma of gaussian blur applied to costmap
+    base_costmap_smoothing_sigma: 4
+
+    # sigma of gaussian blur applied to obstacle costmap
+    obstacle_costmap_smoothing_sigma: 3
+
+    # cost in the goal
+    goal_value: 0
+
+    # cost at a goalpost
+    goalpost_value: 0.4
+
+    # cost in a corner
+    corner_value: 1
+
+    # start value on our side
+    in_field_value_our_side: 0.8
+
+    # dangerous border area width in meters
+    keep_out_border: 0.2
+
+    # cost of an obstacle
+    obstacle_cost: 0.4
 
 role: "offense"
 
