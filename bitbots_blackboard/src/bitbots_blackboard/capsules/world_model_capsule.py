@@ -541,7 +541,7 @@ class WorldModelCapsule:
         :param y: Field coordiante in the y direction
         """
         # for debugging only
-        if self.costmap.sum() > 0 and False:
+        if False and self.costmap.sum() > 0:
             # Create Grid
             grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length*10j, 0:self.field_width:self.field_width*10j]
             plt.imshow(self.costmap.T, origin='lower')
