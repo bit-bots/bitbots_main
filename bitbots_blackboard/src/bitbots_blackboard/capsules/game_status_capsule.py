@@ -16,7 +16,7 @@ class GameStatusCapsule:
         self.gamestate = GameState()
         self.last_update = 0
         self.unpenalized_time = 0
-        self.last_goal_from_us_time = -10
+        self.last_goal_from_us_time = -86400
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
