@@ -186,7 +186,8 @@ class WorldModelCapsule:
                 rospy.logwarn(e)
         else:
             self.ball_twist_map = TwistStamped(header=msg.header, twist=msg.twist.twist)
-        self.ball_twist_publisher.publish(self.ball_twist_map)
+        if self.ball_twist_map is not None:
+            self.ball_twist_publisher.publish(self.ball_twist_map)
 
     def forget_ball(self):
         """Forget that we saw a ball"""
