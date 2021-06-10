@@ -14,7 +14,7 @@ class GoalScoreRecently(AbstractDecisionElement):
         :return:
         """
 
-        if self.blackboard.gamestate.get_seconds_since_own_goal().to_sec() < 2:
+        if self.blackboard.gamestate.get_seconds_since_own_goal() < 2:
             return 'YES'
         return 'NO'
 
