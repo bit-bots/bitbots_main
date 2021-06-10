@@ -423,7 +423,7 @@ class WorldModelCapsule:
         scale = 1 / self.local_obstacle_map.info.resolution / 2
         obstacle = self.local_obstacle_map_numpy.T[
                     int(self.local_obstacle_map_numpy.shape[0] / 2 - self.field_length * scale) : int(self.local_obstacle_map_numpy.shape[0] / 2 + self.field_length * scale) : 2,
-                    int(self.local_obstacle_map_numpy.shape[1] / 2 - self.field_width * scale) : int(self.local_obstacle_map_numpy.shape[1] / 2 + self.field_width * scale) : 2].astype(np.float) / 100 * 0.4
+                    int(self.local_obstacle_map_numpy.shape[1] / 2 - self.field_width * scale) : int(self.local_obstacle_map_numpy.shape[1] / 2 + self.field_width * scale) : 2].astype(np.float) / 100 * rospy.get_param("behavior/body/obstacle_cost")
         # remove ball
         x, y = self.get_ball_position_xy()
         x = int((x - (self.field_length / 2)) * 10)

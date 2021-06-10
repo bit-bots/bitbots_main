@@ -162,6 +162,8 @@ behavior:
     # dangerous border area width in meters
     keep_out_border: 0.2
 
+    # cost of an obstacle
+    obstacle_cost: 0.4
 
 role: "offense"
 
