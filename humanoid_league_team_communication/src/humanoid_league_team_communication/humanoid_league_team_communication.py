@@ -241,7 +241,6 @@ class HumanoidLeagueTeamCommunication:
         ###############################
         set_pose(message.current_pose, team_data.robot_position)
 
-
         # Handle ball
         #############
         team_data.ball_relative.pose.position.x = message.ball.position.x
@@ -328,6 +327,11 @@ class HumanoidLeagueTeamCommunication:
             # z is theta
             message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
             covariance_ros_to_proto(self.pose.pose.covariance, message.current_pose.covariance)
+        else:
+            # set high covariance to show that we have no clue
+            message.current_pose.covariance.x.x = 100
+            message.current_pose.covariance.y.y = 100
+            message.current_pose.covariance.z.z = 100
 
         if self.cmd_vel and rospy.Time.now() - self.cmd_vel_time < rospy.Duration(self.config['lifetime']):
             message.walk_command.x = self.cmd_vel.linear.x
@@ -349,6 +353,11 @@ class HumanoidLeagueTeamCommunication:
             message.ball.velocity.y = self.ball_vel[1]
             message.ball.velocity.z = self.ball_vel[2]
             covariance_ros_to_proto(self.ball_covariance, message.ball.covariance)
+        else:
+            # set high covariance to show that we have no clue
+            message.ball.covariance.x.x = 100
+            message.ball.covariance.y.y = 100
+            message.ball.covariance.z.z = 100
 
         if self.obstacles and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
