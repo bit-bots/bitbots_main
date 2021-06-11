@@ -597,5 +597,4 @@ class WorldModelCapsule:
         return masked_costmap.max()
 
     def get_current_cost_of_kick(self, direction, kick_length, angular_range):
-        x, y, theta = self.get_current_position()
-        return self.get_cost_of_kick_relative(x, y, direction, kick_length, angular_range)
+        return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
