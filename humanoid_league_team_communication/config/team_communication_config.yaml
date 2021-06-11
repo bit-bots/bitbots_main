@@ -24,7 +24,7 @@ lifetime: 1
 team_data_topic: 'team_data'
 strategy_topic: 'strategy'
 pose_topic: 'pose_with_covariance'
-ball_topic: 'ball_relative_filtered'
+ball_topic: 'ball_position_relative_filtered'
 ball_velocity_topic: 'ball_relative_movement'
 obstacle_topic: 'obstacles_relative'
 cmd_vel_topic: 'cmd_vel'

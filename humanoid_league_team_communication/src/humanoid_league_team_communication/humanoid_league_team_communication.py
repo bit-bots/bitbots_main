@@ -50,7 +50,7 @@ class HumanoidLeagueTeamCommunication:
         self.cmd_vel_time = rospy.Time(0)
         self.ball = None  # type: Optional[PointStamped]
         self.ball_vel = (0, 0, 0)
-        self.ball_confidence = 0
+        self.ball_covariance = None
         self.strategy = None  # type: Strategy
         self.strategy_time = rospy.Time(0)
         self.obstacles = None  # type: ObstacleRelativeArray
@@ -107,7 +107,7 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber(self.config['gamestate_topic'], GameState, self.gamestate_cb, queue_size=1)
         rospy.Subscriber(self.config['pose_topic'], PoseWithCovarianceStamped, self.pose_cb, queue_size=1)
         rospy.Subscriber(self.config['cmd_vel_topic'], Twist, self.cmd_vel_cb, queue_size=1)
-        rospy.Subscriber(self.config['ball_topic'], PoseWithCertaintyStamped, self.ball_cb, queue_size=1)
+        rospy.Subscriber(self.config['ball_topic'], PoseWithCovarianceStamped, self.ball_cb, queue_size=1)
         rospy.Subscriber(self.config['ball_velocity_topic'], TwistWithCovarianceStamped, self.ball_vel_cb, queue_size=1)
         rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
         rospy.Subscriber(self.config['obstacle_topic'], ObstacleRelativeArray, self.obstacle_cb, queue_size=1)
@@ -157,17 +157,14 @@ class HumanoidLeagueTeamCommunication:
             except tf2_ros.TransformException:
                 pass
 
-    def ball_cb(self, msg: PoseWithCertaintyStamped):
-        if msg.pose.confidence == 0:
+    def ball_cb(self, msg: PoseWithCovarianceStamped):
+        # Transform to map
+        ball_point = PointStamped(msg.header, msg.pose.pose.position)
+        try:
+            self.ball = self.tf_buffer.transform(ball_point, "map", timeout=rospy.Duration.from_sec(0.3))
+            self.ball_covariance = msg.pose.covariance
+        except tf2_ros.TransformException:
             self.ball = None
-        else:
-            # Transform to map
-            ball_point = PointStamped(msg.header, msg.pose.pose.pose.position)
-            try:
-                self.ball = self.tf_buffer.transform(ball_point, "map", timeout=rospy.Duration.from_sec(0.3))
-                self.ball_confidence = msg.pose.confidence
-            except tf2_ros.TransformException:
-                self.ball = None
 
     def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
         self.ball_vel = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
@@ -186,7 +183,7 @@ class HumanoidLeagueTeamCommunication:
                 self.handle_message(msg)
 
     def handle_message(self, msg):
-        def set_covariance(fmat3, ros_covariance):
+        def covariance_proto_to_ros(fmat3, ros_covariance):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             ros_covariance[0] = fmat3.x.x
             ros_covariance[1] = fmat3.y.x
@@ -209,7 +206,7 @@ class HumanoidLeagueTeamCommunication:
             pose.pose.orientation.w = quat[0]
 
             if pose.covariance:
-                set_covariance(robot.covariance, pose.covariance)
+                covariance_proto_to_ros(robot.covariance, pose.covariance)
 
         message = robocup_extension_pb2.Message()
         message.ParseFromString(msg)
@@ -244,18 +241,16 @@ class HumanoidLeagueTeamCommunication:
         ###############################
         set_pose(message.current_pose, team_data.robot_position.pose)
 
-        if hasattr(message, "position_confidence"):
-            team_data.robot_position.confidence = message.position_confidence
 
         # Handle ball
         #############
         team_data.ball_relative.pose.pose.position.x = message.ball.position.x
         team_data.ball_relative.pose.pose.position.y = message.ball.position.y
         team_data.ball_relative.pose.pose.position.z = message.ball.position.z
-        team_data.ball_relative.confidence = message.ball_confidence
+        covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.covariance)
 
         if message.ball.covariance:
-            set_covariance(message.ball.covariance, team_data.ball_relative.pose.covariance)
+            covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.pose.covariance)
 
         # Handle obstacles
         ##################
@@ -297,7 +292,7 @@ class HumanoidLeagueTeamCommunication:
         self.pub_team_data.publish(team_data)
 
     def send_message(self, event):
-        def get_covariance(ros_covariance, fmat3):
+        def covariance_ros_to_proto(ros_covariance, fmat3):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             fmat3.x.x = ros_covariance[0]
             fmat3.y.x = ros_covariance[1]
@@ -332,12 +327,7 @@ class HumanoidLeagueTeamCommunication:
             q = self.pose.pose.pose.orientation
             # z is theta
             message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-            x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
-            y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
-            theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
-            message.position_confidence = (x_sdev + y_sdev + theta_sdev)/3
-        else:
-            message.position_confidence = 0
+            covariance_ros_to_proto(self.pose.pose.covariance, message.current_pose.covariance)
 
         if self.cmd_vel and rospy.Time.now() - self.cmd_vel_time < rospy.Duration(self.config['lifetime']):
             message.walk_command.x = self.cmd_vel.linear.x
@@ -358,10 +348,7 @@ class HumanoidLeagueTeamCommunication:
             message.ball.velocity.x = self.ball_vel[0]
             message.ball.velocity.y = self.ball_vel[1]
             message.ball.velocity.z = self.ball_vel[2]
-
-            message.ball_confidence = self.ball_confidence
-        else:
-            message.ball_confidence = 0
+            covariance_ros_to_proto(self.ball_covariance, message.ball_covariance)
 
         if self.obstacles and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
