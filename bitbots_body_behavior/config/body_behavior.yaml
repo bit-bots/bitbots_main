@@ -137,6 +137,12 @@ behavior:
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
 
+    # maximal angle of a ball kick
+    max_kick_angle: 1.4  #  (radians)
+
+    # number of considered kick angles (uneven, otherwise the middle would be excluded)
+    num_kick_angles: 9
+
     ##################
     # costmap params #
     ##################
@@ -164,6 +170,12 @@ behavior:
 
     # cost of an obstacle
     obstacle_cost: 0.4
+
+    # angular range when estimating kick cost
+    kick_cost_angular_range: 0.5
+
+    # estimated kick length when estimating kick cost
+    kick_cost_kick_length: 1.5
 
 role: "offense"
 
