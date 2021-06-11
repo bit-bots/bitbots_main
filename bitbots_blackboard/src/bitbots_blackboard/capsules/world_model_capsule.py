@@ -581,8 +581,10 @@ class WorldModelCapsule:
 
         # draw kick area on mask with ones
         maskd = ImageDraw.Draw(mask)
-        a = int(min((self.field_length * 10)-1, max(0, (x + self.field_length / 2) * 10)))
-        b = int(min((self.field_width * 10)-1, max(0, (y + self.field_width / 2) * 10)))
+        # axes are switched in pillow
+
+        b = int(min((self.field_length * 10)-1, max(0, (x + self.field_length / 2) * 10)))
+        a = int(min((self.field_width * 10)-1, max(0, (y + self.field_width / 2) * 10)))
         k = kick_length * 10
         m = a + k * math.sin(direction + 0.5 * angular_range)
         n = b + k * math.sin(0.5 * math.pi - (direction + 0.5 * angular_range))
