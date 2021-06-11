@@ -46,6 +46,10 @@ class KickBallDynamic(AbstractKickAction):
             self.penalty_kick = False
 
         self._goal_sent = False
+        self.kick_length = rospy.get_param('behavior/body/kick_cost_kick_length')
+        self.angular_range = rospy.get_param('behavior/body/kick_cost_angular_range')
+        self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
+        self.num_kick_angles = rospy.get_param('behavior/body/num_kick_angles')
 
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
@@ -63,12 +67,16 @@ class KickBallDynamic(AbstractKickAction):
                 goal.ball_position.y = ball_v
                 goal.ball_position.z = 0
 
-                check_positions = [(1, 0), (0.5, -0.5), (0.5, 0.5)]
-                kick_directions = [0, -1.4 / 2, 1.4 / 2]
+                kick_directions = sorted(np.linspace(
+                    -self.max_kick_angle,
+                    self.max_kick_angle,
+                    num=self.num_kick_angles), key=abs)
 
-                kick_direction = kick_directions[np.argmin(
-                   list(map(lambda t: self.blackboard.world_model.cost_at_relative_xy(*t), check_positions)))]
-
+                kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
+                    direction=direction,
+                    kick_length=self.kick_length,
+                    angular_range=self.angular_range)
+                    for direction in kick_directions])]
                 goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 
                 if self.penalty_kick:
