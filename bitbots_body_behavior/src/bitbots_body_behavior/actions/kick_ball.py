@@ -66,9 +66,10 @@ class KickBallDynamic(AbstractKickAction):
                 check_positions = [(1, 0), (0.5, -0.5), (0.5, 0.5)]
                 kick_directions = [0, -1.4 / 2, 1.4 / 2]
 
-                kick_direction = kick_directions[np.argmin(
-                   list(map(lambda t: self.blackboard.world_model.cost_at_relative_xy(*t), check_positions)))]
-
+                #kick_direction = kick_directions[np.argmin(
+                #  list(map(lambda t: self.blackboard.world_model.cost_at_relative_xy(*t), check_positions)))]
+                kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(direction=direction, kick_length=1, angular_range=0.5)
+                                                            for direction in kick_directions])]
                 goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 
                 if self.penalty_kick:

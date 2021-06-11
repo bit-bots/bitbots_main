@@ -10,14 +10,14 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
-import PIL
+from PIL import Image, ImageDraw
 
 import rospy
 import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped
-from tf.transformations import euler_from_quaternion
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, Quaternion
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 
 
@@ -552,3 +552,50 @@ class WorldModelCapsule:
 
         grad = self.get_gradient_at_field_position(x, y)
         return math.atan2(grad[1], grad[0])
+
+    def get_cost_of_kick_relative(self, x, y, direction, kick_length, angular_range):
+        if self.costmap is None:
+            return 0.0
+
+        pose = PoseStamped()
+        pose.header.stamp = rospy.Time(0)
+        pose.header.frame_id = self.base_footprint_frame
+        pose.pose.position.x = x
+        pose.pose.position.y = y
+
+        pose.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, direction))
+        try:
+            # Transform point of interest to the map
+            pose = self.tf_buffer.transform(pose, self.map_frame, timeout=rospy.Duration(0.3))
+
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return 0.0
+        d = euler_from_quaternion([pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]
+        return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
+
+    def get_cost_of_kick(self, x, y, direction, kick_length, angular_range):
+
+        # create a mask in the size of the costmap consisting of 8-bit values initialized as 0
+        mask = Image.new('L', (self.costmap.shape[1], self.costmap.shape[0]))
+
+        # draw kick area on mask with ones
+        maskd = ImageDraw.Draw(mask)
+        a = int(min((self.field_length * 10)-1, max(0, (x + self.field_length / 2) * 10)))
+        b = int(min((self.field_width * 10)-1, max(0, (y + self.field_width / 2) * 10)))
+        k = kick_length * 10
+        m = a + k * math.sin(direction + 0.5 * angular_range)
+        n = b + k * math.sin(0.5 * math.pi - (direction + 0.5 * angular_range))
+        o = a + k * math.sin(direction - 0.5 * angular_range)
+        p = b + k * math.sin(0.5 * math.pi - (direction - 0.5 * angular_range))
+        maskd.polygon(((a, b), (m, n), (o, p)), fill=1)
+
+        masked_costmap = self.costmap * np.array(mask)
+
+        plt.imshow(masked_costmap, origin='lower')
+        plt.show()
+        return masked_costmap.max()
+
+    def get_current_cost_of_kick(self, direction, kick_length, angular_range):
+        x, y, theta = self.get_current_position()
+        return self.get_cost_of_kick_relative(x, y, direction, kick_length, angular_range)
