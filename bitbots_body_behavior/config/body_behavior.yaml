@@ -2,7 +2,7 @@ behavior:
   # Data older than this is seen as non existent
   team_data_timeout: 2
   # minimal confidence to regard a ball of a team mate as valid
-  ball_min_confidence: 0.5
+  ball_max_covariance: 0.5
 
   body:
     roles:

@@ -24,7 +24,7 @@ class TeamDataCapsule:
         self.action_update = None
         self.role_update = None
         self.data_timeout = rospy.get_param("team_data_timeout", 2)
-        self.ball_min_confidence = rospy.get_param("ball_min_confidence", 0.5)
+        self.ball_max_covariance = rospy.get_param("ball_max_covariance", 0.5)
 
     def outdated(self, data: TeamData):
         return rospy.Time.now() - data.header.stamp > rospy.Duration(self.data_timeout)
@@ -37,7 +37,7 @@ class TeamDataCapsule:
         for data in self.team_data.values():
             role = data.strategy.role
             if role == Strategy.ROLE_GOALIE and not self.outdated(data):
-                return data.ball_relative.x, data.ball_relative.y
+                return data.ball_relative.pose.position.x, data.ball_relative.pose.position.y
         return None
 
     def get_goalie_ball_distance(self):
@@ -60,9 +60,13 @@ class TeamDataCapsule:
         """
         distances = []
         for data in self.team_data.values():
+            # data should not be outdated, from a robot in play, only goalie if desired,
+            # x and y covariance values should be below threshold. orientation covariance of ball does not matter
+            # covariance is a 6x6 matrix as array. 0 is x 7, is y
             if not self.outdated(data) and data.state != TeamData.STATE_PENALIZED and (
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
-                    and data.ball_relative.confidence > self.ball_min_confidence:
+                    and data.ball_relative.covariance[0] < self.ball_max_covariance \
+                    and data.ball_relative.covariance[7] < self.ball_max_covariance:
                 distances.append(math.sqrt(
                     data.ball_relative.pose.pose.position.x ** 2 + data.ball_relative.pose.pose.position.y ** 2))
         sorted_times = sorted(distances)
