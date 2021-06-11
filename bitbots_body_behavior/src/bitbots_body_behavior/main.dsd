@@ -79,9 +79,11 @@ $LocalizationAvailable
             NO --> $BallSeen
                 YES --> $ClosestToBallNoGoalie
                     YES --> $GoalieHandlingBall
-                        YES --> @ChangeAction + action:going_to_ball, @GoToBall + distance:1 + target:map_goal //todo better position?
+                        YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition //dont't go to far back
                         NO --> #GoAndKickBallMapGoal
-                    NO --> @ChangeAction + action:going_to_ball, @GoToBall + distance:1 + target:map_goal
+                    NO --> $PassStarted
+                        YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition
+                        NO --> @ChangeAction + action:positioning, @GoToPassPreparePosition
                 NO --> @Stop, @LookAtFieldFeatures, @SearchBall
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationPlayerBehavior

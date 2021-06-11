@@ -33,7 +33,7 @@ behavior:
     role_positions:
       goalie: [-0.95, 0]
       defense: [[-0.5, 0], [-0.45, 0.5], [-0.45, -0.5]]
-      offense: [[-0.25, 0], [-0.2, 0.5], [-0.2, -0.5]]
+      offense: [[-0.25, 0], [-0.1, 0.5], [-0.1, -0.5]]
       kickoff: [-0.1, 0]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0
@@ -140,6 +140,10 @@ behavior:
 
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
+
+    # The position where the supporter robot should place itself in order to accept a pass
+    pass_position_x: 1
+    pass_position_y: 1
 
 
 role: "offense"

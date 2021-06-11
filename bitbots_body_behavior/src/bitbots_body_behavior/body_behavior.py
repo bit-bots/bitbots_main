@@ -63,7 +63,7 @@ if __name__ == "__main__":
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
 
-    rate = Rate(25)
+    rate = Rate(125)
     while not rospy.is_shutdown():
         D.update()
         D.blackboard.team_data.publish_strategy()

@@ -61,6 +61,14 @@ class TeamDataCapsule:
                 return True
         return False
 
+    def is_team_mate_kicking(self):
+        """Returns true if one of the players in the own team is kicking."""
+        for data in self.team_data.values():
+            if self.is_valid(data) and data.strategy.action == Strategy.ACTION_KICKING:
+                return True
+
+        return False
+
     def team_rank_to_ball(self, own_ball_distance, count_goalies=True):
         """Returns the rank of this robot compared to the team robots concerning ball distance.
         Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
@@ -122,7 +130,7 @@ class TeamDataCapsule:
         return self.strategy.offensive_side, self.strategy_update
 
     def team_data_callback(self, msg):
-            self.team_data[msg.robot_id] = msg
+        self.team_data[msg.robot_id] = msg
 
     def publish_strategy(self):
         """Publish for team comm"""
