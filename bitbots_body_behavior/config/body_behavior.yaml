@@ -163,7 +163,7 @@ behavior:
     keep_out_border: 0.2
 
     # cost of an obstacle
-    obstacle_cost: 0.4
+    obstacle_cost: 0.8
 
 role: "offense"
 

@@ -19,6 +19,7 @@ from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped
 from tf.transformations import euler_from_quaternion
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
+import sensor_msgs.point_cloud2 as pc2
 
 
 class GoalRelative:
@@ -86,8 +87,6 @@ class WorldModelCapsule:
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
-        self.local_obstacle_map = None  # map including the local obstacles (Costmap message)
-        self.local_obstacle_map_numpy = None  # numpy version of the local costmap
         self.gradient_map = None  # global heading map (static) only dependent on field structure
         self.calc_gradient_map()
 
@@ -410,29 +409,23 @@ class WorldModelCapsule:
     # Obstacle #
     ############
 
-    def global_costmap_callback(self, msg):
-        self.local_obstacle_map = msg
-        self.local_obstacle_map_numpy = ros_numpy.numpify(self.local_obstacle_map)
-        self.add_obstacles_costmap()
-
-    def global_costmap_update_callback(self, msg):
-        data_np = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
-        self.local_obstacle_map_numpy[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = data_np
-        self.add_obstacles_costmap()
-
-    def add_obstacles_costmap(self):
-        scale = 1 / self.local_obstacle_map.info.resolution / 2
-        obstacle = self.local_obstacle_map_numpy.T[
-                    int(self.local_obstacle_map_numpy.shape[0] / 2 - self.field_length * scale) : int(self.local_obstacle_map_numpy.shape[0] / 2 + self.field_length * scale) : 2,
-                    int(self.local_obstacle_map_numpy.shape[1] / 2 - self.field_width * scale) : int(self.local_obstacle_map_numpy.shape[1] / 2 + self.field_width * scale) : 2].astype(np.float) / 100 * rospy.get_param("behavior/body/obstacle_cost")
-        # remove ball
-        x, y = self.get_ball_position_xy()
-        x = int((x - (self.field_length / 2)) * 10)
-        y = int((y - (self.field_width/2)) * 10)
-        obstacle[x - 2: x + 2, y - 2: y + 2] = 0
-
-        # merge costmaps
-        self.costmap = self.base_costmap.copy() + gaussian_filter(obstacle, rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma"))
+    def robot_obstacle_callback(self, msg):
+        # Init a new obstacle costmap
+        obstacle_map = np.zeros_like(self.costmap)
+        # Iterate over all obstacles
+        for p in pc2.read_points(msg, field_names = ("x", "y", "z"), skip_nans=True):
+            # Calculate offsets to the array positions
+            idx_x = int((p[0] + self.field_length / 2) * 10 - 1)
+            idx_y = int((p[1] + self.field_width / 2) * 10 - 1)
+            # Check if the obstacle is in the field
+            if 0 < idx_x < obstacle_map.shape[0] and 0 < idx_y < obstacle_map.shape[1]:
+                # Draw obstacle with smoothing independent weight on obstacle costmap
+                obstacle_map[idx_x, idx_y] = \
+                    rospy.get_param("behavior/body/obstacle_cost") * rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma")
+        # Smooth obstacle map
+        obstacle_map = gaussian_filter(obstacle_map, rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma"))
+        # Merge costmaps
+        self.costmap = self.base_costmap.copy() + obstacle_map
 
     def calc_gradients(self):
         gradient = np.gradient(self.base_costmap)
