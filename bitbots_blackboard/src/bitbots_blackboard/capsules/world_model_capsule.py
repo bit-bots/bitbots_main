@@ -594,8 +594,8 @@ class WorldModelCapsule:
 
         masked_costmap = self.costmap * np.array(mask)
 
-        plt.imshow(masked_costmap, origin='lower')
-        plt.show()
+        # plt.imshow(masked_costmap, origin='lower')
+        # plt.show()
         return masked_costmap.max()
 
     def get_current_cost_of_kick(self, direction, kick_length, angular_range):
