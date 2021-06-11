@@ -26,8 +26,9 @@ class TeamDataCapsule:
         self.data_timeout = rospy.get_param("team_data_timeout", 2)
         self.ball_max_covariance = rospy.get_param("ball_max_covariance", 0.5)
 
-    def outdated(self, data: TeamData):
-        return rospy.Time.now() - data.header.stamp > rospy.Duration(self.data_timeout)
+    def is_valid(self, data: TeamData):
+        return rospy.Time.now() - data.header.stamp < rospy.Duration(self.data_timeout) \
+               and data.state != TeamData.STATE_PENALIZED
 
     def get_goalie_ball_position(self):
         """Return the ball relative to the goalie
@@ -36,7 +37,7 @@ class TeamDataCapsule:
         """
         for data in self.team_data.values():
             role = data.strategy.role
-            if role == Strategy.ROLE_GOALIE and not self.outdated(data):
+            if role == Strategy.ROLE_GOALIE and self.is_valid(data):
                 return data.ball_relative.pose.position.x, data.ball_relative.pose.position.y
         return None
 
@@ -51,6 +52,15 @@ class TeamDataCapsule:
         else:
             return None
 
+    def is_goalie_handling_ball(self):
+        """ Returns true if the goalie is going to the ball."""
+        for data in self.team_data.values():
+            if self.is_valid(data) \
+                    and data.strategy.role == Strategy.ROLE_GOALIE \
+                    and data.strategy.action in [Strategy.ACTION_GOING_TO_BALL, Strategy.ACTION_KICKING]:
+                return True
+        return False
+
     def team_rank_to_ball(self, own_ball_distance, count_goalies=True):
         """Returns the rank of this robot compared to the team robots concerning ball distance.
         Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
@@ -63,12 +73,12 @@ class TeamDataCapsule:
             # data should not be outdated, from a robot in play, only goalie if desired,
             # x and y covariance values should be below threshold. orientation covariance of ball does not matter
             # covariance is a 6x6 matrix as array. 0 is x 7, is y
-            if not self.outdated(data) and data.state != TeamData.STATE_PENALIZED and (
+            if self.is_valid(data) and (
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
                     and data.ball_relative.covariance[0] < self.ball_max_covariance \
                     and data.ball_relative.covariance[7] < self.ball_max_covariance:
                 distances.append(math.sqrt(
-                    data.ball_relative.pose.pose.position.x ** 2 + data.ball_relative.pose.pose.position.y ** 2))
+                    data.ball_relative.pose.position.x ** 2 + data.ball_relative.pose.position.y ** 2))
         sorted_times = sorted(distances)
         rank = 1
         for distances in sorted_times:
@@ -112,7 +122,7 @@ class TeamDataCapsule:
         return self.strategy.offensive_side, self.strategy_update
 
     def team_data_callback(self, msg):
-        self.team_data[msg.robot_id] = msg
+            self.team_data[msg.robot_id] = msg
 
     def publish_strategy(self):
         """Publish for team comm"""
