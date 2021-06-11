@@ -108,4 +108,5 @@ if __name__ == '__main__':
             diagnostic_pub.publish(diag_array)
 
             # sleep to have correct rate. we dont use ROS time since we are interested in system things
-            time.sleep(max(0, (1 / rate) - time.time() - last_send_time))
+            dt = time.time() - last_send_time
+            time.sleep(max(0, (1 / rate) - dt))
