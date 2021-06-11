@@ -38,7 +38,7 @@ class TeamCommPrinter:
 
     def __init__(self):
         rospy.init_node('team_comm_printer')
-        self.subscriber = rospy.Subscriber("team_data", TeamData, queue_size=1, tcp_nodelay=True)
+        self.subscriber = rospy.Subscriber("team_data", TeamData, self.data_cb, queue_size=1, tcp_nodelay=True)
         self.team_data = {}
         for i in range(1, 5):
             self.team_data[i] = TeamData()
@@ -81,14 +81,14 @@ class TeamCommPrinter:
         quat_xyzw = data.robot_position.pose.orientation
         rpy = quat2euler((quat_xyzw.w, quat_xyzw.x, quat_xyzw.y, quat_xyzw.z))
         lines.append(f"  yaw: {round(rpy[2], 2):>4}")
-        lines.append(f"  x_cov: {round(data.robot_position.covariance[0]):<4}")
-        lines.append(f"  y_cov: {round(data.robot_position.covariance[7]):<4}")
-        lines.append(f"  yaw_cov: {round(data.robot_position.covariance[35]):<4}")
+        lines.append(f"  x_cov: {round(data.robot_position.covariance[0],2):<4}")
+        lines.append(f"  y_cov: {round(data.robot_position.covariance[7],2):<4}")
+        lines.append(f"  yaw_cov: {round(data.robot_position.covariance[35],2):<4}")
         lines.append(f"Ball")
         lines.append(f"  x: {round(data.ball_relative.pose.position.x, 2):<4}")
         lines.append(f"  y: {round(data.ball_relative.pose.position.y, 2):<4}")
-        lines.append(f"  x_cov: {round(data.ball_relative.covariance[0]):<4}")
-        lines.append(f"  y_cov: {round(data.ball_relative.covariance[7]):<4}")
+        lines.append(f"  x_cov: {round(data.ball_relative.covariance[0],2):<4}")
+        lines.append(f"  y_cov: {round(data.ball_relative.covariance[7],2):<4}")
         lines.append(f"Obstacles found: {len(data.obstacles.obstacles)}")
         lines.append(f"Strategy")
         lines.append(f"  Role: {self.roles[data.strategy.role]:<9}")

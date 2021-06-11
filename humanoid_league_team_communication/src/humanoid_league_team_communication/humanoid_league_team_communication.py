@@ -239,18 +239,18 @@ class HumanoidLeagueTeamCommunication:
 
         # Handle pose of current player
         ###############################
-        set_pose(message.current_pose, team_data.robot_position.pose)
+        set_pose(message.current_pose, team_data.robot_position)
 
 
         # Handle ball
         #############
-        team_data.ball_relative.pose.pose.position.x = message.ball.position.x
-        team_data.ball_relative.pose.pose.position.y = message.ball.position.y
-        team_data.ball_relative.pose.pose.position.z = message.ball.position.z
+        team_data.ball_relative.pose.position.x = message.ball.position.x
+        team_data.ball_relative.pose.position.y = message.ball.position.y
+        team_data.ball_relative.pose.position.z = message.ball.position.z
         covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.covariance)
 
         if message.ball.covariance:
-            covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.pose.covariance)
+            covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.covariance)
 
         # Handle obstacles
         ##################
@@ -267,8 +267,8 @@ class HumanoidLeagueTeamCommunication:
             obstacle.playerNumber = robot.player_id
 
             set_pose(robot, obstacle.pose.pose)
-            if hasattr(message, "obstacle_confidence") and index < len(message.obstacle_confidence):
-                obstacle.pose.confidence = message.obstacle_confidence[index]
+            if hasattr(message, "other_robot_confidence") and index < len(message.other_robot_confidence):
+                obstacle.pose.confidence = message.other_robot_confidence[index]
 
             team_data.obstacles.obstacles.append(obstacle)
 
@@ -348,7 +348,7 @@ class HumanoidLeagueTeamCommunication:
             message.ball.velocity.x = self.ball_vel[0]
             message.ball.velocity.y = self.ball_vel[1]
             message.ball.velocity.z = self.ball_vel[2]
-            covariance_ros_to_proto(self.ball_covariance, message.ball_covariance)
+            covariance_ros_to_proto(self.ball_covariance, message.ball.covariance)
 
         if self.obstacles and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
@@ -364,7 +364,7 @@ class HumanoidLeagueTeamCommunication:
                     team_mapping = dict(((b, a) for a, b in self.team_mapping))
                     robot.team = team_mapping[obstacle.type]
                     message.others.append(robot)
-                    message.obstacle_confidence.append(obstacle.pose.confidence)
+                    message.other_robot_confidence.append(obstacle.pose.confidence)
 
         if (self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']) and
                 self.pose and rospy.Time.now() - self.pose.header.stamp < rospy.Duration(self.config['lifetime'])):
