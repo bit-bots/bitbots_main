@@ -26,7 +26,6 @@ class GoToBall(AbstractActionElement):
         self.distance = parameters.get('distance', self.blackboard.config['ball_approach_dist'])
         self.goal_width = rospy.get_param("goal_width", 2)
 
-
     def perform(self, reevaluate=False):
 
         if 'gradient_goal' == self.target:
@@ -112,5 +111,5 @@ class GoToBall(AbstractActionElement):
 
         self.blackboard.pathfinding.approach_marker_pub.publish(approach_marker)
 
-        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED]  or not self.blocking:
+        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED] or not self.blocking:
             self.pop()

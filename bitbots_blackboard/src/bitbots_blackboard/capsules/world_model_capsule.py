@@ -16,7 +16,8 @@ import rospy
 import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, Quaternion
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, \
+    Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 import sensor_msgs.point_cloud2 as pc2
@@ -91,7 +92,6 @@ class WorldModelCapsule:
         self.gradient_map = None  # global heading map (static) only dependent on field structure
         self.calc_gradient_map()
 
-
     ############
     ### Ball ###
     ############
@@ -125,8 +125,12 @@ class WorldModelCapsule:
             return None
         return ball_bfp.x, ball_bfp.y
 
-    def get_ball_distance(self):
-        u, v = self.get_ball_position_uv()
+    def get_ball_distance(self, filtered=False):
+        if filtered:
+            u = self.ball_filtered.pose.pose.position.x
+            v = self.ball_filtered.pose.pose.position.y
+        else:
+            u, v = self.get_ball_position_uv()
         return math.sqrt(u ** 2 + v ** 2)
 
     def get_ball_speed(self):
@@ -142,7 +146,8 @@ class WorldModelCapsule:
 
             ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
             try:
-                self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=rospy.Duration(0.3))
+                self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame,
+                                                     timeout=rospy.Duration(0.3))
                 self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=rospy.Duration(0.3))
                 self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=rospy.Duration(0.3))
                 # Set timestamps to zero to get the newest transform when this is transformed later
@@ -158,6 +163,9 @@ class WorldModelCapsule:
         else:
             return
 
+    def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
+        self.ball_filtered = msg
+
     def recent_ball_twist_available(self):
         if self.ball_twist_map is None:
             return False
@@ -167,7 +175,7 @@ class WorldModelCapsule:
         x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
         y_sdev = msg.twist.covariance[7]  # position 1,1 in a 6x6-matrix
         if x_sdev > self.ball_twist_precision_threshold['x_sdev'] or \
-           y_sdev > self.ball_twist_precision_threshold['y_sdev']:
+                y_sdev > self.ball_twist_precision_threshold['y_sdev']:
             return
         if msg.header.frame_id != self.map_frame:
             try:
@@ -287,7 +295,7 @@ class WorldModelCapsule:
                 first_post_pos = first_post.pose.pose.position
                 second_post_pos = second_post.pose.pose.position
                 angular_distance = abs((math.atan2(first_post_pos.x, first_post_pos.y) - math.atan2(
-                    second_post_pos.x, second_post_pos.y) + math.pi) % (2*math.pi) - math.pi)
+                    second_post_pos.x, second_post_pos.y) + math.pi) % (2 * math.pi) - math.pi)
                 # Set a new pair of posts if the distance is bigger than the previous ones
                 if angular_distance > goal_combination[2]:
                     goal_combination = (first_post_id, second_post_id, angular_distance)
@@ -378,7 +386,6 @@ class WorldModelCapsule:
         """
         return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.pose_lost_time)
 
-
     #############
     # ## Common #
     #############
@@ -433,8 +440,9 @@ class WorldModelCapsule:
     def calc_gradients(self):
         gradient = np.gradient(self.base_costmap)
         norms = np.linalg.norm(gradient, axis=0)
+
         # normalize gradient length
-        gradient = [np.where(norms==0,0,i/norms) for i in gradient]
+        gradient = [np.where(norms == 0, 0, i / norms) for i in gradient]
         self.gradient_map = gradient
 
     def cost_at_relative_xy(self, x, y):
@@ -456,10 +464,10 @@ class WorldModelCapsule:
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
 
-
     def calc_gradient_map(self):
 
-        goalpost_safety_distance = rospy.get_param("behavior/body/goalpost_safety_distance")  # offset in y direction from the goalpost
+        goalpost_safety_distance = rospy.get_param(
+            "behavior/body/goalpost_safety_distance")  # offset in y direction from the goalpost
         keep_out_border = rospy.get_param("behavior/body/keep_out_border")  # dangerous border area
         in_field_value_our_side = rospy.get_param("behavior/body/in_field_value_our_side")  # start value on our side
         corner_value = rospy.get_param("behavior/body/corner_value")  # cost in a corner
@@ -504,7 +512,8 @@ class WorldModelCapsule:
         fix_points = [[[p[0][0] + self.map_margin, p[0][1] + self.map_margin], p[1]] for p in fix_points]
 
         # Interpolate the keypoints from above to form the costmap
-        interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y), method='linear')
+        interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y),
+                                method='linear')
 
         # Smooth the costmap to get more continus gradients
         self.base_costmap = gaussian_filter(interpolated, rospy.get_param("behavior/body/base_costmap_smoothing_sigma"))
@@ -542,7 +551,8 @@ class WorldModelCapsule:
         # for debugging only
         if False and self.costmap.sum() > 0:
             # Create Grid
-            grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length*10j, 0:self.field_width:self.field_width*10j]
+            grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length * 10j,
+                             0:self.field_width:self.field_width * 10j]
             plt.imshow(self.costmap.T, origin='lower')
             plt.show()
             plt.quiver(grid_x, grid_y, -self.gradient_map[0], -self.gradient_map[1])
@@ -569,7 +579,8 @@ class WorldModelCapsule:
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return 0.0
-        d = euler_from_quaternion([pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]
+        d = euler_from_quaternion(
+            [pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
 
     def get_cost_of_kick(self, x, y, direction, kick_length, angular_range):
