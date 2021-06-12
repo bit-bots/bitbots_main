@@ -9,8 +9,8 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf.transformations import quaternion_from_euler
 
 
-class GoToPassPosition(AbstractActionElement):
-    def __init__(self, accept, blackboard, dsd, parameters=None):
+class AbstractGoToPassPosition(AbstractActionElement):
+    def __init__(self, blackboard, dsd, accept, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.pass_pos_x = rospy.get_param("pass_position_x", 1)
         self.pass_pos_y = rospy.get_param("pass_position_y", 1)
@@ -59,13 +59,19 @@ class GoToPassPosition(AbstractActionElement):
             self.pop()
 
 
-class GoToPassPreparePosition(GoToPassPosition):
+class GoToPassPreparePosition(AbstractGoToPassPosition):
+    """
+        Go to a position 1m left or right from the ball (whichever is closer) as preparation for a pass
+    """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(False, blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, False, parameters)
 
 
-class GoToPassAcceptPosition(GoToPassPosition):
+class GoToPassAcceptPosition(AbstractGoToPassPosition):
+    """
+        Go to a position forward of the ball to accept a pass from another robot.
+    """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(True, blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, True, parameters)
