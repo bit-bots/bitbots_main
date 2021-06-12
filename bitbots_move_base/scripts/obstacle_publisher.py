@@ -70,19 +70,6 @@ class ObstaclePublisher:
             lambda robot: abs((rospy.Time.now() - robot.header.stamp).to_sec()) < self.robots_storage_time,
             self.robots))
 
-        # Clear robots that are close together
-        for i_a, robot_a in enumerate(self.robots):
-            for i_b, robot_b in enumerate(self.robots):
-                # Check that its not the same robot instance and if there is another robot in memory close to it
-                if robot_a != robot_b and np.linalg.norm(ros_numpy.numpify(robot_a.point) - ros_numpy.numpify(
-                        robot_b.point)) < self.robot_merge_distance:
-                    if robot_a.header.stamp > robot_b.header.stamp:
-                        del self.robots[i_b]
-                    else:
-                        del self.robots[i_a]
-
-        
-
         # Enlarge robots
         width = 0.1
         points = []
@@ -119,11 +106,20 @@ class ObstaclePublisher:
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return
+
         for o in msg.obstacles:
             point = PointStamped()
             point.header = msg.header
             point.point = o.pose.pose.pose.position
+            # Transfrom robot to map frame
             point = tf2_geometry_msgs.do_transform_point(point, transform)
+            # Update robots that are close together
+            for i_b, robot_b in enumerate(self.robots):
+                # Check if there is another robot in memory close to it
+                if np.linalg.norm(ros_numpy.numpify(point.point) - ros_numpy.numpify(robot_b.point)) < self.robot_merge_distance:
+                    # Delete the close robot
+                    del self.robots[i_b]
+            # Append our new robots
             self.robots.append(point)
 
     def _ball_active_callback(self, msg):
