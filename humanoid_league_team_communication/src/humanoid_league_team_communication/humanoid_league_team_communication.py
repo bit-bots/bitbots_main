@@ -243,13 +243,13 @@ class HumanoidLeagueTeamCommunication:
 
         # Handle ball
         #############
-        team_data.ball_relative.pose.position.x = message.ball.position.x
-        team_data.ball_relative.pose.position.y = message.ball.position.y
-        team_data.ball_relative.pose.position.z = message.ball.position.z
-        covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.covariance)
+        team_data.ball_absolute.pose.position.x = message.ball.position.x
+        team_data.ball_absolute.pose.position.y = message.ball.position.y
+        team_data.ball_absolute.pose.position.z = message.ball.position.z
+        covariance_proto_to_ros(message.ball.covariance, team_data.ball_absolute.covariance)
 
         if message.ball.covariance:
-            covariance_proto_to_ros(message.ball.covariance, team_data.ball_relative.covariance)
+            covariance_proto_to_ros(message.ball.covariance, team_data.ball_absolute.covariance)
 
         # Handle obstacles
         ##################

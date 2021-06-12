@@ -12,7 +12,7 @@ local_target_ports:
   - 4004
 
 # Rate of published messages in Hz
-rate: 2
+rate: 65
 
 # average walking speed in [m/s]
 avg_walking_speed: 0.2

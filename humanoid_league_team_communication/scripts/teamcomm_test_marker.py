@@ -198,19 +198,20 @@ class TeamMessage:
                                              mat_in_world, [1, 1, 1])
                     trans_in_robot = np.matmul(world_trans_in_robot, trans_in_world)
                     pos_in_robot, mat_in_robot, _, _ = decompose(trans_in_robot)
-                    quat_in_robot = mat2quat(mat_in_robot)
 
                     ball_relative = PoseWithCovariance()
                     ball_relative.pose.position = Point(*pos_in_robot)
-                    ball_relative.pose.orientation = Quaternion(quat_in_robot[1], quat_in_robot[2],
-                                                                quat_in_robot[3], quat_in_robot[0])
-                    ball_relative.covariance = [self.robot.ball.covariance, 0, 0, 0, 0, 0,
+
+                    ball_absolute = PoseWithCovariance()
+                    ball_absolute.pose.position = self.robot.ball.pose.position
+                    ball_absolute.pose.orientation = Quaternion(0, 0, 0, 1)
+                    ball_absolute.covariance = [self.robot.ball.covariance, 0, 0, 0, 0, 0,
                                                 0, self.robot.ball.covariance, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, self.robot.ball.covariance]
-                    msg.ball_relative = ball_relative
+                    msg.ball_absolute = ball_absolute
 
                     cartesian_distance = math.sqrt(
                         ball_relative.pose.position.x ** 2 + ball_relative.pose.position.y ** 2)
