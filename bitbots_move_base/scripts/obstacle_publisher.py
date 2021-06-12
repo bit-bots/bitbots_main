@@ -10,7 +10,7 @@ import ros_numpy
 import numpy as np
 import tf2_ros as tf2
 import tf2_geometry_msgs
-from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray
+from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray, TeamData
 from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
@@ -35,6 +35,7 @@ class ObstaclePublisher:
                          queue_size=1)
         rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
+        rospy.Subscriber("team_data", TeamData, self._team_data_callback, queue_size=1)
 
         self.robot_obstacle_publisher = rospy.Publisher("robot_obstacles", PointCloud2, queue_size=10)
         self.ball_obstacle_publisher = rospy.Publisher("ball_obstacles", PointCloud2, queue_size=10)
@@ -43,6 +44,8 @@ class ObstaclePublisher:
         self.ball_active = True
 
         self.robots = []
+
+        self.team = dict()
 
         self.robots_storage_time = 10
         self.robot_merge_distance = 0.5
@@ -77,6 +80,8 @@ class ObstaclePublisher:
                         del self.robots[i_b]
                     else:
                         del self.robots[i_a]
+
+        
 
         # Enlarge robots
         width = 0.1
@@ -123,6 +128,9 @@ class ObstaclePublisher:
 
     def _ball_active_callback(self, msg):
         self.ball_active = msg.data
+
+    def _team_data_callback(self, msg):
+        self.team[msg.robot_id] = msg
 
 
 if __name__ == "__main__":
