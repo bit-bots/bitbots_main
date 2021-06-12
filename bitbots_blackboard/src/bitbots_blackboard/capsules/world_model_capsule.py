@@ -435,6 +435,13 @@ class WorldModelCapsule:
         self.costmap = self.base_costmap.copy() + obstacle_map
 
     def field_2_costmap_coord(self, x, y):
+        """
+        Converts a field position to the coresponding indices for the costmap.
+        
+        :param x: X Position relative to the center point. (Positive is towards the enemy goal)
+        :param y: Y Position relative to the center point. (Positive is towards the left when we face the enemy goal)
+        :return: The x index of the coresponding costmap slot, The y index of the coresponding costmap slot
+        """
         idx_x = int(min(((self.field_length + self.map_margin * 2) * 10)-1, max(0, (x + self.field_length / 2 + self.map_margin) * 10)))
         idx_y = int(min(((self.field_width + self.map_margin * 2) * 10)-1, max(0, (y + self.field_width / 2 + self.map_margin) * 10)))
         return idx_x, idx_y
