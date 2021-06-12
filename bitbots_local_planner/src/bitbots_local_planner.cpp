@@ -119,7 +119,7 @@ namespace bitbots_local_planner
         }
 
         // Get the min angle of the difference
-        double min_angle = (std::fmod(diff + M_PI, 2 * M_PI) - M_PI);
+        double min_angle = std::remainder(diff, 2 * M_PI);
         // Calculate our desired rotation velocity based on the angle difference and our max velocity
         double vel = std::max(std::min(
                                   config_.rotation_slow_down_factor * min_angle,
