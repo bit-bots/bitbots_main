@@ -80,7 +80,18 @@ class ObstaclePublisher:
             points.append([o.point.x + width / 2, o.point.y - width / 2, o.point.z])
             points.append([o.point.x + width / 2, o.point.y + width / 2, o.point.z])
 
-        self.robot_obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
+        # Publish team mates
+        width = 0.2
+        team_points = points   # This is only equal for now. This changed if our robots are published seperatly.
+        for robot in self.team.values():
+            p = robot.robot_position.pose.position
+            team_points.append([p.x, p.y, p.z])
+            team_points.append([p.x, p.y, p.z])
+            team_points.append([p.x - width / 2, p.y - width / 2, p.z])
+            team_points.append([p.x - width / 2, p.y + width / 2, p.z])
+            team_points.append([p.x + width / 2, p.y - width / 2, p.z])
+            team_points.append([p.x + width / 2, p.y + width / 2, p.z])
+        self.robot_obstacle_publisher.publish(create_cloud_xyz32(dummy_header, team_points))
 
     def _balls_callback(self, msg):
         try:
