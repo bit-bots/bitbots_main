@@ -19,8 +19,6 @@ class GoToDefensePosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.
-        # TODO: in the case of two defensive players, they should use an offset,
-        #  so that they are not targeting the same position
 
         #      y
         #      ^       ______________________
