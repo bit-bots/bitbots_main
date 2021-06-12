@@ -31,10 +31,10 @@ behavior:
 
     # TODO: For four robots we need four initial positions
     role_positions:
-      goalie: [-0.95, 0]
-      defense: [[-0.5, 0], [-0.45, 0.5], [-0.45, -0.5]]
-      offense: [[-0.25, 0], [-0.075, 0.33], [-0.075, -0.33]]
-      kickoff: [-0.1, 0]
+      goalie: [ -0.95, 0 ]
+      defense: [ [ -0.5, 0 ], [ -0.45, 0.5 ], [ -0.45, -0.5 ] ]
+      offense: [ [ -0.25, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
+      kickoff: [ -0.1, 0 ]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0
 
@@ -124,7 +124,7 @@ behavior:
     pathfinding_orientation_threshold: 10
 
     # don't aim closer to goalpost than this
-    goalpost_safety_distance: 0.1
+    goalpost_safety_distance: 0.15
 
     # Distance at which the ball is first approached before the ball obstacle is deactivated and we approach closer for the kick
     ball_far_approach_dist: 0.5
@@ -144,6 +144,46 @@ behavior:
     # The position where the supporter robot should place itself in order to accept a pass
     pass_position_x: 1
     pass_position_y: 1
+
+    # maximal angle of a ball kick
+    max_kick_angle: 1.4  #  (radians)
+
+    # number of considered kick angles (uneven, otherwise the middle would be excluded)
+    num_kick_angles: 9
+
+    ##################
+    # costmap params #
+    ##################
+
+    # sigma of gaussian blur applied to costmap
+    base_costmap_smoothing_sigma: 4
+
+    # sigma of gaussian blur applied to obstacle costmap
+    obstacle_costmap_smoothing_sigma: 3
+
+    # cost in the goal
+    goal_value: 0
+
+    # cost at a goalpost
+    goalpost_value: 0.4
+
+    # cost in a corner
+    corner_value: 1
+
+    # start value on our side
+    in_field_value_our_side: 0.8
+
+    # dangerous border area width in meters
+    keep_out_border: 0.2
+
+    # cost of an obstacle
+    obstacle_cost: 0.4
+
+    # angular range when estimating kick cost
+    kick_cost_angular_range: 0.5
+
+    # estimated kick length when estimating kick cost
+    kick_cost_kick_length: 1.5
 
 
 role: "offense"
