@@ -20,6 +20,7 @@ from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovaria
     Quaternion
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
+import sensor_msgs.point_cloud2 as pc2
 
 
 class GoalRelative:
@@ -74,6 +75,9 @@ class WorldModelCapsule:
         self.field_length = rospy.get_param('field_length', None)
         self.field_width = rospy.get_param('field_width', None)
         self.goal_width = rospy.get_param('goal_width', None)
+        self.map_margin = rospy.get_param('behavior/body/map_margin', 1.0)
+        self.obstacle_costmap_smoothing_sigma = rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma", 1.0)
+        self.obstacle_cost = rospy.get_param("behavior/body/obstacle_cost", 1.0)
 
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
@@ -87,8 +91,6 @@ class WorldModelCapsule:
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
-        self.local_obstacle_map = None  # map including the local obstacles (Costmap message)
-        self.local_obstacle_map_numpy = None  # numpy version of the local costmap
         self.gradient_map = None  # global heading map (static) only dependent on field structure
         self.calc_gradient_map()
 
@@ -417,33 +419,32 @@ class WorldModelCapsule:
     # Obstacle #
     ############
 
-    def global_costmap_callback(self, msg):
-        self.local_obstacle_map = msg
-        self.local_obstacle_map_numpy = ros_numpy.numpify(self.local_obstacle_map)
-        self.add_obstacles_costmap()
+    def robot_obstacle_callback(self, msg):
+        # Init a new obstacle costmap
+        obstacle_map = np.zeros_like(self.costmap)
+        # Iterate over all obstacles
+        for p in pc2.read_points(msg, field_names = ("x", "y", "z"), skip_nans=True):
+            # Convert position to array index
+            idx_x, idx_y = self.field_2_costmap_coord(p[0], p[1])
+            # Draw obstacle with smoothing independent weight on obstacle costmap
+            obstacle_map[idx_x, idx_y] = \
+                self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
+        # Smooth obstacle map
+        obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
+        # Merge costmaps
+        self.costmap = self.base_costmap.copy() + obstacle_map
 
-    def global_costmap_update_callback(self, msg):
-        data_np = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
-        self.local_obstacle_map_numpy[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = data_np
-        self.add_obstacles_costmap()
-
-    def add_obstacles_costmap(self):
-        scale = 1 / self.local_obstacle_map.info.resolution / 2
-        obstacle = self.local_obstacle_map_numpy.T[
-                   int(self.local_obstacle_map_numpy.shape[0] / 2 - self.field_length * scale): int(
-                       self.local_obstacle_map_numpy.shape[0] / 2 + self.field_length * scale): 2,
-                   int(self.local_obstacle_map_numpy.shape[1] / 2 - self.field_width * scale): int(
-                       self.local_obstacle_map_numpy.shape[1] / 2 + self.field_width * scale): 2].astype(
-            np.float) / 100 * rospy.get_param("behavior/body/obstacle_cost")
-        # remove ball
-        x, y = self.get_ball_position_xy()
-        x = int((x - (self.field_length / 2)) * 10)
-        y = int((y - (self.field_width / 2)) * 10)
-        obstacle[x - 2: x + 2, y - 2: y + 2] = 0
-
-        # merge costmaps
-        self.costmap = self.base_costmap.copy() + gaussian_filter(obstacle, rospy.get_param(
-            "behavior/body/obstacle_costmap_smoothing_sigma"))
+    def field_2_costmap_coord(self, x, y):
+        """
+        Converts a field position to the coresponding indices for the costmap.
+        
+        :param x: X Position relative to the center point. (Positive is towards the enemy goal)
+        :param y: Y Position relative to the center point. (Positive is towards the left when we face the enemy goal)
+        :return: The x index of the coresponding costmap slot, The y index of the coresponding costmap slot
+        """
+        idx_x = int(min(((self.field_length + self.map_margin * 2) * 10)-1, max(0, (x + self.field_length / 2 + self.map_margin) * 10)))
+        idx_y = int(min(((self.field_width + self.map_margin * 2) * 10)-1, max(0, (y + self.field_width / 2 + self.map_margin) * 10)))
+        return idx_x, idx_y
 
     def calc_gradients(self):
         gradient = np.gradient(self.base_costmap)
@@ -483,17 +484,23 @@ class WorldModelCapsule:
         goal_value = rospy.get_param("behavior/body/goal_value")  # cost in the goal
 
         # Create Grid
-        grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length * 10j,
-                         0:self.field_width:self.field_width * 10j]
+        grid_x, grid_y = np.mgrid[
+            0:self.field_length + self.map_margin * 2:(self.field_length + self.map_margin * 2)*10j,
+            0:self.field_width + self.map_margin * 2:(self.field_width + self.map_margin * 2)*10j]
 
         fix_points = []
 
         # Add base points
         fix_points.extend([
+            # Corner points of the map (including margin)
+            [[-self.map_margin, -self.map_margin],                                      corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, -self.map_margin],                   corner_value + in_field_value_our_side],
+            [[-self.map_margin, self.field_width + self.map_margin],                    corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, self.field_width + self.map_margin], corner_value + in_field_value_our_side],
             # Corner points of the field
-            [[0, 0], corner_value],
+            [[0, 0], corner_value + in_field_value_our_side],
             [[self.field_length, 0], corner_value],
-            [[0, self.field_width], corner_value],
+            [[0, self.field_width], corner_value + in_field_value_our_side],
             [[self.field_length, self.field_width], corner_value],
             # Points in the field that pull the gradient down, so we don't play always in the middle
             [[keep_out_border, keep_out_border], in_field_value_our_side],
@@ -502,11 +509,16 @@ class WorldModelCapsule:
 
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
-            [[self.field_length, self.field_width / 2 - self.goal_width / 2], goalpost_value],
-            [[self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance], goal_value],
-            [[self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance], goal_value],
-            [[self.field_length, self.field_width / 2 + self.goal_width / 2], goalpost_value],
+            [[self.field_length, self.field_width/2 - self.goal_width/2], goalpost_value],
+            [[self.field_length, self.field_width/2 + self.goal_width/2], goalpost_value],
+            [[self.field_length, self.field_width/2 - self.goal_width/2 + goalpost_safety_distance], goal_value],
+            [[self.field_length, self.field_width/2 + self.goal_width/2 - goalpost_safety_distance], goal_value],
+            [[self.field_length + self.map_margin, self.field_width/2 - self.goal_width/2 - goalpost_safety_distance], -0.2],
+            [[self.field_length + self.map_margin, self.field_width/2 + self.goal_width/2 + goalpost_safety_distance], -0.2],
         ])
+
+        # Apply map margin to fixpoints
+        fix_points = [[[p[0][0] + self.map_margin, p[0][1] + self.map_margin], p[1]] for p in fix_points]
 
         # Interpolate the keypoints from above to form the costmap
         interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y),
@@ -516,17 +528,10 @@ class WorldModelCapsule:
         self.base_costmap = gaussian_filter(interpolated, rospy.get_param("behavior/body/base_costmap_smoothing_sigma"))
         self.costmap = self.base_costmap.copy()
 
+        # plt.imshow(self.costmap, origin='lower')
+        # plt.show()
+
         self.calc_gradients()
-
-        return
-
-        # Viz
-        plt.quiver(grid_x, grid_y, -gradient[0], -gradient[1])
-        plt.show()
-        plt.imshow(self.base_costmap.T, origin='lower')
-        plt.show()
-        plt.imshow(interpolated.T, origin='lower')
-        plt.show()
 
     def get_gradient_at_field_position(self, x, y):
         """
@@ -534,9 +539,8 @@ class WorldModelCapsule:
         :param x: Field coordiante in the x direction
         :param y: Field coordiante in the y direction
         """
-        x_map = int(min((self.field_length * 10) - 1, max(0, (x + self.field_length / 2) * 10)))
-        y_map = int(min((self.field_width * 10) - 1, max(0, (y + self.field_width / 2) * 10)))
-        return -self.gradient_map[0][x_map, y_map], -self.gradient_map[1][x_map, y_map]
+        idx_x, idx_y = self.field_2_costmap_coord(x, y)
+        return -self.gradient_map[0][idx_x, idx_y], -self.gradient_map[1][idx_x, idx_y]
 
     def get_cost_at_field_position(self, x, y):
         """
@@ -544,10 +548,8 @@ class WorldModelCapsule:
         :param x: Field coordinate in the x direction
         :param y: Field coordinate in the y direction
         """
-        x_map = int(min((self.field_length * 10) - 1, max(0, (x + self.field_length / 2) * 10)))
-        y_map = int(min((self.field_width * 10) - 1, max(0, (y + self.field_width / 2) * 10)))
-
-        return self.costmap[x_map, y_map]
+        idx_x, idx_y = self.field_2_costmap_coord(x, y)
+        return self.costmap[idx_x, idx_y]
 
     def get_gradient_direction_at_field_position(self, x, y):
         """
@@ -599,8 +601,7 @@ class WorldModelCapsule:
         maskd = ImageDraw.Draw(mask)
         # axes are switched in pillow
 
-        b = int(min((self.field_length * 10) - 1, max(0, (x + self.field_length / 2) * 10)))
-        a = int(min((self.field_width * 10) - 1, max(0, (y + self.field_width / 2) * 10)))
+        b, a = self.field_2_costmap_coord(x, y)
         k = kick_length * 10
         m = a + k * math.sin(direction + 0.5 * angular_range)
         n = b + k * math.sin(0.5 * math.pi - (direction + 0.5 * angular_range))
@@ -608,11 +609,16 @@ class WorldModelCapsule:
         p = b + k * math.sin(0.5 * math.pi - (direction - 0.5 * angular_range))
         maskd.polygon(((a, b), (m, n), (o, p)), fill=1)
 
-        masked_costmap = self.costmap * np.array(mask)
+        mask_array = np.array(mask)
 
-        # plt.imshow(masked_costmap, origin='lower')
-        # plt.show()
-        return masked_costmap.max()
+        masked_costmap = self.costmap * mask_array
+
+        #plt.imshow(self.costmap, origin='lower')
+        #plt.show()
+        #plt.imshow(masked_costmap, origin='lower')
+        #plt.show()
+
+        return masked_costmap.max() #masked_costmap.sum() / np.count_nonzero(mask_array) # This can be usefull later on
 
     def get_current_cost_of_kick(self, direction, kick_length, angular_range):
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)

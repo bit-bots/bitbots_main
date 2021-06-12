@@ -23,8 +23,6 @@
   <exec_depend>bitbots_blackboard</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>ros_numpy</exec_depend>
-  <exec_depend>map_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>bitbots_convenience_frames</exec_depend>
 

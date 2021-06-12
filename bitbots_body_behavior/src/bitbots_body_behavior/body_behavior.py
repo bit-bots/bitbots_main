@@ -24,8 +24,7 @@ from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from bitbots_ros_patches.rate import Rate
-from nav_msgs.msg import OccupancyGrid
-from map_msgs.msg import OccupancyGridUpdate
+from sensor_msgs.msg import PointCloud2
 
 if __name__ == "__main__":
     rospy.init_node("Bodybehavior")
@@ -54,8 +53,7 @@ if __name__ == "__main__":
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
     rospy.Subscriber("pose_with_covariance", PoseWithCovarianceStamped, D.blackboard.world_model.pose_callback)
-    rospy.Subscriber("move_base/global_costmap/costmap", OccupancyGrid, D.blackboard.world_model.global_costmap_callback)
-    rospy.Subscriber("move_base/global_costmap/costmap_updates", OccupancyGridUpdate, D.blackboard.world_model.global_costmap_update_callback)
+    rospy.Subscriber("robot_obstacles", PointCloud2, D.blackboard.world_model.robot_obstacle_callback)
     rospy.Subscriber("robot_state", RobotControlState, D.blackboard.blackboard.robot_state_callback)
     rospy.Subscriber(
         rospy.get_param("behavior/body/ball_movement_subscribe_topic"),
