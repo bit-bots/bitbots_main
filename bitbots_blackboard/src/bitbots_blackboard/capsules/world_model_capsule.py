@@ -471,9 +471,9 @@ class WorldModelCapsule:
         # Add base points
         fix_points.extend([
             # Corner points of the field
-            [[0, 0], corner_value],
+            [[0, 0], corner_value + in_field_value_our_side],
             [[self.field_length, 0], corner_value],
-            [[0, self.field_width], corner_value],
+            [[0, self.field_width], corner_value + in_field_value_our_side],
             [[self.field_length, self.field_width], corner_value],
             # Points in the field that pull the gradient down, so we don't play always in the middle
             [[keep_out_border, keep_out_border], in_field_value_our_side],
