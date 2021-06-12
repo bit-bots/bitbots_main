@@ -70,7 +70,7 @@ class GoToPassPreparePosition(AbstractGoToPassPosition):
 
 class GoToPassAcceptPosition(AbstractGoToPassPosition):
     """
-        Go to a position forward of the ball to accept a pass from another robot.
+    Go to a position forward of the ball to accept a pass from another robot.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
