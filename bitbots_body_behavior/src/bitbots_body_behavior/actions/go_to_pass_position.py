@@ -61,7 +61,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
 
 class GoToPassPreparePosition(AbstractGoToPassPosition):
     """
-        Go to a position 1m left or right from the ball (whichever is closer) as preparation for a pass
+    Go to a position 1m left or right from the ball (whichever is closer) as preparation for a pass
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
