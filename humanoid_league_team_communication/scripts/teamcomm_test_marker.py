@@ -11,9 +11,8 @@ from interactive_markers.menu_handler import MenuHandler
 from transforms3d.affines import compose, decompose
 from transforms3d.quaternions import quat2mat, mat2quat
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
-from humanoid_league_msgs.msg import PoseWithCertaintyStamped, PoseWithCertaintyArray, \
-    ObstacleRelative, ObstacleRelativeArray, PoseWithCertainty, TeamData
-from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
+from humanoid_league_msgs.msg import ObstacleRelative, ObstacleRelativeArray, TeamData
+from geometry_msgs.msg import Pose, Point, Quaternion, Vector3, PoseWithCovariance
 from tf2_geometry_msgs import PointStamped
 from tf.transformations import euler_from_quaternion
 import tf2_ros
@@ -35,7 +34,7 @@ class TeamCommMarker(object):
         self.server = server
         self.pose = Pose()
         self.active = True
-        self.confidence = 1.0
+        self.covariance = 0.1
         self.int_marker = None
         self.make_marker()
         self.menu_handler = MenuHandler()
@@ -64,9 +63,9 @@ class TeamCommMarker(object):
         item = feedback.menu_entry_id
         if self.menu_handler.getCheckState(item) == MenuHandler.CHECKED:
             self.menu_handler.setCheckState(item, MenuHandler.UNCHECKED)
-            self.confidence = 0.3
+            self.covariance = 1.0
         else:
-            self.confidence = 1.0
+            self.covariance = 0.1
             self.menu_handler.setCheckState(item, MenuHandler.CHECKED)
         self.menu_handler.reApply(self.server)
         self.server.applyChanges()
@@ -175,8 +174,13 @@ class TeamMessage:
             msg.header.stamp = rospy.Time.now()
             msg.header.frame_id = "map"
             msg.robot_id = self.robot.robot_id
-            msg.robot_position.pose.pose = self.robot.pose
-            msg.robot_position.confidence = self.robot.confidence
+            msg.robot_position.pose = self.robot.pose
+            msg.robot_position.covariance = [self.robot.covariance, 0, 0, 0, 0, 0,
+                                             0, self.robot.covariance, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, self.robot.covariance]
 
             if self.robot.ball.active:
                 try:
@@ -194,17 +198,23 @@ class TeamMessage:
                                              mat_in_world, [1, 1, 1])
                     trans_in_robot = np.matmul(world_trans_in_robot, trans_in_world)
                     pos_in_robot, mat_in_robot, _, _ = decompose(trans_in_robot)
-                    quat_in_robot = mat2quat(mat_in_robot)
 
-                    ball_relative = PoseWithCertainty()
-                    ball_relative.pose.pose.position = Point(*pos_in_robot)
-                    ball_relative.pose.pose.orientation = Quaternion(quat_in_robot[1], quat_in_robot[2],
-                                                                     quat_in_robot[3], quat_in_robot[0])
-                    ball_relative.confidence = self.robot.ball.confidence
-                    msg.ball_relative = ball_relative
+                    ball_relative = PoseWithCovariance()
+                    ball_relative.pose.position = Point(*pos_in_robot)
+
+                    ball_absolute = PoseWithCovariance()
+                    ball_absolute.pose.position = self.robot.ball.pose.position
+                    ball_absolute.pose.orientation = Quaternion(0, 0, 0, 1)
+                    ball_absolute.covariance = [self.robot.ball.covariance, 0, 0, 0, 0, 0,
+                                                0, self.robot.ball.covariance, 0, 0, 0, 0,
+                                                0, 0, 0, 0, 0, 0,
+                                                0, 0, 0, 0, 0, 0,
+                                                0, 0, 0, 0, 0, 0,
+                                                0, 0, 0, 0, 0, self.robot.ball.covariance]
+                    msg.ball_absolute = ball_absolute
 
                     cartesian_distance = math.sqrt(
-                        ball_relative.pose.pose.position.x ** 2 + ball_relative.pose.pose.position.y ** 2)
+                        ball_relative.pose.position.x ** 2 + ball_relative.pose.position.y ** 2)
                     msg.time_to_position_at_ball = cartesian_distance / ROBOT_SPEED
                 except tf2_ros.LookupException as ex:
                     rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
@@ -215,7 +225,7 @@ class TeamMessage:
                 self.pub.publish(msg)
             else:
                 # ball not seen
-                msg.ball_relative.confidence = 0.0
+                msg.ball_relative.covariance = 100.0
                 msg.time_to_position_at_ball = 0.0
 
             self.pub.publish(msg)
@@ -229,6 +239,6 @@ if __name__ == "__main__":
 
     team_message = TeamMessage(robot)
     # create a timer to update the published ball transform
-    rospy.Timer(rospy.Duration(0.1), team_message.publish)
+    rospy.Timer(rospy.Duration(0.05), team_message.publish)
     # run and block until finished
     rospy.spin()
