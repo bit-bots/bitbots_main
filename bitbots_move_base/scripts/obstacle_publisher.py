@@ -17,8 +17,6 @@ from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_srvs.srv import Empty
 from std_msgs.msg import Header, Bool
 
-from bitbots_ros_patches.rate import Rate
-
 
 class ObstaclePublisher:
     def __init__(self):
@@ -38,7 +36,8 @@ class ObstaclePublisher:
         rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
 
-        self.obstacle_publisher = rospy.Publisher("obstacles", PointCloud2, queue_size=10)
+        self.robot_obstacle_publisher = rospy.Publisher("robot_obstacles", PointCloud2, queue_size=10)
+        self.ball_obstacle_publisher = rospy.Publisher("ball_obstacles", PointCloud2, queue_size=10)
 
         self.ball = None
         self.ball_active = True
@@ -48,12 +47,11 @@ class ObstaclePublisher:
         self.robots_storage_time = 10
         self.robot_merge_distance = 0.5
 
-        rate = Rate(20)
-        while not rospy.is_shutdown():
-            self.publish_obstacles()
-            rate.sleep()
+        rospy.Timer(rospy.Duration(1/20), self.publish_obstacles)
 
-    def publish_obstacles(self):
+        rospy.spin()
+
+    def publish_obstacles(self, event):
         # Set current timespamp and frame
         dummy_header = Header()
         dummy_header.stamp = rospy.Time.now()
@@ -61,7 +59,7 @@ class ObstaclePublisher:
 
         # Publish balls
         if self.ball_active and self.ball is not None:
-            self.obstacle_publisher.publish(
+            self.ball_obstacle_publisher.publish(
                 create_cloud_xyz32(dummy_header, [[self.ball.point.x, self.ball.point.y, self.ball.point.z]]))
 
         # Cleanup robot obstacles
@@ -90,7 +88,7 @@ class ObstaclePublisher:
             points.append([o.point.x + width / 2, o.point.y - width / 2, o.point.z])
             points.append([o.point.x + width / 2, o.point.y + width / 2, o.point.z])
 
-        self.obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
+        self.robot_obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
 
     def _balls_callback(self, msg):
         try:
