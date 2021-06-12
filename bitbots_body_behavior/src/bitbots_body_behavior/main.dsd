@@ -79,7 +79,7 @@ $LocalizationAvailable
             NO --> $BallSeen
                 YES --> $ClosestToBallNoGoalie
                     YES --> $GoalieHandlingBall
-                        YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition //dont't go to far back
+                        YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition //don't go to far back
                         NO --> #GoAndKickBallMapGoal
                     NO --> $PassStarted
                         YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition
