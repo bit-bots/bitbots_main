@@ -195,7 +195,7 @@ class HumanoidLeagueTeamCommunication:
             ros_covariance[31] = fmat3.y.z
             ros_covariance[35] = fmat3.z.z
 
-        def set_pose(robot, pose):
+        def pose_proto_to_ros(robot, pose):
             pose.pose.position.x = robot.position.x
             pose.pose.position.y = robot.position.y
 
@@ -239,14 +239,13 @@ class HumanoidLeagueTeamCommunication:
 
         # Handle pose of current player
         ###############################
-        set_pose(message.current_pose, team_data.robot_position)
+        pose_proto_to_ros(message.current_pose, team_data.robot_position)
 
         # Handle ball
         #############
         team_data.ball_absolute.pose.position.x = message.ball.position.x
         team_data.ball_absolute.pose.position.y = message.ball.position.y
         team_data.ball_absolute.pose.position.z = message.ball.position.z
-        covariance_proto_to_ros(message.ball.covariance, team_data.ball_absolute.covariance)
 
         if message.ball.covariance:
             covariance_proto_to_ros(message.ball.covariance, team_data.ball_absolute.covariance)
@@ -265,7 +264,7 @@ class HumanoidLeagueTeamCommunication:
 
             obstacle.playerNumber = robot.player_id
 
-            set_pose(robot, obstacle.pose.pose)
+            pose_proto_to_ros(robot, obstacle.pose.pose)
             if hasattr(message, "other_robot_confidence") and index < len(message.other_robot_confidence):
                 obstacle.pose.confidence = message.other_robot_confidence[index]
 
