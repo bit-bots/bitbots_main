@@ -86,7 +86,6 @@ class ObstaclePublisher:
         for robot in self.team.values():
             p = robot.robot_position.pose.position
             team_points.append([p.x, p.y, p.z])
-            team_points.append([p.x, p.y, p.z])
             team_points.append([p.x - width / 2, p.y - width / 2, p.z])
             team_points.append([p.x - width / 2, p.y + width / 2, p.z])
             team_points.append([p.x + width / 2, p.y - width / 2, p.z])
