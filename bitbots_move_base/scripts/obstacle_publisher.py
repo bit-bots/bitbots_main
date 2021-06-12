@@ -10,7 +10,7 @@ import ros_numpy
 import numpy as np
 import tf2_ros as tf2
 import tf2_geometry_msgs
-from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray
+from humanoid_league_msgs.msg import ObstacleRelativeArray, PoseWithCertainty, PoseWithCertaintyArray, TeamData
 from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
@@ -35,6 +35,7 @@ class ObstaclePublisher:
                          queue_size=1)
         rospy.Subscriber("ball_obstacle_active", Bool, self._ball_active_callback, queue_size=1)
         rospy.Subscriber("obstacles_relative", ObstacleRelativeArray, self._obstacle_callback, queue_size=1)
+        rospy.Subscriber("team_data", TeamData, self._team_data_callback, queue_size=1)
 
         self.robot_obstacle_publisher = rospy.Publisher("robot_obstacles", PointCloud2, queue_size=10)
         self.ball_obstacle_publisher = rospy.Publisher("ball_obstacles", PointCloud2, queue_size=10)
@@ -43,6 +44,8 @@ class ObstaclePublisher:
         self.ball_active = True
 
         self.robots = []
+
+        self.team = dict()
 
         self.robots_storage_time = 10
         self.robot_merge_distance = 0.5
@@ -67,17 +70,6 @@ class ObstaclePublisher:
             lambda robot: abs((rospy.Time.now() - robot.header.stamp).to_sec()) < self.robots_storage_time,
             self.robots))
 
-        # Clear robots that are close together
-        for i_a, robot_a in enumerate(self.robots):
-            for i_b, robot_b in enumerate(self.robots):
-                # Check that its not the same robot instance and if there is another robot in memory close to it
-                if robot_a != robot_b and np.linalg.norm(ros_numpy.numpify(robot_a.point) - ros_numpy.numpify(
-                        robot_b.point)) < self.robot_merge_distance:
-                    if robot_a.header.stamp > robot_b.header.stamp:
-                        del self.robots[i_b]
-                    else:
-                        del self.robots[i_a]
-
         # Enlarge robots
         width = 0.1
         points = []
@@ -88,7 +80,17 @@ class ObstaclePublisher:
             points.append([o.point.x + width / 2, o.point.y - width / 2, o.point.z])
             points.append([o.point.x + width / 2, o.point.y + width / 2, o.point.z])
 
-        self.robot_obstacle_publisher.publish(create_cloud_xyz32(dummy_header, points))
+        # Publish team mates
+        width = 0.2
+        team_points = points   # This is only equal for now. This changed if our robots are published seperatly.
+        for robot in self.team.values():
+            p = robot.robot_position.pose.position
+            team_points.append([p.x, p.y, p.z])
+            team_points.append([p.x - width / 2, p.y - width / 2, p.z])
+            team_points.append([p.x - width / 2, p.y + width / 2, p.z])
+            team_points.append([p.x + width / 2, p.y - width / 2, p.z])
+            team_points.append([p.x + width / 2, p.y + width / 2, p.z])
+        self.robot_obstacle_publisher.publish(create_cloud_xyz32(dummy_header, team_points))
 
     def _balls_callback(self, msg):
         try:
@@ -114,15 +116,27 @@ class ObstaclePublisher:
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return
+
         for o in msg.obstacles:
             point = PointStamped()
             point.header = msg.header
             point.point = o.pose.pose.pose.position
+            # Transfrom robot to map frame
             point = tf2_geometry_msgs.do_transform_point(point, transform)
+            # Update robots that are close together
+            for i_b, robot_b in enumerate(self.robots):
+                # Check if there is another robot in memory close to it
+                if np.linalg.norm(ros_numpy.numpify(point.point) - ros_numpy.numpify(robot_b.point)) < self.robot_merge_distance:
+                    # Delete the close robot
+                    del self.robots[i_b]
+            # Append our new robots
             self.robots.append(point)
 
     def _ball_active_callback(self, msg):
         self.ball_active = msg.data
+
+    def _team_data_callback(self, msg):
+        self.team[msg.robot_id] = msg
 
 
 if __name__ == "__main__":
