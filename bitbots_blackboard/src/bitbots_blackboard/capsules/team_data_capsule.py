@@ -80,7 +80,7 @@ class TeamDataCapsule:
         for data in self.team_data.values():
             # data should not be outdated, from a robot in play, only goalie if desired,
             # x and y covariance values should be below threshold. orientation covariance of ball does not matter
-            # covariance is a 6x6 matrix as array. 0 is x 7, is y
+            # covariance is a 6x6 matrix as array. 0 is x, 7 is y
             if self.is_valid(data) and (
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
                     and data.ball_absolute.covariance[0] < self.ball_max_covariance \
