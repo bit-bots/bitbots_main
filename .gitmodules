@@ -70,3 +70,7 @@
 [submodule "bitbots_world_model"]
 	path = bitbots_world_model
 	url = ../../bit-bots/bitbots_world_model.git
+[submodule "lib/spatio_temporal_voxel_layer"]
+	path = lib/spatio_temporal_voxel_layer
+	url = ../../bit-bots/spatio_temporal_voxel_layer
+	branch = melodic-devel
