@@ -1,10 +1,12 @@
 <launch>
     <arg name="use_game_settings" default="false"/>
+    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
 
     <rosparam file="$(find humanoid_league_game_controller)/config/game_controller.yaml" command="load"/>
 
     <node name="team_communication" pkg="humanoid_league_team_communication" type="humanoid_league_team_communication.py"  output="screen">
         <rosparam file="$(find humanoid_league_team_communication)/config/team_communication_config.yaml" command="load"/>
+        <param name="map_frame" value="$(arg tf_prefix)map" />
     </node>
 
     <group if="$(arg use_game_settings)">

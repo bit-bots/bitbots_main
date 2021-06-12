@@ -31,6 +31,7 @@ class HumanoidLeagueTeamCommunication:
         self.team_id = rospy.get_param('team_id')
 
         self.config = rospy.get_param("~")
+        self.map_frame = self.config.get('map_frame', 'map')
 
         self.target_host = self.config['target_host']
         if self.target_host == '127.0.0.1':
@@ -146,24 +147,25 @@ class HumanoidLeagueTeamCommunication:
 
     def obstacle_cb(self, msg):
         self.obstacles = ObstacleRelativeArray(header=msg.header)
-        self.obstacles.header.frame_id = 'map'
+        self.obstacles.header.frame_id = self.map_frame
         for obstacle in msg.obstacles:
             # Transform to map
             obstacle_pose = PoseStamped(msg.header, obstacle.pose.pose.pose)
             try:
-                obstacle_map = self.tf_buffer.transform(obstacle_pose, "map", timeout=rospy.Duration.from_sec(0.3))
+                obstacle_map = self.tf_buffer.transform(obstacle_pose, self.map_frame, timeout=rospy.Duration.from_sec(0.3))
                 obstacle.pose.pose.pose = obstacle_map.pose
                 self.obstacles.obstacles.append(obstacle)
             except tf2_ros.TransformException:
-                pass
+                rospy.logerr("TeamComm: Could not transform obstacle to map frame")
 
     def ball_cb(self, msg: PoseWithCovarianceStamped):
         # Transform to map
         ball_point = PointStamped(msg.header, msg.pose.pose.position)
         try:
-            self.ball = self.tf_buffer.transform(ball_point, "map", timeout=rospy.Duration.from_sec(0.3))
+            self.ball = self.tf_buffer.transform(ball_point, self.map_frame, timeout=rospy.Duration.from_sec(0.3))
             self.ball_covariance = msg.pose.covariance
         except tf2_ros.TransformException:
+            rospy.logerr("TeamComm: Could not transform ball to map frame")
             self.ball = None
 
     def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
@@ -223,7 +225,7 @@ class HumanoidLeagueTeamCommunication:
         header = Header()
         header.stamp.secs = message.timestamp.seconds
         header.stamp.nsecs = message.timestamp.nanos
-        header.frame_id = "map"
+        header.frame_id = self.map_frame
 
         # Handle timestamp
         ##################
