@@ -157,19 +157,19 @@ behavior:
     goal_value: 0
 
     # cost at a goalpost
-    goalpost_value: 0.4
+    goalpost_value: 1
 
     # cost in a corner
     corner_value: 1
 
     # start value on our side
-    in_field_value_our_side: 0.8
+    in_field_value_our_side: 1.5
 
     # dangerous border area width in meters
     keep_out_border: 0.2
 
     # cost of an obstacle
-    obstacle_cost: 0.8
+    obstacle_cost: 2.0
 
     # angular range when estimating kick cost
     kick_cost_angular_range: 0.5
