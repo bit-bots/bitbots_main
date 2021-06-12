@@ -74,6 +74,7 @@ class WorldModelCapsule:
         self.field_length = rospy.get_param('field_length', None)
         self.field_width = rospy.get_param('field_width', None)
         self.goal_width = rospy.get_param('goal_width', None)
+        self.map_margin = 1.0
 
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
@@ -414,18 +415,20 @@ class WorldModelCapsule:
         obstacle_map = np.zeros_like(self.costmap)
         # Iterate over all obstacles
         for p in pc2.read_points(msg, field_names = ("x", "y", "z"), skip_nans=True):
-            # Calculate offsets to the array positions
-            idx_x = int((p[0] + self.field_length / 2) * 10 - 1)
-            idx_y = int((p[1] + self.field_width / 2) * 10 - 1)
-            # Check if the obstacle is in the field
-            if 0 < idx_x < obstacle_map.shape[0] and 0 < idx_y < obstacle_map.shape[1]:
-                # Draw obstacle with smoothing independent weight on obstacle costmap
-                obstacle_map[idx_x, idx_y] = \
-                    rospy.get_param("behavior/body/obstacle_cost") * rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma")
+            # Convert position to array index
+            idx_x, idx_y = self.field_2_costmap_coord(p[0], p[1])
+            # Draw obstacle with smoothing independent weight on obstacle costmap
+            obstacle_map[idx_x, idx_y] = \
+                rospy.get_param("behavior/body/obstacle_cost") * rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma")
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma"))
         # Merge costmaps
         self.costmap = self.base_costmap.copy() + obstacle_map
+
+    def field_2_costmap_coord(self, x, y):
+        idx_x = int(min(((self.field_length + self.map_margin * 2) * 10)-1, max(0, (x + self.field_length / 2 + self.map_margin) * 10)))
+        idx_y = int(min(((self.field_width + self.map_margin * 2) * 10)-1, max(0, (y + self.field_width / 2 + self.map_margin) * 10)))
+        return idx_x, idx_y
 
     def calc_gradients(self):
         gradient = np.gradient(self.base_costmap)
@@ -464,12 +467,19 @@ class WorldModelCapsule:
         goal_value = rospy.get_param("behavior/body/goal_value")  # cost in the goal
 
         # Create Grid
-        grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length*10j, 0:self.field_width:self.field_width*10j]
+        grid_x, grid_y = np.mgrid[
+            0:self.field_length + self.map_margin * 2:(self.field_length + self.map_margin * 2)*10j,
+            0:self.field_width + self.map_margin * 2:(self.field_width + self.map_margin * 2)*10j]
 
         fix_points = []
 
         # Add base points
         fix_points.extend([
+            # Corner points of the map (including margin)
+            [[-self.map_margin, -self.map_margin],                                      corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, -self.map_margin],                   corner_value + in_field_value_our_side],
+            [[-self.map_margin, self.field_width + self.map_margin],                    corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, self.field_width + self.map_margin], corner_value + in_field_value_our_side],
             # Corner points of the field
             [[0, 0], corner_value + in_field_value_our_side],
             [[self.field_length, 0], corner_value],
@@ -483,10 +493,15 @@ class WorldModelCapsule:
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
             [[self.field_length, self.field_width/2 - self.goal_width/2], goalpost_value],
+            [[self.field_length, self.field_width/2 + self.goal_width/2], goalpost_value],
             [[self.field_length, self.field_width/2 - self.goal_width/2 + goalpost_safety_distance], goal_value],
             [[self.field_length, self.field_width/2 + self.goal_width/2 - goalpost_safety_distance], goal_value],
-            [[self.field_length, self.field_width/2 + self.goal_width/2], goalpost_value],
+            [[self.field_length + self.map_margin, self.field_width/2 - self.goal_width/2 - goalpost_safety_distance], -0.2],
+            [[self.field_length + self.map_margin, self.field_width/2 + self.goal_width/2 + goalpost_safety_distance], -0.2],
         ])
+
+        # Apply map margin to fixpoints
+        fix_points = [[[p[0][0] + self.map_margin, p[0][1] + self.map_margin], p[1]] for p in fix_points]
 
         # Interpolate the keypoints from above to form the costmap
         interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y), method='linear')
@@ -495,17 +510,10 @@ class WorldModelCapsule:
         self.base_costmap = gaussian_filter(interpolated, rospy.get_param("behavior/body/base_costmap_smoothing_sigma"))
         self.costmap = self.base_costmap.copy()
 
+        plt.imshow(self.costmap, origin='lower')
+        plt.show()
+
         self.calc_gradients()
-
-        return
-
-        # Viz
-        plt.quiver(grid_x, grid_y, -gradient[0], -gradient[1])
-        plt.show()
-        plt.imshow(self.base_costmap.T, origin='lower')
-        plt.show()
-        plt.imshow(interpolated.T, origin='lower')
-        plt.show()
 
     def get_gradient_at_field_position(self, x, y):
         """
@@ -513,9 +521,8 @@ class WorldModelCapsule:
         :param x: Field coordiante in the x direction
         :param y: Field coordiante in the y direction
         """
-        x_map = int(min((self.field_length * 10)-1, max(0, (x + self.field_length / 2) * 10)))
-        y_map = int(min((self.field_width * 10)-1, max(0, (y + self.field_width / 2) * 10)))
-        return -self.gradient_map[0][x_map, y_map], -self.gradient_map[1][x_map, y_map]
+        idx_x, idx_y = self.field_2_costmap_coord(x, y)
+        return -self.gradient_map[0][idx_x, idx_y], -self.gradient_map[1][idx_x, idx_y]
 
     def get_cost_at_field_position(self, x, y):
         """
@@ -523,10 +530,8 @@ class WorldModelCapsule:
         :param x: Field coordinate in the x direction
         :param y: Field coordinate in the y direction
         """
-        x_map = int(min((self.field_length * 10)-1, max(0, (x + self.field_length / 2) * 10)))
-        y_map = int(min((self.field_width * 10)-1, max(0, (y + self.field_width / 2) * 10)))
-
-        return self.costmap[x_map, y_map]
+        idx_x, idx_y = self.field_2_costmap_coord(x, y)
+        return self.costmap[idx_x, idx_y]
 
     def get_gradient_direction_at_field_position(self, x, y):
         """
@@ -576,8 +581,7 @@ class WorldModelCapsule:
         maskd = ImageDraw.Draw(mask)
         # axes are switched in pillow
 
-        b = int(min((self.field_length * 10)-1, max(0, (x + self.field_length / 2) * 10)))
-        a = int(min((self.field_width * 10)-1, max(0, (y + self.field_width / 2) * 10)))
+        b, a = self.field_2_costmap_coord(x, y)
         k = kick_length * 10
         m = a + k * math.sin(direction + 0.5 * angular_range)
         n = b + k * math.sin(0.5 * math.pi - (direction + 0.5 * angular_range))
