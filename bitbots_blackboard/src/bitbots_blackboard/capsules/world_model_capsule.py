@@ -521,8 +521,8 @@ class WorldModelCapsule:
         self.base_costmap = gaussian_filter(interpolated, rospy.get_param("behavior/body/base_costmap_smoothing_sigma"))
         self.costmap = self.base_costmap.copy()
 
-        plt.imshow(self.costmap, origin='lower')
-        plt.show()
+        # plt.imshow(self.costmap, origin='lower')
+        # plt.show()
 
         self.calc_gradients()
 
