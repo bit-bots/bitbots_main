@@ -1,10 +1,14 @@
 behavior:
+  # Data older than this is seen as non existent
+  team_data_timeout: 2
+  # minimal confidence to regard a ball of a team mate as valid
+  ball_max_covariance: 0.5
+
   body:
     roles:
       - "goalie"
       - "offense"
       - "defense"
-      - "penalty"
 
     # When False, the behavior will use a simple fallback mode in which only detected image features are
     # used for decision making
@@ -27,10 +31,10 @@ behavior:
 
     # TODO: For four robots we need four initial positions
     role_positions:
-      goalie: [-0.95, 0]
-      defense: [[-0.5, 0], [-0.45, 0.5], [-0.45, -0.5]]
-      offense: [[-0.25, 0], [-0.2, 0.5], [-0.2, -0.5]]
-      kickoff: [-0.1, 0]
+      goalie: [ -0.95, 0 ]
+      defense: [ [ -0.5, 0 ], [ -0.45, 0.5 ], [ -0.45, -0.5 ] ]
+      offense: [ [ -0.25, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
+      kickoff: [ -0.1, 0 ]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0
 
@@ -137,6 +141,10 @@ behavior:
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
 
+    # The position where the supporter robot should place itself in order to accept a pass
+    pass_position_x: 1
+    pass_position_y: 1
+
     # maximal angle of a ball kick
     max_kick_angle: 1.4  #  (radians)
 
@@ -176,6 +184,7 @@ behavior:
 
     # estimated kick length when estimating kick cost
     kick_cost_kick_length: 1.5
+
 
 role: "offense"
 

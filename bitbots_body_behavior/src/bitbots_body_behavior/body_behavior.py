@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
     # TODO: callbacks away from the blackboard!
     rospy.Subscriber("balls_relative", PoseWithCertaintyArray, D.blackboard.world_model.balls_callback)
+    rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, D.blackboard.world_model.ball_filtered_callback)
     rospy.Subscriber("goal_posts_relative", PoseWithCertaintyArray, D.blackboard.world_model.goalposts_callback)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
@@ -63,7 +64,8 @@ if __name__ == "__main__":
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
 
-    rate = Rate(5)
+    rate = Rate(125)
     while not rospy.is_shutdown():
         D.update()
+        D.blackboard.team_data.publish_strategy()
         rate.sleep()
