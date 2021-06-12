@@ -74,7 +74,7 @@ class WorldModelCapsule:
         self.field_length = rospy.get_param('field_length', None)
         self.field_width = rospy.get_param('field_width', None)
         self.goal_width = rospy.get_param('goal_width', None)
-        self.map_margin = 1.0
+        self.map_margin = rospy.get_param('behavior/body/map_margin', 1.0)
 
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
