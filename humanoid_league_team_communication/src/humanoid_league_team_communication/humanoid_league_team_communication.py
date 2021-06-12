@@ -223,8 +223,8 @@ class HumanoidLeagueTeamCommunication:
         team_data = TeamData()
 
         header = Header()
-        header.stamp.secs = message.timestamp.seconds
-        header.stamp.nsecs = message.timestamp.nanos
+        # The robots' times can differ, therefore use our own time here
+        header.stamp = rospy.Time.now()
         header.frame_id = self.map_frame
 
         # Handle timestamp
