@@ -83,10 +83,11 @@ class TeamDataCapsule:
             # covariance is a 6x6 matrix as array. 0 is x 7, is y
             if self.is_valid(data) and (
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
-                    and data.ball_relative.covariance[0] < self.ball_max_covariance \
-                    and data.ball_relative.covariance[7] < self.ball_max_covariance:
-                distances.append(math.sqrt(
-                    data.ball_relative.pose.position.x ** 2 + data.ball_relative.pose.position.y ** 2))
+                    and data.ball_absolute.covariance[0] < self.ball_max_covariance \
+                    and data.ball_absolute.covariance[7] < self.ball_max_covariance:
+                ball_rel_x = data.ball_absolute.pose.position.x - data.robot_position.pose.position.x
+                ball_rel_y = data.ball_absolute.pose.position.y - data.robot_position.pose.position.y
+                distances.append(math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2))
         sorted_times = sorted(distances)
         rank = 1
         for distances in sorted_times:

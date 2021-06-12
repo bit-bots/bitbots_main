@@ -118,8 +118,12 @@ class WorldModelCapsule:
             return None
         return ball_bfp.x, ball_bfp.y
 
-    def get_ball_distance(self):
-        u, v = self.get_ball_position_uv()
+    def get_ball_distance(self, filtered=False):
+        if filtered:
+            u = self.ball_filtered.pose.pose.position.x
+            v = self.ball_filtered.pose.pose.position.y
+        else:
+            u, v = self.get_ball_position_uv()
         return math.sqrt(u ** 2 + v ** 2)
 
     def get_ball_speed(self):
@@ -135,7 +139,8 @@ class WorldModelCapsule:
 
             ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
             try:
-                self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=rospy.Duration(0.3))
+                self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame,
+                                                     timeout=rospy.Duration(0.3))
                 self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=rospy.Duration(0.3))
                 self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=rospy.Duration(0.3))
                 # Set timestamps to zero to get the newest transform when this is transformed later
@@ -151,6 +156,9 @@ class WorldModelCapsule:
         else:
             return
 
+    def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
+        self.ball_filtered = msg
+
     def recent_ball_twist_available(self):
         if self.ball_twist_map is None:
             return False
@@ -160,7 +168,7 @@ class WorldModelCapsule:
         x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
         y_sdev = msg.twist.covariance[7]  # position 1,1 in a 6x6-matrix
         if x_sdev > self.ball_twist_precision_threshold['x_sdev'] or \
-           y_sdev > self.ball_twist_precision_threshold['y_sdev']:
+                y_sdev > self.ball_twist_precision_threshold['y_sdev']:
             return
         if msg.header.frame_id != self.map_frame:
             try:
@@ -279,7 +287,7 @@ class WorldModelCapsule:
                 first_post_pos = first_post.pose.pose.position
                 second_post_pos = second_post.pose.pose.position
                 angular_distance = abs((math.atan2(first_post_pos.x, first_post_pos.y) - math.atan2(
-                    second_post_pos.x, second_post_pos.y) + math.pi) % (2*math.pi) - math.pi)
+                    second_post_pos.x, second_post_pos.y) + math.pi) % (2 * math.pi) - math.pi)
                 # Set a new pair of posts if the distance is bigger than the previous ones
                 if angular_distance > goal_combination[2]:
                     goal_combination = (first_post_id, second_post_id, angular_distance)
@@ -370,7 +378,6 @@ class WorldModelCapsule:
         """
         return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.pose_lost_time)
 
-
     #############
     # ## Common #
     #############
@@ -415,19 +422,21 @@ class WorldModelCapsule:
     def add_obstacles_costmap(self):
         scale = 1 / self.local_obstacle_map.info.resolution / 2
         obstacle = self.local_obstacle_map_numpy.T[
-                    int(self.local_obstacle_map_numpy.shape[0] / 2 - 9 * scale) : int(self.local_obstacle_map_numpy.shape[0] / 2 + 9 * scale) : 2,
-                    int(self.local_obstacle_map_numpy.shape[1] / 2 - 6 * scale) : int(self.local_obstacle_map_numpy.shape[1] / 2 + 6 * scale) : 2].astype(np.float) / 100 * 0.4
+                   int(self.local_obstacle_map_numpy.shape[0] / 2 - 9 * scale): int(
+                       self.local_obstacle_map_numpy.shape[0] / 2 + 9 * scale): 2,
+                   int(self.local_obstacle_map_numpy.shape[1] / 2 - 6 * scale): int(
+                       self.local_obstacle_map_numpy.shape[1] / 2 + 6 * scale): 2].astype(np.float) / 100 * 0.4
         x, y = self.get_ball_position_xy()
         x = int((x - 4.5) * 10)
         y = int((y - 3) * 10)
-        obstacle[x - 2 : x + 2, y - 2: y + 2] = 0
+        obstacle[x - 2: x + 2, y - 2: y + 2] = 0
         self.costmap = self.base_costmap.copy() + gaussian_filter(obstacle, 3)
         self.calc_gradients()
 
     def calc_gradients(self):
         gradient = np.gradient(self.base_costmap)
-        norms = np.linalg.norm(gradient,axis=0)
-        gradient = [np.where(norms==0,0,i/norms) for i in gradient]
+        norms = np.linalg.norm(gradient, axis=0)
+        gradient = [np.where(norms == 0, 0, i / norms) for i in gradient]
         self.gradient_map = gradient
 
     def cost_at_relative_xy(self, x, y):
@@ -449,7 +458,6 @@ class WorldModelCapsule:
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
 
-
     def calc_gradient_map(self):
 
         goal_width = rospy.get_param("goal_width", 2)
@@ -461,34 +469,35 @@ class WorldModelCapsule:
         in_field_value_enemy_side = 0.4
 
         # Create Grid
-        grid_x, grid_y = np.mgrid[0:field_length:field_length*10j, 0:field_width:field_width*10j]
+        grid_x, grid_y = np.mgrid[0:field_length:field_length * 10j, 0:field_width:field_width * 10j]
 
         fix_points = []
 
         # Add base points
         fix_points.extend([
             # Corner points of the field
-            [[0,            0],             1],
-            [[field_length, 0],             1],
-            [[0,            field_width],   1],
-            [[field_length, field_width],   1],
+            [[0, 0], 1],
+            [[field_length, 0], 1],
+            [[0, field_width], 1],
+            [[field_length, field_width], 1],
             # Points in the field that pull the gradient down, so we don't play always in the middle
-            [[keep_out_border,                  keep_out_border],                 in_field_value_our_side],
-            #[[field_length - keep_out_border,   keep_out_border],                 in_field_value_enemy_side],
-            [[keep_out_border,                  field_width - keep_out_border],   in_field_value_our_side],
-            #[[field_length - keep_out_border,   field_width - keep_out_border],   in_field_value_enemy_side]
+            [[keep_out_border, keep_out_border], in_field_value_our_side],
+            # [[field_length - keep_out_border,   keep_out_border],                 in_field_value_enemy_side],
+            [[keep_out_border, field_width - keep_out_border], in_field_value_our_side],
+            # [[field_length - keep_out_border,   field_width - keep_out_border],   in_field_value_enemy_side]
         ])
 
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
-            [[field_length, field_width/2 - goal_width/2],                      0.4],
-            [[field_length, field_width/2 - goal_width/2 + goal_factor],    0],
-            [[field_length, field_width/2 + goal_width/2 - goal_factor],    0],
-            [[field_length, field_width/2 + goal_width/2],                      0.4],
+            [[field_length, field_width / 2 - goal_width / 2], 0.4],
+            [[field_length, field_width / 2 - goal_width / 2 + goal_factor], 0],
+            [[field_length, field_width / 2 + goal_width / 2 - goal_factor], 0],
+            [[field_length, field_width / 2 + goal_width / 2], 0.4],
         ])
 
         # Interpolate the keypoints from above to form the costmap
-        interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y), method='linear')
+        interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y),
+                                method='linear')
 
         # Smooth the costmap to get more continus gradients
         self.base_costmap = gaussian_filter(interpolated, 4)
@@ -513,8 +522,8 @@ class WorldModelCapsule:
         """
         field_width = rospy.get_param("field_width", 6)
         field_length = rospy.get_param("field_length", 9)
-        x_map = int(min((field_length * 10)-1, max(0, (x + field_length / 2) * 10)))
-        y_map = int(min((field_width * 10)-1,max(0, (y + field_width / 2) * 10)))
+        x_map = int(min((field_length * 10) - 1, max(0, (x + field_length / 2) * 10)))
+        y_map = int(min((field_width * 10) - 1, max(0, (y + field_width / 2) * 10)))
         return -self.gradient_map[0][x_map, y_map], -self.gradient_map[1][x_map, y_map]
 
     def get_cost_at_field_position(self, x, y):
@@ -525,11 +534,11 @@ class WorldModelCapsule:
         """
         field_width = rospy.get_param("field_width", 6)
         field_length = rospy.get_param("field_length", 9)
-        x_map = int(min((field_length * 10)-1, max(0, (x + field_length / 2) * 10)))
-        y_map = int(min((field_width * 10)-1,max(0, (y + field_width / 2) * 10)))
+        x_map = int(min((field_length * 10) - 1, max(0, (x + field_length / 2) * 10)))
+        y_map = int(min((field_width * 10) - 1, max(0, (y + field_width / 2) * 10)))
 
-        #plt.imshow(self.costmap[x_map - 20 : x_map + 20, y_map - 20 : y_map + 20], origin='lower')
-        #plt.show()
+        # plt.imshow(self.costmap[x_map - 20 : x_map + 20, y_map - 20 : y_map + 20], origin='lower')
+        # plt.show()
         return self.costmap[x_map, y_map]
 
     def get_gradient_direction_at_field_position(self, x, y):
@@ -548,7 +557,7 @@ class WorldModelCapsule:
             in_field_value_enemy_side = 0.2
 
             # Create Grid
-            grid_x, grid_y = np.mgrid[0:field_length:field_length*10j, 0:field_width:field_width*10j]
+            grid_x, grid_y = np.mgrid[0:field_length:field_length * 10j, 0:field_width:field_width * 10j]
             plt.imshow(self.costmap.T, origin='lower')
             plt.show()
             plt.quiver(grid_x, grid_y, -self.gradient_map[0], -self.gradient_map[1])
