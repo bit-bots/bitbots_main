@@ -76,6 +76,8 @@ class WorldModelCapsule:
         self.field_width = rospy.get_param('field_width', None)
         self.goal_width = rospy.get_param('goal_width', None)
         self.map_margin = rospy.get_param('behavior/body/map_margin', 1.0)
+        self.obstacle_costmap_smoothing_sigma = rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma", 1.0)
+        self.obstacle_cost = rospy.get_param("behavior/body/obstacle_cost", 1.0)
 
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
@@ -426,9 +428,9 @@ class WorldModelCapsule:
             idx_x, idx_y = self.field_2_costmap_coord(p[0], p[1])
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = \
-                rospy.get_param("behavior/body/obstacle_cost") * rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma")
+                self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
         # Smooth obstacle map
-        obstacle_map = gaussian_filter(obstacle_map, rospy.get_param("behavior/body/obstacle_costmap_smoothing_sigma"))
+        obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Merge costmaps
         self.costmap = self.base_costmap.copy() + obstacle_map
 
