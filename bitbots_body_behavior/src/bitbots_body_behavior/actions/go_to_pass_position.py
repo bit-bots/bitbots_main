@@ -12,8 +12,9 @@ from tf.transformations import quaternion_from_euler
 class AbstractGoToPassPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, accept, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.pass_pos_x = rospy.get_param("pass_position_x", 1)
-        self.pass_pos_y = rospy.get_param("pass_position_y", 1)
+        self.max_x = rospy.get_param("behavior/body/supporter_max_x", 4)
+        self.pass_pos_x = rospy.get_param("behavior/body/pass_position_x", 1)
+        self.pass_pos_y = rospy.get_param("behavior/body/pass_position_y", 1)
         self.accept = accept
 
     def perform(self, reevaluate=False):
@@ -22,26 +23,21 @@ class AbstractGoToPassPosition(AbstractActionElement):
         our_pose = self.blackboard.world_model.get_current_position()
 
         # decide on side
-        if our_pose[1] - ball_pos[1] < 0:
-            if -math.tau / 4 < our_pose[2] < math.tau / 4:
-                # the ball is left of us
-                side_sign = -1
-            else:
-                # ball is right of us
-                side_sign = 1
+        if our_pose[1] < ball_pos[1]:
+            side_sign = -1
         else:
-            if -math.tau / 4 < our_pose[2] < math.tau / 4:
-                side_sign = 1
-            else:
-                side_sign = -1
+            side_sign = 1
 
         # compute goal
         goal_x = ball_pos[0]
         if self.accept:
             goal_x += self.pass_pos_x
 
+        # Limit the x position, so that we are not running into the enemy goal
+        goal_x = min(self.max_x, goal_x)
+
         goal_y = ball_pos[1] + side_sign * self.pass_pos_y
-        goal_yaw = self.blackboard.world_model.get_gradient_direction_at_field_position(goal_x, goal_y)
+        goal_yaw = 0
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
