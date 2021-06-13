@@ -84,23 +84,19 @@ namespace bitbots_local_planner
         tf2::fromMsg(current_pose_gm, current_pose);
 
         // Calculate the heading angle from our current position to the carrot
-        double walk_angle = std::fmod(
-            std::atan2(
-                goal_pose_.getOrigin().y() - current_pose.getOrigin().y(),
-                goal_pose_.getOrigin().x() - current_pose.getOrigin().x()),
-            2 * M_PI);
+        double walk_angle = std::atan2(
+            goal_pose_.getOrigin().y() - current_pose.getOrigin().y(),
+            goal_pose_.getOrigin().x() - current_pose.getOrigin().x());
 
         // Calculate the heading angle from our current position to the final position of the global plan
-        double final_walk_angle = std::fmod(
-            std::atan2(
-                end_pose_.getOrigin().y() - current_pose.getOrigin().y(),
-                end_pose_.getOrigin().x() - current_pose.getOrigin().x()),
-            2 * M_PI);
+        double final_walk_angle = std::atan2(
+            end_pose_.getOrigin().y() - current_pose.getOrigin().y(),
+            end_pose_.getOrigin().x() - current_pose.getOrigin().x());
 
         // Calculate the distance from our current position to the final position of the global plan
-        double distance = sqrt(
-            pow(end_pose_.getOrigin().y() - current_pose.getOrigin().y(), 2) +
-            pow(end_pose_.getOrigin().x() - current_pose.getOrigin().x(), 2));
+        double distance = std::hypot(
+            end_pose_.getOrigin().x() - current_pose.getOrigin().x(),
+            end_pose_.getOrigin().y() - current_pose.getOrigin().y());
 
         // Calculate the translational walk velocity. It considers the distance and breaks if we are close to the final position of the global plan
         double walk_vel = std::min(distance * config_.translation_slow_down_factor, config_.max_vel_x);
@@ -119,12 +115,12 @@ namespace bitbots_local_planner
         }
 
         // Get the min angle of the difference
-        double min_angle = (std::fmod(diff + M_PI, 2 * M_PI) - M_PI);
+        double min_angle = std::remainder(diff, 2 * M_PI);
         // Calculate our desired rotation velocity based on the angle difference and our max velocity
-        double vel = std::max(std::min(
-                                  config_.rotation_slow_down_factor * min_angle,
-                                  config_.max_rotation_vel),
-                              -config_.max_rotation_vel);
+        double vel = std::clamp(
+            config_.rotation_slow_down_factor * min_angle,
+            -config_.max_rotation_vel,
+            config_.max_rotation_vel);
 
         // Check if we reached the goal. If we did so set the velocities to 0
         if (distance < config_.position_accuracy && abs(min_angle) < config_.rotation_accuracy)
