@@ -12,13 +12,13 @@ $AvoidBall
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
     YES --> $BallKickArea
-        NEAR --> @ChangeAction + action:kicking, @Stop, @LookForward, @KickBallDynamic
+        NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookForward + r:false, @KickBallDynamic + r:false
         FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
     NO --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
-    NEAR --> @ChangeAction + action:kicking, @Stop, @LookForward, @KickBallDynamic
+    NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookForward + r:false, @KickBallDynamic + r:false
     FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
 
 #SearchBall
@@ -56,7 +56,7 @@ $TimerRunning + name:reorientation
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
+            YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
             NO --> $BallSeen
                 YES --> $ClosestToBall
                     YES --> $BallDangerous
@@ -73,7 +73,7 @@ $LocalizationAvailable
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
+            YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
             NO --> $BallSeen
                 YES --> $ClosestToBallNoGoalie
                     YES --> $GoalieHandlingBall
@@ -92,7 +92,7 @@ $LocalizationAvailable
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
+            YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
             NO --> $BallSeen
                 YES --> $BallInDefensiveArea
                     YES --> $ClosestToBallNoGoalie
@@ -126,7 +126,7 @@ $SecondaryStateTeamDecider
 $SecondaryStateDecider
     NORMAL --> $GameStateDecider
         READY --> $GoalScoreRecently
-            YES -> @Stop, @PlayAnimationCheering
+            YES -> @Stop + r:false, @PlayAnimationCheering + r:false
             NO -> #PositioningReady
         PLAYING --> #GoalieBehavior
         ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
