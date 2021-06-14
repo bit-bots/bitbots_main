@@ -14,9 +14,10 @@ class GoToDefensePosition(AbstractActionElement):
 
         # Also apply offset from the ready positions to the defense positions
         role_positions = self.blackboard.config['role_positions']
+        self.position_number = role_positions['pos_number']
         try:
             generalized_role_position = \
-                role_positions[self.blackboard.blackboard.duty][role_positions['pos_number']]
+                role_positions[self.blackboard.blackboard.duty][self.position_number]
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
@@ -55,6 +56,28 @@ class GoToDefensePosition(AbstractActionElement):
             pose_msg.pose.position.y = defense_pos[1]
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
             pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
+        elif self.mode == "corner":
+            # use fixed position rather than standing between ball and goal since there is the goal post
+            # decide if the corner is on the left or right side of our goal
+            if ball_position[1] > 0:
+                # on the side of our left goal post
+                sign = 1
+            else:
+                sign = -1
+            # x dependent on role position
+            if self.blackboard.blackboard.duty == "defense":
+                # close to post
+                x_from_goal_line = 0.5
+            else:
+                # offense players further away based on their position number
+                x_from_goal_line = 1.5 + self.position_number
+            x = x_from_goal_line - (self.blackboard.world_model.field_length / 2)
+            # 1 m away on the side line
+            y = (self.blackboard.world_model.field_width / 2) - 1
+            yaw = (math.tau / 4)
+            pose_msg.pose.position.x = x
+            pose_msg.pose.position.y = sign * y
+            pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, sign * yaw))
         else:
             # center point between ball and own goal
             pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
