@@ -194,7 +194,7 @@ $SecondaryStateDecider
 $AllowedToMove
     NO_MOVEMENT --> @ChangeAction + action:waiting, @LookForward, @StandAndWait
     ONLY_HEAD --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
-    JUST_UNPENALIZED --> @ChangeAction + action:waiting, @GetWalkready, @StandAndWait + duration:2 + r:false
+    JUST_UNPENALIZED --> @ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @StandAndWait + duration:2 + r:false
     NORMAL --> $RoleDecider
         GOALIE --> #GoalieRole
         OFFENSE --> #OffenseRole
