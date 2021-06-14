@@ -139,7 +139,7 @@ behavior:
     ball_approach_dist: 0.24
     
     # Angle at which the ball is normally approached again
-    ball_reaproach_angle: 0.6
+    ball_reapproach_angle: 0.6
 
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
