@@ -50,7 +50,7 @@ class GoToDefensePosition(AbstractActionElement):
         if self.mode == "freekick":
             vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
             # pos between ball and goal but 1m away from ball
-            defense_pos = np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
+            defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
             pose_msg.pose.position.x = defense_pos[0]
             pose_msg.pose.position.y = defense_pos[1]
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
