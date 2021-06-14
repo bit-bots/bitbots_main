@@ -11,11 +11,18 @@ class TurnAround(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(TurnAround, self).__init__(blackboard, dsd, parameters)
 
+        self.orientation_thresh = parameters.get('thresh', 0.5)
+
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
-        x, y, theta = self.blackboard.world_model.get_current_position()
+        pose = self.blackboard.world_model.get_current_position()
+
+        if pose is None:
+            self.pop()
+            return
+        x, y, theta = pose
 
         pose_msg.pose.position.x = x
         pose_msg.pose.position.y = y
@@ -36,6 +43,5 @@ class TurnAround(AbstractActionElement):
 
         self.blackboard.pathfinding.publish(self.pose_msg)
         if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED] or \
-                (self.theta - theta + math.tau) % math.tau < 0.5 :
-            print(self.blackboard.pathfinding.status)
+                (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
             self.pop()
