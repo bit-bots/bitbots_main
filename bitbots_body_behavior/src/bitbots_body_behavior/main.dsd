@@ -22,8 +22,7 @@ $BallKickArea
     FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
 
 #SearchBall
-$Yes
-    YES --> @ChangeAction + action:searching, @LookAtFieldFeatures, @StandAndWait + duration:4, @TurnAround
+@ChangeAction + action:searching, @LookAtFieldFeatures, @StandAndWait + duration:4, @TurnAround
 
 #NoLocalizationPlayerBehavior
 $BallSeen
