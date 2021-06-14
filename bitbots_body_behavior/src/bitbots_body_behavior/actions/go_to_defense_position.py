@@ -16,6 +16,8 @@ class GoToDefensePosition(AbstractActionElement):
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
         self.y_offset = generalized_role_position[1] * self.blackboard.world_model.field_width / 2
+        # optional parameter which goes into the block position at a certain distance to the ball
+        self.distance_to_ball = parameters.get('distance_to_ball', None)
 
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.
@@ -40,8 +42,16 @@ class GoToDefensePosition(AbstractActionElement):
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
-        pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
-        pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
+        if self.distance_to_ball:
+            pose_msg.pose.position.x = ball_position[0] - self.distance_to_ball
+            # Intercept theorem
+            y_at_distance = (goal_position[0] - ball_position[0] - self.distance_to_ball / (
+                    goal_position[0] - ball_position[0])) * ball_position[1]
+            pose_msg.pose.position.y = y_at_distance + self.y_offset
+        else:
+            # center point between ball and own goal
+            pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
+            pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
         pose_msg.pose.orientation.w = 1
 
         self.blackboard.pathfinding.publish(pose_msg)
