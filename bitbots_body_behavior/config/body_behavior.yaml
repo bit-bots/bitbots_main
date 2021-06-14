@@ -152,6 +152,9 @@ behavior:
     # number of considered kick angles (uneven, otherwise the middle would be excluded)
     num_kick_angles: 9
 
+    # distance from center point, that the ball must be during an opponent kickoff to think that it moved
+    kickoff_min_ball_movement: 0.5
+
     ##################
     # costmap params #
     ##################

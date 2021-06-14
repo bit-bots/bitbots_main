@@ -7,6 +7,7 @@ class AllowedToMove(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AllowedToMove, self).__init__(blackboard, dsd, parameters)
         self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
+        self.kickoff_min_ball_movement = rospy.get_param("behavior/body/kickoff_min_ball_movement")
 
     def perform(self, reevaluate=False):
         """
@@ -33,7 +34,8 @@ class AllowedToMove(AbstractDecisionElement):
                 ball_pos = self.blackboard.world_model.get_ball_position_xy()
                 # if we know where the ball is and that it moved, we can play too
                 if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time and (
-                        abs(ball_pos[0]) > 0.5 or abs(ball_pos[1]) > 0.5):
+                        abs(ball_pos[0]) > self.kickoff_min_ball_movement or
+                        abs(ball_pos[1]) > self.kickoff_min_ball_movement):
                     return 'NORMAL'
                 # we need to wait for now
                 return 'ONLY_HEAD'
