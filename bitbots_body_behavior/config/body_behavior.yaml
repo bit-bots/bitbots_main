@@ -43,7 +43,7 @@ behavior:
 
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
-    ball_lost_time: 15
+    ball_lost_time: 8
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
     goal_alignment_orientation_threshold: 20
