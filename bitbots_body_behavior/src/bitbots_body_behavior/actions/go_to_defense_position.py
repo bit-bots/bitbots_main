@@ -1,6 +1,11 @@
+import math
+
+import numpy as np
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
 import rospy
+from tf.transformations import quaternion_from_euler
 
 
 class GoToDefensePosition(AbstractActionElement):
@@ -17,7 +22,7 @@ class GoToDefensePosition(AbstractActionElement):
 
         self.y_offset = generalized_role_position[1] * self.blackboard.world_model.field_width / 2
         # optional parameter which goes into the block position at a certain distance to the ball
-        self.distance_to_ball = parameters.get('distance_to_ball', None)
+        self.mode = parameters.get('mode', None)
 
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.
@@ -42,16 +47,18 @@ class GoToDefensePosition(AbstractActionElement):
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
-        if self.distance_to_ball:
-            pose_msg.pose.position.x = ball_position[0] - self.distance_to_ball
-            # Intercept theorem
-            y_at_distance = (goal_position[0] - ball_position[0] - self.distance_to_ball / (
-                    goal_position[0] - ball_position[0])) * ball_position[1]
-            pose_msg.pose.position.y = y_at_distance + self.y_offset
+        if self.mode == "freekick":
+            vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
+            # pos between ball and goal but 1m away from ball
+            defense_pos = np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
+            pose_msg.pose.position.x = defense_pos[0]
+            pose_msg.pose.position.y = defense_pos[1]
+            yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
+            pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
         else:
             # center point between ball and own goal
             pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
             pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
-        pose_msg.pose.orientation.w = 1
+            pose_msg.pose.orientation.w = 1
 
         self.blackboard.pathfinding.publish(pose_msg)

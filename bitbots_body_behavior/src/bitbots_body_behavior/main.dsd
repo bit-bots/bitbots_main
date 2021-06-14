@@ -157,7 +157,7 @@ $SecondaryStateTeamDecider
         PLACING --> $BallSeen
             YES --> $ClosestToBallNoGoalie
                 YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:1
-                NO -->  @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition + distance_to_ball:1.5
+                NO -->  @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition + mode:freekick
             NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
         ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
