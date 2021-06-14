@@ -1,6 +1,6 @@
 #GoAndKickBallMapGoal
 $AvoidBall
-    NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist + angle:%behavior/body/ball_reaproach_angle
+    NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist + angle:%behavior/body/ball_reapproach_angle
         YES --> $BallKickArea
             NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1.5, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1 + r:false
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal
