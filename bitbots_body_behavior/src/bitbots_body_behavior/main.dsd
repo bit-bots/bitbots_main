@@ -138,28 +138,20 @@ $SecondaryStateDecider
         READY --> #PositioningReady
         PLAYING --> #GoalieBehavior
         ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
-    ELSE --> $SecondaryStateModeDecider
-        PLACING --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
-        ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
+    ELSE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
 
 #OffenseSecondaryState
 $SecondaryStateTeamDecider
     OUR --> $BallSeen
         YES --> $ClosestToBallNoGoalie
-            YES --> $SecondaryStateModeDecider
-                PLACING --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:gradient_goal
-                ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
-            NO --> $SecondaryStateModeDecider
-                PLACING --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToPassPreparePosition
-                ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
+            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:gradient_goal
+            NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToPassPreparePosition
         NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
-    OTHER --> $SecondaryStateModeDecider
-        PLACING --> $BallSeen
-            YES --> $ClosestToBallNoGoalie
-                YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:1
-                NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition + mode:freekick
-            NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
-        ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
+    OTHER --> $BallSeen
+        YES --> $ClosestToBallNoGoalie
+            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:1
+            NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition + mode:freekick
+        NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
 
 #OffenseRole
 $SecondaryStateDecider
@@ -175,11 +167,14 @@ $SecondaryStateDecider
     TIMEOUT -->  @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
     CORNER_KICK --> $BallSeen
         YES --> $SecondaryStateTeamDecider
-            OURS --> $ClosestToBallNoGoalie
+            OUR --> $ClosestToBallNoGoalie
                 YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:striker
                 NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:supporter
-            OTHERS --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
+            OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
         NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
+    GOAL_KICK --> $SecondaryStateTeamDecider
+        OUR --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToGoalKickPosition + mode:offense
+        OTHER --> #OffenseSecondaryState
     ELSE --> #OffenseSecondaryState
 
 
@@ -197,12 +192,13 @@ $SecondaryStateDecider
     TIMEOUT --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
     CORNER_KICK --> $BallSeen
         YES --> $SecondaryStateTeamDecider
-            OURS --> @ChangeAction + action:positioning, @GoToDefensePosition
-            OTHERS --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
+            OUR --> @ChangeAction + action:positioning, @GoToDefensePosition
+            OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
         NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
-    ELSE --> $SecondaryStateModeDecider
-        PLACING --> @GoToDefensePosition
-        ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
+    GOAL_KICK --> $SecondaryStateTeamDecider
+        OUR --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToGoalKickPosition + mode:defense
+        OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition
+    ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition
 
 -->BodyBehavior
 $AllowedToMove
