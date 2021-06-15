@@ -2,7 +2,7 @@
 set -e
 
 git submodule foreach git pull
-git -C humanoid_league_misc git submodule update
+git -C humanoid_league_misc submodule update
 if [[ -d basler_drivers ]]; then
     git -C basler_drivers pull
 else
