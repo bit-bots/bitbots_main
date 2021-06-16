@@ -60,7 +60,7 @@ class AllowedToMove(AbstractDecisionElement):
                     self.publish_debug_data("Reason", "Just unpenalized")
                     return 'JUST_UNPENALIZED'
                 else:
-                    self.publish_debug_data("Reason", "Normal playing state")
+                    self.publish_debug_data("Reason", "Playing or placing")
                     return 'NORMAL'
         else:
             self.publish_debug_data("Reason", "Error fallback to normal")

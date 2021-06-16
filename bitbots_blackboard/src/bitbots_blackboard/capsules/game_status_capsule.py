@@ -89,14 +89,14 @@ class GameStatusCapsule:
         if gs.ownScore > self.gamestate.ownScore:
             self.last_goal_from_us_time = rospy.get_time()
 
-        if gs.secondaryStateMode == 0 and self.gamestate.secondaryStateMode != 0 \
-                and gs.secondary_seconds_remaining != 0 and gs.gameState == GameState.GAMESTATE_PLAYING:
+        if gs.secondaryStateMode == 2 and self.gamestate.secondaryStateMode != 2 \
+                and gs.gameState == GameState.GAMESTATE_PLAYING:
             # secondary action is now executed but we will not see this in the new messages.
             # it will look like a normal kick off, but we need to remember that this is some sort of free kick
             # we set the kickoff value accordingly, then we will not be allowed to move if it is a kick for the others
             self.free_kick_kickoff_team = gs.secondaryStateTeam
 
-        if gs.secondary_seconds_remaining == 0:
+        if gs.secondaryStateMode != 2 and gs.secondary_seconds_remaining == 0:
             self.free_kick_kickoff_team = None
 
         if self.free_kick_kickoff_team is not None:
