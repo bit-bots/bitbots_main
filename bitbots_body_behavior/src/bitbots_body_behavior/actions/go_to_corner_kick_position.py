@@ -65,11 +65,11 @@ class GoToCornerKickPosition(AbstractActionElement):
             y_to_corner = 0.5
             x = field_length / 2 + x_to_corner
             y = sign * (field_width / 2 + y_to_corner)
-            yaw = sign * (3 * math.tau / 8)
+            yaw = sign * (5 * math.tau / 8)
         elif self.mode == "supporter":
             # position relative to the corner
-            x_to_corner = -2
-            y_to_corner = -2
+            x_to_corner = -1.5
+            y_to_corner = -1.5
             x = field_length / 2 + x_to_corner
             y = sign * (field_width / 2 + y_to_corner)
             yaw = 0
