@@ -1,5 +1,6 @@
 from io import BytesIO
 import math
+import numpy as np
 import rospy
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
@@ -58,7 +59,7 @@ class HeadCapsule:
         else:
             return 0
 
-    def send_motor_goals(self, pan_position, tilt_position, pan_speed=1.5, tilt_speed=1.5, current_pan_position=None, current_tilt_position=None, clip=True):
+    def send_motor_goals(self, pan_position, tilt_position, pan_speed=1.5, tilt_speed=1.5, current_pan_position=None, current_tilt_position=None, clip=True, resolve_collision=False):
         """
         :param pan_position: pan in radians
         :param tilt_position: tilt in radians
@@ -76,28 +77,64 @@ class HeadCapsule:
 
         # Check if we should use the better interpolation
         if current_pan_position and current_tilt_position:
-            # Calculate the deltas
-            delta_pan = abs(current_pan_position - pan_position)
-            delta_tilt = abs(current_tilt_position - tilt_position)
-            # Check which speed should be lowred to achieve better interpolation
-            if delta_pan > delta_tilt:
-                tilt_speed = self._calculate_lower_speed(delta_pan, delta_tilt, pan_speed)
+            if resolve_collision:
+                success = self.avoid_collision_on_path(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
+                if not success: rospy.logerr("Unable to resolve head colision")
+                return success
             else:
-                pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
-
-        # Check for collision
-        self.collision_checker.set_head_motors(pan_position, tilt_position)
-        if self.collision_checker.check_collision():
-            pan = round(math.degrees(pan_position), 2)
-            tilt = round(math.degrees(tilt_position), 2)
-            rospy.logwarn(f"Colliding head position: {pan}°, {tilt}°. Not moving.")
-            return False
-        else:
+                self.move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
+                return True
+        else: # Passes the stuff through
             self.pos_msg.positions = pan_position, tilt_position
             self.pos_msg.velocities = [pan_speed, tilt_speed]
             self.pos_msg.header.stamp = rospy.Time.now()
             self.position_publisher.publish(self.pos_msg)
             return True
+
+    def avoid_collision_on_path(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed, max_depth=4, depth=0):
+        # Backup behavior if mach recursion depth is reached
+        if depth > max_depth:
+            self.move_head_to_position_with_speed_adjustment(0, 0, current_pan, current_tilt, pan_speed, tilt_speed)
+            return False
+
+        # Calculate distante in the joint space
+        distance = math.sqrt((goal_pan - current_pan)**2 + (goal_tilt - current_tilt)**2)
+
+        # Caculate step size
+        step_count = int(distance/math.radians(3))
+
+        # Calculate path
+        pan_steps = np.linspace(current_pan, goal_pan, step_count)
+        tilt_steps = np.linspace(current_tilt, goal_tilt, step_count)
+        path = zip(pan_steps, tilt_steps)
+
+        # Checks if we have collisions on our path
+        if any(map(self.check_head_collision, path)) or self.check_head_collision((goal_pan, goal_tilt)):
+            # Check if the problem is solved if we move our head up at the goal position
+            return self.avoid_collision_on_path(goal_pan, goal_tilt + math.radians(10), current_pan, current_tilt, pan_speed, tilt_speed, max_depth, depth + 1)
+        else:
+            # Every thing is fine, we can send our motor goals
+            self.move_head_to_position_with_speed_adjustment(goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed)
+            return True
+
+    def check_head_collision(self, head_joints):
+        self.collision_checker.set_head_motors(head_joints[0], head_joints[1])
+        return self.collision_checker.check_collision()
+
+    def move_head_to_position_with_speed_adjustment(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed):
+        # Calculate the deltas
+        delta_pan = abs(current_pan - goal_pan)
+        delta_tilt = abs(current_tilt - goal_tilt)
+        # Check which speed should be lowred to achieve better interpolation
+        if delta_pan > delta_tilt:
+            tilt_speed = self._calculate_lower_speed(delta_pan, delta_tilt, pan_speed)
+        else:
+            pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
+        # Send new joint values
+        self.pos_msg.positions = goal_pan, goal_tilt
+        self.pos_msg.velocities = [pan_speed, tilt_speed]
+        self.pos_msg.header.stamp = rospy.Time.now()
+        self.position_publisher.publish(self.pos_msg)
 
     def pre_clip(self, pan, tilt):
         """
