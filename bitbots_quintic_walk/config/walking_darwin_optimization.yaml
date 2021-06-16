@@ -33,6 +33,9 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
+    trunk_z_movement: 0.0
+
+    foot_put_down_z_offset: 0.0
 
   node:
     # update frequency of the engine
@@ -67,6 +70,10 @@ walking:
     phase_reset_phase: 0.25
     joint_min_effort: 3
     effort_phase_reset_active: False
+
+    x_speed_multiplier: 1
+    y_speed_multiplier: 1
+    yaw_speed_multiplier: 1
 
   pid_trunk_fused_pitch:
     p: 0
