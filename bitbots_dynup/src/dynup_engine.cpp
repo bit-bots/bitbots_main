@@ -670,6 +670,9 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   } else if (goals.direction == "back_only") {
     duration_ = calcBackSplines();
     direction_ = 5;
+  } else if (goals.direction == "walkready") {
+    duration_ = calcRiseSplines(params_.time_walkready);
+    direction_ = 6;
   } else {
     ROS_ERROR("Provided direction not known");
   }
@@ -677,6 +680,10 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
 
 int DynupEngine::getPercentDone() const {
   return int(time_ / duration_ * 100);
+}
+
+double DynupEngine::getDuration() const{
+  return duration_;
 }
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */ //TODO: make this nice

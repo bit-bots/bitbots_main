@@ -5,7 +5,7 @@ $PickedUp
 
 -->HCM
 $StartHCM
-    NOT_WALKREADY --> @PlayAnimationDynup + direction:rise + initial:true
+    NOT_WALKREADY --> @PlayAnimationDynup + direction:walkready + initial:true
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
     SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop
@@ -24,7 +24,7 @@ $StartHCM
                         PRESSURE_NOT_STARTED --> @WaitForPressureStartup
                         PROBLEM --> @WaitForPressure
                         OKAY --> $PickedUp
-                            PICKED_UP --> @PlayAnimationDynup + direction:rise, @StayPickedUp
+                            PICKED_UP --> @PlayAnimationDynup + direction:walkready, @StayPickedUp
                             ON_GROUND --> $Fallen
                                 FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + direction:front
                                 FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + direction:back

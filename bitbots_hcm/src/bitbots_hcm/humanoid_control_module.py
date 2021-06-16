@@ -135,7 +135,8 @@ class HardwareControlManager:
     def dynup_callback(self, msg):
         if self.blackboard.current_state in [RobotControlState.STARTUP,
                                              RobotControlState.FALLEN,
-                                             RobotControlState.GETTING_UP]:
+                                             RobotControlState.GETTING_UP,
+                                             RobotControlState.CONTROLLABLE]:
             self.joint_goal_publisher.publish(msg)
 
     def head_goal_callback(self, msg):

@@ -41,6 +41,7 @@ dynup:
   time_to_squat: 1
   wait_in_squat_front: 1
 
+  time_walkready: 3.0
   # Rise
   rise_time: 1
 
@@ -52,7 +53,8 @@ dynup:
   minimal_displacement: False
   stable_threshold: 0.05
   stable_duration: 100
-
+  stabilization_timeout: 2
+  
   # Visualizer
   spline_smoothness: 100
   display_debug: True

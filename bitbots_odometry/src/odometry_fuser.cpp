@@ -205,29 +205,33 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
       ROS_ERROR("%s", ex.what());
     }
   } else if (current_support_state == bitbots_msgs::SupportState::DOUBLE) {
-    // use point between soles if double support or unknown support
-    geometry_msgs::TransformStamped base_to_l_sole;
-    base_to_l_sole = tf_buffer_.lookupTransform(base_link_frame_, l_sole_frame_, fused_time_);
-    geometry_msgs::TransformStamped l_to_r_sole;
-    l_to_r_sole = tf_buffer_.lookupTransform(l_sole_frame_, r_sole_frame_, fused_time_);
-    tf2::Transform base_to_l_sole_tf;
-    tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
-    tf2::Transform l_to_r_sole_tf;
-    tf2::fromMsg(l_to_r_sole.transform, l_to_r_sole_tf);
+    try {
+      // use point between soles if double support or unknown support
+      geometry_msgs::TransformStamped base_to_l_sole;
+      base_to_l_sole = tf_buffer_.lookupTransform(base_link_frame_, l_sole_frame_, fused_time_);
+      geometry_msgs::TransformStamped l_to_r_sole;
+      l_to_r_sole = tf_buffer_.lookupTransform(l_sole_frame_, r_sole_frame_, fused_time_);
+      tf2::Transform base_to_l_sole_tf;
+      tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
+      tf2::Transform l_to_r_sole_tf;
+      tf2::fromMsg(l_to_r_sole.transform, l_to_r_sole_tf);
 
-    // we only want to have the half transform to get the point between the feet
-    tf2::Transform l_to_center_tf;
-    l_to_center_tf
-        .setOrigin({l_to_r_sole_tf.getOrigin().x() / 2, l_to_r_sole_tf.getOrigin().y() / 2,
-                    l_to_r_sole_tf.getOrigin().z() / 2});
+      // we only want to have the half transform to get the point between the feet
+      tf2::Transform l_to_center_tf;
+      l_to_center_tf
+          .setOrigin({l_to_r_sole_tf.getOrigin().x() / 2, l_to_r_sole_tf.getOrigin().y() / 2,
+                      l_to_r_sole_tf.getOrigin().z() / 2});
 
-    // Set to zero rotation, because the rotation measurement is done by the imu
-    tf2::Quaternion zero_rotation;
-    zero_rotation.setRPY(0, 0, 0);
-    l_to_center_tf.setRotation(zero_rotation);
+      // Set to zero rotation, because the rotation measurement is done by the imu
+      tf2::Quaternion zero_rotation;
+      zero_rotation.setRPY(0, 0, 0);
+      l_to_center_tf.setRotation(zero_rotation);
 
-    rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
-    rotation_point_tf.setRotation(zero_rotation);
+      rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
+      rotation_point_tf.setRotation(zero_rotation);
+    } catch (tf2::TransformException &ex) {
+      ROS_ERROR("%s", ex.what());
+    }
   } else {
     ROS_ERROR_THROTTLE(2, "cop not available and unknown support state %c", current_support_state);
   }

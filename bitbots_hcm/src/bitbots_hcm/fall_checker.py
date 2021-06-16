@@ -138,19 +138,19 @@ class FallChecker(BaseEstimator):
         fused_roll, fused_pitch, _ = self.fused_from_quat(quaternion)
 
         # Decides which side is facing downwards.
-        if fused_pitch > math.radians(75):
+        if fused_pitch > math.radians(45):
             rospy.loginfo("FALLEN TO THE FRONT")
             return self.FRONT
 
-        if fused_pitch < math.radians(-75):
+        if fused_pitch < math.radians(-45):
             rospy.loginfo("FALLEN TO THE BACK")
             return self.BACK
 
-        if fused_roll > math.radians(75):
+        if fused_roll > math.radians(45):
             rospy.loginfo("FALLEN TO THE RIGHT")
             return self.RIGHT
 
-        if fused_roll < math.radians(-75):
+        if fused_roll < math.radians(-45):
             rospy.loginfo("FALLEN TO THE LEFT")
             return self.LEFT
 

@@ -30,7 +30,7 @@ hcm:
     motor_off: "sit"
     init: "init"
     anim_package: "wolfgang_animations"
-    walkready_pose_threshold: 5 # [deg]
+    walkready_pose_threshold: 50 # [deg]
 
   # Falling
   stand_up_active: true # enables the robot to stand up automatically

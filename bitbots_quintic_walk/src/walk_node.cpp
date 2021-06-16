@@ -95,7 +95,8 @@ void WalkNode::run() {
     if (loop_rate.sleep()) {
       dt = getTimeDelta();
 
-      if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING) {
+      if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING
+      || robot_state_ == humanoid_league_msgs::RobotControlState::GETTING_UP) {
         // the robot fell, we have to reset everything and do nothing else
         walk_engine_.reset();
         stabilizer_.reset();
