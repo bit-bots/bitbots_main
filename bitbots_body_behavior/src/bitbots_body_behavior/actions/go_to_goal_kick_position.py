@@ -55,15 +55,16 @@ class GoToGoalKickPosition(AbstractActionElement):
         if self.mode == "offense":
             # position relative to the goal
             x_to_goal = 2
-            y_to_goal = self.y_offset
-            x = field_length / 2 + x_to_goal
-            y = field_width / 2 + y_to_goal
+            # use role position but applay additional offset so that the center corridor is clear
+            y_to_goal = self.y_offset + 1
+            x = -(field_length / 2) + x_to_goal
+            y = y_to_goal
             yaw = 0
         elif self.mode == "defense":
             x_to_goal = 1
-            y_to_goal = self.y_offset
-            x = field_length / 2 + x_to_goal
-            y = field_width / 2 + y_to_goal
+            y_to_goal = self.y_offset + 1
+            x = -(field_length / 2) + x_to_goal
+            y = y_to_goal
             yaw = 0
 
         pose_msg.pose.position.x = x
