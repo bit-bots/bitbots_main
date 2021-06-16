@@ -255,6 +255,9 @@ geometry_msgs::Pose WalkNode::get_left_foot_pose() {
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
+  if (x_speed_multiplier_ == 0 && y_speed_multiplier_ == 0 && yaw_speed_multiplier_ == 0){
+    ROS_WARN("all speed multipliers in walking are 0. check your config!");
+  }
 
   // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
