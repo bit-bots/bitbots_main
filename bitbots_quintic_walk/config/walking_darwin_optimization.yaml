@@ -35,6 +35,7 @@ walking:
 
     trunk_z_movement: 0.0
 
+    foot_put_down_z_offset: 0.0
 
   node:
     # update frequency of the engine
