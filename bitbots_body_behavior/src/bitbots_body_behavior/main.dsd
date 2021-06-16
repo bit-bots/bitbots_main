@@ -144,7 +144,7 @@ $SecondaryStateDecider
 $SecondaryStateTeamDecider
     OUR --> $BallSeen
         YES --> $ClosestToBallNoGoalie
-            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:gradient_goal
+            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:gradient_goal + distance:0.5
             NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToPassPreparePosition
         NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
     OTHER --> $BallSeen
@@ -172,9 +172,6 @@ $SecondaryStateDecider
                 NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:supporter
             OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
         NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
-    GOAL_KICK --> $SecondaryStateTeamDecider
-        OUR --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToGoalKickPosition + mode:offense
-        OTHER --> #OffenseSecondaryState
     ELSE --> #OffenseSecondaryState
 
 
@@ -195,9 +192,6 @@ $SecondaryStateDecider
             OUR --> @ChangeAction + action:positioning, @GoToDefensePosition
             OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
         NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
-    GOAL_KICK --> $SecondaryStateTeamDecider
-        OUR --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToGoalKickPosition + mode:defense
-        OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition
     ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition
 
 -->BodyBehavior

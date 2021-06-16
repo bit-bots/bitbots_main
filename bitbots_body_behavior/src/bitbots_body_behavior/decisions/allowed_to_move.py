@@ -15,6 +15,8 @@ class AllowedToMove(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
+        self.publish_debug_data("Seconds since unpenalized",
+                                self.blackboard.gamestate.get_seconds_since_unpenalized())
         if self.blackboard.gamestate.get_is_penalized() \
                 or self.blackboard.gamestate.get_gamestate() == GameState.GAMESTATE_FINISHED:
             return 'NO_MOVEMENT'
@@ -32,16 +34,16 @@ class AllowedToMove(AbstractDecisionElement):
                     # time is up for the other team
                     return 'NORMAL'
                 ball_pos = self.blackboard.world_model.get_ball_position_xy()
-                # if we know where the ball is and that it moved, we can play too
-                if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time and (
-                        abs(ball_pos[0]) > self.kickoff_min_ball_movement or
-                        abs(ball_pos[1]) > self.kickoff_min_ball_movement):
-                    return 'NORMAL'
+                # check if this is a normal kickoff
+                if self.blackboard.gamestate.free_kick_kickoff_team is None:
+                    # if we know where the ball is and that it moved, we can play too
+                    if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time and (
+                            abs(ball_pos[0]) > self.kickoff_min_ball_movement or
+                            abs(ball_pos[1]) > self.kickoff_min_ball_movement):
+                        return 'NORMAL'
                 # we need to wait for now
                 return 'ONLY_HEAD'
             else:
-                self.publish_debug_data("Seconds since unpenalized",
-                                        self.blackboard.gamestate.get_seconds_since_unpenalized())
                 if self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
                     return 'JUST_UNPENALIZED'
                 else:
