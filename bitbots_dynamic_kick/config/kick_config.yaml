@@ -1,22 +1,23 @@
 ### Engine ###
 
-foot_distance: 0.22
+foot_distance: 0.21
 foot_rise: 0.11
-kick_speed: 6.7
+kick_speed: 7.0
 kick_time: 0.11
-kick_windup_distance: 0.32
-lower_foot_time: 0.01
-move_back_time: 0.17
-move_to_ball_time: 0.33
-move_trunk_back_time: 0.11
-move_trunk_time: 0.31
-raise_foot_time: 0.21
+kick_windup_distance: 0.31
+lower_foot_time: 0.17
+move_back_time: 0.23
+move_to_ball_time: 0.34
+move_trunk_back_time: 0.09
+move_trunk_time: 0.32
+raise_foot_time: 0.29
 stabilizing_point_x: 0.0
 stabilizing_point_y: -0.03
 trunk_height: 0.41
-trunk_pitch: -0.469493568786475
-trunk_roll: 0.0401425727958696
-trunk_yaw: 0.239110107523223
+trunk_pitch: -0.485201532054424
+trunk_roll: 0.153588974175501
+trunk_yaw: 0.137881010907552
+
 
 # Distances and positions
 engine_rate: 500
