@@ -25,7 +25,7 @@
     "2": {
       "proto": "WolfgangRobocup",
       "dockerTag": "latest",
-      "dockerCmd": "start defense 1",
+      "dockerCmd": "start offense 1",
       "halfTimeStartingPose": {
         "translation": [-1.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
@@ -46,7 +46,7 @@
     "3": {
       "proto": "WolfgangRobocup",
       "dockerTag": "latest",
-      "dockerCmd": "start defense 2",
+      "dockerCmd": "start defense 0",
       "halfTimeStartingPose": {
         "translation": [-3.6, 3.20, 0.43],
         "rotation": [0.0, -0.0, 1.0, -1.57]

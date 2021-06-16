@@ -58,9 +58,10 @@ ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
 
 RUN cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
-    git -C bitbots_meta submodule foreach git checkout master && \
-    sed -i -e /PyQt5/d -e /pydot/d -e /silx/d -e /pyopencl/d bitbots_meta/requirements.txt && \
-    pip3 install -U -r bitbots_meta/requirements.txt && \
+    cd bitbots_meta && \
+    make pull-init && \
+    sed -i -e /pydot/d -e /silx/d -e /pyopencl/d requirements.txt && \
+    pip3 install -U -r requirements.txt && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \

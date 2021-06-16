@@ -103,7 +103,8 @@ class WolfgangRobocupApi():
         while not rospy.is_shutdown():
             # Parse sensor
             msg = self.receive_msg()
-            self.handle_sensor_measurements_msg(msg)
+            if msg:  # Not handle empty messages or None
+                self.handle_sensor_measurements_msg(msg)
 
             sensor_time_steps = None
             if self.first_run:
@@ -154,7 +155,9 @@ class WolfgangRobocupApi():
             return None
 
     def close_connection(self):
-        self.socket.close()
+        if self.socket:
+            self.socket.close()
+            rospy.loginfo("Connection closed.", logger_name="rc_api")
 
     def handle_sensor_measurements_msg(self, msg):
         s_m = messages_pb2.SensorMeasurements()
