@@ -33,6 +33,8 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
+    trunk_z_movement: 0.0
+
 
   node:
     # update frequency of the engine
