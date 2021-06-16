@@ -71,6 +71,10 @@ walking:
     joint_min_effort: 3
     effort_phase_reset_active: False
 
+    x_speed_multiplier: 1
+    y_speed_multiplier: 1
+    yaw_speed_multiplier: 1
+
   pid_trunk_fused_pitch:
     p: 0
     i: 0
