@@ -1,0 +1,22 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_localization'
+depends:
+- bitbots_docs
+- dynamic_reconfigure
+- geometry_msgs
+- humanoid_league_msgs
+- libopencv-dev
+- particle_filter
+- roscpp
+- roslib
+- rospy
+- std_msgs
+- visualization_msgs
+exec-path: bitbots_navigation-master/bitbots_navigation
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_localization'
+uri: https://github.com/bit-bots/bitbots_navigation/archive/refs/heads/master.tar.gz

@@ -1,16 +1,25 @@
+#InitSet
+$SecondaryStateDecider
+    PENALTYSHOOT --> $SecondaryStateTeamDecider
+        OTHER --> @InitGoal, @DoNothing   // Init as kicker
+        OUR --> @InitPenaltyKick, @DoNothing   // Init as goalie
+    ELSE --> @DoNothing
+
 -->Localization
 $CheckPickup
     UP --> @LocalizationStop
     JUST_DOWN --> @LocalizationStart, @DoNothing
     DOWN --> $GettingUpState
         YES --> @LocalizationStop, @DoNothing
-        GOTUP --> @InitPosition, @LocalizationStart, @DoNothing
+        GOTUP --> $WalkedSinceLastInit + dist:%bitbots_localization/walking_moved_distance
+            YES --> @InitPosition, @LocalizationStart, @DoNothing
+            NO --> @RedoLastInit, @LocalizationStart, @DoNothing
         NO --> $CheckGameStateReceived
             NO_GAMESTATE_INIT --> @InitSide, @DoNothing
             DO_NOTHING --> @DoNothing
-            GAMESTATE_RECEIVED --> $CheckGameState
-                INIT --> @InitSide, @DoNothing
-                SET --> @DoNothing
-                PLAYING --> @DoNothing
-                PENALTY --> @InitSide, @DoNothing
-                NO_INFORMATION --> @DoNothing
+            GAMESTATE_RECEIVED --> $CheckPenalized
+                YES --> @InitSide, @DoNothing
+                NO --> $GameStateDecider
+                    INITIAL --> @InitSide, @DoNothing
+                    SET --> #InitSet
+                    ELSE --> @DoNothing
