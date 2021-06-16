@@ -2,21 +2,22 @@
 
 foot_distance: 0.21
 foot_rise: 0.11
-kick_speed: 7.5
+kick_speed: 6.7
 kick_time: 0.11
 kick_windup_distance: 0.33
-lower_foot_time: 0.18
-move_back_time: 0.23
-move_to_ball_time: 0.35
-move_trunk_back_time: 0.08
-move_trunk_time: 0.28
+lower_foot_time: 0.16
+move_back_time: 0.26
+move_to_ball_time: 0.36
+move_trunk_back_time: 0.11
+move_trunk_time: 0.26
 raise_foot_time: 0.29
 stabilizing_point_x: 0.01
-stabilizing_point_y: -0.03
+stabilizing_point_y: -0.04
 trunk_height: 0.41
-trunk_pitch: -0.492182849062401
-trunk_roll: 0.125663706143592
-trunk_yaw: 0.134390352403563
+trunk_pitch: -0.488692190558412
+trunk_roll: 0.102974425867665
+trunk_yaw: 0.296705972839036
+
 
 # Distances and positions
 engine_rate: 500
