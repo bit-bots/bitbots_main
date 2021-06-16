@@ -1,33 +1,34 @@
 ### Engine ###
 
-kick_speed: 7.2
+foot_distance: 0.2
+foot_rise: 0.11
+kick_speed: 7.1
+kick_time: 0.11
+kick_windup_distance: 0.35
+lower_foot_time: 0.14
+move_back_time: 0.17
+move_to_ball_time: 0.32
+move_trunk_back_time: 0.11
+move_trunk_time: 0.29
+raise_foot_time: 0.35
+stabilizing_point_x: 0.0
+stabilizing_point_y: -0.03
+trunk_height: 0.41
+trunk_pitch: -0.486946861306418
+trunk_roll: 0.202458193231342
+trunk_yaw: 0.198967534727354
+
 
 # Distances and positions
 engine_rate: 500
-foot_rise: 0.11
-foot_distance: 0.21
-kick_windup_distance: 0.34
-trunk_height: 0.41
-trunk_roll: 0.101229096615671
-trunk_pitch: -0.502654824574367
-trunk_yaw: 0.301941960595019
 
 # Timings
-move_trunk_time: 0.28
-raise_foot_time: 0.25
-move_to_ball_time: 0.35
-kick_time: 0.11
-move_back_time: 0.25
-lower_foot_time: 0.17
-move_trunk_back_time: 0.11
 
 # Decisions
 choose_foot_corridor_width: 0.4
 
 ### Stabilizer ###
 use_center_of_pressure: false
-stabilizing_point_x: 0.01
-stabilizing_point_y: -0.03
 
 # these values are used only if use_center_of_pressure is true
 pid_x/p: 0.2
