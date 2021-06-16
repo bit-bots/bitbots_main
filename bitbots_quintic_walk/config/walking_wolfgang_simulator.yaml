@@ -15,20 +15,20 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
-    double_support_ratio: 0.183749693391176
-    first_step_swing_factor: 1.44771025914438 
-    foot_distance: 0.195748937570999
-    foot_rise: 0.0549934317047104
-    freq: 1.95330199237288
-    trunk_height: 0.321041356408841
-    trunk_phase: -0.442470344867905
-    trunk_pitch: 0.483631084999971
-    trunk_pitch_p_coef_forward: -2.14490707477545
-    trunk_pitch_p_coef_turn: -2.10264368301089
-    trunk_swing: 0.358917720197168
-    trunk_x_offset: -0.0430989667585277
-    trunk_y_offset: 0.00929729082104182
-    trunk_z_movement: 0.0201190375159133
+    double_support_ratio: 0.395855599264019
+    first_step_swing_factor: 1.70915264949109
+    foot_distance: 0.178992988391498
+    foot_rise: 0.0843964628766617 
+    freq: 1.91918933824085
+    trunk_height: 0.372706758768332
+    trunk_phase: -0.145605322022978
+    trunk_pitch: 0.451353601295159
+    trunk_pitch_p_coef_forward: -1.68178885143664
+    trunk_pitch_p_coef_turn: 0.379555655239298
+    trunk_swing: 0.279830968565271
+    trunk_x_offset: -0.0141055897787283
+    trunk_y_offset: 0.00046067686074256
+    trunk_z_movement: 0.0481509801253288
 
   node:
     # update frequency of the engine
