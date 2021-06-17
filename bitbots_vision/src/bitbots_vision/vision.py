@@ -17,7 +17,6 @@ from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
 from bitbots_vision.cfg import VisionConfig
 from bitbots_msgs.msg import Config, ColorLookupTable
-from bitbots_ros_patches.rate import Rate
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
@@ -104,7 +103,7 @@ class Vision:
         ros_utils.set_general_parameters(["caching"])
 
         # Define the rate of a sleep timer
-        self._rate = Rate(100)
+        self._rate = rospy.Rate(130)
 
         # Run the vision main loop
         self._main_loop()
