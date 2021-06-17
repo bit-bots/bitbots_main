@@ -1,10 +1,10 @@
 #GoAndKickBallMapGoal
 $AvoidBall
-    NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist
+    NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist + angle:%behavior/body/ball_reapproach_angle
         YES --> $BallKickArea
-            NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookAtBall + r:false, @StandAndWait + duration:1 + r:false, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1 + r:false
+            NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1.5, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1 + r:false
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal
-        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist, @AvoidBallActive
+        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist
     YES --> $ReachedMovebaseGoalPosition + thres:%behavior/body/ball_far_approach_position_thresh
         YES --> @AvoidBallInactive
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
@@ -12,13 +12,13 @@ $AvoidBall
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal
     YES --> $BallKickArea
-        NEAR --> @ChangeAction + action:kicking, @Stop, @LookForward, @KickBallDynamic
+        NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookForward + r:false, @KickBallDynamic + r:false
         FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
     NO --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
 
 #GoAndKickBallAway
 $BallKickArea
-    NEAR --> @ChangeAction + action:kicking, @Stop, @LookForward, @KickBallDynamic
+    NEAR --> @ChangeAction + action:kicking + r:false, @Stop + r:false, @LookForward + r:false, @KickBallDynamic + r:false
     FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
 
 #NoLocalizationPlayerBehavior
@@ -28,25 +28,25 @@ $BallSeen
             YES --> #GoAndKickBallDetectionGoal
             NO --> #GoAndKickBallAway
         NO --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
-    NO --> @ChangeAction + action:searching, @Stop, @LookAtBall, @SearchBall
+    NO --> #SearchBall
 
 #NoLocalizationGoalieBehavior
 $BallSeen
     YES --> $BallClose
         YES --> #GoAndKickBallAway
         NO --> @ChangeAction + action:waiting, @Stop, @LookAtBall
-    NO --> @ChangeAction + action:searching, @Stop, @SearchBall
+    NO --> #SearchBall
 
 #PositioningReady
 $ConfigRole
     GOALIE --> $GoalScoreRecently
-        YES --> @Stop, @PlayAnimationCheering
+        YES --> @Stop + r:false, @PlayAnimationCheering + r:false
         NO --> $LocalizationAvailable
             YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
-            NO --> @ChangeAction + action:positioning, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
+            NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
     ELSE --> $LocalizationAvailable
         YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        NO --> @ChangeAction + action:positioning, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
 
 #ReorientationPause
 $TimerRunning + name:reorientation
@@ -58,7 +58,7 @@ $TimerRunning + name:reorientation
 #GoalieBehavior
 $ClosestToBall
     YES --> $BallDangerous
-        NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToBlockPosition, @LookAtFieldFeatures
         ELSE --> #GoAndKickBallMapGoal
     NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
 
@@ -66,7 +66,7 @@ $ClosestToBall
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
-            YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
+            YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
             NO --> $CurrentScore
                 BEHIND --> $LastPlayer
                     YES --> #StrikerRole
@@ -79,16 +79,13 @@ $LocalizationAvailable
 
 #StrikerRole
 $GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition //don't go to far back
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition //don't go to far back
     NO --> #GoAndKickBallMapGoal
-        NO --> #NoLocalizationPlayerBehavior
-        YES --> #ReorientationPause
-    NO --> #NoLocalizationPlayerBehavior
 
 #SupporterRole
 $PassStarted
-    YES --> @ChangeAction + action:positioning, @GoToPassAcceptPosition
-    NO --> @ChangeAction + action:positioning, @GoToPassPreparePosition
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
+    NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #DefenderRole
 $BallInDefensiveArea
@@ -102,7 +99,7 @@ $BallInDefensiveArea
 #PenaltyBehavior
 $SecondaryStateTeamDecider
     OUR --> $GameStateDecider //in penalty we use the main game states to start the positioning and the kicks
-        READY --> @LookAtBall, @GoToBall + target:gradient_goal + distance:%behavior/body/ball_far_approach_dist
+        READY --> @LookAtBall, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
         PLAYING --> #GoAndKickBallMapGoal
         ELSE --> #StandAndLook
     OTHER --> $BallDangerous
@@ -110,25 +107,26 @@ $SecondaryStateTeamDecider
         RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
         ELSE --> @Stop, @LookAtBall
 
+
 #Placing
 $BallSeen
     NO --> #SearchBall
     YES --> $SecondaryStateDecider
         CORNER_KICK --> $SecondaryStateTeamDecider
             OUR --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:striker
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:supporter
-                THIRD --> @ChangeAction + action:positioning, @GoToDefensePosition
-            OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToCornerKickPosition + mode:others
+                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
+                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
+                THIRD --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToDefensePosition
+            OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
         ELSE --> $SecondaryStateTeamDecider
             OUR --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:gradient_goal + distance:0.5
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToPassPreparePosition
-                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition
+                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
+                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
+                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
             OTHER --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:1
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition + mode:freekick
-                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToDefensePosition
+                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:map_goal + distance:1
+                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick
+                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @StandAndWait
@@ -137,17 +135,18 @@ $BallSeen
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
 #SearchBall
-@ChangeAction + action:searching, @LookAtFieldFeatures, @SearchBall
+@ChangeAction + action:searching, @LookAtFieldFeatures, @StandAndWait + duration:4, @TurnAround
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @StandAndWait + duration:2 + r:false
+@ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false
+
 
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> #StandAndLook
+        INITIAL --> @ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
         READY --> #PositioningReady
         SET --> #StandAndLook
         FINISHED --> #DoNothing
@@ -166,7 +165,7 @@ $IsPenalized
                         ELSE --> $LocalizationAvailable
                             YES --> $LocalizationPrecision
                                 HIGH --> $TimerRunning + name:reorientation
-                                    YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
+                                    YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
                                     NO --> $RankToBallNoGoalie
                                         FIRST --> #StrikerRole
                                         SECOND --> #SupporterRole
@@ -175,4 +174,3 @@ $IsPenalized
                                     NO --> #NoLocalizationPlayerBehavior
                                     YES --> #ReorientationPause
                             NO --> #NoLocalizationPlayerBehavior
-

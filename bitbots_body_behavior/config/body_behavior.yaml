@@ -43,7 +43,7 @@ behavior:
 
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
-    ball_lost_time: 15
+    ball_lost_time: 8
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
     goal_alignment_orientation_threshold: 20
@@ -87,7 +87,7 @@ behavior:
     # This affects the BallInDefensiveArea decision.
     # The area is described as portion of the field [0, 1] always measured from the own goal.
     # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
-    defensive_area: 0.25
+    defensive_area: 0.5
 
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.
@@ -136,7 +136,10 @@ behavior:
     ball_reaproach_dist: 1.0
 
     # Distance at which the ball is normally approached
-    ball_approach_dist: 0.20
+    ball_approach_dist: 0.24
+    
+    # Angle at which the ball is normally approached again
+    ball_reapproach_angle: 0.6
 
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'

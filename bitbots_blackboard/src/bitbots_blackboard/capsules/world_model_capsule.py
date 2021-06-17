@@ -135,6 +135,10 @@ class WorldModelCapsule:
             u, v = self.get_ball_position_uv()
         return math.sqrt(u ** 2 + v ** 2)
 
+    def get_ball_angle(self):
+        u, v = self.get_ball_position_uv()
+        return math.atan2(v, u)
+
     def get_ball_speed(self):
         raise NotImplementedError
 
@@ -437,7 +441,7 @@ class WorldModelCapsule:
     def field_2_costmap_coord(self, x, y):
         """
         Converts a field position to the coresponding indices for the costmap.
-        
+
         :param x: X Position relative to the center point. (Positive is towards the enemy goal)
         :param y: Y Position relative to the center point. (Positive is towards the left when we face the enemy goal)
         :return: The x index of the coresponding costmap slot, The y index of the coresponding costmap slot
