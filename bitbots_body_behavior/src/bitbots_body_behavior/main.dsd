@@ -76,7 +76,7 @@ $ClosestToBall
 
 #StrikerRole
 $GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition //don't go to far back
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition //don't go too far back
     NO --> #GoAndKickBallMapGoal
 
 #SupporterRole
