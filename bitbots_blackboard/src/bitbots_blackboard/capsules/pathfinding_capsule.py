@@ -7,7 +7,7 @@ from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from nav_msgs.srv import GetPlan, GetPlanRequest
 from nav_msgs.msg import Path
-from bitbots_blackboard.blackboard import BodyBlackboard
+#from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class PathfindingCapsule:
