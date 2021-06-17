@@ -36,3 +36,26 @@ class ClosestToBall(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+
+class RankToBallNoGoalie(AbstractDecisionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+
+    def perform(self, reevaluate=False):
+        ball_distance = self.blackboard.world_model.get_ball_distance()
+        rank = self.blackboard.team_data.team_rank_to_ball(ball_distance, count_goalies=False)
+        self.publish_debug_data(f"ball distance", ball_distance)
+        self.publish_debug_data(f"Rank to ball", rank)
+        if rank == 1:
+            return "FIRST"
+        elif rank == 2:
+            return "SECOND"
+        elif rank == 3:
+            return "THIRD"
+        else:
+            # emergency fall back if something goes wrong
+            return "FIRST"
+
+    def get_reevaluate(self):
+        return True

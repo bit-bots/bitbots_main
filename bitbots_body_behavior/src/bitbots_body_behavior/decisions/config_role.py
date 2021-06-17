@@ -2,12 +2,12 @@
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
 
-class RoleDecider(AbstractDecisionElement):
+class ConfigRole(AbstractDecisionElement):
     """
     Decides what kind of behaviour the robot performs
     """
     def __init__(self, blackboard, dsd, parameters=None):
-        super(RoleDecider, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.role = self.blackboard.blackboard.duty
 
     def perform(self, reevaluate=False):
