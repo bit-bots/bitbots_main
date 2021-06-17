@@ -55,6 +55,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
             return "THIRD"
         else:
             # emergency fall back if something goes wrong
+            rospy.logwarn("Rank to ball had some issues")
             return "FIRST"
 
     def get_reevaluate(self):
