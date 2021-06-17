@@ -21,11 +21,13 @@ from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.async_service import AsyncServiceProxy
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from bitbots_ros_patches.rate import Rate
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Float32
+from nav_msgs.srv import GetPlan
 
 if __name__ == "__main__":
     rospy.init_node("Bodybehavior")
@@ -38,7 +40,13 @@ if __name__ == "__main__":
     D.blackboard.pathfinding.pathfinding_cancel_pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
     D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
     D.blackboard.pathfinding.approach_marker_pub = rospy.Publisher("debug/approach_point", Marker, queue_size=10)
-
+    D.blackboard.pathfinding.get_plan_service = AsyncServiceProxy("move_base/NavfnROS/make_plan", GetPlan)
+    while not rospy.is_shutdown():
+        try:
+            D.blackboard.pathfinding.get_plan_service.service_proxy.wait_for_service(2.0)
+        except rospy.ROSException as ex:
+            rospy.logwarn("waiting for 'move_base/NavfnROS/make_plan' Service to become available...")
+    D.blackboard.pathfinding.get_plan_service.callback = D.blackboard.pathfinding.path_to_ball_cb
     dirname = os.path.dirname(os.path.realpath(__file__))
 
     D.register_actions(os.path.join(dirname, "actions"))
@@ -69,7 +77,8 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         D.update()
         D.blackboard.team_data.publish_strategy()
+        D.blackboard.team_data.publish_time_to_ball()
         counter = (counter + 1) % 125
         if counter == 0:
-            D.blackboard.team_data.publish_time_to_ball()
+            D.blackboard.pathfinding.get_new_path_to_ball()
         rate.sleep()

@@ -363,6 +363,24 @@ class WorldModelCapsule:
         theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
+    def get_current_position_pose_stamped(self):
+        """
+        Returns the current position as determined by the localization
+        """
+        try:
+            # get the most recent transform
+            transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame, rospy.Time(0))
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return None
+        ps = PoseStamped()
+        ps.header = transform.header
+        ps.pose.position.x = transform.transform.translation.x
+        ps.pose.position.y = transform.transform.translation.y
+        ps.pose.position.z = transform.transform.translation.z
+        ps.pose.orientation = transform.transform.rotation
+        return ps
+
     def get_localization_precision(self):
         """
         Returns the current localization precision based on the covariance matrix.
