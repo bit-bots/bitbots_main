@@ -79,6 +79,6 @@ if __name__ == "__main__":
         D.blackboard.team_data.publish_strategy()
         D.blackboard.team_data.publish_time_to_ball()
         counter = (counter + 1) % 125
-        if counter == 0:
+        if counter == 0 and D.blackboard.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
             D.blackboard.pathfinding.get_new_path_to_ball()
         rate.sleep()
