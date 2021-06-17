@@ -47,7 +47,7 @@ if __name__ == "__main__":
             break
         except rospy.ROSException as ex:
             rospy.logwarn("waiting for 'move_base/NavfnROS/make_plan' Service to become available...")
-    D.blackboard.pathfinding.get_plan_service.callback = D.blackboard.pathfinding.path_to_ball_cb
+
     dirname = os.path.dirname(os.path.realpath(__file__))
 
     D.register_actions(os.path.join(dirname, "actions"))
@@ -75,11 +75,13 @@ if __name__ == "__main__":
 
     rate = Rate(125)
     counter = 0
+    path_to_ball_service_response = None
     while not rospy.is_shutdown():
         D.update()
         D.blackboard.team_data.publish_strategy()
         D.blackboard.team_data.publish_time_to_ball()
         counter = (counter + 1) % 125
+        D.blackboard.pathfinding.path_to_ball_check(path_to_ball_service_response)
         if counter == 0 and D.blackboard.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
-            D.blackboard.pathfinding.get_new_path_to_ball()
+            path_to_ball_service_response = D.blackboard.pathfinding.get_new_path_to_ball()
         rate.sleep()

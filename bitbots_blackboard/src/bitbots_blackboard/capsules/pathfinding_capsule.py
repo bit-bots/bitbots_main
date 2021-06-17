@@ -101,11 +101,14 @@ class PathfindingCapsule:
             req.start = own_position
             self.get_plan_service(req)
 
-    def path_to_ball_cb(self, response):
-        self.last_path_update = self.current_path_update
-        self.current_path_update = rospy.Time.now()
-        self.path_to_ball = response.plan
-        self.__blackboard.team_data.own_time_to_ball = self.calculate_time_to_ball()
+    def path_to_ball_check(self, path_to_ball_service_response):
+        if path_to_ball_service_response is None:
+            return
+        elif path_to_ball_service_response.done():
+            self.last_path_update = self.current_path_update
+            self.current_path_update = rospy.Time.now()
+            self.path_to_ball = path_to_ball_service_response.result().plan
+            self.__blackboard.team_data.own_time_to_ball = self.calculate_time_to_ball()
 
     def calculate_time_to_ball(self):
         return rospy.Time.now().secs
