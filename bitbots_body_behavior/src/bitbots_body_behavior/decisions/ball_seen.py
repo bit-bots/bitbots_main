@@ -14,6 +14,8 @@ class BallSeen(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
+        self.publish_debug_data("Ball lost time",
+                                rospy.Time.now() - self.blackboard.world_model.ball_last_seen())
         if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
             return 'YES'
         return 'NO'

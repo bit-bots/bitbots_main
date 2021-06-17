@@ -196,7 +196,7 @@ behavior:
     kick_cost_kick_length: 1.5
 
 
-role: "offense"
+role: "goalie"
 
 # Field measurements in meters
 field_width: 6
