@@ -34,7 +34,7 @@ def send_goal_and_publish(start_x,start_y,start_theta, goal_x,goal_y,goal_theta,
     save_theta_to_request(rq, start_theta, is_goal=False)
     rq.goal.pose.position.x = goal_x
     rq.goal.pose.position.y = goal_y
-    save_theta_to_request(rq, start_theta, is_goal=True)
+    save_theta_to_request(rq, goal_theta, is_goal=True)
     res = sp(rq)
     for i in range(10):
         pub.publish(res.plan)
