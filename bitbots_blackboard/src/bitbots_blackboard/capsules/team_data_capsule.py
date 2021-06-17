@@ -13,6 +13,7 @@ class TeamDataCapsule:
     def __init__(self):
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
+        self.time_to_ball_publisher = None # type: rospy.Publisher
         # indexed with one to match robot ids
         self.team_data = {}
         for i in range(1, 7):
@@ -29,6 +30,7 @@ class TeamDataCapsule:
             'goalie': Strategy.ROLE_GOALIE,
             'idle': Strategy.ROLE_IDLING
         }
+        self.own_time_to_ball = 9999
         self.strategy = Strategy()
         self.strategy.role = self.roles[rospy.get_param('role')]
         self.strategy_update = None
@@ -147,3 +149,6 @@ class TeamDataCapsule:
     def publish_strategy(self):
         """Publish for team comm"""
         self.strategy_sender.publish(self.strategy)
+
+    def publish_time_to_ball(self):
+        self.time_to_ball_publisher.publish(self.own_time_to_ball)
