@@ -55,16 +55,23 @@ $TimerRunning + name:reorientation
         NO --> @ChangeAction + action:localizing, @LookAtFieldFeatures, @Stop
     NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
 
+#GoalieBehavior
+$ClosestToBall
+    YES --> $BallDangerous
+        NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+        ELSE --> #GoAndKickBallMapGoal
+    NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+
 #GoalieRole
 $LocalizationAvailable
     YES --> $LocalizationPrecision
         HIGH --> $TimerRunning + name:reorientation
             YES --> @EndTimer + name:reorientation, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration
-            NO --> $ClosestToBall
-                YES --> $BallDangerous
-                    NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
-                    ELSE --> #GoAndKickBallMapGoal
-                NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+            NO --> $CurrentScore
+                BEHIND --> $LastPlayer
+                    YES --> #StrikerRole
+                    NO --> #GoalieBehavior
+                ELSE --> #GoalieBehavior
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationGoalieBehavior
             YES --> #ReorientationPause
