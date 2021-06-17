@@ -70,4 +70,6 @@ if __name__ == "__main__":
         D.update()
         D.blackboard.team_data.publish_strategy()
         counter = (counter + 1) % 125
+        if counter == 0:
+            D.blackboard.team_data.publish_time_to_ball()
         rate.sleep()
