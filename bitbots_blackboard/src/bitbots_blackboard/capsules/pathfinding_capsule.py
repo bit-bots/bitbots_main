@@ -93,7 +93,9 @@ class PathfindingCapsule:
         if self.last_path_update is None or self.current_path_update is None or\
                 self.current_path_update > self.last_path_update:
             ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_approach_dist'], 2)
+            rospy.logerr(ball_target)
             own_position = self.__blackboard.world_model.get_current_position_pose_stamped()
+            rospy.logerr(own_position)
             req = GetPlanRequest()
             req.goal = ball_target
             req.start = own_position
