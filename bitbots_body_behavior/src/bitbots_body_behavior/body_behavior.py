@@ -44,6 +44,7 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         try:
             D.blackboard.pathfinding.get_plan_service.service_proxy.wait_for_service(2.0)
+            break
         except rospy.ROSException as ex:
             rospy.logwarn("waiting for 'move_base/NavfnROS/make_plan' Service to become available...")
     D.blackboard.pathfinding.get_plan_service.callback = D.blackboard.pathfinding.path_to_ball_cb
