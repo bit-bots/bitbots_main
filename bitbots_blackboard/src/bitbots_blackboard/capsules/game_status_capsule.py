@@ -17,6 +17,7 @@ class GameStatusCapsule:
         self.last_update = 0
         self.unpenalized_time = 0
         self.last_goal_from_us_time = -86400
+        self.free_kick_kickoff_team = None
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
@@ -81,12 +82,28 @@ class GameStatusCapsule:
     def get_team_id(self):
         return self.team_id
 
+    def get_red_cards(self):
+        return self.gamestate.teamMatesWithRedCard
+
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:
             self.unpenalized_time = rospy.get_time()
 
         if gs.ownScore > self.gamestate.ownScore:
             self.last_goal_from_us_time = rospy.get_time()
+
+        if gs.secondaryStateMode == 2 and self.gamestate.secondaryStateMode != 2 \
+                and gs.gameState == GameState.GAMESTATE_PLAYING:
+            # secondary action is now executed but we will not see this in the new messages.
+            # it will look like a normal kick off, but we need to remember that this is some sort of free kick
+            # we set the kickoff value accordingly, then we will not be allowed to move if it is a kick for the others
+            self.free_kick_kickoff_team = gs.secondaryStateTeam
+
+        if gs.secondaryStateMode != 2 and gs.secondary_seconds_remaining == 0:
+            self.free_kick_kickoff_team = None
+
+        if self.free_kick_kickoff_team is not None:
+            gs.hasKickOff = self.free_kick_kickoff_team == self.team_id
 
         self.last_update = rospy.get_time()
         self.gamestate = gs

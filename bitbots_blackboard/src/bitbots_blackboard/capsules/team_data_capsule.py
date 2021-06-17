@@ -19,7 +19,18 @@ class TeamDataCapsule:
             self.team_data[i] = TeamData()
         self.team_strategy = dict()
         self.times_to_ball = dict()
+        self.roles = {
+            'striker': Strategy.ROLE_STRIKER,
+            'offense': Strategy.ROLE_STRIKER,
+            'supporter': Strategy.ROLE_SUPPORTER,
+            'defender': Strategy.ROLE_DEFENDER,
+            'defense': Strategy.ROLE_DEFENDER,
+            'other': Strategy.ROLE_OTHER,
+            'goalie': Strategy.ROLE_GOALIE,
+            'idle': Strategy.ROLE_IDLING
+        }
         self.strategy = Strategy()
+        self.strategy.role = self.roles[rospy.get_param('role')]
         self.strategy_update = None
         self.action_update = None
         self.role_update = None
