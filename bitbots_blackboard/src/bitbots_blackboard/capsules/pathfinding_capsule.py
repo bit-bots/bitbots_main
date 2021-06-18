@@ -104,7 +104,10 @@ class PathfindingCapsule:
             req.goal = ball_target
             req.start = own_position
             return self.get_plan_service(req)
-        return None
+        else:
+            # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
+            self.__blackboard.team_data.own_time_to_ball = 9999.0
+            return None
 
     def path_to_ball_check(self, path_to_ball_service_response):
         #rospy.logerr("checking if path to ball is calculated")

@@ -30,7 +30,7 @@ class TeamDataCapsule:
             'goalie': Strategy.ROLE_GOALIE,
             'idle': Strategy.ROLE_IDLING
         }
-        self.own_time_to_ball = 9999
+        self.own_time_to_ball = 9999.0
         self.strategy = Strategy()
         self.strategy.role = self.roles[rospy.get_param('role')]
         self.strategy_update = None
