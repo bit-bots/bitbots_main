@@ -5,9 +5,7 @@ import tf2_ros
 from geometry_msgs.msg import PoseStamped, Point
 from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from nav_msgs.srv import GetPlan, GetPlanRequest
-from nav_msgs.msg import Path
-#from bitbots_blackboard.blackboard import BodyBlackboard
+from nav_msgs.srv import GetPlanRequest
 
 
 class PathfindingCapsule:
@@ -28,7 +26,7 @@ class PathfindingCapsule:
         self.avoid_ball = True
         self.__blackboard = blackboard  # type: BodyBlackboard
         self.get_plan_service = None
-        self.path_to_ball = None # type: Path
+        self.path_to_ball = None
         self.path_updated = True
 
     def publish(self, msg):
@@ -121,7 +119,6 @@ class PathfindingCapsule:
                 end = self.path_to_ball.poses[i+1].pose
                 dist = math.sqrt((start.position.x-end.position.x) ** 2 + (start.position.y-end.position.y) ** 2)
                 path_length += dist
-            print(path_length)
             # TODO add cost for rotating in the beginning by looking at angle between current orientation and first->second point
             start_theta = euler_from_quaternion([self.path_to_ball.poses[0].pose.orientation.x,
                                                  self.path_to_ball.poses[0].pose.orientation.y,
