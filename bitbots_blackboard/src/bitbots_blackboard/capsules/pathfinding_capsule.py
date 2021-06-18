@@ -104,6 +104,14 @@ class PathfindingCapsule:
             return self.get_plan_service(req)
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
+            if not self.path_updated:
+                rospy.logerr("path already updated")
+            if not self.__blackboard.world_model.ball_seen:
+                rospy.logerr("ball not seen at all")
+            if not (rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time):
+                rospy.logerr("ball not seen for some time")
+            if not self.__blackboard.world_model.localization_precision_in_threshold():
+                rospy.logerr("localization bad")
             self.__blackboard.team_data.own_time_to_ball = 9999.0
             return None
 
@@ -163,6 +171,7 @@ class PathfindingCapsule:
                 #             f"total: {total_cost}")
             return total_cost
         else:
+            rospy.logerr("no path")
             return 9999.0
 
     def get_ball_goal(self, target, distance, goal_width):
