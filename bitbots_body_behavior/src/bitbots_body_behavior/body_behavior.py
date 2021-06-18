@@ -83,5 +83,7 @@ if __name__ == "__main__":
         counter = (counter + 1) % 125
         D.blackboard.pathfinding.path_to_ball_check(path_to_ball_service_response)
         if counter == 0 and D.blackboard.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
-            path_to_ball_service_response = D.blackboard.pathfinding.get_new_path_to_ball()
+            resp = D.blackboard.pathfinding.get_new_path_to_ball()
+            if resp is not None:
+                path_to_ball_service_response = resp
         rate.sleep()

@@ -29,8 +29,7 @@ class PathfindingCapsule:
         self.__blackboard = blackboard  # type: BodyBlackboard
         self.get_plan_service = None
         self.path_to_ball = None # type: Path
-        self.last_path_update = None  # type rospy.Time
-        self.current_path_update = None  # type rospy.Time
+        self.path_updated = True
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -90,28 +89,66 @@ class PathfindingCapsule:
 
     def get_new_path_to_ball(self):
         # only send new request if previous request is finished or first update
-        if self.last_path_update is None or self.current_path_update is None or\
-                self.current_path_update > self.last_path_update:
+        if self.path_updated:
+            rospy.logerr("updating path")
+            self.path_updated = False
             ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_approach_dist'], 2)
-            rospy.logerr(ball_target)
+            #rospy.logerr(ball_target)
             own_position = self.__blackboard.world_model.get_current_position_pose_stamped()
-            rospy.logerr(own_position)
+            #rospy.logerr(own_position)
             req = GetPlanRequest()
             req.goal = ball_target
             req.start = own_position
-            self.get_plan_service(req)
+            return self.get_plan_service(req)
+        return None
 
     def path_to_ball_check(self, path_to_ball_service_response):
+        #rospy.logerr("checking if path to ball is calculated")
         if path_to_ball_service_response is None:
             return
-        elif path_to_ball_service_response.done():
-            self.last_path_update = self.current_path_update
+        elif path_to_ball_service_response.done() and not self.path_updated:
+            self.path_updated = True
             self.current_path_update = rospy.Time.now()
             self.path_to_ball = path_to_ball_service_response.result().plan
             self.__blackboard.team_data.own_time_to_ball = self.calculate_time_to_ball()
 
     def calculate_time_to_ball(self):
-        return rospy.Time.now().secs
+        # calculate length of path
+        if len(self.path_to_ball.poses) > 2:
+            path_length = 0
+            for i in range(len(self.path_to_ball.poses)-1):
+                start = self.path_to_ball.poses[i].pose
+                end = self.path_to_ball.poses[i+1].pose
+                dist = math.sqrt((start.position.x-end.position.x) ** 2 + (start.position.y-end.position.y) ** 2)
+                path_length += dist
+            print(path_length)
+            # TODO add cost for rotating in the beginning by looking at angle between current orientation and first->second point
+            start_theta = euler_from_quaternion([self.path_to_ball.poses[0].pose.orientation.x,
+                                                 self.path_to_ball.poses[0].pose.orientation.y,
+                                                 self.path_to_ball.poses[0].pose.orientation.z,
+                                                 self.path_to_ball.poses[0].pose.orientation.w])[2]
+            first_point = self.path_to_ball.poses[0].pose.position
+            second_point = self.path_to_ball.poses[1].pose.position
+            path_start_theta= math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
+            start_theta_diff = abs(start_theta - path_start_theta)
+            goal_theta = euler_from_quaternion([self.path_to_ball.poses[-1].pose.orientation.x,
+                                                self.path_to_ball.poses[-1].pose.orientation.y,
+                                                self.path_to_ball.poses[-1].pose.orientation.z,
+                                                self.path_to_ball.poses[-1].pose.orientation.w])[2]
+            second_to_last_point = self.path_to_ball.poses[-2].pose.position
+            last_point = self.path_to_ball.poses[-1].pose.position
+            path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
+            goal_theta_diff = abs(goal_theta - path_end_theta)
+
+            start_theta_cost = start_theta_diff * self.__blackboard.config['time_to_ball_start_angle_weight']
+            goal_theta_cost = goal_theta_diff * self.__blackboard.config['time_to_ball_goal_angle_weight']
+            total_cost = path_length + start_theta_cost + goal_theta_cost
+            rospy.logerr(f"start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
+                         f"weighted start_diff: {start_theta_cost}, " +
+                         f"weighted goal_diff: {goal_theta_cost}, " +
+                         f"path_length: {path_length}, " +
+                         f"total: {total_cost}")
+            return total_cost
 
     def get_ball_goal(self, target, distance, goal_width):
 

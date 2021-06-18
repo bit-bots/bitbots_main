@@ -195,6 +195,11 @@ behavior:
     # estimated kick length when estimating kick cost
     kick_cost_kick_length: 1.5
 
+    # parameters for time_to_ball estimation
+    # factor by which the difference in the starting angle and direction of the path (in rad) is weighted
+    time_to_ball_start_angle_weight: 0.3
+    # same but for the goal angle
+    time_to_ball_goal_angle_weight: 0.2
 
 role: "goalie"
 
