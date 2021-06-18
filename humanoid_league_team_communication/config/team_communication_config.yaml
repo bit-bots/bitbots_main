@@ -23,6 +23,7 @@ lifetime: 1
 # ROS Topics
 team_data_topic: 'team_data'
 strategy_topic: 'strategy'
+time_to_ball_topic: 'time_to_ball'
 pose_topic: 'pose_with_covariance'
 ball_topic: 'ball_position_relative_filtered'
 ball_velocity_topic: 'ball_relative_movement'

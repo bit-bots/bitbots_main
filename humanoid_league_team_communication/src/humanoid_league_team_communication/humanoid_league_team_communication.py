@@ -9,7 +9,7 @@ import struct
 
 import tf2_ros
 import transforms3d
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Float32
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy, \
     PoseWithCertaintyStamped
@@ -54,6 +54,8 @@ class HumanoidLeagueTeamCommunication:
         self.ball_covariance = None
         self.strategy = None  # type: Strategy
         self.strategy_time = rospy.Time(0)
+        self.time_to_ball = None
+        self.time_to_ball_time = rospy.Time(0)
         self.obstacles = None  # type: ObstacleRelativeArray
         self.move_base_goal = None  # type: PoseStamped
 
@@ -111,6 +113,7 @@ class HumanoidLeagueTeamCommunication:
         rospy.Subscriber(self.config['ball_topic'], PoseWithCovarianceStamped, self.ball_cb, queue_size=1)
         rospy.Subscriber(self.config['ball_velocity_topic'], TwistWithCovarianceStamped, self.ball_vel_cb, queue_size=1)
         rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
+        rospy.Subscriber(self.config['time_to_ball_topic'], Float32, self.time_to_ball_cb, queue_size=1)
         rospy.Subscriber(self.config['obstacle_topic'], ObstacleRelativeArray, self.obstacle_cb, queue_size=1)
         rospy.Subscriber(self.config['move_base_goal_topic'], PoseStamped, self.move_base_goal_cb, queue_size=1)
 
@@ -141,6 +144,10 @@ class HumanoidLeagueTeamCommunication:
     def strategy_cb(self, msg):
         self.strategy = msg
         self.strategy_time = rospy.Time.now()
+
+    def time_to_ball_cb(self, msg):
+        self.time_to_ball = msg.data
+        self.time_to_ball_time = rospy.Time.now()
 
     def move_base_goal_cb(self, msg):
         self.move_base_goal = msg
@@ -391,6 +398,11 @@ class HumanoidLeagueTeamCommunication:
 
             side_mapping = dict(((b, a) for a, b in self.side_mapping))
             message.offensive_side = side_mapping[self.strategy.offensive_side]
+
+        if self.time_to_ball and rospy.Time.now() - self.time_to_ball_time < rospy.Duration(self.config['lifetime']):
+            message.time_to_ball = self.time_to_ball
+        else:
+            message.time_to_ball = 9999.0
 
         msg = message.SerializeToString()
         for port in self.target_ports:
