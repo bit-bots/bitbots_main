@@ -92,7 +92,7 @@ class HeadCapsule:
             return True
 
     def avoid_collision_on_path(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed, max_depth=4, depth=0):
-        # Backup behavior if mach recursion depth is reached
+        # Backup behavior if max recursion depth is reached
         if depth > max_depth:
             self.move_head_to_position_with_speed_adjustment(0, 0, current_pan, current_tilt, pan_speed, tilt_speed)
             return False
