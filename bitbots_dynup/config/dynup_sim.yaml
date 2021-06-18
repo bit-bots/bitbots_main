@@ -47,7 +47,7 @@ dynup:
   trunk_x_front: 0.035
   wait_in_squat_front: 0.032
   # Rise
-  rise_time: 0.256 #front
+  rise_time: 0.4 #front
   #rise_time: 0.16 #back
   #rise_time: 0.75
 
@@ -59,7 +59,7 @@ dynup:
   minimal_displacement: False
   stable_threshold: 0.05
   stable_duration: 100
-  stabilization_timeout: 2
+  stabilization_timeout: 1
 
   # Visualizer
   spline_smoothness: 100
@@ -75,11 +75,11 @@ dynup:
     antiwindup: True
     publish_state: False
   pid_trunk_pitch:
-    p: -0.22
-    i: -3.31646
-    d: -0.008295
+    p: -0.3
+    i: -1.0
+    d: -0.025
     i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
     antiwindup: True
     publish_state: False
