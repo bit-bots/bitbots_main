@@ -2,10 +2,12 @@ import rospy
 import math
 
 import tf2_ros
+from ros_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point
 from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from nav_msgs.srv import GetPlanRequest
+
 
 
 class PathfindingCapsule:
@@ -120,18 +122,12 @@ class PathfindingCapsule:
                 dist = math.sqrt((start.position.x-end.position.x) ** 2 + (start.position.y-end.position.y) ** 2)
                 path_length += dist
             # TODO add cost for rotating in the beginning by looking at angle between current orientation and first->second point
-            start_theta = euler_from_quaternion([self.path_to_ball.poses[0].pose.orientation.x,
-                                                 self.path_to_ball.poses[0].pose.orientation.y,
-                                                 self.path_to_ball.poses[0].pose.orientation.z,
-                                                 self.path_to_ball.poses[0].pose.orientation.w])[2]
+            start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
             first_point = self.path_to_ball.poses[0].pose.position
             second_point = self.path_to_ball.poses[1].pose.position
             path_start_theta= math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
             start_theta_diff = abs(start_theta - path_start_theta)
-            goal_theta = euler_from_quaternion([self.path_to_ball.poses[-1].pose.orientation.x,
-                                                self.path_to_ball.poses[-1].pose.orientation.y,
-                                                self.path_to_ball.poses[-1].pose.orientation.z,
-                                                self.path_to_ball.poses[-1].pose.orientation.w])[2]
+            goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
             second_to_last_point = self.path_to_ball.poses[-2].pose.position
             last_point = self.path_to_ball.poses[-1].pose.position
             path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
