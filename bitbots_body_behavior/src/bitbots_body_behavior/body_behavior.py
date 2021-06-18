@@ -22,7 +22,7 @@ from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
-from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped, Twist
 from bitbots_ros_patches.rate import Rate
 from sensor_msgs.msg import PointCloud2
 
@@ -32,6 +32,7 @@ if __name__ == "__main__":
 
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_mode", HeadMode, queue_size=10)
+    D.blackboard.pathfinding.direct_cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
     D.blackboard.pathfinding.pathfinding_pub = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
     D.blackboard.pathfinding.pathfinding_cancel_pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
     D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)

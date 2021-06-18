@@ -15,13 +15,14 @@ class PathfindingCapsule:
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.position_threshold = rospy.get_param('behavior/body/pathfinding_position_threshold')
         self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
+        self.direct_cmd_vel_pub = None  # type: rospy.Publisher
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.ball_obstacle_active_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
-        self.current_pose = None # type: PoseStamped
-        self.status = -1 # Current status of movebase
+        self.current_pose = None  # type: PoseStamped
+        self.status = -1  # Current status of movebase
         self.avoid_ball = True
 
     def publish(self, msg):
@@ -35,7 +36,7 @@ class PathfindingCapsule:
     def transform_goal_to_map(self, msg):
         # type: (PoseStamped) -> PoseStamped
         # transform local goal to goal in map frame
-        if msg.header.frame_id ==  self.map_frame:
+        if msg.header.frame_id == self.map_frame:
             return msg
         else:
             try:
