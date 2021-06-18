@@ -162,6 +162,8 @@ class PathfindingCapsule:
                 #             f"path_length: {path_length}, " +
                 #             f"total: {total_cost}")
             return total_cost
+        else:
+            return 9999.0
 
     def get_ball_goal(self, target, distance, goal_width):
 
