@@ -28,9 +28,7 @@ class DribbleForward(AbstractActionElement):
         """
         ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
 
-        # todo we dont check if the pathplanning is still running at the same time. this could lead to strange behavior
         # todo compute yaw speed based on how we are aligned to the goal
-        # todo head behavior for ball and forward
 
         # increase x if ball is in the center, decrease otherwise
         if abs(ball_v) < 0.1:

@@ -427,7 +427,7 @@ class WorldModelCapsule:
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
         # Iterate over all obstacles
-        for p in pc2.read_points(msg, field_names = ("x", "y", "z"), skip_nans=True):
+        for p in pc2.read_points(msg, field_names=("x", "y", "z"), skip_nans=True):
             # Convert position to array index
             idx_x, idx_y = self.field_2_costmap_coord(p[0], p[1])
             # Draw obstacle with smoothing independent weight on obstacle costmap
@@ -446,8 +446,10 @@ class WorldModelCapsule:
         :param y: Y Position relative to the center point. (Positive is towards the left when we face the enemy goal)
         :return: The x index of the coresponding costmap slot, The y index of the coresponding costmap slot
         """
-        idx_x = int(min(((self.field_length + self.map_margin * 2) * 10)-1, max(0, (x + self.field_length / 2 + self.map_margin) * 10)))
-        idx_y = int(min(((self.field_width + self.map_margin * 2) * 10)-1, max(0, (y + self.field_width / 2 + self.map_margin) * 10)))
+        idx_x = int(min(((self.field_length + self.map_margin * 2) * 10) - 1,
+                        max(0, (x + self.field_length / 2 + self.map_margin) * 10)))
+        idx_y = int(min(((self.field_width + self.map_margin * 2) * 10) - 1,
+                        max(0, (y + self.field_width / 2 + self.map_margin) * 10)))
         return idx_x, idx_y
 
     def calc_gradients(self):
@@ -489,18 +491,19 @@ class WorldModelCapsule:
 
         # Create Grid
         grid_x, grid_y = np.mgrid[
-            0:self.field_length + self.map_margin * 2:(self.field_length + self.map_margin * 2)*10j,
-            0:self.field_width + self.map_margin * 2:(self.field_width + self.map_margin * 2)*10j]
+                         0:self.field_length + self.map_margin * 2:(self.field_length + self.map_margin * 2) * 10j,
+                         0:self.field_width + self.map_margin * 2:(self.field_width + self.map_margin * 2) * 10j]
 
         fix_points = []
 
         # Add base points
         fix_points.extend([
             # Corner points of the map (including margin)
-            [[-self.map_margin, -self.map_margin],                                      corner_value + in_field_value_our_side],
-            [[self.field_length + self.map_margin, -self.map_margin],                   corner_value + in_field_value_our_side],
-            [[-self.map_margin, self.field_width + self.map_margin],                    corner_value + in_field_value_our_side],
-            [[self.field_length + self.map_margin, self.field_width + self.map_margin], corner_value + in_field_value_our_side],
+            [[-self.map_margin, -self.map_margin], corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, -self.map_margin], corner_value + in_field_value_our_side],
+            [[-self.map_margin, self.field_width + self.map_margin], corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, self.field_width + self.map_margin],
+             corner_value + in_field_value_our_side],
             # Corner points of the field
             [[0, 0], corner_value + in_field_value_our_side],
             [[self.field_length, 0], corner_value],
@@ -513,12 +516,14 @@ class WorldModelCapsule:
 
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
-            [[self.field_length, self.field_width/2 - self.goal_width/2], goalpost_value],
-            [[self.field_length, self.field_width/2 + self.goal_width/2], goalpost_value],
-            [[self.field_length, self.field_width/2 - self.goal_width/2 + goalpost_safety_distance], goal_value],
-            [[self.field_length, self.field_width/2 + self.goal_width/2 - goalpost_safety_distance], goal_value],
-            [[self.field_length + self.map_margin, self.field_width/2 - self.goal_width/2 - goalpost_safety_distance], -0.2],
-            [[self.field_length + self.map_margin, self.field_width/2 + self.goal_width/2 + goalpost_safety_distance], -0.2],
+            [[self.field_length, self.field_width / 2 - self.goal_width / 2], goalpost_value],
+            [[self.field_length, self.field_width / 2 + self.goal_width / 2], goalpost_value],
+            [[self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance], goal_value],
+            [[self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance], goal_value],
+            [[self.field_length + self.map_margin,
+              self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance], -0.2],
+            [[self.field_length + self.map_margin,
+              self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance], -0.2],
         ])
 
         # Apply map margin to fixpoints
@@ -617,12 +622,23 @@ class WorldModelCapsule:
 
         masked_costmap = self.costmap * mask_array
 
-        #plt.imshow(self.costmap, origin='lower')
-        #plt.show()
-        #plt.imshow(masked_costmap, origin='lower')
-        #plt.show()
+        # plt.imshow(self.costmap, origin='lower')
+        # plt.show()
+        # plt.imshow(masked_costmap, origin='lower')
+        # plt.show()
 
-        return masked_costmap.max() #masked_costmap.sum() / np.count_nonzero(mask_array) # This can be usefull later on
+        return masked_costmap.max()  # masked_costmap.sum() / np.count_nonzero(mask_array) # This can be usefull later on
 
     def get_current_cost_of_kick(self, direction, kick_length, angular_range):
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
+
+    def get_best_kick_direction(self, min_angle, max_angle, num_kick_angles, kick_length, angular_range):
+        kick_directions = sorted(np.linspace(min_angle,
+                                             max_angle,
+                                             num=num_kick_angles), key=abs)
+
+        kick_direction = kick_directions[np.argmin([self.get_current_cost_of_kick(direction=direction,
+                                                                                  kick_length=kick_length,
+                                                                                  angular_range=angular_range)
+                                                    for direction in kick_directions])]
+        return kick_direction

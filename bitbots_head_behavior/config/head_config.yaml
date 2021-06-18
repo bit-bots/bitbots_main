@@ -87,6 +87,14 @@ behavior:
         ]
         ball_search_time: 20
 
+    front_search_pattern:
+      tilt_speed: 3
+      pan_speed: 3
+      pan_max: [ 0, 0 ]
+      tilt_max: [ -10, -80 ]
+      scan_lines: 2
+      reduce_last_scanline: 0.2
+
     # Values for the visual compass record pattern
     record_pattern_scan_lines: 2
     record_pattern_pan_max_left: [-80, 0]

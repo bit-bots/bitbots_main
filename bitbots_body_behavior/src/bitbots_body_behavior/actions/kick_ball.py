@@ -67,16 +67,13 @@ class KickBallDynamic(AbstractKickAction):
                 goal.ball_position.y = ball_v
                 goal.ball_position.z = 0
 
-                kick_directions = sorted(np.linspace(
-                    -self.max_kick_angle,
-                    self.max_kick_angle,
-                    num=self.num_kick_angles), key=abs)
+                kick_direction = self.blackboard.world_model.get_best_kick_direction(-self.max_kick_angle,
+                                                                                     self.max_kick_angle,
+                                                                                     self.num_kick_angles,
+                                                                                     self.kick_length,
+                                                                                     self.angular_range)
+                self.publish_debug_data("Kick direction", kick_direction)
 
-                kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
-                    direction=direction,
-                    kick_length=self.kick_length,
-                    angular_range=self.angular_range)
-                    for direction in kick_directions])]
                 goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 
                 if self.penalty_kick:
@@ -86,7 +83,6 @@ class KickBallDynamic(AbstractKickAction):
 
                 self.blackboard.kick.kick(goal)
                 self._goal_sent = True
-
             else:
                 self.pop()
 

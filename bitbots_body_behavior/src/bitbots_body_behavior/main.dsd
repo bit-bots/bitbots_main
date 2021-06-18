@@ -11,15 +11,17 @@
 @ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false
 
 #GoAndKickBallMapGoal
-$AvoidBall
-    NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist + angle:%behavior/body/ball_reapproach_angle
-        YES --> $BallKickArea
-            NEAR --> @ChangeAction + action:kicking, @Stop, @LookAtBall, @StandAndWait + duration:1.0, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1 + r:false
-            FAR --> @ChangeAction + action:going_to_ball, @LookAtBall, @GoToBall + target:map_goal
-        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist
-    YES --> $ReachedMovebaseGoalPosition + thres:%behavior/body/ball_far_approach_position_thresh
-        YES --> @AvoidBallInactive
-        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
+$DribbleOrKick
+    DRIBBLE --> @Stop, @LookAtFront, @DribbleForward
+    KICK --> $AvoidBall
+        NO --> $BallClose + distance:%behavior/body/ball_reaproach_dist + angle:%behavior/body/ball_reapproach_angle
+            YES --> $BallKickArea
+                NEAR --> @ChangeAction + action:kicking, @Stop, @LookAtBall, @StandAndWait + duration:1.0, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1 + r:false
+                FAR --> @ChangeAction + action:going_to_ball, @LookAtBall, @GoToBall + target:map_goal
+            NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map_goal + blocking:false + distance:%behavior/body/ball_far_approach_dist
+        YES --> $ReachedMovebaseGoalPosition + thres:%behavior/body/ball_far_approach_position_thresh
+            YES --> @AvoidBallInactive
+            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
 
 #GoAndKickBallDetectionGoal
 $AlignedToMoveBaseGoal

@@ -158,10 +158,16 @@ behavior:
     # distance from center point, that the ball must be during an opponent kickoff to think that it moved
     kickoff_min_ball_movement: 0.5
 
+    # dribble action
     dribble_max_speed_x: 0.25
     dribble_max_speed_y: 0.1
     dribble_p: 0.75
     dribble_accel_x: 0.001
+
+    # dribble decision
+    dribble_orient_threshold: 0.4
+    dribble_goal_distance_threshold: 1.0
+    dribble_ball_distance_threshold: 1.0
 
     ##################
     # costmap params #

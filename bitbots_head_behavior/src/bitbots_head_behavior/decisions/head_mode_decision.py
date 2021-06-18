@@ -58,6 +58,8 @@ class HeadModeDecision(AbstractDecisionElement):
             return 'RECORD_VISUAL_COMPASS'
         elif head_mode == HeadMode.VISUAL_COMPASS_FEATURES:
             return 'VISUAL_COMPASS_FEATURES'
+        elif head_mode == HeadMode.LOOK_FRONT:
+            return 'LOOK_FRONT'
         else:
             rospy.logerr('the set head_mode ({}) is not known'.format(head_mode))
 
