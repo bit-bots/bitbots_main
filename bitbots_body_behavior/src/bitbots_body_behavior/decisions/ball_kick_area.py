@@ -7,12 +7,11 @@ from std_msgs.msg import String
 class BallKickArea(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallKickArea, self).__init__(blackboard, dsd, parameters)
-        self.ball_close_distance = self.blackboard.config['ball_close_distance']
-        self.kick_min_x = self.blackboard.config['kick_min_x']
-        self.kick_min_y = self.blackboard.config['kick_min_y']
-        self.kick_max_x = self.blackboard.config['kick_max_x']
-        self.kick_max_y = self.blackboard.config['kick_max_y']
-        self.viz_publisher = rospy.Publisher('debug/viz_ball_kick_area', String, queue_size=1)
+        self.kick_x_enter = self.blackboard.config['kick_x_enter']
+        self.kick_y_enter = self.blackboard.config['kick_y_enter']
+        self.kick_x_leave = self.blackboard.config['kick_x_leave']
+        self.kick_y_leave = self.blackboard.config['kick_y_leave']
+        self.last_descision = "FAR"
 
     def perform(self, reevaluate=False):
         """
@@ -20,18 +19,28 @@ class BallKickArea(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        ball_data = self.blackboard.world_model.get_ball_position_uv()
-        ball_position = ball_data[0], ball_data[1]
+        # Get the ball position
+        ball_position = self.blackboard.world_model.get_ball_position_uv()
 
         self.publish_debug_data("ball_position", {"u": ball_position[0], "v": ball_position[1]})
 
-        if self.kick_min_x <= ball_position[0] <= self.kick_max_x and \
-           self.kick_min_y <= ball_position[1] <= self.kick_max_y:
-            self.viz_publisher.publish('NEAR')
+        # Check if the ball is in the enter area
+        if 0 <= ball_position[0] <= self.kick_x_enter and 0 <= abs(ball_position[1]) <= self.kick_y_enter:
+            self.last_descision = 'NEAR'
             return 'NEAR'
-        # TODO: areas for TURN RIGHT/LEFT/AROUND might be useful.
-        self.viz_publisher.publish('FAR')
-        return 'FAR'
+        # Check if the ball is in the area between the enter area and the leave area
+        elif 0 <= ball_position[0] <= self.kick_x_leave and 0 <= abs(ball_position[1]) <= self.kick_y_leave:
+            # Return them explicitly to make the parsing easyer for e.g. the DSD GUI
+            if self.last_descision == "FAR":
+                return "FAR"
+            elif self.last_descision == "NEAR":
+                return 'NEAR'
+            else:
+                rospy.logerr(f"Unknown BallKickArea last return value: {self.last_descision}")
+        # We are outside of both areas
+        else:
+            self.last_descision = 'FAR'
+            return 'FAR'
 
     def get_reevaluate(self):
         """

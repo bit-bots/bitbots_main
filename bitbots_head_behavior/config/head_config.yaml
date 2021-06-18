@@ -20,8 +20,8 @@ behavior:
     #  - [-30, -7]
 
     look_at:
-        tilt_speed: 3
-        pan_speed: 3
+        tilt_speed: 6
+        pan_speed: 6
 
     # Search pattern for ball
     search_pattern:
@@ -103,7 +103,7 @@ behavior:
     # to reduce unnecessary movement due to noise in the detection of the Ball.
     ball_tracking_min_pan_delta: 1.5
     ball_tracking_min_tilt_delta: 1.5
-    
+
 
     # Positions for static head modes
     look_down_position: [0, -65]

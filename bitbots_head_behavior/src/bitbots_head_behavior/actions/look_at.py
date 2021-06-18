@@ -73,7 +73,10 @@ class AbstractLookAt(AbstractActionElement):
             self.blackboard.head_capsule.send_motor_goals(head_pan,
                                                           head_tilt,
                                                           pan_speed=self.pan_speed,
-                                                          tilt_speed=self.tilt_speed)
+                                                          tilt_speed=self.tilt_speed,
+                                                          current_pan_position=current_head_pan,
+                                                          current_tilt_position=current_head_tilt,
+                                                          resolve_collision=True)
 
 
 
