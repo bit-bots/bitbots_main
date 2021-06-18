@@ -92,6 +92,7 @@ class PathfindingCapsule:
         # also verify that the ball and the localization are reasonably recent/accurate
         ball_lost_time = rospy.Duration.from_sec(self.__blackboard.config['ball_lost_time'])
         if self.path_updated and \
+                self.__blackboard.world_model.ball_seen and \
                 rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time and \
                 self.__blackboard.world_model.localization_precision_in_threshold():
             rospy.logerr("updating path")
