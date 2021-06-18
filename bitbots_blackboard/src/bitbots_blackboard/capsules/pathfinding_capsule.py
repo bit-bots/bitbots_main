@@ -90,8 +90,9 @@ class PathfindingCapsule:
     def get_new_path_to_ball(self):
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
+        ball_lost_time = self.__blackboard.config['ball_lost_time']
         if self.path_updated and \
-                self.__blackboard.world_model.ball_last_seen() < self.__blackboard.config['ball_lost_time'] and \
+                rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time and \
                 self.__blackboard.world_model.localization_precision_in_threshold():
             rospy.logerr("updating path")
             self.path_updated = False
