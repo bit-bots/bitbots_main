@@ -124,11 +124,13 @@ class ObstaclePublisher:
             # Transfrom robot to map frame
             point = tf2_geometry_msgs.do_transform_point(point, transform)
             # Update robots that are close together
-            for i_b, robot_b in enumerate(self.robots):
+            cleaned_robots = []
+            for old_robot in self.robots:
                 # Check if there is another robot in memory close to it
-                if np.linalg.norm(ros_numpy.numpify(point.point) - ros_numpy.numpify(robot_b.point)) < self.robot_merge_distance:
-                    # Delete the close robot
-                    del self.robots[i_b]
+                if np.linalg.norm(ros_numpy.numpify(point.point) - ros_numpy.numpify(old_robot.point)) > self.robot_merge_distance:
+                    cleaned_robots.append(old_robot)
+            # Update our robot list with a new list that does not contain the duplicates
+            self.robots = cleaned_robots
             # Append our new robots
             self.robots.append(point)
 
