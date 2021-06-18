@@ -179,6 +179,13 @@ class GameStateReceiver(object):
         msg.penaltyShot = own_team.penalty_shot
         msg.singleShots = own_team.single_shots
         msg.coach_message = own_team.coach_message
+        penalties = []
+        red_cards = []
+        for i in range(6):
+            penalties.append(own_team.players[i].penalty != 0)
+            red_cards.append(own_team.players[i].number_of_red_cards != 0)
+        msg.teamMatesWithPenalty = penalties
+        msg.teamMatesWithRedCard = red_cards
         self.state_publisher.publish(msg)
 
     def get_last_state(self):
