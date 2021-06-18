@@ -95,12 +95,9 @@ class PathfindingCapsule:
                 self.__blackboard.world_model.ball_seen and \
                 rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time and \
                 self.__blackboard.world_model.localization_precision_in_threshold():
-            rospy.logerr("updating path")
             self.path_updated = False
             ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_approach_dist'], 2)
-            #rospy.logerr(ball_target)
             own_position = self.__blackboard.world_model.get_current_position_pose_stamped()
-            #rospy.logerr(own_position)
             req = GetPlanRequest()
             req.goal = ball_target
             req.start = own_position
@@ -111,7 +108,6 @@ class PathfindingCapsule:
             return None
 
     def path_to_ball_check(self, path_to_ball_service_response):
-        #rospy.logerr("checking if path to ball is calculated")
         if path_to_ball_service_response is None:
             return
         elif path_to_ball_service_response.done() and not self.path_updated:
@@ -140,10 +136,10 @@ class PathfindingCapsule:
                 start_goal_theta_diff = abs(start_theta-goal_theta)
                 start_goal_theta_cost = start_goal_theta_diff * self.__blackboard.config['time_to_ball_start_to_goal_angle_weight']
                 total_cost = path_length + start_goal_theta_cost
-                rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
-                             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
-                             f"path_length: {path_length}, " +
-                             f"total: {total_cost}")
+                #rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
+                #             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
+                #             f"path_length: {path_length}, " +
+                #             f"total: {total_cost}")
             else:
                 # calculate how much we need to turn to start walking along the path
                 start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
@@ -160,11 +156,11 @@ class PathfindingCapsule:
                 start_theta_cost = start_theta_diff * self.__blackboard.config['time_to_ball_start_angle_weight']
                 goal_theta_cost = goal_theta_diff * self.__blackboard.config['time_to_ball_goal_angle_weight']
                 total_cost = path_length + start_theta_cost + goal_theta_cost
-                rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
-                             f"weighted start_diff: {start_theta_cost}, " +
-                             f"weighted goal_diff: {goal_theta_cost}, " +
-                             f"path_length: {path_length}, " +
-                             f"total: {total_cost}")
+                #rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
+                #             f"weighted start_diff: {start_theta_cost}, " +
+                #             f"weighted goal_diff: {goal_theta_cost}, " +
+                #             f"path_length: {path_length}, " +
+                #             f"total: {total_cost}")
             return total_cost
 
     def get_ball_goal(self, target, distance, goal_width):
