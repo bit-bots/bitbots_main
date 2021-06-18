@@ -1,34 +1,26 @@
 walking:
   engine:
-    foot_z_pause: 0.0
-    foot_apex_phase: 0.5
-    foot_put_down_z_offset: 0.0
-    foot_put_down_phase: 1.0
-    foot_overshoot_ratio: 0.0
-    foot_overshoot_phase: 0.85
-    trunk_pause: 0.0
-    trunk_x_offset_p_coef_forward: 0.0
-    trunk_x_offset_p_coef_turn: 0.0
+    double_support_ratio: 0.2
+    first_step_swing_factor: 0.18
+    foot_rise: 0.07
+    freq: 1.8
+    trunk_phase: -0.2
+    trunk_pitch: 0.0
+    trunk_pitch_p_coef_forward: 0.5
+    trunk_pitch_p_coef_turn: 0.0
+    trunk_swing: 0.4
+    trunk_x_offset: 0.002
+    trunk_y_offset: 0.005
+    trunk_z_movement: 0.03
     first_step_trunk_phase: -0.5
-
-    kick_length: 0.09
-    kick_vel: 0.2
-    kick_phase: 0.75
-
-    double_support_ratio: 0.395855599264019
-    first_step_swing_factor: 1.70915264949109
-    foot_distance: 0.178992988391498
-    foot_rise: 0.0843964628766617 
-    freq: 1.91918933824085
-    trunk_height: 0.372706758768332
-    trunk_phase: -0.145605322022978
-    trunk_pitch: 0.451353601295159
-    trunk_pitch_p_coef_forward: -1.68178885143664
-    trunk_pitch_p_coef_turn: 0.379555655239298
-    trunk_swing: 0.279830968565271
-    trunk_x_offset: -0.0141055897787283
-    trunk_y_offset: 0.00046067686074256
-    trunk_z_movement: 0.0481509801253288
+    foot_apex_phase: 0.5
+    foot_distance: 0.2
+    foot_overshoot_phase: 1
+    foot_overshoot_ratio: 0.0
+    foot_put_down_phase: 1
+    foot_z_pause: 0
+    trunk_height: 0.4
+    trunk_pause: 0
 
   node:
     # update frequency of the engine
@@ -43,17 +35,17 @@ walking:
 
     # 0.5
     # -0.4
-    max_step_x: 10
+    max_step_x: 0.125
     # 0.12
-    max_step_y: 10
-    max_step_xy: 10
+    max_step_y: 0.105
+    max_step_xy: 0.15
     max_step_z: 10
     # 0.5
-    max_step_angular: 10
+    max_step_angular: 0.7
 
-    x_speed_multiplier: 1.0
-    y_speed_multiplier: 1.0
-    yaw_speed_multiplier: 1.0
+    x_speed_multiplier: 1.3
+    y_speed_multiplier: 1.3
+    yaw_speed_multiplier: 1.5
 
     vel: -1
     acc: -1
@@ -73,21 +65,21 @@ walking:
     effort_phase_reset_active: False
 
   pid_trunk_fused_pitch:
-    p: 0.25
-    i: 0
+    p: 0.111
+    i: 0.01
     d: 0
     i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
     antiwindup: False
     publish_state: False
 
   pid_trunk_fused_roll:
     p: 0.111
-    i: 0
+    i: 0.01
     d: 0
     i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
     antiwindup: False
     publish_state: False
