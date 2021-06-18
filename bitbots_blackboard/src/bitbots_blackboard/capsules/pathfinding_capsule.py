@@ -89,7 +89,10 @@ class PathfindingCapsule:
 
     def get_new_path_to_ball(self):
         # only send new request if previous request is finished or first update
-        if self.path_updated:
+        # also verify that the ball and the localization are reasonably recent/accurate
+        if self.path_updated and \
+                self.__blackboard.world_model.ball_last_seen() < self.__blackboard.config['ball_lost_time'] and \
+                self.__blackboard.world_model.localization_precision_in_threshold():
             rospy.logerr("updating path")
             self.path_updated = False
             ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_approach_dist'], 2)
@@ -121,26 +124,42 @@ class PathfindingCapsule:
                 end = self.path_to_ball.poses[i+1].pose
                 dist = math.sqrt((start.position.x-end.position.x) ** 2 + (start.position.y-end.position.y) ** 2)
                 path_length += dist
-            # TODO add cost for rotating in the beginning by looking at angle between current orientation and first->second point
-            start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
-            first_point = self.path_to_ball.poses[0].pose.position
-            second_point = self.path_to_ball.poses[1].pose.position
-            path_start_theta= math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
-            start_theta_diff = abs(start_theta - path_start_theta)
-            goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
-            second_to_last_point = self.path_to_ball.poses[-2].pose.position
-            last_point = self.path_to_ball.poses[-1].pose.position
-            path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
-            goal_theta_diff = abs(goal_theta - path_end_theta)
 
-            start_theta_cost = start_theta_diff * self.__blackboard.config['time_to_ball_start_angle_weight']
-            goal_theta_cost = goal_theta_diff * self.__blackboard.config['time_to_ball_goal_angle_weight']
-            total_cost = path_length + start_theta_cost + goal_theta_cost
-            rospy.logerr(f"start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
-                         f"weighted start_diff: {start_theta_cost}, " +
-                         f"weighted goal_diff: {goal_theta_cost}, " +
-                         f"path_length: {path_length}, " +
-                         f"total: {total_cost}")
+            start_point = self.path_to_ball.poses[0].pose.position
+            end_point = self.path_to_ball.poses[-1].pose.position
+            straightline_distance = math.sqrt((start_point.x-end_point.x) ** 2 + (start_point.y-end_point.y) ** 2)
+            # if the robot is close to the ball it does not turn to walk to it
+            if straightline_distance < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
+                start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
+                goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
+                start_goal_theta_diff = abs(start_theta-goal_theta)
+                start_goal_theta_cost = start_goal_theta_diff * self.__blackboard.config['time_to_ball_start_to_goal_angle_weight']
+                total_cost = path_length + start_goal_theta_cost
+                rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
+                             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
+                             f"path_length: {path_length}, " +
+                             f"total: {total_cost}")
+            else:
+                # calculate how much we need to turn to start walking along the path
+                start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
+                first_point = self.path_to_ball.poses[0].pose.position
+                second_point = self.path_to_ball.poses[1].pose.position
+                path_start_theta= math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
+                start_theta_diff = abs(start_theta - path_start_theta)
+                # calculate how much we need to turn to turn at the end of the path
+                goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
+                second_to_last_point = self.path_to_ball.poses[-2].pose.position
+                last_point = self.path_to_ball.poses[-1].pose.position
+                path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
+                goal_theta_diff = abs(goal_theta - path_end_theta)
+                start_theta_cost = start_theta_diff * self.__blackboard.config['time_to_ball_start_angle_weight']
+                goal_theta_cost = goal_theta_diff * self.__blackboard.config['time_to_ball_goal_angle_weight']
+                total_cost = path_length + start_theta_cost + goal_theta_cost
+                rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
+                             f"weighted start_diff: {start_theta_cost}, " +
+                             f"weighted goal_diff: {goal_theta_cost}, " +
+                             f"path_length: {path_length}, " +
+                             f"total: {total_cost}")
             return total_cost
 
     def get_ball_goal(self, target, distance, goal_width):

@@ -80,9 +80,9 @@ if __name__ == "__main__":
         D.update()
         D.blackboard.team_data.publish_strategy()
         D.blackboard.team_data.publish_time_to_ball()
-        counter = (counter + 1) % 125
+        counter = (counter + 1) % D.blackboard.config['time_to_ball_divider']
         D.blackboard.pathfinding.path_to_ball_check(path_to_ball_service_response)
-        if counter == 0 and D.blackboard.gamestate.is_game_state_equals(GameState.GAMESTATE_PLAYING):
+        if counter == 0:
             resp = D.blackboard.pathfinding.get_new_path_to_ball()
             if resp is not None:
                 path_to_ball_service_response = resp
