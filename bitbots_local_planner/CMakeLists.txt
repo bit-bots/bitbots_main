@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
   costmap_2d
   dynamic_reconfigure
   geometry_msgs
+  base_local_planner
   nav_core
   nav_msgs
   pluginlib

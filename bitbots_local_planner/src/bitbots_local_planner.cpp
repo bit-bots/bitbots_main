@@ -7,7 +7,7 @@ PLUGINLIB_EXPORT_CLASS(bitbots_local_planner::BBPlanner, nav_core::BaseLocalPlan
 namespace bitbots_local_planner
 {
 
-    BBPlanner::BBPlanner()
+    BBPlanner::BBPlanner() : odom_helper_("odom")
     {
     }
 
@@ -27,7 +27,7 @@ namespace bitbots_local_planner
         // Set fields to default values
         goal_reached_ = false;
 
-        ros::Subscriber odom_sub_ = private_nh.subscribe("motion_odometry", 1, &BBPlanner::motionOdomCB, this);
+        //odom_helper_ = new base_local_planner::OdometryHelperRos("motion_odometry");
 
         // Setup dynamic reconfigure
         dsrv_ = new dynamic_reconfigure::Server<BBPlannerConfig>(private_nh);
@@ -140,16 +140,20 @@ namespace bitbots_local_planner
         }
         else
         {
-            double current_vel_ = std::hypot(motion_odom_.twist.twist.linear.x, motion_odom_.twist.twist.linear.y);
+            // Get odometry velocity vector
+            geometry_msgs::PoseStamped robot_vel;
+            odom_helper_.getRobotVel(robot_vel);
+            // Calc current velocity value
+            double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
 
             // Limit the maximum acceleration
-            if (walk_vel > current_vel_ + 0.02) {
-                walk_vel = current_vel_ + 0.02;
+            if (walk_vel > current_vel_ + 0.005) {
+                walk_vel = current_vel_ + 0.005;
             }
 
-            walk_vel /= rot_goal_vel + 1; //TODO param
+            //walk_vel /= rot_goal_vel / 0.01 + 1; // TODO param
 
-            ROS_INFO("Walk Vel %f | Max Walk Vel %f", walk_vel, current_vel_ + 0.01);
+            ROS_INFO("Walk Vel %f | Max Walk Vel %f", walk_vel, current_vel_ + 0.005);
 
             // Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
             cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
@@ -183,6 +187,8 @@ namespace bitbots_local_planner
             cmd_vel.angular.z = rot_goal_vel;
             // We didn't reached our goal if we need this step
             goal_reached_ = false;
+
+            ROS_INFO("End vel %f, %f\n", std::hypot(cmd_vel.linear.x, cmd_vel.linear.y), current_vel_);
         }
         // Publich our "local plan" for viz purposes
         publishPlan();

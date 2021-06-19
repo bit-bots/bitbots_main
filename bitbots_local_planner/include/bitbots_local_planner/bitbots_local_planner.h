@@ -8,6 +8,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_local_planner/BBPlannerConfig.h>
 #include <bitbots_local_planner/transform_global_plan.h>
+#include <base_local_planner/odometry_helper_ros.h>
 #include <nav_core/base_local_planner.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
@@ -15,6 +16,7 @@
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/utils.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Point.h>
@@ -106,6 +108,7 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
 
   nav_msgs::Odometry motion_odom_;
 
+  base_local_planner::OdometryHelperRos odom_helper_;
 };
 }
 #endif
