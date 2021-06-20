@@ -8,7 +8,10 @@
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false
+@ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+
+#GetWalkreadyAndLookAtBall
+@ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
 
 #GoAndKickBallMapGoal
 $AvoidBall
@@ -110,10 +113,7 @@ $LocalizationAvailable
 
 #PenaltyBehavior
 $SecondaryStateTeamDecider
-    OUR --> $GameStateDecider //in penalty we use the main game states to start the positioning and the kicks
-        READY --> @LookAtBall, @GoToBall + target:map_goal + distance:%behavior/body/ball_far_approach_dist
-        PLAYING --> #GoAndKickBallMapGoal
-        ELSE --> #StandAndLook
+    OUR --> @LookAtBall, @StandAndWait + duration:1.0, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @StandAndWait + duration:1 + r:false
     OTHER --> $BallDangerous
         LEFT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallLeft
         RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
@@ -145,10 +145,12 @@ $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
+        INITIAL --> @ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
         READY --> #PositioningReady
         SET --> $SecondaryStateDecider
-            PENALTYSHOOT --> #GetWalkreadyAndLocalize
+            PENALTYSHOOT --> $SecondaryStateTeamDecider
+                OUR --> #GetWalkreadyAndLocalize // we need to also see the goalie todo better use LookForward but this is in dribbling PR
+                OTHER --> #GetWalkreadyAndLookAtBall // goalie only needs to care about the ball
             ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider
