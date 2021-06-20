@@ -82,7 +82,7 @@ class TeamDataCapsule:
 
         return False
 
-    def team_rank_to_ball(self, own_ball_distance, count_goalies=True):
+    def team_rank_to_ball(self, own_ball_distance, count_goalies=True, use_time_to_ball=False):
         """Returns the rank of this robot compared to the team robots concerning ball distance.
         Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
         For example, we do not want our goalie to perform a throw in against our empty goal.
@@ -98,9 +98,12 @@ class TeamDataCapsule:
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
                     and data.ball_absolute.covariance[0] < self.ball_max_covariance \
                     and data.ball_absolute.covariance[7] < self.ball_max_covariance:
-                ball_rel_x = data.ball_absolute.pose.position.x - data.robot_position.pose.position.x
-                ball_rel_y = data.ball_absolute.pose.position.y - data.robot_position.pose.position.y
-                distances.append(math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2))
+                if use_time_to_ball:
+                    distances.append(data.time_to_position_at_ball)
+                else:
+                    ball_rel_x = data.ball_absolute.pose.position.x - data.robot_position.pose.position.x
+                    ball_rel_y = data.ball_absolute.pose.position.y - data.robot_position.pose.position.y
+                    distances.append(math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2))
         sorted_times = sorted(distances)
         rank = 1
         for distances in sorted_times:

@@ -208,6 +208,9 @@ behavior:
     # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
     time_to_ball_start_to_goal_angle_weight: 0.3
 
+    # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
+    time_to_ball_remember_time: 2.5
+
 role: "goalie"
 
 # Field measurements in meters

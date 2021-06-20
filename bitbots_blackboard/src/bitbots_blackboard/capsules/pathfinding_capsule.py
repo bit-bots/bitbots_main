@@ -30,6 +30,7 @@ class PathfindingCapsule:
         self.get_plan_service = None
         self.path_to_ball = None
         self.path_updated = True
+        self.path_update_time = rospy.Time.now()
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -122,7 +123,19 @@ class PathfindingCapsule:
             self.path_updated = True
             self.current_path_update = rospy.Time.now()
             self.path_to_ball = path_to_ball_service_response.result().plan
-            self.__blackboard.team_data.own_time_to_ball = self.calculate_time_to_ball()
+            time_to_ball = self.calculate_time_to_ball()
+            # path valid
+            if time_to_ball != -1:
+                self.__blackboard.team_data.own_time_to_ball = time_to_ball
+                self.path_update_time = rospy.Time.now()
+                rospy.logerr("new path to ball")
+            # timeout
+            elif rospy.Time.now() - self.path_update_time >\
+                    rospy.Duration(self.__blackboard.config['time_to_ball_remember_time']):
+                rospy.logerr("no path to ball found but path is too old")
+                self.__blackboard.team_data.own_time_to_ball = 9999.0
+            else:
+                rospy.logerr("no path to ball found but i member")
 
     def calculate_time_to_ball(self):
         # calculate length of path
@@ -171,8 +184,7 @@ class PathfindingCapsule:
                 #             f"total: {total_cost}")
             return total_cost
         else:
-            rospy.logerr("no path")
-            return 9999.0
+            return -1
 
     def get_ball_goal(self, target, distance, goal_width):
 
