@@ -66,13 +66,11 @@ class KickBallDynamic(AbstractKickAction):
 
                 if self.penalty_kick:
                     goal.kick_speed = 6.7
-                    goal.ball_position.x = 0.2
+                    goal.ball_position.x = 0.25
                     goal.ball_position.y = 0.0
                     goal.ball_position.z = 0
                     kick_direction = math.radians(25)
-                    rospy.logerr("foo")
                 else:
-                    rospy.logerr("bar")
                     goal.kick_speed = 1
                     goal.ball_position.x = ball_u
                     goal.ball_position.y = ball_v
