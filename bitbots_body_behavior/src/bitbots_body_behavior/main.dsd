@@ -147,7 +147,9 @@ $IsPenalized
     NO --> $GameStateDecider
         INITIAL --> @ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
         READY --> #PositioningReady
-        SET --> #StandAndLook
+        SET --> $SecondaryStateDecider
+            PENALTYSHOOT --> #GetWalkreadyAndLocalize
+            ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider
             PENALTYSHOOT --> #PenaltyBehavior
