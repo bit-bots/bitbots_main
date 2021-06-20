@@ -4,6 +4,7 @@ std_msgs/Header header
 geometry_msgs/Point ball_position
 geometry_msgs/Quaternion kick_direction
 float64 kick_speed
+bool unstable
 
 ---
 # result definition
