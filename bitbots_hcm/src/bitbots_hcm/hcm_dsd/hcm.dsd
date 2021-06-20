@@ -5,10 +5,9 @@ $PickedUp
 
 -->HCM
 $StartHCM
-    NOT_WALKREADY --> @PlayAnimationDynup + direction:walkready + initial:true
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
     SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
-    RUNNING --> $Stop
+    ELSE --> $Stop
         STOPPED -->  @ForceStopWalking, @PlayAnimationStopped, @StayStopped
         FREE -->$Record
             RECORD_ACTIVE --> @StayRecord
