@@ -159,7 +159,7 @@ class HardwareControlManager:
             self.joint_goal_publisher.publish(msg)
 
     def kick_goal_callback(self, msg):
-        if self.blackboard.current_state == RobotControlState.KICKING:
+        if self.blackboard.current_state in [RobotControlState.KICKING, RobotControlState.CONTROLLABLE]:
             # we can perform a kick
             self.joint_goal_publisher.publish(msg)
 
