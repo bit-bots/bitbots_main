@@ -22,6 +22,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('ball_y', type=float, help='y position of the ball [m]', default=0)
     parser.add_argument('kick_direction', type=float, help='kick direction [°]', default=0)
+    parser.add_argument('-u', '--unstable', action='store_true', help='Use unstable kick')
     args = parser.parse_args()
 
     print("Beware: this script may only work when calling it directly on the robot "
@@ -85,10 +86,11 @@ if __name__ == "__main__":
     goal.ball_position.x = 0.2
     goal.ball_position.y = args.ball_y
     goal.ball_position.z = 0
+    goal.unstable = args.unstable
 
     goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(args.kick_direction)))
 
-    goal.kick_speed = 6.7
+    goal.kick_speed = 6.7 if args.unstable else 1
 
     """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp

@@ -86,6 +86,7 @@ class KickNode {
   bool isLeftKick();
  private:
   ros::NodeHandle node_handle_;
+  ros::NodeHandle private_node_handle_;
   ros::Publisher joint_goal_publisher_;
   ros::Publisher support_foot_publisher_;
   ros::Subscriber cop_l_subscriber_;
@@ -104,6 +105,8 @@ class KickNode {
   bool was_support_foot_published_;
   robot_state::RobotStatePtr goal_state_;
   robot_state::RobotStatePtr current_state_;
+  DynamicKickConfig unstable_config_;
+  std::optional<DynamicKickConfig> normal_config_;
 
   std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
 
@@ -134,6 +137,12 @@ class KickNode {
    * Get JointCommand message for JointGoals
    */
   bitbots_msgs::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
+
+  /**
+   * Get the config for the unstable kick
+   */
+  DynamicKickConfig getUnstableConfig();
+
   void copLCallback(const geometry_msgs::PointStamped &cop);
   void copRCallback(const geometry_msgs::PointStamped &cop);
 };
