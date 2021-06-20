@@ -14,7 +14,7 @@
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [2.5, -0.0, 0.43],
+        "translation": [2.75, -0.0, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
@@ -35,11 +35,11 @@
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [2.5, -0.0, 0.43],
+        "translation": [-1.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-4.475, -0.0, 0.43],
+        "translation": [-1.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     },
@@ -56,11 +56,11 @@
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [2.5, -0.0, 0.43],
+        "translation": [-3.6, 3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-4.475, -0.0, 0.43],
+        "translation": [-3.6, 3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     },
@@ -77,11 +77,11 @@
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [2.5, -0.0, 0.43],
+        "translation": [-1.6, 3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
-        "translation": [-4.475, -0.0, 0.43],
+        "translation": [-1.6, 3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     }
