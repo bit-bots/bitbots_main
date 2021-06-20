@@ -37,6 +37,9 @@ if __name__ == "__main__":
     D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
     D.blackboard.pathfinding.approach_marker_pub = rospy.Publisher("debug/approach_point", Marker, queue_size=10)
 
+    D.blackboard.dynup_cancel_pub = rospy.Publisher('dynup/cancel', GoalID, queue_size=1)
+    D.blackboard.hcm_deactivate_pub = rospy.Publisher('hcm_restart', Bool, queue_size=1)
+
     dirname = os.path.dirname(os.path.realpath(__file__))
 
     D.register_actions(os.path.join(dirname, "actions"))
