@@ -146,7 +146,7 @@ $IsPenalized
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
                 OUR -->  @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // we need to also see the goalie todo look at better position a bit lower
-                OTHER --> @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // goalie only needs to care about the ball
+                OTHER --> @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // goalie only needs to care about the ball
             ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider

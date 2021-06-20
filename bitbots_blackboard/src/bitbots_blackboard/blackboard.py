@@ -28,6 +28,7 @@ class BodyBlackboard:
         self.team_data = TeamDataCapsule()
         # animations
         self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
+        self.goalie_arms_animation = rospy.get_param("Animations/Goalie/goalieArms")
         self.goalie_falling_right_animation = rospy.get_param("Animations/Goalie/fallRight")
         self.goalie_falling_left_animation = rospy.get_param("Animations/Goalie/fallLeft")
         self.cheering_animation = rospy.get_param("Animations/Misc/cheering")
