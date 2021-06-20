@@ -50,6 +50,7 @@ class HardwareControlManager:
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'hcm.dsd'))
+        self.hcm_deactivated = False
 
         # Publisher / subscriber
         self.joint_goal_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
@@ -76,10 +77,15 @@ class HardwareControlManager:
         rospy.Subscriber("cop_l", PointStamped, self.cop_l_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("cop_r", PointStamped, self.cop_r_cb, queue_size=1, tcp_nodelay=True)
         rospy.Subscriber("core/power_switch_status", Bool, self.power_cb, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber("hcm_deactivate", Bool, self.deactivate_cb, queue_size=1, tcp_nodelay=True)
 
         self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
 
         self.main_loop()
+
+    def deactivate_cb(self, msg):
+        # we need to make sure the hcm got new sensor messages in between
+        self.hcm_deactivated = msg.data
 
     def pause(self, msg):
         """ Updates the stop state for the state machine"""
@@ -237,13 +243,17 @@ class HardwareControlManager:
         rate = Rate(500)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
-            self.blackboard.current_time = rospy.Time.now()
-            try:
-                self.dsd.update()
+            if self.hcm_deactivated:
+                self.blackboard.current_state = RobotControlState.CONTROLLABLE
                 self.hcm_state_publisher.publish(self.blackboard.current_state)
-            except IndexError:
-                # this error will happen during shutdown procedure, just ignore it
-                pass
+            else:
+                self.blackboard.current_time = rospy.Time.now()
+                try:
+                    self.dsd.update()
+                    self.hcm_state_publisher.publish(self.blackboard.current_state)
+                except IndexError:
+                    # this error will happen during shutdown procedure, just ignore it
+                    pass
 
             try:
                 # catch exception of moving backwards in time, when restarting simulator
