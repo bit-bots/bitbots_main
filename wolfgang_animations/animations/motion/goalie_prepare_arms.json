@@ -1,0 +1,23 @@
+{
+    "author": "Unknown",
+    "description": "Edit me!",
+    "hostname": "TheArchives",
+    "keyframes": [
+        {
+            "duration": 0.5,
+            "goals": {
+                "LShoulderPitch" : -179,
+                "LShoulderRoll" : 0,
+                "LElbow" : -90,
+                "RShoulderPitch" : 179,
+                "RShoulderRoll" : 0.0,
+                "RElbow" : 90
+            },
+            "name": "generated frame",
+            "pause": 0.0
+        }
+    ],
+    "last_edited": "2021-05-06 10:29:41.094173",
+    "name": "None yet",
+    "version": 0
+}
