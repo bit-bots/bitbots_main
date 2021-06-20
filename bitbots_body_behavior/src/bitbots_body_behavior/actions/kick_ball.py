@@ -65,7 +65,7 @@ class KickBallDynamic(AbstractKickAction):
 
                 if self.penalty_kick:
                     goal.kick_speed = 6.7
-                    goal.ball_position.x = 0.25
+                    goal.ball_position.x = 0.22
                     goal.ball_position.y = 0.0
                     goal.ball_position.z = 0
                     kick_direction = math.radians(25)
