@@ -60,9 +60,7 @@ class KickBallDynamic(AbstractKickAction):
                 goal = KickGoal()
                 goal.header.stamp = rospy.Time.now()
 
-                # TODO evaluate whether the dynamic kick is good enough to actually use the ball position
                 # currently we use a tested left or right kick
-                ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
                 goal.header.frame_id = self.blackboard.world_model.base_footprint_frame  # the ball position is stated in this frame
 
                 if self.penalty_kick:
@@ -72,6 +70,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.z = 0
                     kick_direction = math.radians(25)
                 else:
+                    ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
                     goal.kick_speed = 1
                     goal.ball_position.x = ball_u
                     goal.ball_position.y = ball_v
