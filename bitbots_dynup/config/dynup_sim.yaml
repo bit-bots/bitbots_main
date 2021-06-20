@@ -8,8 +8,8 @@ dynup:
   hand_walkready_pitch: 34.2
   hand_walkready_height: -0.18
   trunk_height: 0.4
-  trunk_pitch: 0.0
-  trunk_x_final: 0.002
+  trunk_pitch: 0.13
+  trunk_x_final: 0.0
 
   #arm_side_offset: 0.163
   arm_side_offset: 0.13 #front
