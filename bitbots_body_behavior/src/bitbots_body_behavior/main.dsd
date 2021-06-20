@@ -113,9 +113,9 @@ $LocalizationAvailable
 $SecondaryStateTeamDecider
     OUR --> @KickBallDynamic + r:true, @LookAtFieldFeatures, @StandAndWait
     OTHER --> $BallDangerous
-        LEFT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallLeft
-        RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
-        ELSE --> @Stop, @LookAtBall
+        LEFT --> @PlayAnimationGoalieFallLeft
+        RIGHT --> @PlayAnimationGoalieFallRight
+        ELSE --> @LookAtBall
 
 
 #Placing
