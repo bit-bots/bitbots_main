@@ -14,6 +14,7 @@ dynup:
   #arm_side_offset: 0.163
   arm_side_offset: 0.13 #front
 
+  time_walkready: 2.0
 
   # Back
   arms_angle_back: 113.75
