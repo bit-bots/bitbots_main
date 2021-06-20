@@ -50,6 +50,7 @@ class KickBallDynamic(AbstractKickAction):
         self.angular_range = rospy.get_param('behavior/body/kick_cost_angular_range')
         self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
         self.num_kick_angles = rospy.get_param('behavior/body/num_kick_angles')
+        self.penalty_kick_angle = rospy.get_param('behavior/body/penalty_kick_angle')
         # By default, don't reevaluate
         self.never_reevaluate = parameters.get('r', True) and parameters.get('reevaluate', True)
 
@@ -69,7 +70,18 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.y = 0.0
                     goal.ball_position.z = 0
                     goal.unstable = True
-                    kick_direction = math.radians(25)
+
+                    # only check 2 directions, left and right
+                    kick_directions = sorted(np.linspace(
+                        -self.penalty_kick_angle,
+                        self.penalty_kick_angle,
+                        num=2), key=abs)
+
+                    kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
+                        direction=direction,
+                        kick_length=self.kick_length,
+                        angular_range=self.angular_range)
+                        for direction in kick_directions])]
                 else:
                     ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
                     goal.kick_speed = 1
