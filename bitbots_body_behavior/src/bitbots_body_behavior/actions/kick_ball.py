@@ -50,6 +50,7 @@ class KickBallDynamic(AbstractKickAction):
         self.angular_range = rospy.get_param('behavior/body/kick_cost_angular_range')
         self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
         self.num_kick_angles = rospy.get_param('behavior/body/num_kick_angles')
+        self.never_reevaluate = parameters.get('r', False)
 
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
