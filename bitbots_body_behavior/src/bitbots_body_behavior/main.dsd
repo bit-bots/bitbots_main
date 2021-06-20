@@ -115,24 +115,26 @@ $IsPenaltyShootRobot
 
 
 #Placing
-$BallSeen
-    NO --> #SearchBall
-    YES --> $SecondaryStateDecider
-        CORNER_KICK --> $SecondaryStateTeamDecider
-            OUR --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
-                THIRD --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToDefensePosition
-            OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
-        ELSE --> $SecondaryStateTeamDecider
-            OUR --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
-                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
-            OTHER --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:map_goal + distance:1
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick
-                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+$ConfigRole
+    GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+    ELSE --> $BallSeen
+        NO --> #SearchBall
+        YES --> $SecondaryStateDecider
+            CORNER_KICK --> $SecondaryStateTeamDecider
+                OUR --> $RankToBallNoGoalie
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
+                    THIRD --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToDefensePosition
+                OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
+            ELSE --> $SecondaryStateTeamDecider
+                OUR --> $RankToBallNoGoalie
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
+                    THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+                OTHER --> $RankToBallNoGoalie
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:map_goal + distance:1
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick
+                    THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
 -->BodyBehavior
 $IsPenalized
