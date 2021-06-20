@@ -68,6 +68,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.x = 0.22
                     goal.ball_position.y = 0.0
                     goal.ball_position.z = 0
+                    goal.unstable = True
                     kick_direction = math.radians(25)
                 else:
                     ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
@@ -75,6 +76,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.x = ball_u
                     goal.ball_position.y = ball_v
                     goal.ball_position.z = 0
+                    goal.unstable = False
                     kick_directions = sorted(np.linspace(
                         -self.max_kick_angle,
                         self.max_kick_angle,
