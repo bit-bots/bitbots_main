@@ -8,10 +8,8 @@
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+@ChangeAction + action:waiting + r:false, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
 
-#GetWalkreadyAndLookAtBall
-@ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
 
 #GoAndKickBallMapGoal
 $AvoidBall
@@ -145,12 +143,12 @@ $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @ChangeAction + action:waiting + r:false, @StandAndWait + duration:1 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+        INITIAL --> @ChangeAction + action:waiting + r:false, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
         READY --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
-                OUR --> #GetWalkreadyAndLocalize // we need to also see the goalie todo better use LookForward but this is in dribbling PR
-                OTHER --> #GetWalkreadyAndLookAtBall // goalie only needs to care about the ball
+                OUR -->  @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // we need to also see the goalie todo better use LookForward but this is in dribbling PR
+                OTHER -->  @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // goalie only needs to care about the ball
             ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider

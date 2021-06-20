@@ -30,3 +30,4 @@ Animations:
 
   Misc:
     cheering: "cheering"
+    init: "init_sim"

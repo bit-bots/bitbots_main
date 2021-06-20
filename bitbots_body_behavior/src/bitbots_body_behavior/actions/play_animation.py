@@ -92,3 +92,7 @@ class PlayAnimationCheering(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING CHEERING ANIMATION")
         return self.blackboard.cheering_animation
+
+class PlayAnimationInit(AbstractPlayAnimation):
+    def chose_animation(self):
+        return self.blackboard.init_animation
