@@ -53,7 +53,6 @@ class KickBallDynamic(AbstractKickAction):
         self.never_reevaluate = parameters.get('r', False)
 
     def perform(self, reevaluate=False):
-        self.do_not_reevaluate()
 
         if not self.blackboard.kick.is_currently_kicking:
             if not self._goal_sent:
