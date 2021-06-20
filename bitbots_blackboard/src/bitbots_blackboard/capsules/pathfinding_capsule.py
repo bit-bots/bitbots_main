@@ -97,7 +97,10 @@ class PathfindingCapsule:
                 rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time and \
                 self.__blackboard.world_model.localization_precision_in_threshold():
             self.path_updated = False
-            ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_far_approach_dist'], 2)
+            if self.__blackboard.world_model.get_ball_distance() < self.__blackboard.config['ball_close_distance']:
+                ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_approach_dist'], 2)
+            else:
+                ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_far_approach_dist'], 2)
             own_position = self.__blackboard.world_model.get_current_position_pose_stamped()
             req = GetPlanRequest()
             req.goal = ball_target
