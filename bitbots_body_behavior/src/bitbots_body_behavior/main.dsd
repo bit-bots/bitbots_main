@@ -85,13 +85,7 @@ $PassStarted
     NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #DefenderRole
-$BallInDefensiveArea
-    YES --> $GoalieHandlingBall
-        YES --> @ChangeAction + action:positioning, @GoToDefensePosition
-        NO --> #GoAndKickBallMapGoal
-    NO --> $BallClose
-        YES --> #GoAndKickBallMapGoal
-        NO --> @ChangeAction + action:positioning, @GoToDefensePosition
+@ChangeAction + action:positioning, @GoToDefensePosition
 
 #GoalieRole
 $LocalizationAvailable
