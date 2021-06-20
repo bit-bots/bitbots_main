@@ -63,26 +63,31 @@ class KickBallDynamic(AbstractKickAction):
                 # currently we use a tested left or right kick
                 ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
                 goal.header.frame_id = self.blackboard.world_model.base_footprint_frame  # the ball position is stated in this frame
-                goal.ball_position.x = ball_u
-                goal.ball_position.y = ball_v
-                goal.ball_position.z = 0
-
-                kick_directions = sorted(np.linspace(
-                    -self.max_kick_angle,
-                    self.max_kick_angle,
-                    num=self.num_kick_angles), key=abs)
-
-                kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
-                    direction=direction,
-                    kick_length=self.kick_length,
-                    angular_range=self.angular_range)
-                    for direction in kick_directions])]
-                goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 
                 if self.penalty_kick:
-                    goal.kick_speed = 3
+                    goal.kick_speed = 6.7
+                    goal.ball_position.x = 0.2
+                    goal.ball_position.y = 0.0
+                    goal.ball_position.z = 0
+                    kick_direction = math.radians(25)
+                    rospy.logerr("foo")
                 else:
+                    rospy.logerr("bar")
                     goal.kick_speed = 1
+                    goal.ball_position.x = ball_u
+                    goal.ball_position.y = ball_v
+                    goal.ball_position.z = 0
+                    kick_directions = sorted(np.linspace(
+                        -self.max_kick_angle,
+                        self.max_kick_angle,
+                        num=self.num_kick_angles), key=abs)
+
+                    kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
+                        direction=direction,
+                        kick_length=self.kick_length,
+                        angular_range=self.angular_range)
+                        for direction in kick_directions])]
+                goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 
                 self.blackboard.kick.kick(goal)
                 self._goal_sent = True

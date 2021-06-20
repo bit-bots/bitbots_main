@@ -111,7 +111,7 @@ $LocalizationAvailable
 
 #PenaltyBehavior
 $SecondaryStateTeamDecider
-    OUR --> @KickBallDynamic + r:true, @LookAtFieldFeatures, @StandAndWait
+    OUR --> @KickBallDynamic + r:true  + type:penalty, @LookAtFieldFeatures, @StandAndWait
     OTHER --> $BallDangerous
         LEFT --> @PlayAnimationGoalieFallLeft
         RIGHT --> @PlayAnimationGoalieFallRight
