@@ -147,8 +147,8 @@ namespace bitbots_local_planner
             double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
 
             // Limit the maximum acceleration
-            if (walk_vel > current_vel_ + 0.005) {
-                walk_vel = current_vel_ + 0.005;
+            if (walk_vel > current_vel_ + 0.01) {
+                walk_vel = current_vel_ + 0.01;
             }
 
             //walk_vel /= rot_goal_vel / 0.01 + 1; // TODO param
