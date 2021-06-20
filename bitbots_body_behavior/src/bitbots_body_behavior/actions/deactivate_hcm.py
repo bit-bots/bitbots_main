@@ -10,5 +10,4 @@ class DeactivateHCM(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.hcm_deactivate_pub.publish(Bool(True))
-        self.blackboard.dynup_cancel_pub.publish(GoalID())
         self.pop()
