@@ -1,13 +1,14 @@
+from actionlib_msgs.msg import GoalID
 from dynamic_stack_decider import AbstractActionElement
 from humanoid_league_msgs.msg import Strategy
+from std_msgs.msg import Bool
 
 
-class ChangeRole(AbstractActionElement):
+class DeactivateHCM(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
-        self.role = parameters.get('role', None)
-
     def perform(self, reevaluate=False):
-        self.blackboard.team_data.set_role(self.blackboard.team_data.roles[self.role])
+        self.blackboard.hcm_deactivate_pub.publish(Bool(True))
+        self.blackboard.dynup_cancel_pub.publish(GoalID())
         self.pop()

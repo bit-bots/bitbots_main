@@ -34,6 +34,9 @@ class BodyBlackboard:
         self.init_animation = rospy.get_param("Animations/Misc/init")
 
         self.dynup_action_client = None
+        self.dynup_cancel_pub = None  # type: rospy.Publisher
+        self.hcm_deactivate_pub = None  # type: rospy.Publisher
+
 
 class HeadBlackboard:
     def __init__(self):
