@@ -71,22 +71,22 @@ $TimerRunning + name:reorientation
 #GoalieBehavior
 $ClosestToBall
     YES --> $BallDangerous
-        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToBlockPosition, @LookAtFieldFeatures
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
         ELSE --> #GoAndKickBallMapGoal
-    NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
 
 #StrikerRole
 $GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition //don't go too far back
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
     NO --> #GoAndKickBallMapGoal
 
 #SupporterRole
 $PassStarted
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
-    NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
+    YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallInactive, @GoToPassAcceptPosition
+    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #DefenderRole
-@ChangeAction + action:positioning, @GoToDefensePosition
+@LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
 
 #GoalieRole
 $LocalizationAvailable
