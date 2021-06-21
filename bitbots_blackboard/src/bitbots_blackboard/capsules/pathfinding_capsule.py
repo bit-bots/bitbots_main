@@ -21,6 +21,7 @@ class PathfindingCapsule:
         self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
+        self.path_to_ball_pub = None  #type: rospy.Publisher
         self.ball_obstacle_active_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
@@ -110,13 +111,13 @@ class PathfindingCapsule:
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
             if not self.path_updated:
-                rospy.logerr("path already updated")
+                rospy.loginfo("time_to_ball: path already updated")
             if not self._blackboard.world_model.ball_seen:
-                rospy.logerr("ball not seen at all")
+                rospy.loginfo("time_to_ball: ball not seen at all")
             if not (rospy.Time.now() - self._blackboard.world_model.ball_last_seen() < ball_lost_time):
-                rospy.logerr("ball not seen for some time")
+                rospy.loginfo("time_to_ball: ball not seen for some time")
             if not self._blackboard.world_model.localization_precision_in_threshold():
-                rospy.logerr("localization bad")
+                rospy.loginfo("time_to_ball: localization bad")
             self._blackboard.team_data.own_time_to_ball = 9999.0
             return None
 
@@ -132,14 +133,14 @@ class PathfindingCapsule:
             if time_to_ball != -1:
                 self._blackboard.team_data.own_time_to_ball = time_to_ball
                 self.path_update_time = rospy.Time.now()
-                rospy.logerr("new path to ball")
+                rospy.loginfo("time_to_ball: new path to ball")
             # timeout
             elif rospy.Time.now() - self.path_update_time >\
                     rospy.Duration(self._blackboard.config['time_to_ball_remember_time']):
-                rospy.logerr("no path to ball found, path is too old, setting time_to_ball to 9999")
+                rospy.loginfo("time_to_ball: no path to ball found, path is too old, setting time_to_ball to 9999")
                 self._blackboard.team_data.own_time_to_ball = 9999.0
             else:
-                rospy.logerr("no path to ball found but i member")
+                rospy.loginfo("time_to_ball: no path to ball found but i member")
 
     def calculate_time_to_ball(self):
         # calculate length of path
@@ -152,10 +153,10 @@ class PathfindingCapsule:
 
             start_point = self.path_to_ball.poses[0].pose.position
             end_point = self.path_to_ball.poses[-1].pose.position
-            straightline_distance =  np.linalg.norm(numpify(start_point)[:2]-numpify(end_point)[:2])
+            straightline_distance = np.linalg.norm(numpify(start_point)[:2]-numpify(end_point)[:2])
             # if the robot is close to the ball it does not turn to walk to it
             if straightline_distance < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
-                start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
+                _, _, start_theta = self._blackboard.world_model.get_current_position()
                 goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
                 start_goal_theta_diff = abs(start_theta-goal_theta)
                 start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config['time_to_ball_start_to_goal_angle_weight']
@@ -166,17 +167,19 @@ class PathfindingCapsule:
                 #             f"total: {total_cost}")
             else:
                 # calculate how much we need to turn to start walking along the path
-                start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
+                _, _, start_theta = self._blackboard.world_model.get_current_position()
                 first_point = self.path_to_ball.poses[0].pose.position
                 second_point = self.path_to_ball.poses[1].pose.position
-                path_start_theta= math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
-                start_theta_diff = abs(start_theta - path_start_theta)
+                path_start_theta = math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
+                start_theta_diff = abs(start_theta - path_start_theta) % math.pi
                 # calculate how much we need to turn to turn at the end of the path
                 goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
                 second_to_last_point = self.path_to_ball.poses[-2].pose.position
                 last_point = self.path_to_ball.poses[-1].pose.position
                 path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
-                goal_theta_diff = abs(goal_theta - path_end_theta)
+                goal_theta_diff = abs(goal_theta - path_end_theta) % math.pi
+                goal_theta_diff -= math.tau if goal_theta_diff > (math.tau / 2.0) else 0
+                goal_theta_diff += math.tau if goal_theta_diff < (-math.tau / 2.0) else 0
                 start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_start_angle_weight']
                 goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_goal_angle_weight']
                 total_cost = path_length + start_theta_cost + goal_theta_cost
@@ -185,6 +188,8 @@ class PathfindingCapsule:
                 #             f"weighted goal_diff: {goal_theta_cost}, " +
                 #             f"path_length: {path_length}, " +
                 #             f"total: {total_cost}")
+            if self._blackboard.config['publish_path_to_ball']:
+                self.path_to_ball_pub.publish(self.path_to_ball)
             return total_cost
         else:
             return -1
