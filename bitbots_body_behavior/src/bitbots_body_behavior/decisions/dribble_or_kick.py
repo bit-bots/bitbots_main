@@ -31,7 +31,6 @@ class DribbleOrKick(AbstractDecisionElement):
                                                                                   3,
                                                                                   self.kick_length,
                                                                                   self.angular_range)
-        rospy.logerr(best_kick_direction)
         front_free = best_kick_direction == 0
         self.publish_debug_data("Front free", front_free)
 
