@@ -7,13 +7,13 @@ PLUGINLIB_EXPORT_CLASS(bitbots_local_planner::BBPlanner, nav_core::BaseLocalPlan
 namespace bitbots_local_planner
 {
 
-    BBPlanner::BBPlanner()
+    BBPlanner::BBPlanner() : odom_helper_("odom")
     {
     }
 
     void BBPlanner::initialize(std::string name, tf2_ros::Buffer *tf_buffer, costmap_2d::Costmap2DROS *costmap_ros)
     {
-        // Init private node handle
+        // Init node handles
         ros::NodeHandle private_nh("~/" + name);
 
         // Register publishers
@@ -27,12 +27,20 @@ namespace bitbots_local_planner
         // Set fields to default values
         goal_reached_ = false;
 
+        //odom_helper_ = new base_local_planner::OdometryHelperRos("motion_odometry");
+
         // Setup dynamic reconfigure
         dsrv_ = new dynamic_reconfigure::Server<BBPlannerConfig>(private_nh);
         dynamic_reconfigure::Server<BBPlannerConfig>::CallbackType cb = boost::bind(&BBPlanner::reconfigureCB, this, _1, _2);
         dsrv_->setCallback(cb);
 
         ROS_DEBUG("BBPlanner: Version 2 Init.");
+    }
+
+    void BBPlanner::motionOdomCB(const nav_msgs::Odometry::ConstPtr &msg)
+    {
+        motion_odom_ = *msg;
+        ROS_ERROR("GOT ODOM");
     }
 
     void BBPlanner::reconfigureCB(BBPlannerConfig &config, uint32_t level)
@@ -117,7 +125,7 @@ namespace bitbots_local_planner
         // Get the min angle of the difference
         double min_angle = std::remainder(diff, 2 * M_PI);
         // Calculate our desired rotation velocity based on the angle difference and our max velocity
-        double vel = std::clamp(
+        double rot_goal_vel = std::clamp(
             config_.rotation_slow_down_factor * min_angle,
             -config_.max_rotation_vel,
             config_.max_rotation_vel);
@@ -132,15 +140,51 @@ namespace bitbots_local_planner
         }
         else
         {
+            // Get odometry velocity vector
+            geometry_msgs::PoseStamped robot_vel;
+            odom_helper_.getRobotVel(robot_vel);
+            // Calc current velocity value
+            double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
+
             // Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
             cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
             cmd_vel.linear.y = std::sin(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
+
+            // Scale command accordingly if a limit is acceded
+            if (cmd_vel.linear.x > config_.max_vel_x) {
+                ROS_DEBUG("X LIMIT reached: %f > %f, with y %f", cmd_vel.linear.x, config_.max_vel_x, cmd_vel.linear.y);
+                cmd_vel.linear.y *= config_.max_vel_x / cmd_vel.linear.x;
+                cmd_vel.linear.x = config_.max_vel_x;
+                ROS_DEBUG("X LIMIT set y %f", cmd_vel.linear.y);
+            }
+
+            if (cmd_vel.linear.x < config_.min_vel_x) {
+                ROS_DEBUG("X LIMIT reached: %f < %f, with y %f", cmd_vel.linear.x, config_.min_vel_x, cmd_vel.linear.y);
+                cmd_vel.linear.y *= config_.min_vel_x / cmd_vel.linear.x;
+                cmd_vel.linear.x = config_.min_vel_x;
+                ROS_DEBUG("X LIMIT set y %f", cmd_vel.linear.y);
+            }
+
+            double max_y = config_.max_vel_y;
+
+            if (std::abs(cmd_vel.linear.y) > max_y) {
+                ROS_DEBUG("Y LIMIT reached: %f > %f, with x %f", cmd_vel.linear.y, max_y, cmd_vel.linear.x);
+                cmd_vel.linear.x *= max_y / std::abs(cmd_vel.linear.y);
+                cmd_vel.linear.y *= max_y / std::abs(cmd_vel.linear.y);
+                ROS_DEBUG("Y LIMIT set x %f", cmd_vel.linear.x);
+            }
+
+            // Complementary Filter for smooting the outputs
+            cmd_vel.linear.x = cmd_vel.linear.x * config_.smoothing_k + robot_vel.pose.position.x * (1.0 - config_.smoothing_k);
+            cmd_vel.linear.y = cmd_vel.linear.y * config_.smoothing_k + robot_vel.pose.position.y * (1.0 - config_.smoothing_k);
+
             // Apply the desired rotational velocity
-            cmd_vel.angular.z = vel;
+            cmd_vel.angular.z = rot_goal_vel;
             // We didn't reached our goal if we need this step
             goal_reached_ = false;
-        }
 
+            ROS_INFO("End vel %f, %f\n", std::hypot(cmd_vel.linear.x, cmd_vel.linear.y), current_vel_);
+        }
         // Publich our "local plan" for viz purposes
         publishPlan();
 

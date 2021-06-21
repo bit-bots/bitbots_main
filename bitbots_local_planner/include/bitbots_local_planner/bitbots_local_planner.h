@@ -8,14 +8,15 @@
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_local_planner/BBPlannerConfig.h>
 #include <bitbots_local_planner/transform_global_plan.h>
+#include <base_local_planner/odometry_helper_ros.h>
 #include <nav_core/base_local_planner.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <tf2/convert.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/utils.h>
-#include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Point.h>
@@ -57,6 +58,11 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
    */
   void initialize(std::string name, tf2_ros::Buffer *tf_buffer, costmap_2d::Costmap2DROS *costmap_ros) override;
 
+  /**
+  *@brief Callbac for the motion odometry which is used for the current velocity
+  */
+  void motionOdomCB(const nav_msgs::Odometry::ConstPtr &msg);
+
   ~BBPlanner() override;
 
  private:
@@ -65,6 +71,7 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
   *@brief Reconfigure config_
   */
   void reconfigureCB(BBPlannerConfig &config, uint32_t level);
+
 
   /**
   *@brief Publish the global plan for visualization.
@@ -95,8 +102,13 @@ class BBPlanner : public nav_core::BaseLocalPlanner {
   bool goal_reached_;
   //publisher where the local plan for visulatation is published
   ros::Publisher local_plan_publisher_;
+  ros::Subscriber odom_sub_;
 
   costmap_2d::Costmap2DROS *costmap_ros_;
+
+  nav_msgs::Odometry motion_odom_;
+
+  base_local_planner::OdometryHelperRos odom_helper_;
 };
 }
 #endif
