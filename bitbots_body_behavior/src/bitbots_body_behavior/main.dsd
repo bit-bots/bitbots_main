@@ -69,24 +69,24 @@ $TimerRunning + name:reorientation
     NO --> @StartTimer + name:reorientation + duration:%behavior/body/reorientation_duration
 
 #GoalieBehavior
-$ClosestToBall
+$ClosestToBall + use_time_to_ball:true
     YES --> $BallDangerous
-        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToBlockPosition, @LookAtFieldFeatures
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
         ELSE --> #GoAndKickBallMapGoal
-    NO --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
 
 #StrikerRole
 $GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition //don't go too far back
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
     NO --> #GoAndKickBallMapGoal
 
 #SupporterRole
 $PassStarted
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
-    NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
+    YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
+    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #DefenderRole
-@ChangeAction + action:positioning, @GoToDefensePosition
+@LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
 
 #GoalieRole
 $LocalizationAvailable
@@ -122,13 +122,13 @@ $ConfigRole
         NO --> #SearchBall
         YES --> $SecondaryStateDecider
             CORNER_KICK --> $SecondaryStateTeamDecider
-                OUR --> $RankToBallNoGoalie
+                OUR --> $RankToBallNoGoalie + use_time_to_ball:true
                     FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
                     SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
                     THIRD --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToDefensePosition
                 OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
             ELSE --> $SecondaryStateTeamDecider
-                OUR --> $RankToBallNoGoalie
+                OUR --> $RankToBallNoGoalie + use_time_to_ball:true
                     FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
                     SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
                     THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
@@ -169,7 +169,7 @@ $IsPenalized
                             YES --> $LocalizationPrecision
                                 HIGH --> $TimerRunning + name:reorientation
                                     YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
-                                    NO --> $RankToBallNoGoalie
+                                    NO --> $RankToBallNoGoalie + use_time_to_ball:true
                                         FIRST --> #StrikerRole
                                         SECOND --> #SupporterRole
                                         THIRD --> #DefenderRole

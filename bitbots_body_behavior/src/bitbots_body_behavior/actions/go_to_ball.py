@@ -24,72 +24,10 @@ class GoToBall(AbstractActionElement):
 
         self.blocking = parameters.get('blocking', True)
         self.distance = parameters.get('distance', self.blackboard.config['ball_approach_dist'])
-        self.goal_width = rospy.get_param("goal_width", 2)
 
     def perform(self, reevaluate=False):
 
-        if 'gradient_goal' == self.target:
-            ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
-
-            goal_angle = self.blackboard.world_model.get_gradient_direction_at_field_position(ball_x, ball_y)
-
-            goal_x = ball_x - math.cos(goal_angle) * self.distance
-            goal_y = ball_y - math.sin(goal_angle) * self.distance
-
-            ball_point = (goal_x, goal_y, goal_angle, self.blackboard.map_frame)
-
-        elif 'map_goal' == self.target:
-            goal_angle = self.blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
-
-            ball_x, ball_y = self.blackboard.world_model.get_ball_position_xy()
-
-            if abs(ball_y) < self.goal_width / 2:
-                goal_angle = 0
-
-            goal_x = ball_x - math.cos(goal_angle) * self.distance
-            goal_y = ball_y - math.sin(goal_angle) * self.distance
-
-            ball_point = (goal_x, goal_y, goal_angle, self.blackboard.map_frame)
-
-        elif 'detection_goal' == self.target:
-
-            x_dist = self.blackboard.world_model.get_detection_based_goal_position_uv()[0] - \
-                     self.blackboard.world_model.get_ball_position_uv()[0]
-            y_dist = self.blackboard.world_model.get_detection_based_goal_position_uv()[1] - \
-                     self.blackboard.world_model.get_ball_position_uv()[1]
-
-            goal_angle = math.atan2(y_dist, x_dist)
-
-            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-            goal_u = ball_u + math.cos(goal_angle) * self.distance
-            goal_v = ball_v + math.sin(goal_angle) * self.distance
-
-            ball_point = (goal_u, goal_v, goal_angle, self.blackboard.world_model.base_footprint_frame)
-
-        elif 'none' == self.target or 'current_orientation' == self.target:
-
-            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-            ball_point = (ball_u, ball_v, 0, self.blackboard.world_model.base_footprint_frame)
-
-        elif 'close' == self.target:
-
-            ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-            angle = math.atan2(ball_v, ball_u)
-            ball_point = (ball_u, ball_v, angle, self.blackboard.world_model.base_footprint_frame)
-        else:
-            rospy.logerr("Target %s for go_to_ball action not specified.", self.target)
-            return
-
-        pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
-        pose_msg.header.frame_id = ball_point[3]
-        pose_msg.pose.position = Point(ball_point[0], ball_point[1], 0)
-        quaternion = quaternion_from_euler(0, 0, ball_point[2])
-        pose_msg.pose.orientation.x = quaternion[0]
-        pose_msg.pose.orientation.y = quaternion[1]
-        pose_msg.pose.orientation.z = quaternion[2]
-        pose_msg.pose.orientation.w = quaternion[3]
-
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance)
         self.blackboard.pathfinding.publish(pose_msg)
 
         approach_marker = Marker()

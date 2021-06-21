@@ -21,22 +21,36 @@ from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.async_service import AsyncServiceProxy
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from bitbots_ros_patches.rate import Rate
 from sensor_msgs.msg import PointCloud2
+from std_msgs.msg import Float32
+from nav_msgs.srv import GetPlan
+from nav_msgs.msg import Path
 
 if __name__ == "__main__":
     rospy.init_node("Bodybehavior")
     D = dsd.DSD(BodyBlackboard(), 'debug/dsd/body_behavior')
 
     D.blackboard.team_data.strategy_sender = rospy.Publisher("strategy", Strategy, queue_size=2)
+    D.blackboard.team_data.time_to_ball_publisher = rospy.Publisher("time_to_ball", Float32, queue_size=2)
     D.blackboard.blackboard.head_pub = rospy.Publisher("head_mode", HeadMode, queue_size=10)
     D.blackboard.pathfinding.pathfinding_pub = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
     D.blackboard.pathfinding.pathfinding_cancel_pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
     D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
     D.blackboard.pathfinding.keep_out_area_pub = rospy.Publisher("keep_out_area", PointCloud2, queue_size=1)
     D.blackboard.pathfinding.approach_marker_pub = rospy.Publisher("debug/approach_point", Marker, queue_size=10)
+    D.blackboard.pathfinding.get_plan_service = AsyncServiceProxy("move_base/NavfnROS/make_plan", GetPlan)
+    D.blackboard.pathfinding.path_to_ball_pub = rospy.Publisher("path_to_ball", Path, queue_size=10)
+
+    while not rospy.is_shutdown():
+        try:
+            D.blackboard.pathfinding.get_plan_service.service_proxy.wait_for_service(2.0)
+            break
+        except rospy.ROSException as ex:
+            rospy.logwarn("waiting for 'move_base/NavfnROS/make_plan' Service to become available...")
 
     D.blackboard.dynup_cancel_pub = rospy.Publisher('dynup/cancel', GoalID, queue_size=1)
     D.blackboard.hcm_deactivate_pub = rospy.Publisher('hcm_deactivate', Bool, queue_size=1)
@@ -67,7 +81,16 @@ if __name__ == "__main__":
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
 
     rate = Rate(125)
+    counter = 0
+    path_to_ball_service_response = None
     while not rospy.is_shutdown():
         D.update()
         D.blackboard.team_data.publish_strategy()
+        D.blackboard.team_data.publish_time_to_ball()
+        counter = (counter + 1) % D.blackboard.config['time_to_ball_divider']
+        D.blackboard.pathfinding.path_to_ball_check(path_to_ball_service_response)
+        if counter == 0:
+            resp = D.blackboard.pathfinding.get_new_path_to_ball()
+            if resp is not None:
+                path_to_ball_service_response = resp
         rate.sleep()
