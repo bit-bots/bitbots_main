@@ -89,11 +89,15 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.y = ball_v
                     goal.ball_position.z = 0
                     goal.unstable = False
+
+                    # list of possible kick directions, sorted by absolute value to 
+                    # prefer forward kicks to side kicks if their costs are equal
                     kick_directions = sorted(np.linspace(
                         -self.max_kick_angle,
                         self.max_kick_angle,
                         num=self.num_kick_angles), key=abs)
 
+                    # get the kick direction with the least cost
                     kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
                         direction=direction,
                         kick_length=self.kick_length,
