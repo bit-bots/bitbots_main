@@ -24,9 +24,13 @@ class KickOffTimeUp(AbstractDecisionElement):
                         abs(ball_pos[1]) > self.kickoff_min_ball_movement:
                     self.publish_debug_data("Reason", "Opp kick off ball moved")
                     return 'YES'
+            else:
+                # this is some kind of free kick and we may want to act differently
+                self.publish_debug_data("Reason", "Opp has free kick")
+                return 'NO_FREEKICK'
             self.publish_debug_data("Reason", "Opp has kick off")
             # we need to wait for now
-            return 'NO'
+            return 'NO_NORMAL'
 
     def get_reevaluate(self):
         return True

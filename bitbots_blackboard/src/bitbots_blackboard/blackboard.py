@@ -8,6 +8,7 @@ from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
+from bitbots_blackboard.async_service import AsyncServiceProxy
 
 import actionlib
 from humanoid_league_msgs.msg import PlayAnimationAction
@@ -23,7 +24,7 @@ class BodyBlackboard:
         self.gamestate = GameStatusCapsule()
         self.animation = AnimationCapsule()
         self.kick = KickCapsule(self)
-        self.pathfinding = PathfindingCapsule()
+        self.pathfinding = PathfindingCapsule(self)
         self.world_model = WorldModelCapsule()
         self.team_data = TeamDataCapsule()
         # animations

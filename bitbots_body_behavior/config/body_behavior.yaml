@@ -36,7 +36,7 @@ behavior:
       offense: [ [ -0.25, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
       kickoff: [ -0.1, 0 ]
       # position number 0 = center, 1 = left, 2 = right
-      pos_number: 0
+      pos_number: 0 #this is currently handled more dynamically for offense players
 
     # Time to wait in ready state before moving to role position to give the localization time to converge.
     ready_wait_time: 4
@@ -209,6 +209,23 @@ behavior:
     # estimated kick length when estimating kick cost
     kick_cost_kick_length: 1.5
 
+    # parameters for time_to_ball estimation
+    # divider of how often the time to ball is updated depending on update rate of the behavior
+    # example: (125 = 1 per second, 250 = 1 per 2 seconds)
+    time_to_ball_divider: 25
+
+    # factor by which the difference in the starting angle and direction of the path (in rad) is weighted
+    time_to_ball_start_angle_weight: 0.3
+    # same but for the goal angle
+    time_to_ball_goal_angle_weight: 0.2
+
+    # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
+    time_to_ball_start_to_goal_angle_weight: 0.3
+
+    # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
+    time_to_ball_remember_time: 2.5
+
+    publish_path_to_ball: true
 
 role: "goalie"
 
