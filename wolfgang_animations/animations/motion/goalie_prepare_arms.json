@@ -4,7 +4,7 @@
     "hostname": "TheArchives",
     "keyframes": [
         {
-            "duration": 0.5,
+            "duration": 1.0,
             "goals": {
                 "HeadPan" : 0.0,
                 "HeadTilt" : 0.0,
