@@ -8,7 +8,7 @@
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @StandAndWait + duration:2 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+@ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
 
 
 #GoAndKickBallMapGoal
@@ -133,8 +133,8 @@ $ConfigRole
                     SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
                     THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
                 OTHER --> $RankToBallNoGoalie
-                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:map_goal + distance:1
-                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
                     THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
 -->BodyBehavior
@@ -142,7 +142,7 @@ $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+        INITIAL --> @ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
         READY --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
