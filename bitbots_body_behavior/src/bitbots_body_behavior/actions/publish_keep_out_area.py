@@ -22,7 +22,7 @@ class PublishKeepOutArea(AbstractActionElement):
 
         dummy_header = Header()
         dummy_header.stamp = rospy.Time.now()
-        dummy_header.frame_id = self.map_frame
+        dummy_header.frame_id = self.blackboard.map_frame
         msg = create_cloud_xyz32(dummy_header, obstacle_points)
-        self.blackboard.keep_out_area_pub.publish(msg)
+        self.blackboard.pathfinding.keep_out_area_pub.publish(msg)
         self.pop()
