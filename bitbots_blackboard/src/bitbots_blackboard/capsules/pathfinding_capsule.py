@@ -2,6 +2,7 @@ import rospy
 import math
 
 import tf2_ros
+import numpy as np
 from ros_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point
 from actionlib_msgs.msg import GoalID
@@ -145,14 +146,13 @@ class PathfindingCapsule:
         if len(self.path_to_ball.poses) > 2:
             path_length = 0
             for i in range(len(self.path_to_ball.poses)-1):
-                start = self.path_to_ball.poses[i].pose
-                end = self.path_to_ball.poses[i+1].pose
-                dist = math.sqrt((start.position.x-end.position.x) ** 2 + (start.position.y-end.position.y) ** 2)
-                path_length += dist
+                start = self.path_to_ball.poses[i].pose.position
+                end = self.path_to_ball.poses[i+1].pose.position
+                path_length += np.linalg.norm(numpify(start)[:2]-numpify(end)[:2])
 
             start_point = self.path_to_ball.poses[0].pose.position
             end_point = self.path_to_ball.poses[-1].pose.position
-            straightline_distance = math.sqrt((start_point.x-end_point.x) ** 2 + (start_point.y-end_point.y) ** 2)
+            straightline_distance =  np.linalg.norm(numpify(start_point)[:2]-numpify(end_point)[:2])
             # if the robot is close to the ball it does not turn to walk to it
             if straightline_distance < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
                 start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
