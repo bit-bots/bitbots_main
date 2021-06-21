@@ -2,6 +2,7 @@ global_costmap:
   plugins:
     - {name: robot_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
     - {name: ball_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    - {name: keep_out_area, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
     - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
   origin_y: -4.0
