@@ -71,7 +71,7 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
 
 void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
-  ROS_INFO("Accepted new goal");
+  ROS_INFO("Dynup accepted new goal");
   engine_.reset();
   ik_.reset();
   stabilizer_.reset();
