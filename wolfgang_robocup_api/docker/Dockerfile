@@ -80,8 +80,6 @@ RUN cd src/bitbots_meta && make vision-files
 RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
 # Set respawn="true" for all nodes
 RUN bash -c "find -name '*.launch' | xargs sed -i '/<node/s/ respawn=\"\w\+\"//;/<node/s/ required=\"\w\+\"//;/<node/s/<node/<node respawn=\"true\"/'"
-# In the robocup api, set required="true"
-RUN sed -i "/<node/s/respawn/required/" src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/launch/wolfgang_robocup_api_bridge.launch
 
 # Volume for logs
 VOLUME /robocup-logs

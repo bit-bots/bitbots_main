@@ -1,0 +1,36 @@
+{
+ "author": "jasper",
+ "description": "init for simulation when reset",
+ "hostname": "none",
+ "keyframes": [
+ {
+ "duration": 1.0,
+ "goals": {
+ "HeadPan" : 0.0,
+ "HeadTilt" : 0.0,
+ "LHipYaw" : 0.0,
+ "LHipRoll" : 0.0,
+ "LHipPitch" : -6.875494,
+ "LKnee" : 0.0,
+ "LAnklePitch" : 6.875494,
+ "LAnkleRoll" : 0.0,
+ "LShoulderPitch" : 0.0,
+ "LShoulderRoll" : 0.0,
+ "LElbow" : 0.0,
+ "RHipYaw" : 0.0,
+ "RHipRoll" : 0.0,
+ "RHipPitch" : 6.875494,
+ "RKnee" : 0.0,
+ "RAnklePitch" : -6.875494,
+ "RAnkleRoll" : 0.0,
+ "RShoulderPitch" : 0.0,
+ "RShoulderRoll" : 0.0,
+ "RElbow" : 0.0
+},
+ "name": "generated frame",
+ "pause": 0.5
+ }
+ ],
+ "name": "init_sim",
+"version": 0
+}
