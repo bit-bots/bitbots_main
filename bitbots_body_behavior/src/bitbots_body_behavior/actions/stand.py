@@ -11,6 +11,15 @@ class Stop(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.pathfinding.cancel_goal()
+        self.blackboard.pathfinding.stop_walk()
+        self.pop()
+
+
+class CancelPathplanning(AbstractActionElement):
+    """Only cancel the pathplanning goal without completly stopping the walking"""
+
+    def perform(self, reevaluate=False):
+        self.blackboard.pathfinding.cancel_goal()
         self.pop()
 
 

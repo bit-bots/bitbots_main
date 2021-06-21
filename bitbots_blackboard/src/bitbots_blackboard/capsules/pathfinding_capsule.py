@@ -84,3 +84,9 @@ class PathfindingCapsule:
 
     def cmd_vel_cb(self, msg: Twist):
         self.current_cmd_vel = msg
+
+    def stop_walk(self):
+        # send special command to walking to stop it
+        msg = Twist()
+        msg.angular.x = -1.0
+        self.direct_cmd_vel_pub.publish(msg)

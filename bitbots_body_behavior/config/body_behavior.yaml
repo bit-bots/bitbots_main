@@ -169,7 +169,7 @@ behavior:
 
     # dribble decision
     dribble_orient_threshold: 0.5
-    dribble_goal_distance_threshold: 1.25
+    dribble_goal_distance_threshold: 1.5
     dribble_ball_distance_threshold: 1.0
 
     ##################
