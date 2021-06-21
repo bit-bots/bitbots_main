@@ -158,7 +158,7 @@ $IsPenalized
                 PLACING --> #Placing
             NORMAL --> $BallSeen
                 NO --> $ConfigRole
-                    GOALIE --> #GoToRolePosition
+                    GOALIE --> @GoToRolePosition
                     ELSE --> #SearchBall
                 YES --> $KickOffTimeUp
                     NO --> #StandAndLook
