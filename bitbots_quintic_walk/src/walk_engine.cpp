@@ -47,10 +47,6 @@ void WalkEngine::setGoals(const WalkRequest &goals) {
 }
 
 WalkResponse WalkEngine::update(double dt) {
-  // check if orders are zero, since we don't want to walk on the spot
-  bool orders_zero = request_.linear_orders.x() == 0 && request_.linear_orders.y() == 0 &&
-      request_.linear_orders.z() == 0 && request_.angular_z == 0;
-
   // First check cases where we do not want to update the phase: pausing, idle and phase rest
   if (engine_state_ == WalkState::PAUSED) {
     if (time_paused_ > pause_duration_) {
@@ -71,7 +67,7 @@ WalkResponse WalkEngine::update(double dt) {
     }
     // we don't have to update anything more
   } else if (engine_state_ == WalkState::IDLE) {
-    if (orders_zero || !request_.walkable_state) {
+    if (request_.stop_walk || !request_.walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return createResponse();
     }
@@ -100,7 +96,7 @@ WalkResponse WalkEngine::update(double dt) {
   } else if (engine_state_ == WalkState::START_MOVEMENT) {
     // in this state we do a single "step" where we only move the trunk
     if (half_step_finished) {
-      if (orders_zero) {
+      if (request_.stop_walk) {
         engine_state_ = WalkState::STOP_MOVEMENT;
         buildStopMovementTrajectories();
       } else {
@@ -111,7 +107,7 @@ WalkResponse WalkEngine::update(double dt) {
     }
   } else if (engine_state_ == WalkState::START_STEP) {
     if (half_step_finished) {
-      if (orders_zero) {
+      if (request_.stop_walk) {
         // we have zero command vel -> we should stop
         engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
@@ -139,7 +135,7 @@ WalkResponse WalkEngine::update(double dt) {
       right_kick_requested_ = false;
     } else if (half_step_finished) {
       // current step is finished, lets see if we have to change state
-      if (orders_zero) {
+      if (request_.stop_walk) {
         // we have zero command vel -> we should stop
         engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
@@ -229,13 +225,14 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  reset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
+  reset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, true, false, false);
 }
 
-void WalkEngine::reset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
+void WalkEngine::reset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z, bool stop_walk,
                               bool walkable_state, bool reset_odometry) {
   request_.linear_orders = linear_orders;
   request_.angular_z = angular_z;
+  request_.stop_walk = stop_walk;
   request_.walkable_state = walkable_state;
   engine_state_ = state;
   time_paused_ = 0.0;

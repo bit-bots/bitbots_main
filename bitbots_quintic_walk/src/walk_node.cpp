@@ -228,7 +228,7 @@ void WalkNode::reset() {
 }
 
 void WalkNode::reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry) {
-  walk_engine_.reset(state, phase, {cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.linear.z}, cmd_vel.angular.z,
+  walk_engine_.reset(state, phase, {cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.linear.z}, false, cmd_vel.angular.z,
                      true, reset_odometry);
   stabilizer_.reset();
   cmdVelCb(cmd_vel);
@@ -274,6 +274,9 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
       {msg.linear.x * factor * x_speed_multiplier_, msg.linear.y * factor * 2 * y_speed_multiplier_,
        msg.linear.z * factor};
   current_request_.angular_z = msg.angular.z * factor * yaw_speed_multiplier_;
+
+  // special command to completely stop the walking
+  current_request_.stop_walk = msg.angular.x != 0;
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
