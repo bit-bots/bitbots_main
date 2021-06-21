@@ -53,9 +53,9 @@ class PlayAnimationAction(object):
                 with open(animation_file) as fp:
                     self.animation_cache[animation_name] = parse(json.load(fp))
             except IOError:
-                rospy.logwarn("Animation '%s' could not be loaded" % animation_name)
+                rospy.logerr("Animation '%s' could not be loaded" % animation_name)
             except ValueError:
-                rospy.logwarn(
+                rospy.logerr(
                     "Animation '%s' had a ValueError. Probably there is a syntax error in the animation file. "
                     "See traceback" % animation_name)
                 traceback.print_exc()
@@ -137,7 +137,7 @@ class PlayAnimationAction(object):
 
     def get_animation_splines(self, animation_name):
         if animation_name not in self.animation_cache:
-            rospy.logwarn("Animation '%s' not found" % animation_name)
+            rospy.logerr("Animation '%s' not found" % animation_name)
             self._as.set_aborted(False, "Animation not found")
             return
 
