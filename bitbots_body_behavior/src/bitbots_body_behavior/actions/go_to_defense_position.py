@@ -43,7 +43,7 @@ class GoToDefensePosition(AbstractActionElement):
 
         goal_position = (-self.blackboard.world_model.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
-        our_pose = self.blackboard.world_model.get_current_position()
+        our_pose = np.array(self.blackboard.world_model.get_current_position())
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
@@ -63,14 +63,18 @@ class GoToDefensePosition(AbstractActionElement):
             defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
 
-            # decide on side
-            if our_pose[1] < ball_position[1]:
-                side_sign = -1
-            else:
-                side_sign = 1
+            # decide on side that is closer
+            pos_1 = np.array([defense_pos[0] + math.sin(yaw) * 1, defense_pos[1] + math.cos(yaw) * 1])
+            pos_2 = np.array([defense_pos[0] + math.sin(yaw) * 1, defense_pos[1] - math.cos(yaw) * 1])
+            distance_1 = np.linalg.norm(our_pose - pos_1)
+            distance_2 = np.linalg.norm(our_pose - pos_2)
 
-            pose_msg.pose.position.x = defense_pos[0] + side_sign * math.sin(yaw) * 1
-            pose_msg.pose.position.y = defense_pos[1] + side_sign * math.cos(yaw) * 1
+            if distance_1 < distance_2:
+                pose_msg.pose.position.x = pos_1[0]
+                pose_msg.pose.position.y = pos_1[1]
+            else:
+                pose_msg.pose.position.x = pos_2[0]
+                pose_msg.pose.position.y = pos_2[1]
             pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
         else:
             # center point between ball and own goal
