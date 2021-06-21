@@ -17,7 +17,7 @@ import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, \
-    Quaternion
+    Quaternion, TransformStamped
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 import sensor_msgs.point_cloud2 as pc2
@@ -352,6 +352,33 @@ class WorldModelCapsule:
     def get_current_position(self):
         """
         Returns the current position as determined by the localization
+        :returns x,y,theta
+        """
+        transform = self.get_current_position_transform()
+        if transform is None:
+            return None
+        orientation = transform.transform.rotation
+        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        return transform.transform.translation.x, transform.transform.translation.y, theta
+
+    def get_current_position_pose_stamped(self) -> PoseStamped:
+        """
+        Returns the current position as determined by the localization as a PoseStamped
+        """
+        transform = self.get_current_position_transform()
+        if transform is None:
+            return None
+        ps = PoseStamped()
+        ps.header = transform.header
+        ps.pose.position.x = transform.transform.translation.x
+        ps.pose.position.y = transform.transform.translation.y
+        ps.pose.position.z = transform.transform.translation.z
+        ps.pose.orientation = transform.transform.rotation
+        return ps
+
+    def get_current_position_transform(self) -> TransformStamped:
+        """
+        Returns the current position as determined by the localization as a TransformStamped
         """
         try:
             # get the most recent transform
@@ -359,9 +386,7 @@ class WorldModelCapsule:
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return None
-        orientation = transform.transform.rotation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        return transform.transform.translation.x, transform.transform.translation.y, theta
+        return transform
 
     def get_localization_precision(self):
         """
