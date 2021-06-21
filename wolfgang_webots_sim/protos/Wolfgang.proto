@@ -1983,25 +1983,25 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation -0.030000 -0.007000 -0.034000
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation 0.000000 0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
                                                 ]
                                               }
                                               DEF r_cleat_l_back Solid {
-                                                translation 0.000000 -0.000500 -0.016000
-                                                rotation -0.000000 0.000000 -1.000000 3.141590
+                                                translation 0.000000 -0.000500 0.016000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 name "r_cleat_l_back"
                                               }
                                             ]
                                             name "rlb"
                                             boundingObject DEF CLEAT_CAPSULE Transform {
-                                              translation 0.000000 0.000000 -0.005000
+                                              translation 0.000000 0.000000 0.005000
                                               rotation 1.000000 -0.000000 0.000000 1.570796
                                               children [
                                                 Capsule {
@@ -2024,19 +2024,19 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation -0.030000 0.177000 -0.034000
-                                            rotation -0.000000 0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation -0.000000 0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
                                                 ]
                                               }
                                               DEF r_cleat_l_front Solid {
-                                                translation -0.000000 -0.000500 -0.016000
-                                                rotation 0.000000 -0.000000 -1.000000 3.141590
+                                                translation -0.000000 -0.000500 0.016000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 name "r_cleat_l_front"
                                               }
                                             ]
@@ -2056,19 +2056,19 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation 0.060000 0.177000 -0.034000
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation -0.000000 0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
                                                 ]
                                               }
                                               DEF r_cleat_r_front Solid {
-                                                translation -0.000000 -0.000500 -0.016000
-                                                rotation 0.000000 -0.000000 -1.000000 3.141590
+                                                translation -0.000000 -0.000500 0.016000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 name "r_cleat_r_front"
                                               }
                                             ]
@@ -2088,18 +2088,18 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation 0.060000 -0.007000 -0.034000
-                                            rotation 0.000000 0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation -0.000000 0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
                                                 ]
                                               }
                                               DEF r_cleat_r_back Solid {
-                                                translation -0.000000 -0.000500 -0.016000
+                                                translation -0.000000 -0.000500 0.016000
                                                 rotation 0.000000 0.000000 1.000000 3.141590
                                                 name "r_cleat_r_back"
                                               }
@@ -3537,11 +3537,11 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation -0.060000 -0.007000 -0.034000
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation 0.000000 -0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation 0.000000 -0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
@@ -3569,11 +3569,11 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation -0.060000 0.177000 -0.034000
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation -0.000000 0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
@@ -3601,11 +3601,11 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation 0.030000 0.177000 -0.034000
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation 0.000000 -0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
@@ -3633,11 +3633,11 @@ PROTO Wolfgang [
                                             type "force"
                                             resolution 0.00005
                                             translation 0.030000 -0.007000 -0.034000
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
+                                            rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
                                               Transform {
-                                                translation -0.000000 0.000000 -0.010000
-                                                rotation 0.000000 1.000000 0.000000 0.000000
+                                                translation -0.000000 0.000000 0.010000
+                                                rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
                                                   }
