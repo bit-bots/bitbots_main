@@ -107,7 +107,7 @@ $LocalizationAvailable
 $IsPenaltyShootRobot
     NO --> #DoNothing
     YES -->$SecondaryStateTeamDecider
-        OUR --> @KickBallDynamic + r:true  + type:penalty, @LookAtFieldFeatures, @StandAndWait
+        OUR --> @KickBallDynamic + r:true + type:penalty, @StandAndWait
         OTHER --> $BallDangerous
             LEFT --> @PlayAnimationGoalieFallLeft
             RIGHT --> @PlayAnimationGoalieFallRight
@@ -143,8 +143,8 @@ $IsPenalized
         READY --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
-                OUR -->  @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // we need to also see the goalie todo look at better position a bit lower
-                OTHER --> @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait // goalie only needs to care about the ball
+                OUR -->  @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @StandAndWait + duration:1 + r:false, @StandAndWait // we need to also see the goalie
+                OTHER --> @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait // goalie only needs to care about the ball
             ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider
