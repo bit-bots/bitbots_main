@@ -24,6 +24,7 @@ class StandAndWait(AbstractActionElement):
         self.start_time = rospy.Time.now()
 
     def perform(self, reevaluate=False):
+        self.publish_debug_data("duration", self.duration)
         if self.duration is not None and \
                 (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
             return self.pop()
