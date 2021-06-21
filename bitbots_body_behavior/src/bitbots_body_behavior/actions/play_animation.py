@@ -79,20 +79,33 @@ class AbstractPlayAnimation(AbstractActionElement):
         return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
 
 
+class PlayAnimationGoalieArms(AbstractPlayAnimation):
+    def chose_animation(self):
+        return self.blackboard.goalie_arms_animation
+
+
 class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING GOALIE FALLING RIGHT ANIMATION")
         return self.blackboard.goalie_falling_right_animation
+
 
 class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING GOALIE FALLING LEFT ANIMATION")
         return self.blackboard.goalie_falling_left_animation
 
+class PlayAnimationGoalieFallCenter(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING GOALIE FALLING CENTER ANIMATION")
+        return self.blackboard.goalie_falling_center_animation
+
+
 class PlayAnimationCheering(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING CHEERING ANIMATION")
         return self.blackboard.cheering_animation
+
 
 class PlayAnimationInit(AbstractPlayAnimation):
     def chose_animation(self):

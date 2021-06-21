@@ -53,7 +53,7 @@ $BallSeen
 #PositioningReady
 $ConfigRole
     GOALIE --> $GoalScoreRecently
-        YES --> @Stop + r:false, @PlayAnimationCheering + r:false
+        YES --> @Stop + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
         NO --> $LocalizationAvailable
             YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
             NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
@@ -103,7 +103,7 @@ $LocalizationAvailable
             YES --> #ReorientationPause
     NO --> #NoLocalizationGoalieBehavior
 
-#PenaltyBehavior
+#PenaltyShootoutBehavior
 $IsPenaltyShootRobot
     NO --> #DoNothing
     YES -->$SecondaryStateTeamDecider
@@ -111,28 +111,31 @@ $IsPenaltyShootRobot
         OTHER --> $BallDangerous
             LEFT --> @PlayAnimationGoalieFallLeft
             RIGHT --> @PlayAnimationGoalieFallRight
+            CENTER --> @PlayAnimationGoalieFallCenter
             ELSE --> @LookAtBall
 
 
 #Placing
-$BallSeen
-    NO --> #SearchBall
-    YES --> $SecondaryStateDecider
-        CORNER_KICK --> $SecondaryStateTeamDecider
-            OUR --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
-                THIRD --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToDefensePosition
-            OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
-        ELSE --> $SecondaryStateTeamDecider
-            OUR --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
-                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
-            OTHER --> $RankToBallNoGoalie
-                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:map_goal + distance:1
-                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick
-                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+$ConfigRole
+    GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+    ELSE --> $BallSeen
+        NO --> #SearchBall
+        YES --> $SecondaryStateDecider
+            CORNER_KICK --> $SecondaryStateTeamDecider
+                OUR --> $RankToBallNoGoalie
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
+                    THIRD --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToDefensePosition
+                OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
+            ELSE --> $SecondaryStateTeamDecider
+                OUR --> $RankToBallNoGoalie
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
+                    THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+                OTHER --> $RankToBallNoGoalie
+                    FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:map_goal + distance:1
+                    SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick
+                    THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
 -->BodyBehavior
 $IsPenalized
@@ -144,17 +147,19 @@ $IsPenalized
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
                 OUR -->  @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @StandAndWait + duration:1 + r:false, @StandAndWait // we need to also see the goalie
-                OTHER --> @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @StandAndWait // goalie only needs to care about the ball
+                OTHER --> @DeactivateHCM, @LookForward, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @StandAndWait // goalie only needs to care about the ball
             ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider
-            PENALTYSHOOT --> #PenaltyBehavior
+            PENALTYSHOOT --> #PenaltyShootoutBehavior
             TIMEOUT --> #StandAndLook
             ELSE --> $SecondaryStateModeDecider
                 ELSE --> #StandAndLook
                 PLACING --> #Placing
             NORMAL --> $BallSeen
-                NO --> #SearchBall
+                NO --> $ConfigRole
+                    GOALIE --> @GoToRolePosition
+                    ELSE --> #SearchBall
                 YES --> $KickOffTimeUp
                     NO --> #StandAndLook
                     YES --> $ConfigRole
