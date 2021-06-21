@@ -1,5 +1,6 @@
 import rospy
 import humanoid_league_msgs.msg
+from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -75,7 +76,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def animation_finished(self):
         state = self.blackboard.animation_action_client.get_state()
-        return state >= 1
+        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
 
 
 class PlayAnimationGoalieArms(AbstractPlayAnimation):
