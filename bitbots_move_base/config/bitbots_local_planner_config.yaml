@@ -6,7 +6,7 @@ BBPlanner:
   max_vel_x: 0.25
   min_vel_x: -0.2
   max_vel_y: 0.08
-  max_acc: 0.01
+  smoothing_k: 0.4
   rotation_slow_down_factor: 0.3
-  translation_slow_down_factor: 0.6
+  translation_slow_down_factor: 0.5
   orient_to_goal_distance: 1

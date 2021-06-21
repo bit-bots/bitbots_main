@@ -146,10 +146,6 @@ namespace bitbots_local_planner
             // Calc current velocity value
             double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
 
-            // Limit the acceleration
-            walk_vel = std::min(walk_vel, current_vel_ + config_.max_acc);
-            ROS_DEBUG("Walk Vel %f | Max Walk Vel %f", walk_vel, current_vel_ + config_.max_acc);
-
             // Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
             cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
             cmd_vel.linear.y = std::sin(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
@@ -177,6 +173,10 @@ namespace bitbots_local_planner
                 cmd_vel.linear.y *= max_y / std::abs(cmd_vel.linear.y);
                 ROS_DEBUG("Y LIMIT set x %f", cmd_vel.linear.x);
             }
+
+            // Complementary Filter for smooting the outputs
+            cmd_vel.linear.x = cmd_vel.linear.x * config_.smoothing_k + robot_vel.pose.position.x * (1.0 - config_.smoothing_k);
+            cmd_vel.linear.y = cmd_vel.linear.y * config_.smoothing_k + robot_vel.pose.position.y * (1.0 - config_.smoothing_k);
 
             // Apply the desired rotational velocity
             cmd_vel.angular.z = rot_goal_vel;
