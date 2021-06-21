@@ -136,7 +136,7 @@ class PathfindingCapsule:
             # timeout
             elif rospy.Time.now() - self.path_update_time >\
                     rospy.Duration(self._blackboard.config['time_to_ball_remember_time']):
-                rospy.logerr("no path to ball found but path is too old")
+                rospy.logerr("no path to ball found, path is too old, setting time_to_ball to 9999")
                 self._blackboard.team_data.own_time_to_ball = 9999.0
             else:
                 rospy.logerr("no path to ball found but i member")
