@@ -82,7 +82,7 @@ $GoalieHandlingBall
 
 #SupporterRole
 $PassStarted
-    YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallInactive, @GoToPassAcceptPosition
+    YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #DefenderRole
