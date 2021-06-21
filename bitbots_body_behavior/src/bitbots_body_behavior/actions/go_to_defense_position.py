@@ -65,7 +65,7 @@ class GoToDefensePosition(AbstractActionElement):
 
             # decide on side that is closer
             pos_1 = np.array([defense_pos[0] + math.sin(yaw) * 1, defense_pos[1] + math.cos(yaw) * 1])
-            pos_2 = np.array([defense_pos[0] + math.sin(yaw) * 1, defense_pos[1] - math.cos(yaw) * 1])
+            pos_2 = np.array([defense_pos[0] - math.sin(yaw) * 1, defense_pos[1] - math.cos(yaw) * 1])
             distance_1 = np.linalg.norm(our_pose - pos_1)
             distance_2 = np.linalg.norm(our_pose - pos_2)
 
