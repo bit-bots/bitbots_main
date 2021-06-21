@@ -23,6 +23,7 @@ class PathfindingCapsule:
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.path_to_ball_pub = None  #type: rospy.Publisher
         self.ball_obstacle_active_pub = None
+        self.keep_out_area_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
