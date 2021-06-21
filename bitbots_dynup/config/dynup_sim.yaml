@@ -11,12 +11,10 @@ dynup:
   trunk_pitch: 0.13
   trunk_x_final: 0.0
 
-  #arm_side_offset: 0.163
-  arm_side_offset: 0.13 #front
-
 
   # Back
   arms_angle_back: 113.75
+  arm_side_offset_back: 0.22
   com_shift_1: 0.1
   com_shift_2: 0.066
   foot_angle: 67.97
@@ -27,12 +25,13 @@ dynup:
   time_full_squat_hands: 0.128
   time_full_squat_legs: 0.096
   time_legs_close: 0.064
-  trunk_height_back: 0.112
+  trunk_height_back: 0.17
   trunk_overshoot_angle_back: 6.72
   wait_in_squat_back: 0.096
 
 
   # Front
+  arm_side_offset_front: 0.13
   hands_pitch: -46.7
   leg_min_length_front: 0.298
   max_leg_angle: 77.64
@@ -59,7 +58,7 @@ dynup:
   minimal_displacement: False
   stable_threshold: 0.05
   stable_duration: 100
-  stabilization_timeout: 1
+  stabilization_timeout: 1.5
 
   # Visualizer
   spline_smoothness: 100
@@ -76,8 +75,8 @@ dynup:
     publish_state: False
   pid_trunk_pitch:
     p: -0.3
-    i: -1.0
-    d: -0.025
+    i: 0.0
+    d: -0.005
     i_clamp: 0
     i_clamp_min: -0.25
     i_clamp_max: 0.25
