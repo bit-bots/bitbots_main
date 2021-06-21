@@ -211,6 +211,8 @@ behavior:
     # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
     time_to_ball_remember_time: 2.5
 
+    publish_path_to_ball: true
+
 role: "goalie"
 
 # Field measurements in meters

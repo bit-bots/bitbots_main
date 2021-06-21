@@ -158,7 +158,7 @@ class PathfindingCapsule:
             if straightline_distance < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
                 _, _, start_theta = self._blackboard.world_model.get_current_position()
                 goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
-                start_goal_theta_diff = abs(start_theta-goal_theta)
+                start_goal_theta_diff = (abs(start_theta - goal_theta)  + math.tau / 2) % math.tau - math.tau / 2
                 start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config['time_to_ball_start_to_goal_angle_weight']
                 total_cost = path_length + start_goal_theta_cost
                 #rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
@@ -169,17 +169,12 @@ class PathfindingCapsule:
                 # calculate how much we need to turn to start walking along the path
                 _, _, start_theta = self._blackboard.world_model.get_current_position()
                 first_point = self.path_to_ball.poses[0].pose.position
-                second_point = self.path_to_ball.poses[1].pose.position
-                path_start_theta = math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
-                start_theta_diff = abs(start_theta - path_start_theta) % math.pi
+                last_point = self.path_to_ball.poses[-1].pose.position
+                path_theta = math.atan2(last_point.y-first_point.y, last_point.x-first_point.x)
+                start_theta_diff = (abs(start_theta - path_theta)  + math.tau / 2) % math.tau - math.tau / 2
                 # calculate how much we need to turn to turn at the end of the path
                 goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
-                second_to_last_point = self.path_to_ball.poses[-2].pose.position
-                last_point = self.path_to_ball.poses[-1].pose.position
-                path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
-                goal_theta_diff = abs(goal_theta - path_end_theta) % math.pi
-                goal_theta_diff -= math.tau if goal_theta_diff > (math.tau / 2.0) else 0
-                goal_theta_diff += math.tau if goal_theta_diff < (-math.tau / 2.0) else 0
+                goal_theta_diff = (abs(goal_theta - path_theta)  + math.tau / 2) % math.tau - math.tau / 2
                 start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_start_angle_weight']
                 goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_goal_angle_weight']
                 total_cost = path_length + start_theta_cost + goal_theta_cost
