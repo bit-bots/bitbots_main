@@ -10,10 +10,15 @@
 # Usage #
 #########
 
-if [[ -z $1 || -z $2 ]]; then
-    echo "Usage: $0 role position_number [--no-bag]"
+function print_usage() {
+    echo "Usage: $0 role position_number [--no-bag] [--team ID]"
     echo "       role: [offense | defense | goalie]"
     echo "       position_number: [0 | 1 | 2]"
+}
+
+
+if [[ -z $1 || -z $2 ]]; then
+    print_usage
     exit 1
 fi
 
@@ -68,14 +73,57 @@ if [[ -z "$TEAM_COMM_DIR" ]]; then
     exit 2
 fi
 
+###########################
+# Read command line flags #
+###########################
+
+ROLE=$1
+shift
+
+POSITION=$2
+shift
+
+RECORD=true
+
+while test $# -gt 0; do
+    case "$1" in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        --no-bag)
+            shift
+            RECORD=false
+            ;;
+        --team)
+            shift
+            if test $# -gt 0; then
+                if [[ "$1" =~ ^[0-9]+$ ]]; then
+                    TEAM_ID=$1
+                else
+                    echo "Invalid team id: $1"
+                    exit 1
+                fi
+            else
+                echo "No team id for --team specified"
+                exit 1
+            fi
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 #############################
 # Write configuration files #
 #############################
 
 cat > $BRINGUP_DIR/config/game_settings.yaml << EOF
-behavior/body/role_positions/pos_number: $2
+behavior/body/role_positions/pos_number: $POSITION
 bot_id: $ROBOCUP_ROBOT_ID
-role: $1
+role: $ROLE
 team_color: $ROBOCUP_TEAM_COLOR
 team_id: $TEAM_ID
 EOF
@@ -90,11 +138,5 @@ sed -i "/^target_host:/s/^.*$/target_host: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM_COM
 #############
 # Start ROS #
 #############
-
-if [[ "$3" == "--no-bag" ]]; then
-    RECORD=false
-else
-    RECORD=true
-fi
 
 exec roslaunch wolfgang_robocup_api robocup_teamplayer.launch record:=$RECORD
