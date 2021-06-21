@@ -163,7 +163,7 @@ behavior:
 
     # dribble action
     dribble_max_speed_x: 0.25
-    dribble_max_speed_y: 0.1
+    dribble_max_speed_y: 0.08
     dribble_p: 0.75
     dribble_accel_x: 0.001
 

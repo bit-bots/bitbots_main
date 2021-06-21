@@ -8,7 +8,7 @@
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @StandAndWait + duration:2 + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+@ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
 
 
 #GoAndKickBallMapGoal
@@ -144,7 +144,7 @@ $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @StandAndWait + duration:2, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
+        INITIAL --> @ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
         READY --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
