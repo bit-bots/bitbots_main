@@ -2,13 +2,9 @@ import rospy
 import math
 
 import tf2_ros
-<<<<<<< HEAD
-from geometry_msgs.msg import PoseStamped, Twist
-=======
 import numpy as np
 from ros_numpy import numpify
-from geometry_msgs.msg import PoseStamped, Point
->>>>>>> origin/master
+from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from nav_msgs.srv import GetPlanRequest
@@ -34,15 +30,12 @@ class PathfindingCapsule:
         self.current_pose = None  # type: PoseStamped
         self.status = -1  # Current status of movebase
         self.avoid_ball = True
-<<<<<<< HEAD
         self.current_cmd_vel = Twist()
-=======
         self._blackboard = blackboard  # type: BodyBlackboard
         self.get_plan_service = None
         self.path_to_ball = None
         self.path_updated = True
         self.path_update_time = rospy.Time.now()
->>>>>>> origin/master
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
