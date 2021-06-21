@@ -8,11 +8,7 @@
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
 
 #GetWalkreadyAndLocalize
-<<<<<<< HEAD
 @ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
-=======
-@ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait + duration:2 + r:false, @StandAndWait
->>>>>>> origin/master
 
 
 #GoAndKickBallMapGoal
