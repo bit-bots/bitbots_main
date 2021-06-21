@@ -44,9 +44,9 @@
   starting_diffusion: 0.05
   starting_steps_with_higher_diffusion: 40
 
-  drift_distance_to_direction: 3.0
+  drift_distance_to_direction: 2.0
   drift_roation_to_direction: 0.0
-  drift_distance_to_distance: 0.2
+  drift_distance_to_distance: 0.1
   drift_roation_to_distance: 0.2
   drift_distance_to_rotation: 0.0
   drift_rotation_to_rotation: 3.0
