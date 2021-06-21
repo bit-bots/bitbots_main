@@ -13,7 +13,6 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
         ball_distance = self.blackboard.world_model.get_ball_distance()
         rank = self.blackboard.team_data.team_rank_to_ball(ball_distance, count_goalies=False,
                                                            use_time_to_ball=self.use_time_to_ball)
-        rospy.logerr(f"use_time_to_ball:{self.use_time_to_ball}, rank: {rank}")
         self.publish_debug_data(f"ball distance", ball_distance)
         self.publish_debug_data(f"Rank to ball", rank)
         if rank == 1:
@@ -33,7 +32,6 @@ class ClosestToBall(AbstractDecisionElement):
         ball_distance = self.blackboard.world_model.get_ball_distance()
         rank = self.blackboard.team_data.team_rank_to_ball(ball_distance, count_goalies=True,
                                                            use_time_to_ball=self.use_time_to_ball)
-        rospy.logerr(f"use_time_to_ball:{self.use_time_to_ball}, rank: {rank}")
         self.publish_debug_data(f"ball distance", ball_distance)
         self.publish_debug_data(f"Rank to ball", rank)
         if rank == 1:
@@ -53,7 +51,6 @@ class RankToBallNoGoalie(AbstractDecisionElement):
         ball_distance = self.blackboard.world_model.get_ball_distance()
         rank = self.blackboard.team_data.team_rank_to_ball(ball_distance, count_goalies=False,
                                                            use_time_to_ball=self.use_time_to_ball)
-        rospy.logerr(f"use_time_to_ball:{self.use_time_to_ball}, rank: {rank}")
         self.publish_debug_data(f"ball distance", ball_distance)
         self.publish_debug_data(f"Rank to ball", rank)
         if rank == 1:
