@@ -14,6 +14,7 @@ class PublishKeepOutArea(AbstractActionElement):
 
         # we need to create multiple points since we can not set the inflation for only this layer
         points_distance = 0.5
+        # todo these positions could be improved. maybe use linspace
         obstacle_points = [[ball_position[0], ball_position[1], 0],
                            [ball_position[0] + points_distance, ball_position[1] + points_distance, 0],
                            [ball_position[0] - points_distance, ball_position[1] + points_distance, 0],
