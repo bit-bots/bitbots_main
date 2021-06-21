@@ -23,6 +23,7 @@ WalkNode::WalkNode(const std::string ns) :
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
   current_request_.linear_orders = {0, 0, 0};
   current_request_.angular_z = 0;
+  current_request_.stop_walk = true;
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
   current_fly_pressure_ = 0;
