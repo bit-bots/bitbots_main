@@ -155,13 +155,16 @@ $IsPenalized
             TIMEOUT --> #StandAndLook
             ELSE --> $SecondaryStateModeDecider
                 ELSE --> #StandAndLook
-                PLACING --> #Placing
+                PLACING --> $DoOnce
+                    NOT_DONE --> @PublishKeepOutArea
+                    DONE --> #Placing
             NORMAL --> $BallSeen
                 NO --> $ConfigRole
                     GOALIE --> @GoToRolePosition
                     ELSE --> #SearchBall
                 YES --> $KickOffTimeUp
-                    NO --> #StandAndLook
+                    NO_NORMAL --> #StandAndLook
+                    NO_FREEKICK --> #Placing
                     YES --> $ConfigRole
                         GOALIE --> #GoalieRole
                         ELSE --> $LocalizationAvailable

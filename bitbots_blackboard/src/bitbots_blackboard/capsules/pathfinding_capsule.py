@@ -18,6 +18,7 @@ class PathfindingCapsule:
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.ball_obstacle_active_pub = None
+        self.keep_out_area_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
@@ -79,3 +80,7 @@ class PathfindingCapsule:
 
     def cancel_goal(self):
         self.pathfinding_cancel_pub.publish(GoalID())
+
+    def publish_keep_out_area(self, x, y):
+        """Publishes a keep out area with 1m radius for placing"""
+

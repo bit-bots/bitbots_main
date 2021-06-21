@@ -35,6 +35,7 @@ if __name__ == "__main__":
     D.blackboard.pathfinding.pathfinding_pub = rospy.Publisher('move_base_simple/goal', PoseStamped, queue_size=1)
     D.blackboard.pathfinding.pathfinding_cancel_pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=1)
     D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
+    D.blackboard.pathfinding.keep_out_area_pub = rospy.Publisher("keep_out_area", PointCloud2, queue_size=1)
     D.blackboard.pathfinding.approach_marker_pub = rospy.Publisher("debug/approach_point", Marker, queue_size=10)
 
     D.blackboard.dynup_cancel_pub = rospy.Publisher('dynup/cancel', GoalID, queue_size=1)
