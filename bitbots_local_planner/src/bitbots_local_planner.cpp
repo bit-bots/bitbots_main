@@ -146,14 +146,9 @@ namespace bitbots_local_planner
             // Calc current velocity value
             double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
 
-            // Limit the maximum acceleration
-            if (walk_vel > current_vel_ + 0.01) {
-                walk_vel = current_vel_ + 0.01;
-            }
-
-            //walk_vel /= rot_goal_vel / 0.01 + 1; // TODO param
-
-            ROS_INFO("Walk Vel %f | Max Walk Vel %f", walk_vel, current_vel_ + 0.005);
+            // Limit the acceleration
+            walk_vel = std::min(walk_vel, current_vel_ + config_.max_acc);
+            ROS_DEBUG("Walk Vel %f | Max Walk Vel %f", walk_vel, current_vel_ + config_.max_acc);
 
             // Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
             cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
@@ -161,26 +156,26 @@ namespace bitbots_local_planner
 
             // Scale command accordingly if a limit is acceded
             if (cmd_vel.linear.x > config_.max_vel_x) {
-                ROS_INFO("X LIMIT reached: %f > %f, with y %f", cmd_vel.linear.x, config_.max_vel_x, cmd_vel.linear.y);
+                ROS_DEBUG("X LIMIT reached: %f > %f, with y %f", cmd_vel.linear.x, config_.max_vel_x, cmd_vel.linear.y);
                 cmd_vel.linear.y *= config_.max_vel_x / cmd_vel.linear.x;
                 cmd_vel.linear.x = config_.max_vel_x;
-                ROS_INFO("X LIMIT set y %f", cmd_vel.linear.y);
+                ROS_DEBUG("X LIMIT set y %f", cmd_vel.linear.y);
             }
 
             if (cmd_vel.linear.x < config_.min_vel_x) {
-                ROS_INFO("X LIMIT reached: %f < %f, with y %f", cmd_vel.linear.x, config_.min_vel_x, cmd_vel.linear.y);
+                ROS_DEBUG("X LIMIT reached: %f < %f, with y %f", cmd_vel.linear.x, config_.min_vel_x, cmd_vel.linear.y);
                 cmd_vel.linear.y *= config_.min_vel_x / cmd_vel.linear.x;
                 cmd_vel.linear.x = config_.min_vel_x;
-                ROS_INFO("X LIMIT set y %f", cmd_vel.linear.y);
+                ROS_DEBUG("X LIMIT set y %f", cmd_vel.linear.y);
             }
 
             double max_y = config_.max_vel_y;
 
             if (std::abs(cmd_vel.linear.y) > max_y) {
-                ROS_INFO("Y LIMIT reached: %f > %f, with x %f", cmd_vel.linear.y, max_y, cmd_vel.linear.x);
+                ROS_DEBUG("Y LIMIT reached: %f > %f, with x %f", cmd_vel.linear.y, max_y, cmd_vel.linear.x);
                 cmd_vel.linear.x *= max_y / std::abs(cmd_vel.linear.y);
                 cmd_vel.linear.y *= max_y / std::abs(cmd_vel.linear.y);
-                ROS_INFO("X LIMIT set y %f", cmd_vel.linear.x);
+                ROS_DEBUG("Y LIMIT set x %f", cmd_vel.linear.x);
             }
 
             // Apply the desired rotational velocity
