@@ -72,10 +72,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.unstable = True
 
                     # only check 2 directions, left and right
-                    kick_directions = sorted(np.linspace(
-                        -self.penalty_kick_angle,
-                        self.penalty_kick_angle,
-                        num=2), key=abs)
+                    kick_directions = np.array([-self.penalty_kick_angle, self.penalty_kick_angle])
 
                     kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
                         direction=direction,
