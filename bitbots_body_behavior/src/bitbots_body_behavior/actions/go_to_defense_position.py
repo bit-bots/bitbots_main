@@ -43,7 +43,8 @@ class GoToDefensePosition(AbstractActionElement):
 
         goal_position = (-self.blackboard.world_model.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
-        our_pose = np.array(self.blackboard.world_model.get_current_position())
+        robot_x, robot_y, _ = np.array(self.blackboard.world_model.get_current_position())
+        our_pose = [robot_x, robot_y]
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
