@@ -16,8 +16,8 @@ class DribbleForward(AbstractActionElement):
         self.p = self.blackboard.config['dribble_p']
         self.accel_x = self.blackboard.config['dribble_accel_x']
 
-        self.current_speed_x = 0
-        self.current_speed_y = 0
+        self.current_speed_x = self.blackboard.pathfinding.current_cmd_vel.linear.x
+        self.current_speed_y = self.blackboard.pathfinding.current_cmd_vel.linear.y
 
     def perform(self, reevaluate=False):
         """
@@ -30,8 +30,8 @@ class DribbleForward(AbstractActionElement):
 
         # todo compute yaw speed based on how we are aligned to the goal
 
-        # increase x if ball is in the center, decrease otherwise
-        if abs(ball_v) < 0.1:
+        # set speed based on how centered the ball is in relation to its distance
+        if abs(ball_v) < abs(ball_u) / 4:
             x_speed = self.current_speed_x + self.accel_x
         else:
             x_speed = self.current_speed_x - self.accel_x

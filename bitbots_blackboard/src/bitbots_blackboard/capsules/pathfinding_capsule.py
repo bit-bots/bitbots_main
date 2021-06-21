@@ -2,7 +2,7 @@ import rospy
 import math
 
 import tf2_ros
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
@@ -24,6 +24,7 @@ class PathfindingCapsule:
         self.current_pose = None  # type: PoseStamped
         self.status = -1  # Current status of movebase
         self.avoid_ball = True
+        self.current_cmd_vel = Twist()
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -80,3 +81,6 @@ class PathfindingCapsule:
 
     def cancel_goal(self):
         self.pathfinding_cancel_pub.publish(GoalID())
+
+    def cmd_vel_cb(self, msg: Twist):
+        self.current_cmd_vel = msg

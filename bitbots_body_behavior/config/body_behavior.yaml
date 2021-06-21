@@ -168,8 +168,8 @@ behavior:
     dribble_accel_x: 0.001
 
     # dribble decision
-    dribble_orient_threshold: 0.4
-    dribble_goal_distance_threshold: 1.0
+    dribble_orient_threshold: 0.5
+    dribble_goal_distance_threshold: 1.25
     dribble_ball_distance_threshold: 1.0
 
     ##################

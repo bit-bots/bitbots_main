@@ -13,7 +13,6 @@ class DribbleOrKick(AbstractDecisionElement):
         self.kick_length = rospy.get_param('behavior/body/kick_cost_kick_length')
         self.angular_range = rospy.get_param('behavior/body/kick_cost_angular_range')
         self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
-        self.num_kick_angles = rospy.get_param('behavior/body/num_kick_angles')
 
     def perform(self, reevaluate=False):
         """
@@ -29,14 +28,16 @@ class DribbleOrKick(AbstractDecisionElement):
         # no other robots should be in front of the ball. this means the kick with angle 0 would be the best
         best_kick_direction = self.blackboard.world_model.get_best_kick_direction(-self.max_kick_angle,
                                                                                   self.max_kick_angle,
-                                                                                  self.num_kick_angles,
+                                                                                  3,
                                                                                   self.kick_length,
                                                                                   self.angular_range)
+        rospy.logerr(best_kick_direction)
         front_free = best_kick_direction == 0
         self.publish_debug_data("Front free", front_free)
 
-        # we should be not to close to the goal, otherwise kicking makes more sense
-        goal_distance = abs(self.blackboard.world_model.get_map_based_opp_goal_distance())
+        # we should be not to close to the goal, otherwise kicking makes more sense. only take x axis into account
+        goal_distance = abs(self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0] -
+                            self.blackboard.world_model.get_current_position()[0])
         goal_far = goal_distance > self.goal_distance_threshold
         self.publish_debug_data(f"Goal distance (needs >{self.goal_distance_threshold}", goal_distance)
 

@@ -65,6 +65,7 @@ if __name__ == "__main__":
         D.blackboard.world_model.ball_twist_callback)
     rospy.Subscriber("move_base/feedback", MoveBaseActionFeedback, D.blackboard.pathfinding.feedback_callback)
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
+    rospy.Subscriber("cmd_vel", Twist, D.blackboard.pathfinding.cmd_vel_cb)
 
     rate = Rate(125)
     while not rospy.is_shutdown():
