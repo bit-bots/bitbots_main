@@ -51,6 +51,9 @@ if __name__ == "__main__":
         except rospy.ROSException as ex:
             rospy.logwarn("waiting for 'move_base/NavfnROS/make_plan' Service to become available...")
 
+    D.blackboard.dynup_cancel_pub = rospy.Publisher('dynup/cancel', GoalID, queue_size=1)
+    D.blackboard.hcm_deactivate_pub = rospy.Publisher('hcm_deactivate', Bool, queue_size=1)
+
     dirname = os.path.dirname(os.path.realpath(__file__))
 
     D.register_actions(os.path.join(dirname, "actions"))
