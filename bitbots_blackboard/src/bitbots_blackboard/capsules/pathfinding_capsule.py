@@ -98,9 +98,9 @@ class PathfindingCapsule:
                 self._blackboard.world_model.localization_precision_in_threshold():
             self.path_updated = False
             if self._blackboard.world_model.get_ball_distance() < self._blackboard.config['ball_close_distance']:
-                ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_approach_dist'], 2)
+                ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_approach_dist'])
             else:
-                ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_far_approach_dist'], 2)
+                ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_far_approach_dist'])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             req = GetPlanRequest()
             req.goal = ball_target
@@ -189,7 +189,7 @@ class PathfindingCapsule:
         else:
             return -1
 
-    def get_ball_goal(self, target, distance, goal_width):
+    def get_ball_goal(self, target, distance):
 
         if 'gradient_goal' == target:
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
@@ -206,7 +206,7 @@ class PathfindingCapsule:
 
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
-            if abs(ball_y) < goal_width / 2:
+            if abs(ball_y) < self._blackboard.world_model.goal_width / 2:
                 goal_angle = 0
 
             goal_x = ball_x - math.cos(goal_angle) * distance
