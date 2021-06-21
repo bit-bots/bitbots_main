@@ -80,7 +80,7 @@ fi
 ROLE=$1
 shift
 
-POSITION=$2
+POSITION=$1
 shift
 
 RECORD=true
