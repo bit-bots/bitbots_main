@@ -103,7 +103,7 @@ $LocalizationAvailable
             YES --> #ReorientationPause
     NO --> #NoLocalizationGoalieBehavior
 
-#PenaltyBehavior
+#PenaltyShootoutBehavior
 $IsPenaltyShootRobot
     NO --> #DoNothing
     YES -->$SecondaryStateTeamDecider
@@ -111,6 +111,7 @@ $IsPenaltyShootRobot
         OTHER --> $BallDangerous
             LEFT --> @PlayAnimationGoalieFallLeft
             RIGHT --> @PlayAnimationGoalieFallRight
+            CENTER --> @PlayAnimationGoalieFallCenter
             ELSE --> @LookAtBall
 
 
@@ -150,7 +151,7 @@ $IsPenalized
             ELSE --> #StandAndLook
         FINISHED --> #DoNothing
         PLAYING --> $SecondaryStateDecider
-            PENALTYSHOOT --> #PenaltyBehavior
+            PENALTYSHOOT --> #PenaltyShootoutBehavior
             TIMEOUT --> #StandAndLook
             ELSE --> $SecondaryStateModeDecider
                 ELSE --> #StandAndLook

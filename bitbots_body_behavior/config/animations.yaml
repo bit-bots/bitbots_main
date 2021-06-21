@@ -21,6 +21,7 @@ Animations:
     goalieArms: "goalie_prepare_arms"
     fallLeft: "goalie_falling_left"
     fallRight: "goalie_falling_right"
+    fallCenter: "goalie_falling_center"
 
   Penalty:
     # Penalty kicks to the left/right
