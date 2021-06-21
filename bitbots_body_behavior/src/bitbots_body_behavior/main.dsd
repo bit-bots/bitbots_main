@@ -1,9 +1,6 @@
 #SearchBall
 @ChangeAction + action:searching, @LookAtFieldFeatures, @StandAndWait + duration:4, @TurnAround
 
-#SearchBallGoalie
-@ChangeAction + action:searching, @LookAtFieldFeatures, @StandAndWait + duration:4, @TurnZero
-
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @StandAndWait
 
@@ -160,7 +157,7 @@ $IsPenalized
                 PLACING --> #Placing
             NORMAL --> $BallSeen
                 NO --> $ConfigRole
-                    GOALIE --> #SearchBallGoalie
+                    GOALIE --> #GoToRolePosition
                     ELSE --> #SearchBall
                 YES --> $KickOffTimeUp
                     NO --> #StandAndLook
