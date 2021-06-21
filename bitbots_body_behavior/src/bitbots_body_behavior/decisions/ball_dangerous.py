@@ -18,7 +18,7 @@ class BallDangerous(AbstractDecisionElement):
                 return 'LEFT'
             elif ball_position[1] < robot_position[1] - self.nofall_radius:
                 return 'RIGHT'
-            return 'MIDDLE'
+            return 'CENTER'
         return 'NO'
 
     def _in_dangerous_area(self, position):

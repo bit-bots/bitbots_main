@@ -1,5 +1,6 @@
 import rospy
 import humanoid_league_msgs.msg
+from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -75,7 +76,12 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def animation_finished(self):
         state = self.blackboard.animation_action_client.get_state()
-        return state >= 1
+        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
+
+
+class PlayAnimationGoalieArms(AbstractPlayAnimation):
+    def chose_animation(self):
+        return self.blackboard.goalie_arms_animation
 
 
 class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
@@ -83,12 +89,24 @@ class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
         rospy.loginfo("PLAYING GOALIE FALLING RIGHT ANIMATION")
         return self.blackboard.goalie_falling_right_animation
 
+
 class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING GOALIE FALLING LEFT ANIMATION")
         return self.blackboard.goalie_falling_left_animation
 
+class PlayAnimationGoalieFallCenter(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING GOALIE FALLING CENTER ANIMATION")
+        return self.blackboard.goalie_falling_center_animation
+
+
 class PlayAnimationCheering(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING CHEERING ANIMATION")
         return self.blackboard.cheering_animation
+
+
+class PlayAnimationInit(AbstractPlayAnimation):
+    def chose_animation(self):
+        return self.blackboard.init_animation

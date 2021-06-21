@@ -2,6 +2,7 @@ import rospy
 import math
 
 import tf2_ros
+import numpy as np
 from ros_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point
 from actionlib_msgs.msg import GoalID
@@ -20,13 +21,14 @@ class PathfindingCapsule:
         self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
+        self.path_to_ball_pub = None  #type: rospy.Publisher
         self.ball_obstacle_active_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
         self.current_pose = None # type: PoseStamped
         self.status = -1 # Current status of movebase
         self.avoid_ball = True
-        self.__blackboard = blackboard  # type: BodyBlackboard
+        self._blackboard = blackboard  # type: BodyBlackboard
         self.get_plan_service = None
         self.path_to_ball = None
         self.path_updated = True
@@ -91,17 +93,17 @@ class PathfindingCapsule:
     def get_new_path_to_ball(self):
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
-        ball_lost_time = rospy.Duration.from_sec(self.__blackboard.config['ball_lost_time'])
+        ball_lost_time = rospy.Duration.from_sec(self._blackboard.config['ball_lost_time'])
         if self.path_updated and \
-                self.__blackboard.world_model.ball_seen and \
-                rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time and \
-                self.__blackboard.world_model.localization_precision_in_threshold():
+                self._blackboard.world_model.ball_seen and \
+                rospy.Time.now() - self._blackboard.world_model.ball_last_seen() < ball_lost_time and \
+                self._blackboard.world_model.localization_precision_in_threshold():
             self.path_updated = False
-            if self.__blackboard.world_model.get_ball_distance() < self.__blackboard.config['ball_close_distance']:
-                ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_approach_dist'], 2)
+            if self._blackboard.world_model.get_ball_distance() < self._blackboard.config['ball_close_distance']:
+                ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_approach_dist'])
             else:
-                ball_target = self.get_ball_goal('map_goal', self.__blackboard.config['ball_far_approach_dist'], 2)
-            own_position = self.__blackboard.world_model.get_current_position_pose_stamped()
+                ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_far_approach_dist'])
+            own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             req = GetPlanRequest()
             req.goal = ball_target
             req.start = own_position
@@ -109,14 +111,14 @@ class PathfindingCapsule:
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
             if not self.path_updated:
-                rospy.logerr("path already updated")
-            if not self.__blackboard.world_model.ball_seen:
-                rospy.logerr("ball not seen at all")
-            if not (rospy.Time.now() - self.__blackboard.world_model.ball_last_seen() < ball_lost_time):
-                rospy.logerr("ball not seen for some time")
-            if not self.__blackboard.world_model.localization_precision_in_threshold():
-                rospy.logerr("localization bad")
-            self.__blackboard.team_data.own_time_to_ball = 9999.0
+                rospy.loginfo("time_to_ball: path already updated")
+            if not self._blackboard.world_model.ball_seen:
+                rospy.loginfo("time_to_ball: ball not seen at all")
+            if not (rospy.Time.now() - self._blackboard.world_model.ball_last_seen() < ball_lost_time):
+                rospy.loginfo("time_to_ball: ball not seen for some time")
+            if not self._blackboard.world_model.localization_precision_in_threshold():
+                rospy.loginfo("time_to_ball: localization bad")
+            self._blackboard.team_data.own_time_to_ball = 9999.0
             return None
 
     def path_to_ball_check(self, path_to_ball_service_response):
@@ -129,36 +131,35 @@ class PathfindingCapsule:
             time_to_ball = self.calculate_time_to_ball()
             # path valid
             if time_to_ball != -1:
-                self.__blackboard.team_data.own_time_to_ball = time_to_ball
+                self._blackboard.team_data.own_time_to_ball = time_to_ball
                 self.path_update_time = rospy.Time.now()
-                rospy.logerr("new path to ball")
+                rospy.loginfo("time_to_ball: new path to ball")
             # timeout
             elif rospy.Time.now() - self.path_update_time >\
-                    rospy.Duration(self.__blackboard.config['time_to_ball_remember_time']):
-                rospy.logerr("no path to ball found but path is too old")
-                self.__blackboard.team_data.own_time_to_ball = 9999.0
+                    rospy.Duration(self._blackboard.config['time_to_ball_remember_time']):
+                rospy.loginfo("time_to_ball: no path to ball found, path is too old, setting time_to_ball to 9999")
+                self._blackboard.team_data.own_time_to_ball = 9999.0
             else:
-                rospy.logerr("no path to ball found but i member")
+                rospy.loginfo("time_to_ball: no path to ball found but i member")
 
     def calculate_time_to_ball(self):
         # calculate length of path
         if len(self.path_to_ball.poses) > 2:
             path_length = 0
             for i in range(len(self.path_to_ball.poses)-1):
-                start = self.path_to_ball.poses[i].pose
-                end = self.path_to_ball.poses[i+1].pose
-                dist = math.sqrt((start.position.x-end.position.x) ** 2 + (start.position.y-end.position.y) ** 2)
-                path_length += dist
+                start = self.path_to_ball.poses[i].pose.position
+                end = self.path_to_ball.poses[i+1].pose.position
+                path_length += np.linalg.norm(numpify(start)[:2]-numpify(end)[:2])
 
             start_point = self.path_to_ball.poses[0].pose.position
             end_point = self.path_to_ball.poses[-1].pose.position
-            straightline_distance = math.sqrt((start_point.x-end_point.x) ** 2 + (start_point.y-end_point.y) ** 2)
+            straightline_distance = np.linalg.norm(numpify(start_point)[:2]-numpify(end_point)[:2])
             # if the robot is close to the ball it does not turn to walk to it
             if straightline_distance < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
-                start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
+                _, _, start_theta = self._blackboard.world_model.get_current_position()
                 goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
-                start_goal_theta_diff = abs(start_theta-goal_theta)
-                start_goal_theta_cost = start_goal_theta_diff * self.__blackboard.config['time_to_ball_start_to_goal_angle_weight']
+                start_goal_theta_diff = (abs(start_theta - goal_theta)  + math.tau / 2) % math.tau - math.tau / 2
+                start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config['time_to_ball_start_to_goal_angle_weight']
                 total_cost = path_length + start_goal_theta_cost
                 #rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
                 #             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
@@ -166,79 +167,78 @@ class PathfindingCapsule:
                 #             f"total: {total_cost}")
             else:
                 # calculate how much we need to turn to start walking along the path
-                start_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[0].pose.orientation))[2]
+                _, _, start_theta = self._blackboard.world_model.get_current_position()
                 first_point = self.path_to_ball.poses[0].pose.position
-                second_point = self.path_to_ball.poses[1].pose.position
-                path_start_theta= math.atan2(second_point.y-first_point.y, second_point.x-first_point.x)
-                start_theta_diff = abs(start_theta - path_start_theta)
+                last_point = self.path_to_ball.poses[-1].pose.position
+                path_theta = math.atan2(last_point.y-first_point.y, last_point.x-first_point.x)
+                start_theta_diff = (abs(start_theta - path_theta)  + math.tau / 2) % math.tau - math.tau / 2
                 # calculate how much we need to turn to turn at the end of the path
                 goal_theta = euler_from_quaternion(numpify(self.path_to_ball.poses[-1].pose.orientation))[2]
-                second_to_last_point = self.path_to_ball.poses[-2].pose.position
-                last_point = self.path_to_ball.poses[-1].pose.position
-                path_end_theta = math.atan2(last_point.y-second_to_last_point.y, last_point.x-second_to_last_point.x)
-                goal_theta_diff = abs(goal_theta - path_end_theta)
-                start_theta_cost = start_theta_diff * self.__blackboard.config['time_to_ball_start_angle_weight']
-                goal_theta_cost = goal_theta_diff * self.__blackboard.config['time_to_ball_goal_angle_weight']
+                goal_theta_diff = (abs(goal_theta - path_theta)  + math.tau / 2) % math.tau - math.tau / 2
+                start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_start_angle_weight']
+                goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_goal_angle_weight']
                 total_cost = path_length + start_theta_cost + goal_theta_cost
                 #rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
                 #             f"weighted start_diff: {start_theta_cost}, " +
                 #             f"weighted goal_diff: {goal_theta_cost}, " +
                 #             f"path_length: {path_length}, " +
                 #             f"total: {total_cost}")
+            if self._blackboard.config['publish_path_to_ball']:
+                self.path_to_ball_pub.publish(self.path_to_ball)
             return total_cost
         else:
             return -1
 
-    def get_ball_goal(self, target, distance, goal_width):
+    def get_ball_goal(self, target, distance):
 
         if 'gradient_goal' == target:
-            ball_x, ball_y = self.__blackboard.world_model.get_ball_position_xy()
+            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
-            goal_angle = self.__blackboard.world_model.get_gradient_direction_at_field_position(ball_x, ball_y)
+            goal_angle = self._blackboard.world_model.get_gradient_direction_at_field_position(ball_x, ball_y)
 
             goal_x = ball_x - math.cos(goal_angle) * distance
             goal_y = ball_y - math.sin(goal_angle) * distance
 
-            ball_point = (goal_x, goal_y, goal_angle, self.__blackboard.map_frame)
+            ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
         elif 'map_goal' == target:
-            goal_angle = self.__blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
+            goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
 
-            ball_x, ball_y = self.__blackboard.world_model.get_ball_position_xy()
+            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
-            if abs(ball_y) < goal_width / 2:
+            if abs(ball_y) < self._blackboard.world_model.goal_width / 2:
                 goal_angle = 0
 
             goal_x = ball_x - math.cos(goal_angle) * distance
             goal_y = ball_y - math.sin(goal_angle) * distance
 
-            ball_point = (goal_x, goal_y, goal_angle, self.__blackboard.map_frame)
+            ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
         elif 'detection_goal' == target:
 
-            x_dist = self.__blackboard.world_model.get_detection_based_goal_position_uv()[0] - \
-                     self.__blackboard.world_model.get_ball_position_uv()[0]
-            y_dist = self.__blackboard.world_model.get_detection_based_goal_position_uv()[1] - \
-                     self.__blackboard.world_model.get_ball_position_uv()[1]
+            x_dist = self._blackboard.world_model.get_detection_based_goal_position_uv()[0] - \
+                     self._blackboard.world_model.get_ball_position_uv()[0]
+            y_dist = self._blackboard.world_model.get_detection_based_goal_position_uv()[1] - \
+                     self._blackboard.world_model.get_ball_position_uv()[1]
 
             goal_angle = math.atan2(y_dist, x_dist)
 
-            ball_u, ball_v = self.__blackboard.world_model.get_ball_position_uv()
+            ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             goal_u = ball_u + math.cos(goal_angle) * distance
             goal_v = ball_v + math.sin(goal_angle) * distance
 
-            ball_point = (goal_u, goal_v, goal_angle, self.__blackboard.world_model.base_footprint_frame)
+            ball_point = (goal_u, goal_v, goal_angle, self._blackboard.world_model.base_footprint_frame)
 
         elif 'none' == target or 'current_orientation' == target:
 
-            ball_u, ball_v = self.__blackboard.world_model.get_ball_position_uv()
-            ball_point = (ball_u, ball_v, 0, self.__blackboard.world_model.base_footprint_frame)
+            ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
+            ball_point = (ball_u, ball_v, 0, self._blackboard.world_model.base_footprint_frame)
 
         elif 'close' == target:
 
-            ball_u, ball_v = self.__blackboard.world_model.get_ball_position_uv()
+            ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
-            ball_point = (ball_u, ball_v, angle, self.__blackboard.world_model.base_footprint_frame)
+            ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
         else:
             rospy.logerr("Target %s for go_to_ball action not specified.", target)
             return

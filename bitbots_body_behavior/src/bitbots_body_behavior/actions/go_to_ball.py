@@ -24,11 +24,10 @@ class GoToBall(AbstractActionElement):
 
         self.blocking = parameters.get('blocking', True)
         self.distance = parameters.get('distance', self.blackboard.config['ball_approach_dist'])
-        self.goal_width = rospy.get_param("goal_width", 2)
 
     def perform(self, reevaluate=False):
 
-        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.goal_width)
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance)
         self.blackboard.pathfinding.publish(pose_msg)
 
         approach_marker = Marker()
