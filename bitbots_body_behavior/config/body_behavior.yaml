@@ -198,7 +198,7 @@ behavior:
     # parameters for time_to_ball estimation
     # divider of how often the time to ball is updated depending on update rate of the behavior
     # example: (125 = 1 per second, 250 = 1 per 2 seconds)
-    time_to_ball_divider: 125
+    time_to_ball_divider: 25
 
     # factor by which the difference in the starting angle and direction of the path (in rad) is weighted
     time_to_ball_start_angle_weight: 0.3
