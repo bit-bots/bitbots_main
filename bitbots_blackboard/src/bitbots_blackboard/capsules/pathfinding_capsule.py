@@ -80,7 +80,3 @@ class PathfindingCapsule:
 
     def cancel_goal(self):
         self.pathfinding_cancel_pub.publish(GoalID())
-
-    def publish_keep_out_area(self, x, y):
-        """Publishes a keep out area with 1m radius for placing"""
-
