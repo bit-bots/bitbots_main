@@ -15,7 +15,7 @@ class CancelPathplanning(AbstractActionElement):
 
 
 class StandAndWait(AbstractActionElement):
-    """ This stops the robots walking and keeps standing """
+    """This keeps walking in place and optionally pops itself after a given time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(StandAndWait, self).__init__(blackboard, dsd, parameters)
@@ -31,20 +31,8 @@ class StandAndWait(AbstractActionElement):
         self.blackboard.pathfinding.cancel_goal()
 
 
-class StandAndWaitRandom(StandAndWait):
-    """ This stops the robots walking and keeps standing """
-
-    def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
-        self.min = parameters.get('min', None)
-        self.max = parameters.get('max', None)
-        self.duration = random.uniform(self.min, self.max)
-
-        self.start_time = rospy.Time.now()
-
-
 class Stop(StandAndWait):
-    """ This stops the robot's walking and pops itself when the robot stands """
+    """This stops the robot's walking and optionally pops itself after a given time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
@@ -56,3 +44,15 @@ class Stop(StandAndWait):
             return self.pop()
         # need to keep publishing this since path planning publishes a few more messages
         self.blackboard.pathfinding.stop_walk()
+
+
+class StandAndWaitRandom(Stop):
+    """This stops the robot's walking for a random amount of time"""
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.min = parameters.get('min', None)
+        self.max = parameters.get('max', None)
+        self.duration = random.uniform(self.min, self.max)
+
+        self.start_time = rospy.Time.now()
