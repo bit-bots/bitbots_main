@@ -114,7 +114,7 @@ class WorldModelCapsule:
         Returns the time at which the ball was last seen if it is in the threshold or
         the more recent ball from either the teammate or itself if teamcom is available
         """
-        if self.ball_seen_self() or self._blackboard.team_data is None:
+        if self.ball_seen_self() or hasattr(self._blackboard, "team_data"):
             return self.ball_seen_time
         else:
             return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
@@ -138,7 +138,7 @@ class WorldModelCapsule:
         or from teammate if the robot itself has lost it and teamcom is available
         """
         if self.use_localization and self.localization_precision_in_threshold():
-            if self.ball_seen_self() or self._blackboard.team_data is None:
+            if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
                 return self.ball_map
             else:
                 teammate_ball = self._blackboard.team_data.get_teammate_ball()
