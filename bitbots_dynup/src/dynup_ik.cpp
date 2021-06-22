@@ -78,7 +78,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     result.first = joint_names;
     result.second = joint_goals;
     /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
-    for (size_t i = result.first.size() -1; i >= 0 ; i--) {
+    for (size_t i = result.first.size(); i-- > 0;) {
       if (result.first[i] == "HeadPan") {
         if (direction_ == "walkready"){
             // remove head from the goals so that we can move it freely
