@@ -6,6 +6,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class GoalScoreRecently(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoalScoreRecently, self).__init__(blackboard, dsd, parameters)
+        self.time = parameters.get('time', 2)
 
     def perform(self, reevaluate=False):
         """
@@ -14,7 +15,7 @@ class GoalScoreRecently(AbstractDecisionElement):
         :return:
         """
 
-        if self.blackboard.gamestate.get_seconds_since_own_goal() < 2:
+        if self.blackboard.gamestate.get_seconds_since_own_goal() < self.time:
             return 'YES'
         return 'NO'
 

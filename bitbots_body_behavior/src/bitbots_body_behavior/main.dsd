@@ -144,8 +144,12 @@ $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @ChangeAction + action:waiting + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @StandAndWait
-        READY --> #PositioningReady
+        INITIAL --> @PlayAnimationInit + r:false, @StandAndWait
+        READY --> $GoalScoreRecently + time:50
+            YES --> #PositioningReady
+            NO --> $DoOnce
+                NOT_DONE --> @ChangeAction + action:waiting + r:false, @Stop + duration:1, @GetWalkready + r:false, @LookAtFieldFeatures + r:false
+                DONE --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
                 OUR -->  @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @StandAndWait // we need to also see the goalie
