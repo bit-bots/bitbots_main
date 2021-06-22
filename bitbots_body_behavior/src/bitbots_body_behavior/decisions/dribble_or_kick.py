@@ -24,7 +24,7 @@ class DribbleOrKick(AbstractDecisionElement):
         # robot needs to be correctly aligned to ball, so that opponent goal is in front
         goal_angle = abs(self.blackboard.world_model.get_map_based_opp_goal_angle())
         oriented_to_goal = goal_angle < self.orient_threshold
-        self.publish_debug_data(f"Orientation to goal (needs <{self.orient_threshold}", goal_angle)
+        self.publish_debug_data(f"Orientation to goal (needs <{self.orient_threshold})", goal_angle)
 
         # no other robots should be in front of the ball. this means the kick with angle 0 would be the best
         best_kick_direction = self.blackboard.world_model.get_best_kick_direction(-self.max_kick_angle,
