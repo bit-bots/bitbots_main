@@ -25,6 +25,7 @@
   <exec_depend>ros_numpy</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>bitbots_convenience_frames</exec_depend>
+  <test_depend>bitbots_test</test_depend>
 
 
   <export>
