@@ -13,7 +13,7 @@ showing_feedback = False
 
 if __name__ == "__main__":
     directions = ['front', 'front_only', 'back', 'back_only', 'rise',
-                  'descend']
+                  'descend', 'walkready']
     if len(sys.argv) != 2 or not sys.argv[1] in directions:
         print('Use ' + str(directions) + ' as parameters!')
         sys.exit(1)
