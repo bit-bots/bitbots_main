@@ -9,7 +9,7 @@ import rospy
 
 
 class KickRunsTestCase(RosNodeTestCase):
-    def test_kick_runs(self):
+    def single_run(self, goal):
         def done_cb(state, result):
             assert state == GoalStatus.SUCCEEDED, "Kick was not successful"
             self.kick_succeeded = True
@@ -21,18 +21,31 @@ class KickRunsTestCase(RosNodeTestCase):
         client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
         assert client.wait_for_server(), "Kick action server not running"
 
-        goal = KickGoal()
-        goal.header.stamp = rospy.Time.now()
-        goal.header.frame_id = "base_footprint"
-        goal.ball_position.x = 0.2
-        goal.kick_direction = Quaternion(0, 0, 0, 1)
-        goal.kick_speed = 1
         client.send_goal(goal)
         client.done_cb = done_cb
         client.wait_for_result()
         sub.wait_until_connected()
         sub.assertMessageReceived()
         assert self.kick_succeeded, "Kick was not successful"
+
+    def test_normal_kick(self):
+        goal = KickGoal()
+        goal.header.stamp = rospy.Time.now()
+        goal.header.frame_id = "base_footprint"
+        goal.ball_position.x = 0.2
+        goal.kick_direction = Quaternion(0, 0, 0, 1)
+        goal.kick_speed = 1
+        self.single_run(goal)
+
+    def test_normal_kick(self):
+        goal = KickGoal()
+        goal.header.stamp = rospy.Time.now()
+        goal.header.frame_id = "base_footprint"
+        goal.ball_position.x = 0.2
+        goal.kick_direction = Quaternion(0, 0, 0, 1)
+        goal.kick_speed = 1
+        goal.unstable = True
+        self.single_run(goal)
 
 if __name__ == '__main__':
     from bitbots_test import run_rostests
