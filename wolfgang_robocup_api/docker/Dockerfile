@@ -65,7 +65,7 @@ RUN cd src && \
     rm -rf ~/.cache
 # Make image size smaller: remove unused packages or unused dependencies
 RUN cd src/bitbots_meta && \
-    rm -rf bitbots_tools/bitbots_jenkins_library bitbots_tools/containers \
+    rm -rf bitbots_tools/bitbots_jenkins_library udp_bridge bitbots_tools/containers \
     humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
     wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
     lib/dynamixel_workbench_msgs bitbots_misc/bitbots_live_tool_rqt bitbots_motion/bitbots_recordui_rqt && \
