@@ -736,7 +736,10 @@ class WorldModelCapsule:
         # plt.imshow(masked_costmap, origin='lower')
         # plt.show()
 
-        return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25 # masked_costmap.sum() / np.count_nonzero(mask_array) # This can be usefull later on
+        # The main influence should be the maximum cost in the area which is covered by the kick. This could be the field boundary, robots, ...
+        # But we also want prio directions with lower min cost. This could be the goal area or the pass accept area of an teammate
+        # This should contribute way less than the max and should have an impact if the max values are similar in all directions.
+        return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25
 
     def get_current_cost_of_kick(self, direction, kick_length, angular_range):
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
