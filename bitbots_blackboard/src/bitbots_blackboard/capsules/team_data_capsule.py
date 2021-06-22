@@ -196,9 +196,9 @@ class TeamDataCapsule:
             stamp = single_teamdata.header.stamp
             if rospy.Time.now() - stamp < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
-                    if robot_x_std_dev < self.pose_precision_threshold[0] and \
-                            robot_y_std_dev < self.pose_precision_threshold[1] and \
-                            robot_theta_std_dev < self.pose_precision_threshold[2]:
+                    if robot_x_std_dev < self.pose_precision_threshold['x_sdev'] and \
+                            robot_y_std_dev < self.pose_precision_threshold['y_sdev'] and \
+                            robot_theta_std_dev < self.pose_precision_threshold['theta_sdev']:
                         robot_dist = self.get_robot_ball_euclidian_distance(single_teamdata)
                         if robot_dist < best_robot_dist:
                             best_ball = PointStamped()
