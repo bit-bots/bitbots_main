@@ -14,11 +14,11 @@ class CancelPathplanning(AbstractActionElement):
         self.pop()
 
 
-class StandAndWait(AbstractActionElement):
+class WalkInPlace(AbstractActionElement):
     """This keeps walking in place and optionally pops itself after a given time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(StandAndWait, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.duration = parameters.get('duration', None)
 
         self.start_time = rospy.Time.now()
@@ -31,7 +31,7 @@ class StandAndWait(AbstractActionElement):
         self.blackboard.pathfinding.cancel_goal()
 
 
-class Stop(StandAndWait):
+class Stand(WalkInPlace):
     """This stops the robot's walking and optionally pops itself after a given time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
@@ -46,7 +46,7 @@ class Stop(StandAndWait):
         self.blackboard.pathfinding.stop_walk()
 
 
-class StandAndWaitRandom(Stop):
+class StandAndWaitRandom(Stand):
     """This stops the robot's walking for a random amount of time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
