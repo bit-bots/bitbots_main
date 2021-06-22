@@ -142,15 +142,17 @@ class WorldModelCapsule:
                 return self.ball_map
             else:
                 teammate_ball = self._blackboard.team_data.get_teammate_ball()
-                if teammate_ball is not None:
+                if teammate_ball is not None and self.tf_buffer.can_transform(self.base_footprint_frame,
+                                                                              teammate_ball.header.frame_id,
+                                                                              teammate_ball.header.stamp,
+                                                                              timeout=rospy.Duration(0.2)):
                     rospy.logerr("using teammate ball, we are so fancy")
                     return teammate_ball
                 else:
-                    rospy.logerr("our ball is bad but the teammates ball is worse")
+                    rospy.logerr("our ball is bad but the teammates ball is worse or cant be transformed")
                     return self.ball_map
         else:
             return self.ball_odom
-
 
     def get_ball_position_uv(self):
         ball = self.get_best_ball_point_stamped()
