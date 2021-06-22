@@ -33,6 +33,8 @@
   <depend>rotconv</depend>
   <depend>control_toolbox</depend>
 
+  <test_depend>bitbots_test</test_depend>
+
   <!-- The export tag contains other, unspecified, tags -->
   <export>
   </export>

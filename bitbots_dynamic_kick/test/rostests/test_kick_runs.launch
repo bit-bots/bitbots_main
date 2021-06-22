@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
+        <arg name="sim" value="true"/>
+    </include>
+
+    <param name="use_sim_time" value="false" />
+
+    <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen">
+        <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config.yaml" />
+    </node>
+
+    <test pkg="bitbots_dynamic_kick" type="test_kick_runs.py" test-name="kick_runs" time-limit="300" />
+</launch>
