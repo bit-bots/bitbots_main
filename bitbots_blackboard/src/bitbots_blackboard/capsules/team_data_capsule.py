@@ -13,6 +13,7 @@ class TeamDataCapsule:
     def __init__(self):
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
+        self.time_to_ball_publisher = None # type: rospy.Publisher
         # indexed with one to match robot ids
         self.team_data = {}
         for i in range(1, 7):
@@ -29,6 +30,7 @@ class TeamDataCapsule:
             'goalie': Strategy.ROLE_GOALIE,
             'idle': Strategy.ROLE_IDLING
         }
+        self.own_time_to_ball = 9999.0
         self.strategy = Strategy()
         self.strategy.role = self.roles[rospy.get_param('role')]
         self.strategy_update = None
@@ -80,7 +82,7 @@ class TeamDataCapsule:
 
         return False
 
-    def team_rank_to_ball(self, own_ball_distance, count_goalies=True):
+    def team_rank_to_ball(self, own_ball_distance, count_goalies=True, use_time_to_ball=False):
         """Returns the rank of this robot compared to the team robots concerning ball distance.
         Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
         For example, we do not want our goalie to perform a throw in against our empty goal.
@@ -96,9 +98,12 @@ class TeamDataCapsule:
                     data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
                     and data.ball_absolute.covariance[0] < self.ball_max_covariance \
                     and data.ball_absolute.covariance[7] < self.ball_max_covariance:
-                ball_rel_x = data.ball_absolute.pose.position.x - data.robot_position.pose.position.x
-                ball_rel_y = data.ball_absolute.pose.position.y - data.robot_position.pose.position.y
-                distances.append(math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2))
+                if use_time_to_ball:
+                    distances.append(data.time_to_position_at_ball)
+                else:
+                    ball_rel_x = data.ball_absolute.pose.position.x - data.robot_position.pose.position.x
+                    ball_rel_y = data.ball_absolute.pose.position.y - data.robot_position.pose.position.y
+                    distances.append(math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2))
         sorted_times = sorted(distances)
         rank = 1
         for distances in sorted_times:
@@ -156,3 +161,6 @@ class TeamDataCapsule:
     def publish_strategy(self):
         """Publish for team comm"""
         self.strategy_sender.publish(self.strategy)
+
+    def publish_time_to_ball(self):
+        self.time_to_ball_publisher.publish(self.own_time_to_ball)

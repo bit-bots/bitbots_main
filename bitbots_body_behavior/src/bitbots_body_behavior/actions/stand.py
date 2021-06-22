@@ -6,15 +6,6 @@ from tf2_geometry_msgs import PoseStamped
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class Stop(AbstractActionElement):
-    """ This stops the robot's walking and pops itself when the robot stands """
-
-    def perform(self, reevaluate=False):
-        self.blackboard.pathfinding.cancel_goal()
-        self.blackboard.pathfinding.stop_walk()
-        self.pop()
-
-
 class CancelPathplanning(AbstractActionElement):
     """Only cancel the pathplanning goal without completly stopping the walking"""
 
@@ -23,26 +14,40 @@ class CancelPathplanning(AbstractActionElement):
         self.pop()
 
 
-class StandAndWait(AbstractActionElement):
-    """ This stops the robots walking and keeps standing """
+class WalkInPlace(AbstractActionElement):
+    """This keeps walking in place and optionally pops itself after a given time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(StandAndWait, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.duration = parameters.get('duration', None)
 
         self.start_time = rospy.Time.now()
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
-        if self.duration is not None and \
-                (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
+        if self.duration is not None and (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
             return self.pop()
 
         self.blackboard.pathfinding.cancel_goal()
 
 
-class StandAndWaitRandom(StandAndWait):
-    """ This stops the robots walking and keeps standing """
+class Stand(WalkInPlace):
+    """This stops the robot's walking and optionally pops itself after a given time"""
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard.pathfinding.cancel_goal()
+
+    def perform(self, reevaluate=False):
+        self.publish_debug_data("duration", self.duration)
+        if self.duration is not None and (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
+            return self.pop()
+        # need to keep publishing this since path planning publishes a few more messages
+        self.blackboard.pathfinding.stop_walk()
+
+
+class StandAndWaitRandom(Stand):
+    """This stops the robot's walking for a random amount of time"""
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)

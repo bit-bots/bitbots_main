@@ -1,3 +1,5 @@
+import random
+
 import rospy
 from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import Point
@@ -12,9 +14,14 @@ class GoToRolePosition(AbstractActionElement):
         try:
             if self.blackboard.blackboard.duty == 'goalie':
                 generalized_role_position = role_positions[self.blackboard.blackboard.duty]
-            elif self.blackboard.blackboard.duty == 'offense' and role_positions['pos_number'] == 0 and self.blackboard.gamestate.has_kickoff():
+            elif self.blackboard.blackboard.duty == 'offense' and role_positions['pos_number'] == 0 \
+                    and self.blackboard.gamestate.has_kickoff():
                 # handle kick off specifically. Let center offense go near ball
                 generalized_role_position = role_positions['kickoff']
+            elif self.blackboard.blackboard.duty == 'offense' and role_positions['pos_number'] != 0:
+                # chose position randomly between left and right
+                random_number = random.randint(1, 2)
+                generalized_role_position = role_positions[self.blackboard.blackboard.duty][random_number]
             else:
                 # players other than the goalie have multiple possible positions
                 generalized_role_position = \

@@ -17,7 +17,7 @@ import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, \
-    Quaternion, Pose
+    Quaternion, Pose, TransformStamped
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
@@ -358,6 +358,33 @@ class WorldModelCapsule:
     def get_current_position(self):
         """
         Returns the current position as determined by the localization
+        :returns x,y,theta
+        """
+        transform = self.get_current_position_transform()
+        if transform is None:
+            return None
+        orientation = transform.transform.rotation
+        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        return transform.transform.translation.x, transform.transform.translation.y, theta
+
+    def get_current_position_pose_stamped(self) -> PoseStamped:
+        """
+        Returns the current position as determined by the localization as a PoseStamped
+        """
+        transform = self.get_current_position_transform()
+        if transform is None:
+            return None
+        ps = PoseStamped()
+        ps.header = transform.header
+        ps.pose.position.x = transform.transform.translation.x
+        ps.pose.position.y = transform.transform.translation.y
+        ps.pose.position.z = transform.transform.translation.z
+        ps.pose.orientation = transform.transform.rotation
+        return ps
+
+    def get_current_position_transform(self) -> TransformStamped:
+        """
+        Returns the current position as determined by the localization as a TransformStamped
         """
         try:
             # get the most recent transform
@@ -365,9 +392,7 @@ class WorldModelCapsule:
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
             return None
-        orientation = transform.transform.rotation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        return transform.transform.translation.x, transform.transform.translation.y, theta
+        return transform
 
     def get_localization_precision(self):
         """
@@ -566,31 +591,46 @@ class WorldModelCapsule:
         # Add base points
         fix_points.extend([
             # Corner points of the map (including margin)
-            [[-self.map_margin, -self.map_margin], corner_value + in_field_value_our_side],
-            [[self.field_length + self.map_margin, -self.map_margin], corner_value + in_field_value_our_side],
-            [[-self.map_margin, self.field_width + self.map_margin], corner_value + in_field_value_our_side],
+            [[-self.map_margin, -self.map_margin],
+             corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, -self.map_margin],
+             corner_value + in_field_value_our_side],
+            [[-self.map_margin, self.field_width + self.map_margin],
+             corner_value + in_field_value_our_side],
             [[self.field_length + self.map_margin, self.field_width + self.map_margin],
              corner_value + in_field_value_our_side],
             # Corner points of the field
-            [[0, 0], corner_value + in_field_value_our_side],
-            [[self.field_length, 0], corner_value],
-            [[0, self.field_width], corner_value + in_field_value_our_side],
-            [[self.field_length, self.field_width], corner_value],
+            [[0, 0],
+             corner_value + in_field_value_our_side],
+            [[self.field_length, 0],
+             corner_value],
+            [[0, self.field_width],
+             corner_value + in_field_value_our_side],
+            [[self.field_length, self.field_width],
+             corner_value],
             # Points in the field that pull the gradient down, so we don't play always in the middle
-            [[keep_out_border, keep_out_border], in_field_value_our_side],
-            [[keep_out_border, self.field_width - keep_out_border], in_field_value_our_side],
+            [[keep_out_border, keep_out_border],
+             in_field_value_our_side],
+            [[keep_out_border, self.field_width - keep_out_border],
+             in_field_value_our_side],
         ])
 
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
-            [[self.field_length, self.field_width / 2 - self.goal_width / 2], goalpost_value],
-            [[self.field_length, self.field_width / 2 + self.goal_width / 2], goalpost_value],
-            [[self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance], goal_value],
-            [[self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance], goal_value],
+            [[self.field_length, self.field_width / 2 - self.goal_width / 2],
+             goalpost_value],
+            [[self.field_length, self.field_width / 2 + self.goal_width / 2],
+             goalpost_value],
+            [[self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance],
+             goal_value],
+            [[self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance],
+             goal_value],
             [[self.field_length + self.map_margin,
-              self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance], -0.2],
+              self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance],
+             -0.2],
             [[self.field_length + self.map_margin,
-              self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance], -0.2],
+              self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance],
+             -0.2],
         ])
 
         # Apply map margin to fixpoints
@@ -698,10 +738,13 @@ class WorldModelCapsule:
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
 
     def get_best_kick_direction(self, min_angle, max_angle, num_kick_angles, kick_length, angular_range):
+        # list of possible kick directions, sorted by absolute value to
+        # prefer forward kicks to side kicks if their costs are equal
         kick_directions = sorted(np.linspace(min_angle,
                                              max_angle,
                                              num=num_kick_angles), key=abs)
 
+        # get the kick direction with the least cost
         kick_direction = kick_directions[np.argmin([self.get_current_cost_of_kick(direction=direction,
                                                                                   kick_length=kick_length,
                                                                                   angular_range=angular_range)

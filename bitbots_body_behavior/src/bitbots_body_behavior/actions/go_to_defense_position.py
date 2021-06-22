@@ -43,18 +43,39 @@ class GoToDefensePosition(AbstractActionElement):
 
         goal_position = (-self.blackboard.world_model.field_length / 2, 0)  # position of the own goal
         ball_position = self.blackboard.world_model.get_ball_position_xy()
+        robot_x, robot_y, _ = np.array(self.blackboard.world_model.get_current_position())
+        our_pose = [robot_x, robot_y]
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
-        if self.mode == "freekick":
+        if self.mode == "freekick_first":
             vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
             # pos between ball and goal but 1m away from ball
             defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
             pose_msg.pose.position.x = defense_pos[0]
             pose_msg.pose.position.y = defense_pos[1]
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
+            pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
+        elif self.mode == "freekick_second":
+            vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
+            # pos between ball and goal but 1m away from ball and 1m to the side which is closer to us
+            defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
+            yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
+
+            # decide on side that is closer
+            pos_1 = np.array([defense_pos[0] + math.sin(yaw) * 1, defense_pos[1] + math.cos(yaw) * 1])
+            pos_2 = np.array([defense_pos[0] - math.sin(yaw) * 1, defense_pos[1] - math.cos(yaw) * 1])
+            distance_1 = np.linalg.norm(our_pose - pos_1)
+            distance_2 = np.linalg.norm(our_pose - pos_2)
+
+            if distance_1 < distance_2:
+                pose_msg.pose.position.x = pos_1[0]
+                pose_msg.pose.position.y = pos_1[1]
+            else:
+                pose_msg.pose.position.x = pos_2[0]
+                pose_msg.pose.position.y = pos_2[1]
             pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
         else:
             # center point between ball and own goal
