@@ -187,7 +187,6 @@ class TeamDataCapsule:
         best_ball = None
         for robot_name, single_teamdata in self.team_data.items():
             if not self.is_valid(single_teamdata):
-                rospy.logerr(f"Teamdata from {robot_name} is too old")
                 continue
             ball = single_teamdata.ball_absolute
             ball_x_std_dev, ball_y_std_dev, _ = std_dev_from_covariance(ball.covariance)
