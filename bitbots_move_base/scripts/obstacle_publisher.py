@@ -71,7 +71,7 @@ class ObstaclePublisher:
             self.robots))
 
         # Enlarge robots
-        width = 0.1
+        width = 0.2
         points = []
         for o in self.robots:
             points.append([o.point.x, o.point.y, o.point.z])
@@ -81,7 +81,7 @@ class ObstaclePublisher:
             points.append([o.point.x + width / 2, o.point.y + width / 2, o.point.z])
 
         # Publish team mates
-        width = 0.2
+        width = 0.3
         team_points = points   # This is only equal for now. This changed if our robots are published seperatly.
         for robot in self.team.values():
             p = robot.robot_position.pose.position
