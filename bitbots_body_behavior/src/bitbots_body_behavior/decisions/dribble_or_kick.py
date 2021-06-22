@@ -39,7 +39,7 @@ class DribbleOrKick(AbstractDecisionElement):
         goal_distance = abs(self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0] -
                             self.blackboard.world_model.get_current_position()[0])
         goal_far = goal_distance > self.goal_distance_threshold
-        self.publish_debug_data(f"Goal distance (needs >{self.goal_distance_threshold}", goal_distance)
+        self.publish_debug_data(f"Goal distance (needs >{self.goal_distance_threshold})", goal_distance)
 
         # ball needs to be close enough
         ball_distance = self.blackboard.world_model.get_ball_distance()
