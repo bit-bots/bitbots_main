@@ -95,6 +95,8 @@ class WorldModelCapsule:
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
         self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
+        self.used_ball_pub = rospy.Publisher('debug/used_ball', PointStamped, queue_size=1)
+        self.which_ball_pub = rospy.Publisher('debug/which_ball_is_used', Header, queue_size=1)
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
@@ -139,6 +141,11 @@ class WorldModelCapsule:
         """
         if self.use_localization and self.localization_precision_in_threshold():
             if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
+                self.used_ball_pub.publish(self.ball_map)
+                h = Header()
+                h.stamp = self.ball_map.header.stamp
+                h.frame_id = "own_ball_map"
+                self.which_ball_pub.publish(h)
                 return self.ball_map
             else:
                 teammate_ball = self._blackboard.team_data.get_teammate_ball()
@@ -147,11 +154,26 @@ class WorldModelCapsule:
                                                                               teammate_ball.header.stamp,
                                                                               timeout=rospy.Duration(0.2)):
                     rospy.logerr("using teammate ball, we are so fancy")
+                    self.used_ball_pub.publish(teammate_ball)
+                    h = Header()
+                    h.stamp = teammate_ball.header.stamp
+                    h.frame_id = "teammate_ball"
+                    self.which_ball_pub.publish(h)
                     return teammate_ball
                 else:
                     rospy.logerr("our ball is bad but the teammates ball is worse or cant be transformed")
+                    h = Header()
+                    h.stamp = self.ball_map.header.stamp
+                    h.frame_id = "own_ball_map"
+                    self.which_ball_pub.publish(h)
+                    self.used_ball_pub.publish(self.ball_map)
                     return self.ball_map
         else:
+            h = Header()
+            h.stamp = self.ball_odom.header.stamp
+            h.frame_id = "own_ball_odom"
+            self.which_ball_pub.publish(h)
+            self.used_ball_pub.publish(self.ball_odom)
             return self.ball_odom
 
     def get_ball_position_uv(self):
