@@ -2,3 +2,6 @@
 
 INTERACTIVE = "interactive"
 "Tests which require user interaction in order to be run"
+
+WEBOTS = "webots"
+"Tests which require webots"
