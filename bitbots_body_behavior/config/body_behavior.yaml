@@ -33,7 +33,7 @@ behavior:
     role_positions:
       goalie: [ -0.95, 0 ]
       defense: [ [ -0.5, 0 ], [ -0.45, 0.5 ], [ -0.45, -0.5 ] ]
-      offense: [ [ -0.35, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
+      offense: [ [ -0.3, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
       kickoff: [ -0.1, 0 ]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0 #this is currently handled more dynamically for offense players
