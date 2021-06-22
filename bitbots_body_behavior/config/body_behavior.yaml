@@ -145,7 +145,7 @@ behavior:
     ball_movement_subscribe_topic: 'ball_relative_movement'
 
     # The position where the supporter robot should place itself in order to accept a pass
-    pass_position_x: 0.5
+    pass_position_x: 0.1
     pass_position_y: 1
     supporter_max_x: 4
 
