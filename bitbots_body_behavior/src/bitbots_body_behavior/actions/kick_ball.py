@@ -72,13 +72,12 @@ class KickBallDynamic(AbstractKickAction):
                     goal.unstable = True
 
                     # only check 2 directions, left and right
-                    kick_directions = np.array([-self.penalty_kick_angle, self.penalty_kick_angle])
-
-                    kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
-                        direction=direction,
-                        kick_length=self.kick_length,
-                        angular_range=self.angular_range)
-                        for direction in kick_directions])]
+                    kick_direction = self.blackboard.world_model.get_best_kick_direction(
+                            -self.penalty_kick_angle,
+                            self.penalty_kick_angle,
+                            2,
+                            self.kick_length,
+                            self.angular_range)
                 else:
                     ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
                     goal.kick_speed = 1
@@ -87,19 +86,13 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.z = 0
                     goal.unstable = False
 
-                    # list of possible kick directions, sorted by absolute value to 
-                    # prefer forward kicks to side kicks if their costs are equal
-                    kick_directions = sorted(np.linspace(
-                        -self.max_kick_angle,
-                        self.max_kick_angle,
-                        num=self.num_kick_angles), key=abs)
+                    kick_direction = self.blackboard.world_model.get_best_kick_direction(
+                            -self.max_kick_angle,
+                            self.max_kick_angle,
+                            self.num_kick_angles,
+                            self.kick_length,
+                            self.angular_range)
 
-                    # get the kick direction with the least cost
-                    kick_direction = kick_directions[np.argmin([self.blackboard.world_model.get_current_cost_of_kick(
-                        direction=direction,
-                        kick_length=self.kick_length,
-                        angular_range=self.angular_range)
-                        for direction in kick_directions])]
                 goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
 
                 self.blackboard.kick.kick(goal)

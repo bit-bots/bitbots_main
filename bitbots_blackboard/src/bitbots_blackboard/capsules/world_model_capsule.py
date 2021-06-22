@@ -658,10 +658,13 @@ class WorldModelCapsule:
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
 
     def get_best_kick_direction(self, min_angle, max_angle, num_kick_angles, kick_length, angular_range):
+        # list of possible kick directions, sorted by absolute value to
+        # prefer forward kicks to side kicks if their costs are equal
         kick_directions = sorted(np.linspace(min_angle,
                                              max_angle,
                                              num=num_kick_angles), key=abs)
 
+        # get the kick direction with the least cost
         kick_direction = kick_directions[np.argmin([self.get_current_cost_of_kick(direction=direction,
                                                                                   kick_length=kick_length,
                                                                                   angular_range=angular_range)
