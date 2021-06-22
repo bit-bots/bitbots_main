@@ -17,7 +17,8 @@ import tf2_ros as tf2
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, \
-    Quaternion
+    Quaternion, Pose
+from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 import sensor_msgs.point_cloud2 as pc2
@@ -40,7 +41,8 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self):
+    def __init__(self, blackboard):
+        self._blackboard = blackboard
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
@@ -88,11 +90,15 @@ class WorldModelCapsule:
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
         self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
+        self.costmap_publisher = rospy.Publisher('debug/costmap', OccupancyGrid, queue_size=1)
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
         self.gradient_map = None  # global heading map (static) only dependent on field structure
-        self.calc_gradient_map()
+
+        # Calculates the base costmap and gradient map based on it
+        self.calc_base_costmap()
+        self.calc_gradients()
 
     ############
     ### Ball ###
@@ -424,6 +430,9 @@ class WorldModelCapsule:
     ############
 
     def robot_obstacle_callback(self, msg):
+        """
+        Callback with new obstacles
+        """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
         # Iterate over all obstacles
@@ -435,8 +444,56 @@ class WorldModelCapsule:
                 self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
+        # Get pass offsets
+        self.pass_map = self.get_pass_regions()
+
         # Merge costmaps
-        self.costmap = self.base_costmap.copy() + obstacle_map
+        self.costmap = self.base_costmap.copy() + obstacle_map - self.pass_map
+
+        self.costmap_debug_draw()
+
+    def costmap_debug_draw(self):
+        """
+        Publishes the costmap for rviz
+        """
+        msg = ros_numpy.msgify(
+            OccupancyGrid,
+            (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T,
+            info=MapMetaData(
+                resolution=0.1,
+                origin=Pose(
+                    position=Point(
+                        x=-self.field_length/2 - self.map_margin,
+                        y=-self.field_width/2 - self.map_margin,
+                    )
+                )))
+        msg.header.frame_id = self.map_frame
+        self.costmap_publisher.publish(msg)
+
+    def get_pass_regions(self):
+        """
+        Draws a costmap for the pass regions
+        """
+        pass_dist = 1.0
+        pass_weight = 20.0
+        pass_smooth = 4.0
+        # Init a new costmap
+        costmap = np.zeros_like(self.costmap)
+        # Iterate over possible team mate poses
+        for pose in self._blackboard.team_data.get_active_teammate_poses(count_goalies=False):
+            # Get positions
+            goal_position = np.array([self.field_length / 2, 0, 0])  # position of the opponent goal
+            teammate_position = ros_numpy.numpify(pose.position)
+            # Get vector
+            vector_teammate_to_goal = goal_position - ros_numpy.numpify(pose.position)
+            # Position between robot and goal but 1m away from the robot
+            pass_pos = vector_teammate_to_goal / np.linalg.norm(vector_teammate_to_goal) * pass_dist + teammate_position
+            # Convert position to array index
+            idx_x, idx_y = self.field_2_costmap_coord(pass_pos[0], pass_pos[1])
+            # Draw pass position with smoothing independent weight on costmap
+            costmap[idx_x, idx_y] = pass_weight * pass_smooth
+        # Smooth obstacle map
+        return gaussian_filter(costmap, pass_smooth)
 
     def field_2_costmap_coord(self, x, y):
         """
@@ -453,6 +510,9 @@ class WorldModelCapsule:
         return idx_x, idx_y
 
     def calc_gradients(self):
+        """
+        Recalculates the gradient map based on the current costmap.
+        """
         gradient = np.gradient(self.base_costmap)
         norms = np.linalg.norm(gradient, axis=0)
 
@@ -461,6 +521,9 @@ class WorldModelCapsule:
         self.gradient_map = gradient
 
     def cost_at_relative_xy(self, x, y):
+        """
+        Returns cost at relative position to the base footprint.
+        """
         if self.costmap is None:
             return 0.0
 
@@ -479,8 +542,12 @@ class WorldModelCapsule:
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
 
-    def calc_gradient_map(self):
-
+    def calc_base_costmap(self):
+        """
+        Builds the base costmap based on the bahavior parameters.
+        This costmap includes a gradient towards the enemy goal and high costs outside the playable area
+        """
+        # Get parameters
         goalpost_safety_distance = rospy.get_param(
             "behavior/body/goalpost_safety_distance")  # offset in y direction from the goalpost
         keep_out_border = rospy.get_param("behavior/body/keep_out_border")  # dangerous border area
@@ -539,8 +606,6 @@ class WorldModelCapsule:
 
         # plt.imshow(self.costmap, origin='lower')
         # plt.show()
-
-        self.calc_gradients()
 
     def get_gradient_at_field_position(self, x, y):
         """
@@ -627,7 +692,7 @@ class WorldModelCapsule:
         # plt.imshow(masked_costmap, origin='lower')
         # plt.show()
 
-        return masked_costmap.max()  # masked_costmap.sum() / np.count_nonzero(mask_array) # This can be usefull later on
+        return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25 # masked_costmap.sum() / np.count_nonzero(mask_array) # This can be usefull later on
 
     def get_current_cost_of_kick(self, direction, kick_length, angular_range):
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)

@@ -141,7 +141,16 @@ class TeamDataCapsule:
     def get_kickoff_strategy(self):
         return self.strategy.offensive_side, self.strategy_update
 
+    def get_active_teammate_poses(self, count_goalies=False):
+        """ Returns the poses of all playing robots """
+        poses = []
+        for data in self.team_data.values():
+            if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
+                poses.append(data.robot_position.pose)
+        return poses
+
     def team_data_callback(self, msg):
+        # Save team data
         self.team_data[msg.robot_id] = msg
 
     def publish_strategy(self):
