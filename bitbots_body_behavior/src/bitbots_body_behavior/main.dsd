@@ -148,7 +148,7 @@ $IsPenalized
         READY --> $AnyGoalScoreRecently + time:50
             YES --> #PositioningReady
             NO --> $DoOnce
-                NOT_DONE --> @ChangeAction + action:waiting + r:false, @Stand + duration:1, @GetWalkready + r:false, @LookAtFieldFeatures + r:false
+                NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:1, @GetWalkready + r:false
                 DONE --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
