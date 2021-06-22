@@ -17,6 +17,7 @@ class GameStatusCapsule:
         self.last_update = 0
         self.unpenalized_time = 0
         self.last_goal_from_us_time = -86400
+        self.last_goal_time = -86400
         self.free_kick_kickoff_team = None
 
     def is_game_state_equals(self, value):
@@ -52,6 +53,9 @@ class GameStatusCapsule:
 
     def get_seconds_since_own_goal(self):
         return rospy.get_time() - self.last_goal_from_us_time
+
+    def get_seconds_since_any_goal(self):
+        return rospy.get_time() - self.last_goal_time
 
     def get_seconds_remaining(self):
         # Time from the message minus time passed since receiving it
@@ -91,6 +95,10 @@ class GameStatusCapsule:
 
         if gs.ownScore > self.gamestate.ownScore:
             self.last_goal_from_us_time = rospy.get_time()
+            self.last_goal_time = rospy.get_time()
+
+        if gs.rivalScore > self.gamestate.rivalScore:
+            self.last_goal_time = rospy.get_time()
 
         if gs.secondaryStateMode == 2 and self.gamestate.secondaryStateMode != 2 \
                 and gs.gameState == GameState.GAMESTATE_PLAYING:

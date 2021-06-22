@@ -137,5 +137,13 @@ class FieldFeaturesSearchPattern(AbstractSearchPattern):
 
 class VisualCompassSearchPattern(AbstractSearchPattern):
     """Search for features that are recognized by the visual compass"""
+
     def get_search_pattern(self):
         return self.blackboard.config['visual_compass_features_pattern']
+
+
+class FrontSearchPattern(AbstractSearchPattern):
+    """Searches only in front of the robot. Useful to see ball often but to also get some field features"""
+
+    def get_search_pattern(self):
+        return self.blackboard.config['front_search_pattern']
