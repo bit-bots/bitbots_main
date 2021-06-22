@@ -92,9 +92,9 @@ DynamicKickConfig KickNode::getUnstableConfig() {
   return config;
 }
 
-void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t /* level */) {
-  if (!normal_config_) {
-    // This is called at the beginning, so we can set the normal config here
+void KickNode::reconfigureCallback(bitbots_dynamic_kick::DynamicKickConfig &config, uint32_t level) {
+  if (level != 9999) {
+    // The level is set to 9999 for the unstable kick, so we don't update the normal config in that case
     normal_config_ = config;
   }
   engine_rate_ = config.engine_rate;
@@ -136,7 +136,7 @@ bool KickNode::init(const bitbots_msgs::KickGoal &goal_msg,
   }
 
   if (goal_msg.unstable) {
-    reconfigureCallback(unstable_config_, 0);
+    reconfigureCallback(unstable_config_, 9999);
   } else {
     reconfigureCallback(normal_config_.value(), 0);
   }
