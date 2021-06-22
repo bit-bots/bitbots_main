@@ -12,18 +12,21 @@ from sklearn.metrics import accuracy_score
 
 class FallChecker(BaseEstimator):
 
-    def __init__(self, thresh_gyro_pitch=rospy.get_param("hcm/falling_thresh_gyro_pitch"),
-                 thresh_gyro_roll=rospy.get_param("hcm/falling_thresh_gyro_roll"),
-                 thresh_orient_pitch=math.radians(rospy.get_param("hcm/falling_thresh_orient_pitch")),
-                 thresh_orient_roll=math.radians(rospy.get_param("hcm/falling_thresh_orient_roll")),
-                 smoothing=rospy.get_param("hcm/smooth_threshold")):
+    def __init__(self, thresh_gyro_pitch=None,
+                 thresh_gyro_roll=None,
+                 thresh_orient_pitch=None,
+                 thresh_orient_roll=None,
+                 smoothing=None):
+        self.thresh_gyro_pitch = rospy.get_param("hcm/falling_thresh_gyro_pitch") \
+            if thresh_gyro_pitch is None else thresh_gyro_pitch
+        self.thresh_gyro_roll = rospy.get_param("hcm/falling_thresh_gyro_roll") \
+            if thresh_gyro_roll is None else thresh_gyro_roll
+        self.thresh_orient_pitch = math.radians(rospy.get_param("hcm/falling_thresh_orient_pitch")) \
+            if thresh_orient_pitch is None else thresh_orient_pitch
+        self.thresh_orient_roll = math.radians(rospy.get_param("hcm/falling_thresh_orient_roll")) \
+            if thresh_orient_roll is None else thresh_orient_roll
 
-        self.thresh_gyro_pitch = thresh_gyro_pitch
-        self.thresh_gyro_roll = thresh_gyro_roll
-        self.thresh_orient_pitch = thresh_orient_pitch
-        self.thresh_orient_roll = thresh_orient_roll
-
-        self.smoothing = smoothing
+        self.smoothing = rospy.get_param("hcm/smooth_threshold") if smoothing is None else smoothing
         self.smoothing_list = []
         self.counter = 0
         self.last_result = 0
