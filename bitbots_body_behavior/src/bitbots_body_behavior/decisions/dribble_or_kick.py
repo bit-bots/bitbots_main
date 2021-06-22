@@ -1,3 +1,5 @@
+import math
+
 import rospy
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
@@ -11,7 +13,6 @@ class DribbleOrKick(AbstractDecisionElement):
         self.ball_distance_threshold = self.blackboard.config['dribble_ball_distance_threshold']
 
         self.kick_length = rospy.get_param('behavior/body/kick_cost_kick_length')
-        self.angular_range = rospy.get_param('behavior/body/kick_cost_angular_range')
         self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
 
     def perform(self, reevaluate=False):
@@ -30,7 +31,7 @@ class DribbleOrKick(AbstractDecisionElement):
                                                                                   self.max_kick_angle,
                                                                                   3,
                                                                                   self.kick_length,
-                                                                                  self.angular_range)
+                                                                                  math.tau/4)
         front_free = best_kick_direction == 0
         self.publish_debug_data("Front free", front_free)
 
