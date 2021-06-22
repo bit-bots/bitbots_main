@@ -8,7 +8,7 @@
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @WalkInPlace
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
+@ChangeAction + action:waiting + r:false, @PlayAnimationInit + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
 
 #GoAndKickBallMapGoal
