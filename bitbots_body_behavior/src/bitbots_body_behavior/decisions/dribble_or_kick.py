@@ -44,7 +44,7 @@ class DribbleOrKick(AbstractDecisionElement):
         # ball needs to be close enough
         ball_distance = self.blackboard.world_model.get_ball_distance()
         ball_near = ball_distance < self.ball_distance_threshold
-        self.publish_debug_data(f"Ball distance (needs <{self.ball_distance_threshold}", ball_distance)
+        self.publish_debug_data(f"Ball distance (needs <{self.ball_distance_threshold})", ball_distance)
 
         if oriented_to_goal and front_free and goal_far and ball_near:
             return "DRIBBLE"
