@@ -40,8 +40,9 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self):
+    def __init__(self, blackboard):
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
+        self._blackboard = blackboard
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -58,6 +59,10 @@ class WorldModelCapsule:
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
         self.ball_map.header.stamp = rospy.Time(0)
         self.ball_map.header.frame_id = self.map_frame
+        self.ball_teammate = PointStamped()
+        self.ball_teammate.header.stamp = rospy.Time(0)
+        self.ball_teammate.header.frame_id = self.map_frame
+        self.ball_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_lost_time', 8.0))
         self.ball_twist_map = None
         self.ball_twist_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_twist_lost_time', 2))
         self.ball_twist_precision_threshold = rospy.get_param('behavior/body/ball_twist_precision_threshold', None)
@@ -70,8 +75,10 @@ class WorldModelCapsule:
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
+        self.ball_seen_time_teammate = rospy.Time(0)
         self.goal_seen_time = rospy.Time(0)
         self.ball_seen = False
+        self.ball_seen_teammate = False
         self.field_length = rospy.get_param('field_length', None)
         self.field_width = rospy.get_param('field_width', None)
         self.goal_width = rospy.get_param('goal_width', None)
@@ -131,12 +138,16 @@ class WorldModelCapsule:
         or from teammate if the robot itself has lost it and teamcom is available
         """
         if self.use_localization and self.localization_precision_in_threshold():
-            if self.ball_seen_self() or self._blackboard.team_data is None \
-                    or not self._blackboard.team_data.teammate_ball_is_valid():
+            if self.ball_seen_self() or self._blackboard.team_data is None:
                 return self.ball_map
             else:
-                rospy.logwarn("using teammate ball, we are so fancy")
-                return self._blackboard.team_data.get_teammate_ball()
+                teammate_ball = self._blackboard.team_data.get_teammate_ball()
+                if teammate_ball is not None:
+                    rospy.logerr("using teammate ball, we are so fancy")
+                    return teammate_ball
+                else:
+                    rospy.logerr("our ball is bad but the teammates ball is worse")
+                    return self.ball_map
         else:
             return self.ball_odom
 
@@ -235,9 +246,11 @@ class WorldModelCapsule:
             self.ball_twist_publisher.publish(self.ball_twist_map)
 
     def forget_ball(self):
-        """Forget that we saw a ball"""
+        """Forget that we and the best teammate saw a ball"""
         self.ball_seen_time = rospy.Time(0)
+        self.ball_seen_time_teammate = rospy.Time(0)
         self.ball = PointStamped()
+        self.ball_teammate = PointStamped()
 
     ###########
     # ## Goal #
