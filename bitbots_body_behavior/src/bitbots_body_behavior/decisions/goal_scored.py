@@ -21,3 +21,21 @@ class GoalScoreRecently(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+class AnyGoalScoreRecently(GoalScoreRecently):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+
+    def perform(self, reevaluate=False):
+        """
+        Determines whether someone scored an goal in the last n seconds
+        :param reevaluate:
+        :return:
+        """
+
+        if self.blackboard.gamestate.get_seconds_since_any_goal() < self.time:
+            return 'YES'
+        return 'NO'
+
+    def get_reevaluate(self):
+        return True

@@ -2,7 +2,7 @@
 @ChangeAction + action:searching, @LookAtFieldFeatures, @StandAndWait + duration:4, @TurnAround
 
 #DoNothing
-@ChangeAction + action:waiting, @LookForward, @StandAndWait
+@ChangeAction + action:waiting, @LookForward, @Stop
 
 #StandAndLook
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @StandAndWait
@@ -57,11 +57,11 @@ $ConfigRole
     GOALIE --> $GoalScoreRecently
         YES --> @Stop + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
         NO --> $LocalizationAvailable
-            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
-            NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
+            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition, @Stop
+            NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @Stop
     ELSE --> $LocalizationAvailable
-        YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @StandAndWait
+        YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @StandAndWait + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition, @Stop
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @Stop
 
 #ReorientationPause
 $TimerRunning + name:reorientation
@@ -144,8 +144,8 @@ $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @PlayAnimationInit + r:false, @StandAndWait
-        READY --> $GoalScoreRecently + time:50
+        INITIAL --> @PlayAnimationInit + r:false, @ChangeAction + action:waiting, @LookForward, @Stop
+        READY --> $AnyGoalScoreRecently + time:50
             YES --> #PositioningReady
             NO --> $DoOnce
                 NOT_DONE --> @ChangeAction + action:waiting + r:false, @Stop + duration:1, @GetWalkready + r:false, @LookAtFieldFeatures + r:false
