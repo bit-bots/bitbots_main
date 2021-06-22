@@ -97,7 +97,7 @@ class GameStatusCapsule:
             self.last_goal_from_us_time = rospy.get_time()
             self.last_goal_time = rospy.get_time()
 
-        if gs.oppScore > self.gamestate.oppScore:
+        if gs.rivalScore > self.gamestate.rivalScore:
             self.last_goal_time = rospy.get_time()
 
         if gs.secondaryStateMode == 2 and self.gamestate.secondaryStateMode != 2 \
