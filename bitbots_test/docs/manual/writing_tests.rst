@@ -51,10 +51,10 @@ Here is an example:
    from bitbots_test.test_case import TestCase
 
    class ExampleTestCase(TestCase):
-       def test_equals():
+       def test_equals(self):
            self.assertEqual(1, 1)
 
-       def test_list_contains():
+       def test_list_contains(self):
            my_list = [i for i in range(0, 10) if i % 2 == 0]
            self.assertIn(4, my_list)
 
@@ -148,7 +148,7 @@ Writing rostests
       from bitbots_test.test_case import RosNodeTestCase
 
       class ExampleTestCase(RosNodeTestCase):
-          def test_roslog():
+          def test_roslog(self):
               # assert that nothing at all is logged
               self.assertNotRosLogs()
 
@@ -170,7 +170,7 @@ Here is an example:
 
 .. code-block:: python3
 
-   def test_some_publisher():
+   def test_some_publisher(self):
        # setup
        pub = rospy.Publisher("/test", std_msgs.msg.Empty, queue_size=10)
        sub = MockSubscriber("/test", std_msgs.msg.Empty, queue_size=10)
