@@ -471,19 +471,21 @@ class WorldModelCapsule:
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Get pass offsets
         self.pass_map = self.get_pass_regions()
-
         # Merge costmaps
         self.costmap = self.base_costmap.copy() + obstacle_map - self.pass_map
-
+        # Publish debug costmap
         self.costmap_debug_draw()
 
     def costmap_debug_draw(self):
         """
         Publishes the costmap for rviz
         """
+        # Normalize costmap to match the rviz color scheme in a good way
+        normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
+        # Build the OccupancyGrid message
         msg = ros_numpy.msgify(
             OccupancyGrid,
-            (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T,
+            normalized_costmap,
             info=MapMetaData(
                 resolution=0.1,
                 origin=Pose(
@@ -492,7 +494,9 @@ class WorldModelCapsule:
                         y=-self.field_width/2 - self.map_margin,
                     )
                 )))
+        # Change the frame to allow namespaces
         msg.header.frame_id = self.map_frame
+        # Publish
         self.costmap_publisher.publish(msg)
 
     def get_pass_regions(self):
