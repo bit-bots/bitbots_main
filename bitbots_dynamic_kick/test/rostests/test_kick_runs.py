@@ -30,6 +30,7 @@ class KickRunsTestCase(RosNodeTestCase):
         client.send_goal(goal)
         client.done_cb = done_cb
         client.wait_for_result()
+        sub.wait_until_connected()
         sub.assertMessageReceived()
         assert self.kick_succeeded, "Kick was not successful"
 
