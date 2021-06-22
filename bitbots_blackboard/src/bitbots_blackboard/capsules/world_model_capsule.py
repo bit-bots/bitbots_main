@@ -524,31 +524,46 @@ class WorldModelCapsule:
         # Add base points
         fix_points.extend([
             # Corner points of the map (including margin)
-            [[-self.map_margin, -self.map_margin], corner_value + in_field_value_our_side],
-            [[self.field_length + self.map_margin, -self.map_margin], corner_value + in_field_value_our_side],
-            [[-self.map_margin, self.field_width + self.map_margin], corner_value + in_field_value_our_side],
+            [[-self.map_margin, -self.map_margin],
+             corner_value + in_field_value_our_side],
+            [[self.field_length + self.map_margin, -self.map_margin],
+             corner_value + in_field_value_our_side],
+            [[-self.map_margin, self.field_width + self.map_margin],
+             corner_value + in_field_value_our_side],
             [[self.field_length + self.map_margin, self.field_width + self.map_margin],
              corner_value + in_field_value_our_side],
             # Corner points of the field
-            [[0, 0], corner_value + in_field_value_our_side],
-            [[self.field_length, 0], corner_value],
-            [[0, self.field_width], corner_value + in_field_value_our_side],
-            [[self.field_length, self.field_width], corner_value],
+            [[0, 0],
+             corner_value + in_field_value_our_side],
+            [[self.field_length, 0],
+             corner_value],
+            [[0, self.field_width],
+             corner_value + in_field_value_our_side],
+            [[self.field_length, self.field_width],
+             corner_value],
             # Points in the field that pull the gradient down, so we don't play always in the middle
-            [[keep_out_border, keep_out_border], in_field_value_our_side],
-            [[keep_out_border, self.field_width - keep_out_border], in_field_value_our_side],
+            [[keep_out_border, keep_out_border],
+             in_field_value_our_side],
+            [[keep_out_border, self.field_width - keep_out_border],
+             in_field_value_our_side],
         ])
 
         # Add goal area (including the dangerous parts on the side of the goal)
         fix_points.extend([
-            [[self.field_length, self.field_width / 2 - self.goal_width / 2], goalpost_value],
-            [[self.field_length, self.field_width / 2 + self.goal_width / 2], goalpost_value],
-            [[self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance], goal_value],
-            [[self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance], goal_value],
+            [[self.field_length, self.field_width / 2 - self.goal_width / 2],
+             goalpost_value],
+            [[self.field_length, self.field_width / 2 + self.goal_width / 2],
+             goalpost_value],
+            [[self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance],
+             goal_value],
+            [[self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance],
+             goal_value],
             [[self.field_length + self.map_margin,
-              self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance], -0.2],
+              self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance],
+             -0.2],
             [[self.field_length + self.map_margin,
-              self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance], -0.2],
+              self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance],
+             -0.2],
         ])
 
         # Apply map margin to fixpoints
