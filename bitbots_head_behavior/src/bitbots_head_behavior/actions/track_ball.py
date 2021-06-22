@@ -23,7 +23,7 @@ class TrackBall(AbstractLookAt):
         """
 
         # Get last ball position
-        point = self.blackboard.world_model.get_ball_stamped()
+        point = self.blackboard.world_model.get_ball_stamped_relative()
 
         # Call internal look-at to turn head to this point (when necessary)
         self.look_at(point,

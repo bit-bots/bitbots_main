@@ -98,27 +98,51 @@ class WorldModelCapsule:
     ### Ball ###
     ############
 
+    def ball_seen_self(self):
+        """Returns true if we have seen the ball recently (less than ball_lost_time ago)"""
+        return rospy.Time.now() - self.ball_seen_time < self.ball_lost_time
+
     def ball_last_seen(self):
-        return self.ball_seen_time
+        """
+        Returns the time at which the ball was last seen if it is in the threshold or
+        the more recent ball from either the teammate or itself if teamcom is available
+        """
+        if self.ball_seen_self() or self._blackboard.team_data is None:
+            return self.ball_seen_time
+        else:
+            return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
+
+    def ball_seen(self):
+        """Returns true if we or a teammate has seen the ball recently (less than ball_lost_time ago)"""
+        return rospy.Time.now() - self.ball_last_seen() < self.ball_lost_time
 
     def get_ball_position_xy(self):
         """Return the ball saved in the map or odom frame"""
-        if self.use_localization and \
-                self.localization_precision_in_threshold():
-            ball = self.ball_map
-        else:
-            ball = self.ball_odom
+        ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
 
-    def get_ball_stamped(self):
+    def get_ball_stamped_relative(self):
+        """ Returns the ball in the base_footprint frame i.e. relative to the robot projected on the ground"""
         return self.ball
 
-    def get_ball_position_uv(self):
-        if self.use_localization and \
-                self.localization_precision_in_threshold():
-            ball = self.ball_map
+    def get_best_ball_point_stamped(self):
+        """
+        Returns the best ball, either its own ball has been in the ball_lost_lost time
+        or from teammate if the robot itself has lost it and teamcom is available
+        """
+        if self.use_localization and self.localization_precision_in_threshold():
+            if self.ball_seen_self() or self._blackboard.team_data is None \
+                    or not self._blackboard.team_data.teammate_ball_is_valid():
+                return self.ball_map
+            else:
+                rospy.logwarn("using teammate ball, we are so fancy")
+                return self._blackboard.team_data.get_teammate_ball()
         else:
-            ball = self.ball_odom
+            return self.ball_odom
+
+
+    def get_ball_position_uv(self):
+        ball = self.get_best_ball_point_stamped()
         try:
             ball_bfp = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=rospy.Duration(0.2)).point
         except (tf2.ExtrapolationException) as e:
