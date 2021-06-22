@@ -54,6 +54,11 @@ catkin_package(
 
 enable_bitbots_docs()
 
+if (CATKIN_ENABLE_TESTING)
+    find_package(catkin REQUIRED COMPONENTS bitbots_test)
+    enable_bitbots_tests()
+endif()
+
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
