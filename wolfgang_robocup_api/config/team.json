@@ -4,7 +4,7 @@
     "1": {
       "proto": "WolfgangRobocup",
       "dockerTag": "latest",
-      "dockerCmd": "start goalie 0",
+      "dockerCmd": "start defense 0",
       "halfTimeStartingPose": {
         "translation": [-3.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
@@ -25,48 +25,6 @@
     "2": {
       "proto": "WolfgangRobocup",
       "dockerTag": "latest",
-      "dockerCmd": "start offense 1",
-      "halfTimeStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
-      },
-      "reentryStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, -1.57]
-      },
-      "shootoutStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, 0.0]
-      },
-      "goalKeeperStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, 0.0]
-      }
-    },
-    "3": {
-      "proto": "WolfgangRobocup",
-      "dockerTag": "latest",
-      "dockerCmd": "start defense 0",
-      "halfTimeStartingPose": {
-        "translation": [-3.6, 3.20, 0.43],
-        "rotation": [0.0, -0.0, 1.0, -1.57]
-      },
-      "reentryStartingPose": {
-        "translation": [-3.6, 3.20, 0.43],
-        "rotation": [0.0, -0.0, 1.0, -1.57]
-      },
-      "shootoutStartingPose": {
-        "translation": [-3.6, 3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, 0.0]
-      },
-      "goalKeeperStartingPose": {
-        "translation": [-3.6, 3.20, 0.43],
-        "rotation": [0.0, -0.0, -1.0, 0.0]
-      }
-    },
-    "4": {
-      "proto": "WolfgangRobocup",
-      "dockerTag": "latest",
       "dockerCmd": "start offense 0",
       "halfTimeStartingPose": {
         "translation": [-1.6, 3.20, 0.43],
@@ -82,6 +40,27 @@
       },
       "goalKeeperStartingPose": {
         "translation": [-1.6, 3.20, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
+      }
+    },
+    "3": {
+      "proto": "WolfgangRobocup",
+      "dockerTag": "latest",
+      "dockerCmd": "start offense 1",
+      "halfTimeStartingPose": {
+        "translation": [-1.6, -3.20, 0.43],
+        "rotation": [0.0, -0.0, -1.0, -1.57]
+      },
+      "reentryStartingPose": {
+        "translation": [-1.6, -3.20, 0.43],
+        "rotation": [0.0, -0.0, -1.0, -1.57]
+      },
+      "shootoutStartingPose": {
+        "translation": [-1.6, -3.20, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
+      },
+      "goalKeeperStartingPose": {
+        "translation": [-1.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       }
     }
