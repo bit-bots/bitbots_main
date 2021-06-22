@@ -57,7 +57,7 @@ $ConfigRole
     GOALIE --> $GoalScoreRecently
         YES --> @Stand + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
         NO --> $LocalizationAvailable
-            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @WalkInPlace + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
+            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
             NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @Stand
     ELSE --> $LocalizationAvailable
         YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @WalkInPlace + duration:%behavior/body/ready_wait_time, @AvoidBallActive, @GoToRolePosition
