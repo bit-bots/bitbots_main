@@ -89,6 +89,10 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
             result.second[i] = 1.0;
           } else if (direction_ == "back") {
             result.second[i] = -1.5;
+          } else if (direction_ == "walkready"){
+            // remove head from the goals so that we can move it freely
+            result.first.erase(result.first.begin() + i);
+            result.second.erase(result.second.begin() + i);
           } else {
             result.second[i] = 0;
           }
