@@ -21,3 +21,25 @@ class BallInDefensiveArea(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+
+class BallInOwnPercent(AbstractDecisionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(BallInOwnPercent, self).__init__(blackboard, dsd, parameters)
+        self.percent = parameters["p"]
+
+    def perform(self, reevaluate=False):
+        """
+        Determines whether the ball is in the given percentage of the field towards the own goal.
+        :param reevaluate:
+        :return:
+        """
+        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        # calculate the x value of the boundary of the defensive area
+        defensive_x = (self.defensive_area * self.blackboard.world_model.field_length) - (self.blackboard.world_model.field_length * (self.percent / 100.0))
+        if ball_position[0] <= defensive_x:
+            return 'YES'
+        return 'NO'
+
+    def get_reevaluate(self):
+        return True
