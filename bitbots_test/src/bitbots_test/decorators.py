@@ -4,7 +4,6 @@ import os
 import abc
 from functools import wraps
 from unittest import skip, SkipTest
-from bitbots_test.test_case import TestCase
 
 
 def tag(*tags: str) -> Callable:
@@ -96,6 +95,7 @@ def tag(*tags: str) -> Callable:
         if type(cls) != type:
             raise TypeError(f"@tag decorator can only be used on classes and not {type(cls)}")
 
+        from bitbots_test.test_case import TestCase
         if not issubclass(cls, TestCase):
             raise ValueError(f"@tag decorator can only be used on TestCase subclasses and not {cls.__name__}")
 

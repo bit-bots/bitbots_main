@@ -9,6 +9,8 @@ import geometry_msgs.msg
 from rosgraph_msgs.msg import Log as LogMsg
 import std_srvs.srv
 import bitbots_msgs.srv
+from bitbots_test.decorators import tag
+from bitbots_test.known_tags import WEBOTS
 import gazebo_msgs.msg
 from datetime import datetime, timedelta
 from unittest.case import TestCase as BaseTestCase
@@ -211,6 +213,7 @@ class RosNodeTestCase(RosLogAssertionMixins, RosNodeAssertionMixins, TestCase):
         return f"{type(self).__name__}"
 
 
+@tag(WEBOTS)
 class WebotsTestCase(RosNodeTestCase):
     """A specific TestCase class which offers utility methods when running in a webots simulator"""
     _SUPERVISOR_NODE_NAME = "/webots_ros_supervisor"
