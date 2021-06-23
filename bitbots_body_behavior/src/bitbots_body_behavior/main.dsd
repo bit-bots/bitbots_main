@@ -5,7 +5,7 @@
 @ChangeAction + action:waiting, @LookForward, @Stand
 
 #StandAndLook
-@ChangeAction + action:waiting, @LookAtFieldFeatures, @WalkInPlace
+@ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
 
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @PlayAnimationInit + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
@@ -139,12 +139,15 @@ $ConfigRole
                     SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
                     THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
+#Init
+@Stand + duration:0.1 + r:false, @PlayAnimationInit + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
+
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
-        INITIAL --> @PlayAnimationInit + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
+        INITIAL --> #Init
         READY --> $AnyGoalScoreRecently + time:50
             YES --> #PositioningReady
             NO --> $DoOnce
@@ -152,10 +155,10 @@ $IsPenalized
                 DONE --> #PositioningReady
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
-                OUR -->  @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @Stand // we need to also see the goalie
-                OTHER --> @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
+                OUR --> @Stand + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @Stand // we need to also see the goalie
+                OTHER --> @Stand + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
             ELSE --> #StandAndLook
-        FINISHED --> #DoNothing
+        FINISHED --> #Init
         PLAYING --> $SecondaryStateDecider
             PENALTYSHOOT --> #PenaltyShootoutBehavior
             TIMEOUT --> #StandAndLook
