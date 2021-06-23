@@ -12,16 +12,8 @@ class GoToCornerKickPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
-        # Also apply offset from the ready positions to the defense positions
-        role_positions = self.blackboard.config['role_positions']
-        self.position_number = role_positions['pos_number']
-        try:
-            generalized_role_position = \
-                role_positions[self.blackboard.blackboard.duty][self.position_number]
-        except KeyError:
-            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
+        self.position_number = self.blackboard.config['role_positions']['pos_number']
 
-        self.y_offset = generalized_role_position[1] * self.blackboard.world_model.field_width / 2
         # optional parameter which goes into the block position at a certain distance to the ball
         self.mode = parameters.get('mode', None)
         if self.mode is None or self.mode not in ("striker", "supporter", "others"):
