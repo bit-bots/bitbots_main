@@ -100,8 +100,7 @@ class PathfindingCapsule:
     def calculate_time_to_ball(self):
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
-        ball_lost_time = rospy.Duration.from_sec(self._blackboard.config['ball_lost_time'])
-        if self._blackboard.world_model.ball_seen and self._blackboard.world_model.ball_seen() and \
+        if self._blackboard.world_model.ball_seen() and \
                 self._blackboard.world_model.localization_precision_in_threshold():
             ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_approach_dist'])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
