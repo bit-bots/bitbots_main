@@ -22,6 +22,11 @@ class MotionOdometry {
   tf2_ros::Buffer tf_buffer_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
 
+  double x_forward_scaling_;
+  double x_backward_scaling_;
+  double y_scaling_;
+  double yaw_scaling_;
+
   void supportCallback(bitbots_msgs::SupportState msg);
   void jointStateCb(const sensor_msgs::JointState &msg);
   void odomCallback(nav_msgs::Odometry msg);
