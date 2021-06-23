@@ -7,13 +7,14 @@ from collections import defaultdict
 
 import rospy
 from humanoid_league_msgs.msg import Strategy, TeamData
+from geometry_msgs.msg import PointStamped
 
 
 class TeamDataCapsule:
     def __init__(self):
         self.bot_id = rospy.get_param("bot_id", 1)
         self.strategy_sender = None  # type: rospy.Publisher
-        self.time_to_ball_publisher = None # type: rospy.Publisher
+        self.time_to_ball_publisher = None  # type: rospy.Publisher
         # indexed with one to match robot ids
         self.team_data = {}
         for i in range(1, 7):
@@ -38,6 +39,8 @@ class TeamDataCapsule:
         self.role_update = None
         self.data_timeout = rospy.get_param("team_data_timeout", 2)
         self.ball_max_covariance = rospy.get_param("ball_max_covariance", 0.5)
+        self.ball_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_lost_time', 8.0))
+        self.pose_precision_threshold = rospy.get_param('behavior/body/pose_precision_threshold', None)
 
     def is_valid(self, data: TeamData):
         return rospy.Time.now() - data.header.stamp < rospy.Duration(self.data_timeout) \
@@ -101,9 +104,7 @@ class TeamDataCapsule:
                 if use_time_to_ball:
                     distances.append(data.time_to_position_at_ball)
                 else:
-                    ball_rel_x = data.ball_absolute.pose.position.x - data.robot_position.pose.position.x
-                    ball_rel_y = data.ball_absolute.pose.position.y - data.robot_position.pose.position.y
-                    distances.append(math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2))
+                    distances.append(self.get_robot_ball_euclidian_distance(data))
         sorted_times = sorted(distances)
         rank = 1
         for distances in sorted_times:
@@ -111,6 +112,12 @@ class TeamDataCapsule:
                 return rank
             rank += 1
         return rank
+
+    def get_robot_ball_euclidian_distance(self, robot_teamdata):
+        ball_rel_x = robot_teamdata.ball_absolute.pose.position.x - robot_teamdata.robot_position.pose.position.x
+        ball_rel_y = robot_teamdata.ball_absolute.pose.position.y - robot_teamdata.robot_position.pose.position.y
+        dist = math.sqrt(ball_rel_x ** 2 + ball_rel_y ** 2)
+        return dist
 
     def set_role(self, role):
         """Set the role of this robot in the team
@@ -155,3 +162,53 @@ class TeamDataCapsule:
 
     def publish_time_to_ball(self):
         self.time_to_ball_publisher.publish(self.own_time_to_ball)
+
+    def get_teammate_ball_seen_time(self):
+        """Returns the time at which a teammate has seen the ball accurately enough"""
+        teammate_ball = self.get_teammate_ball()
+        if teammate_ball is not None:
+            return teammate_ball.header.stamp
+        else:
+            return rospy.Time(0)
+
+    def teammate_ball_is_valid(self):
+        """Returns true if a teammate has seen the ball accurately enough"""
+        return self.get_teammate_ball() is not None
+
+    def get_teammate_ball(self):
+        """Returns the ball from the closest teammate that has accurate enough localization and ball precision"""
+        def std_dev_from_covariance(covariance):
+            x_sdev = covariance[0]  # position 0,0 in a 6x6-matrix
+            y_sdev = covariance[7]  # position 1,1 in a 6x6-matrix
+            theta_sdev = covariance[35]  # position 5,5 in a 6x6-matrix
+            return x_sdev, y_sdev, theta_sdev
+
+        best_robot_dist = 9999
+        best_ball = None
+        for robot_name, single_teamdata in self.team_data.items():
+            if not self.is_valid(single_teamdata):
+                continue
+            ball = single_teamdata.ball_absolute
+            ball_x_std_dev, ball_y_std_dev, _ = std_dev_from_covariance(ball.covariance)
+            robot = single_teamdata.robot_position
+            robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
+            stamp = single_teamdata.header.stamp
+            if rospy.Time.now() - stamp < self.ball_lost_time:
+                if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
+                    if robot_x_std_dev < self.pose_precision_threshold['x_sdev'] and \
+                            robot_y_std_dev < self.pose_precision_threshold['y_sdev'] and \
+                            robot_theta_std_dev < self.pose_precision_threshold['theta_sdev']:
+                        robot_dist = self.get_robot_ball_euclidian_distance(single_teamdata)
+                        if robot_dist < best_robot_dist:
+                            best_ball = PointStamped()
+                            best_ball.header = single_teamdata.header
+                            best_ball.point.x = single_teamdata.ball_absolute.pose.position.x
+                            best_ball.point.y = single_teamdata.ball_absolute.pose.position.y
+                            best_robot_dist = robot_dist
+                    else:
+                        rospy.logerr(
+                            f"robot: {robot_name} has too high localization std_dev, x: {robot_x_std_dev}, y: {robot_y_std_dev}, theta: {robot_theta_std_dev}")
+                else:
+                    rospy.logerr(
+                        f"robot: {robot_name} has too high ball std_dev, x: {ball_x_std_dev}, y: {ball_y_std_dev}")
+        return best_ball

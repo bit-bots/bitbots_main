@@ -25,7 +25,7 @@ class BodyBlackboard:
         self.animation = AnimationCapsule()
         self.kick = KickCapsule(self)
         self.pathfinding = PathfindingCapsule(self)
-        self.world_model = WorldModelCapsule()
+        self.world_model = WorldModelCapsule(self)
         self.team_data = TeamDataCapsule()
         # animations
         self.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
@@ -45,6 +45,6 @@ class HeadBlackboard:
     def __init__(self):
         self.config = rospy.get_param("behavior/head")
         self.head_capsule = HeadCapsule(self)
-        self.world_model = WorldModelCapsule()
+        self.world_model = WorldModelCapsule(self)
         rospy.wait_for_service('bio_ik/get_bio_ik')
         self.bio_ik = rospy.ServiceProxy('bio_ik/get_bio_ik', GetIK)

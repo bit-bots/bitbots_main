@@ -40,8 +40,9 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self):
+    def __init__(self, blackboard):
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
+        self._blackboard = blackboard
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
@@ -58,6 +59,10 @@ class WorldModelCapsule:
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
         self.ball_map.header.stamp = rospy.Time(0)
         self.ball_map.header.frame_id = self.map_frame
+        self.ball_teammate = PointStamped()
+        self.ball_teammate.header.stamp = rospy.Time(0)
+        self.ball_teammate.header.frame_id = self.map_frame
+        self.ball_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_lost_time', 8.0))
         self.ball_twist_map = None
         self.ball_twist_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_twist_lost_time', 2))
         self.ball_twist_precision_threshold = rospy.get_param('behavior/body/ball_twist_precision_threshold', None)
@@ -70,8 +75,10 @@ class WorldModelCapsule:
         self.my_data = dict()
         self.counter = 0
         self.ball_seen_time = rospy.Time(0)
+        self.ball_seen_time_teammate = rospy.Time(0)
         self.goal_seen_time = rospy.Time(0)
         self.ball_seen = False
+        self.ball_seen_teammate = False
         self.field_length = rospy.get_param('field_length', None)
         self.field_width = rospy.get_param('field_width', None)
         self.goal_width = rospy.get_param('goal_width', None)
@@ -88,6 +95,8 @@ class WorldModelCapsule:
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
         self.goal_publisher = rospy.Publisher('debug/viz_goal', PoseWithCertaintyArray, queue_size=1)
         self.ball_twist_publisher = rospy.Publisher('debug/ball_twist', TwistStamped, queue_size=1)
+        self.used_ball_pub = rospy.Publisher('debug/used_ball', PointStamped, queue_size=1)
+        self.which_ball_pub = rospy.Publisher('debug/which_ball_is_used', Header, queue_size=1)
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
@@ -98,27 +107,77 @@ class WorldModelCapsule:
     ### Ball ###
     ############
 
+    def ball_seen_self(self):
+        """Returns true if we have seen the ball recently (less than ball_lost_time ago)"""
+        return rospy.Time.now() - self.ball_seen_time < self.ball_lost_time
+
     def ball_last_seen(self):
-        return self.ball_seen_time
+        """
+        Returns the time at which the ball was last seen if it is in the threshold or
+        the more recent ball from either the teammate or itself if teamcom is available
+        """
+        if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
+            return self.ball_seen_time
+        else:
+            return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
+
+    def ball_seen(self):
+        """Returns true if we or a teammate has seen the ball recently (less than ball_lost_time ago)"""
+        return rospy.Time.now() - self.ball_last_seen() < self.ball_lost_time
 
     def get_ball_position_xy(self):
         """Return the ball saved in the map or odom frame"""
-        if self.use_localization and \
-                self.localization_precision_in_threshold():
-            ball = self.ball_map
-        else:
-            ball = self.ball_odom
+        ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
 
-    def get_ball_stamped(self):
+    def get_ball_stamped_relative(self):
+        """ Returns the ball in the base_footprint frame i.e. relative to the robot projected on the ground"""
         return self.ball
 
-    def get_ball_position_uv(self):
-        if self.use_localization and \
-                self.localization_precision_in_threshold():
-            ball = self.ball_map
+    def get_best_ball_point_stamped(self):
+        """
+        Returns the best ball, either its own ball has been in the ball_lost_lost time
+        or from teammate if the robot itself has lost it and teamcom is available
+        """
+        if self.use_localization and self.localization_precision_in_threshold():
+            if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
+                self.used_ball_pub.publish(self.ball_map)
+                h = Header()
+                h.stamp = self.ball_map.header.stamp
+                h.frame_id = "own_ball_map"
+                self.which_ball_pub.publish(h)
+                return self.ball_map
+            else:
+                teammate_ball = self._blackboard.team_data.get_teammate_ball()
+                if teammate_ball is not None and self.tf_buffer.can_transform(self.base_footprint_frame,
+                                                                              teammate_ball.header.frame_id,
+                                                                              teammate_ball.header.stamp,
+                                                                              timeout=rospy.Duration(0.2)):
+                    rospy.logerr("using teammate ball, we are so fancy")
+                    self.used_ball_pub.publish(teammate_ball)
+                    h = Header()
+                    h.stamp = teammate_ball.header.stamp
+                    h.frame_id = "teammate_ball"
+                    self.which_ball_pub.publish(h)
+                    return teammate_ball
+                else:
+                    rospy.logerr("our ball is bad but the teammates ball is worse or cant be transformed")
+                    h = Header()
+                    h.stamp = self.ball_map.header.stamp
+                    h.frame_id = "own_ball_map"
+                    self.which_ball_pub.publish(h)
+                    self.used_ball_pub.publish(self.ball_map)
+                    return self.ball_map
         else:
-            ball = self.ball_odom
+            h = Header()
+            h.stamp = self.ball_odom.header.stamp
+            h.frame_id = "own_ball_odom"
+            self.which_ball_pub.publish(h)
+            self.used_ball_pub.publish(self.ball_odom)
+            return self.ball_odom
+
+    def get_ball_position_uv(self):
+        ball = self.get_best_ball_point_stamped()
         try:
             ball_bfp = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=rospy.Duration(0.2)).point
         except (tf2.ExtrapolationException) as e:
@@ -211,9 +270,11 @@ class WorldModelCapsule:
             self.ball_twist_publisher.publish(self.ball_twist_map)
 
     def forget_ball(self):
-        """Forget that we saw a ball"""
+        """Forget that we and the best teammate saw a ball"""
         self.ball_seen_time = rospy.Time(0)
+        self.ball_seen_time_teammate = rospy.Time(0)
         self.ball = PointStamped()
+        self.ball_teammate = PointStamped()
 
     ###########
     # ## Goal #
