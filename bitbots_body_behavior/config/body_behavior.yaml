@@ -223,7 +223,7 @@ behavior:
     time_to_ball_start_to_goal_angle_weight: 0.3
 
     # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
-    time_to_ball_remember_time: 2.5
+    time_to_ball_remember_time: 1.0
 
     publish_path_to_ball: true
 
