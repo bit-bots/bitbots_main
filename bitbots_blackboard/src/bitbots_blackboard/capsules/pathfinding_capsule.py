@@ -126,8 +126,8 @@ class PathfindingCapsule:
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
             start_goal_theta_diff = (abs(start_theta - goal_theta) + math.tau / 2) % math.tau - math.tau / 2
             start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config[
-                'time_to_ball_start_to_goal_angle_weight']
-            total_cost = path_length + start_goal_theta_cost
+                'time_to_ball_cost_start_to_goal_angle']
+            total_cost = path_length * self._blackboard.config['time_to_ball_cost_per_meter'] + start_goal_theta_cost
             #rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
             #             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
             #             f"path_length: {path_length}, " +
@@ -140,9 +140,10 @@ class PathfindingCapsule:
             # calculate how much we need to turn to turn at the end of the path
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
             goal_theta_diff = (abs(goal_theta - path_theta) + math.tau / 2) % math.tau - math.tau / 2
-            start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_start_angle_weight']
-            goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_goal_angle_weight']
-            total_cost = path_length + start_theta_cost + goal_theta_cost
+            start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_cost_start_angle']
+            goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_cost_goal_angle']
+            total_cost = path_length * self._blackboard.config['time_to_ball_cost_per_meter'] + \
+                         start_theta_cost + goal_theta_cost
             #rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
             #             f"weighted start_diff: {start_theta_cost}, " +
             #             f"weighted goal_diff: {goal_theta_cost}, " +
