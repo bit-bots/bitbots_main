@@ -3,16 +3,16 @@
     "description": "Edit me!",
     "hostname": "TheArchives",
     "keyframes": [
-{ 
+{
  "duration": 0.1,
- "goals": { 
+ "goals": {
  "HeadPan" : 0.0,
  "HeadTilt" : 0.0,
  "LHipYaw" : -0.0006957411352730921,
  "LHipRoll" : 2.4179578166451106,
- "LHipPitch" : 17.62366580150313,
- "LKnee" : 65.27586447607317,
- "LAnklePitch" : -32.65200910867831,
+ "LHipPitch" : 6.875494,
+ "LKnee" : 0.0,
+ "LAnklePitch" : 6.875494,
  "LAnkleRoll" : 2.6736751638781087,
  "LShoulderPitch" : -179,
  "LShoulderRoll" : 0.0,
@@ -27,7 +27,7 @@
  "RShoulderRoll" : 0.0,
  "RElbow" : 90
 },
- "name": "generated frame", 
+ "name": "generated frame",
  "pause": 0.0
  }
     ],
