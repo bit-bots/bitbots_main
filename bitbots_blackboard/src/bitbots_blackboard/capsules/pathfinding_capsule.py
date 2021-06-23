@@ -131,10 +131,10 @@ class PathfindingCapsule:
             start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config[
                 'time_to_ball_start_to_goal_angle_weight']
             total_cost = path_length + start_goal_theta_cost
-            rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
-                         f"weighted start_goal_diff: {start_goal_theta_cost}, " +
-                         f"path_length: {path_length}, " +
-                         f"total: {total_cost}")
+            #rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
+            #             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
+            #             f"path_length: {path_length}, " +
+            #             f"total: {total_cost}")
         else:
             # calculate how much we need to turn to start walking along the path
             _, _, start_theta = self._blackboard.world_model.get_current_position()
@@ -146,11 +146,11 @@ class PathfindingCapsule:
             start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_start_angle_weight']
             goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_goal_angle_weight']
             total_cost = path_length + start_theta_cost + goal_theta_cost
-            rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
-                         f"weighted start_diff: {start_theta_cost}, " +
-                         f"weighted goal_diff: {goal_theta_cost}, " +
-                         f"path_length: {path_length}, " +
-                         f"total: {total_cost}")
+            #rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
+            #             f"weighted start_diff: {start_theta_cost}, " +
+            #             f"weighted goal_diff: {goal_theta_cost}, " +
+            #             f"path_length: {path_length}, " +
+            #             f"total: {total_cost}")
         return total_cost
 
     def get_ball_goal(self, target, distance):
