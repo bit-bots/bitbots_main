@@ -12,9 +12,9 @@ from humanoid_league_msgs.msg import (PoseWithCertainty,
                                       PoseWithCertaintyArray,
                                       PoseWithCertaintyStamped)
 from std_msgs.msg import Header
+from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 
-from bitbots_ball_filter.srv import ResetBallFilter
 from bitbots_ball_filter.cfg import BallFilterConfig
 
 
@@ -96,7 +96,7 @@ class BallFilter:
         
         self.reset_service = rospy.Service(
             config['ball_filter_reset_service_name'],
-            ResetBallFilter,
+            Trigger,
             self.reset_filter_cb
         )
 
