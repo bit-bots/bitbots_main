@@ -82,13 +82,15 @@ $GoalieHandlingBall
     YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
     NO --> #GoAndKickBallMapGoal
 
-#SupporterRole
-$PassStarted
-    YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
-    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
-
 #DefenderRole
 @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+
+#SupporterRole
+$GoalieHandlingBall
+    YES --> #DefenderRole
+    NO --> $PassStarted
+        YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
+        NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #GoalieRole
 $LocalizationAvailable
@@ -173,7 +175,13 @@ $IsPenalized
                     NO_NORMAL --> #StandAndLook
                     NO_FREEKICK --> #Placing
                     YES --> $ConfigRole
-                        GOALIE --> #GoalieRole
+                        GOALIE --> $BallInOwnPercent + p:33
+                            YES --> $DoOnce
+                                NOT_DONE --> @ChangeDuty + duty:goalie
+                                DONE --> #GoalieRole
+                            NO --> $DoOnce
+                                NOT_DONE --> @ChangeDuty + duty:defense
+                                DONE --> #DefenderRole
                         ELSE --> $LocalizationAvailable
                             YES --> $LocalizationPrecision
                                 HIGH --> $TimerRunning + name:reorientation
