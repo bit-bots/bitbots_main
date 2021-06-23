@@ -174,8 +174,12 @@ $IsPenalized
                     NO_FREEKICK --> #Placing
                     YES --> $ConfigRole
                         GOALIE --> $BallInOwnPercent + p:33
-                            YES --> @ChangeRole + role:goalie, #GoalieRole
-                            NO --> @ChangeRole + role:defense, #DefenderRole
+                            YES --> $DoOnce
+                                NOT_DONE --> @ChangeDuty + duty:goalie
+                                DONE --> #GoalieRole
+                            NO --> $DoOnce
+                                NOT_DONE --> @ChangeDuty + duty:defense
+                                DONE --> #DefenderRole
                         ELSE --> $LocalizationAvailable
                             YES --> $LocalizationPrecision
                                 HIGH --> $TimerRunning + name:reorientation
