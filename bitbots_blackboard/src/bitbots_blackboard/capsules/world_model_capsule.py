@@ -21,6 +21,7 @@ from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovaria
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
+from bitbots_ball_filter.srv import ResetBallFilter
 import sensor_msgs.point_cloud2 as pc2
 
 
@@ -69,6 +70,7 @@ class WorldModelCapsule:
         self.ball_filtered = None
         self.ball_twist_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_twist_lost_time', 2))
         self.ball_twist_precision_threshold = rospy.get_param('behavior/body/ball_twist_precision_threshold', None)
+        self.reset_ball_filter = rospy.ServiceProxy('ball_filter_reset', ResetBallFilter)
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
@@ -285,9 +287,13 @@ class WorldModelCapsule:
     def forget_ball(self):
         """Forget that we and the best teammate saw a ball"""
         self.ball_seen_time = rospy.Time(0)
-        self.ball_seen_time_teammate = rospy.Time(0)
         self.ball = PointStamped()
+        self.ball_seen_time_teammate = rospy.Time(0)
         self.ball_teammate = PointStamped()
+
+        success = self.reset_ball_filter()
+        if not success:
+            rospy.logwarn("Apparently, ball filter could not be reset...",logger_name='bitbots_blackboard')
 
     ###########
     # ## Goal #
