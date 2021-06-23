@@ -46,11 +46,11 @@ class KickBallDynamic(AbstractKickAction):
             self.penalty_kick = False
 
         self._goal_sent = False
-        self.kick_length = rospy.get_param('behavior/body/kick_cost_kick_length')
-        self.angular_range = rospy.get_param('behavior/body/kick_cost_angular_range')
-        self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
-        self.num_kick_angles = rospy.get_param('behavior/body/num_kick_angles')
-        self.penalty_kick_angle = rospy.get_param('behavior/body/penalty_kick_angle')
+        self.kick_length = self.blackboard.config['kick_cost_kick_length']
+        self.angular_range = self.blackboard.config['kick_cost_angular_range']
+        self.max_kick_angle = self.blackboard.config['max_kick_angle']
+        self.num_kick_angles = self.blackboard.config['num_kick_angles']
+        self.penalty_kick_angle = self.blackboard.config['penalty_kick_angle']
         # By default, don't reevaluate
         self.never_reevaluate = parameters.get('r', True) and parameters.get('reevaluate', True)
 

@@ -7,7 +7,7 @@ class AllowedToMove(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AllowedToMove, self).__init__(blackboard, dsd, parameters)
         self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
-        self.kickoff_min_ball_movement = rospy.get_param("behavior/body/kickoff_min_ball_movement")
+        self.kickoff_min_ball_movement = self.blackboard.config["kickoff_min_ball_movement"]
 
     def perform(self, reevaluate=False):
         """

@@ -7,8 +7,8 @@ class AlignedToGoal(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
         self.goalpost_safety_distance = self.blackboard.config['goalpost_safety_distance']
-        self.field_length = rospy.get_param("field_length")
-        self.goal_width = rospy.get_param("goal_width")
+        self.field_length = self.blackboard.config["field_length"]
+        self.goal_width = self.blackboard.config["goal_width"]
 
     def perform(self, reevaluate=False):
         """

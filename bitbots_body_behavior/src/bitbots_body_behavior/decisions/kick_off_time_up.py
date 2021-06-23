@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class KickOffTimeUp(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.kickoff_min_ball_movement = rospy.get_param("behavior/body/kickoff_min_ball_movement")
+        self.kickoff_min_ball_movement = self.blackboard.config["kickoff_min_ball_movement"]
 
     def perform(self, reevaluate=False):
         if self.blackboard.gamestate.has_kickoff():

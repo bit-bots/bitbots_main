@@ -12,6 +12,8 @@ class BallKickArea(AbstractDecisionElement):
         self.kick_x_leave = self.blackboard.config['kick_x_leave']
         self.kick_y_leave = self.blackboard.config['kick_y_leave']
         self.last_descision = "FAR"
+        self.smoothing = self.blackboard.config['kick_decision_smoothing']
+        self.no_near_decisions = 0
 
     def perform(self, reevaluate=False):
         """
@@ -27,19 +29,24 @@ class BallKickArea(AbstractDecisionElement):
         # Check if the ball is in the enter area
         if 0 <= ball_position[0] <= self.kick_x_enter and 0 <= abs(ball_position[1]) <= self.kick_y_enter:
             self.last_descision = 'NEAR'
-            return 'NEAR'
+            self.no_near_decisions += 1
         # Check if the ball is in the area between the enter area and the leave area
         elif 0 <= ball_position[0] <= self.kick_x_leave and 0 <= abs(ball_position[1]) <= self.kick_y_leave:
-            # Return them explicitly to make the parsing easyer for e.g. the DSD GUI
+            # Return them explicitly to make the parsing easier for e.g. the DSD GUI
             if self.last_descision == "FAR":
-                return "FAR"
+                self.no_near_decisions = 0
             elif self.last_descision == "NEAR":
-                return 'NEAR'
+                self.no_near_decisions += 1
             else:
                 rospy.logerr(f"Unknown BallKickArea last return value: {self.last_descision}")
         # We are outside of both areas
         else:
             self.last_descision = 'FAR'
+            self.no_near_decisions = 0
+
+        if self.no_near_decisions >= self.smoothing:
+            return 'NEAR'
+        else:
             return 'FAR'
 
     def get_reevaluate(self):
