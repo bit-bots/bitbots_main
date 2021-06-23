@@ -43,7 +43,7 @@ class SearchRecentBall(AbstractLookAt):
             return
 
          # Get last ball position
-        point = self.blackboard.world_model.get_ball_stamped()
+        point = self.blackboard.world_model.get_ball_stamped_relative()
 
         # Transform the points reference frame to be the head
         try:

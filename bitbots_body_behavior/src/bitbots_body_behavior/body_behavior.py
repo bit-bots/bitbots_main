@@ -21,7 +21,6 @@ from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_blackboard.async_service import AsyncServiceProxy
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped, Twist
 from bitbots_ros_patches.rate import Rate
@@ -43,15 +42,6 @@ if __name__ == "__main__":
     D.blackboard.pathfinding.ball_obstacle_active_pub = rospy.Publisher("ball_obstacle_active", Bool, queue_size=1)
     D.blackboard.pathfinding.keep_out_area_pub = rospy.Publisher("keep_out_area", PointCloud2, queue_size=1)
     D.blackboard.pathfinding.approach_marker_pub = rospy.Publisher("debug/approach_point", Marker, queue_size=10)
-    D.blackboard.pathfinding.get_plan_service = AsyncServiceProxy("move_base/NavfnROS/make_plan", GetPlan)
-    D.blackboard.pathfinding.path_to_ball_pub = rospy.Publisher("path_to_ball", Path, queue_size=10)
-
-    while not rospy.is_shutdown():
-        try:
-            D.blackboard.pathfinding.get_plan_service.service_proxy.wait_for_service(2.0)
-            break
-        except rospy.ROSException as ex:
-            rospy.logwarn("waiting for 'move_base/NavfnROS/make_plan' Service to become available...")
 
     D.blackboard.dynup_cancel_pub = rospy.Publisher('dynup/cancel', GoalID, queue_size=1)
     D.blackboard.hcm_deactivate_pub = rospy.Publisher('hcm_deactivate', Bool, queue_size=1)
@@ -90,9 +80,6 @@ if __name__ == "__main__":
         D.blackboard.team_data.publish_strategy()
         D.blackboard.team_data.publish_time_to_ball()
         counter = (counter + 1) % D.blackboard.config['time_to_ball_divider']
-        D.blackboard.pathfinding.path_to_ball_check(path_to_ball_service_response)
         if counter == 0:
-            resp = D.blackboard.pathfinding.get_new_path_to_ball()
-            if resp is not None:
-                path_to_ball_service_response = resp
+            D.blackboard.pathfinding.calculate_time_to_ball()
         rate.sleep()
