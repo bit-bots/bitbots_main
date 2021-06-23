@@ -24,6 +24,7 @@ class BodyBlackboard:
         self.gamestate = GameStatusCapsule()
         self.animation = AnimationCapsule()
         self.kick = KickCapsule(self)
+        self.world_model = WorldModelCapsule(self)
         self.pathfinding = PathfindingCapsule(self)
         self.world_model = WorldModelCapsule(self)
         self.team_data = TeamDataCapsule()
@@ -39,7 +40,6 @@ class BodyBlackboard:
         self.dynup_action_client = None
         self.dynup_cancel_pub = None  # type: rospy.Publisher
         self.hcm_deactivate_pub = None  # type: rospy.Publisher
-
 
 class HeadBlackboard:
     def __init__(self):

@@ -33,7 +33,7 @@ behavior:
     role_positions:
       goalie: [ -0.95, 0 ]
       defense: [ [ -0.5, 0 ], [ -0.45, 0.5 ], [ -0.45, -0.5 ] ]
-      offense: [ [ -0.3, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
+      offense: [ [ -0.25, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
       kickoff: [ -0.1, 0 ]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0 #this is currently handled more dynamically for offense players
@@ -145,7 +145,7 @@ behavior:
     ball_movement_subscribe_topic: 'ball_relative_movement'
 
     # The position where the supporter robot should place itself in order to accept a pass
-    pass_position_x: 0.5
+    pass_position_x: 0.1
     pass_position_y: 1
     supporter_max_x: 4
 
@@ -223,7 +223,7 @@ behavior:
     time_to_ball_start_to_goal_angle_weight: 0.3
 
     # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
-    time_to_ball_remember_time: 2.5
+    time_to_ball_remember_time: 1.0
 
     publish_path_to_ball: true
 
