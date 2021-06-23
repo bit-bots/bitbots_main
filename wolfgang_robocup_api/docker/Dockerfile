@@ -75,7 +75,17 @@ RUN sudo rosdep init && rosdep update
 RUN rosdep install -iry --from-paths src && \
     sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
+
+# Delete some tests (has to happen before catkin build)
+RUN cd src/bitbots_meta && \
+    rm bitbots_tools/bitbots_test/test/rostests/test_webots_simulator.launch \
+       bitbots_navigation/bitbots_localization/test/rostests/test_inital_localization_side.launch
+
 RUN catkin build
+
+# Execute tests
+RUN . devel/setup.sh && catkin run_tests && catkin_test_results
+
 RUN cd src/bitbots_meta && make vision-files
 RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
 # Set respawn="true" for all nodes
