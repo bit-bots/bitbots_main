@@ -14,6 +14,7 @@ from humanoid_league_msgs.msg import (PoseWithCertainty,
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 
+from bitbots_ball_filter.srv import ResetBallFilter
 from bitbots_ball_filter.cfg import BallFilterConfig
 
 
@@ -92,6 +93,13 @@ class BallFilter:
             self.ball_callback,
             queue_size=1
         )
+        
+        self.reset_service = rospy.Service(
+            config['ball_filter_reset_service_name'],
+            ResetBallFilter,
+            self.reset_filter_cb
+        )
+
         self.config = config
         self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
         return config
@@ -124,7 +132,6 @@ class BallFilter:
         if self.ball:
             if not self.filter_initialized:
                 self.init_filter(*self.get_ball_measurement())
-                self.filter_initialized = True
             self.kf.predict()
             self.kf.update(self.get_ball_measurement())
             state = self.kf.get_update()
@@ -150,13 +157,25 @@ class BallFilter:
         except AttributeError as e:
             rospy.logwarn(f"Did you reconfigure? Something went wrong... {e}", logger_name="ball_filter")
 
-    def init_filter(self, x, y):
+    def reset_filter_cb(self, req):
+        self.reset_filter(req.x, req.y)
+
+    def reset_filter(self, x, y):
         """
-        initializes kalmanfilter at given position
+        Reinitializes kalmanfilter at given position
 
         :param x: start x position of the ball
         :param y: start y position of the ball
-        :return:
+        """
+        self.filter_initialized = False
+        self.init_filter(x, y)
+
+    def init_filter(self, x, y):
+        """
+        Initializes kalmanfilter at given position
+
+        :param x: start x position of the ball
+        :param y: start y position of the ball
         """
         # initial value of position(x,y) of the ball and velocity
         self.kf.x = np.array([x, y, 0, 0])
@@ -178,6 +197,8 @@ class BallFilter:
 
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False)
+
+        self.filter_initialized = True
 
     def publish_data(self, state: np.array, cov_mat: np.array) -> None:
         """

@@ -9,7 +9,15 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   rospy
   dynamic_reconfigure
+  message_generation
+  message_runtime
 )
+
+## Generate services in the 'srv' folder
+add_service_files(
+   FILES
+   ResetBallFilter.srv
+ )
 
 catkin_python_setup()
 
