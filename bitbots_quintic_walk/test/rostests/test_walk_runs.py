@@ -17,7 +17,7 @@ class WalkRunsTestCase(RosNodeTestCase):
         pub.publish(goal)
         sub.wait_until_connected()
         rospy.sleep(5)
-        self.with_assertion_grace_period(sub.assertMessageReceived, 1)
+        self.with_assertion_grace_period(sub.assertMessageReceived, 100)
 
 if __name__ == '__main__':
     from bitbots_test import run_rostests
