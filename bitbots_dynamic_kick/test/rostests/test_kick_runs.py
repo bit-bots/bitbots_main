@@ -37,7 +37,7 @@ class KickRunsTestCase(RosNodeTestCase):
         goal.kick_speed = 1
         self.single_run(goal)
 
-    def test_normal_kick(self):
+    def test_unstable_kick(self):
         goal = KickGoal()
         goal.header.stamp = rospy.Time.now()
         goal.header.frame_id = "base_footprint"
