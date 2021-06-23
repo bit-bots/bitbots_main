@@ -17,3 +17,4 @@ $HeadModeDecision
     DONT_MOVE --> @Wait + time:1
     RECORD_VISUAL_COMPASS --> @VisualCompassRecord + init:ZERO
     VISUAL_COMPASS_FEATURES --> @VisualCompassSearchPattern + init:NEAREST
+    LOOK_FRONT --> @FrontSearchPattern + init:NEAREST

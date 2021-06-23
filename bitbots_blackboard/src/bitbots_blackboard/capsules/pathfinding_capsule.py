@@ -4,7 +4,7 @@ import math
 import tf2_ros
 import numpy as np
 from ros_numpy import numpify
-from geometry_msgs.msg import PoseStamped, Point
+from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from nav_msgs.srv import GetPlanRequest
@@ -19,6 +19,7 @@ class PathfindingCapsule:
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.position_threshold = rospy.get_param('behavior/body/pathfinding_position_threshold')
         self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
+        self.direct_cmd_vel_pub = None  # type: rospy.Publisher
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
         self.path_to_ball_pub = None  #type: rospy.Publisher
@@ -26,9 +27,10 @@ class PathfindingCapsule:
         self.keep_out_area_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
-        self.current_pose = None # type: PoseStamped
-        self.status = -1 # Current status of movebase
+        self.current_pose = None  # type: PoseStamped
+        self.status = -1  # Current status of movebase
         self.avoid_ball = True
+        self.current_cmd_vel = Twist()
         self._blackboard = blackboard  # type: BodyBlackboard
         self.get_plan_service = None
         self.path_to_ball = None
@@ -46,7 +48,7 @@ class PathfindingCapsule:
     def transform_goal_to_map(self, msg):
         # type: (PoseStamped) -> PoseStamped
         # transform local goal to goal in map frame
-        if msg.header.frame_id ==  self.map_frame:
+        if msg.header.frame_id == self.map_frame:
             return msg
         else:
             try:
@@ -90,6 +92,15 @@ class PathfindingCapsule:
 
     def cancel_goal(self):
         self.pathfinding_cancel_pub.publish(GoalID())
+
+    def cmd_vel_cb(self, msg: Twist):
+        self.current_cmd_vel = msg
+
+    def stop_walk(self):
+        # send special command to walking to stop it
+        msg = Twist()
+        msg.angular.x = -1.0
+        self.direct_cmd_vel_pub.publish(msg)
 
     def get_new_path_to_ball(self):
         # only send new request if previous request is finished or first update

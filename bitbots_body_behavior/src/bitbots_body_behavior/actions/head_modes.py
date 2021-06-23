@@ -85,3 +85,9 @@ class LookForVisualCompassFeatures(AbstractActionElement):
     def perform(self):
         self.blackboard.blackboard.set_head_duty(HeadMode.VISUAL_COMPASS_FEATURES)
         return self.pop()
+
+class LookAtFront(AbstractActionElement):
+    """Search in the front of the robot"""
+    def perform(self):
+        self.blackboard.blackboard.set_head_duty(HeadMode.LOOK_FRONT)
+        return self.pop()

@@ -33,7 +33,7 @@ behavior:
     role_positions:
       goalie: [ -0.95, 0 ]
       defense: [ [ -0.5, 0 ], [ -0.45, 0.5 ], [ -0.45, -0.5 ] ]
-      offense: [ [ -0.25, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
+      offense: [ [ -0.3, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
       kickoff: [ -0.1, 0 ]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0 #this is currently handled more dynamically for offense players
@@ -136,7 +136,7 @@ behavior:
     ball_reaproach_dist: 1.0
 
     # Distance at which the ball is normally approached
-    ball_approach_dist: 0.24
+    ball_approach_dist: 0.2
 
     # Angle at which the ball is normally approached again
     ball_reapproach_angle: 1.2
@@ -160,6 +160,17 @@ behavior:
 
     # distance from center point, that the ball must be during an opponent kickoff to think that it moved
     kickoff_min_ball_movement: 0.5
+
+    # dribble action
+    dribble_max_speed_x: 0.25
+    dribble_max_speed_y: 0.08
+    dribble_p: 0.75
+    dribble_accel_x: 0.001
+
+    # dribble decision
+    dribble_orient_threshold: 0.5
+    dribble_goal_distance_threshold: 1.5
+    dribble_ball_distance_threshold: 1.0
 
     ##################
     # costmap params #

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml" />
+    <rosparam command="load" file="$(find bitbots_body_behavior)/config/animations.yaml" />
+    <test pkg="bitbots_body_behavior" type="test_dsd_file.py" test-name="dsd_file" />
+</launch>
