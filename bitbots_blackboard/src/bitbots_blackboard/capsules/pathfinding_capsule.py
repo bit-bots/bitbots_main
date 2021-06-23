@@ -120,9 +120,9 @@ class PathfindingCapsule:
 
     def time_to_ball_from_poses(self, own_pose: PoseStamped, goal_pose: PoseStamped):
         # calculate length of path
-        start_point = numpify(own_pose.pose.position)
-        end_point = numpify(goal_pose.pose.position)
-        path_length = np.linalg.norm(start_point[:2] - end_point[:2])
+        start_point = own_pose.pose.position
+        end_point = goal_pose.pose.position
+        path_length = np.linalg.norm(numpify(start_point)[:2] - numpify(end_point)[:2])
         # if the robot is close to the ball it does not turn to walk to it
         if path_length < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
             _, _, start_theta = self._blackboard.world_model.get_current_position()
