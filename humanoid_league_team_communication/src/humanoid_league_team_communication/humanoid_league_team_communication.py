@@ -35,8 +35,8 @@ class HumanoidLeagueTeamCommunication:
 
         self.target_host = self.config['target_host']
         if self.target_host == '127.0.0.1':
-            # local mode, bind to port depending on bot id
-            self.target_ports = self.config['local_target_ports']
+            # local mode, bind to port depending on bot id and team id
+            self.target_ports = [port + 10 * self.team_id for port in self.config['local_target_ports']]
             self.receive_port = self.target_ports[self.player_id - 1]
         else:
             self.target_ports = [self.config['target_port']]
