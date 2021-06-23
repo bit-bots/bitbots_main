@@ -81,5 +81,5 @@ if __name__ == "__main__":
         D.blackboard.team_data.publish_time_to_ball()
         counter = (counter + 1) % D.blackboard.config['time_to_ball_divider']
         if counter == 0:
-            D.blackboard.pathfinding.path_to_ball_check(path_to_ball_service_response)
+            D.blackboard.pathfinding.calculate_time_to_ball()
         rate.sleep()

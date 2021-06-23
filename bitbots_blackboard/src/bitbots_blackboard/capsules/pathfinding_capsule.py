@@ -97,7 +97,7 @@ class PathfindingCapsule:
         msg.angular.x = -1.0
         self.direct_cmd_vel_pub.publish(msg)
 
-    def get_new_path_to_ball(self):
+    def calculate_time_to_ball(self):
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
         ball_lost_time = rospy.Duration.from_sec(self._blackboard.config['ball_lost_time'])
@@ -106,11 +106,9 @@ class PathfindingCapsule:
                 self._blackboard.world_model.localization_precision_in_threshold():
             ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_approach_dist'])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
-            self._blackboard.team_data.own_time_to_ball = self.calculate_time_to_ball(own_position, ball_target)
+            self._blackboard.team_data.own_time_to_ball = self.time_to_ball_from_poses(own_position, ball_target)
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
-            if not self.path_updated:
-                rospy.loginfo("time_to_ball: path already updated")
             if not self._blackboard.world_model.ball_seen:
                 rospy.loginfo("time_to_ball: ball not seen at all")
             if not (rospy.Time.now() - self._blackboard.world_model.ball_last_seen() < ball_lost_time):
@@ -120,7 +118,7 @@ class PathfindingCapsule:
             self._blackboard.team_data.own_time_to_ball = 9999.0
             return None
 
-    def calculate_time_to_ball(self, own_pose : PoseStamped, goal_pose : PoseStamped):
+    def time_to_ball_from_poses(self, own_pose: PoseStamped, goal_pose: PoseStamped):
         # calculate length of path
         start_point = numpify(own_pose.pose.position)
         end_point = numpify(goal_pose.pose.position)
