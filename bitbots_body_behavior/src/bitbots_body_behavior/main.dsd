@@ -109,11 +109,11 @@ $LocalizationAvailable
 $IsPenaltyShootRobot
     NO --> #DoNothing
     YES -->$SecondaryStateTeamDecider
-        OUR --> @StandAndWaitRandom + min:10 + max:30, @KickBallDynamic + r:true + type:penalty, @WalkInPlace
+        OUR --> @StandAndWaitRandom + min:10 + max:30, @KickBallDynamic + r:true + type:penalty, @Stand
         OTHER --> $BallDangerous
-            LEFT --> @PlayAnimationGoalieFallLeft, @WalkInPlace
-            RIGHT --> @PlayAnimationGoalieFallRight, @WalkInPlace
-            CENTER --> @PlayAnimationGoalieFallCenter, @WalkInPlace
+            LEFT --> @PlayAnimationGoalieFallLeft, @Stand
+            RIGHT --> @PlayAnimationGoalieFallRight, @Stand
+            CENTER --> @PlayAnimationGoalieFallCenter, @Stand
             ELSE --> @LookAtBall
 
 
