@@ -120,6 +120,11 @@ class BallFilter:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
 
+    def reset_filter_cb(self, req):
+        rospy.loginfo("Resetting bitbots ball filter...", logger_name="ball_filter")
+        self.filter_initialized = False
+        return True
+
     def filter_step(self, event):
         """"
         When ball has been assigned a value and filter has been initialized:
@@ -156,19 +161,6 @@ class BallFilter:
             return np.array([self.ball.point.x, self.ball.point.y])
         except AttributeError as e:
             rospy.logwarn(f"Did you reconfigure? Something went wrong... {e}", logger_name="ball_filter")
-
-    def reset_filter_cb(self, req):
-        self.reset_filter(req.x, req.y)
-
-    def reset_filter(self, x, y):
-        """
-        Reinitializes kalmanfilter at given position
-
-        :param x: start x position of the ball
-        :param y: start y position of the ball
-        """
-        self.filter_initialized = False
-        self.init_filter(x, y)
 
     def init_filter(self, x, y):
         """
