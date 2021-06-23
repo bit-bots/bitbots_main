@@ -17,7 +17,7 @@ class GoToDefensePosition(AbstractActionElement):
         self.position_number = role_positions['pos_number']
         try:
             generalized_role_position = \
-                role_positions[self.blackboard.blackboard.duty][self.position_number]
+                role_positions['defense'][self.position_number]
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
