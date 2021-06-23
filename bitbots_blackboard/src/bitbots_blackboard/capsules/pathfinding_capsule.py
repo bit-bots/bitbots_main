@@ -31,6 +31,7 @@ class PathfindingCapsule:
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
         self._blackboard = blackboard  # type: BodyBlackboard
+        self.orient_to_ball_distance = rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1)
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -120,7 +121,7 @@ class PathfindingCapsule:
         end_point = goal_pose.pose.position
         path_length = np.linalg.norm(numpify(start_point)[:2] - numpify(end_point)[:2])
         # if the robot is close to the ball it does not turn to walk to it
-        if path_length < rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1):
+        if path_length < self.orient_to_ball_distance:
             _, _, start_theta = self._blackboard.world_model.get_current_position()
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
             start_goal_theta_diff = (abs(start_theta - goal_theta) + math.tau / 2) % math.tau - math.tau / 2
