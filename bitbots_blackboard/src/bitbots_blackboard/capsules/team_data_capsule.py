@@ -105,13 +105,10 @@ class TeamDataCapsule:
                     distances.append(data.time_to_position_at_ball)
                 else:
                     distances.append(self.get_robot_ball_euclidian_distance(data))
-        sorted_times = sorted(distances)
-        rank = 1
-        for distances in sorted_times:
-            if own_ball_distance < distances:
-                return rank
-            rank += 1
-        return rank
+        for rank, distance in enumerate(sorted(distances)):
+            if own_ball_distance < distance:
+                return rank + 1
+        return len(distances) + 1
 
     def get_robot_ball_euclidian_distance(self, robot_teamdata):
         ball_rel_x = robot_teamdata.ball_absolute.pose.position.x - robot_teamdata.robot_position.pose.position.x
@@ -153,7 +150,19 @@ class TeamDataCapsule:
     def get_kickoff_strategy(self):
         return self.strategy.offensive_side, self.strategy_update
 
+    def get_active_teammate_poses(self, count_goalies=False):
+        """ Returns the poses of all playing robots """
+        poses = []
+        for data in self.team_data.values():
+            if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
+                poses.append(data.robot_position.pose)
+        return poses
+
+    def get_own_time_to_ball(self):
+        return self.own_time_to_ball
+
     def team_data_callback(self, msg):
+        # Save team data
         self.team_data[msg.robot_id] = msg
 
     def publish_strategy(self):
