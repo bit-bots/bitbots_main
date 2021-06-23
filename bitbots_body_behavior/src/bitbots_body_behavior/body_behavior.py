@@ -21,7 +21,6 @@ from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_blackboard.async_service import AsyncServiceProxy
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped, Twist
 from bitbots_ros_patches.rate import Rate
