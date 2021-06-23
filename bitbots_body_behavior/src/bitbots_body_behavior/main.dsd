@@ -28,7 +28,7 @@ $AvoidBall
 $DribbleOrKick
     DRIBBLE --> @CancelPathplanning, @LookAtFront, @DribbleForward
     KICK --> $BallKickArea
-        NEAR --> $OrientedToGoal
+        NEAR --> $AlignedToGoal
             YES --> #PerformKick
             NO --> #KickBallWithAvoidance
         ELSE --> #KickBallWithAvoidance

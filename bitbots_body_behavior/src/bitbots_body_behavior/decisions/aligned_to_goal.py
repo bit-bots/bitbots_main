@@ -7,8 +7,8 @@ class AlignedToGoal(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
         self.goalpost_safety_distance = self.blackboard.config['goalpost_safety_distance']
-        self.field_length = self.blackboard.config["field_length"]
-        self.goal_width = self.blackboard.config["goal_width"]
+        self.field_length = self.blackboard.world_model.field_length
+        self.goal_width = self.blackboard.world_model.goal_width
 
     def perform(self, reevaluate=False):
         """
