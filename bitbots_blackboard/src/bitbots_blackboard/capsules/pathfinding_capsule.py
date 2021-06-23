@@ -107,9 +107,7 @@ class PathfindingCapsule:
             self._blackboard.team_data.own_time_to_ball = self.time_to_ball_from_poses(own_position, ball_target)
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
-            if not self._blackboard.world_model.ball_seen:
-                rospy.loginfo("time_to_ball: ball not seen at all")
-            if not (rospy.Time.now() - self._blackboard.world_model.ball_last_seen() < ball_lost_time):
+            if not self._blackboard.world_model.ball_seen():
                 rospy.loginfo("time_to_ball: ball not seen for some time")
             if not self._blackboard.world_model.localization_precision_in_threshold():
                 rospy.loginfo("time_to_ball: localization bad")
