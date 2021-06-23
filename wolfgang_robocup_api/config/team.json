@@ -4,7 +4,7 @@
     "1": {
       "proto": "WolfgangRobocup",
       "dockerTag": "latest",
-      "dockerCmd": "start defense 0",
+      "dockerCmd": "start goalie 0",
       "halfTimeStartingPose": {
         "translation": [-3.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
@@ -35,7 +35,7 @@
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [-1.6, 3.20, 0.43],
+        "translation": [2.75, -0.0, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
@@ -56,7 +56,7 @@
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
+        "translation": [2.75, -0.0, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       },
       "goalKeeperStartingPose": {
