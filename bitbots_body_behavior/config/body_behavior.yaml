@@ -214,18 +214,22 @@ behavior:
     # example: (125 = 1 per second, 250 = 1 per 2 seconds)
     time_to_ball_divider: 25
 
+    # 7 seconds per meter when walking
+    # 6 sec per 1.57 rad (90 deg) = 3.82 sec per rad
+
+    time_to_ball_cost_per_meter: 7 # seconds
+
     # factor by which the difference in the starting angle and direction of the path (in rad) is weighted
-    time_to_ball_start_angle_weight: 0.3
+    time_to_ball_cost_start_angle: 3.82
     # same but for the goal angle
-    time_to_ball_goal_angle_weight: 0.2
+    time_to_ball_cost_goal_angle: 3.82
 
     # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
-    time_to_ball_start_to_goal_angle_weight: 0.3
+    time_to_ball_cost_start_to_goal_angle: 3.82
 
     # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
     time_to_ball_remember_time: 1.0
 
-    publish_path_to_ball: true
 
 role: "goalie"
 

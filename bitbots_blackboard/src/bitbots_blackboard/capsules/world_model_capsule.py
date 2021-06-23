@@ -127,7 +127,7 @@ class WorldModelCapsule:
         else:
             return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
 
-    def ball_seen(self):
+    def ball_has_been_seen(self):
         """Returns true if we or a teammate has seen the ball recently (less than ball_lost_time ago)"""
         return rospy.Time.now() - self.ball_last_seen() < self.ball_lost_time
 
