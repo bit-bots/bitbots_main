@@ -96,7 +96,7 @@ x: kick center forward X: kick center backward
 b: kick left backward  n: kick right backward
 B: kick left outward   N: kick right outward
 
-f: play walkready animation
+f: full stop           F: play walkready animation
 r: reset robot in simulation
 R: reset ball in simulation
 
@@ -176,6 +176,7 @@ if __name__ == "__main__":
 
     x = 0
     y = 0
+    a_x = -1
     th = 0
     status = 0
 
@@ -229,6 +230,7 @@ if __name__ == "__main__":
                 y = round(y, 2)
                 th += moveBindings[key][2] * turn_speed_step
                 th = round(th, 2)
+                a_x = 0
             elif key in headBindings.keys():
                 head_msg.positions[0] = head_pan_pos + headBindings[key][1] * head_pan_step
                 head_msg.positions[1] = head_tilt_pos + headBindings[key][0] * head_tilt_step
@@ -280,7 +282,7 @@ if __name__ == "__main__":
             elif key == 'C':
                 # kick right walk
                 walk_kick_pub.publish(True)
-            elif key == 'f':
+            elif key == 'F':
                 # play walkready animation
                 walkready.header.stamp = rospy.Time.now()
                 joint_pub.publish(walkready)
@@ -296,19 +298,28 @@ if __name__ == "__main__":
                     reset_ball()
                 except:
                     pass
+            elif key == 'f':
+                # complete walk stop
+                x = 0
+                y = 0
+                z = 0
+                a_x = -1
+                th = 0
             else:
                 x = 0
                 y = 0
                 z = 0
+                a_x = 0
                 th = 0
                 if (key == '\x03'):
+                    a_x = -1
                     break
 
             twist = Twist()
             twist.linear.x = x
             twist.linear.y = y
             twist.linear.z = 0
-            twist.angular.x = 0
+            twist.angular.x = a_x
             twist.angular.y = 0
             twist.angular.z = th
             pub.publish(twist)
