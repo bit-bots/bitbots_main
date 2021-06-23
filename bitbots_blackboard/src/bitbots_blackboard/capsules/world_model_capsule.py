@@ -15,13 +15,13 @@ from PIL import Image, ImageDraw
 import rospy
 import tf2_ros as tf2
 from std_msgs.msg import Header
+from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, \
     Quaternion, Pose, TransformStamped
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
-from bitbots_ball_filter.srv import ResetBallFilter
 import sensor_msgs.point_cloud2 as pc2
 
 
@@ -70,7 +70,7 @@ class WorldModelCapsule:
         self.ball_filtered = None
         self.ball_twist_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_twist_lost_time', 2))
         self.ball_twist_precision_threshold = rospy.get_param('behavior/body/ball_twist_precision_threshold', None)
-        self.reset_ball_filter = rospy.ServiceProxy('ball_filter_reset', ResetBallFilter)
+        self.reset_ball_filter = rospy.ServiceProxy('ball_filter_reset', Trigger)
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
