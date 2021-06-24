@@ -125,7 +125,7 @@ class BallFilter:
     def reset_filter_cb(self, req):
         rospy.loginfo("Resetting bitbots ball filter...", logger_name="ball_filter")
         self.filter_initialized = False
-        return True
+        return True, ""
 
     def filter_step(self, event):
         """"
