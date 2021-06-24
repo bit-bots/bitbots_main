@@ -43,7 +43,7 @@ class BallFilter:
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_initialized = False
-        self.ball = None  # type:PointStamped
+        self.ball = None  # type: PointStamped
         self.ball_header = None  # type: Header
         self.last_ball_msg = None  # type: PoseWithCertainty
 
@@ -202,8 +202,8 @@ class BallFilter:
         # velocity
         movement_msg = TwistWithCovarianceStamped()
         movement_msg.header = pose_msg.header
-        movement_msg.twist.twist.linear.x = state[2]
-        movement_msg.twist.twist.linear.y = state[3]
+        movement_msg.twist.twist.linear.x = state[2] * self.filter_rate
+        movement_msg.twist.twist.linear.y = state[3] * self.filter_rate
         movement_msg.twist.covariance = np.eye(6).reshape((36))
         movement_msg.twist.covariance[0] = cov_mat[2][2]
         movement_msg.twist.covariance[1] = cov_mat[2][3]
