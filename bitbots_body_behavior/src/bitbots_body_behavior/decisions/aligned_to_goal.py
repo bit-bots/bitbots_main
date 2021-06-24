@@ -10,7 +10,7 @@ class AlignedToGoal(AbstractDecisionElement):
         self.goalpost_safety_distance = self.blackboard.config['goalpost_safety_distance']
         self.field_length = self.blackboard.world_model.field_length
         self.goal_width = self.blackboard.world_model.goal_width
-        self.max_kick_angle = self.blackboard.config['goalpost_safety_distance']
+        self.max_kick_angle = self.blackboard.config['max_kick_angle']
 
     def perform(self, reevaluate=False):
         """
@@ -25,8 +25,8 @@ class AlignedToGoal(AbstractDecisionElement):
             return 'NO'
 
         # Get maximum kick angle relative to our base footprint
-        angle_difference_right = current_pose[2] - math.radians(45) # TODO param
-        angle_difference_left = current_pose[2] + math.radians(45)
+        angle_difference_right = current_pose[2] - self.max_kick_angle
+        angle_difference_left = current_pose[2] + self.max_kick_angle
 
         # Calculate the intersection of the left most kick with the goal line right of the center of the goal. dist_left represents the y coordinate of the intersection.
         if math.cos(angle_difference_left) > 0:
