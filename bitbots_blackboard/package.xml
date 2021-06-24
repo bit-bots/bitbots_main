@@ -23,8 +23,9 @@
     <depend>rospy</depend>
 
     <build_depend>bitbots_docs</build_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>std_srvs</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
-    <exec_depend>sensor_srvs</exec_depend>
     <exec_depend>geometry_msgs</exec_depend>
     <exec_depend>tf2</exec_depend>
     <exec_depend>tf2_geometry_msgs</exec_depend>
