@@ -4,7 +4,7 @@
   "hostname": "keks-ThinkPad-T450s",
   "keyframes": [
     {
-      "duration": 0.5,
+      "duration": 1.0,
       "goals": {
         "HeadPan": 0,
         "HeadTilt": 0,
@@ -28,7 +28,7 @@
         "RShoulderRoll": 46
       },
       "name": "new framed",
-      "pause": 0.0
+      "pause": 0.5
     },
     {
       "duration": 1.0,
