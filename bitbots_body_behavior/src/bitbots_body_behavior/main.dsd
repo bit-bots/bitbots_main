@@ -147,7 +147,9 @@ $ConfigRole
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing
-    JUST_UNPENALIZED --> #GetWalkreadyAndLocalize
+    JUST_UNPENALIZED --> $GameStateDecider
+        INITIAL --> #Init
+        ELSE --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
         INITIAL --> #Init
         READY --> $AnyGoalScoreRecently + time:50
