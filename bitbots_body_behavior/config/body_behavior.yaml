@@ -67,6 +67,11 @@ behavior:
     # the duration after which a ball_twist is considered irrelevant.
     ball_twist_lost_time: 2
 
+    # the maximal allowed standard deviation of the ball position.
+    ball_position_precision_threshold:
+      x_sdev: 1.0
+      y_sdev: 1.0
+
     # An area in which the ball can be kicked
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation

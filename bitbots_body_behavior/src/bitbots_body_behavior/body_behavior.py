@@ -56,7 +56,7 @@ if __name__ == "__main__":
     D.blackboard.dynup_action_client = actionlib.SimpleActionClient('dynup', DynUpAction)
 
     # TODO: callbacks away from the blackboard!
-    rospy.Subscriber("balls_relative", PoseWithCertaintyArray, D.blackboard.world_model.balls_callback)
+    # rospy.Subscriber("balls_relative", PoseWithCertaintyArray, D.blackboard.world_model.balls_callback)
     rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, D.blackboard.world_model.ball_filtered_callback)
     rospy.Subscriber("goal_posts_relative", PoseWithCertaintyArray, D.blackboard.world_model.goalposts_callback)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
