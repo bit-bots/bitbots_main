@@ -15,11 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
 )
 
-## Generate services in the 'srv' folder
-add_service_files(
-   FILES
- )
-
 catkin_python_setup()
 
 #add dynamic reconfigure api
