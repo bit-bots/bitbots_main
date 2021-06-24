@@ -91,7 +91,6 @@ class WorldModelCapsule:
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
         self.pose_precision_threshold = rospy.get_param('behavior/body/pose_precision_threshold', None)
-        self.pose_lost_time = rospy.get_param('behavior/body/pose_lost_time', None)
 
         # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
@@ -125,7 +124,12 @@ class WorldModelCapsule:
         if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
             return self.ball_seen_time
         else:
-            return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
+            if self.use_localization and self.localization_precision_in_threshold():
+                # better value of teammate and us if we are localized
+                return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
+            else:
+                # can't use teammate ball if we dont know where we are
+                return self.ball_seen_time
 
     def ball_has_been_seen(self):
         """Returns true if we or a teammate has seen the ball recently (less than ball_lost_time ago)"""
@@ -197,11 +201,19 @@ class WorldModelCapsule:
             u = self.ball_filtered.pose.pose.position.x
             v = self.ball_filtered.pose.pose.position.y
         else:
-            u, v = self.get_ball_position_uv()
+            ball_pos = self.get_ball_position_uv()
+            if ball_pos is None:
+                return np.inf  # worst case (very far away)
+            else:
+                u, v = ball_pos
         return math.sqrt(u ** 2 + v ** 2)
 
     def get_ball_angle(self):
-        u, v = self.get_ball_position_uv()
+        ball_pos = self.get_ball_position_uv()
+        if ball_pos is None:
+            return -math.pi  # worst case (behind robot)
+        else:
+            u, v = ball_pos
         return math.atan2(v, u)
 
     def get_ball_speed(self):
@@ -468,7 +480,7 @@ class WorldModelCapsule:
         """
         Returns whether the last localization precision values were in the threshold defined in the settings.
         """
-        # Check whether we received a message in the last pose_lost_time seconds.
+        # Check whether we can transform into and from the map frame seconds.
         if not self.localization_pose_current():
             return False
         # get the standard deviation values of the covariance matrix
@@ -480,9 +492,12 @@ class WorldModelCapsule:
 
     def localization_pose_current(self) -> bool:
         """
-        Returns whether the last localization pose was received in the last pose_lost_time-setting seconds.
+        Returns whether we can transform into and from the map frame.
         """
-        return rospy.Time.now() - self.pose.header.stamp < rospy.Duration.from_sec(self.pose_lost_time)
+        # if we can do this, we should be able to transform the ball
+        # (unless the localization dies in the next 0.2 seconds)
+        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame,
+                                            rospy.Time.now()-rospy.Duration(0.2))
 
     #############
     # ## Common #

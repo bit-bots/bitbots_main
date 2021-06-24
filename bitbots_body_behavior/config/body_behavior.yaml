@@ -111,9 +111,6 @@ behavior:
       y_sdev: 0.5
       theta_sdev: 0.6
 
-    # maximum amount of time after which a localization pose is dropped.
-    # (This should not happen unless the localization has died. RIP in this case.)
-    pose_lost_time: 10
 
     # Duration for which the robot tries to orient itself, when the localization precision is low.
     reorientation_duration: 10
