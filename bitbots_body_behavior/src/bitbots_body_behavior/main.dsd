@@ -121,7 +121,9 @@ $IsPenaltyShootRobot
 
 #Placing
 $ConfigRole
-    GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+    GOALIE --> $BallInOwnPercent + p:33
+        YES --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+        NO -->  @ChangeAction + action:positioning, @GoToDefensePosition, @LookAtFieldFeatures
     ELSE --> $BallSeen
         NO --> #SearchBall
         YES --> $SecondaryStateDecider
