@@ -52,7 +52,7 @@ class BallFilter:
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rospy.Duration(secs=config['filter_reset_time'])
 
-        use_frame = config.get('use_frame')
+        use_frame = config.get('filter_frame')
         if use_frame == "odom":
             self.filter_frame = rospy.get_param('~odom_frame')
         elif use_frame == "map":
