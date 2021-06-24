@@ -290,8 +290,8 @@ class WorldModelCapsule:
         self.ball = PointStamped()
         self.ball_seen_time_teammate = rospy.Time(0)
         self.ball_teammate = PointStamped()
-
-        success = self.reset_ball_filter()
+        
+        success, msg = self.reset_ball_filter()
         if not success:
             rospy.logwarn("Apparently, ball filter could not be reset...",logger_name='bitbots_blackboard')
 
