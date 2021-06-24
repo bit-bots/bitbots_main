@@ -54,10 +54,10 @@ class BallFilter:
         self.filter_reset_duration = rospy.Duration(secs=config['filter_reset_time'])
         self.filter_reset_distance = config['filter_reset_distance']
 
-        use_frame = config.get('filter_frame')
-        if use_frame == "odom":
+        filter_frame = config.get('filter_frame')
+        if filter_frame == "odom":
             self.filter_frame = rospy.get_param('~odom_frame')
-        elif use_frame == "map":
+        elif filter_frame == "map":
             self.filter_frame = rospy.get_param('~map_frame')
         rospy.loginfo(f"Using frame '{self.filter_frame}' for ball filtering", logger_name="ball_filter")
 
