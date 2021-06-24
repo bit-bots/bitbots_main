@@ -91,7 +91,6 @@ class WorldModelCapsule:
         self.use_localization = rospy.get_param('behavior/body/use_localization', None)
 
         self.pose_precision_threshold = rospy.get_param('behavior/body/pose_precision_threshold', None)
-        self.pose_lost_time = rospy.get_param('behavior/body/pose_lost_time', None)
 
         # Publisher for visualization in RViZ
         self.ball_publisher = rospy.Publisher('debug/viz_ball', PointStamped, queue_size=1)
@@ -481,7 +480,7 @@ class WorldModelCapsule:
         """
         Returns whether the last localization precision values were in the threshold defined in the settings.
         """
-        # Check whether we received a message in the last pose_lost_time seconds.
+        # Check whether we can transform into and from the map frame seconds.
         if not self.localization_pose_current():
             return False
         # get the standard deviation values of the covariance matrix
@@ -493,7 +492,7 @@ class WorldModelCapsule:
 
     def localization_pose_current(self) -> bool:
         """
-        Returns whether the last localization pose was received in the last pose_lost_time-setting seconds.
+        Returns whether we can transform into and from the map frame.
         """
         # if we can do this, we should be able to transform the ball
         # (unless the localization dies in the next 0.2 seconds)
