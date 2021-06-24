@@ -129,28 +129,30 @@ $IsPenaltyShootRobot
 
 
 #Placing
-$ConfigRole
-    GOALIE --> $BallInOwnPercent + p:33
-        YES --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
-        NO -->  @ChangeAction + action:positioning, @GoToDefensePosition, @LookAtFieldFeatures
-    ELSE --> $BallSeen
-        NO --> #SearchBall
-        YES --> $SecondaryStateDecider
-            CORNER_KICK --> $SecondaryStateTeamDecider
-                OUR --> $RankToBallNoGoalie + use_time_to_ball:true
-                    FIRST --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
-                    SECOND --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
-                    THIRD --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
-                OTHER --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
-            ELSE --> $SecondaryStateTeamDecider
-                OUR --> $RankToBallNoGoalie + use_time_to_ball:true
-                    FIRST --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
-                    SECOND --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
-                    THIRD --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
-                OTHER --> $RankToBallNoGoalie
-                    FIRST --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
-                    SECOND --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
-                    THIRD --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+$DoOnce
+    NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
+    DONE --> $ConfigRole
+        GOALIE --> $BallInOwnPercent + p:33
+            YES --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+            NO -->  @ChangeAction + action:positioning, @GoToDefensePosition, @LookAtFieldFeatures
+        ELSE --> $BallSeen
+            NO --> #SearchBall
+            YES --> $SecondaryStateDecider
+                CORNER_KICK --> $SecondaryStateTeamDecider
+                    OUR --> $RankToBallNoGoalie + use_time_to_ball:true
+                        FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:striker
+                        SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
+                        THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+                    OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
+                ELSE --> $SecondaryStateTeamDecider
+                    OUR --> $RankToBallNoGoalie + use_time_to_ball:true
+                        FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient_goal + distance:0.5
+                        SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
+                        THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+                    OTHER --> $RankToBallNoGoalie
+                        FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
+                        SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
+                        THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
 #Init
 @Stand + duration:0.1 + r:false, @PlayAnimationInit + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
