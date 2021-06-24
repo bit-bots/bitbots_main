@@ -46,7 +46,7 @@ class BallFilter:
         self.filter_initialized = False
         self.ball = None  # type:PointStamped
         self.ball_header = None  # type: Header
-        self.last_ball_msg = None  # type: PoseWithCertainty
+        self.last_ball_msg = PoseWithCertainty()  # type: PoseWithCertainty
 
         self.filter_rate = config['filter_rate']
         self.measurement_certainty = config['measurement_certainty']
@@ -154,6 +154,13 @@ class BallFilter:
                 state = self.kf.get_update()
                 self.publish_data(*state)
                 self.last_state = state
+            else:
+                # Publish old state with huge covariance
+                state, cov_mat = self.kf.get_update()
+                huge_cov_mat = np.ones_like(cov_mat) * 10
+                self.publish_data(state, huge_cov_mat)
+                self.last_state = state, huge_cov_mat
+
 
     def get_ball_measurement(self):
         """extracts filter measurement from ball message"""
