@@ -21,6 +21,8 @@ add_service_files(
 
 catkin_python_setup()
 
+generate_messages()
+
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
