@@ -209,19 +209,28 @@ class RobotController:
         self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
 
     def command_cb(self, command: JointCommand):
-        for i, name in enumerate(command.joint_names):
-            try:
-                motor_index = self.external_motor_names.index(name)
-                self.motors[motor_index].setPosition(command.positions[i])
-                if len(command.velocities) == 0 or command.velocities[i] == -1:
-                    self.motors[motor_index].setVelocity(self.motors[motor_index].getMaxVelocity())
-                else:
-                    self.motors[motor_index].setVelocity(command.velocities[i])
-                if not len(command.accelerations) == 0:
-                    self.motors[motor_index].setAcceleration(command.accelerations[i])
+        if len(command.positions) != 0:
+            # position control
+            for i, name in enumerate(command.joint_names):
+                try:
+                    motor_index = self.external_motor_names.index(name)
+                    self.motors[motor_index].setPosition(command.positions[i])
+                    if len(command.velocities) == 0 or command.velocities[i] == -1:
+                        self.motors[motor_index].setVelocity(self.motors[motor_index].getMaxVelocity())
+                    else:
+                        self.motors[motor_index].setVelocity(command.velocities[i])
 
-            except ValueError:
-                print(f"invalid motor specified ({name})")
+                except ValueError:
+                    print(f"invalid motor specified ({name})")
+        else:
+            # torque control
+            for i, name in enumerate(command.joint_names):
+                try:
+                    motor_index = self.external_motor_names.index(name)
+                    self.motors[motor_index].setTorque(command.accelerations[i])
+                except ValueError:
+                    print(f"invalid motor specified ({name})")
+
 
     def set_head_tilt(self, pos):
         self.motors[-1].setPosition(pos)

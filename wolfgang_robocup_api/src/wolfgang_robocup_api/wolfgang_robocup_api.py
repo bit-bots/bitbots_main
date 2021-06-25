@@ -68,7 +68,9 @@ class WolfgangRobocupApi():
         self.sensors_names.extend(self.position_sensors)
         self.sensors_names.extend(self.force3d_sensors)
 
-        self.joint_command = JointCommand()
+        self.positions = {}
+        self.velocities = {}
+        self.torques = {}
 
         self.create_publishers()
         self.create_subscribers()
@@ -131,7 +133,27 @@ class WolfgangRobocupApi():
 
     def joint_command_cb(self, msg):
         with self.joint_command_mutex:
-            self.joint_command = msg
+            for i, name in enumerate(msg.joint_names):
+                webots_name = self.joint_to_webots(name)
+                if len(msg.positions) == 0:
+                    # no positions given, use torque control
+                    self.torques[webots_name] = msg.accelerations[i]
+                    # delete positon and velocities
+                    if webots_name in self.positions:
+                        del self.positions[webots_name]
+                    if webots_name in self.velocities:
+                        del self.velocities[webots_name]
+                else:
+                    # use position and velocity control
+                    self.positions[webots_name] = msg.positions[i]
+
+                    if len(msg.velocities) == 0 or msg.velocities[i] == -1:
+                        self.velocities[webots_name] = self.velocity_limits[name]
+                    else:
+                        self.velocities[webots_name] = msg.velocities[i]
+
+                    if webots_name in self.torques:
+                        del self.torques[webots_name]
 
     def get_connection(self, addr):
         host, port = addr.split(':')
@@ -422,21 +444,22 @@ class WolfgangRobocupApi():
 
         # Makes this this thread safe
         with self.joint_command_mutex:
-            joint_command = copy.deepcopy(self.joint_command)
+            for name in self.positions:
+                motor_position = messages_pb2.MotorPosition()
+                motor_position.name = name
+                motor_position.position = self.positions[name]
+                actuator_requests.motor_positions.append(motor_position)
 
-        for i, name in enumerate(joint_command.joint_names):
-            motor_position = messages_pb2.MotorPosition()
-            motor_position.name = self.joint_to_webots(name)
-            motor_position.position = joint_command.positions[i]
-            actuator_requests.motor_positions.append(motor_position)
+                motor_velocity = messages_pb2.MotorVelocity()
+                motor_velocity.name = name
+                motor_velocity.velocity = self.velocities[name]
+                actuator_requests.motor_velocities.append(motor_velocity)
 
-            motor_velocity = messages_pb2.MotorVelocity()
-            motor_velocity.name = self.joint_to_webots(name)
-            if len(joint_command.velocities) == 0 or joint_command.velocities[i] == -1:
-                motor_velocity.velocity = self.velocity_limits[name]
-            else:
-                motor_velocity.velocity = joint_command.velocities[i]
-            actuator_requests.motor_velocities.append(motor_velocity)
+            for name in self.torques:
+                motor_torque = messages_pb2.MotorTorque()
+                motor_torque.name = name
+                motor_torque.torque = self.torques[name]
+                actuator_requests.motor_torques.append(motor_torque)
 
         msg = actuator_requests.SerializeToString()
         msg_size = struct.pack(">L", len(msg))
