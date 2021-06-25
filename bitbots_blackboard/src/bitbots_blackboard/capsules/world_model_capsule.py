@@ -285,8 +285,10 @@ class WorldModelCapsule:
         self.ball_teammate = PointStamped()
         
         success, msg = self.reset_ball_filter()
-        if not success:
-            rospy.logwarn("Apparently, ball filter could not be reset...",logger_name='bitbots_blackboard')
+        if success:
+            rospy.loginfo(f"Received message from ball filter: '{msg}'")
+        else:
+            rospy.logwarn(f"Ball filter reset failed with: '{msg}'",logger_name='bitbots_blackboard')
 
     ###########
     # ## Goal #
