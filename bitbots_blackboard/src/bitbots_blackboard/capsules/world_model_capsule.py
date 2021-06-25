@@ -15,6 +15,7 @@ from PIL import Image, ImageDraw
 import rospy
 import tf2_ros as tf2
 from std_msgs.msg import Header
+from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped, PoseStamped, \
     Quaternion, Pose, TransformStamped
@@ -69,6 +70,7 @@ class WorldModelCapsule:
         self.ball_filtered = None
         self.ball_twist_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_twist_lost_time', 2))
         self.ball_twist_precision_threshold = rospy.get_param('behavior/body/ball_twist_precision_threshold', None)
+        self.reset_ball_filter = rospy.ServiceProxy('ball_filter_reset', Trigger)
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
@@ -285,9 +287,16 @@ class WorldModelCapsule:
     def forget_ball(self):
         """Forget that we and the best teammate saw a ball"""
         self.ball_seen_time = rospy.Time(0)
-        self.ball_seen_time_teammate = rospy.Time(0)
         self.ball = PointStamped()
+        self.ball_seen_time_teammate = rospy.Time(0)
         self.ball_teammate = PointStamped()
+        
+        result = self.reset_ball_filter()
+
+        if result.success:
+            rospy.loginfo(f"Received message from ball filter: '{result.message}'")
+        else:
+            rospy.logwarn(f"Ball filter reset failed with: '{result.message}'", logger_name='bitbots_blackboard')
 
     ###########
     # ## Goal #
@@ -491,8 +500,12 @@ class WorldModelCapsule:
         """
         # if we can do this, we should be able to transform the ball
         # (unless the localization dies in the next 0.2 seconds)
-        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame,
-                                            rospy.Time.now()-rospy.Duration(0.2))
+        try:
+            t = rospy.Time.now()-rospy.Duration(0.3)
+        except TypeError as e:
+            rospy.logerr(e)
+            t = rospy.Time(0)
+        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)   
 
     #############
     # ## Common #
