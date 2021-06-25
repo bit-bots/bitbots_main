@@ -6,8 +6,12 @@ project(bitbots_ball_filter)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   rospy
+  std_msgs
+  std_srvs
+  geometry_msgs
+  tf2_geometry_msgs
+  humanoid_league_msgs
   dynamic_reconfigure
 )
 

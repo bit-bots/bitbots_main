@@ -4,6 +4,8 @@ ball_position_publish_topic: 'ball_position_relative_filtered'
 ball_movement_publish_topic: 'ball_relative_movement'
 ball_publish_topic: 'ball_relative_filtered'
 
+ball_filter_reset_service_name: 'ball_filter_reset'
+
 filter_frame: 'odom'
 #filter_frame: 'map'
 

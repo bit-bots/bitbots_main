@@ -13,6 +13,7 @@ from humanoid_league_msgs.msg import (PoseWithCertainty,
                                       PoseWithCertaintyArray,
                                       PoseWithCertaintyStamped)
 from std_msgs.msg import Header
+from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 
 from bitbots_ball_filter.cfg import BallFilterConfig
@@ -46,7 +47,7 @@ class BallFilter:
         self.filter_initialized = False
         self.ball = None  # type: PointStamped
         self.ball_header = None  # type: Header
-        self.last_ball_msg = None  # type: PoseWithCertainty
+        self.last_ball_msg = PoseWithCertainty()  # type: PoseWithCertainty
 
         self.filter_rate = config['filter_rate']
         self.measurement_certainty = config['measurement_certainty']
@@ -94,6 +95,13 @@ class BallFilter:
             self.ball_callback,
             queue_size=1
         )
+        
+        self.reset_service = rospy.Service(
+            config['ball_filter_reset_service_name'],
+            Trigger,
+            self.reset_filter_cb
+        )
+
         self.config = config
         self.filter_timer = rospy.Timer(rospy.Duration(self.filter_time_step), self.filter_step)
         return config
@@ -114,6 +122,11 @@ class BallFilter:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 rospy.logwarn(e)
 
+    def reset_filter_cb(self, req):
+        rospy.loginfo("Resetting bitbots ball filter...", logger_name="ball_filter")
+        self.filter_initialized = False
+        return True, ""
+
     def filter_step(self, event):
         """"
         When ball has been assigned a value and filter has been initialized:
@@ -128,7 +141,6 @@ class BallFilter:
                 self.filter_initialized = False
             if not self.filter_initialized:
                 self.init_filter(*self.get_ball_measurement())
-                self.filter_initialized = True
             self.kf.predict()
             self.kf.update(self.get_ball_measurement())
             state = self.kf.get_update()
@@ -146,6 +158,12 @@ class BallFilter:
                 state = self.kf.get_update()
                 self.publish_data(*state)
                 self.last_state = state
+            else:
+                # Publish old state with huge covariance
+                state, cov_mat = self.kf.get_update()
+                huge_cov_mat = np.eye(cov_mat.shape[0]) * 10
+                self.publish_data(state, huge_cov_mat)
+                self.last_state = state, huge_cov_mat
 
     def distance_to_ball(self, state):
         state_x = state[0]
@@ -164,11 +182,10 @@ class BallFilter:
 
     def init_filter(self, x, y):
         """
-        initializes kalmanfilter at given position
+        Initializes kalmanfilter at given position
 
         :param x: start x position of the ball
         :param y: start y position of the ball
-        :return:
         """
         # initial value of position(x,y) of the ball and velocity
         self.kf.x = np.array([x, y, 0, 0])
@@ -190,6 +207,8 @@ class BallFilter:
 
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False)
+
+        self.filter_initialized = True
 
     def publish_data(self, state: np.array, cov_mat: np.array) -> None:
         """
