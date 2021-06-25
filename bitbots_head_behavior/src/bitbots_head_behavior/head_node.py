@@ -46,7 +46,6 @@ def init():
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
-    # rospy.Subscriber("balls_relative", PoseWithCertaintyArray, blackboard.world_model.balls_callback)
     rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, blackboard.world_model.ball_filtered_callback)
     rospy.Subscriber('joint_states', JointState, blackboard.head_capsule.joint_state_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
