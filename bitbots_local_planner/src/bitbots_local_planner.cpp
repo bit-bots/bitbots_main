@@ -183,7 +183,7 @@ namespace bitbots_local_planner
             // We didn't reached our goal if we need this step
             goal_reached_ = false;
 
-            ROS_INFO("End vel %f, %f\n", std::hypot(cmd_vel.linear.x, cmd_vel.linear.y), current_vel_);
+            ROS_DEBUG("End vel %f, %f\n", std::hypot(cmd_vel.linear.x, cmd_vel.linear.y), current_vel_);
         }
         // Publich our "local plan" for viz purposes
         publishPlan();
