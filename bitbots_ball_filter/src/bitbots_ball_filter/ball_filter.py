@@ -2,6 +2,7 @@
 
 import numpy as np
 import rospy
+import math
 import tf2_ros as tf2
 from dynamic_reconfigure.server import Server
 from filterpy.common import Q_discrete_white_noise
@@ -43,7 +44,7 @@ class BallFilter:
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_initialized = False
-        self.ball = None  # type:PointStamped
+        self.ball = None  # type: PointStamped
         self.ball_header = None  # type: Header
         self.last_ball_msg = None  # type: PoseWithCertainty
 
@@ -51,11 +52,12 @@ class BallFilter:
         self.measurement_certainty = config['measurement_certainty']
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rospy.Duration(secs=config['filter_reset_time'])
+        self.filter_reset_distance = config['filter_reset_distance']
 
-        use_frame = config.get('use_frame')
-        if use_frame == "odom":
+        filter_frame = config.get('filter_frame')
+        if filter_frame == "odom":
             self.filter_frame = rospy.get_param('~odom_frame')
-        elif use_frame == "map":
+        elif filter_frame == "map":
             self.filter_frame = rospy.get_param('~map_frame')
         rospy.loginfo(f"Using frame '{self.filter_frame}' for ball filtering", logger_name="ball_filter")
 
@@ -122,6 +124,8 @@ class BallFilter:
         Process noise is taken into account
         """
         if self.ball:
+            if self.filter_initialized and self.distance_to_ball(self.kf.get_update()[0]) > self.filter_reset_distance:
+                self.filter_initialized = False
             if not self.filter_initialized:
                 self.init_filter(*self.get_ball_measurement())
                 self.filter_initialized = True
@@ -142,6 +146,14 @@ class BallFilter:
                 state = self.kf.get_update()
                 self.publish_data(*state)
                 self.last_state = state
+
+    def distance_to_ball(self, state):
+        state_x = state[0]
+        state_y = state[1]
+        ball_x = self.ball.point.x
+        ball_y = self.ball.point.y
+        # math.dist is implemented in Python 3.8
+        return math.sqrt((state_x - ball_x) ** 2 + (state_y - ball_y) ** 2)
 
     def get_ball_measurement(self):
         """extracts filter measurement from ball message"""
@@ -202,8 +214,8 @@ class BallFilter:
         # velocity
         movement_msg = TwistWithCovarianceStamped()
         movement_msg.header = pose_msg.header
-        movement_msg.twist.twist.linear.x = state[2]
-        movement_msg.twist.twist.linear.y = state[3]
+        movement_msg.twist.twist.linear.x = state[2] * self.filter_rate
+        movement_msg.twist.twist.linear.y = state[3] * self.filter_rate
         movement_msg.twist.covariance = np.eye(6).reshape((36))
         movement_msg.twist.covariance[0] = cov_mat[2][2]
         movement_msg.twist.covariance[1] = cov_mat[2][3]

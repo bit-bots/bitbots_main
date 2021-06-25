@@ -11,7 +11,7 @@ filter_frame: 'map'
 filter_rate: 10
 
 # Velocity reduction (per axis) factor of the ball per second
-velocity_reduction: 0.4
+velocity_reduction: 0.6
 
 # Noise which is added to the estimated position without new measurements
 process_noise_variance: 0.005
@@ -21,3 +21,6 @@ measurement_certainty: 0.1
 
 # Max ball not seen time in Seconds
 filter_reset_time: 20
+
+# Distance to the current estimation causing a filter reset
+filter_reset_distance: 2
