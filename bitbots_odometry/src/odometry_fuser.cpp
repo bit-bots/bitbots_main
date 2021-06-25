@@ -128,7 +128,7 @@ OdometryFuser::OdometryFuser() : tf_listener_(tf_buffer_), support_state_cache_(
 
       last_time_stamp = fused_time_;
     } else {
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }

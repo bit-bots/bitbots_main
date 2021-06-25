@@ -258,7 +258,7 @@ void KickNode::loopEngine(ros::Rate loop_rate) {
       }
       joint_goal_publisher_.publish(getJointCommand(motor_goals.value()));
     } else {
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }

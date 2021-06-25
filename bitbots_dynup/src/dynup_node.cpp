@@ -166,7 +166,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
         }
       }
     } else {
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }

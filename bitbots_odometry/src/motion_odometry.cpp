@@ -145,7 +145,7 @@ MotionOdometry::MotionOdometry() {
         }
       }
     } else {
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }

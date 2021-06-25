@@ -154,7 +154,7 @@ void WalkNode::run() {
         odom_counter = 0;
       }
     }else{
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }
