@@ -6,8 +6,8 @@ ball_publish_topic: 'ball_relative_filtered'
 
 ball_filter_reset_service_name: 'ball_filter_reset'
 
-#filter_frame: 'odom'
-filter_frame: 'map'
+filter_frame: 'odom'
+#filter_frame: 'map'
 
 # Filtering rate in Hz
 filter_rate: 10
