@@ -4,8 +4,8 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class BallDangerous(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallDangerous, self).__init__(blackboard, dsd, parameters)
-        self.goal_radius = self.blackboard.config['ball_dangerous_goal_radius']
-        self.nofall_radius = self.blackboard.config['ball_dangerous_nofall_radius']
+        self.goal_radius = parameters.get("radius", self.blackboard.config['ball_dangerous_goal_radius'])
+        self.center_width = self.blackboard.config['ball_dangerous_center']
         self.decided = False
 
     def perform(self, reevaluate=False):
@@ -16,9 +16,9 @@ class BallDangerous(AbstractDecisionElement):
         if self._in_dangerous_area(ball_position):
             self.decided = True
             robot_position = self.blackboard.world_model.get_current_position()
-            if ball_position[1] > robot_position[1] + self.nofall_radius:
+            if ball_position[1] > robot_position[1] + self.center_width / 2:
                 return 'LEFT'
-            elif ball_position[1] < robot_position[1] - self.nofall_radius:
+            elif ball_position[1] < robot_position[1] - self.center_width / 2:
                 return 'RIGHT'
             return 'CENTER'
         return 'NO'
