@@ -163,7 +163,6 @@ class WorldModelCapsule:
                                                                               teammate_ball.header.frame_id,
                                                                               teammate_ball.header.stamp,
                                                                               timeout=rospy.Duration(0.2)):
-                    rospy.logerr("using teammate ball, we are so fancy")
                     self.used_ball_pub.publish(teammate_ball)
                     h = Header()
                     h.stamp = teammate_ball.header.stamp
