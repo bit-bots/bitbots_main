@@ -12,9 +12,9 @@ from tf.transformations import quaternion_from_euler
 class AbstractGoToPassPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, accept, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.max_x = rospy.get_param("behavior/body/supporter_max_x", 4)
-        self.pass_pos_x = rospy.get_param("behavior/body/pass_position_x", 1)
-        self.pass_pos_y = rospy.get_param("behavior/body/pass_position_y", 1)
+        self.max_x = self.blackboard.config["supporter_max_x"]
+        self.pass_pos_x = self.blackboard.config["pass_position_x"]
+        self.pass_pos_y = self.blackboard.config["pass_position_y"]
         self.accept = accept
 
     def perform(self, reevaluate=False):

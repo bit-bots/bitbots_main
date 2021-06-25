@@ -12,8 +12,12 @@ class DribbleOrKick(AbstractDecisionElement):
         self.goal_distance_threshold = self.blackboard.config['dribble_goal_distance_threshold']
         self.ball_distance_threshold = self.blackboard.config['dribble_ball_distance_threshold']
 
-        self.kick_length = rospy.get_param('behavior/body/kick_cost_kick_length')
-        self.max_kick_angle = rospy.get_param('behavior/body/max_kick_angle')
+        self.kick_length = self.blackboard.config['kick_cost_kick_length']
+        self.max_kick_angle = self.blackboard.config['max_kick_angle']
+        self.angular_range = self.blackboard.config['kick_cost_angular_range']
+        self.num_kick_angles = self.blackboard.config['num_kick_angles']
+
+        self.dribble_kick_angle = self.blackboard.config['dribble_kick_angle']
 
     def perform(self, reevaluate=False):
         """
@@ -29,10 +33,11 @@ class DribbleOrKick(AbstractDecisionElement):
         # no other robots should be in front of the ball. this means the kick with angle 0 would be the best
         best_kick_direction = self.blackboard.world_model.get_best_kick_direction(-self.max_kick_angle,
                                                                                   self.max_kick_angle,
-                                                                                  3,
+                                                                                  self.num_kick_angles,
                                                                                   self.kick_length,
-                                                                                  math.tau/4)
-        front_free = best_kick_direction == 0
+                                                                                  self.angular_range)
+        front_free = -self.dribble_kick_angle < best_kick_direction < self.dribble_kick_angle
+        self.publish_debug_data("best kick direction", best_kick_direction)
         self.publish_debug_data("Front free", front_free)
 
         # we should be not to close to the goal, otherwise kicking makes more sense. only take x axis into account

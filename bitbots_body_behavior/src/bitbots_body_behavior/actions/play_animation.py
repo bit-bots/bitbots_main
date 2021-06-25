@@ -55,7 +55,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             rospy.logwarn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))
+            rospy.Duration(1))
         if not first_try:
             server_running = False
             while not server_running and not rospy.is_shutdown():

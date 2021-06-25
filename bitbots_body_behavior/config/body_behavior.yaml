@@ -174,7 +174,10 @@ behavior:
     # dribble decision
     dribble_orient_threshold: 0.5
     dribble_goal_distance_threshold: 1.5
-    dribble_ball_distance_threshold: 1.0
+    dribble_ball_distance_threshold: 0.5
+    dribble_kick_angle: 0.6
+
+    kick_decision_smoothing: 5
 
     ##################
     # costmap params #
@@ -211,7 +214,7 @@ behavior:
     kick_cost_angular_range: 0.5
 
     # estimated kick length when estimating kick cost
-    kick_cost_kick_length: 1.5
+    kick_cost_kick_length: 2
 
     # parameters for time_to_ball estimation
     # divider of how often the time to ball is updated depending on update rate of the behavior
