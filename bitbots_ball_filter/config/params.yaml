@@ -10,13 +10,16 @@ filter_frame: 'odom'
 #filter_frame: 'map'
 
 # Filtering rate in Hz
-filter_rate: 10
+filter_rate: 62  # we get an image every 16 ms -> 62.5 hz
+
+# Balls with lower confidence will be dropped
+min_ball_confidence: 0.6
 
 # Velocity reduction (per axis) factor of the ball per second
 velocity_reduction: 0.6
 
 # Noise which is added to the estimated position without new measurements
-process_noise_variance: 0.005
+process_noise_variance: 0.001
 
 # Ball measurement certainty in filter
 measurement_certainty: 0.1
