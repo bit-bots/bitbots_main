@@ -10,7 +10,7 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 class AbstractKickAction(AbstractActionElement):
     def pop(self):
-        self.blackboard.world_model.forget_ball()
+        self.blackboard.world_model.forget_ball(own=True, team=True, reset_ball_filter=True)
         super(AbstractKickAction, self).pop()
 
 

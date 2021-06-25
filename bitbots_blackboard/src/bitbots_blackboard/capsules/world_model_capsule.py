@@ -229,6 +229,7 @@ class WorldModelCapsule:
         y_sdev = msg.pose.covariance[7]  # position 1,1 in a 6x6-matrix
         if x_sdev > self.body_config['ball_position_precision_threshold']['x_sdev'] or \
                 y_sdev > self.body_config['ball_position_precision_threshold']['y_sdev']:
+            self.forget_ball(own=True, team=False, reset_ball_filter=False)
             return
 
         ball_buffer = PointStamped(msg.header, msg.pose.pose.position)
@@ -284,19 +285,30 @@ class WorldModelCapsule:
         if self.ball_twist_map is not None:
             self.ball_twist_publisher.publish(self.ball_twist_map)
 
-    def forget_ball(self):
-        """Forget that we and the best teammate saw a ball"""
-        self.ball_seen_time = rospy.Time(0)
-        self.ball = PointStamped()
-        self.ball_seen_time_teammate = rospy.Time(0)
-        self.ball_teammate = PointStamped()
-        
-        result = self.reset_ball_filter()
+    def forget_ball(self, own=True, team=True, reset_ball_filter=True):
+        """
+        Forget that we and the best teammate saw a ball, optionally reset the ball filter
+        :param own: Forget the ball recognized by the own robot, defaults to True
+        :type own: bool, optional
+        :param team: Forget the ball received from the team, defaults to True
+        :type team: bool, optional
+        :param reset_ball_filter: Reset the ball filter, defaults to True
+        :type reset_ball_filter: bool, optional
+        """
+        if own:  # Forget own ball
+            self.ball_seen_time = rospy.Time(0)
+            self.ball = PointStamped()
 
-        if result.success:
-            rospy.loginfo(f"Received message from ball filter: '{result.message}'")
-        else:
-            rospy.logwarn(f"Ball filter reset failed with: '{result.message}'", logger_name='bitbots_blackboard')
+        if team:  # Forget team ball
+            self.ball_seen_time_teammate = rospy.Time(0)
+            self.ball_teammate = PointStamped()
+
+        if reset_ball_filter:  # Reset the ball filter
+            result = self.reset_ball_filter()
+            if result.success:
+                rospy.loginfo(f"Received message from ball filter: '{result.message}'", logger_name='bitbots_blackboard')
+            else:
+                rospy.logwarn(f"Ball filter reset failed with: '{result.message}'", logger_name='bitbots_blackboard')
 
     ###########
     # ## Goal #
