@@ -2,7 +2,7 @@
     <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
     <arg name="depends_only" default="false" />
     <arg name="use_game_settings" default="false"/>
-
+    <rosparam command="load" file="$(find bitbots_body_behavior)/config/body_behavior.yaml"/>
     <rosparam command="load" file="$(find bitbots_head_behavior)/config/head_config.yaml"/>
 
     <group if="$(arg use_game_settings)">
