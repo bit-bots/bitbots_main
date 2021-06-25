@@ -83,9 +83,12 @@ class MotorVizHelper:
     def joint_command_cb(self, msg: JointCommand):
         self.joint_command_msg.header.stamp = rospy.Time.now()
         for i in range(len(msg.joint_names)):
-            name = msg.joint_names[i]
-            self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.positions[i]
-            self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = msg.velocities[i]
+            if len(msg.positions) != 0:
+                # if msg.positions is 0, torque control is probably used.
+                # there, the visualization is not implemented yet.
+                name = msg.joint_names[i]
+                self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.positions[i]
+                self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = msg.velocities[i]
 
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = rospy.Time.now()
