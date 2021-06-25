@@ -58,7 +58,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))
         if not first_try:
             server_running = False
-            while not server_running and not self.blackboard.shut_down_request and not rospy.is_shutdown():
+            while not server_running and not rospy.is_shutdown():
                 rospy.logerr_throttle(5.0,
                                       "Animation Action Server not running! Motion can not work without animation action server. "
                                       "Will now wait until server is accessible!")
