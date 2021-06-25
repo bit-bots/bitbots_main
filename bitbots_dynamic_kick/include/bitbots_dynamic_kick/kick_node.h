@@ -22,6 +22,7 @@
 #include <bitbots_dynamic_kick/kick_ik.h>
 #include <bitbots_dynamic_kick/kick_utils.h>
 #include <bitbots_msgs/SupportState.h>
+#include <unistd.h>
 
 namespace bitbots_dynamic_kick {
 

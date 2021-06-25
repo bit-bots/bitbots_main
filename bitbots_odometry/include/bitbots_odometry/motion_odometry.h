@@ -7,6 +7,7 @@
 #include <tf2/utils.h>
 #include <nav_msgs/Odometry.h>
 #include <bitbots_msgs/SupportState.h>
+#include <unistd.h>
 
 class MotionOdometry {
  public:

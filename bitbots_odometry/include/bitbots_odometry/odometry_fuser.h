@@ -21,7 +21,7 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <bitbots_msgs/SupportState.h>
-
+#include <unistd.h>
 
 class OdometryFuser {
  public:
