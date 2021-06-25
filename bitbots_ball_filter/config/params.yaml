@@ -10,7 +10,7 @@ filter_frame: 'odom'
 #filter_frame: 'map'
 
 # Filtering rate in Hz
-filter_rate: 62
+filter_rate: 62  # we get an image every 16 ms -> 62.5 hz
 
 # Balls with lower confidence will be dropped
 min_ball_confidence: 0.6
