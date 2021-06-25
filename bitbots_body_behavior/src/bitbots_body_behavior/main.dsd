@@ -26,7 +26,7 @@ $AvoidBall
 
 #GoAndKickBallMapGoal
 $DribbleOrKick
-    DRIBBLE --> @CancelPathplanning, @LookAtFront, @DribbleForward
+    DRIBBLE --> @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
     KICK --> $BallKickArea
         NEAR --> $AlignedToGoal
             YES --> #PerformKick
@@ -81,18 +81,24 @@ $TimerRunning + name:reorientation
 
 #GoalieBehavior
 $ClosestToBall + use_time_to_ball:true
-    YES --> $BallDangerous
-        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-        ELSE --> #GoAndKickBallMapGoal
-    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
+    NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+    YES --> #GoAndKickBallMapGoal
 
 #StrikerRole
 $GoalieHandlingBall
     YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
     NO --> #GoAndKickBallMapGoal
 
-#DefenderRole
+#DefensePositioning
 @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+
+#DefenderRole
+$BallInOwnPercent + p:50
+    YES --> $ClosestToBall
+        YES --> #GoAndKickBallMapGoal
+        NO --> #DefensePositioning
+    NO --> #DefensePositioning
+
 
 #SupporterRole
 $GoalieHandlingBall
