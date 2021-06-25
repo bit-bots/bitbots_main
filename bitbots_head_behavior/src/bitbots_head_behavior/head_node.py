@@ -14,6 +14,7 @@ from humanoid_league_msgs.msg import HeadMode as HeadModeMsg, PoseWithCertainty,
 from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 
 from bitbots_ros_patches.rate import Rate
@@ -45,7 +46,7 @@ def init():
     blackboard = HeadBlackboard()
 
     rospy.Subscriber('head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
-    rospy.Subscriber("balls_relative", PoseWithCertaintyArray, blackboard.world_model.balls_callback)
+    rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, blackboard.world_model.ball_filtered_callback)
     rospy.Subscriber('joint_states', JointState, blackboard.head_capsule.joint_state_callback)
     blackboard.head_capsule.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
     blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher(blackboard.config['visual_compass_trigger_topic'], Header, queue_size=5)
