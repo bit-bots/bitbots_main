@@ -93,7 +93,7 @@ $GoalieHandlingBall
 @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
 
 #DefenderRole
-$BallInOwnPercent + p:50
+$BallInOwnPercent + p:62.5
     YES --> $ClosestToBall
         YES --> #GoAndKickBallMapGoal
         NO --> #DefensePositioning
