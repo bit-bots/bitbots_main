@@ -500,8 +500,12 @@ class WorldModelCapsule:
         """
         # if we can do this, we should be able to transform the ball
         # (unless the localization dies in the next 0.2 seconds)
-        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame,
-                                            rospy.Time.now()-rospy.Duration(0.2))
+        try:
+            t = rospy.Time.now()-rospy.Duration(0.3)
+        except TypeError as e:
+            rospy.logerr(e)
+            t = rospy.Time(0)
+        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)   
 
     #############
     # ## Common #
