@@ -108,10 +108,6 @@ class PathfindingCapsule:
             self._blackboard.team_data.own_time_to_ball = self.time_to_ball_from_poses(own_position, ball_target)
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
-            if not self._blackboard.world_model.ball_has_been_seen():
-                rospy.loginfo("time_to_ball: ball not seen for some time")
-            if not self._blackboard.world_model.localization_precision_in_threshold():
-                rospy.loginfo("time_to_ball: localization bad")
             self._blackboard.team_data.own_time_to_ball = 9999.0
             return None
 
@@ -128,10 +124,6 @@ class PathfindingCapsule:
             start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config[
                 'time_to_ball_cost_start_to_goal_angle']
             total_cost = path_length * self._blackboard.config['time_to_ball_cost_per_meter'] + start_goal_theta_cost
-            #rospy.logerr(f"Close to ball: start_goal_diff: {start_goal_theta_diff} " +
-            #             f"weighted start_goal_diff: {start_goal_theta_cost}, " +
-            #             f"path_length: {path_length}, " +
-            #             f"total: {total_cost}")
         else:
             # calculate how much we need to turn to start walking along the path
             _, _, start_theta = self._blackboard.world_model.get_current_position()
@@ -144,11 +136,6 @@ class PathfindingCapsule:
             goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_cost_goal_angle']
             total_cost = path_length * self._blackboard.config['time_to_ball_cost_per_meter'] + \
                          start_theta_cost + goal_theta_cost
-            #rospy.logerr(f"Far from ball: start_diff: {start_theta_diff}, goal_diff: {goal_theta_diff}, " +
-            #             f"weighted start_diff: {start_theta_cost}, " +
-            #             f"weighted goal_diff: {goal_theta_cost}, " +
-            #             f"path_length: {path_length}, " +
-            #             f"total: {total_cost}")
         return total_cost
 
     def get_ball_goal(self, target, distance):

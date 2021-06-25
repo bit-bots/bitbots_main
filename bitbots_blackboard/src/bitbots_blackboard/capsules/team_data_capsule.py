@@ -214,10 +214,4 @@ class TeamDataCapsule:
                             best_ball.point.x = single_teamdata.ball_absolute.pose.position.x
                             best_ball.point.y = single_teamdata.ball_absolute.pose.position.y
                             best_robot_dist = robot_dist
-                    else:
-                        rospy.logerr(
-                            f"robot: {robot_name} has too high localization std_dev, x: {robot_x_std_dev}, y: {robot_y_std_dev}, theta: {robot_theta_std_dev}")
-                else:
-                    rospy.logerr(
-                        f"robot: {robot_name} has too high ball std_dev, x: {ball_x_std_dev}, y: {ball_y_std_dev}")
         return best_ball
