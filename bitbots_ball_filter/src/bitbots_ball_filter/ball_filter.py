@@ -161,7 +161,7 @@ class BallFilter:
             else:
                 # Publish old state with huge covariance
                 state, cov_mat = self.kf.get_update()
-                huge_cov_mat = np.ones_like(cov_mat) * 10
+                huge_cov_mat = np.eye(cov_mat.shape[0]) * 10
                 self.publish_data(state, huge_cov_mat)
                 self.last_state = state, huge_cov_mat
 
