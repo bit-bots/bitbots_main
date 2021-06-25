@@ -165,7 +165,6 @@ class BallFilter:
                 self.publish_data(state, huge_cov_mat)
                 self.last_state = state, huge_cov_mat
 
-
     def distance_to_ball(self, state):
         state_x = state[0]
         state_y = state[1]
