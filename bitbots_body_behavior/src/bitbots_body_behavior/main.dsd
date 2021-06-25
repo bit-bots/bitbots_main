@@ -157,6 +157,30 @@ $DoOnce
 #Init
 @Stand + duration:0.1 + r:false, @PlayAnimationInit + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
 
+#NormalBehavior
+$BallSeen
+    NO --> $ConfigRole
+        GOALIE --> @LookAtFieldFeatures, @GoToRolePosition
+        ELSE --> #SearchBall
+    YES --> $KickOffTimeUp
+        NO_NORMAL --> #StandAndLook
+        NO_FREEKICK --> #Placing
+        YES --> $ConfigRole
+            GOALIE --> $BallInOwnPercent + p:33
+                YES --> #GoalieRole
+                NO --> #DefenderRole
+            ELSE --> $LocalizationAvailable
+                YES --> $LocalizationPrecision
+                    HIGH --> $TimerRunning + name:reorientation
+                        YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
+                        NO --> $RankToBallNoGoalie + use_time_to_ball:true
+                            FIRST --> #StrikerRole
+                            SECOND --> #SupporterRole
+                            THIRD --> #DefenderRole
+                    LOW --> $TimerEnded + name:reorientation_pause
+                        NO --> #NoLocalizationPlayerBehavior
+                        YES --> #ReorientationPause
+                NO --> #NoLocalizationPlayerBehavior
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing
@@ -180,49 +204,5 @@ $IsPenalized
             ELSE --> $SecondaryStateModeDecider
                 ELSE --> #StandAndLook
                 PLACING --> #Placing
-            NORMAL --> $BallSeen
-                NO --> $ConfigRole
-                    GOALIE --> @LookAtFieldFeatures, @GoToRolePosition
-                    ELSE --> #SearchBall
-                YES --> $KickOffTimeUp
-                    NO_NORMAL --> #StandAndLook
-                    NO_FREEKICK --> #Placing
-                    YES --> $ConfigRole
-                        GOALIE --> $BallInOwnPercent + p:33
-                            YES --> #GoalieRole
-                            NO --> #DefenderRole
-                        ELSE --> $LocalizationAvailable
-                            YES --> $LocalizationPrecision
-                                HIGH --> $TimerRunning + name:reorientation
-                                    YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
-                                    NO --> $RankToBallNoGoalie + use_time_to_ball:true
-                                        FIRST --> #StrikerRole
-                                        SECOND --> #SupporterRole
-                                        THIRD --> #DefenderRole
-                                LOW --> $TimerEnded + name:reorientation_pause
-                                    NO --> #NoLocalizationPlayerBehavior
-                                    YES --> #ReorientationPause
-                            NO --> #NoLocalizationPlayerBehavior
-            OVERTIME --> $BallSeen // HACKY SHOULD BE REWORKED AFTER COMPETITION
-                NO --> $ConfigRole
-                    GOALIE --> @LookAtFieldFeatures, @GoToRolePosition
-                    ELSE --> #SearchBall
-                YES --> $KickOffTimeUp
-                    NO_NORMAL --> #StandAndLook
-                    NO_FREEKICK --> #Placing
-                    YES --> $ConfigRole
-                        GOALIE --> $BallInOwnPercent + p:33
-                            YES --> #GoalieRole
-                            NO --> #DefenderRole
-                        ELSE --> $LocalizationAvailable
-                            YES --> $LocalizationPrecision
-                                HIGH --> $TimerRunning + name:reorientation
-                                    YES --> @EndTimer + name:reorientation + r:false, @StartTimer + name:reorientation_pause + duration:%behavior/body/reorientation_pause_duration + r:false
-                                    NO --> $RankToBallNoGoalie + use_time_to_ball:true
-                                        FIRST --> #StrikerRole
-                                        SECOND --> #SupporterRole
-                                        THIRD --> #DefenderRole
-                                LOW --> $TimerEnded + name:reorientation_pause
-                                    NO --> #NoLocalizationPlayerBehavior
-                                    YES --> #ReorientationPause
-                            NO --> #NoLocalizationPlayerBehavior
+            NORMAL --> #NormalBehavior
+            OVERTIME --> #NormalBehavior
