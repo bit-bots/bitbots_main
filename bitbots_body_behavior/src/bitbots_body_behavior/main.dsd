@@ -170,9 +170,7 @@ $BallSeen
         NO_NORMAL --> #StandAndLook
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
-            GOALIE --> $BallInOwnPercent + p:33
-                YES --> #GoalieRole
-                NO --> #DefenderRole
+            GOALIE --> #GoalieRole
             ELSE --> $LocalizationAvailable
                 YES --> $LocalizationPrecision
                     HIGH --> $TimerRunning + name:reorientation
