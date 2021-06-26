@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="nth_image" default="15" doc="records every nth image" />
     <arg name="out_dir" default="/robocup-logs" doc="Output directory" />
 
     <node name="record_rosbag_drop_images" pkg="topic_tools" type="drop"
