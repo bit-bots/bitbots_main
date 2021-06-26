@@ -36,7 +36,7 @@ behavior:
       offense:
         # passive: opponent has kickoff, active: we have kickoff
         passive: [ [ -0.27, 0 ], [ -0.2, 0.33 ], [ -0.2, -0.33 ] ]
-        active: [ [ -0.1, 0 ], [ -0.075, 0.33 ], [ -0.075, -0.33 ] ]
+        active: [ [ -0.1, 0 ], [ -0.085, 0.33 ], [ -0.085, -0.33 ] ]
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0 #this is currently handled more dynamically for offense players
 
