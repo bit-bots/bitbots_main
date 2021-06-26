@@ -136,9 +136,7 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
-        GOALIE --> $BallInOwnPercent + p:33
-            YES --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
-            NO -->  @ChangeAction + action:positioning, @GoToDefensePosition, @LookAtFieldFeatures
+        GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
         ELSE --> $BallSeen
             NO --> #SearchBall
             YES --> $SecondaryStateDecider
