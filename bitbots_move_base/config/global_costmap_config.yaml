@@ -5,8 +5,8 @@ global_costmap:
     - {name: keep_out_area, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
     - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
   # Set map origin to have the origin in the map center
-  origin_y: -4.0
-  origin_x: -5.5
+  origin_y: -5.5
+  origin_x: -8.0
   robot_base_frame: base_footprint
   global_frame: map
 
@@ -14,6 +14,6 @@ global_costmap:
   publish_frequency: 5.0
   transform_tolerance: 1.0
   rolling_window: false
-  width: 11.0
-  height: 8.0
+  width: 16.0
+  height: 11.0
   robot_radius: 0.2
