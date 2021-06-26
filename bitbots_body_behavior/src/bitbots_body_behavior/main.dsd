@@ -82,7 +82,11 @@ $TimerRunning + name:reorientation
 #GoalieBehavior
 $ClosestToBall + use_time_to_ball:true
     NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-    YES --> #GoAndKickBallMapGoal
+    YES --> $BallKickArea // TODO: refactor dribble or kick subtree
+        NEAR --> $AlignedToGoal
+            YES --> #PerformKick
+            NO --> #KickBallWithAvoidance
+        ELSE --> #KickBallWithAvoidance
 
 #StrikerRole
 $GoalieHandlingBall
@@ -136,9 +140,7 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
-        GOALIE --> $BallInOwnPercent + p:33
-            YES --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
-            NO -->  @ChangeAction + action:positioning, @GoToDefensePosition, @LookAtFieldFeatures
+        GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
         ELSE --> $BallSeen
             NO --> #SearchBall
             YES --> $SecondaryStateDecider
@@ -170,9 +172,7 @@ $BallSeen
         NO_NORMAL --> #StandAndLook
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
-            GOALIE --> $BallInOwnPercent + p:33
-                YES --> #GoalieRole
-                NO --> #DefenderRole
+            GOALIE --> #GoalieRole
             ELSE --> $LocalizationAvailable
                 YES --> $LocalizationPrecision
                     HIGH --> $TimerRunning + name:reorientation
