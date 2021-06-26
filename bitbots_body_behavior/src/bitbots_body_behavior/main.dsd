@@ -82,7 +82,11 @@ $TimerRunning + name:reorientation
 #GoalieBehavior
 $ClosestToBall + use_time_to_ball:true
     NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-    YES --> #GoAndKickBallMapGoal
+    YES --> $BallKickArea // TODO: refactor dribble or kick subtree
+        NEAR --> $AlignedToGoal
+            YES --> #PerformKick
+            NO --> #KickBallWithAvoidance
+        ELSE --> #KickBallWithAvoidance
 
 #StrikerRole
 $GoalieHandlingBall
