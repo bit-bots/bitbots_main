@@ -6,11 +6,11 @@
       "dockerTag": "latest",
       "dockerCmd": "start goalie 0",
       "halfTimeStartingPose": {
-        "translation": [-3.6, -3.20, 0.43],
+        "translation": [-3.6, -4.80, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "reentryStartingPose": {
-        "translation": [-3.6, -3.20, 0.43],
+        "translation": [-3.6, -4.80, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
@@ -27,11 +27,11 @@
       "dockerTag": "latest",
       "dockerCmd": "start offense 0",
       "halfTimeStartingPose": {
-        "translation": [-1.6, 3.20, 0.43],
+        "translation": [-1.6, 4.80, 0.43],
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "reentryStartingPose": {
-        "translation": [-1.6, 3.20, 0.43],
+        "translation": [-1.6, 4.80, 0.43],
         "rotation": [0.0, -0.0, 1.0, -1.57]
       },
       "shootoutStartingPose": {
@@ -48,11 +48,11 @@
       "dockerTag": "latest",
       "dockerCmd": "start offense 1",
       "halfTimeStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
+        "translation": [-1.6, -4.80, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "reentryStartingPose": {
-        "translation": [-1.6, -3.20, 0.43],
+        "translation": [-1.6, -4.80, 0.43],
         "rotation": [0.0, -0.0, -1.0, -1.57]
       },
       "shootoutStartingPose": {
