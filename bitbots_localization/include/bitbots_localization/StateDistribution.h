@@ -31,40 +31,28 @@ class RobotStateDistribution : public particle_filter::StateDistribution<RobotSt
 
 class RobotStateDistributionStartLeft : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionStartLeft(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                  std::pair<double, double> initial_robot_pose1,
-                                  double initial_theta1,
-                                  std::pair<double, double> initial_robot_pose2,
-                                  double initial_theta2);
+  RobotStateDistributionStartLeft(
+    particle_filter::CRandomNumberGenerator &random_number_generator,
+    std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
-  std::pair<double, double> initial_robot_pose_1;
-  std::pair<double, double> initial_robot_pose_2;
-  double initial_theta_1;
-  double initial_theta_2;
-
+  std::pair<double, double> field_size;
 };
 
 class RobotStateDistributionStartRight : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionStartRight(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                   std::pair<double, double> initial_robot_pose1,
-                                   double initial_theta1,
-                                   std::pair<double, double> initial_robot_pose2,
-                                   double initial_theta2);
+  RobotStateDistributionStartRight(
+    particle_filter::CRandomNumberGenerator &random_number_generator,
+    std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
-  std::pair<double, double> initial_robot_pose_1;
-  std::pair<double, double> initial_robot_pose_2;
-  double initial_theta_1;
-  double initial_theta_2;
-
+  double field_x, field_y;
 };
 
 class RobotStateDistributionLeftHalf : public particle_filter::StateDistribution<RobotState> {
