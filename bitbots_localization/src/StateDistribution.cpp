@@ -26,53 +26,38 @@ const RobotState RobotStateDistribution::draw() const {
 
 RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
         particle_filter::CRandomNumberGenerator &random_number_generator,
-        std::pair<double, double> initial_robot_pose1,
-        double initial_theta1,
-        std::pair<double, double> initial_robot_pose2,
-        double initial_theta2) {
-
-    initial_robot_pose_1 = initial_robot_pose1;
-    initial_robot_pose_2 = initial_robot_pose2;
-    initial_theta_1 = initial_theta1;
-    initial_theta_2 = initial_theta2;
+        std::pair<double, double> field_size) {
+    field_size = field_size;
 
 }
 
 const RobotState RobotStateDistributionStartLeft::draw() const {
     if (random_number_generator_.getUniform(0, 1) > 0.5) {
-        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) + initial_robot_pose_1.first,
-                           random_number_generator_.getGaussian(0.1) + initial_robot_pose_1.second,
-                           random_number_generator_.getGaussian(0.2) + initial_theta_1));
+        return (RobotState(random_number_generator_.getUniform(field_size.first/2, 0.0),
+                           random_number_generator_.getGaussian(0.1) - field_size.second/2 - 0.1,
+                           random_number_generator_.getGaussian(0.2) - 1.57));
     } else {
-        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) + initial_robot_pose_2.first,
-                           random_number_generator_.getGaussian(0.1) + initial_robot_pose_2.second,
-                           random_number_generator_.getGaussian(0.2) + initial_theta_2));
+        return (RobotState(random_number_generator_.getUniform(field_size.first/2, 0.0),
+                           random_number_generator_.getGaussian(0.1) + field_size.second/2 + 0.1,
+                           random_number_generator_.getGaussian(0.2) + 1.57));
     }
 }
 
 RobotStateDistributionStartRight::RobotStateDistributionStartRight(
         particle_filter::CRandomNumberGenerator &random_number_generator,
-        std::pair<double, double> initial_robot_pose1,
-        double initial_theta1,
-        std::pair<double, double> initial_robot_pose2,
-        double initial_theta2) {
-
-    initial_robot_pose_1 = initial_robot_pose1;
-    initial_robot_pose_2 = initial_robot_pose2;
-    initial_theta_1 = initial_theta1;
-    initial_theta_2 = initial_theta2;
-
-}
+        std::pair<double, double> field_size) {
+      field_x = field_size.first;
+      field_y = field_size.second;}
 
 const RobotState RobotStateDistributionStartRight::draw() const {
     if (random_number_generator_.getUniform(0, 1) > 0.5) {
-        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) - initial_robot_pose_1.first,
-                           random_number_generator_.getGaussian(0.1) + initial_robot_pose_1.second,
-                           random_number_generator_.getGaussian(0.2) + initial_theta_1));
+        return (RobotState(random_number_generator_.getUniform(-field_x/2, 0.0),
+                           random_number_generator_.getGaussian(0.1) - field_y/2,
+                           random_number_generator_.getGaussian(0.2) + 1.57));
     } else {
-        return (RobotState(random_number_generator_.getUniform(-2.0, 2.5) - initial_robot_pose_2.first,
-                           random_number_generator_.getGaussian(0.1) + initial_robot_pose_2.second,
-                           random_number_generator_.getGaussian(0.2) + initial_theta_2));
+        return (RobotState(random_number_generator_.getUniform(-field_x/2, 0.0),
+                           random_number_generator_.getGaussian(0.1) + field_y/2,
+                           random_number_generator_.getGaussian(0.2) - 1.57));
     }
 }
 
@@ -84,8 +69,6 @@ RobotStateDistributionLeftHalf::RobotStateDistributionLeftHalf(particle_filter::
     min_y_ = (-field_size.second / 2.0) - 0.5;
     max_x_ = 0 - 0.5;
     max_y_ = (field_size.second / 2.0) + 0.5;
-
-
 }
 
 const RobotState RobotStateDistributionLeftHalf::draw() const {
