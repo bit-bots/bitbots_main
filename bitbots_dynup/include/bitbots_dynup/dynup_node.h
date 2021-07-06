@@ -6,6 +6,7 @@
 #include <optional>
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <unistd.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_dynup/DynUpConfig.h>

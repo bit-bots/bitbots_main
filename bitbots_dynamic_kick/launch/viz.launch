@@ -5,5 +5,6 @@
   <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" args="--kick" />
   <node name="dynamic_kick" pkg="bitbots_dynamic_kick" type="KickNode" output="screen">
     <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config.yaml" />
+    <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config_unstable.yaml" />
   </node>
 </launch>

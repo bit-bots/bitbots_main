@@ -63,3 +63,8 @@ add_executable(DynupNode ${SOURCES})
 add_dependencies(DynupNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages)
 
 target_link_libraries(DynupNode ${catkin_LIBRARIES})
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(catkin REQUIRED COMPONENTS bitbots_test)
+    enable_bitbots_tests()
+endif()

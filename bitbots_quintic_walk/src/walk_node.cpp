@@ -23,6 +23,7 @@ WalkNode::WalkNode(const std::string ns) :
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
   current_request_.linear_orders = {0, 0, 0};
   current_request_.angular_z = 0;
+  current_request_.stop_walk = true;
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
   current_fly_pressure_ = 0;
@@ -89,6 +90,7 @@ void WalkNode::run() {
 
   ros::Rate loop_rate(engine_frequency_);
   double dt;
+  WalkRequest last_request;
   while (ros::ok()) {
     ros::spinOnce();
     if (loop_rate.sleep()) {
@@ -107,6 +109,13 @@ void WalkNode::run() {
         current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
             robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
             robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+
+        // reset when we start walking, otherwise PID controller will use old I value
+        if((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0) &&
+           (current_request_.linear_orders.x() != 0 || current_request_.linear_orders.y() != 0 || current_request_.angular_z != 0)){
+          stabilizer_.reset();
+        }
+        last_request = current_request_;
 
         // perform all the actual calculations
         bitbots_msgs::JointCommand joint_goals = step(dt);
@@ -145,7 +154,7 @@ void WalkNode::run() {
         odom_counter = 0;
       }
     }else{
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }
@@ -294,6 +303,9 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
        msg.linear.z * factor};
   current_request_.angular_z = msg.angular.z * factor * yaw_speed_multiplier_;
 
+  // special command to completely stop the walking
+  current_request_.stop_walk = msg.angular.x != 0;
+
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
     current_request_.linear_orders[i] =
@@ -303,7 +315,7 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
       std::max(std::min(current_request_.angular_z, max_step_angular_), max_step_angular_ * -1);
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_ != 0) {
-    double scaling_factor = (current_request_.linear_orders[0] + current_request_.linear_orders[1]) / max_step_xy_;
+    double scaling_factor = sqrt(pow(current_request_.linear_orders[0], 2) + pow(current_request_.linear_orders[1], 2)) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
       current_request_.linear_orders[i] = current_request_.linear_orders[i] / std::max(scaling_factor, 1.0);
     }
@@ -506,10 +518,10 @@ nav_msgs::Odometry WalkNode::getOdometry() {
   odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2;
-  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() * 2;
-  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2;
-  twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2;
+  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2 / x_speed_multiplier_;
+  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() / y_speed_multiplier_;
+  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2 ;
+  twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2 / yaw_speed_multiplier_;
 
   odom_msg_.twist.twist = twist;
   return odom_msg_;

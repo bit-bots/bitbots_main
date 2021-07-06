@@ -9,6 +9,10 @@ MotionOdometry::MotionOdometry() {
   pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
   pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
   pnh.param<std::string>("odom_frame", odom_frame_, "odom");
+  pnh.param<double>("x_forward_scaling", x_forward_scaling_, 1);
+  pnh.param<double>("x_backward_scaling", x_backward_scaling_, 1);
+  pnh.param<double>("y_scaling", y_scaling_, 1);
+  pnh.param<double>("yaw_scaling", yaw_scaling_, 1);
   current_support_state_ = -1;
   previous_support_state_ = -1;
   std::string previous_support_link = r_sole_frame_;
@@ -75,12 +79,18 @@ MotionOdometry::MotionOdometry() {
             tf2::Transform previous_to_current_support = tf2::Transform();
             tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
             // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
-            previous_to_current_support.setOrigin({
-                                                      previous_to_current_support.getOrigin().x(),
-                                                      previous_to_current_support.getOrigin().y(),
-                                                      0});
+            // scale odometry based on parameters
+            double x = previous_to_current_support.getOrigin().x();
+            if (x > 0){
+                x = x * x_forward_scaling_;
+            }else{
+                x = x * x_backward_scaling_;
+            }
+            double y = previous_to_current_support.getOrigin().y() * y_scaling_;
+            double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * yaw_scaling_;
+            previous_to_current_support.setOrigin({x, y, 0});
             tf2::Quaternion q;
-            q.setRPY(0, 0, tf2::getYaw(previous_to_current_support.getRotation()));
+            q.setRPY(0, 0, yaw);
             previous_to_current_support.setRotation(q);
             odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
           } catch (tf2::TransformException &ex) {
@@ -135,7 +145,7 @@ MotionOdometry::MotionOdometry() {
         }
       }
     } else {
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }
