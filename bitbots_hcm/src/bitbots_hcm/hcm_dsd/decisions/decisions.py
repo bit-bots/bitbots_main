@@ -129,7 +129,7 @@ class CheckMotors(AbstractDecisionElement):
             return "TURN_OFF"
 
         # see if we get no messages or always the exact same
-        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
+        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > self.blackboard.motor_timeout_duration:
             if self.blackboard.is_power_on:
                 if (self.blackboard.current_state == RobotControlState.STARTUP and
                         self.blackboard.current_time.to_sec() - self.blackboard.start_time.to_sec() < 10):
