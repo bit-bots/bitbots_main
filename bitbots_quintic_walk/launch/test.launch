@@ -1,21 +1,29 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="sim" default="false"/>
+  <arg name="use_darwin" default="false"/>
 
   <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
   <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
 
   <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
       <arg name="sim" value="$(arg sim)"/>
+      <arg name="use_darwin" value="$(arg use_darwin)"/>
   </include>
 
-  <group unless="$(arg sim)">
-    <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+  <group if="$(arg use_darwin)">
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_darwin_optimization.yaml" command="load"/>
   </group>
 
-  <group if="$(arg sim)">
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
+  <group unless="$(arg use_darwin)">
+      <group unless="$(arg sim)">
+        <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
+        <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+      </group>
+
+      <group if="$(arg sim)">
+        <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
+      </group>
   </group>
 
   <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen" launch-prefix="$(arg taskset)">
