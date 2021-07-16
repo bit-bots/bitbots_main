@@ -225,10 +225,15 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  reset(WalkState::IDLE, 0.0, false, false);
+  reset(WalkState::IDLE, 0.0, {0, 0, 0, 0}, true, false, false);
 }
 
-void WalkEngine::reset(WalkState state, double phase, bool walkable_state, bool reset_odometry) {
+void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, bool stop_walk, bool walkable_state, bool reset_odometry) {
+  request_.linear_orders[0] = step[0];
+  request_.linear_orders[1] = step[1];
+  request_.linear_orders[2] = step[2];
+  request_.angular_z = step[3];
+  request_.stop_walk = stop_walk;
   request_.walkable_state = walkable_state;
   engine_state_ = state;
   time_paused_ = 0.0;

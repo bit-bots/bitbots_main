@@ -39,7 +39,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   /**
    * Resets the engine to any given state. Necessary for using it as reference in learning.
    */
-  void reset(WalkState state, double phase, bool walkable_state, bool reset_odometry);
+  void reset(WalkState state, double phase, std::vector<double> step, bool stop_walk, bool walkable_state, bool reset_odometry);
 
   /**
    * Return current walk phase between 0 and 1

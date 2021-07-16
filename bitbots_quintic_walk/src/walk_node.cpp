@@ -225,9 +225,10 @@ void WalkNode::reset() {
 }
 
 void WalkNode::reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry) {
-  cmdVelCb(cmd_vel);
-  walk_engine_.reset(state, phase, true, reset_odometry);
+  std::vector<double> step = get_step_from_vel(cmd_vel);
+  walk_engine_.reset(state, phase, step, false, true, reset_odometry);
   stabilizer_.reset();
+  cmdVelCb(cmd_vel);
 }
 
 bitbots_msgs::JointCommand WalkNode::step(double dt,
@@ -288,44 +289,37 @@ geometry_msgs::Pose WalkNode::get_right_foot_pose() {
   return pose;
 }
 
-void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
-  // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
-  // other axis.
-
-  // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
+std::vector<double> WalkNode::get_step_from_vel(const geometry_msgs::Twist msg){
+  // We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
   // the sidewards movement only does one step per double step, since the second foot only goes back to the initial pose
   // therefore we need to multiply it by 2
   // furthermore, the engine does not really reach the correct goal speed, dependent on the parameters
-  current_request_.linear_orders =
-      {msg.linear.x * factor * x_speed_multiplier_, msg.linear.y * factor * 2 * y_speed_multiplier_,
-       msg.linear.z * factor};
-  current_request_.angular_z = msg.angular.z * factor * yaw_speed_multiplier_;
-
-  // special command to completely stop the walking
-  current_request_.stop_walk = msg.angular.x != 0;
+  std::vector<double> step = {msg.linear.x * factor * x_speed_multiplier_,
+                              msg.linear.y * factor * 2 * y_speed_multiplier_,
+                              msg.linear.z * factor,
+                              msg.angular.z * factor * yaw_speed_multiplier_};
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    current_request_.linear_orders[i] =
-        std::max(std::min(current_request_.linear_orders[i], max_step_linear_[i]), max_step_linear_[i] * -1);
+    step[i] = std::max(std::min(step[i], max_step_linear_[i]), max_step_linear_[i] * -1);
   }
-  current_request_.angular_z =
-      std::max(std::min(current_request_.angular_z, max_step_angular_), max_step_angular_ * -1);
+  step[3] = std::max(std::min(step[3], max_step_angular_), max_step_angular_ * -1);
+
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_ != 0) {
-    double scaling_factor = sqrt(pow(current_request_.linear_orders[0], 2) + pow(current_request_.linear_orders[1], 2)) / max_step_xy_;
+    double scaling_factor = sqrt(pow(step[0], 2) + pow(step[1], 2)) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      current_request_.linear_orders[i] = current_request_.linear_orders[i] / std::max(scaling_factor, 1.0);
+      step[i] = step[i] / std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x * factor * x_speed_multiplier_ != current_request_.linear_orders[0] ||
-      msg.linear.y * factor * y_speed_multiplier_ != current_request_.linear_orders[1] / 2 ||
-      msg.linear.z * factor != current_request_.linear_orders[2] ||
-      msg.angular.z * factor * yaw_speed_multiplier_ != current_request_.angular_z) {
+  if (msg.linear.x * factor * x_speed_multiplier_ != step[0] ||
+      msg.linear.y * factor * y_speed_multiplier_ != step[1] / 2 ||
+      msg.linear.z * factor != step[2] ||
+      msg.angular.z * factor * yaw_speed_multiplier_ != step[3]) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
         msg.linear.x,
@@ -339,6 +333,21 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
         max_step_angular_ / factor,
         max_step_xy_ / factor);
   }
+
+  return step;
+}
+
+void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
+  // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
+  // other axis.
+
+  // the engine expects orders in [m] not [m/s]
+  std::vector<double> step = get_step_from_vel(msg);
+  current_request_.linear_orders = {step[0], step[1], step[2]};
+  current_request_.angular_z = step[3];
+
+  // special command to completely stop the walking
+  current_request_.stop_walk = msg.angular.x != 0;
 }
 
 void WalkNode::imuCb(const sensor_msgs::Imu &msg) {

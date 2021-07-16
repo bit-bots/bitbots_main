@@ -117,6 +117,7 @@ class WalkNode {
 
   void publishOdometry(WalkResponse response);
 
+  std::vector<double> get_step_from_vel(const geometry_msgs::Twist msg);
   void cmdVelCb(geometry_msgs::Twist msg);
 
   void imuCb(const sensor_msgs::Imu &msg);
