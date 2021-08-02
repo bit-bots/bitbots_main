@@ -113,6 +113,7 @@ class WalkNode {
 
   void publishOdometry(WalkResponse response);
 
+  void stepCb(const geometry_msgs::Twist msg);
   void cmdVelCb(geometry_msgs::Twist msg);
 
   void imuCb(const sensor_msgs::Imu &msg);
@@ -207,6 +208,7 @@ class WalkNode {
   ros::Publisher pub_support_;
   tf2_ros::TransformBroadcaster odom_broadcaster_;
 
+  ros::Subscriber step_sub_;
   ros::Subscriber cmd_vel_sub_;
   ros::Subscriber robot_state_sub_;
   ros::Subscriber joint_state_sub_;
@@ -234,6 +236,8 @@ class WalkNode {
 
   double roll_vel_;
   double pitch_vel_;
+
+  bool got_new_goals_;
 };
 
 } // namespace bitbots_quintic_walk
