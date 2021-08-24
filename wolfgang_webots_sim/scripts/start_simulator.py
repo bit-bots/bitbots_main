@@ -32,7 +32,7 @@ if __name__ == "__main__":
     if args.multi_robot:
         world_name = "4_bots.wbt"
     else:
-        world_name = "walk_optim_wolfgang.wbt"
+        world_name = "walk_optim_wolfgang_2.wbt"
 
     if args.headless:
         cmd = [
