@@ -1,7 +1,7 @@
 from controller import Supervisor
 
 import rospy
-from geometry_msgs.msg import Quaternion, Pose, Point
+from geometry_msgs.msg import Quaternion, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
 from bitbots_msgs.srv import SetObjectPose, SetObjectPoseResponse, SetObjectPosition, SetObjectPositionResponse
 
@@ -240,6 +240,15 @@ class SupervisorController:
                 robot_pose.orientation = Quaternion(*orientation)
                 msg.name.append(robot_name)
                 msg.pose.append(robot_pose)
+                lin_vel, ang_vel = self.get_robot_velocity(robot_name)
+                twist = Twist()
+                twist.linear.x = lin_vel[0]
+                twist.linear.y = lin_vel[1]
+                twist.linear.z = lin_vel[2]
+                twist.angular.x = ang_vel[0]
+                twist.angular.y = ang_vel[1]
+                twist.angular.z = ang_vel[2]
+                msg.twist.append(twist)
 
                 head_node = robot_node.getFromProtoDef("head")
                 head_position = head_node.getPosition()
@@ -252,10 +261,12 @@ class SupervisorController:
                 msg.name.append(robot_name + "_head")
                 msg.pose.append(head_pose)
 
-            ball_position = self.ball.getField("translation").getSFVec3f()
-            ball_pose = Pose()
-            ball_pose.position = Point(*ball_position)
-            ball_pose.orientation = Quaternion()
-            msg.name.append("ball")
-            msg.pose.append(ball_pose)
+            if self.ball is not None:
+                ball_position = self.ball.getField("translation").getSFVec3f()
+                ball_pose = Pose()
+                ball_pose.position = Point(*ball_position)
+                ball_pose.orientation = Quaternion()
+                msg.name.append("ball")
+                msg.pose.append(ball_pose)
+
             self.model_state_publisher.publish(msg)

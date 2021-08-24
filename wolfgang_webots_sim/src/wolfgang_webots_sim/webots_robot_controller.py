@@ -111,6 +111,7 @@ class RobotController:
             self.sensors.append(self.robot_node.getDevice(motor_name + self.sensor_suffix))
             self.sensors[-1].enable(self.timestep)
 
+        self.current_positions = [0] * len(self.motor_names)
         self.accel = self.robot_node.getDevice(accel_name)
         self.accel.enable(self.timestep)
         self.gyro = self.robot_node.getDevice(gyro_name)
@@ -247,11 +248,15 @@ class RobotController:
         js.header.stamp = rospy.Time.from_seconds(self.time)
         js.position = []
         js.effort = []
+        current_positions = []
         for i in range(len(self.sensors)):
             js.name.append(self.external_motor_names[i])
             value = self.sensors[i].getValue()
+            current_positions.append(value)
             js.position.append(value)
+            js.velocity.append(self.current_positions[i] - value)
             js.effort.append(self.motors[i].getTorqueFeedback())
+        self.current_positions = current_positions
         return js
 
     def publish_joint_states(self):
