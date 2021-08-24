@@ -308,14 +308,15 @@ class Simulation:
         p.resetSimulation()
         self.load_models()
 
-    def reset_robot_pose(self, position, orientation):
+    def reset_robot_pose(self, position, orientation, reset_joints=False):
         # reset body pose and velocity
         p.resetBasePositionAndOrientation(self.robot_index, position, orientation)
         p.resetBaseVelocity(self.robot_index, [0, 0, 0], [0, 0, 0])
-        # we need to reset all joints to, otherwise they still have velocity
-        for name in self.joints:
-            joint = self.joints[name]
-            p.resetJointState(joint.body_index, joint.joint_index, 0, 0)
+        if reset_joints:
+            # we need to reset all joints to, otherwise they still have velocity
+            for name in self.joints:
+                joint = self.joints[name]
+                p.resetJointState(joint.body_index, joint.joint_index, 0, 0)
 
     def reset_robot_pose_rpy(self, position, rpy):
         quat = tf.transformations.quaternion_from_euler(*rpy)

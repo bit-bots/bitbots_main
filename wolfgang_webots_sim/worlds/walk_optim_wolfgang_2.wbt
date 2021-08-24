@@ -52,3 +52,7 @@ Floor {
   size 100 100
   tileSize 2 2
 }
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
+}

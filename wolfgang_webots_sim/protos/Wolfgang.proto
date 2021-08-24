@@ -13,7 +13,7 @@ PROTO Wolfgang [
   field  SFString    customData      ""          # Is `Robot.customData`.
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
   field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
-  field  SFBool      selfCollision   TRUE        # Is `Robot.selfCollision`.
+  field  SFBool      selfCollision   FALSE        # Is `Robot.selfCollision`.
   field  SFFloat     cameraFOV       1.04
   field  SFInt32     cameraWidth     800
   field  SFInt32     cameraHeight    600
