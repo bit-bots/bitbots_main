@@ -19,7 +19,7 @@ import numpy as np
 
 
 class Simulation:
-    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain=False, field=True, joints_ft=False,
+    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain=True, field=False, joints_ft=False,
                  robot="wolfgang"):
         self.gui = gui
         self.paused = False
@@ -88,7 +88,7 @@ class Simulation:
         self.terrain_index = None
         self.plane_index = None
         if self.terrain_on:
-            self.max_terrain_height = 0.01
+            self.max_terrain_height = 0.02
             self.terrain = Terrain(self.max_terrain_height)
             self.terrain_index = self.terrain.id
         else:
@@ -184,26 +184,17 @@ class Simulation:
                              "rrb"] or link_name in self.foot_link_names:
                 # print(p.getLinkState(self.robot_index, self.links[link_name]))
                 p.changeDynamics(self.robot_index, self.links[link_name],
-                                 lateralFriction=lateral_friction,
-                                 spinningFriction=spinning_friction,
-                                 rollingFriction=rolling_friction,
-                                 contactDamping=contact_damping,
-                                 contactStiffness=contact_stiffness,
-                                 jointDamping=joint_damping,
-                                 restitution=restitution)
+                                 lateralFriction=1,
+                                 spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
         if self.plane_index:
-            p.changeDynamics(self.plane_index, -1, lateralFriction=lateral_friction, spinningFriction=spinning_friction,
-                             rollingFriction=rolling_friction, restitution=restitution, contactDamping=contact_damping,
-                             contactStiffness=contact_stiffness, jointDamping=joint_damping)
+            p.changeDynamics(self.plane_index, -1, lateralFriction=1,
+                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
         if self.field_index:
-            p.changeDynamics(self.field_index, -1, lateralFriction=lateral_friction, spinningFriction=spinning_friction,
-                             rollingFriction=rolling_friction, restitution=restitution, contactDamping=contact_damping,
-                             contactStiffness=contact_stiffness, jointDamping=joint_damping)
+            p.changeDynamics(self.field_index, -1, lateralFriction=1,
+                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
         if self.terrain_index:
-            p.changeDynamics(self.terrain_index, -1, lateralFriction=lateral_friction,
-                             spinningFriction=spinning_friction,
-                             rollingFriction=rolling_friction, restitution=restitution, contactDamping=contact_damping,
-                             contactStiffness=contact_stiffness, jointDamping=joint_damping)
+            p.changeDynamics(self.terrain_index, -1, lateralFriction=1,
+                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
 
     def set_filter_params(self, cutoff, order):
         for i in range(p.getNumJoints(self.robot_index)):
@@ -429,7 +420,7 @@ class PressureSensor:
         nyq = 240 * 0.5  # nyquist frequency from simulation frequency
         normalized_cutoff = cutoff / nyq  # cutoff freq in hz
         self.filter_b, self.filter_a = signal.butter(order, normalized_cutoff, btype='low')
-        self.filter_state = signal.lfilter_zi(self.filter_b, 1)
+        self.filter_state = signal.lfilter_zi(self.filter_b, self.filter_a)
         self.unfiltered = 0
         self.filtered = [0]
 

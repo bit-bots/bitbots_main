@@ -111,6 +111,7 @@ class RobotController:
             self.sensors.append(self.robot_node.getDevice(motor_name + self.sensor_suffix))
             self.sensors[-1].enable(self.timestep)
 
+        self.current_positions = [0] * len(self.motor_names)
         self.accel = self.robot_node.getDevice(accel_name)
         self.accel.enable(self.timestep)
         self.gyro = self.robot_node.getDevice(gyro_name)
@@ -209,19 +210,28 @@ class RobotController:
         self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
 
     def command_cb(self, command: JointCommand):
-        for i, name in enumerate(command.joint_names):
-            try:
-                motor_index = self.external_motor_names.index(name)
-                self.motors[motor_index].setPosition(command.positions[i])
-                if len(command.velocities) == 0 or command.velocities[i] == -1:
-                    self.motors[motor_index].setVelocity(self.motors[motor_index].getMaxVelocity())
-                else:
-                    self.motors[motor_index].setVelocity(command.velocities[i])
-                if not len(command.accelerations) == 0:
-                    self.motors[motor_index].setAcceleration(command.accelerations[i])
+        if len(command.positions) != 0:
+            # position control
+            for i, name in enumerate(command.joint_names):
+                try:
+                    motor_index = self.external_motor_names.index(name)
+                    self.motors[motor_index].setPosition(command.positions[i])
+                    if len(command.velocities) == 0 or command.velocities[i] == -1:
+                        self.motors[motor_index].setVelocity(self.motors[motor_index].getMaxVelocity())
+                    else:
+                        self.motors[motor_index].setVelocity(command.velocities[i])
 
-            except ValueError:
-                print(f"invalid motor specified ({name})")
+                except ValueError:
+                    print(f"invalid motor specified ({name})")
+        else:
+            # torque control
+            for i, name in enumerate(command.joint_names):
+                try:
+                    motor_index = self.external_motor_names.index(name)
+                    self.motors[motor_index].setTorque(command.accelerations[i])
+                except ValueError:
+                    print(f"invalid motor specified ({name})")
+
 
     def set_head_tilt(self, pos):
         self.motors[-1].setPosition(pos)
@@ -238,11 +248,15 @@ class RobotController:
         js.header.stamp = rospy.Time.from_seconds(self.time)
         js.position = []
         js.effort = []
+        current_positions = []
         for i in range(len(self.sensors)):
             js.name.append(self.external_motor_names[i])
             value = self.sensors[i].getValue()
+            current_positions.append(value)
             js.position.append(value)
+            js.velocity.append(self.current_positions[i] - value)
             js.effort.append(self.motors[i].getTorqueFeedback())
+        self.current_positions = current_positions
         return js
 
     def publish_joint_states(self):
