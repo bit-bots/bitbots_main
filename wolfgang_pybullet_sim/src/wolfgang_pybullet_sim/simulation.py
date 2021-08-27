@@ -106,10 +106,11 @@ class Simulation:
         # Load robot, deactivate all self collisions
         if self.robot in ["wolfgang", "sigmaban"]:
             # we have a better inertia estimation from onshape in our model
-            flags = p.URDF_USE_SELF_COLLISION + p.URDF_USE_INERTIA_FROM_FILE
+            flags = p.URDF_USE_SELF_COLLISION + p.URDF_USE_INERTIA_FROM_FILE + \
+                    p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
         else:
             # most other URDFs from the internet have issues with their inertia values
-            flags = p.URDF_USE_SELF_COLLISION
+            flags = p.URDF_USE_SELF_COLLISION + p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
 
         if self.urdf_path is None:
             # use wolfgang as standard
@@ -316,7 +317,12 @@ class Simulation:
             # we need to reset all joints to, otherwise they still have velocity
             for name in self.joints:
                 joint = self.joints[name]
-                p.resetJointState(joint.body_index, joint.joint_index, 0, 0)
+                try:
+                    pos_in_rad = math.radians(self.initial_joints_positions[name])
+                except KeyError:
+                    pos_in_rad = 0
+                joint.reset_position(pos_in_rad, 0)
+                joint.set_position(pos_in_rad)
 
     def reset_robot_pose_rpy(self, position, rpy):
         quat = tf.transformations.quaternion_from_euler(*rpy)
