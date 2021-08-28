@@ -41,6 +41,8 @@ WalkNode::WalkNode(const std::string ns) :
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_engine_odometry", 1);
   pub_support_ = nh_.advertise<bitbots_msgs::SupportState>("walk_support_state", 1, true);
+  step_sub_ = nh_.subscribe("step", 1, &WalkNode::stepCb, this,
+                               ros::TransportHints().tcpNoDelay());
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
   robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robotStateCb, this,
@@ -161,9 +163,16 @@ void WalkNode::run() {
 
 bitbots_msgs::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);
+  // PID control on foot position. take previous goal orientation and compute difference with actual orientation
+  Eigen::Quaterniond goal_orientation_eigen;
+  tf2::convert(current_response_.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
+  rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
-  // update walk engine response
-  walk_engine_.setGoals(request);
+// update walk engine response
+  if(got_new_goals_){
+    got_new_goals_ = false;
+    walk_engine_.setGoals(request);
+  }
   checkPhaseRestAndReset();
   current_response_ = walk_engine_.update(dt);
 
@@ -336,8 +345,18 @@ std::vector<double> WalkNode::get_step_from_vel(const geometry_msgs::Twist msg){
 
   return step;
 }
+void WalkNode::stepCb(const geometry_msgs::Twist msg) {
+  current_request_.linear_orders = {msg.linear.x, msg.linear.y, msg.linear.z};
+  current_request_.angular_z = msg.angular.z;
+  current_request_.single_step = true;
+  current_request_.stop_walk = true;
+  got_new_goals_ = true;
+}
 
 void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
+  got_new_goals_ = true;
+  current_request_.single_step = false;
+
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
 

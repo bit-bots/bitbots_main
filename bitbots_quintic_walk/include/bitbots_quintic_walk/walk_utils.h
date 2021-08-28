@@ -29,6 +29,7 @@ struct WalkRequest {
   double angular_z = 0;
   bool stop_walk = false;
   bool walkable_state = false;
+  bool single_step = false;
 };
 
 struct WalkResponse {

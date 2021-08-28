@@ -169,7 +169,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void buildStopMovementTrajectories();
 
-  void buildTrajectories(bool start_movement, bool start_step, bool kick_step);
+  void buildTrajectories(bool start_movement, bool start_step, bool kick_step, bool stop_step);
 
   void buildWalkDisableTrajectories(bool foot_in_idle_position);
 
