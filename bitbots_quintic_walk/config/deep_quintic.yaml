@@ -1,78 +1,44 @@
 walking:
   engine:
-    # Full walk cycle frequency
-    # (in Hz, > 0)
-    freq: 1.3
-    # Length of double support phase in half cycle
-    # (ratio, [0:1])
-    double_support_ratio: 0.05
-    # Lateral distance between the feet center
-    # (in m, >= 0)
-    foot_distance: 0.2
-    # Maximum flying foot height
-    # (in m, >= 0)
-    foot_rise: 0.06
-    # Pause of Z movement on highest point
-    # (single support cycle ratio, [0,1])
-    foot_z_pause: 0.0
-    # Phase of flying foot apex
-    # (single support cycle phase, [0:1])
-    foot_apex_phase: 0.5
-    # Let the foot's downward trajectory end above the ground
+    # Let the foots downward trajectory end above the ground
     # this is helpful if the support leg bends
     # (in m, >= 0)
     foot_put_down_z_offset: 0.0
-    #Phase time for moving the foot from Z offset to ground
-    #(in half cycle ratio [0:1])
-    foot_put_down_phase: 1.0
-    # Foot X/Y overshoot in ratio of step length
-    # (ratio, >= 0)
-    foot_overshoot_ratio: 0.1
-    # Foot X/Y overshoot phase
-    # (single support cycle phase, [foot_apex_phase:1]
-    foot_overshoot_phase: 0.85
-    # Height of the trunk from ground
-    # (in m, > 0)
-    trunk_height: 0.40
-    # Trunk pitch orientation
-    # (in rad)
-    trunk_pitch: 0.14
-    # Phase offset of trunk oscillation
-    # (half cycle phase, [-1:1])
-    trunk_phase: -0.1
-    # Trunk forward offset
-    # (in m)
-    trunk_x_offset: 0.0
-    # Trunk lateral offset
-    # (in m)
-    trunk_y_offset: 0.005
-    # Trunk lateral oscillation amplitude ratio
-    # (ratio, >= 0)
-    trunk_swing: 0.2
-    # Trunk swing pause length in phase at apex
-    # (half cycle ratio, [0:1])
-    trunk_pause: 0.0
     # Trunk forward offset proportional to forward step
     # (in m)
     trunk_x_offset_p_coef_forward: 0.0
     # Trunk forward offset proportional to rotation step
     # (in m/rad)
     trunk_x_offset_p_coef_turn: 0.0
-    # Trunk pitch orientation proportional to forward step
-    # (in rad/m)
-    trunk_pitch_p_coef_forward: 1.2
-    # Trunk pitch orientation proportional to rotation step
-    # (in 1)
-    trunk_pitch_p_coef_turn: -0.05
 
     kick_length: 0.09
     kick_vel: 0.2
     kick_phase: 0.75
 
-    first_step_swing_factor: 1.0
+    # pybullet_11 845
+    double_support_ratio: 0.195653816190475
+    first_step_swing_factor: 1.90197511529937
+    foot_distance: 0.180186647580716
+    foot_rise: 0.0570410313214668
+    freq: 1.77127700659165
+    trunk_height: 0.362414751580849
+    trunk_phase: 0.0169549448026024
+    trunk_pitch: -0.136359502763989
+    trunk_pitch_p_coef_forward: 0.659537646675347
+    trunk_pitch_p_coef_turn: 0.337677610704392
+    trunk_swing: 0.0328389889172115
+    trunk_x_offset: -0.00899171051218267
+    trunk_y_offset: 0.00122749120369858
+    trunk_z_movement: 0.00668702757559466
+    early_termination_at: [0.0, 0.0, 28.0]
     first_step_trunk_phase: -0.5
+    foot_apex_phase: 0.5
+    foot_overshoot_phase: 1
+    foot_overshoot_ratio: 0.0
+    foot_put_down_phase: 1
+    foot_z_pause: 0
+    trunk_pause: 0
 
-    trunk_z_movement: 0.0
 
   node:
     # update frequency of the engine
