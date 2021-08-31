@@ -235,7 +235,8 @@ void WalkNode::reset() {
 
 void WalkNode::reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry) {
   std::vector<double> step = get_step_from_vel(cmd_vel);
-  walk_engine_.reset(state, phase, step, false, true, reset_odometry);
+  bool stop_walk = cmd_vel.angular.x < 0;
+  walk_engine_.reset(state, phase, step, stop_walk, true, reset_odometry);
   stabilizer_.reset();
   cmdVelCb(cmd_vel);
 }
