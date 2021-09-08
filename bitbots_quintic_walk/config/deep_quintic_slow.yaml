@@ -1,0 +1,101 @@
+walking:
+  engine:
+    # Let the foots downward trajectory end above the ground
+    # this is helpful if the support leg bends
+    # (in m, >= 0)
+    foot_put_down_z_offset: 0.0
+    # Trunk forward offset proportional to forward step
+    # (in m)
+    trunk_x_offset_p_coef_forward: 0.0
+    # Trunk forward offset proportional to rotation step
+    # (in m/rad)
+    trunk_x_offset_p_coef_turn: 0.0
+
+    kick_length: 0.09
+    kick_vel: 0.2
+    kick_phase: 0.75
+
+    # pybullet_12 969
+    double_support_ratio: 0.172648327532766
+    first_step_swing_factor: 0.775116302324749
+    foot_distance: 0.238140511608774
+    foot_rise: 0.0526612011867905
+    trunk_height: 0.355818362960825
+    trunk_phase: -0.0835958835132952
+    trunk_pitch: 0.289959053269827
+    trunk_pitch_p_coef_forward: 0.11964167820289
+    trunk_pitch_p_coef_turn: 1.08556707859035
+    trunk_swing: 0.426882154152786
+    trunk_x_offset: -0.0427450195250579
+    trunk_y_offset: -0.0172468498854458
+    trunk_z_movement: 0.0287601222065676
+    early_termination_at: [0.0, 0.0, 8.0]
+    first_step_trunk_phase: -0.5
+    foot_apex_phase: 0.5
+    foot_overshoot_phase: 1.0
+    foot_overshoot_ratio: 0.0
+    foot_put_down_phase: 1.0
+    foot_z_pause: 0.0
+    freq: 1.0
+    trunk_pause: 0.0
+
+
+  node:
+    # update frequency of the engine
+    engine_freq: 500.0
+
+    # parameters for bioIK
+    ik_timeout: 0.01
+
+    debug_active: False
+
+    trunkYOnlyInDoubleSupport: False
+
+    max_step_x: 10000
+    max_step_y: 10000
+    max_step_xy: 10000
+    max_step_z: 100000
+    max_step_angular: 10000
+
+    x_speed_multiplier: 1
+    y_speed_multiplier: 1
+    yaw_speed_multiplier: 1
+
+    vel: -1
+    acc: -1
+    pwm: -1
+
+    imu_active: False
+    imu_pitch_threshold: 0.19
+    imu_roll_threshold: 0.4
+    imu_pitch_vel_threshold: 1.3
+    imu_roll_vel_threshold: 5.7
+    pause_duration: 3.0
+
+    phase_reset_active: False
+    ground_min_pressure: 1.5
+    phase_reset_phase: 0.25
+    joint_min_effort: 35
+    effort_phase_reset_active: False
+
+    publish_odom_tf: False
+
+  pid_trunk_fused_pitch:
+    p: 0.0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: False
+
+  pid_trunk_fused_roll:
+    p: 0.0
+    i: 0
+    d: 0
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: False
+    publish_state: False
