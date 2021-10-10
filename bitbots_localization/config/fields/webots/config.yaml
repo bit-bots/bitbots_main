@@ -11,10 +11,10 @@
 # Initialize at sideline
 # TODO better parameters
 initial_robot_x1: 2.5
-initial_robot_y1: 4.5
+initial_robot_y1: 3
 initial_robot_t1: -1.5
 initial_robot_x2: 2.5
-initial_robot_y2: -4.5
+initial_robot_y2: -3
 initial_robot_t2: 1.57
 
 # Inertial single point position
@@ -27,8 +27,8 @@ initial_robot_t: 0
 ##################
 
 # Field size
-field_x: 14
-field_y: 9
+field_x: 9
+field_y: 6
 
 # Padding
 field_padding: 1.0
