@@ -1,7 +1,7 @@
 ball:
   ball_topic: 'balls_in_image'
   # ballradius in meter
-  ball_radius: 0.111
+  ball_radius: 0.075
 
 lines:
   lines_topic: 'line_in_image'
