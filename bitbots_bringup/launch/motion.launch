@@ -4,7 +4,7 @@
     <arg name="viz" default="false"/>
     <arg name="walking" default="true" doc="start the walking" />
     <arg name="use_game_settings" default="false"/>
-    <arg name="torqueless" default="false" doc="start without torque, for example for testing the falling detection"/>
+    <arg name="torqueless_mode" default="false" doc="start without torque, for example for testing the falling detection"/>
 
     <!-- load the general game settings -->
     <group if="$(arg use_game_settings)">
@@ -16,7 +16,7 @@
         <group unless="$(arg viz)">
             <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
                 <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-                <arg name="torqueless" value="$(arg torqueless)" />
+                <arg name="torqueless_mode" value="$(arg torqueless_mode)" />
             </include>
             <node name="set_volume" pkg="bitbots_bringup" type="set_volume.sh" args="100%" />
         </group>
