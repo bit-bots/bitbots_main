@@ -5,15 +5,13 @@ import rospy
 from humanoid_league_msgs.msg import TeamData, Strategy
 from transforms3d.euler import quat2euler
 
-from bitbots_ros_patches.rate import Rate
-
 print_msg = """
 Team Communication Visualizer
 -----------------------------
 Robot 1
     Outdated: True
     Time since message: 100
-    State: UNKNOWN        
+    State: UNKNOWN
     Position
         x: 00.0
         y: 00.0
@@ -21,7 +19,7 @@ Robot 1
         x_cov: 00.0
         y_conv: 00.0
         yaw_cov: 00.0
-    Ball        
+    Ball
         x: 00.00
         y: 00.00
         x_cov: 00.00
@@ -30,7 +28,7 @@ Robot 1
     Strategy
         Role: UNDEFINED
         Action: UNDEFINED
-        SIDE: UNDEFINED                    
+        SIDE: UNDEFINED
 """
 
 
@@ -97,7 +95,7 @@ class TeamCommPrinter:
         return lines
 
     def run(self):
-        rate = Rate(1)
+        rate = rospy.Rate(1)
         first = True
         while not rospy.is_shutdown():
             prints = []
