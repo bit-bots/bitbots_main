@@ -12,7 +12,6 @@ include:
         - bitbots_convenience_frames
         - bitbots_teleop
         - system_monitor
-        - bitbots_ros_patches
     - bitbots_motion:
         - bitbots_animation_server
         - bitbots_dynamic_kick
