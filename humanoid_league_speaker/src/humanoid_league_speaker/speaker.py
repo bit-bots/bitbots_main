@@ -12,7 +12,7 @@ from dynamic_reconfigure.server import Server
 from humanoid_league_speaker.cfg import speaker_paramsConfig
 
 from humanoid_league_msgs.msg import Audio
-from bitbots_ros_patches.rate import Rate
+
 
 def speak(text, publisher, priority=20, speaking_active=True):
     """ Utility method which can be used by other classes to easily publish a message."""
@@ -63,7 +63,7 @@ class Speaker(object):
 
     def run_speaker(self):
         """ Runs continuously to wait for messages and speaks them."""
-        rate = Rate(20)
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             # test if espeak is already running and speak is enabled
             if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
