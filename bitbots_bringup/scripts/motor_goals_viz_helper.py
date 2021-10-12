@@ -7,7 +7,6 @@ from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
-from bitbots_ros_patches.rate import Rate
 
 # List of all joint names. Do not change the order as it is important for Gazebo
 JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
@@ -63,7 +62,7 @@ class MotorVizHelper:
         self.joint_command_msg.positions = [0] * 20
         self.joint_command_msg.velocities = [-1] * 20
 
-        rate = Rate(100)
+        rate = rospy.Rate(100)
         self.update_time = rospy.Time.now()
         while not rospy.is_shutdown():
             try:
