@@ -17,8 +17,6 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 
-from bitbots_ros_patches.rate import Rate
-
 
 def run(dsd):
     """
@@ -26,7 +24,7 @@ def run(dsd):
 
     :returns: Never
     """
-    rate = Rate(60)
+    rate = rospy.Rate(60)
     while not rospy.is_shutdown():
         dsd.update()
         rate.sleep()

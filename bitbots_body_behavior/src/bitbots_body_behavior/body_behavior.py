@@ -23,7 +23,6 @@ from visualization_msgs.msg import Marker
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider import dsd
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped, Twist
-from bitbots_ros_patches.rate import Rate
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Float32
 from nav_msgs.srv import GetPlan
@@ -71,7 +70,7 @@ if __name__ == "__main__":
     rospy.Subscriber("move_base/result", MoveBaseActionResult, D.blackboard.pathfinding.status_callback)
     rospy.Subscriber("cmd_vel", Twist, D.blackboard.pathfinding.cmd_vel_cb)
 
-    rate = Rate(125)
+    rate = rospy.Rate(125)
     counter = 0
     path_to_ball_service_response = None
     while not rospy.is_shutdown():
