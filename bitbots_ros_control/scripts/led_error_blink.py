@@ -4,7 +4,6 @@ import rospy
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from bitbots_msgs.srv import Leds, LedsRequest, LedsResponse
 from std_msgs.msg import ColorRGBA
-from bitbots_ros_patches.rate import Rate
 
 BLINK_DURATION = 0.2
 ERROR_TIMEOUT = 1
@@ -73,7 +72,7 @@ rospy.sleep(1)
 
 rospy.Subscriber("/diagnostics_toplevel_state", DiagnosticStatus, cb, queue_size=1, tcp_nodelay=True)
 
-rate = Rate(100)
+rate = rospy.Rate(100)
 while not rospy.is_shutdown():
     if last_hardware_error_time is not None:
         current_time = rospy.Time.now().to_sec()

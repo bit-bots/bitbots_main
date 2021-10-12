@@ -4,7 +4,7 @@ import rospy
 import math
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_ros_patches.rate import Rate
+
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 JOINT_NAME = "LAnkleRoll"
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     rospy.init_node("send_sinus_command")
     pub = rospy.Publisher(DYNAMIXEL_CMD_TOPIC, JointCommand, queue_size=1)
 
-    rate = Rate(PUBLISH_RATE)
+    rate = rospy.Rate(PUBLISH_RATE)
     while not rospy.is_shutdown():
         time = rospy.Time.now()
         position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.to_sec())
