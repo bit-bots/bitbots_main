@@ -12,6 +12,7 @@ include:
         - bitbots_convenience_frames
         - bitbots_teleop
         - system_monitor
+        - bitbots_ros_patches
     - bitbots_motion:
         - bitbots_animation_server
         - bitbots_dynamic_kick
@@ -27,6 +28,7 @@ include:
         - bitbots_move_base
     - bitbots_tools:
         - bitbots_docs
+        - bitbots_test
     - center_of_mass
     - dynamic_stack_decider
     - humanoid_base_footprint
