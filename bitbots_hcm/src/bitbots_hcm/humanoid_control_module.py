@@ -23,8 +23,6 @@ from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
 import os
 
-from bitbots_ros_patches.rate import Rate
-
 
 class HardwareControlManager:
     def __init__(self):
@@ -240,7 +238,7 @@ class HardwareControlManager:
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        rate = Rate(500)
+        rate = rospy.Rate(500)
 
         while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
             if self.hcm_deactivated:
