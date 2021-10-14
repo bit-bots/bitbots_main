@@ -28,6 +28,9 @@ Localization::Localization() : tfListener(tfBuffer), line_points_() {
   pnh_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
   pnh_.param<std::string>("map_frame", map_frame_, "map");
   pnh_.param<std::string>("publishing_frame", publishing_frame_, "localization_raw");
+
+  // Get current odometry transform as init
+  previousOdomTransform_ = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0), ros::Duration(20.0));
 }
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
