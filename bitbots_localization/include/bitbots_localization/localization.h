@@ -297,6 +297,7 @@ class Localization {
 
   geometry_msgs::Vector3 linear_movement_;
   geometry_msgs::Vector3 rotational_movement_;
+  geometry_msgs::TransformStamped previousOdomTransform_;
   bool new_linepoints_ = false;
   bool robot_moved = false;
   int timer_callback_count_ = 0;

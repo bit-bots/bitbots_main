@@ -28,6 +28,9 @@ Localization::Localization() : tfListener(tfBuffer), line_points_() {
   pnh_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
   pnh_.param<std::string>("map_frame", map_frame_, "map");
   pnh_.param<std::string>("publishing_frame", publishing_frame_, "localization_raw");
+
+  // Get current odometry transform as init
+  previousOdomTransform_ = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0), ros::Duration(20.0));
 }
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
@@ -382,42 +385,40 @@ void Localization::updateMeasurements() {
 
 void Localization::getMotion() {
   robot_moved = false;
-  geometry_msgs::TransformStamped transformStampedPast;
   geometry_msgs::TransformStamped transformStampedNow;
 
   try {
 
+    // Get current odometry transform
     transformStampedNow = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0));
 
-    ros::Time past = transformStampedNow.header.stamp - ros::Duration(1.0/(float)config_.publishing_frequency);
-
-    transformStampedPast = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, past);
-
-    //linear movement
+    // Get linear movement from odometry transform and the transform of the previous filter step
     double global_diff_x, global_diff_y;
-    global_diff_x = transformStampedNow.transform.translation.x - transformStampedPast.transform.translation.x;
-    global_diff_y = transformStampedNow.transform.translation.y - transformStampedPast.transform.translation.y;
+    global_diff_x = (transformStampedNow.transform.translation.x - previousOdomTransform_.transform.translation.x);
+    global_diff_y = (transformStampedNow.transform.translation.y - previousOdomTransform_.transform.translation.y);
 
     // Convert to local frame
     auto [polar_rot, polar_dist] = cartesianToPolar(global_diff_x, global_diff_y);
     auto [local_movement_x, local_movement_y] = polarToCartesian(
-      polar_rot - tf::getYaw(transformStampedPast.transform.rotation), polar_dist);
+      polar_rot - tf::getYaw(previousOdomTransform_.transform.rotation), polar_dist);
     linear_movement_.x = local_movement_x;
     linear_movement_.y = local_movement_y;
     linear_movement_.z = 0;
 
-    //rotational movement
+    // Get angular movement from odometry transform and the transform of the previous filter step
     rotational_movement_.x = 0;
     rotational_movement_.y = 0;
     rotational_movement_.z = tf::getYaw(transformStampedNow.transform.rotation) -
-        tf::getYaw(transformStampedPast.transform.rotation);
+        tf::getYaw(previousOdomTransform_.transform.rotation);
 
-    //check if robot moved
+    // Check if robot moved
     if (linear_movement_.x > config_.min_motion_linear or linear_movement_.y > config_.min_motion_linear or
         rotational_movement_.z > config_.min_motion_angular) {
       robot_moved = true;
     }
 
+    // Set the variable for the transform of the previous step to the transform of the current step, because we finished this step. 
+    previousOdomTransform_ = transformStampedNow;
   }
   catch (const tf2::TransformException &ex) {
     ROS_WARN("Could not aquire motion for odom transforms: %s", ex.what());
