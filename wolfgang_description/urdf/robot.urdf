@@ -24,7 +24,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -39,7 +39,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -54,7 +54,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_holder_right_front.stl"/>
       </geometry>
       <material name="nuc_holder_right_front_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -63,7 +63,7 @@
         <mesh filename="package://wolfgang_description/urdf/power_regulator.stl"/>
       </geometry>
       <material name="power_regulator_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -72,7 +72,7 @@
         <mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
       </geometry>
       <material name="torso_bumper_right_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -99,7 +99,7 @@
         <mesh filename="package://wolfgang_description/urdf/core.stl"/>
       </geometry>
       <material name="core_material">
-        <color rgba="0.282353 0.54902 0.160784 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -108,7 +108,7 @@
         <mesh filename="package://wolfgang_description/urdf/battery.stl"/>
       </geometry>
       <material name="battery_material">
-        <color rgba="0.807843 0.823529 0.831373 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -123,7 +123,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
-        <color rgba="0.262745 0.282353 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -138,7 +138,7 @@
         <mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
       </geometry>
       <material name="torso_bumper_left_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -165,7 +165,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_holder_right_back.stl"/>
       </geometry>
       <material name="nuc_holder_right_back_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -174,7 +174,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
-        <color rgba="0.262745 0.282353 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -198,7 +198,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_holder_left_back.stl"/>
       </geometry>
       <material name="nuc_holder_left_back_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -207,7 +207,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_bottom.stl"/>
       </geometry>
       <material name="nuc_bottom_material">
-        <color rgba="0.301961 0.301961 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -216,7 +216,7 @@
         <mesh filename="package://wolfgang_description/urdf/imu_holder.stl"/>
       </geometry>
       <material name="imu_holder_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -225,7 +225,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_front.stl"/>
       </geometry>
       <material name="nuc_front_material">
-        <color rgba="0.4 0.4 0.4 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -234,7 +234,7 @@
         <mesh filename="package://wolfgang_description/urdf/odroid_xu4.stl"/>
       </geometry>
       <material name="odroid_xu4_material">
-        <color rgba="0.564706 0.811765 0.945098 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -243,7 +243,7 @@
         <mesh filename="package://wolfgang_description/urdf/torso_bottom.stl"/>
       </geometry>
       <material name="torso_bottom_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -258,7 +258,7 @@
         <mesh filename="package://wolfgang_description/urdf/router_holder_left.stl"/>
       </geometry>
       <material name="router_holder_left_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -267,7 +267,7 @@
         <mesh filename="package://wolfgang_description/urdf/imu_bottom_cover.stl"/>
       </geometry>
       <material name="imu_bottom_cover_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -276,7 +276,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -291,7 +291,7 @@
         <mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
       </geometry>
       <material name="torso_bumper_left_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -318,7 +318,7 @@
         <mesh filename="package://wolfgang_description/urdf/speaker_holder.stl"/>
       </geometry>
       <material name="speaker_holder_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -327,7 +327,7 @@
         <mesh filename="package://wolfgang_description/urdf/baseplate_odroid_xu4_core.stl"/>
       </geometry>
       <material name="baseplate_odroid_xu4_core_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -336,7 +336,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_main.stl"/>
       </geometry>
       <material name="nuc_main_material">
-        <color rgba="0.603922 0.647059 0.686275 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -345,7 +345,7 @@
         <mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
       </geometry>
       <material name="torso_bumper_right_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -372,7 +372,7 @@
         <mesh filename="package://wolfgang_description/urdf/switch_holder.stl"/>
       </geometry>
       <material name="switch_holder_material">
-        <color rgba="0.980392 0.713725 0.00392157 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -381,7 +381,7 @@
         <mesh filename="package://wolfgang_description/urdf/torso_top.stl"/>
       </geometry>
       <material name="torso_top_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -414,7 +414,7 @@
         <mesh filename="package://wolfgang_description/urdf/dummy_speaker.stl"/>
       </geometry>
       <material name="dummy_speaker_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -423,7 +423,7 @@
         <mesh filename="package://wolfgang_description/urdf/router_holder_right.stl"/>
       </geometry>
       <material name="router_holder_right_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -432,7 +432,7 @@
         <mesh filename="package://wolfgang_description/urdf/battery_cage_holder.stl"/>
       </geometry>
       <material name="battery_cage_holder_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -441,7 +441,7 @@
         <mesh filename="package://wolfgang_description/urdf/nuc_holder_left_front.stl"/>
       </geometry>
       <material name="nuc_holder_left_front_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -450,7 +450,7 @@
         <mesh filename="package://wolfgang_description/urdf/battery_cage.stl"/>
       </geometry>
       <material name="battery_cage_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.4 0.4 0.4 1.0"/>
       </material>
     </visual>
   </link>
@@ -479,7 +479,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
-        <color rgba="0.862745 0.14902 0.498039 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -494,7 +494,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -543,7 +543,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -558,7 +558,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-        <color rgba="0.960784 0.960784 0.960784 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -600,7 +600,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-        <color rgba="0.960784 0.960784 0.960784 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -642,7 +642,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
       </geometry>
       <material name="upper_arm_spacer_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -703,7 +703,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.960784 0.960784 0.960784 1.0"/>
       </material>
     </visual>
     <collision>
@@ -718,7 +718,7 @@
         <mesh filename="package://wolfgang_description/urdf/hand.stl"/>
       </geometry>
       <material name="hand_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.960784 0.960784 0.960784 1.0"/>
       </material>
     </visual>
     <collision>
@@ -834,7 +834,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
-        <color rgba="0.862745 0.14902 0.498039 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -849,7 +849,7 @@
         <mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
       </geometry>
       <material name="shoulder_connector_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -876,7 +876,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -898,7 +898,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -913,7 +913,7 @@
         <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -928,7 +928,7 @@
         <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -943,7 +943,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
       </geometry>
       <material name="upper_arm_spacer_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -958,7 +958,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-        <color rgba="0.960784 0.960784 0.960784 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -985,7 +985,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-        <color rgba="0.960784 0.960784 0.960784 1.0"/>
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1019,7 +1019,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
-        <color rgba="0.247059 0.247059 0.247059 1.0"/>
+        <color rgba="0.960784 0.960784 0.960784 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1073,7 +1073,7 @@
         <mesh filename="package://wolfgang_description/urdf/hand.stl"/>
       </geometry>
       <material name="hand_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.960784 0.960784 0.960784 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1244,7 +1244,7 @@
         <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.262745 0.282353 0.301961 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1265,7 +1265,7 @@
         <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
-        <color rgba="0.792157 0.819608 0.933333 1.0"/>
+        <color rgba="0.262745 0.282353 0.301961 1.0"/>
       </material>
     </visual>
     <visual>
@@ -1274,7 +1274,7 @@
         <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.262745 0.282353 0.301961 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1338,7 +1338,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
-        <color rgba="0.392157 0.392157 0.392157 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1425,7 +1425,7 @@
         <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
       </geometry>
       <material name="part_1_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1440,7 +1440,7 @@
         <mesh filename="package://wolfgang_description/urdf/xh-540.stl"/>
       </geometry>
       <material name="xh-540_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1455,7 +1455,7 @@
         <mesh filename="package://wolfgang_description/urdf/spring_holder_upper.stl"/>
       </geometry>
       <material name="spring_holder_upper_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1470,7 +1470,7 @@
         <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
       </geometry>
       <material name="part_1_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1485,7 +1485,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
-        <color rgba="0.392157 0.392157 0.392157 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1593,7 +1593,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_leg_spacer.stl"/>
       </geometry>
       <material name="upper_leg_spacer_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1630,7 +1630,7 @@
         <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
-        <color rgba="0.407843 0.407843 0.407843 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1669,7 +1669,7 @@
         <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
-        <color rgba="0.407843 0.407843 0.407843 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1708,7 +1708,7 @@
         <mesh filename="package://wolfgang_description/urdf/lower_leg_spacer.stl"/>
       </geometry>
       <material name="lower_leg_spacer_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1723,7 +1723,7 @@
         <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
       </geometry>
       <material name="springholder_new_material">
-        <color rgba="0.862745 0.14902 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1744,7 +1744,7 @@
         <mesh filename="package://wolfgang_description/urdf/spring_holder_lower.stl"/>
       </geometry>
       <material name="spring_holder_lower_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1774,7 +1774,7 @@
         <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
       </geometry>
       <material name="springholder_bottom_material">
-        <color rgba="0.392157 0.560784 1.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1817,7 +1817,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
-        <color rgba="0.262745 0.282353 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1853,7 +1853,7 @@
         <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
-        <color rgba="0.792157 0.819608 0.933333 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <visual>
@@ -1862,7 +1862,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
-        <color rgba="0.262745 0.282353 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1977,7 +1977,7 @@
         <mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
       </geometry>
       <material name="forcefoot_pcb_material">
-        <color rgba="0.141176 0.52549 0.141176 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <visual>
@@ -2067,7 +2067,7 @@
         <mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
       </geometry>
       <material name="foot_cover_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2121,7 +2121,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2170,7 +2170,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2219,7 +2219,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2268,7 +2268,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2426,7 +2426,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
-        <color rgba="0.262745 0.282353 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2441,7 +2441,7 @@
         <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
-        <color rgba="0.262745 0.282353 0.301961 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2477,7 +2477,7 @@
         <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
-        <color rgba="0.792157 0.819608 0.933333 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
   </link>
@@ -2514,7 +2514,7 @@
         <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
       </geometry>
       <material name="part_1_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2550,7 +2550,7 @@
         <mesh filename="package://wolfgang_description/urdf/xh-540.stl"/>
       </geometry>
       <material name="xh-540_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2565,7 +2565,7 @@
         <mesh filename="package://wolfgang_description/urdf/spring_holder_upper.stl"/>
       </geometry>
       <material name="spring_holder_upper_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2580,7 +2580,7 @@
         <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
       </geometry>
       <material name="part_1_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2595,7 +2595,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
-        <color rgba="0.392157 0.392157 0.392157 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2682,7 +2682,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
-        <color rgba="0.392157 0.392157 0.392157 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2769,7 +2769,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_leg_spacer.stl"/>
       </geometry>
       <material name="upper_leg_spacer_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2791,7 +2791,7 @@
         <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
       </geometry>
       <material name="springholder_new_material">
-        <color rgba="0.862745 0.14902 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2812,7 +2812,7 @@
         <mesh filename="package://wolfgang_description/urdf/spring_holder_lower.stl"/>
       </geometry>
       <material name="spring_holder_lower_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2827,7 +2827,7 @@
         <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
       </geometry>
       <material name="springholder_bottom_material">
-        <color rgba="0.392157 0.560784 1.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2857,7 +2857,7 @@
         <mesh filename="package://wolfgang_description/urdf/lower_leg_spacer.stl"/>
       </geometry>
       <material name="lower_leg_spacer_material">
-        <color rgba="0.498039 0.498039 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2887,7 +2887,7 @@
         <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
-        <color rgba="0.407843 0.407843 0.407843 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2926,7 +2926,7 @@
         <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
-        <color rgba="0.407843 0.407843 0.407843 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2972,7 +2972,7 @@
         <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.262745 0.282353 0.301961 1.0"/>
       </material>
     </visual>
     <collision>
@@ -2993,7 +2993,7 @@
         <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
-        <color rgba="0.792157 0.819608 0.933333 1.0"/>
+        <color rgba="0.262745 0.282353 0.301961 1.0"/>
       </material>
     </visual>
     <visual>
@@ -3002,7 +3002,7 @@
         <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.262745 0.282353 0.301961 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3141,7 +3141,7 @@
         <mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
       </geometry>
       <material name="forcefoot_pcb_material">
-        <color rgba="0.141176 0.52549 0.141176 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <visual>
@@ -3150,7 +3150,7 @@
         <mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
       </geometry>
       <material name="foot_cover_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3297,7 +3297,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3346,7 +3346,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3395,7 +3395,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3444,7 +3444,7 @@
         <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
-        <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        <color rgba="0.717647 0.717647 0.717647 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3541,7 +3541,7 @@
         <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
+        <color rgba="0.247059 0.247059 0.247059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3599,7 +3599,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
-        <color rgba="1.0 0.690196 0.0 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3614,7 +3614,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
-        <color rgba="0.862745 0.14902 0.498039 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3659,7 +3659,7 @@
         <mesh filename="package://wolfgang_description/urdf/basler_ace_gige_c-mount_v01.stl"/>
       </geometry>
       <material name="basler_ace_gige_c-mount_v01_material">
-        <color rgba="0.917647 0.917647 0.917647 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
