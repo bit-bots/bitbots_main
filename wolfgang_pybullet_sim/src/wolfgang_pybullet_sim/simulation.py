@@ -303,6 +303,9 @@ class Simulation:
                              rollingFriction=rand_rolling_friction,
                              restitution=rand_restitution)
 
+    def randomize_terrain(self, terrain_height):
+        self.terrain.randomize(terrain_height)
+
     def set_filter_params(self, cutoff, order, robot_index=1):
         for i in range(p.getNumJoints(robot_index)):
             joint_info = p.getJointInfo(robot_index, i)

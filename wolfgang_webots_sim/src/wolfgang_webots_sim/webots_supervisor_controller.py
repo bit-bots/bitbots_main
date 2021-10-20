@@ -1,4 +1,5 @@
 from controller import Supervisor
+from controller import Keyboard
 
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point, Twist
@@ -47,7 +48,7 @@ class SupervisorController:
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
         # resolve the node for corresponding name
-        self.robot_names = ["amy", "rory", "jack", "donna"]
+        self.robot_names = ["amy", "rory", "jack", "donna", "robot", "refbot", "free_camera"]
         self.robot_nodes = {}
         self.translation_fields = {}
         self.rotation_fields = {}
@@ -93,6 +94,16 @@ class SupervisorController:
             self.publish_clock()
             if self.model_states_active:
                 self.publish_model_states()
+
+    def handle_gui(self):
+        key = self.keyboard.getKey()
+        if key == Keyboard.CONTROL + 'r':
+            self.reset()
+        elif key == 'r':
+            self.set_initial_poses()
+        elif key == Keyboard.SHIFT + 'r':
+            self.reset_ball()
+        return key
 
     def publish_clock(self):
         self.clock_msg.clock = rospy.Time.from_seconds(self.time)

@@ -17,7 +17,7 @@ class RobotSupervisorController(SupervisorController, RobotController):
         super().__init__(ros_active=ros_active, mode=mode, do_ros_init=False, base_ns=base_ns, model_states_active=model_states_active)
         # This is used so that SupervisorController and RobotController can use the same underlying controller
         self.robot_node = self.supervisor
-        RobotController.__init__(self, ros_active=ros_active, robot=robot, do_ros_init=False, external_controller=True, base_ns=base_ns, camera_active=camera_active)
+        RobotController.__init__(self, ros_active=ros_active, robot=robot, do_ros_init=False, robot_node=self.robot_node, base_ns=base_ns, camera_active=camera_active)
 
     def step(self):
         super().step()

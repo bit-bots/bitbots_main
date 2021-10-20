@@ -14,7 +14,7 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, external_controller=False, base_ns='',
+    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, robot_node=None, base_ns='',
                  recognize=False, camera_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
@@ -30,13 +30,18 @@ class RobotController:
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
-        if not external_controller:
+        if robot_node is None:
             self.robot_node = Robot()
+        else:
+            self.robot_node = robot_node
         self.walkready = [0] * 20
         self.time = 0
 
         self.motors = []
         self.sensors = []
+        # for direct access
+        self.motors_dict = {}
+        self.sensors_dict = {}
         self.timestep = int(self.robot_node.getBasicTimeStep())
 
         self.switch_coordinate_system = True
@@ -58,7 +63,7 @@ class RobotController:
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
-            pressure_sensor_names = [] # ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
+            pressure_sensor_names = []  # ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
             for name in pressure_sensor_names:
                 sensor = self.robot_node.getDevice(name)
@@ -104,14 +109,26 @@ class RobotController:
             camera_name = "Camera"
             self.switch_coordinate_system = False
 
-        # self.robot_node = self.supervisor.getFromDef(self.robot_node_name)
-        for motor_name in self.motor_names:
-            self.motors.append(self.robot_node.getDevice(motor_name))
-            self.motors[-1].enableTorqueFeedback(self.timestep)
-            self.sensors.append(self.robot_node.getDevice(motor_name + self.sensor_suffix))
-            self.sensors[-1].enable(self.timestep)
+        self.motor_names_to_external_name = {}
+        for i in range(len(self.motor_names)):
+            self.motor_names_to_external_name[self.motor_names[i]] = self.external_motor_names[i]
 
-        self.current_positions = [0] * len(self.motor_names)
+        self.current_positions = {}
+        self.joint_limits = {}
+        for motor_name in self.motor_names:
+            motor = self.robot_node.getDevice(motor_name)
+            motor.enableTorqueFeedback(self.timestep)
+            self.motors.append(motor)
+            self.motors_dict[motor_name] = motor
+            sensor = self.robot_node.getDevice(motor_name + self.sensor_suffix)
+            sensor.enable(self.timestep)
+            self.sensors.append(sensor)
+            self.sensors_dict[motor_name] = sensor
+            self.current_positions[motor_name] = sensor.getValue()
+            # min, max and middle position (precomputed since it will be used at each step)
+            self.joint_limits[motor_name] = (motor.getMinPosition(), motor.getMaxPosition(),
+                                             0.5 * (motor.getMinPosition() + motor.getMaxPosition()))
+
         self.accel = self.robot_node.getDevice(accel_name)
         self.accel.enable(self.timestep)
         self.gyro = self.robot_node.getDevice(gyro_name)
@@ -209,29 +226,49 @@ class RobotController:
             self.save_recognition()
         self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
 
+    def convert_joint_radiant_to_scaled(self, joint_name, pos):
+        # helper method to convert to scaled position between [-1,1] for this joint using min max scaling
+        lower_limit, upper_limit, mid_position = self.joint_limits[joint_name]
+        return 2 * (pos - mid_position) / (upper_limit - lower_limit)
+
+    def convert_joint_scaled_to_radiant(self, joint_name, position):
+        # helper method to convert to scaled position for this joint using min max scaling
+        lower_limit, upper_limit, mid_position = self.joint_limits[joint_name]
+        return position * (upper_limit - lower_limit) / 2 + mid_position
+
+    def set_joint_goal_position(self, joint_name, goal_position, goal_velocity=-1, scaled=False, relative=False):
+        motor = self.motors_dict[joint_name]
+        if scaled:
+            goal_position = convert_joint_radiant_to_scaled(joint_name, goal_position)
+        if relative:
+            goal_position = goal_position + self.get_joint_values([joint_name])[0]
+        motor.setPosition(goal_position)
+        if goal_velocity == -1:
+            motor.setVelocity(motor.getMaxVelocity())
+        else:
+            motor.setVelocity(goal_velocity)
+
+    def set_joint_goals_position(self, joint_names, goal_positions, goal_velocities=[]):
+        for i in range(len(joint_names)):
+            try:
+                if len(goal_velocities) != 0:
+                    self.set_joint_goal_position(joint_names[i], goal_positions[i], goal_velocities[i])
+                else:
+                    self.set_joint_goal_position(joint_names[i], goal_positions[i])
+            except ValueError:
+                print(f"invalid motor specified ({joint_names[i]})")
+
     def command_cb(self, command: JointCommand):
         if len(command.positions) != 0:
             # position control
-            for i, name in enumerate(command.joint_names):
-                try:
-                    motor_index = self.external_motor_names.index(name)
-                    self.motors[motor_index].setPosition(command.positions[i])
-                    if len(command.velocities) == 0 or command.velocities[i] == -1:
-                        self.motors[motor_index].setVelocity(self.motors[motor_index].getMaxVelocity())
-                    else:
-                        self.motors[motor_index].setVelocity(command.velocities[i])
-
-                except ValueError:
-                    print(f"invalid motor specified ({name})")
+            self.set_joint_goals_position(command.joint_names, command.positions, command.velocities)
         else:
             # torque control
             for i, name in enumerate(command.joint_names):
                 try:
-                    motor_index = self.external_motor_names.index(name)
-                    self.motors[motor_index].setTorque(command.accelerations[i])
+                    self.motors_dict[name].setTorque(command.accelerations[i])
                 except ValueError:
                     print(f"invalid motor specified ({name})")
-
 
     def set_head_tilt(self, pos):
         self.motors[-1].setPosition(pos)
@@ -242,21 +279,31 @@ class RobotController:
         for i in range(0, 6):
             self.motors[i].setPosition(positions[i])
 
+    def get_joint_values(self, used_joint_names):
+        joint_positions = []
+        joint_velocities = []
+        joint_torques = []
+        for joint_name in used_joint_names:
+            value = self.sensors_dict[joint_name].getValue()
+            joint_positions.append(value)
+            joint_velocities.append(self.current_positions[joint_name] - value)
+            joint_torques.append(self.motors_dict[joint_name].getTorqueFeedback())
+            self.current_positions[joint_name] = value
+        return joint_positions, joint_velocities, joint_torques
+
     def get_joint_state_msg(self):
         js = JointState()
         js.name = []
         js.header.stamp = rospy.Time.from_seconds(self.time)
         js.position = []
         js.effort = []
-        current_positions = []
-        for i in range(len(self.sensors)):
-            js.name.append(self.external_motor_names[i])
-            value = self.sensors[i].getValue()
-            current_positions.append(value)
+        for joint_name in self.motor_names:
+            js.name.append(self.motor_names_to_external_name[joint_name])
+            value = self.sensors_dict[joint_name].getValue()
             js.position.append(value)
             js.velocity.append(self.current_positions[i] - value)
-            js.effort.append(self.motors[i].getTorqueFeedback())
-        self.current_positions = current_positions
+            js.effort.append(self.motors_dict[joint_name].getTorqueFeedback())
+            self.current_positions[joint_name] = value
         return js
 
     def publish_joint_states(self):
