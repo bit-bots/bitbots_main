@@ -5,11 +5,13 @@
  # Extracted from: wolfgang.urdf
 
 PROTO WolfgangNUC [
+  field SFFloat  transparency 0 # [0, 1]
 ]
 {
     PBRAppearance {
         baseColor 0.03 0.03 0.03
         roughness 0.8
         metalness 1
+        transparency IS transparency
     }
 }

@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_basler_ace_gige_c-mount_v01Mesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangMetal {}
+    appearance WolfgangMetal {transparency IS transparency}
     geometry DEF basler_ace_gige_c-mount_v01 IndexedFaceSet {
       coord Coordinate {
         point [

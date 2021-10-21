@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_torso_bumper_leftMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangPlastic {}
+    appearance WolfgangPlastic {transparency IS transparency}
     geometry DEF torso_bumper_left IndexedFaceSet {
       coord Coordinate {
         point [

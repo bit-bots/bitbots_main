@@ -5,6 +5,7 @@
  # Extracted from: wolfgang.urdf
 
 PROTO WolfgangOdroid [
+      field SFFloat  transparency 0 # [0, 1]
 ]
 {
     PBRAppearance {
@@ -13,5 +14,6 @@ PROTO WolfgangOdroid [
       roughness 1.000000
       metalness 0
       emissiveColor 0.000000 0.000000 0.000000
+      transparency IS transparency
     }
 }

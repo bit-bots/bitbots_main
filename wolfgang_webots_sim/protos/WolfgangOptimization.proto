@@ -12,6 +12,9 @@ PROTO WolfgangOptimization [
   field  SFBool      selfCollision   TRUE        # Is `Robot.selfCollision`.
   field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
   field  SFString    controller      "player"      # Is `Robot.controller`.
+  field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
+  field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
+  field  SFFloat     transparency    0              # Is `Robot.transparency`
 ]
 {
   Wolfgang {
@@ -23,5 +26,8 @@ PROTO WolfgangOptimization [
     selfCollision IS selfCollision
     supervisor IS supervisor
     controller IS controller
+    enableBoundingObject IS enableBoundingObject
+    enablePhysics IS enablePhysics
+    transparency IS transparency
   }
 }

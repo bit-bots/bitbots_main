@@ -5,11 +5,13 @@
  # Extracted from: wolfgang.urdf
 
 PROTO WolfgangPaintedMetal [
+  field SFFloat  transparency 0 # [0, 1]
 ]
 {
     PBRAppearance {
         baseColor 0.05 0.05 0.05
         roughness 0.6
         metalness 1
+        transparency IS transparency
     }
 }

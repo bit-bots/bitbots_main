@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_baseplate_odroid_xu4_coreMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangPlastic {}
+    appearance WolfgangPlastic {transparency IS transparency}
     geometry DEF baseplate_odroid_xu4_core IndexedFaceSet {
       coord Coordinate {
         point [

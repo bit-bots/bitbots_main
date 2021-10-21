@@ -5,11 +5,13 @@
  # Extracted from: wolfgang.urdf
 
 PROTO WolfgangMotor [
+  field SFFloat  transparency 0 # [0, 1]
 ]
 {
     PBRAppearance {
         baseColor 0.1 0.1 0.1
         roughness 1
         metalness 0
+        transparency IS transparency
     }
 }

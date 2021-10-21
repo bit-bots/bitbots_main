@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_lower_legMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance CarbonFiberAppearance {}
+    appearance WolfgangCarbonFiberAppearance {transparency IS transparency}
     geometry DEF lower_leg IndexedFaceSet {
       coord Coordinate {
         point [

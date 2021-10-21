@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_load_cellMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangPaintedMetal {}
+    appearance WolfgangPaintedMetal {transparency IS transparency}
     geometry DEF load_cell IndexedFaceSet {
       coord Coordinate {
         point [

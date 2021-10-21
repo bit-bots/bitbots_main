@@ -7,6 +7,7 @@
     PROTO WolfgangMarker [
     field MFString textureUrl "Wolfgang_textures/number_0.png"
     field SFColor  baseColor   0.0 0.0 0.0
+    field SFFloat  transparency 0 # [0, 1]
     ]
 {
 PBRAppearance {
@@ -16,5 +17,6 @@ PBRAppearance {
     baseColorMap ImageTexture {
         url IS textureUrl
     }
+    transparency IS transparency
 }
 }

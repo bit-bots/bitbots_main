@@ -1,0 +1,22 @@
+#VRML_SIM R2020b utf8
+DEF world_info WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation -0.0023811091778024587 0.9985301538767813 0.054146672269814705 1.5278860820515021
+  position 4.7418441107948 0.990332099852493 0.5605334291098022
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 25 25
+  tileSize 1 1
+}
+DEF Robot Atlas {
+  translation 6.21882e-08 0.94 1.45658e-07
+  rotation 0.5773509358554485 0.5773509358554485 0.5773489358556708 -2.094395307179586
+  controller "<extern>"
+  supervisor TRUE
+}

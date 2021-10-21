@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_upper_armMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance CarbonFiberAppearance {}
+    appearance WolfgangCarbonFiberAppearance {transparency IS transparency}
     geometry DEF upper_arm IndexedFaceSet {
       coord Coordinate {
         point [

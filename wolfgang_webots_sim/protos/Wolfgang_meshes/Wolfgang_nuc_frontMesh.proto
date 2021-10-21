@@ -5,6 +5,7 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_nuc_frontMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
@@ -14,6 +15,7 @@ PROTO Wolfgang_nuc_frontMesh [
       roughness 1.000000
       metalness 0
       emissiveColor 0.000000 0.000000 0.000000
+      transparency IS transparency
     }
     geometry DEF nuc_front IndexedFaceSet {
       coord Coordinate {

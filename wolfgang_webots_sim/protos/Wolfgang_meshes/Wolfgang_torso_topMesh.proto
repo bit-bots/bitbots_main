@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_torso_topMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangPaintedMetal {}
+    appearance WolfgangPaintedMetal {transparency IS transparency}
     geometry DEF torso_top IndexedFaceSet {
       coord Coordinate {
         point [

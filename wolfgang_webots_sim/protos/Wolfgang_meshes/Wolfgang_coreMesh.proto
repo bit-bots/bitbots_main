@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_coreMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance Pcb {}
+    appearance WolfgangPlastic {transparency IS transparency}
     geometry DEF core IndexedFaceSet {
       coord Coordinate {
         point [

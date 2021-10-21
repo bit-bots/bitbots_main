@@ -5,6 +5,7 @@
  # Extracted from: wolfgang.urdf
 
 PROTO WolfgangMetal [
+  field SFFloat  transparency 0 # [0, 1]
 ]
 {
     PBRAppearance {
@@ -13,5 +14,6 @@ PROTO WolfgangMetal [
        roughness 0.4
        metalness 1
        emissiveColor 0.000000 0.000000 0.000000
+      transparency IS transparency
      }
 }

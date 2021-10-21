@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_thrustbearingholderMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangPaintedMetal {}
+    appearance WolfgangPaintedMetal {transparency IS transparency}
     geometry DEF thrustbearingholder IndexedFaceSet {
       coord Coordinate {
         point [

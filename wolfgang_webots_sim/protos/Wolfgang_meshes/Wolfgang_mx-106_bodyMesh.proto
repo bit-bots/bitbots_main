@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_mx-106_bodyMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangMotor {}
+    appearance WolfgangMotor {transparency IS transparency}
     geometry DEF mx-106_body IndexedFaceSet {
       coord Coordinate {
         point [

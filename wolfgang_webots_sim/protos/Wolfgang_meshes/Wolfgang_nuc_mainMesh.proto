@@ -5,10 +5,11 @@
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_nuc_mainMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangNUC {}
+    appearance WolfgangNUC {transparency IS transparency}
     geometry DEF nuc_main IndexedFaceSet {
       coord Coordinate {
         point [
