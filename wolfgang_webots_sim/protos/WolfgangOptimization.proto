@@ -14,6 +14,7 @@ PROTO WolfgangOptimization [
   field  SFString    controller      "player"      # Is `Robot.controller`.
   field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
   field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
+  field  SFBool      enableFootSensors TRUE         # Is `Robot.enableFootSensors`.
   field  SFFloat     transparency    0              # Is `Robot.transparency`
 ]
 {
@@ -29,5 +30,6 @@ PROTO WolfgangOptimization [
     enableBoundingObject IS enableBoundingObject
     enablePhysics IS enablePhysics
     transparency IS transparency
+    enableFootSensors IS enableFootSensors
   }
 }

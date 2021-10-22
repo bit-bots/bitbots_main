@@ -1,4 +1,4 @@
-#VRML_SIM R2021a utf8
+#VRML_SIM R2021b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # This is a proto file for Webots for the Wolfgang
@@ -16,6 +16,7 @@ PROTO Wolfgang [
   field  SFBool      selfCollision   FALSE          # Is `Robot.selfCollision`.
   field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
   field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
+  field  SFBool      enableFootSensors TRUE         # Is `Robot.enableFootSensors`.
   field  SFFloat     transparency    0              # Is `Robot.transparency`
   field  SFFloat     cameraFOV       1.04
   field  SFInt32     cameraWidth     800
@@ -465,7 +466,7 @@ PROTO Wolfgang [
           }
         ]
       }
-      HingeJointWithBacklash {
+      DEF RShoulderPitchJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -519,7 +520,7 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF RShoulderRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -620,7 +621,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF RElbowJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -1033,7 +1034,7 @@ PROTO Wolfgang [
           %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF LShoulderPitchJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -1087,7 +1088,7 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF LShoulderRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -1189,7 +1190,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF LElbowJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -1602,7 +1603,7 @@ PROTO Wolfgang [
           %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF RHipYawJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -1638,7 +1639,7 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF RHipRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -1710,7 +1711,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF RHipPitchJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -1819,7 +1820,7 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        HingeJointWithBacklash {
+                        DEF RKneeJoint HingeJointWithBacklash {
                           gearMass IS gearMass
                           backlash IS backlash
                           jointParameters HingeJointParameters {
@@ -1918,7 +1919,7 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              HingeJointWithBacklash {
+                              DEF RAnklePitchJoint HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
@@ -1991,7 +1992,7 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    HingeJointWithBacklash {
+                                    DEF RAnkleRollJoint HingeJointWithBacklash {
                                       gearMass IS gearMass
                                       backlash IS backlash
                                       jointParameters HingeJointParameters {
@@ -2104,7 +2105,13 @@ PROTO Wolfgang [
                                             rotation -0.000000 0.000000 1.000000 1.570800
                                             name "r_toe"
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF rlb TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF rlb Solid {
+                                          %{end}%
                                             translation -0.030000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -2148,7 +2155,13 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF rlf TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF rlf Solid {
+                                          %{end}%
                                             translation -0.030000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -2183,7 +2196,13 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF rrf TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF rrf Solid {
+                                          %{end}%
                                             translation 0.060000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -2218,7 +2237,13 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF rrb TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF rrb Solid {
+                                          %{end}%
                                             translation 0.060000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3228,7 +3253,7 @@ PROTO Wolfgang [
           %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF LHipYawJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -3264,7 +3289,7 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF LHipRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -3336,7 +3361,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF LHipPitch HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -3445,7 +3470,7 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        HingeJointWithBacklash {
+                        DEF LKneePitch HingeJointWithBacklash {
                           gearMass IS gearMass
                           backlash IS backlash
                           jointParameters HingeJointParameters {
@@ -3544,7 +3569,7 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              HingeJointWithBacklash {
+                              DEF LAnklePitch HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
@@ -3617,7 +3642,7 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    HingeJointWithBacklash {
+                                    DEF LAnkleRoll HingeJointWithBacklash {
                                       gearMass IS gearMass
                                       backlash IS backlash
                                       jointParameters HingeJointParameters {
@@ -3730,7 +3755,13 @@ PROTO Wolfgang [
                                             rotation 0.000000 -0.000000 1.000000 1.570800
                                             name "l_toe"
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF llb TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF llb Solid {
+                                          %{end}%
                                             translation -0.060000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3765,7 +3796,13 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF llf TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF llf Solid {
+                                          %{end}%
                                             translation -0.060000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3800,7 +3837,13 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF lrf TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF lrf Solid {
+                                          %{end}%
                                             translation 0.030000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3835,7 +3878,13 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
+                                          DEF lrb TouchSensor {
+                                            type "force"
+                                            resolution 0.00005
+                                          %{else}%
                                           DEF lrb Solid {
+                                          %{end}%
                                             translation 0.030000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -4845,7 +4894,7 @@ PROTO Wolfgang [
           %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF HeadPanJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -4890,7 +4939,7 @@ PROTO Wolfgang [
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF HeadTilt HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {

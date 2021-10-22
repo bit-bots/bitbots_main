@@ -55,6 +55,7 @@ DEF refbot WolfgangOptimization {
   selfCollision FALSE
   enableBoundingObject FALSE
   enablePhysics FALSE
+  enableFootSensors FALSE
   transparency 0.5
 }
 

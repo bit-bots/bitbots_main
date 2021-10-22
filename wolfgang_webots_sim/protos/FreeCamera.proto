@@ -1,4 +1,4 @@
-#VRML_SIM R2020b utf8
+#VRML_SIM R2021b utf8
 # Just a camera that can be used to render images from the simulation
 
 PROTO FreeCamera [
