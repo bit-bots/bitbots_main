@@ -6,6 +6,7 @@ import rclpy
 from rclpy import logging
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
+from rcl_interfaces.msg import SetParametersResult
 from copy import deepcopy
 from cv_bridge import CvBridge
 from threading import Thread, Lock
@@ -40,7 +41,7 @@ class Vision(Node):
         :return: None
         """
 
-        super().__init__('bitbots_vision')
+        super().__init__('bitbots_vision', automatically_declare_parameters_from_overrides=True)
 
         self._package_path = get_package_share_directory('bitbots_vision')
 
@@ -87,64 +88,43 @@ class Vision(Node):
         self._yolo = None
 
         # Add model enums to _config  TODO
-        #ros_utils.add_model_enums(VisionConfig, self._package_path)
-        #ros_utils.add_color_lookup_table_enum(VisionConfig, self._package_path)
+        # ros_utils.add_model_enums(VisionConfig, self._package_path)
+        # ros_utils.add_color_lookup_table_enum(VisionConfig, self._package_path)
 
-        # Register VisionConfig server (dynamic reconfigure) and set callback
-        #srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
+        self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
+
+        #logger.info(str(self.get_parameter('neural_network_type').value))
 
         # Add general params
         ros_utils.set_general_parameters(["caching"])
 
+        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
+
         # Define the rate of a sleep timer
-        self._rate = self.create_rate(130)
+        #self._rate = self.create_rate(130)
 
         # Run the vision main loop
-        self._main_loop()
+        #self._main_loop()
 
-    def _main_loop(self):
-        """
-        Main loop that processes the images and configuration changes
-        """
-        while rclpy.ok():
-            # Check for reconfiguration data
-            if self._transfer_reconfigure_data is not None:
-                # Copy reconfigure data from shared memory
-                with self._transfer_reconfigure_data_mutex:
-                    reconfigure_data = deepcopy(self._transfer_reconfigure_data)
-                    self._transfer_reconfigure_data = None
-                # Run vision reconfiguration
-                self._configure_vision(*reconfigure_data)
-            # Check for new image
-            elif self._transfer_image_msg is not None:
-                # Copy image from shared memory
-                with self._transfer_image_msg_mutex:
-                    image_msg = self._transfer_image_msg
-                    self._transfer_image_msg = None
-                    # Run the vision pipeline
-                    self._handle_image(image_msg)
-                # Now the first image has been processed
-                self._first_image_callback = False
-            else:
-                #try:
-                self._rate.sleep()
-                #except rospy.exceptions.ROSTimeMovedBackwardsException:
-                #    pass
-                # TODO Needs name of new expection please add if it occurs
-
-    def _dynamic_reconfigure_callback(self, config, level):
+    def _dynamic_reconfigure_callback(self, params):
         """
         Callback for the dynamic reconfigure configuration.
 
         :param config: New _config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        with self._transfer_reconfigure_data_mutex:
-            # Set data
-            self._transfer_reconfigure_data = (config, level)
-        return config
+        logger.info("Test")
 
-    def _configure_vision(self, config, level):
+        config = deepcopy(self._config)
+
+        logger.info(str(params))
+        # Set data
+        for param in params:
+            config[param.name] = param.value
+        self._configure_vision(config)
+        return SetParametersResult(successful=True)
+
+    def _configure_vision(self, config):
         """
         Handle dynamic reconfigure configuration.
 
@@ -152,6 +132,8 @@ class Vision(Node):
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
         self._register_or_update_all_publishers(config)
+
+        return
 
         # Set max number of balls
         self._max_balls = config['ball_candidate_max_count']
@@ -367,19 +349,19 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        self._pub_audio = ros_utils.create_or_update_publisher(self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
-        self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
-        self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
-        self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
-        self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
-        self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
-        self._pub_white_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
-        self._pub_red_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
-        self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
-        self._pub_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
-        self._pub_dynamic_color_lookup_table_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_dynamic_color_lookup_table_field_mask_image, 'ROS_dynamic_color_lookup_table_field_mask_image_msg_topic', Image)
+        #self._pub_audio = ros_utils.create_or_update_publisher(self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
+        #self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
+        #self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
+        #self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
+        #self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
+        #self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
+        #self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
+        #self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
+        #self._pub_white_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
+        #self._pub_red_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
+        #self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
+        #self._pub_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
+        #self._pub_dynamic_color_lookup_table_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_dynamic_color_lookup_table_field_mask_image, 'ROS_dynamic_color_lookup_table_field_mask_image_msg_topic', Image)
 
     def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
