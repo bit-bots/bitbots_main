@@ -15,7 +15,7 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 class RobotController:
     def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, robot_node=None, base_ns='',
-                 recognize=False, camera_active=True):
+                 recognize=False, camera_active=True, foot_sensors_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -63,9 +63,11 @@ class RobotController:
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
-            pressure_sensor_names = []  # ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
+            self.pressure_sensor_names = []
+            if foot_sensors_active:
+                self.pressure_sensor_names = ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
-            for name in pressure_sensor_names:
+            for name in self.pressure_sensor_names:
                 sensor = self.robot_node.getDevice(name)
                 sensor.enable(self.timestep)
                 self.pressure_sensors.append(sensor)
@@ -109,9 +111,11 @@ class RobotController:
             camera_name = "Camera"
             self.switch_coordinate_system = False
 
-        self.motor_names_to_external_name = {}
+        self.motor_names_to_external_names = {}
+        self.external_motor_names_to_motor_names = {}
         for i in range(len(self.motor_names)):
-            self.motor_names_to_external_name[self.motor_names[i]] = self.external_motor_names[i]
+            self.motor_names_to_external_names[self.motor_names[i]] = self.external_motor_names[i]
+            self.external_motor_names_to_motor_names[self.external_motor_names[i]] = self.motor_names[i]
 
         self.current_positions = {}
         self.joint_limits = {}
@@ -201,6 +205,9 @@ class RobotController:
             command.positions = [-math.tau / 8, math.tau / 8]
             self.command_cb(command)
 
+        # needed to run this one time to initialize current position, otherwise velocity will be nan
+        self.get_joint_values(self.motor_names)
+
     def mat_from_fov_and_resolution(self, fov, res):
         return 0.5 * res * (math.cos((fov / 2)) / math.sin((fov / 2)))
 
@@ -261,6 +268,7 @@ class RobotController:
     def command_cb(self, command: JointCommand):
         if len(command.positions) != 0:
             # position control
+            #todo maybe needs to match external motor names to interal ones fist?
             self.set_joint_goals_position(command.joint_names, command.positions, command.velocities)
         else:
             # torque control
@@ -298,7 +306,7 @@ class RobotController:
         js.position = []
         js.effort = []
         for joint_name in self.motor_names:
-            js.name.append(self.motor_names_to_external_name[joint_name])
+            js.name.append(self.motor_names_to_external_names[joint_name])
             value = self.sensors_dict[joint_name].getValue()
             js.position.append(value)
             js.velocity.append(self.current_positions[i] - value)

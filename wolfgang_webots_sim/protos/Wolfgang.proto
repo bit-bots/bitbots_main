@@ -3361,7 +3361,7 @@ PROTO Wolfgang [
                       }
                     ]
                   }
-                  DEF LHipPitch HingeJointWithBacklash {
+                  DEF LHipPitchJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -3470,7 +3470,7 @@ PROTO Wolfgang [
                             }
                           ]
                         }
-                        DEF LKneePitch HingeJointWithBacklash {
+                        DEF LKneeJoint HingeJointWithBacklash {
                           gearMass IS gearMass
                           backlash IS backlash
                           jointParameters HingeJointParameters {
@@ -3569,7 +3569,7 @@ PROTO Wolfgang [
                                   }
                                 ]
                               }
-                              DEF LAnklePitch HingeJointWithBacklash {
+                              DEF LAnklePitchJoint HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
@@ -3642,7 +3642,7 @@ PROTO Wolfgang [
                                         }
                                       ]
                                     }
-                                    DEF LAnkleRoll HingeJointWithBacklash {
+                                    DEF LAnkleRollJoint HingeJointWithBacklash {
                                       gearMass IS gearMass
                                       backlash IS backlash
                                       jointParameters HingeJointParameters {
@@ -4939,7 +4939,7 @@ PROTO Wolfgang [
                 }
               ]
             }
-            DEF HeadTilt HingeJointWithBacklash {
+            DEF HeadTiltJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {

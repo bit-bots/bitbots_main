@@ -1,5 +1,4 @@
-from controller import Supervisor
-from controller import Keyboard
+from controller import Supervisor, Keyboard, Node
 
 import rospy
 from geometry_msgs.msg import Quaternion, Pose, Point, Twist
@@ -31,8 +30,8 @@ class SupervisorController:
         self.model_states_active = model_states_active
         self.time = 0
         self.clock_msg = Clock()
-
         self.supervisor = Supervisor()
+        self.keyboard_activated = False
 
         if mode == 'normal':
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
@@ -47,20 +46,29 @@ class SupervisorController:
         self.sensors = []
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
-        # resolve the node for corresponding name
-        self.robot_names = ["amy", "rory", "jack", "donna", "robot", "refbot", "free_camera"]
         self.robot_nodes = {}
         self.translation_fields = {}
         self.rotation_fields = {}
+        self.joint_nodes = {}
 
-        # check if None
-        for name in self.robot_names:
-            node = self.supervisor.getFromDef(name)
-            if node is not None:
+        root = self.supervisor.getRoot()
+        print("--begin")
+        children_field = root.getField('children')
+        children_count = children_field.getCount()
+        for i in range(children_count):
+            node = children_field.getMFNode(i)
+            name_field = node.getField('name')
+            if name_field is not None and node.getType() == Node.ROBOT:
+                # this is a robot
+                name = name_field.getSFString()
                 self.robot_nodes[name] = node
                 self.translation_fields[name] = node.getField("translation")
                 self.rotation_fields[name] = node.getField("rotation")
+                print(f"###{name}")
+                print(f"proto type {node.getTypeName()}")
+                self.joint_nodes[name] = self.collect_joint_node_references(node, {})
 
+        print("--end")
         if self.ros_active:
             # need to handle these topics differently or we will end up having a double //
             if base_ns == "":
@@ -84,6 +92,35 @@ class SupervisorController:
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
 
+    def collect_joint_node_references(self, node, dict):
+        # this is a recursive function that iterates through the whole robot as this seems to be the only way to
+        # get all joints
+        # add node if it is a joint
+        if node.getType() == Node.HINGE_JOINT:
+            name = node.getDef()
+            # substract the "Joint" keyword due to naming convention
+            print(name)
+            name = name[:-5]
+            print(name)
+            dict[name] = node
+            # the joints dont have children but an "endpoint" that we need to search through
+            if node.isProto():
+                endpoint_field = node.getProtoField('endPoint')
+            else:
+                endpoint_field = node.getField('endPoint')
+            endpoint_node = endpoint_field.getSFNode()
+            self.collect_joint_node_references(endpoint_node, dict)
+        # needs to be done because Webots has two different getField functions for proto nodes and normal nodes
+        if node.isProto():
+            children_field = node.getProtoField('children')
+        else:
+            children_field = node.getField('children')
+        if children_field is not None:
+            for i in range(children_field.getCount()):
+                child = children_field.getMFNode(i)
+                self.collect_joint_node_references(child, dict)
+        return dict
+
     def step_sim(self):
         self.time += self.timestep / 1000
         self.supervisor.step(self.timestep)
@@ -96,6 +133,10 @@ class SupervisorController:
                 self.publish_model_states()
 
     def handle_gui(self):
+        if not self.keyboard_activated:
+            self.keyboard = Keyboard()
+            self.keyboard.enable(100)
+            self.keyboard_activated = True
         key = self.keyboard.getKey()
         if key == Keyboard.CONTROL + 'r':
             self.reset()
