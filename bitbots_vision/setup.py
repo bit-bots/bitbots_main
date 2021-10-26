@@ -28,7 +28,7 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'vision = bitbots_vision.src.bitbots_vision.vision:main',
+            'vision = bitbots_vision.vision:main',
         ],
     }
 )
