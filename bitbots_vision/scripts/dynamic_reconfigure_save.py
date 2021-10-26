@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 import os
-import rospy
+import rclpy
 import rospkg
 import argparse
 # Use ruamel.yaml to be comment/order persistent

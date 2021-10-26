@@ -3,7 +3,7 @@ import abc
 import cv2
 import yaml
 import pickle
-import rospy
+import rclpy
 import VisionExtensions
 import numpy as np
 from copy import deepcopy

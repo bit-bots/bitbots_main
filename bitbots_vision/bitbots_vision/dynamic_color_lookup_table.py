@@ -2,7 +2,7 @@
 
 import cv2
 import yaml
-import rospy
+import rclpy
 import rospkg
 import numpy as np
 from copy import deepcopy

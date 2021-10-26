@@ -1,5 +1,5 @@
 import abc
-import rospy
+import rclpy
 
 
 class Candidate:

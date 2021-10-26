@@ -2,28 +2,30 @@
 
 import os
 import cv2
-import rospy
-import rospkg
+import rclpy
+from rclpy import logging
+from rclpy.node import Node
+from ament_index_python.packages import get_package_share_directory
 from copy import deepcopy
 from cv_bridge import CvBridge
 from threading import Thread, Lock
-from dynamic_reconfigure.server import Server
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PolygonStamped
-from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
-    ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
-    GoalPostInImageArray, Audio
+#from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
+#    ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
+#    GoalPostInImageArray, Audio
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
-from bitbots_vision.cfg import VisionConfig
-from bitbots_msgs.msg import Config, ColorLookupTable
+
+logger = logging.get_logger('bitbots_vision')
+
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
-    rospy.loginfo("No Profiling avalabile", logger_name="vision")
+    logger.info("No Profiling avalabile")
 
 
-class Vision:
+class Vision(Node):
     """
     The Vision is the main ROS-node for handling all tasks related to image processing.
 
@@ -37,11 +39,12 @@ class Vision:
 
         :return: None
         """
-        rospack = rospkg.RosPack()
-        self._package_path = rospack.get_path('bitbots_vision')
 
-        rospy.init_node('bitbots_vision')
-        rospy.loginfo('Initializing vision...', logger_name="vision")
+        super().__init__('bitbots_vision')
+
+        self._package_path = get_package_share_directory('bitbots_vision')
+
+        logger.info('Initializing vision...')
 
         self._cv_bridge = CvBridge()
 
@@ -69,15 +72,6 @@ class Vision:
         # Debug image drawer placeholder
         self._debug_image_creator = None
 
-        # Register static publishers
-        # Register publisher of 'vision_config'-messages
-        # For changes of topic name: also change topic name in dynamic_color_lookup_table.py
-        self._pub_config = rospy.Publisher(
-            'vision_config',
-            Config,
-            queue_size=1,
-            latch=True)
-
         # Needed for operations that should only be executed on the first image
         self._first_image_callback = True
 
@@ -92,18 +86,18 @@ class Vision:
         # Yolo placeholder
         self._yolo = None
 
-        # Add model enums to _config
-        ros_utils.add_model_enums(VisionConfig, self._package_path)
-        ros_utils.add_color_lookup_table_enum(VisionConfig, self._package_path)
+        # Add model enums to _config  TODO
+        #ros_utils.add_model_enums(VisionConfig, self._package_path)
+        #ros_utils.add_color_lookup_table_enum(VisionConfig, self._package_path)
 
         # Register VisionConfig server (dynamic reconfigure) and set callback
-        srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
+        #srv = Server(VisionConfig, self._dynamic_reconfigure_callback)
 
         # Add general params
         ros_utils.set_general_parameters(["caching"])
 
         # Define the rate of a sleep timer
-        self._rate = rospy.Rate(130)
+        self._rate = self.create_rate(130)
 
         # Run the vision main loop
         self._main_loop()
@@ -112,7 +106,7 @@ class Vision:
         """
         Main loop that processes the images and configuration changes
         """
-        while not rospy.is_shutdown():
+        while rclpy.ok():
             # Check for reconfiguration data
             if self._transfer_reconfigure_data is not None:
                 # Copy reconfigure data from shared memory
@@ -132,10 +126,11 @@ class Vision:
                 # Now the first image has been processed
                 self._first_image_callback = False
             else:
-                try:
-                    self._rate.sleep()
-                except rospy.exceptions.ROSTimeMovedBackwardsException:
-                    pass
+                #try:
+                self._rate.sleep()
+                #except rospy.exceptions.ROSTimeMovedBackwardsException:
+                #    pass
+                # TODO Needs name of new expection please add if it occurs
 
     def _dynamic_reconfigure_callback(self, config, level):
         """
@@ -708,5 +703,12 @@ class Vision:
             ros_utils.speak("Hey!   Remove my camera cap!", self._pub_audio)
 
 
-if __name__ == '__main__':
-    Vision()
+def main(args=None):
+    rclpy.init(args=args)
+    node = Vision()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    node.destroy_node()
+    rclpy.shutdown()

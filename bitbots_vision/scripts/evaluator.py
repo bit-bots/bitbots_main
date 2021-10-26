@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
 from humanoid_league_msgs.msg import \
     ObstacleInImageArray, BallInImageArray, \
     GoalPostInImageArray
@@ -30,8 +30,8 @@ class Evaluation(object):
 class ImageMeasurement(object):
     def __init__(self, image_data, eval_classes):
         """
-        Describes the evaluation of a single image. 
-        It stores the annotations, Evaluation (see Evaluation class) for each class in the image. 
+        Describes the evaluation of a single image.
+        It stores the annotations, Evaluation (see Evaluation class) for each class in the image.
         """
         self.evaluations = dict()
         self.image_data = image_data
@@ -120,9 +120,9 @@ class Evaluator(object):
 
         # make image publisher
         self._image_pub = rospy.Publisher(
-            rospy.get_param("~image_publish_topic", "image_raw"), 
-            Image, 
-            queue_size=1, 
+            rospy.get_param("~image_publish_topic", "image_raw"),
+            Image,
+            queue_size=1,
             latch=True)
 
         # Get parameters
@@ -157,7 +157,7 @@ class Evaluator(object):
         rospy.loginfo('Labels of {} images are valid'.format(len(self._images)))
 
         # Init image counter and set the image send time
-        self._current_image_counter = 0 
+        self._current_image_counter = 0
         self._image_send_time = rospy.Time.now()
 
         self._image_count = len(self._images)  # number of images (important for loop stuff)
@@ -167,10 +167,10 @@ class Evaluator(object):
         # A lock which checks if there is eval processing done at the moment
         self._lock = 0
 
-        # A time which checks for updates and serves the images if all classes arrived or 
+        # A time which checks for updates and serves the images if all classes arrived or
         # if a timeout is raised
         self._react_timer = rospy.Timer(rospy.Duration(0.2), self._react_callback)
-        
+
         # Send first image
         self._send_image()
         rospy.spin()
@@ -191,12 +191,12 @@ class Evaluator(object):
             rospy.signal_shutdown('killed.')
             sys.exit(0)
 
-        # Is raised if we didnt process a image in 2 Seconds. 
-        # This is the case if we havent got all responses and therefore are not sending the new image for 2 Seconds 
+        # Is raised if we didnt process a image in 2 Seconds.
+        # This is the case if we havent got all responses and therefore are not sending the new image for 2 Seconds
         timeout = (rospy.Time.now() - self._image_send_time).to_sec() > 2.0
         if timeout: rospy.logwarn("Stoped waiting for responses. Maybe some detections are lost")
 
-        # Check if the timeout is due or if all desired responses have been collected and processed. 
+        # Check if the timeout is due or if all desired responses have been collected and processed.
         # It also skips if a lock is present
         if (self._recieved_all_messages_for_image(self._current_image_counter) or timeout) and not self._lock:
             # Increse image counter
@@ -249,7 +249,7 @@ class Evaluator(object):
         # Set the resized image size as expected by the vision
         if self._image_shape is None:
             self._image_shape = np.array((
-                rospy.get_param("~image_resolution_y"), 
+                rospy.get_param("~image_resolution_y"),
                 rospy.get_param("~image_resolution_x")))
 
         # resize the image
@@ -259,7 +259,7 @@ class Evaluator(object):
         rospy.loginfo('Sending image {} of {} (starting by 0).'.format(self._current_image_counter, self._image_count))
         msg = self.bridge.cv2_to_imgmsg(image, 'bgr8')
         msg.header.stamp = rospy.Time.now()
-        # The second unforgivable curse. 
+        # The second unforgivable curse.
         # The tf frame name is abused to store the id of the image
         msg.header.frame_id = str(self._current_image_counter)
         self._image_pub.publish(msg)
@@ -338,13 +338,13 @@ class Evaluator(object):
         """
         # Obstacle type mapping
         class_colors = [
-            ('undefined',  0), 
-            ('obstacle',   1), 
-            ('robot_red',  2), 
-            ('robot_blue', 3), 
-            ('human',      4), 
+            ('undefined',  0),
+            ('obstacle',   1),
+            ('robot_red',  2),
+            ('robot_blue', 3),
+            ('human',      4),
             ('pole',       5)]
-            
+
         # Add lock
         self._lock += 1
 
@@ -450,7 +450,7 @@ class Evaluator(object):
 
     def _measure_timing(self, header):
         """
-        Calculating the time the processing took by subtracting the current time 
+        Calculating the time the processing took by subtracting the current time
         from the time where we send the image (as saves in the image header stamp)
         """
         return (rospy.get_rostime() - header.stamp).to_sec()
@@ -612,11 +612,11 @@ class Evaluator(object):
             not_in_image_count[eval_class] = 0
 
         # Filter list of images that should be used
-        # The list contains only the ids not the images itself 
+        # The list contains only the ids not the images itself
         filtered_images = list()
         for image in images:
             # Whether the image is used in the evaluation or not
-            add_image = True  
+            add_image = True
 
             # Init dict which notes if class is in the image / found or not
             in_image = dict()
@@ -656,7 +656,7 @@ class Evaluator(object):
                     not_in_image_count[eval_class] += 1
                     rospy.logwarn('Image without label found')
                     # Remove images when not all labels are defined somehow.
-                    add_image = False  
+                    add_image = False
             # Add image if everything was ok
             if add_image:
                 filtered_images.append(image)
@@ -688,19 +688,19 @@ class Evaluator(object):
         """
         # Get serialized mesasurement envs
         serialized_measurements = [measurement.serialize() for measurement in self._measurements.values()]
-        
+
         # Save them is a YAML file
         rospy.loginfo('Writing {} measurements to file...'.format(len(serialized_measurements)))
         filepath = rospy.get_param('~output_file_path', '/tmp/data.yaml')
         with open(filepath, 'w') as outfile:
             yaml.dump(serialized_measurements, outfile)
         rospy.loginfo('Done writing to file.')
-        
+
         # Calc FPS
         fps = np.array([1 / k['evaluations']['max_latency'] \
             for k in serialized_measurements if k['evaluations']['max_latency'] > 0])
         rospy.loginfo(f'FPS | Mean: {np.mean(fps)} | Std: {np.std(fps)}')
-        
+
         # Print IoU for each class
         rospy.loginfo('Mean IoUs (by class):')
         evaluations_by_class = [k['evaluations']['classes'] for k in serialized_measurements]

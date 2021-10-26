@@ -1,5 +1,5 @@
 import cv2
-import rospy
+import rclpy
 import numpy as np
 from collections import deque
 

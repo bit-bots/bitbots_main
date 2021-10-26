@@ -1,13 +1,11 @@
 import os
 import re
-import rospy
+import rclpy
 import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point, PolygonStamped
-from dynamic_reconfigure.encoding import Config as DynamicReconfigureConfig
-from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
-    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, Audio, RegionOfInterestWithImage
-from bitbots_msgs.msg import Config
+#from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
+#    ObstacleInImage, GoalPostInImageArray, GoalPostInImage, Audio, RegionOfInterestWithImage
 
 """
 This module provides some methods needed for the ros environment,

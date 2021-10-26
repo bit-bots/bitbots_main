@@ -1,6 +1,6 @@
 import itertools
 import numpy as np
-import rospy
+import rclpy
 from .candidate import CandidateFinder, Candidate
 from .color import ColorDetector
 from .field_boundary import FieldBoundaryDetector

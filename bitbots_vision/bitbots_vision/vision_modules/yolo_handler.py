@@ -1,27 +1,31 @@
 import cv2
 import os
 import abc
-import rospy
+import rclpy
 import numpy as np
+from rclpy import logging
 from math import exp
 from collections import defaultdict
 from .candidate import CandidateFinder, Candidate
+
+logger = logging.get_logger('vision_yolo')
+
 try:
     from pydarknet import Detector, Image
 except ImportError:
-    rospy.logerr("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.", logger_name="vision_yolo")
+    logger.error("Not able to run Darknet YOLO! Its only executable under python3 with yolo34py or yolo34py-gpu installed.")
 try:
     from openvino.inference_engine import IENetwork, IECore
 except ImportError:
-    rospy.logerr("Not able to run YOLO on the Intel NCS2 TPU! The OpenVINO SDK should be installed if you intend to run YOLO on the TPU", logger_name="vision_yolo")
+    logger.error("Not able to run YOLO on the Intel NCS2 TPU! The OpenVINO SDK should be installed if you intend to run YOLO on the TPU")
 try:
     ie = IECore()
 except NameError:
-    rospy.logerr("Please install/source OpenVino environment to use the NCS2 YOLO Handler.", logger_name="vision_yolo")
+    logger.error("Please install/source OpenVino environment to use the NCS2 YOLO Handler.")
 try:
     from pytorchyolo import models as torch_models, detect as torch_detect
 except ImportError:
-    rospy.logerr("Not able to import pytorchyolo. This might be fine if you use another method.", logger_name="vision_yolo")
+    logger.error("Not able to import pytorchyolo. This might be fine if you use another method.")
 
 class YoloHandler:
     """
@@ -497,7 +501,7 @@ class YoloHandlerPytorch(YoloHandler):
                 c = Candidate.from_x1y1x2y2(*box[0:4].astype(int), box[4].astype(float))
                 self._candidates[self._class_names[int(box[5])]].append(c)
 
-                
+
 class YoloDetector(CandidateFinder):
     """
     An abstract object detector using the yolo neural network.
@@ -534,7 +538,7 @@ class YoloDetector(CandidateFinder):
         """
         self._yolo.predict()
 
-        
+
 class YoloBallDetector(YoloDetector):
     """
     A ball detector using the yolo neural network.
@@ -550,7 +554,7 @@ class YoloBallDetector(YoloDetector):
         """
         return self._yolo.get_candidates("ball")
 
-      
+
 class YoloGoalpostDetector(YoloDetector):
     """
     A goalpost detector using the yolo neural network.
@@ -566,7 +570,7 @@ class YoloGoalpostDetector(YoloDetector):
         """
         return self._yolo.get_candidates("goalpost")
 
-      
+
 class YoloRobotDetector(YoloDetector):
     """
     A robot detector using the yolo neural network.
@@ -582,7 +586,7 @@ class YoloRobotDetector(YoloDetector):
         """
         return self._yolo.get_candidates("robot")
 
-      
+
 class YoloXIntersectionDetector(YoloDetector):
     """
     A X-Intersection detector using the yolo neural network.
@@ -598,7 +602,7 @@ class YoloXIntersectionDetector(YoloDetector):
         """
         return self._yolo.get_candidates("X-Intersection")
 
-      
+
 class YoloLIntersectionDetector(YoloDetector):
     """
     A L-Intersection detector using the yolo neural network.
