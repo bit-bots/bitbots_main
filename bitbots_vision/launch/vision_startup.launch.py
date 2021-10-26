@@ -10,17 +10,6 @@ from ament_index_python.packages import get_package_share_directory
 # TODO: params, taskset, camera, game_settings, sim time, dyn color
 
 def generate_launch_description():
-    # TODO fix, temporary fix for weird param loading similar to https://answers.ros.org/question/346409/ros2-component_container-yaml-parsing/
-    param_path = get_package_share_directory('bitbots_vision') + '/config/visionparams.yaml'
-    with open(param_path, 'r') as f:
-        params = yaml.safe_load(f)
-
-    sim = True # TODO
-    if sim:
-        sim_param_path = get_package_share_directory('bitbots_vision') + '/config/simparams.yaml'
-        with open(sim_param_path, 'r') as f:
-            params = {**params, **yaml.safe_load(f)}
-
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='sim',
@@ -58,7 +47,8 @@ def generate_launch_description():
             name='bitbots_vision',
             output='screen',
             parameters=[
-                *[{k: v} for k, v in params.items()],
+                get_package_share_directory('bitbots_vision') + '/config/visionparams.yaml',
+                get_package_share_directory('bitbots_vision') + '/config/simparams.yaml',
                 {
                     'vision_publish_debug_image': launch.substitutions.LaunchConfiguration('debug')
                 },
