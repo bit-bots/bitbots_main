@@ -6,6 +6,8 @@ import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
 
+# TODO: taskset, camera, game_settings, sim time, dyn color
+
 def generate_launch_description():
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
@@ -37,14 +39,6 @@ def generate_launch_description():
             name='use_game_settings',
             default_value='false',
             description='true: loads additional game settings'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='taskset',
-            default_value='taskset -c 6,7'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='taskset',
-            default_value=''
         ),
         launch_ros.actions.Node(
             package='bitbots_vision',
