@@ -49,16 +49,20 @@ class RobotController:
         self.pressure_sensors = None
         if robot == 'wolfgang':
             self.is_wolfgang = True
-            self.motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll",
-                                "LShoulderRoll", "RElbow",
-                                "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]", "LHipRoll [hip]", "RHipPitch",
-                                "LHipPitch",
-                                "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan",
-                                "HeadTilt"]
+            self.proto_motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll",
+                                      "LShoulderRoll", "RElbow", "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]",
+                                      "LHipRoll [hip]", "RHipPitch", "LHipPitch", "RKnee", "LKnee", "RAnklePitch",
+                                      "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan", "HeadTilt"]
             self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
                                          "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
                                          "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
                                          "LAnkleRoll", "HeadPan", "HeadTilt"]
+            self.initial_joint_positions = {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
+                                            "LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
+                                            "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
+                                            "LShoulderPitch": 75, "LShoulderRoll": 0, "LElbow": 36,
+                                            "RShoulderPitch": -75, "RShoulderRoll": 0, "RElbow": -36, "HeadPan": 0,
+                                            "HeadTilt": 0}
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
@@ -73,9 +77,9 @@ class RobotController:
                 self.pressure_sensors.append(sensor)
 
         elif robot == 'darwin':
-            self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
-                                "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
-                                "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
+            self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
+                                      "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
+                                      "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
             self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
                                          "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
                                          "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
@@ -85,22 +89,23 @@ class RobotController:
             gyro_name = "Gyro"
             camera_name = "Camera"
         elif robot == 'nao':
-            self.motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbowYaw",
-                                "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch",
-                                "LHipPitch",
-                                "RKneePitch", "LKneePitch", "RAnklePitch", "LAnklePitch", "RAnkleRoll", "LAnkleRoll",
-                                "HeadYaw",
-                                "HeadPitch"]
-            self.external_motor_names = self.motor_names
+            self.proto_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbowYaw",
+                                      "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch",
+                                      "LHipPitch",
+                                      "RKneePitch", "LKneePitch", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
+                                      "LAnkleRoll",
+                                      "HeadYaw",
+                                      "HeadPitch"]
+            self.external_motor_names = self.proto_motor_names
             self.sensor_suffix = "S"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
             self.switch_coordinate_system = False
         elif robot == 'op3':
-            self.motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
-                                "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
-                                "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
+            self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
+                                      "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
+                                      "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
             self.external_motor_names = ["r_sho_pitch", "l_sho_pitch", "r_sho_roll", "l_sho_roll",
                                          "r_el", "l_el", "r_hip_yaw", "l_hip_yaw", "r_hip_roll", "l_hip_roll",
                                          "r_hip_pitch", "l_hip_pitch", "r_knee", "l_knee", "r_ank_pitch",
@@ -113,25 +118,26 @@ class RobotController:
 
         self.motor_names_to_external_names = {}
         self.external_motor_names_to_motor_names = {}
-        for i in range(len(self.motor_names)):
-            self.motor_names_to_external_names[self.motor_names[i]] = self.external_motor_names[i]
-            self.external_motor_names_to_motor_names[self.external_motor_names[i]] = self.motor_names[i]
+        for i in range(len(self.proto_motor_names)):
+            self.motor_names_to_external_names[self.proto_motor_names[i]] = self.external_motor_names[i]
+            self.external_motor_names_to_motor_names[self.external_motor_names[i]] = self.proto_motor_names[i]
 
         self.current_positions = {}
         self.joint_limits = {}
-        for motor_name in self.motor_names:
+        for motor_name in self.proto_motor_names:
             motor = self.robot_node.getDevice(motor_name)
             motor.enableTorqueFeedback(self.timestep)
             self.motors.append(motor)
-            self.motors_dict[motor_name] = motor
+            self.motors_dict[self.motor_names_to_external_names[motor_name]] = motor
             sensor = self.robot_node.getDevice(motor_name + self.sensor_suffix)
             sensor.enable(self.timestep)
             self.sensors.append(sensor)
-            self.sensors_dict[motor_name] = sensor
-            self.current_positions[motor_name] = sensor.getValue()
+            self.sensors_dict[self.motor_names_to_external_names[motor_name]] = sensor
+            self.current_positions[self.motor_names_to_external_names[motor_name]] = sensor.getValue()
             # min, max and middle position (precomputed since it will be used at each step)
-            self.joint_limits[motor_name] = (motor.getMinPosition(), motor.getMaxPosition(),
-                                             0.5 * (motor.getMinPosition() + motor.getMaxPosition()))
+            self.joint_limits[self.motor_names_to_external_names[motor_name]] = (
+                motor.getMinPosition(), motor.getMaxPosition(),
+                0.5 * (motor.getMinPosition() + motor.getMaxPosition()))
 
         self.accel = self.robot_node.getDevice(accel_name)
         self.accel.enable(self.timestep)
@@ -206,7 +212,7 @@ class RobotController:
             self.command_cb(command)
 
         # needed to run this one time to initialize current position, otherwise velocity will be nan
-        self.get_joint_values(self.motor_names)
+        self.get_joint_values(self.external_motor_names)
 
     def mat_from_fov_and_resolution(self, fov, res):
         return 0.5 * res * (math.cos((fov / 2)) / math.sin((fov / 2)))
@@ -246,7 +252,7 @@ class RobotController:
     def set_joint_goal_position(self, joint_name, goal_position, goal_velocity=-1, scaled=False, relative=False):
         motor = self.motors_dict[joint_name]
         if scaled:
-            goal_position = convert_joint_radiant_to_scaled(joint_name, goal_position)
+            goal_position = self.convert_joint_radiant_to_scaled(joint_name, goal_position)
         if relative:
             goal_position = goal_position + self.get_joint_values([joint_name])[0]
         motor.setPosition(goal_position)
@@ -268,7 +274,7 @@ class RobotController:
     def command_cb(self, command: JointCommand):
         if len(command.positions) != 0:
             # position control
-            #todo maybe needs to match external motor names to interal ones fist?
+            # todo maybe needs to match external motor names to interal ones fist?
             self.set_joint_goals_position(command.joint_names, command.positions, command.velocities)
         else:
             # torque control
@@ -305,7 +311,7 @@ class RobotController:
         js.header.stamp = rospy.Time.from_seconds(self.time)
         js.position = []
         js.effort = []
-        for joint_name in self.motor_names:
+        for joint_name in self.proto_motor_names:
             js.name.append(self.motor_names_to_external_names[joint_name])
             value = self.sensors_dict[joint_name].getValue()
             js.position.append(value)

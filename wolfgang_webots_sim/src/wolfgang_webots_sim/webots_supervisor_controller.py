@@ -52,7 +52,6 @@ class SupervisorController:
         self.joint_nodes = {}
 
         root = self.supervisor.getRoot()
-        print("--begin")
         children_field = root.getField('children')
         children_count = children_field.getCount()
         for i in range(children_count):
@@ -64,11 +63,8 @@ class SupervisorController:
                 self.robot_nodes[name] = node
                 self.translation_fields[name] = node.getField("translation")
                 self.rotation_fields[name] = node.getField("rotation")
-                print(f"###{name}")
-                print(f"proto type {node.getTypeName()}")
                 self.joint_nodes[name] = self.collect_joint_node_references(node, {})
 
-        print("--end")
         if self.ros_active:
             # need to handle these topics differently or we will end up having a double //
             if base_ns == "":
@@ -99,9 +95,7 @@ class SupervisorController:
         if node.getType() == Node.HINGE_JOINT:
             name = node.getDef()
             # substract the "Joint" keyword due to naming convention
-            print(name)
             name = name[:-5]
-            print(name)
             dict[name] = node
             # the joints dont have children but an "endpoint" that we need to search through
             if node.isProto():
@@ -138,12 +132,15 @@ class SupervisorController:
             self.keyboard.enable(100)
             self.keyboard_activated = True
         key = self.keyboard.getKey()
-        if key == Keyboard.CONTROL + 'r':
+        if key == ord('R'):
             self.reset()
-        elif key == 'r':
+        elif key == ord('P'):
             self.set_initial_poses()
-        elif key == Keyboard.SHIFT + 'r':
-            self.reset_ball()
+        elif key == Keyboard.SHIFT + ord('R'):
+            try:
+                self.reset_ball()
+            except AttributeError:
+                print("No ball in simulation that can be reset")
         return key
 
     def publish_clock(self):
