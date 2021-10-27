@@ -432,7 +432,13 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
             global _dyn_color_space
             color_space = _dyn_color_space
 
+        # Reshape image to an one-dimensional list of pixels with r g and b values
         image_reshape = image.reshape(-1,3).transpose()
+        # Query the corresponding look up table value for each pixel in the list using numpys fancy array index
+        # The r g and b values are used as the index in the lookup table for each pixel resulting in a new array with the
+        # same number of values as the original image pixels.
+        # Instead of the rgb values this array includes 255, if the given pixel is contained in the LUT or 0, if not.
+        # This array is then reshaped to match the two dimensional shape of the original image, resulting in a lut mask.
         mask = self._color_space[
                 image_reshape[0],
                 image_reshape[1],
