@@ -18,6 +18,8 @@ from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
 
+from .params import gen
+
 logger = logging.get_logger('bitbots_vision')
 
 try:
@@ -41,7 +43,7 @@ class Vision(Node):
         :return: None
         """
 
-        super().__init__('bitbots_vision', automatically_declare_parameters_from_overrides=True)
+        super().__init__('bitbots_vision')
 
         self._package_path = get_package_share_directory('bitbots_vision')
 
@@ -87,10 +89,8 @@ class Vision(Node):
         # Yolo placeholder
         self._yolo = None
 
-        # Add model enums to _config  TODO
-        # ros_utils.add_model_enums(VisionConfig, self._package_path)
-        # ros_utils.add_color_lookup_table_enum(VisionConfig, self._package_path)
-
+        # Setup reconfiguration
+        gen.declare_params(self)
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
 
         #logger.info(str(self.get_parameter('neural_network_type').value))
