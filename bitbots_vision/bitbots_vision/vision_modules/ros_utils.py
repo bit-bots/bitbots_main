@@ -268,13 +268,13 @@ def build_goal_post_msgs(goalposts):
     for goalpost in goalposts:
         # Create a empty post message
         post_msg = GoalPostInImage()
-        post_msg.width = goalpost.get_width()
+        post_msg.width = float(goalpost.get_width())
         if goalpost.get_rating() is not None:
-            post_msg.confidence = goalpost.get_rating()
-        post_msg.foot_point.x = goalpost.get_center_x()
-        post_msg.foot_point.y = goalpost.get_lower_right_y()
-        post_msg.top_point.x = goalpost.get_center_x()
-        post_msg.top_point.y = goalpost.get_upper_left_y()
+            post_msg.confidence = float(goalpost.get_rating())
+        post_msg.foot_point.x = float(goalpost.get_center_x())
+        post_msg.foot_point.y =float(goalpost.get_lower_right_y())
+        post_msg.top_point.x = float(goalpost.get_center_x())
+        post_msg.top_point.y = float(goalpost.get_upper_left_y())
         message_list.append(post_msg)
     return message_list
 
@@ -305,10 +305,10 @@ def build_ball_msg(top_ball_candidate):
     """
     # Create a empty ball message
     ball_msg = BallInImage()
-    ball_msg.center.x = top_ball_candidate.get_center_x()
-    ball_msg.center.y = top_ball_candidate.get_center_y()
-    ball_msg.diameter = top_ball_candidate.get_diameter()
-    ball_msg.confidence = top_ball_candidate.get_rating()
+    ball_msg.center.x = float(top_ball_candidate.get_center_x())
+    ball_msg.center.y = float(top_ball_candidate.get_center_y())
+    ball_msg.diameter = float(top_ball_candidate.get_diameter())
+    ball_msg.confidence = float(top_ball_candidate.get_rating())
     return ball_msg
 
 def build_obstacle_array_msg(header, obstacles):
@@ -340,15 +340,15 @@ def build_obstacle_msgs(obstacle_type, detections):
     for detected_obstacle in detections:
         obstacle_msg = ObstacleInImage()
         obstacle_msg.type = obstacle_type
-        obstacle_msg.top_left.x = detected_obstacle.get_upper_left_x()
-        obstacle_msg.top_left.y = detected_obstacle.get_upper_left_y()
+        obstacle_msg.top_left.x = float(detected_obstacle.get_upper_left_x())
+        obstacle_msg.top_left.y = float(detected_obstacle.get_upper_left_y())
         obstacle_msg.height = int(detected_obstacle.get_height())
         obstacle_msg.width = int(detected_obstacle.get_width())
         if detected_obstacle.get_rating() is not None:
-            obstacle_msg.confidence = detected_obstacle.get_rating()
+            obstacle_msg.confidence = float(detected_obstacle.get_rating())
         else:
             obstacle_msg.confidence = 1.0
-        obstacle_msg.playerNumber = 42
+        obstacle_msg.player_number = 42
         message_list.append(obstacle_msg)
     return message_list
 
