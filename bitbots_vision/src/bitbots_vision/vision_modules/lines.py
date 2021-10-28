@@ -8,6 +8,12 @@ import cv2
 class LineDetector:
     """
     Detecting field lines in the image.
+    The line detection module is responsible for finding the white field markings
+    that are especially important for the localisation of the robot.
+    It mainly uses the ColorDetector and FieldBoundaryDetector because white lines
+    should only be found on the field (and therefore under the field boundary).
+    It is able to output a sparse output (line points) or a whole mask of the image,
+    which marks the line points.
     """
     def __init__(self, config, white_detector, field_color_detector, field_boundary_detector):
         # type: (dict, ColorDetector, ColorDetector, FieldBoundaryDetector) -> None
@@ -23,6 +29,7 @@ class LineDetector:
         self._linepoints_range = config['line_detector_linepoints_range']
         self._use_line_points = config['line_detector_use_line_points']
         self._use_line_mask = config['line_detector_use_line_mask']
+        self._object_grow = config['line_detector_object_remove_grow']
 
         # Set if values should be cached
         self._caching = config['caching']
@@ -145,12 +152,27 @@ class LineDetector:
             # Invert and scale the field mask
             not_green_mask = np.ones_like(green_mask) - (np.floor_divide(green_mask, 255))
             # Get part under the field boundary as white mask
-            field_boundary_mask = self._field_boundary_detector.get_mask()
+            field_boundary_mask = self._field_boundary_detector.get_mask(offset=self._field_boundary_offset)
             # Get not green points under field boundary
             possible_line_locations = cv2.bitwise_and(not_green_mask, not_green_mask, mask=field_boundary_mask)
             # Get white points that are not above the field boundary or in the green field
-            self._white_mask = self._white_detector.mask_bitwise(possible_line_locations)
+            white_mask = self._white_detector.mask_bitwise(possible_line_locations)
+
+            # Filter out outliers
+            self._white_mask = cv2.medianBlur(white_mask, 3)
         return self._white_mask
+
+    def get_line_mask_without_other_objects(self, candidate_list):
+        """
+        Generates a white mask that not contains pixels in the green field, above the field boundary or in the specified candidates.
+
+        :param candidate_list: List ob candidate bounding boxes that are subtracted from the final mask
+        :return: Mask
+        """
+        mask = self.get_line_mask().copy()
+        for candidate in candidate_list:
+            mask = candidate.set_in_mask(mask, 0, self._object_grow)
+        return mask
 
 
 def filter_points_with_candidates(linepoints, candidates):

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(white_balancer)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -16,11 +17,14 @@ find_package(catkin REQUIRED COMPONENTS
   rosconsole
   message_generation
   cv_bridge
+  bitbots_docs
+  pluginlib
+  nodelet
 )
 
 # dynamic reconfigure
 generate_dynamic_reconfigure_options(
-    cfg/white_balancer.cfg
+    cfg/WhiteBalancer.cfg
 )
 
 catkin_package()
@@ -38,3 +42,10 @@ add_dependencies(white_balancer ${PROJECT_NAME}_gencfg)
 target_link_libraries(white_balancer
     ${catkin_LIBRARIES}
 )
+
+# Nodelet library
+add_library(test_nodelet src/white_balancer.cpp)
+add_dependencies(test_nodelet ${PROJECT_NAME})
+target_link_libraries(test_nodelet ${catkin_LIBRARIES})
+
+enable_bitbots_docs()

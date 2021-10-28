@@ -5,16 +5,18 @@
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <dynamic_reconfigure/server.h>
-#include <white_balancer/WhiteBalanceConfig.h>
+#include <white_balancer/WhiteBalancerConfig.h>
 #include <boost/bind.hpp>
-
+#include <nodelet/nodelet.h>
+#include <pluginlib/class_list_macros.h>
 
 class WhiteBalancer
 {
 public:
-    WhiteBalancer();
+    // Params: (public node handler (for e.g. callbacks), private node handle (for e.g. dynamic reconfigure))
+    WhiteBalancer(ros::NodeHandle nh, ros::NodeHandle pnh);
     // Dynamic reconfigure callback
-    void callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level);
+    void callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level);
 private:
     image_transport::Publisher pub;
     // Color temp to rgb convertion table
@@ -140,29 +142,28 @@ private:
     void set_delay(double delay);
 };
 
-WhiteBalancer::WhiteBalancer()
+WhiteBalancer::WhiteBalancer(ros::NodeHandle nh, ros::NodeHandle pnh)
 {
     // Dynamic reconfigure stuff
-    dynamic_reconfigure::Server<white_balancer::WhiteBalanceConfig> server;
-    dynamic_reconfigure::Server<white_balancer::WhiteBalanceConfig>::CallbackType f;
+    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig> server(pnh);
+    dynamic_reconfigure::Server<white_balancer::WhiteBalancerConfig>::CallbackType f;
     f = boost::bind(&WhiteBalancer::callbackRC, this, _1, _2);
     server.setCallback(f);
 
     // Register image messages
-    ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
 
     ros::Duration(2.0).sleep();
 
     std::string ROS_output_topic, ROS_input_topic;
-    if (nh.getParam("/white_balancer/ROS_output_topic", ROS_output_topic)) {
+    if (pnh.getParam("ROS_output_topic", ROS_output_topic)) {
         WhiteBalancer::pub = it.advertise(ROS_output_topic, 1);
     } else {
         ROS_ERROR("No output topic set");
         exit(2);
     }
     image_transport::Subscriber sub;
-    if (nh.getParam("/white_balancer/ROS_input_topic", ROS_input_topic)) {
+    if (pnh.getParam("ROS_input_topic", ROS_input_topic)) {
          sub = it.subscribe(ROS_input_topic, 1, &WhiteBalancer::imageCallback, this);
     } else {
         ROS_ERROR("No input topic set");
@@ -182,7 +183,7 @@ void WhiteBalancer::set_delay(double timestamp_offset)
 {
     ros::Duration timestamp_offset_duration = ros::Duration(timestamp_offset);
     // Check timestamp offset diff
-    if (WhiteBalancer::timestamp_offset != timestamp_offset_duration) 
+    if (WhiteBalancer::timestamp_offset != timestamp_offset_duration)
     {
         // Set timestamp offset
         WhiteBalancer::timestamp_offset = timestamp_offset_duration;
@@ -197,13 +198,13 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
         // Get RGB value for current temperature
         std::vector <int> white_value = WhiteBalancer::kelvin.at(WhiteBalancer::temp);
 
-        // Get image 
+        // Get image
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        
+
         cv::multiply(cv_ptr->image, cv::Scalar( (float)(255.0/white_value[2]),
                                                 (float)(255.0/white_value[1]),
                                                 (float)(255.0/white_value[0])), cv_ptr->image);
-        
+
         cv_ptr->header.stamp = cv_ptr->header.stamp + WhiteBalancer::timestamp_offset;
 
         // Publish white balanced image
@@ -213,21 +214,42 @@ void WhiteBalancer::imageCallback(const sensor_msgs::ImageConstPtr& msg)
     {
         ROS_ERROR_THROTTLE(60, "Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
-    
+
 }
 
-void WhiteBalancer::callbackRC(white_balancer::WhiteBalanceConfig &config, uint32_t level) {
+void WhiteBalancer::callbackRC(white_balancer::WhiteBalancerConfig &config, uint32_t level) {
     // Set color temperature
     WhiteBalancer::set_temp(config.temp);
     // Set timestamp delay
     WhiteBalancer::set_delay(config.timestamp_offset);
 }
-  
+
 int main(int argc, char **argv)
 {
     // Init
     ros::init(argc, argv, "white_balancer");
-    WhiteBalancer w;
+    ros::NodeHandle nh;
+    ros::NodeHandle pnh ("~");
+    WhiteBalancer w(nh, pnh);
 
     return 0;
 }
+
+namespace white_balancer
+{
+    class WhiteBalanceNodelet : public nodelet::Nodelet
+    {
+        public:
+            WhiteBalanceNodelet()
+            {}
+
+        private:
+            virtual void onInit()
+            {
+                // Init
+                WhiteBalancer w(getMTNodeHandle(), getMTPrivateNodeHandle());
+            }
+    };
+}
+
+PLUGINLIB_EXPORT_CLASS(white_balancer::WhiteBalanceNodelet, nodelet::Nodelet)

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>white_balancer</name>
-  <version>0.0.0</version>
+  <version>1.1.0</version>
   <description>The white_balanceing package</description>
 
   <maintainer email="7vahl@informatik.uni-hamurg.de">Florian Vahl</maintainer>
@@ -17,13 +17,18 @@
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>OpenCV</depend>
   <depend>cv_bridge</depend>
+  <depend>bitbots_docs</depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>nodelet</build_depend>
+  <exec_depend>pluginlib</exec_depend>
+  <exec_depend>nodelet</exec_depend>
 
   <export>
     <bitbots_documentation>
       <language>c++</language>
       <status>tested_robot</status>
     </bitbots_documentation>
+    <nodelet plugin="${prefix}/nodelets.xml"/>
   </export>
 </package>

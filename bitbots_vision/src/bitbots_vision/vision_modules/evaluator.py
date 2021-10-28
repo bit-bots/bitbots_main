@@ -5,11 +5,17 @@ from collections import deque
 
 
 class RuntimeEvaluator:
+    """
+    The :class:`.RuntimeEvaluator` calculates the average time a method (e.g. get_candidates) needs to work on a single image.
+    It thereby allows improved evaluation and comparison of different methods.
+    To meassure the runtime for some methods of a class, it is neccessary to call :meth:`.start_timer` before and
+    :meth:`.stop_timer` after the method.
+    Use :meth:`.print_timer` to receive the result.
+    """
     def __init__(self, name="Runtime", queue_size=100):
         # type: (str, int) -> None
         """
-        Calculates the average time a method (e.g. get_candidates) takes to work on an image.
-        Allows improved evaluation and comparison of different methods.
+        Initialization of RuntimeEvaluator.
 
         :param name: name of the evaluator, allow the identification of the printed results
         :param queue_size: amount of measurements used to calculate the average
@@ -30,7 +36,7 @@ class RuntimeEvaluator:
         # type: (None) -> None
         """
         Resets all variable once the time should be measured for a new picture.
-        
+
         :param image: we don't use this, but every set_image method of other classes has this parameter
         """
         self._timer_running = False
@@ -85,7 +91,7 @@ class RuntimeEvaluator:
         Calculates the average of all measurements in the queue once enough measurements are collected and prints the result.
         """
         # the results are only printed out after we collected enough measurements:
-        rospy.loginfo("Vision runtime evaluator: {} Progress:".format(self._name) + str(self._count + 1) + "/" + str(self._queue_size), logger_name="vision_evaluator")
+        rospy.loginfo(f"Vision runtime evaluator: {self._name} Progress: {self._count + 1}/{self._queue_size}", logger_name="vision_evaluator")
         if self._count == self._queue_size - 1:
             avg = np.array(self._queue).mean()  # calculates the average of our measurements
-            rospy.loginfo("Vision runtime evaluator: {} timer: {}".format(self._name, avg), logger_name="vision_evaluator")
+            rospy.loginfo(f"Vision runtime evaluator: {self._name} timer: {avg}", logger_name="vision_evaluator")

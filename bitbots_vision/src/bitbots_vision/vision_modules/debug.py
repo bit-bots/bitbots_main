@@ -4,10 +4,19 @@ import numpy as np
 
 class DebugImage:
     """
-    Draws the debug image for the Vision
+    :class:`.DebugImage` draws the images with information of the vision pipeline for debug purposes.
+
+    It is capable of displaying the detected and convex field boundary (red and yellow lines respectively),
+    the best and discarded ball candidates (green and red circles respectively),
+    the goalposts (white bounding boxes) and
+    different obstacles (black: unknown, red: red robot, blue: blue robot).
     """
-    def __init__(self):
+    def __init__(self, active=True):
+        """
+        Initialization of :class:`.DebugImage`.
+        """
         self._debug_image = None
+        self.active = active
 
     def set_image(self, image):
         """
@@ -25,6 +34,7 @@ class DebugImage:
         :param color: color of the line
         :param thickness: thickness of the line
         """
+        if not self.active: return
         for i in range(len(field_boundary_points) - 1):
             cv2.line(self._debug_image,
                      field_boundary_points[i],
@@ -38,6 +48,7 @@ class DebugImage:
         :param color: color of the circle to draw
         :param thickness: thickness of the outline
         """
+        if not self.active: return
         for candidate in ball_candidates:
             if candidate:
                 cv2.circle(self._debug_image,
@@ -54,6 +65,7 @@ class DebugImage:
         :param color: color of the outline
         :param thickness: thickness of the outline
         """
+        if not self.active: return
         for candidate in obstacle_candidates:
             if candidate:
                 cv2.rectangle(self._debug_image,
@@ -71,6 +83,7 @@ class DebugImage:
         :param thickness: thickness of the outline
         :param rad: radius of the point
         """
+        if not self.active: return
         for point in points:
             cv2.circle(self._debug_image, point, rad, color, thickness=thickness)
 
@@ -82,6 +95,7 @@ class DebugImage:
         :param color: color of the line
         :param thickness: thickness of the line
         """
+        if not self.active: return
         for segment in segments:
             cv2.line(self._debug_image,
                      (segment[0], segment[1]),
@@ -89,6 +103,7 @@ class DebugImage:
                      color, thickness=2)
 
     def draw_mask(self, mask, color, opacity=0.5):
+        if not self.active: return
         # Make a colored image
         colored_image = np.zeros_like(self._debug_image)
         colored_image[:, :] = tuple(np.multiply(color, opacity).astype(np.uint8))
@@ -108,7 +123,7 @@ class DebugImage:
 
     def draw(self, debug_image_description, image=None):
         """
-        Draws a debug image description, that contains the style and the date for each object/class that we debug
+        Draws a debug image description, that contains the style and the data for each object/class that we debug
         E.g.:
         {
             'type': 'field_boundary',
