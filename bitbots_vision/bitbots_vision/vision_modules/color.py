@@ -4,13 +4,14 @@ import cv2
 import yaml
 import pickle
 import rclpy
-import VisionExtensions
 import numpy as np
+from rclpy import logging
 from copy import deepcopy
 from threading import Lock
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
 
+logger = logging.get_logger('bitbots_vision')
 
 class ColorDetector(object):
     """
@@ -47,7 +48,7 @@ class ColorDetector(object):
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
         """
-        rospy.logdebug("(RE-)Configuring of ColorDetector", logger_name="vision_color_detector")
+        logger.debug("(RE-)Configuring of ColorDetector")
         self._config = config
 
     @abc.abstractmethod
@@ -226,7 +227,7 @@ class HsvSpaceColorDetector(ColorDetector):
                         config[self._detector_name + '_upper_values_v']
                 ])
         except KeyError:
-            rospy.logerr(f"Undefined hsv color values for '{self._detector_name}'. Check config values.", logger_name="vision_hsv_color_detector")
+            logger.error(f"Undefined hsv color values for '{self._detector_name}'. Check config values.")
             raise
 
     def match_pixel(self, pixel):
@@ -310,7 +311,7 @@ class PixelListColorDetector(ColorDetector):
                 try:
                     color_values = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
-                    rospy.logerr(exc, logger_name="vision_pixellist_color_detector")
+                    logger.error(exc)
 
         # pickle-file is stored as '.pickle'
         elif color_path.endswith('.pickle'):
@@ -318,13 +319,13 @@ class PixelListColorDetector(ColorDetector):
                 with open(color_path, 'rb') as f:
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
-                rospy.logerr(exc, logger_name="vision_pixellist_color_detector")
+                logger.error(exc)
 
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
             color_values = color_values['color_values']['greenField']
         # setting colors from yaml file to True in color space
-        color_lookup_table[color_values['blue'], color_values['green'], color_values['red']] = 1
+        color_lookup_table[color_values['blue'], color_values['green'], color_values['red']] = 255
         return color_lookup_table
 
 
@@ -347,7 +348,15 @@ class PixelListColorDetector(ColorDetector):
         :param np.array image: input image
         :return np.array: masked image
         """
-        return VisionExtensions.maskImg(image, self._color_lookup_table)
+        image_reshape = image.reshape(-1,3)
+        mask = self._color_lookup_table[
+                image_reshape[0],
+                image_reshape[1],
+                image_reshape[2],
+            ].reshape(
+                image.shape[0],
+                image.shape[1])
+        return mask
 
 
 class DynamicPixelListColorDetector(PixelListColorDetector):
@@ -423,7 +432,15 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         if color_lookup_table is None:
             global _dyn_color_lookup_table
             color_lookup_table = _dyn_color_lookup_table
-        return VisionExtensions.maskImg(image, color_lookup_table)
+        image_reshape = image.reshape(-1,3).transpose()
+        mask = color_lookup_table[
+                image_reshape[0],
+                image_reshape[1],
+                image_reshape[2],
+            ].reshape(
+                image.shape[0],
+                image.shape[1])
+        return mask
 
     def color_lookup_table_callback(self, msg):
         # type: (ColorLookupTable) -> None
@@ -455,7 +472,7 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         new_color_lookup_table[
             msg.blue,
             msg.green,
-            msg.red] = 1
+            msg.red] = 255
 
         # Switches the reference to the new color lookup table
         global _dyn_color_lookup_table

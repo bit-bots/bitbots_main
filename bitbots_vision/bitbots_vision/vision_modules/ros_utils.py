@@ -2,6 +2,7 @@ import os
 import re
 import rclpy
 import yaml
+from  rclpy import logging
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point32, PolygonStamped
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
@@ -13,6 +14,8 @@ e.g. methods to convert candidates to ROS messages or methods to modify the dyna
 """
 
 _cv_bridge = CvBridge()
+
+logger = logging.get_logger('bitbots_vision')
 
 general_parameters = []
 
@@ -178,19 +181,16 @@ def add_color_lookup_table_enum(cfg_type, package_path):
     _change_enum_items(cfg_type, 'field_color_detector_path', color_lookup_table_enum)
     _change_enum_items(cfg_type, 'white_color_detector_color_lookup_table_path', color_lookup_table_enum)
 
-def create_or_update_publisher(old_config, new_config, publisher_object, topic_key, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=1):
+def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, queue_size=1):
     """
     Creates or updates a publisher
 
+    :param node: ROS node to which the publisher is binded
     :param old_config: Previous config dict
     :param new_config: Current config dict
     :param publisher_object: The python object, that represents the publisher
     :param topic_key: The name of the topic variable in the config dict
     :param data_class: Data type class for ROS messages of the topic we want to subscribe
-    :param subscriber_listener: Listener for subscription events
-    :param tcp_nodelay: If True, this enables lower latency publishing at the cost of efficiency
-    :param latch: If True, the last message, that has been published, will be sent to a new subscriber immediately
-    :param headers: The ROS publisher headers
     :param queue_size: The ROS message queue size
     :return: adjusted publisher object
     """
@@ -200,21 +200,18 @@ def create_or_update_publisher(old_config, new_config, publisher_object, topic_k
         if publisher_object is not None:
             publisher_object.unregister()
         # Create the new publisher
-        publisher_object = rospy.Publisher(
-            new_config[topic_key],
+        publisher_object = node.create_publisher(
             data_class,
-            subscriber_listener=subscriber_listener,
-            tcp_nodelay=tcp_nodelay,
-            latch=latch,
-            headers=headers,
-            queue_size=queue_size)
-        rospy.logdebug("Registered new publisher to " + str(new_config[topic_key]), logger_name="vision_ros_utils")
+            new_config[topic_key],
+            queue_size)
+        logger.debug("Registered new publisher to " + str(new_config[topic_key]))
     return publisher_object
 
-def create_or_update_subscriber(old_config, new_config, subscriber_object, topic_key, data_class, callback=None, callback_args=None, queue_size=1, buff_size=65536, tcp_nodelay=False):
+def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, queue_size=1):
     """
     Creates or updates a subscriber
 
+    :param node: ROS node to which the publisher is binded
     :param old_config: Previous config dict
     :param new_config: Current config dict
     :param subscriber_object: The python object, that represents the subscriber
@@ -233,15 +230,12 @@ def create_or_update_subscriber(old_config, new_config, subscriber_object, topic
         if subscriber_object is not None:
             subscriber_object.unregister()
         # Create the new subscriber
-        subscriber_object = rospy.Subscriber(
-            new_config[topic_key],
+        subscriber_object = node.create_subscription(
             data_class,
+            new_config[topic_key],
             callback,
-            callback_args=callback_args,
-            queue_size=queue_size,
-            buff_size=buff_size,
-            tcp_nodelay=tcp_nodelay)
-        rospy.logdebug("Registered new subscriber at " + str(new_config[topic_key]), logger_name="vision_ros_utils")
+            queue_size)
+        logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
 def build_goal_post_array_msg(header, goal_post_msgs):
@@ -372,7 +366,11 @@ def build_field_boundary_polygon_msg(header, field_boundary):
     field_boundary_msg.header = header
     # Add field boundary points
     for point in field_boundary:
-        field_boundary_msg.polygon.points.append(Point(point[0], point[1], 0))
+        p = Point32()
+        p.x = float(point[0])
+        p.y = float(point[1])
+        field_boundary_msg.polygon.points.append(p)
+
     return field_boundary_msg
 
 def build_line_information_in_image_msg(header, line_segments):
@@ -416,8 +414,8 @@ def convert_line_points_to_line_segment_msgs(line_points):
     for line_point in line_points:
         # Create LineSegmentInImage message
         line_segment = LineSegmentInImage()
-        line_segment.start.x = line_point[0]
-        line_segment.start.y = line_point[1]
+        line_segment.start.x = float(line_point[0])
+        line_segment.start.y = float(line_point[1])
         line_segment.end = line_segment.start
         line_segments.append(line_segment)
     return line_segments
@@ -480,7 +478,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
             raise KeyError(f"Parameter '{param}' is not in dict.")
         # Check if param is new or if param has changed
         elif param not in old_config or old_config[param] != new_config[param]:
-            rospy.logdebug(f"Parameter '{param}' has changed to '{new_config[param]}'", logger_name="vision_ros_utils")
+            logger.debug(f"Parameter '{param}' has changed to '{new_config[param]}'")
             return True
     return False
 

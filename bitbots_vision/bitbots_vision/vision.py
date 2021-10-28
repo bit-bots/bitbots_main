@@ -3,7 +3,7 @@
 import os
 import cv2
 import rclpy
-from rclpy import logging
+from rclpy import logging, time
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
 from rcl_interfaces.msg import SetParametersResult
@@ -100,11 +100,6 @@ class Vision(Node):
 
         self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
-        # Define the rate of a sleep timer
-        #self._rate = self.create_rate(130)
-
-        # Run the vision main loop
-        #self._main_loop()
 
     def _dynamic_reconfigure_callback(self, params):
         """
@@ -113,12 +108,7 @@ class Vision(Node):
         :param config: New _config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        logger.info("Test")
-
         config = deepcopy(self._config)
-
-        logger.info(str(params))
-        # Set data
         for param in params:
             config[param.name] = param.value
         self._configure_vision(config)
@@ -132,8 +122,6 @@ class Vision(Node):
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
         self._register_or_update_all_publishers(config)
-
-        return
 
         # Set max number of balls
         self._max_balls = config['ball_candidate_max_count']
@@ -155,9 +143,9 @@ class Vision(Node):
         # Should the debug image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_debug_image'):
             if config['vision_publish_debug_image']:
-                rospy.loginfo('Debug images are enabled', logger_name="vision")
+                logger.info('Debug images are enabled')
             else:
-                rospy.loginfo('Debug images are disabled', logger_name="vision")
+                logger.info('Debug images are disabled')
             # Create debug drawer
             self._debug_image_creator = debug.DebugImage(config['vision_publish_debug_image'])
 
@@ -165,17 +153,17 @@ class Vision(Node):
         if ros_utils.config_param_change(self._config, config, 'vision_publish_HSV_mask_image'):
             self._publish_HSV_mask_image = config['vision_publish_HSV_mask_image']
             if self._publish_HSV_mask_image:
-                rospy.loginfo('HSV mask image publishing is enabled', logger_name="vision_hsv_color_detector")
+                logger.info('HSV mask image publishing is enabled')
             else:
-                rospy.loginfo('HSV mask image publishing is disabled', logger_name="vision_hsv_color_detector")
+                logger.info('HSV mask image publishing is disabled')
 
         # Should the (dynamic color lookup table-) field mask image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_field_mask_image'):
             self._publish_field_mask_image = config['vision_publish_field_mask_image']
             if self._publish_field_mask_image:
-                rospy.loginfo('(Dynamic color lookup table-) Field mask image publishing is enabled', logger_name="dynamic_color_lookup_table")
+                logger.info('(Dynamic color lookup table-) Field mask image publishing is enabled')
             else:
-                rospy.loginfo('(Dynamic color lookup table-) Field mask image publishing is disabled', logger_name="dynamic_color_lookup_table")
+                logger.info('(Dynamic color lookup table-) Field mask image publishing is disabled')
 
         # Set the white color detector
         if ros_utils.config_param_change(self._config, config, r'^white_color_detector_'):
@@ -258,7 +246,7 @@ class Vision(Node):
                 yolo_darknet_model_path = os.path.join(self._package_path, 'models', config['yolo_darknet_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_darknet_model_path, "yolo_weights.weights")):
-                    rospy.logerr('The specified yolo darknet model file doesn\'t exist!', logger_name="vision_yolo")
+                    logger.error('The specified yolo darknet model file doesn\'t exist!')
                 else:
                     # Decide which yolo implementation should be used
                     if config['neural_network_type'] == 'yolo_opencv':
@@ -269,11 +257,13 @@ class Vision(Node):
                         self._yolo = yolo_handler.YoloHandlerDarknet(config, yolo_darknet_model_path)
                     elif config['neural_network_type'] == 'yolo_pytorch':
                         self._yolo = yolo_handler.YoloHandlerPytorch(config, yolo_darknet_model_path)
-                    rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
+                    logger.info(config['neural_network_type'] + " vision is running now")
 
             # For other changes only modify the config
             elif ros_utils.config_param_change(self._config, config, r'yolo_'):
                 self._yolo.set_config(config)
+
+            logger.error(str(self._yolo))
 
             # Set both ball and goalpost detector
             self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
@@ -290,10 +280,10 @@ class Vision(Node):
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.bin")) \
                         or not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.xml")):
-                    rospy.logerr('The specified yolo openvino model file doesn\'t exist!', logger_name="vision_yolo")
+                    logger.error('The specified yolo openvino model file doesn\'t exist!')
                 else:
                     self._yolo = yolo_handler.YoloHandlerNCS2(config, yolo_openvino_model_path)
-                    rospy.loginfo(config['neural_network_type'] + " vision is running now", logger_name="vision_yolo")
+                    logger.info(config['neural_network_type'] + " vision is running now")
             # For other changes only modify the config
             elif ros_utils.config_param_change(self._config, config, r'yolo_'):
                 self._yolo.set_config(config)
@@ -335,7 +325,7 @@ class Vision(Node):
         ]
 
         # Publish Config-message (mainly for the dynamic color lookup table node)
-        ros_utils.publish_vision_config(config, self._pub_config)
+        # ros_utils.publish_vision_config(config, self._pub_config)
 
         # The old _config gets replaced with the new _config
         self._config = config
@@ -349,19 +339,19 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        #self._pub_audio = ros_utils.create_or_update_publisher(self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
-        #self._pub_balls = ros_utils.create_or_update_publisher(self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
-        #self._pub_lines = ros_utils.create_or_update_publisher(self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
-        #self._pub_line_mask = ros_utils.create_or_update_publisher(self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        #self._pub_obstacle = ros_utils.create_or_update_publisher(self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
-        #self._pub_goal_posts = ros_utils.create_or_update_publisher(self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
-        #self._pub_debug_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-        #self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
-        #self._pub_white_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
-        #self._pub_red_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
-        #self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
-        #self._pub_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
-        #self._pub_dynamic_color_lookup_table_field_mask_image = ros_utils.create_or_update_publisher(self._config, config, self._pub_dynamic_color_lookup_table_field_mask_image, 'ROS_dynamic_color_lookup_table_field_mask_image_msg_topic', Image)
+        self._pub_audio = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
+        self._pub_balls = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
+        self._pub_lines = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
+        self._pub_line_mask = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
+        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
+        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
+        self._pub_debug_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
+        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
+        self._pub_white_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
+        self._pub_red_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
+        self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
+        self._pub_field_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
+        self._pub_dynamic_color_lookup_table_field_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_dynamic_color_lookup_table_field_mask_image, 'ROS_dynamic_color_lookup_table_field_mask_image_msg_topic', Image)
 
     def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
@@ -371,7 +361,7 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        self._sub_image = ros_utils.create_or_update_subscriber(self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'], buff_size=60000000) # https://github.com/ros/ros_comm/issues/536
+        self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'])
 
         if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
             self._sub_dynamic_color_lookup_table_msg_topic = ros_utils.create_or_update_subscriber(self._config, config, self._sub_dynamic_color_lookup_table_msg_topic, 'ROS_dynamic_color_lookup_table_msg_topic', ColorLookupTable, callback=self._field_color_detector.color_lookup_table_callback, queue_size=1, buff_size=2 ** 20)
@@ -387,19 +377,18 @@ class Vision(Node):
         """
         # Drops old images and cleans up the queue.
         # Still accepts very old images, that are most likely from ROS bags.
-        image_age = rospy.get_rostime() - image_msg.header.stamp
-        if 1.0 < image_age.to_sec() < 1000.0:
-            rospy.logwarn(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)",
-                            logger_name="vision")
+        image_age = self.get_clock().now() - time.Time.from_msg(image_msg.header.stamp)
+        if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
+            logger.warning(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)")
             return
 
         if self._transfer_image_msg_mutex.locked():
             return
 
         with self._transfer_image_msg_mutex:
-            # Transfer the image to the main thread
-            self._transfer_image_msg = image_msg
+            self._handle_image(image_msg)
 
+    @profile
     def _handle_image(self, image_msg):
         """
         Runs the vision pipeline
@@ -411,7 +400,7 @@ class Vision(Node):
 
         # Skip if image is None
         if image is None:
-            rospy.logdebug("Image content is None :(", logger_name="vision")
+            logger.debug("Image content is None :(")
             return
 
         # Check if its the first image callback
@@ -681,7 +670,7 @@ class Vision(Node):
 
         # Notify if there is a camera cap detected
         if sum(mean) < self._blind_threshold:
-            rospy.logerr("Image is too dark! Camera cap not removed?", logger_name="vision")
+            logger.error("Image is too dark! Camera cap not removed?")
             ros_utils.speak("Hey!   Remove my camera cap!", self._pub_audio)
 
 
