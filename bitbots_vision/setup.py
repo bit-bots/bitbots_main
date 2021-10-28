@@ -15,9 +15,12 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/config",
-            glob.glob(os.path.join('config', '*.yaml'))),
+            glob.glob('config/*.yaml')),
+        ('share/' + package_name + "/config/color_lookup_tables",
+            glob.glob('config/color_lookup_tables/*.pickle')),
         ('share/' + package_name + '/launch',
-            glob.glob(os.path.join('launch', '*.launch.py'))),
+            glob.glob('launch/*.launch.py')),
+        *[('share/' + package_name + '/' + os.path.dirname(file), [file]) for file in glob.glob('models/**/**/*.*', recursive=True)],
     ],
     install_requires=[
         'launch',
@@ -33,3 +36,4 @@ setup(
     }
 )
 
+#https://roboticsbackend.com/ros2-rclpy-parameter-callback/
