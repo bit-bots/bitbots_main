@@ -184,7 +184,7 @@ class YoloHandlerOpenCV(YoloHandler):
         """
         layer_names = self._net.getLayerNames()
 
-        output_layers = [layer_names[i[0] - 1] for i in self._net.getUnconnectedOutLayers()]
+        output_layers = [layer_names[i - 1] for i in self._net.getUnconnectedOutLayers()]
 
         return output_layers
 
@@ -237,7 +237,7 @@ class YoloHandlerOpenCV(YoloHandler):
             # Iterate over filtered boxes
             for i in indices:
                 # Get id
-                i = i[0]
+                i = i
                 # Get box
                 box = boxes[i]
                 # Convert the box position/size to int
