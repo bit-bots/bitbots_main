@@ -263,8 +263,6 @@ class Vision(Node):
             elif ros_utils.config_param_change(self._config, config, r'yolo_'):
                 self._yolo.set_config(config)
 
-            logger.error(str(self._yolo))
-
             # Set both ball and goalpost detector
             self._ball_detector = yolo_handler.YoloBallDetector(config, self._yolo)
             self._goalpost_detector = yolo_handler.YoloGoalpostDetector(config, self._yolo)
