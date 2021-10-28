@@ -32,6 +32,8 @@
   <depend>message_runtime</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
+  <depend>humanoid_league_msgs</depend>
+
 
 
   <export>
