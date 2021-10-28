@@ -328,7 +328,6 @@ class PixelListColorDetector(ColorDetector):
         color_lookup_table[color_values['blue'], color_values['green'], color_values['red']] = 255
         return color_lookup_table
 
-
     def match_pixel(self, pixel):
         # type: (np.array) -> bool
         """
@@ -339,17 +338,26 @@ class PixelListColorDetector(ColorDetector):
         """
         return self._color_lookup_table[pixel[0], pixel[1], pixel[2]]
 
-    def _mask_image(self, image):
-        # type: (np.array) -> np.array
+    def _mask_image(self, image, color_lookup_table=None):
+        # type: (np.array, np.array) -> np.array
         """
         Returns the color mask of the image
         (0 for not in color range and 255 for in color range)
-
         :param np.array image: input image
+        :param np.array color_lookup_table: Optional color lookup table. Mainly used for compability dynamic color lookup table.
         :return np.array: masked image
         """
-        image_reshape = image.reshape(-1,3)
-        mask = self._color_lookup_table[
+        if color_lookup_table is None:
+            color_lookup_table = self._color_lookup_table
+
+        # Reshape image to an one-dimensional list of pixels with r g and b values
+        image_reshape = image.reshape(-1,3).transpose()
+        # Query the corresponding look up table value for each pixel in the list using numpys fancy array index
+        # The r g and b values are used as the index in the lookup table for each pixel resulting in a new array with the
+        # same number of values as the original image pixels.
+        # Instead of the rgb values this array includes 255, if the given pixel is contained in the LUT or 0, if not.
+        # This array is then reshaped to match the two dimensional shape of the original image, resulting in a lut mask.
+        mask = color_lookup_table[
                 image_reshape[0],
                 image_reshape[1],
                 image_reshape[2],
@@ -421,26 +429,19 @@ class DynamicPixelListColorDetector(PixelListColorDetector):
         return mask
 
     def _mask_image(self, image, color_lookup_table=None):
-        # type: (np.array) -> np.array
+        # type: (np.array, np.array) -> np.array
         """
         Returns the color mask of the image based on the dynamic color lookup table unless other is specified
         (0 for not in color range and 255 for in color range)
         :param np.array image: input image
-        :param np.array color_lookup_table: Optional color lookup table
+        :param np.array color_lookup_table: Optional color lookup table. Mainly used for dynamic color lookup table.
         :return np.array: masked image
         """
         if color_lookup_table is None:
             global _dyn_color_lookup_table
             color_lookup_table = _dyn_color_lookup_table
-        image_reshape = image.reshape(-1,3).transpose()
-        mask = color_lookup_table[
-                image_reshape[0],
-                image_reshape[1],
-                image_reshape[2],
-            ].reshape(
-                image.shape[0],
-                image.shape[1])
-        return mask
+
+        return super(DynamicPixelListColorDetector, self)._mask_image(image, color_lookup_table)
 
     def color_lookup_table_callback(self, msg):
         # type: (ColorLookupTable) -> None

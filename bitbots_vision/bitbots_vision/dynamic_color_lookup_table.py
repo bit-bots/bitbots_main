@@ -12,7 +12,7 @@ from collections import deque
 from sensor_msgs.msg import Image
 from bitbots_msgs.msg import ColorLookupTable, Config
 from bitbots_vision.vision_modules import field_boundary, color, ros_utils
-from bitbots_ros_patches.rate import Rate
+
 
 class DynamicColorLookupTable:
     """
@@ -46,7 +46,7 @@ class DynamicColorLookupTable:
 
         # Init params
         self._vision_config = {}
-        self._rate = Rate(100)  # Rate of sleep timer
+        self._rate = rospy.Rate(100)  # Rate of sleep timer
         self._max_fps = None
         self._last_time = rospy.get_rostime()  # Time since we have received the last image
 
