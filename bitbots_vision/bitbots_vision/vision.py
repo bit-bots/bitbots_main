@@ -460,14 +460,12 @@ class Vision(Node):
         top_balls = candidate.Candidate.rating_threshold(
             balls_under_field_boundary,
             self._ball_candidate_threshold)
-        # check whether there are ball candidates
-        if top_balls:
-            # Convert ball cancidate list to ball message list
-            list_of_balls = map(ros_utils.build_ball_msg, top_balls)
-            # Create balls msg with the list of balls
-            balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
-            # Publish balls
-            self._pub_balls.publish(balls_msg)
+        # Convert ball cancidate list to ball message list
+        list_of_balls = map(ros_utils.build_ball_msg, top_balls)
+        # Create balls msg with the list of balls
+        balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
+        # Publish balls
+        self._pub_balls.publish(balls_msg)
 
         # Debug draw all ball candidates
         self._debug_image_creator.draw_ball_candidates(
