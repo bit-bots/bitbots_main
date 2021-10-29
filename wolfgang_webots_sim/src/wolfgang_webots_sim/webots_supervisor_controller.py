@@ -50,6 +50,7 @@ class SupervisorController:
         self.translation_fields = {}
         self.rotation_fields = {}
         self.joint_nodes = {}
+        self.link_nodes = {}
 
         root = self.supervisor.getRoot()
         children_field = root.getField('children')
@@ -63,7 +64,8 @@ class SupervisorController:
                 self.robot_nodes[name] = node
                 self.translation_fields[name] = node.getField("translation")
                 self.rotation_fields[name] = node.getField("rotation")
-                self.joint_nodes[name] = self.collect_joint_node_references(node, {})
+                self.joint_nodes[name], self.link_nodes[name] = self.collect_joint_and_link_node_references(node, {},
+                                                                                                            {})
 
         if self.ros_active:
             # need to handle these topics differently or we will end up having a double //
@@ -88,22 +90,25 @@ class SupervisorController:
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
 
-    def collect_joint_node_references(self, node, dict):
+    def collect_joint_and_link_node_references(self, node, joint_dict, link_dict):
         # this is a recursive function that iterates through the whole robot as this seems to be the only way to
         # get all joints
         # add node if it is a joint
+        if node.getType() == Node.SOLID:
+            name = node.getDef()
+            link_dict[name] = node
         if node.getType() == Node.HINGE_JOINT:
             name = node.getDef()
             # substract the "Joint" keyword due to naming convention
             name = name[:-5]
-            dict[name] = node
+            joint_dict[name] = node
             # the joints dont have children but an "endpoint" that we need to search through
             if node.isProto():
                 endpoint_field = node.getProtoField('endPoint')
             else:
                 endpoint_field = node.getField('endPoint')
             endpoint_node = endpoint_field.getSFNode()
-            self.collect_joint_node_references(endpoint_node, dict)
+            self.collect_joint_and_link_node_references(endpoint_node, joint_dict, link_dict)
         # needs to be done because Webots has two different getField functions for proto nodes and normal nodes
         if node.isProto():
             children_field = node.getProtoField('children')
@@ -112,8 +117,8 @@ class SupervisorController:
         if children_field is not None:
             for i in range(children_field.getCount()):
                 child = children_field.getMFNode(i)
-                self.collect_joint_node_references(child, dict)
-        return dict
+                self.collect_joint_and_link_node_references(child, joint_dict, link_dict)
+        return joint_dict, link_dict
 
     def step_sim(self):
         self.time += self.timestep / 1000

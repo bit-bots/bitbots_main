@@ -3,11 +3,9 @@ import math
 import random
 import sys
 import os
-import time
 
 import pybullet as p
-from time import sleep
-import time
+from time import sleep, time
 
 import rospy
 import tf
@@ -95,9 +93,8 @@ class Simulation:
         # standard parameters seem to be best. leave them like they are
         # p.setPhysicsEngineParameter(fixedTimeStep=self.timestep, numSubSteps=1)
         # no real time, as we will publish own clock, but we have option to switch to real_time by waiting
-        self.real_time = False
         p.setRealTimeSimulation(0)
-        self.last_wall_time = time.time()
+        self.last_wall_time = time()
 
         self.load_models()
 
@@ -397,12 +394,12 @@ class Simulation:
                     break
 
             # sleep long enough to run the simulation in real time and not in accelerated speed
-            if self.real_time:
+            if self.realtime:
                 # wait till one timestep has actually passed in real time
-                time_to_sleep = max(0, self.timestep - (time.time() - self.last_wall_time)) * (self.time_multiplier + 1)
-                time.sleep(time_to_sleep)
+                time_to_sleep = max(0, self.timestep - (time() - self.last_wall_time)) * (self.time_multiplier + 1)
+                sleep(time_to_sleep)
 
-        self.last_wall_time = time.time()
+        self.last_wall_time = time()
         self.time += self.timestep
 
     def step_pressure_filters(self, robot_index=1):
