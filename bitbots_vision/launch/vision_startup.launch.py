@@ -46,6 +46,7 @@ def generate_launch_description():
             executable='vision',
             name='bitbots_vision',
             output='screen',
+            condition= launch.conditions.IfCondition(launch.substitutions.LaunchConfiguration('debug')),
             parameters=[
                 get_package_share_directory('bitbots_vision') + '/config/visionparams.yaml',
                 get_package_share_directory('bitbots_vision') + '/config/simparams.yaml',
