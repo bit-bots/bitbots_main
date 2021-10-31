@@ -19,7 +19,7 @@ setup(
         ('share/' + package_name + "/config/color_lookup_tables",
             glob.glob('config/color_lookup_tables/*.pickle')),
         ('share/' + package_name + '/launch',
-            glob.glob('launch/*.launch.py')),
+            glob.glob('launch/*.launch')),
         *[('share/' + package_name + '/' + os.path.dirname(file), [file]) for file in glob.glob('models/**/**/*.*', recursive=True)],
     ],
     install_requires=[
