@@ -311,7 +311,7 @@ class RobotController:
         js.header.stamp = rospy.Time.from_seconds(self.time)
         js.position = []
         js.effort = []
-        for joint_name in self.proto_motor_names:
+        for joint_name in self.external_motor_names:
             js.name.append(self.motor_names_to_external_names[joint_name])
             value = self.sensors_dict[joint_name].getValue()
             js.position.append(value)
