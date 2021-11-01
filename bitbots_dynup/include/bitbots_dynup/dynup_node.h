@@ -43,7 +43,7 @@ namespace bitbots_dynup {
 typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
 
 /**
- * DynUpNode is that part of bitbots_dynamic_DynUp which takes care of interacting with ROS and utilizes a DynUpEngine
+ * DynupNode is that part of bitbots_dynamic_DynUp which takes care of interacting with ROS and utilizes a DynUpEngine
  * to calculate actual DynUp behavior.
  *
  * It provides an ActionServer for the bitbots_msgs::DynUpAction.
@@ -51,9 +51,9 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
  *
  * Additionally it publishes the DynUpEngines motor-goals back into ROS
  */
-class DynUpNode {
+class DynupNode {
  public:
-  DynUpNode();
+  DynupNode();
 
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level);
@@ -67,6 +67,13 @@ class DynUpNode {
   void imuCallback(const sensor_msgs::Imu &msg);
 
   void jointStateCallback(const sensor_msgs::JointState &jointstates);
+
+  bitbots_msgs::JointCommand step(double dt);
+  bitbots_msgs::JointCommand step(double dt,
+                                  const sensor_msgs::Imu &imu_msg,
+                                  const sensor_msgs::JointState &jointstate_msg);
+
+  void reset(int time=0);
 
  private:
   ros::Publisher debug_publisher_;
@@ -124,6 +131,11 @@ class DynUpNode {
    * Helper method to achieve correctly sampled rate
    */
   double getTimeDelta();
+
+  DynupEngine *getEngine();
+
+
+
 
 };
 
