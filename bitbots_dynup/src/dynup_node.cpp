@@ -2,8 +2,8 @@
 
 namespace bitbots_dynup {
 
-DynUpNode::DynUpNode() :
-    server_(node_handle_, "dynup", boost::bind(&DynUpNode::executeCb, this, _1), false),
+DynupNode::DynupNode() :
+    server_(node_handle_, "dynup", boost::bind(&DynupNode::executeCb, this, _1), false),
     visualizer_("debug/dynup"),
     listener_(tf_buffer_),
     robot_model_loader_("robot_description", false) {
@@ -39,20 +39,35 @@ DynUpNode::DynUpNode() :
 
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
-  cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynUpNode::imuCallback, this);
-  joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &DynUpNode::jointStateCallback, this);
+  cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynupNode::imuCallback, this);
+  joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &DynupNode::jointStateCallback, this);
   server_.start();
 }
 
-void DynUpNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
+bitbots_msgs::JointCommand DynupNode::step(double dt,
+                                          const sensor_msgs::Imu &imu_msg,
+                                          const sensor_msgs::JointState &jointstate_msg) {
+    // method for python interface. take all messages as parameters instead of using ROS
+    imuCallback(imu_msg);
+    jointStateCallback(jointstate_msg);
+    // update dynup engine response
+    bitbots_msgs::JointCommand joint_goals = step(dt);
+    return joint_goals;
+}
+
+bitbots_msgs::JointCommand DynupNode::step(double dt) {
+
+}
+
+void DynupNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
   ik_.setCurrentJointStates(jointstates);
 }
 
-void DynUpNode::imuCallback(const sensor_msgs::Imu &msg) {
+void DynupNode::imuCallback(const sensor_msgs::Imu &msg) {
   stabilizer_.setImu(msg);
 }
 
-void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
+void DynupNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level) {
   engine_rate_ = config.engine_rate;
   debug_ = config.display_debug;
 
@@ -69,12 +84,16 @@ void DynUpNode::reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t
   visualizer_.setParams(viz_params);
 }
 
-void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
+void DynupNode::reset(int time) {
+    engine_.reset(time);
+    ik_.reset();
+    stabilizer_.reset();
+}
+
+void DynupNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   // TODO: maybe switch to goal callback to be able to reject goals properly
   ROS_INFO("Dynup accepted new goal");
-  engine_.reset();
-  ik_.reset();
-  stabilizer_.reset();
+  reset();
   last_ros_update_time_ = 0;
   start_time_ = ros::Time::now().toSec();
   if (std::optional < std::tuple < geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose,
@@ -113,7 +132,7 @@ void DynUpNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   }
 }
 
-double DynUpNode::getTimeDelta() {
+double DynupNode::getTimeDelta() {
   // compute actual time delta that happened
   double dt;
   double current_ros_time = ros::Time::now().toSec();
@@ -133,7 +152,7 @@ double DynUpNode::getTimeDelta() {
   return dt;
 }
 
-void DynUpNode::loopEngine(ros::Rate loop_rate) {
+void DynupNode::loopEngine(ros::Rate loop_rate) {
   int failed_tick_counter = 0;
   double dt;
   /* Do the loop as long as nothing cancels it */
@@ -174,7 +193,7 @@ void DynUpNode::loopEngine(ros::Rate loop_rate) {
 std::optional<std::tuple<geometry_msgs::Pose,
                          geometry_msgs::Pose,
                          geometry_msgs::Pose,
-                         geometry_msgs::Pose>> DynUpNode::getCurrentPoses() {
+                         geometry_msgs::Pose>> DynupNode::getCurrentPoses() {
   ros::Time time = ros::Time::now();
 
   /* Construct zero-positions for all poses in their respective local frames */
@@ -213,8 +232,8 @@ std::optional<std::tuple<geometry_msgs::Pose,
   }
 
 }
-
-void DynUpNode::publishGoals(const bitbots_splines::JointGoals &goals) {
+//TODO: turn this and loopEngine into step(dt) function
+void DynupNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::JointCommand command;
   command.header.stamp = ros::Time::now();
@@ -239,17 +258,21 @@ void DynUpNode::publishGoals(const bitbots_splines::JointGoals &goals) {
   joint_goal_publisher_.publish(command);
 }
 
+DynupEngine *DynupNode::getEngine() {
+    return &engine_;
+}
+
 }
 
 int main(int argc, char *argv[]) {
   /* Setup ROS node */
   ros::init(argc, argv, "dynup");
-  bitbots_dynup::DynUpNode node;
+  bitbots_dynup::DynupNode node;
 
   /* Setup dynamic_reconfigure */
   dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig> dyn_reconf_server;
   dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig>::CallbackType f;
-  f = boost::bind(&bitbots_dynup::DynUpNode::reconfigureCallback, &node, _1, _2);
+  f = boost::bind(&bitbots_dynup::DynupNode::reconfigureCallback, &node, _1, _2);
   dyn_reconf_server.setCallback(f);
 
   ROS_INFO("Initialized DynUp and waiting for actions");

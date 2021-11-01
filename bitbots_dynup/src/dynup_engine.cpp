@@ -20,7 +20,16 @@ void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
 }
 
 void DynupEngine::reset() {
-  time_ = 0;
+    time_ = 0;
+    duration_ = 0;
+    r_foot_spline_ = bitbots_splines::PoseSpline();
+    l_hand_spline_ = bitbots_splines::PoseSpline();
+    r_hand_spline_ = bitbots_splines::PoseSpline();
+    l_foot_spline_ = bitbots_splines::PoseSpline();
+}
+
+void DynupEngine::reset(double time) {
+  time_ = time;
   duration_ = 0;
   r_foot_spline_ = bitbots_splines::PoseSpline();
   l_hand_spline_ = bitbots_splines::PoseSpline();
@@ -743,6 +752,10 @@ void DynupEngine::setParams(DynUpConfig params) {
   arm_offset_y_ = shoulder_offset_y_;
   offset_left_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, arm_offset_y_, arm_offset_z_});
   offset_right_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, -arm_offset_y_, arm_offset_z_});
+}
+
+int DynupEngine::getDirection() {
+    return direction_;
 }
 
 }
