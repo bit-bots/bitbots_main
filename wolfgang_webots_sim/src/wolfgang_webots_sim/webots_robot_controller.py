@@ -315,7 +315,7 @@ class RobotController:
             js.name.append(joint_name)
             value = self.sensors_dict[joint_name].getValue()
             js.position.append(value)
-            js.velocity.append(self.current_positions[i] - value)
+            js.velocity.append(self.current_positions[joint_name] - value)
             js.effort.append(self.motors_dict[joint_name].getTorqueFeedback())
             self.current_positions[joint_name] = value
         return js
