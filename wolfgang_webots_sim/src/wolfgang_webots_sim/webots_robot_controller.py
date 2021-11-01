@@ -312,7 +312,7 @@ class RobotController:
         js.position = []
         js.effort = []
         for joint_name in self.external_motor_names:
-            js.name.append(self.motor_names_to_external_names[joint_name])
+            js.name.append(joint_name)
             value = self.sensors_dict[joint_name].getValue()
             js.position.append(value)
             js.velocity.append(self.current_positions[i] - value)
