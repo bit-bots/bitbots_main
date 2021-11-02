@@ -8,8 +8,8 @@
 #include <map>
 #include <iostream>
 #include <moveit/py_bindings_tools/serialize_msg.h>
-#include <bitbots_dynup/bitbots_dynup_paramsConfig.h>
-#include "bitbots_dynuo/dynup_utils.h"
+#include <bitbots_dynup/DynUpConfig.h>
+#include "bitbots_dynup/dynup_utils.h"
 
 class PyDynupWrapper {
 public:

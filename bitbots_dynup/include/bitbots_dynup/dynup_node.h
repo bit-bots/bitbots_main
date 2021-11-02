@@ -91,6 +91,7 @@ class DynupNode {
   DynUpConfig params_;
   int stable_duration_;
   int engine_rate_;
+  int failed_tick_counter_;
   double last_ros_update_time_;
   double start_time_;
   bool debug_;
@@ -123,9 +124,9 @@ class DynupNode {
   void publishSupportFoot(bool is_left_dyn_up);
 
   /**
-   * Publish goals to ROS
+   * Creates the Goal Msg
    */
-  void publishGoals(const bitbots_splines::JointGoals &goals);
+  bitbots_msgs::JointCommand createGoalMsg(const bitbots_splines::JointGoals &goals);
 
   /**
    * Helper method to achieve correctly sampled rate
