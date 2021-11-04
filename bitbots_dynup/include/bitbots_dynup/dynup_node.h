@@ -19,6 +19,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <bitbots_msgs/DynUpAction.h>
 #include <bitbots_msgs/JointCommand.h>
+#include <bitbots_dynup/DynupPoses.h>
 
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -68,6 +69,15 @@ class DynupNode {
 
   void jointStateCallback(const sensor_msgs::JointState &jointstates);
 
+  DynupEngine *getEngine();
+
+  /**
+  * Retrieve current positions of left foot and trunk relative to right foot
+  *
+  * @return The pair of (right foot, left foot) poses if transformation was successfull
+  */
+  bitbots_dynup::DynupPoses getCurrentPoses();
+
   bitbots_msgs::JointCommand step(double dt);
   bitbots_msgs::JointCommand step(double dt,
                                   const sensor_msgs::Imu &imu_msg,
@@ -108,16 +118,6 @@ class DynupNode {
   void loopEngine(ros::Rate loop_rate);
 
   /**
-   * Retrieve current positions of left foot and trunk relative to right foot
-   *
-   * @return The pair of (right foot, left foot) poses if transformation was successfull
-   */
-  std::optional<std::tuple<geometry_msgs::Pose,
-                           geometry_msgs::Pose,
-                           geometry_msgs::Pose,
-                           geometry_msgs::Pose>> getCurrentPoses();
-
-  /**
    * Publish the current support_foot so that a correct base_footprint can be calculated
    * @param is_left_dyn_up Whether the left foot is the current DynUping foot, meaning it is in the air
    */
@@ -132,8 +132,6 @@ class DynupNode {
    * Helper method to achieve correctly sampled rate
    */
   double getTimeDelta();
-
-  DynupEngine *getEngine();
 
 
 

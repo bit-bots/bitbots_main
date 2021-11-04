@@ -123,15 +123,15 @@ void DynupNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   reset();
   last_ros_update_time_ = 0;
   start_time_ = ros::Time::now().toSec();
-  if (std::optional < std::tuple < geometry_msgs::Pose, geometry_msgs::Pose, geometry_msgs::Pose,
-      geometry_msgs::Pose >> poses = getCurrentPoses()) {
+  bitbots_dynup::DynupPoses poses = getCurrentPoses();
+  if (poses.header.stamp.sec == 0) {
     DynupRequest request;
-    request.l_foot_pose = std::get<0>(poses.value());
     request.direction = goal->direction;
     ik_.setDirection(request.direction);
-    request.r_foot_pose = std::get<1>(poses.value());
-    request.l_hand_pose = std::get<2>(poses.value());
-    request.r_hand_pose = std::get<3>(poses.value());
+    request.l_foot_pose = poses.l_leg_pose;
+    request.r_foot_pose = poses.r_leg_pose;
+    request.l_hand_pose = poses.l_arm_pose;
+    request.r_hand_pose = poses.r_arm_pose;
     engine_.setGoals(request);
     if (debug_) {
       visualizer_.displaySplines(engine_.getRFootSplines(), base_link_frame_);
@@ -196,10 +196,7 @@ void DynupNode::loopEngine(ros::Rate loop_rate) {
   }
 }
 
-std::optional<std::tuple<geometry_msgs::Pose,
-                         geometry_msgs::Pose,
-                         geometry_msgs::Pose,
-                         geometry_msgs::Pose>> DynupNode::getCurrentPoses() {
+bitbots_dynup::DynupPoses DynupNode::getCurrentPoses() {
   ros::Time time = ros::Time::now();
 
   /* Construct zero-positions for all poses in their respective local frames */
@@ -221,20 +218,24 @@ std::optional<std::tuple<geometry_msgs::Pose,
   r_hand_origin.header.stamp = time;
 
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
-  geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
+  bitbots_dynup::DynupPoses msg;
   try {
     //0.2 second timeout for transformations
+    geometry_msgs::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
     tf_buffer_.transform(l_foot_origin, l_foot_transformed, r_sole_frame_, ros::Duration(0.2));
     tf_buffer_.transform(r_foot_origin, r_foot_transformed, base_link_frame_, ros::Duration(0.2));
     tf_buffer_.transform(l_hand_origin, l_hand_transformed, base_link_frame_, ros::Duration(0.2));
     tf_buffer_.transform(r_hand_origin, r_hand_transformed, base_link_frame_, ros::Duration(0.2));
-    return std::make_tuple(l_foot_transformed.pose,
-                           r_foot_transformed.pose,
-                           l_hand_transformed.pose,
-                           r_hand_transformed.pose);
+
+    msg.l_leg_pose = l_foot_transformed.pose;
+    msg.r_leg_pose = r_foot_transformed.pose;
+    msg.l_arm_pose = l_hand_transformed.pose;
+    msg.r_arm_pose = r_hand_transformed.pose;
+    msg.header.stamp = ros::Time::now();
+    return msg;
   } catch (tf2::TransformException &exc) {
     ROS_ERROR_STREAM(exc.what());
-    return std::nullopt;
+    return msg;
   }
 
 }

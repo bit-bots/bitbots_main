@@ -15,7 +15,6 @@ class PyDynupWrapper {
 public:
     PyDynupWrapper(const std::string ns);
     moveit::py_bindings_tools::ByteString step(double dt,
-                                               const std::string &cmdvel_msg,
                                                const std::string &imu_msg,
                                                const std::string &jointstate_msg);
     moveit::py_bindings_tools::ByteString get_poses();
