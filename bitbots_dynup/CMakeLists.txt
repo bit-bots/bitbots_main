@@ -1,9 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_dynup)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 17)
+
 add_compile_options(-Wall -Werror -Wno-unused)
 
-
+set(SOURCES
+        src/dynup_node.cpp
+        src/dynup_engine.cpp
+        src/dynup_stabilizer.cpp
+        src/dynup_ik.cpp
+        src/visualizer.cpp
+        src/dynup_pywrapper.cpp
+        )
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
@@ -36,8 +46,9 @@ find_package(catkin REQUIRED COMPONENTS
     rotconv
 )
 
-catkin_python_setup()
+find_package(PkgConfig REQUIRED)
 
+catkin_python_setup()
 enable_bitbots_docs()
 
 generate_dynamic_reconfigure_options(
@@ -47,6 +58,7 @@ generate_dynamic_reconfigure_options(
 add_message_files(
         FILES
         DynupEngineDebug.msg
+        DynupPoses.msg
 )
 
 generate_messages(
@@ -55,33 +67,24 @@ generate_messages(
         geometry_msgs
 )
 
-catkin_package(
-    INCLUDE_DIRS include
-    CATKIN_DEPENDS rotconv
-)
-
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
 
-set(SOURCES
-    src/dynup_node.cpp
-    src/dynup_engine.cpp
-    src/dynup_stabilizer.cpp
-    src/dynup_ik.cpp
-    src/visualizer.cpp
-    src/dynup_pywrapper.cpp
+catkin_package(
+        INCLUDE_DIRS include
+        LIBRARIES ${PROJECT_NAME}
+        CATKIN_DEPENDS rotconv
 )
-
-
 
 add_executable(DynupNode ${SOURCES})
 
-add_dependencies(DynupNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages)
+add_dependencies(DynupNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(DynupNode ${catkin_LIBRARIES})
+target_link_libraries(DynupNode ${catkin_LIBRARIES} ${CODE_LIBRARIES})
 
 # create the lib
 add_library(py_dynup SHARED src/dynup_pywrapper.cpp ${SOURCES})

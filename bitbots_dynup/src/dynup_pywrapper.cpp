@@ -44,7 +44,6 @@ moveit::py_bindings_tools::ByteString PyDynupWrapper::step(double dt,
                                                           const std::string &jointstate_msg) {
     std::string result =
             to_python<bitbots_msgs::JointCommand>(dynup_node_->step(dt,
-                                                          from_python<geometry_msgs::Twist>(cmdvel_msg),
                                                           from_python<sensor_msgs::Imu>(imu_msg),
                                                           from_python<sensor_msgs::JointState>(jointstate_msg)));
     return moveit::py_bindings_tools::serializeMsg(result);
@@ -62,26 +61,9 @@ int PyDynupWrapper::get_direction() {
     return dynup_node_->getEngine()->getDirection();
 }
 
-moveit::py_bindings_tools::ByteString DynupWrapper::get_poses() {
-    //TODO: there has to be a better way to do this
-    std::tuple<geometry_msgs::Pose,
-                geometry_msgs::Pose,
-                geometry_msgs::Pose,
-                geometry_msgs::Pose> poses = dynup_node_->getCurrentPoses();
-
-    geometry_msgs::Pose l_f = std::get<0>(poses)
-    geometry_msgs::Pose r_f = std::get<1>(poses)
-    geometry_msgs::Pose l_h = std::get<2>(poses)
-    geometry_msgs::Pose r_h = std::get<3>(poses)
-
-    std::string result = std::make_tuple(
-            to_python<geometry_msgs::Pose>(l_f),
-            to_python<geometry_msgs::Pose>(r_f),
-            to_python<geometry_msgs::Pose>(l_h),
-            to_python<geometry_msgs::Pose>(r_h)
-            );
-
-    return moveit::py_bindings_tools::serializeMsg(result); //TODO: can I just do this?
+moveit::py_bindings_tools::ByteString PyDynupWrapper::get_poses() {
+    bitbots_dynup::DynupPoses poses = dynup_node_->getCurrentPoses();
+    return moveit::py_bindings_tools::serializeMsg(poses);
 }
 
 bool string2bool(const std::string &v) {
@@ -103,7 +85,7 @@ void PyDynupWrapper::set_node_dyn_reconf(const boost::python::object params) {
     list keylist = cppdict.keys();
 
     // create dyn reconf object
-    bitbots_dynup::bitbots_dynup_paramsConfig dyn_conf;
+    bitbots_dynup::DynUpConfig dyn_conf;
 
     // fill all values from dict to dyn reconf
     int const len = boost::python::len(keylist);
@@ -202,15 +184,13 @@ void PyDynupWrapper::set_node_dyn_reconf(const boost::python::object params) {
             dyn_conf.stable_duration = string2bool(valstr);
         } else if (keystr == "stabilization_timeout") {
             dyn_conf.stabilization_timeout = string2bool(valstr);
-        } else if (keystr == "Visualization") {
-            dyn_conf.Visualization = string2bool(valstr);
         } else if (keystr == "display_debug") {
             dyn_conf.display_debug = string2bool(valstr);
         } else {
             std::cout << keystr << " not known. WILL BE IGNORED\n";
         }
     }
-    dynup_node_->reconfigureCallback(dyn_conf, 0)
+    dynup_node_->reconfigureCallback(dyn_conf, 0);
 }
 
 
