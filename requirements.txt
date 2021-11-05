@@ -20,3 +20,5 @@ silx
 sklearn
 transforms3d
 git+https://github.com/catkin/catkin_tools.git
+git+https://github.com/SammyRamone/stable-baselines3.git
+git+https://github.com/bit-bots/deep_quintic.git
