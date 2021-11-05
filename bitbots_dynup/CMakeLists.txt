@@ -12,7 +12,6 @@ set(SOURCES
         src/dynup_stabilizer.cpp
         src/dynup_ik.cpp
         src/visualizer.cpp
-        src/dynup_pywrapper.cpp
         )
 
 set(Boost_USE_STATIC_LIBS OFF)
