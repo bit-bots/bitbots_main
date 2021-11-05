@@ -1,0 +1,2 @@
+rl_walk:
+  model_folder: 'walk_model_cartesian'
