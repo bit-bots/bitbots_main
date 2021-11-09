@@ -14,19 +14,20 @@ from humanoid_league_msgs.msg import (PoseWithCertainty,
                                       PoseWithCertaintyStamped)
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from tf2_geometry_msgs import PointStamped
+
 
 from copy import deepcopy
-from rcl_interface.msg import SetParametersResult
+from rcl_interfaces.msg import SetParametersResult
+from tf2_geometry_msgs import PointStamped
 
 class BallFilter(Node):
     def __init__(self):
         """
         creates Kalmanfilter and subscribes to messages which are needed
         """
-        super(BallFilter).__init__(self, automatically_declare_parameters_from_overrides=True)
+        super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.tf_buffer = tf2.Buffer(cache_time=rclpy.duration.Duration(seconds=2))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
 
         # Setup dynamic reconfigure config
         self.config = {}
@@ -60,9 +61,9 @@ class BallFilter(Node):
 
         filter_frame = config['filter_frame']
         if filter_frame == "odom":
-            self.filter_frame = config['~odom_frame'] #TODO: how to in ros2?
+            self.filter_frame = config['odom_frame'] #TODO: how to in ros2?
         elif filter_frame == "map":
-            self.filter_frame = config['~map_frame']
+            self.filter_frame = config['map_frame']
         self.get_logger().info(f"Using frame '{self.filter_frame}' for ball filtering")
 
         # adapt velocity factor to frequency
@@ -72,42 +73,42 @@ class BallFilter(Node):
 
         # publishes positions of ball
         self.ball_pose_publisher = self.create_publisher(
-            config['ball_position_publish_topic'],
             PoseWithCovarianceStamped,
-            queue_size=1
+            config['ball_position_publish_topic'],
+            1
         )
 
         # publishes velocity of ball
         self.ball_movement_publisher = self.create_publisher(
-            config['ball_movement_publish_topic'],
             TwistWithCovarianceStamped,
-            queue_size=1
+            config['ball_movement_publish_topic'],
+            1
         )
 
         # publishes ball
         self.ball_publisher = self.create_publisher(
-            config['ball_publish_topic'],
             PoseWithCertaintyStamped,
-            queue_size=1
+            config['ball_publish_topic'],
+            1
         )
 
         # setup subscriber
         self.subscriber = self.create_subscription(
-            config['ball_subscribe_topic'],
             PoseWithCertaintyArray,
+            config['ball_subscribe_topic'],
             self.ball_callback,
-            queue_size=1
+            1
         )
         
-#        self.reset_service = rospy.Service(
-#            config['ball_filter_reset_service_name'],
-#            Trigger,
-#            self.reset_filter_cb
-#        )
+        self.reset_service = self.create_service(
+            Trigger, #ist Trigger der type?
+            config['ball_filter_reset_service_name'],
+            self.reset_filter_cb
+        )
 
         self.config = config
         self.filter_timer = self.create_timer(self.filter_time_step, self.filter_step)
-        return SetParametersResult(succesful=True)
+        return SetParametersResult(successful=True)
 
     def ball_callback(self, msg: PoseWithCertaintyArray):
         """handles incoming ball messages"""
@@ -118,14 +119,16 @@ class BallFilter(Node):
             if ball.confidence < self.min_ball_confidence:
                 return
             self.last_ball_msg = ball
-            ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
+            ball_buffer = PointStamped()
+            ball_buffer.header = msg.header
+            ball_buffer.point = ball.pose.pose.position
             try:
                 self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame, timeout=rclpy.duration.Duration(seconds=0.3))
                 self.ball_header = msg.header
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self.get_logger().warning(e)
+                self.get_logger().warning(str(e))
 
-    def reset_filter_cb(self, req):
+    def reset_filter_cb(self, req, response): #hier response informieren? wenn man nichts damit macht?
         self.get_logger().info("Resetting bitbots ball filter...")
         self.filter_initialized = False
         return True, ""
@@ -224,30 +227,30 @@ class BallFilter(Node):
         pose_msg = PoseWithCovarianceStamped()
         pose_msg.header.frame_id = self.filter_frame
         pose_msg.header.stamp = rclpy.time.Time.to_msg(self.get_clock().now())
-        pose_msg.pose.pose.position.x = state[0]
-        pose_msg.pose.pose.position.y = state[1]
+        pose_msg.pose.pose.position.x = float(state[0])
+        pose_msg.pose.pose.position.y = float(state[1])
         pose_msg.pose.covariance = np.eye(6).reshape((36))
-        pose_msg.pose.covariance[0] = cov_mat[0][0]
-        pose_msg.pose.covariance[1] = cov_mat[0][1]
-        pose_msg.pose.covariance[6] = cov_mat[1][0]
-        pose_msg.pose.covariance[7] = cov_mat[1][1]
-        pose_msg.pose.pose.orientation.w = 1
+        pose_msg.pose.covariance[0] = float( cov_mat[0][0])
+        pose_msg.pose.covariance[1] = float(cov_mat[0][1])
+        pose_msg.pose.covariance[6] = float(cov_mat[1][0])
+        pose_msg.pose.covariance[7] = float(cov_mat[1][1])
+        pose_msg.pose.pose.orientation.w = 1.0
         self.ball_pose_publisher.publish(pose_msg)
         # velocity
         movement_msg = TwistWithCovarianceStamped()
         movement_msg.header = pose_msg.header
-        movement_msg.twist.twist.linear.x = state[2] * self.filter_rate
-        movement_msg.twist.twist.linear.y = state[3] * self.filter_rate
+        movement_msg.twist.twist.linear.x =float( state[2] * self.filter_rate)
+        movement_msg.twist.twist.linear.y =float( state[3] * self.filter_rate)
         movement_msg.twist.covariance = np.eye(6).reshape((36))
-        movement_msg.twist.covariance[0] = cov_mat[2][2]
-        movement_msg.twist.covariance[1] = cov_mat[2][3]
-        movement_msg.twist.covariance[6] = cov_mat[3][2]
-        movement_msg.twist.covariance[7] = cov_mat[3][3]
+        movement_msg.twist.covariance[0] = float(cov_mat[2][2])
+        movement_msg.twist.covariance[1] = float(cov_mat[2][3])
+        movement_msg.twist.covariance[6] = float(cov_mat[3][2])
+        movement_msg.twist.covariance[7] = float(cov_mat[3][3])
         self.ball_movement_publisher.publish(movement_msg)
         # ball
         ball_msg = PoseWithCertaintyStamped()
         ball_msg.header = pose_msg.header
-        ball_msg.pose.confidence = self.last_ball_msg.confidence
+        ball_msg.pose.confidence = float(self.last_ball_msg.confidence)
         ball_msg.pose.pose.pose.position = pose_msg.pose.pose.position
         ball_msg.pose.pose.covariance = pose_msg.pose.covariance
         self.ball_publisher.publish(ball_msg)

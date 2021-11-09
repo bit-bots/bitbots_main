@@ -18,6 +18,7 @@ setup(
             glob.glob('config/*.yaml')),
         ('share/' + package_name + '/launch',
             glob.glob('launch/*.launch')),
+        *[('share/' + package_name + '/' + os.path.dirname(file), [file]) for file in glob.glob('models/**/**/*.*', recursive=True)],
     ],
     install_requires=[
         'launch',
