@@ -57,33 +57,30 @@ bitbots_msgs::JointCommand DynupNode::step(double dt,
 
 bitbots_msgs::JointCommand DynupNode::step(double dt) {
     bitbots_msgs::JointCommand msg;
-    if (dt > 0) {
-        DynupResponse response = engine_.update(dt);
-        stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
-        DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
-        bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-        bitbots_msgs::DynUpFeedback feedback;
-        feedback.percent_done = engine_.getPercentDone();
-        server_.publishFeedback(feedback);
-        if (goals.first.empty()) {
-            failed_tick_counter_++;
-        }
-        if (stabilizer_.isStable()) {
-            stable_duration_ += 1;
-        } else {
-            stable_duration_ = 0;
-        }
-        if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing) ||
-                                             (ros::Time::now().toSec() - start_time_ >= engine_.getDuration() + params_.stabilization_timeout))) {
-            ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter_);
-            return msg;
-        }
-        return createGoalMsg(goals);
+    if (dt <= 0) {
+        dt = 0.001;
     }
-    else {
-        usleep(1);
-        return msg; //TODO: make sure that this doesn't break things
+    DynupResponse response = engine_.update(dt);
+    stabilizer_.setRSoleToTrunk(tf_buffer_.lookupTransform(r_sole_frame_, base_link_frame_, ros::Time(0)));
+    DynupResponse stabilized_response = stabilizer_.stabilize(response, ros::Duration(dt));
+    bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+    bitbots_msgs::DynUpFeedback feedback;
+    feedback.percent_done = engine_.getPercentDone();
+    server_.publishFeedback(feedback);
+    if (goals.first.empty()) {
+        failed_tick_counter_++;
     }
+    if (stabilizer_.isStable()) {
+        stable_duration_ += 1;
+    } else {
+        stable_duration_ = 0;
+    }
+    if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing) ||
+                                         (ros::Time::now().toSec() - start_time_ >= engine_.getDuration() + params_.stabilization_timeout))) {
+        ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter_);
+        return msg;
+    }
+    return createGoalMsg(goals);
 }
 
 void DynupNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
@@ -124,7 +121,7 @@ void DynupNode::executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   last_ros_update_time_ = 0;
   start_time_ = ros::Time::now().toSec();
   bitbots_dynup::DynupPoses poses = getCurrentPoses();
-  if (poses.header.stamp.sec == 0) {
+  if (!poses.header.stamp.sec == 0) {
     DynupRequest request;
     request.direction = goal->direction;
     ik_.setDirection(request.direction);
@@ -182,11 +179,11 @@ double DynupNode::getTimeDelta() {
 void DynupNode::loopEngine(ros::Rate loop_rate) {
   double dt;
   bitbots_msgs::JointCommand msg;
-  dt = getTimeDelta();
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
     ros::spinOnce();
     if (loop_rate.sleep()) {
+      dt = getTimeDelta();
       msg = step(dt);
       if (msg.joint_names.empty()) {
           break;
