@@ -1,55 +1,35 @@
 walking:
   engine:
-    # Pause of Z movement on highest point
-    # (single support cycle ratio [01])
-    foot_z_pause: 0.0
-    # Phase of flying foot apex
-    # (single support cycle phase [0:1])
-    foot_apex_phase: 0.5
-    # Let the foots downward trajectory end above the ground
-    # this is helpful if the support leg bends
-    # (in m >= 0)
     foot_put_down_z_offset: 0.0
-    #Phase time for moving the foot from Z offset to ground
-    #(in half cycle ratio [0:1])
-    foot_put_down_phase: 1.0
-    # Foot X/Y overshoot in ratio of step length
-    # (ratio >= 0)
-    foot_overshoot_ratio: 0.1
-    # Foot X/Y overshoot phase
-    # (single support cycle phase [foot_apex_phase:1]
-    foot_overshoot_phase: 0.85
-    # Trunk swing pause length in phase at apex
-    # (half cycle ratio [0:1])
-    trunk_pause: 0.0
-    # Trunk forward offset proportional to forward step
-    # (in m)
     trunk_x_offset_p_coef_forward: 0.0
-    # Trunk forward offset proportional to rotation step
-    # (in m/rad)
     trunk_x_offset_p_coef_turn: 0.0
 
     kick_length: 0.09
     kick_vel: 0.2
     kick_phase: 0.75
 
+    double_support_ratio: 0.0906819308038397
+    first_step_swing_factor: 1.45588362669552
+    foot_distance: 0.153971149815958
+    foot_rise: 0.0981244015039266
+    freq: 2.67729591070497
+    trunk_height: 0.395043834297363
+    trunk_phase: -0.084591045991683
+    trunk_pitch: 0.412632667400867
+    trunk_pitch_p_coef_forward: -0.447806874828813
+    trunk_pitch_p_coef_turn: 0.350555700807064
+    trunk_swing: 0.22424715492762
+    trunk_x_offset: -0.0364757504345581
+    trunk_y_offset: 0.00190753473333655
+    trunk_z_movement: 0.00383772572950785
+    early_termination_at: [0.0, 0.0, 27.0]
     first_step_trunk_phase: -0.5
-
-
-    double_support_ratio: 0.0733610368209149
-    first_step_swing_factor: 1.99816324920763
-    foot_distance: 0.238317150784785
-    foot_rise: 0.0965188848722401
-    freq: 2.60026632207194
-    trunk_height: 0.369366578729381
-    trunk_phase: -0.114230248691803
-    trunk_pitch: 0.376833592692892
-    trunk_pitch_p_coef_forward: 1.31783219131374
-    trunk_pitch_p_coef_turn: 0.930933529807866
-    trunk_swing: 0.267082144911548
-    trunk_x_offset: -0.0297465930545479
-    trunk_y_offset: -0.00768110435177957
-    trunk_z_movement: 0.00144762352257939
+    foot_apex_phase: 0.5
+    foot_overshoot_phase: 1.0
+    foot_overshoot_ratio: 0.0
+    foot_put_down_phase: 1.0
+    foot_z_pause: 0.0
+    trunk_pause: 0.0
 
 
   node:
