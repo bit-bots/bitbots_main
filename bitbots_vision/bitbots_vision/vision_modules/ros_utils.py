@@ -34,9 +34,6 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
     """
     # Check if topic parameter has changed
     if config_param_change(old_config, new_config, topic_key):
-        # Check if an publisher exists and unregister him
-        if publisher_object is not None:
-            publisher_object.unregister()
         # Create the new publisher
         publisher_object = node.create_publisher(
             data_class,
@@ -64,9 +61,6 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
     """
     # Check if topic parameter has changed
     if config_param_change(old_config, new_config, topic_key):
-        # Check if an subsciber exists and unregister him
-        if subscriber_object is not None:
-            subscriber_object.unregister()
         # Create the new subscriber
         subscriber_object = node.create_subscription(
             data_class,
