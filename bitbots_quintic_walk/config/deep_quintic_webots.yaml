@@ -8,21 +8,21 @@ walking:
     kick_vel: 0.2
     kick_phase: 0.75
 
-    double_support_ratio: 0.0906819308038397
-    first_step_swing_factor: 1.45588362669552
-    foot_distance: 0.153971149815958
-    foot_rise: 0.0981244015039266
-    freq: 2.67729591070497
-    trunk_height: 0.395043834297363
-    trunk_phase: -0.084591045991683
-    trunk_pitch: 0.412632667400867
-    trunk_pitch_p_coef_forward: -0.447806874828813
-    trunk_pitch_p_coef_turn: 0.350555700807064
-    trunk_swing: 0.22424715492762
-    trunk_x_offset: -0.0364757504345581
-    trunk_y_offset: 0.00190753473333655
-    trunk_z_movement: 0.00383772572950785
-    early_termination_at: [0.0, 0.0, 27.0]
+    double_support_ratio: 0.0264282002140171
+    first_step_swing_factor: 1.80591386587488
+    foot_distance: 0.179900277671633
+    foot_rise: 0.0819786291304007
+    freq: 1.96331645572213
+    trunk_height: 0.394780002666927
+    trunk_phase: -0.151653984431689
+    trunk_pitch: 0.105566178884548
+    trunk_pitch_p_coef_forward: -0.186068274875133
+    trunk_pitch_p_coef_turn: -0.457339940581988
+    trunk_swing: 0.154856652745882
+    trunk_x_offset: 0.00885762700992359
+    trunk_y_offset: 0.00369752824507733
+    trunk_z_movement: 0.0155005052923747
+    early_termination_at: [0.0, 0.0, 25.0]
     first_step_trunk_phase: -0.5
     foot_apex_phase: 0.5
     foot_overshoot_phase: 1.0
