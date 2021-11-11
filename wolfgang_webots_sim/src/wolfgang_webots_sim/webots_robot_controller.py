@@ -255,7 +255,7 @@ class RobotController:
             goal_position = self.convert_joint_radiant_to_scaled(joint_name, goal_position)
         if relative:
             goal_position = goal_position + self.get_joint_values([joint_name])[0]
-        motor.setPosition(float(goal_position))
+        motor.setPosition(goal_position)
         if goal_velocity == -1:
             motor.setVelocity(motor.getMaxVelocity())
         else:
