@@ -255,7 +255,7 @@ class RobotController:
             goal_position = self.convert_joint_radiant_to_scaled(joint_name, goal_position)
         if relative:
             goal_position = goal_position + self.get_joint_values([joint_name])[0]
-        motor.setPosition(goal_position)
+        motor.setPosition(float(goal_position))
         if goal_velocity == -1:
             motor.setVelocity(motor.getMaxVelocity())
         else:
@@ -293,12 +293,14 @@ class RobotController:
         for i in range(0, 6):
             self.motors[i].setPosition(positions[i])
 
-    def get_joint_values(self, used_joint_names):
+    def get_joint_values(self, used_joint_names, scaled=False):
         joint_positions = []
         joint_velocities = []
         joint_torques = []
         for joint_name in used_joint_names:
             value = self.sensors_dict[joint_name].getValue()
+            if scaled:
+                value = self.convert_joint_radiant_to_scaled(joint_name, value)
             joint_positions.append(value)
             joint_velocities.append(self.current_positions[joint_name] - value)
             joint_torques.append(self.motors_dict[joint_name].getTorqueFeedback())
