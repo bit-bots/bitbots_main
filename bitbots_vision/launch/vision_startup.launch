@@ -15,6 +15,9 @@
          <!-- Set vision config -->
         <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
 
+        <!-- Load special sim parameters-->
+        <param if="$(var sim)" from="$(find-pkg-share bitbots_vision)/config/simparams.yaml"/>
+
         <!-- Set debug params-->
         <param name="vision_publish_debug_image" value="$(var debug)" />
         <param name="vision_publish_HSV_mask_image" value="$(var debug)" />
@@ -22,9 +25,6 @@
 
         <!-- Start vision without ball detection-->
         <param name="neural_network_type" value="dummy" if="$(var dummyball)"/>
-
-        <!-- Load special sim parameters-->
-        <param if="$(var sim)" from="$(find-pkg-share bitbots_vision)/config/simparams.yaml"/>
 
         <param name="use_sim_time" value="true" if="$(var sim)"/>
     </node>
