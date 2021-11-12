@@ -216,7 +216,7 @@ void WalkEngine::updatePhase(double dt) {
     }
   }
   //Check for too long dt
-  if (dt > 0.25 / params_.freq) {
+  if (dt > 0.5001 / params_.freq) {
     ROS_ERROR_THROTTLE(1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }

@@ -49,9 +49,9 @@ walking:
     max_step_z: 100000
     max_step_angular: 10000
 
-    x_speed_multiplier: 1
-    y_speed_multiplier: 1
-    yaw_speed_multiplier: 1
+    x_speed_multiplier: 1.3
+    y_speed_multiplier: 1.5
+    yaw_speed_multiplier: 1.5
 
     vel: -1
     acc: -1
