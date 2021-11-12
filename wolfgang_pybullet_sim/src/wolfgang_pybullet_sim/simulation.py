@@ -432,7 +432,7 @@ class Simulation:
         if reset_joints:
             # we need to reset all joints to, otherwise they still have velocity
             for name in self.joints[robot_index]:
-                joint = self.joints[name]
+                joint = self.joints[robot_index][name]
                 try:
                     pos_in_rad = math.radians(self.initial_joint_positions[name])
                 except KeyError:
