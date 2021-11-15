@@ -42,7 +42,7 @@ class Simulation:
         self.torso_ids = {}
         self.last_step_time = 0
         self.realtime = False
-        self.time_multiplier = 1
+        self.time_multiplier = 0
 
         # config values
         self.start_position = [0, 0, 0.43]
