@@ -13,7 +13,7 @@
 
 class PyDynupWrapper {
 public:
-    PyDynupWrapper(const std::string ns);
+    PyDynupWrapper(std::string ns);
     moveit::py_bindings_tools::ByteString step(double dt,
                                                const std::string &imu_msg,
                                                const std::string &jointstate_msg);

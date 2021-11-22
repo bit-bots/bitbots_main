@@ -11,6 +11,7 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 
+
 class PyDynup(object):
     def __init__(self, namespace=""):
         if namespace != "" and namespace[-1] != '/':

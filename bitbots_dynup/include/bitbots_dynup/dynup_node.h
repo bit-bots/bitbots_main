@@ -54,7 +54,7 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
  */
 class DynupNode {
  public:
-  DynupNode();
+  explicit DynupNode(const std::string &ns = std::string());
 
   /** Callback for dynamic reconfigure */
   void reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level);

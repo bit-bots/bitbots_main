@@ -29,6 +29,10 @@ std::string to_python(const M &msg) {
     return str_msg;
 }
 
+PyDynupWrapper::PyDynupWrapper(const std::string ns) {
+    dynup_node_ = std::make_shared<bitbots_dynup::DynupNode>(ns);
+}
+
 void init_ros(std::string ns) {
     // remap clock
     std::map<std::string, std::string> remap = {{"/clock", "/" + ns + "clock"}};
