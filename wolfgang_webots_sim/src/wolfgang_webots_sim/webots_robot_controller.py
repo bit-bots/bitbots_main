@@ -420,7 +420,14 @@ class RobotController:
         return self.camera.getImage()
 
     def get_pressure_message(self):
-        return FootPressure(), FootPressure(), PointStamped(), PointStamped()
+        current_time = rospy.Time.from_sec(self.time)
+        cop_r = PointStamped()
+        cop_r.header.frame_id = self.r_sole_frame
+        cop_r.header.stamp = current_time
+        cop_l = PointStamped()
+        cop_l.header.frame_id = self.l_sole_frame
+        cop_l.header.stamp = current_time
+        return FootPressure(), FootPressure(), cop_l, cop_r
         current_time = rospy.Time.from_sec(self.time)
 
         left_pressure = FootPressure()
