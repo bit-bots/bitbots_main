@@ -48,6 +48,7 @@ if __name__ == '__main__':
         "clip_range": lambda _: 0.0,
     }
     model_path = os.path.join(model_folder, "model.zip")
+    rospy.loginfo(f"Loading model from {model_path}")
     model = ALGOS[loaded_args['algo']].load(model_path, env=venv, custom_objects=custom_objects)
 
     env.run_node(model, venv)
