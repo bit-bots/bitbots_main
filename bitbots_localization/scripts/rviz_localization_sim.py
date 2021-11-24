@@ -3,7 +3,7 @@
 import rospy
 import sys
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from bitbots_ros_patches.rate import Rate
+
 
 """
 This script simulates precision messages coming from a perfect localization.
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     rospy.init_node('sim_localization')
 
     pose_publisher = rospy.Publisher('pose_with_covariance', PoseWithCovarianceStamped, queue_size=1, latch=True)
-    rate = Rate(20)  # rate of 20 Hz
+    rate = rospy.Rate(20)  # rate of 20 Hz
 
     pose = PoseWithCovarianceStamped()
     pose.header.frame_id = 'map'
