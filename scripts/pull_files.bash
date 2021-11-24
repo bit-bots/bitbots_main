@@ -3,3 +3,5 @@
 META=$(dirname $(dirname $(realpath $0)))
 rm -rf $META/bitbots_vision/bitbots_vision/models/fcnn03 $META/bitbots_vision/bitbots_vision/models/fcnn031 $META/bitbots_vision/bitbots_vision/models/fcnn032 $META/bitbots_vision/bitbots_vision/models/classifier01
 wget -r -N -np -nH -P $META/bitbots_vision/bitbots_vision --reject "index.html*" "http://data.bit-bots.de/models/"
+
+wget -r -N -np -nH -P $META/bitbots_motion/bitbots_rl_walk --reject "index.html*" "http://data.bit-bots.de/rl_walk_models/"
