@@ -181,7 +181,7 @@ class SupervisorController:
         self.robot_nodes[name].resetPhysics()
 
     def set_initial_poses(self, req=None):
-        self.reset_robot_pose_rpy([0, 0, 0.42], [0, 0, 0], name="amy")
+        self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
         self.reset_robot_pose_rpy([-1, -3, 0.42], [0, 0.24, 1.57], name="rory")
         self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
         self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
