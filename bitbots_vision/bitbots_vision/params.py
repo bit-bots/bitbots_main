@@ -7,8 +7,7 @@ class ParameterGenerator:  # TODO own file
     self.param_cache = []
 
   def declare_params(self, node):
-    for param in self.param_cache:
-      node.declare_parameter(*param)
+    node.declare_parameter('', self.param_cache)
 
   def add(self, param_name, param_type=None, default=None, description=None, min=None, max=None, step=None):
     describtor = ParameterDescriptor()
