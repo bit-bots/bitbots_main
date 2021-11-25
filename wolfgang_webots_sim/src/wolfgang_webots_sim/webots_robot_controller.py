@@ -30,6 +30,7 @@ class RobotController:
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
+        self.foot_sensors_active = foot_sensors_active
         if robot_node is None:
             self.robot_node = Robot()
         else:
@@ -68,7 +69,7 @@ class RobotController:
             gyro_name = "imu gyro"
             camera_name = "camera"
             self.pressure_sensor_names = []
-            if foot_sensors_active:
+            if self.foot_sensors_active:
                 self.pressure_sensor_names = ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
             for name in self.pressure_sensor_names:
@@ -420,15 +421,16 @@ class RobotController:
         return self.camera.getImage()
 
     def get_pressure_message(self):
+
         current_time = rospy.Time.from_sec(self.time)
-        cop_r = PointStamped()
-        cop_r.header.frame_id = self.r_sole_frame
-        cop_r.header.stamp = current_time
-        cop_l = PointStamped()
-        cop_l.header.frame_id = self.l_sole_frame
-        cop_l.header.stamp = current_time
-        return FootPressure(), FootPressure(), cop_l, cop_r
-        current_time = rospy.Time.from_sec(self.time)
+        if not self.foot_sensors_active:
+            cop_r = PointStamped()
+            cop_r.header.frame_id = self.r_sole_frame
+            cop_r.header.stamp = current_time
+            cop_l = PointStamped()
+            cop_l.header.frame_id = self.l_sole_frame
+            cop_l.header.stamp = current_time
+            return FootPressure(), FootPressure(), cop_l, cop_r
 
         left_pressure = FootPressure()
         left_pressure.header.stamp = current_time
