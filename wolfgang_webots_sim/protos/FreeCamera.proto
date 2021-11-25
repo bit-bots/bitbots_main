@@ -1,0 +1,38 @@
+#VRML_SIM R2021b utf8
+# Just a camera that can be used to render images from the simulation
+
+PROTO FreeCamera [
+  field SFVec3f    translation 0 0.1 0
+  field SFRotation rotation    0 1 0 0
+  field SFString   name        "free_camera"
+  field  SFFloat     cameraFOV       1.04
+  field  SFInt32     cameraWidth     800
+  field  SFInt32     cameraHeight    600
+  field  SFString    controller      "<extern>"
+  field  MFString    controllerArgs  []
+
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    children [
+      Solid {
+        translation IS translation
+        rotation IS rotation
+        children [
+          Camera {
+            rotation 1.0 0.0 0.0 3.141591
+            name "camera"
+            fieldOfView IS cameraFOV
+            width IS cameraWidth
+            height IS cameraHeight
+          }
+        ]
+        name IS name
+      }
+    ]
+  }
+}

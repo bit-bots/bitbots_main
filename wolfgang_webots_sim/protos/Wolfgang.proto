@@ -1,4 +1,4 @@
-#VRML_SIM R2021a utf8
+#VRML_SIM R2021b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # This is a proto file for Webots for the Wolfgang
@@ -7,13 +7,17 @@
 PROTO Wolfgang [
   field  SFVec3f     translation     0 0 0
   field  SFRotation  rotation        0 1 0 0
-  field  SFString    name            "red player 1"  # Is `Robot.name`.
-  field  SFString    controller      "player"      # Is `Robot.controller`.
-  field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
-  field  SFString    customData      ""          # Is `Robot.customData`.
-  field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
-  field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
-  field  SFBool      selfCollision   TRUE        # Is `Robot.selfCollision`.
+  field  SFString    name            "red player 1" # Is `Robot.name`.
+  field  SFString    controller      "player"       # Is `Robot.controller`.
+  field  MFString    controllerArgs  []             # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""             # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE          # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE           # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE          # Is `Robot.selfCollision`.
+  field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
+  field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
+  field  SFBool      enableFootSensors TRUE         # Is `Robot.enableFootSensors`.
+  field  SFFloat     transparency    0              # Is `Robot.transparency`
   field  SFFloat     cameraFOV       1.04
   field  SFInt32     cameraWidth     800
   field  SFInt32     cameraHeight    600
@@ -67,6 +71,7 @@ PROTO Wolfgang [
         rotation -0.707105 0.000001 0.707108 3.141591
         children [
           Wolfgang_mx-64-bodyMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -75,6 +80,7 @@ PROTO Wolfgang [
         rotation -0.000000 -1.000000 -0.000000 1.570800
         children [
           Wolfgang_mx-64-bodyMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -83,6 +89,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_right_frontMesh {
+           transparency IS transparency
           }
         ]
       }
@@ -91,6 +98,7 @@ PROTO Wolfgang [
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
           Wolfgang_power_regulatorMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -99,6 +107,7 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_torso_bumper_rightMesh {
+           transparency IS transparency
           }
         ]
       }
@@ -107,6 +116,7 @@ PROTO Wolfgang [
         rotation -0.000000 0.000000 -1.000000 1.570800
         children [
           Wolfgang_coreMesh {
+           transparency IS transparency
           }
         ]
       }
@@ -115,6 +125,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 -1.000000 1.570800
         children [
           Wolfgang_batteryMesh {
+           transparency IS transparency
           }
         ]
       }
@@ -123,6 +134,7 @@ PROTO Wolfgang [
         rotation 0.577350 -0.577352 -0.577350 2.094399
         children [
           Wolfgang_mx-106_bodyMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -131,6 +143,7 @@ PROTO Wolfgang [
         rotation -0.577350 0.577352 -0.577350 2.094399
         children [
           Wolfgang_torso_bumper_leftMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -139,6 +152,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_right_backMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -147,6 +161,7 @@ PROTO Wolfgang [
         rotation 0.577350 -0.577352 -0.577350 2.094399
         children [
           Wolfgang_mx-106_bodyMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -155,6 +170,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_battery_clipMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -163,6 +179,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_left_backMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -171,6 +188,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_bottomMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -179,6 +197,7 @@ PROTO Wolfgang [
         rotation -0.707105 0.000001 0.707108 3.141591
         children [
           Wolfgang_imu_holderMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -187,6 +206,7 @@ PROTO Wolfgang [
         rotation 0.000000 -0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_frontMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -195,6 +215,7 @@ PROTO Wolfgang [
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
           Wolfgang_torso_bottomMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -212,6 +233,7 @@ PROTO Wolfgang [
                 %{else}%
                   baseColor  0.0, 0.0, 0.0
                  %{ end }%
+              transparency IS transparency
             }
             geometry Box {
               size 0.15 0.005 0.08
@@ -233,6 +255,7 @@ PROTO Wolfgang [
                 %{else}%
                   baseColor  0.0, 0.0, 0.0
                 %{ end }%
+                transparency IS transparency
               }
             geometry Box {
               size 0.15 0.005 0.08
@@ -245,6 +268,7 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_router_holder_leftMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -253,6 +277,7 @@ PROTO Wolfgang [
         rotation 0.707105 -0.707108 -0.000001 3.141591
         children [
           Wolfgang_imu_bottom_coverMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -261,6 +286,7 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_mx-64-bodyMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -269,6 +295,7 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_torso_bumper_leftMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -277,6 +304,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_speaker_holderMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -285,6 +313,7 @@ PROTO Wolfgang [
         rotation -0.000000 0.000000 -1.000000 1.570800
         children [
           Wolfgang_baseplate_odroid_xu4_coreMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -293,6 +322,7 @@ PROTO Wolfgang [
         rotation -0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_mainMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -301,6 +331,7 @@ PROTO Wolfgang [
         rotation -0.577350 0.577352 -0.577350 2.094399
         children [
           Wolfgang_torso_bumper_rightMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -309,6 +340,7 @@ PROTO Wolfgang [
         rotation 0.577350 0.577352 0.577350 2.094399
         children [
           Wolfgang_switch_holderMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -317,6 +349,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_torso_topMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -325,6 +358,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_dummy_speakerMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -333,6 +367,7 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_router_holder_rightMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -341,6 +376,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_battery_cage_holderMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -349,6 +385,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_left_frontMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -357,6 +394,7 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_battery_cageMesh {
+            transparency IS transparency
           }
         ]
       }
@@ -428,7 +466,7 @@ PROTO Wolfgang [
           }
         ]
       }
-      HingeJointWithBacklash {
+      DEF RShoulderPitchJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -460,6 +498,7 @@ PROTO Wolfgang [
               rotation -0.577350 -0.577352 0.577350 2.094399
               children [
                 Wolfgang_sea_connectorMesh {
+                  transparency IS transparency
                 }
               ]
             }
@@ -468,6 +507,7 @@ PROTO Wolfgang [
               rotation -0.577350 -0.577352 0.577350 2.094399
               children [
                 Wolfgang_sea_ninjaflexMesh {
+                  transparency IS transparency
                 }
               ]
             }
@@ -476,10 +516,11 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_shoulder_connectorMesh {
+                transparency IS transparency
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF RShoulderRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -510,6 +551,7 @@ PROTO Wolfgang [
                     rotation -1.000000 0.000000 -0.000000 1.570800
                     children [
                       Wolfgang_mx-64-bodyMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -518,6 +560,7 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -534,6 +577,7 @@ PROTO Wolfgang [
                           %{else}%
                             baseColor  0.0, 0.0, 0.0
                           %{ end }%
+                          transparency IS transparency
                         }
                         geometry Box {
                           size 0.07 0.005 0.04
@@ -546,6 +590,7 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -554,6 +599,7 @@ PROTO Wolfgang [
                     rotation -0.577350 0.577350 0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -562,6 +608,7 @@ PROTO Wolfgang [
                     rotation 0.577350 0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -570,10 +617,11 @@ PROTO Wolfgang [
                     rotation -0.000000 -1.000000 -0.000000 1.570800
                     children [
                       Wolfgang_upper_arm_spacerMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF RElbowJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -605,6 +653,7 @@ PROTO Wolfgang [
                           rotation -0.000001 0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_lower_armMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -613,6 +662,7 @@ PROTO Wolfgang [
                           rotation -1.000000 0.000000 0.000000 1.570800
                           children [
                             Wolfgang_mx-64-bodyMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -621,6 +671,7 @@ PROTO Wolfgang [
                           rotation 1.000000 0.000000 -0.000000 1.570800
                           children [
                             Wolfgang_handMesh {
+                            transparency IS transparency
                             }
                           ]
                         }
@@ -629,6 +680,7 @@ PROTO Wolfgang [
                           rotation -0.000001 0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_lower_armMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -639,6 +691,7 @@ PROTO Wolfgang [
                         }
                       ]
                       name "r_lower_arm [arm]"
+                      %{if fields.enableBoundingObject.value then}%
                       boundingObject Group {
                         children [
                           Transform {
@@ -784,19 +837,23 @@ PROTO Wolfgang [
                           }
                         ]
                       }
-                      physics Physics {
-                        density -1
-                        mass 0.207774
-                        centerOfMass [ 0.000436 -0.060513 -0.023555 ]
-                        inertiaMatrix [
-                          1.088000e-03 8.903240e-05 1.100760e-03
-                          -1.161880e-06 -5.015150e-09 -3.226660e-08
-                        ]
-                      }
+                      %{ end }%
+                      %{if fields.enablePhysics.value then}%
+                        physics Physics {
+                          density -1
+                          mass 0.207774
+                          centerOfMass [ 0.000436 -0.060513 -0.023555 ]
+                          inertiaMatrix [
+                            1.088000e-03 8.903240e-05 1.100760e-03
+                            -1.161880e-06 -5.015150e-09 -3.226660e-08
+                          ]
+                        }
+                      %{ end }%
                     }
                   }
                 ]
                 name "r_upper_arm [arm]"
+                %{if fields.enableBoundingObject.value then}%
                 boundingObject Group {
                   children [
                     Transform {
@@ -895,19 +952,23 @@ PROTO Wolfgang [
                     }
                   ]
                 }
-                physics Physics {
-                  density -1
-                  mass 0.228498
-                  centerOfMass [ 0.000098 -0.032582 -0.023923 ]
-                  inertiaMatrix [
-                    2.414550e-04 1.794910e-04 3.711270e-04
-                    8.094790e-07 7.570950e-08 -2.798500e-06
-                  ]
-                }
+                %{ end }%
+                %{if fields.enablePhysics.value then}%
+                  physics Physics {
+                    density -1
+                    mass 0.228498
+                    centerOfMass [ 0.000098 -0.032582 -0.023923 ]
+                    inertiaMatrix [
+                      2.414550e-04 1.794910e-04 3.711270e-04
+                      8.094790e-07 7.570950e-08 -2.798500e-06
+                    ]
+                  }
+                %{ end }%
               }
             }
           ]
           name "r_shoulder"
+          %{if fields.enableBoundingObject.value then}%
           boundingObject Group {
             children [
               Transform {
@@ -959,18 +1020,21 @@ PROTO Wolfgang [
               }
             ]
           }
-          physics Physics {
-            density -1
-            mass 0.041445
-            centerOfMass [ -0.013540 0.028402 -0.000002 ]
-            inertiaMatrix [
-              1.854730e-05 2.766490e-05 3.495730e-05
-              7.630580e-06 -9.413860e-10 8.718250e-10
-            ]
-          }
+          %{ end }%
+          %{if fields.enablePhysics.value then}%
+            physics Physics {
+              density -1
+              mass 0.041445
+              centerOfMass [ -0.013540 0.028402 -0.000002 ]
+              inertiaMatrix [
+                1.854730e-05 2.766490e-05 3.495730e-05
+                7.630580e-06 -9.413860e-10 8.718250e-10
+              ]
+            }
+          %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF LShoulderPitchJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -1002,6 +1066,7 @@ PROTO Wolfgang [
               rotation 0.577350 -0.577352 -0.577350 2.094399
               children [
                 Wolfgang_sea_connectorMesh {
+                  transparency IS transparency
                 }
               ]
             }
@@ -1010,6 +1075,7 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_shoulder_connectorMesh {
+                  transparency IS transparency
                 }
               ]
             }
@@ -1018,10 +1084,11 @@ PROTO Wolfgang [
               rotation 0.577350 -0.577352 -0.577350 2.094399
               children [
                 Wolfgang_sea_ninjaflexMesh {
+                  transparency IS transparency
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF LShoulderRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -1052,6 +1119,7 @@ PROTO Wolfgang [
                     rotation -1.000000 -0.000000 -0.000000 1.570800
                     children [
                       Wolfgang_mx-64-bodyMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1068,6 +1136,7 @@ PROTO Wolfgang [
                           %{else}%
                             baseColor  0.0, 0.0, 0.0
                           %{ end }%
+                          transparency IS transparency
                         }
                         geometry Box {
                           size 0.07 0.005 0.04
@@ -1081,6 +1150,7 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1089,6 +1159,7 @@ PROTO Wolfgang [
                     rotation 0.577350 0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1097,6 +1168,7 @@ PROTO Wolfgang [
                     rotation 0.000000 -1.000000 0.000000 1.570800
                     children [
                       Wolfgang_upper_arm_spacerMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1105,6 +1177,7 @@ PROTO Wolfgang [
                     rotation -0.577350 0.577350 0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1113,10 +1186,11 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF LElbowJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -1148,6 +1222,7 @@ PROTO Wolfgang [
                           rotation -1.000000 -0.000000 0.000000 1.570800
                           children [
                             Wolfgang_mx-64-bodyMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1156,6 +1231,7 @@ PROTO Wolfgang [
                           rotation 1.000000 0.000000 0.000000 1.570800
                           children [
                             Wolfgang_lower_armMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1164,6 +1240,7 @@ PROTO Wolfgang [
                           rotation -0.000001 0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_handMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1172,6 +1249,7 @@ PROTO Wolfgang [
                           rotation 1.000000 0.000000 0.000000 1.570800
                           children [
                             Wolfgang_lower_armMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1182,6 +1260,7 @@ PROTO Wolfgang [
                         }
                       ]
                       name "l_lower_arm [arm]"
+                      %{if fields.enableBoundingObject.value then}%
                       boundingObject Group {
                         children [
                           Transform {
@@ -1327,19 +1406,23 @@ PROTO Wolfgang [
                           }
                         ]
                       }
-                      physics Physics {
-                        density -1
-                        mass 0.207774
-                        centerOfMass [ -0.000436 -0.060513 -0.023555 ]
-                        inertiaMatrix [
-                          1.088000e-03 8.903240e-05 1.100760e-03
-                          -1.148360e-05 5.011780e-09 -3.226660e-08
-                        ]
-                      }
+                      %{ end }%
+                      %{if fields.enablePhysics.value then}%
+                        physics Physics {
+                          density -1
+                          mass 0.207774
+                          centerOfMass [ -0.000436 -0.060513 -0.023555 ]
+                          inertiaMatrix [
+                            1.088000e-03 8.903240e-05 1.100760e-03
+                            -1.148360e-05 5.011780e-09 -3.226660e-08
+                          ]
+                        }
+                      %{ end }%
                     }
                   }
                 ]
                 name "l_upper_arm [arm]"
+                %{if fields.enableBoundingObject.value then}%
                 boundingObject Group {
                   children [
                     Transform {
@@ -1438,19 +1521,23 @@ PROTO Wolfgang [
                     }
                   ]
                 }
-                physics Physics {
-                  density -1
-                  mass 0.228498
-                  centerOfMass [ 0.000098 -0.032582 -0.023923 ]
-                  inertiaMatrix [
-                    2.414550e-04 1.794910e-04 3.711270e-04
-                    8.094790e-07 7.570950e-08 -2.798500e-06
-                  ]
-                }
+                %{ end }%
+                %{if fields.enablePhysics.value then}%
+                  physics Physics {
+                    density -1
+                    mass 0.228498
+                    centerOfMass [ 0.000098 -0.032582 -0.023923 ]
+                    inertiaMatrix [
+                      2.414550e-04 1.794910e-04 3.711270e-04
+                      8.094790e-07 7.570950e-08 -2.798500e-06
+                    ]
+                  }
+                %{ end }%
               }
             }
           ]
           name "l_shoulder"
+          %{if fields.enableBoundingObject.value then}%
           boundingObject Group {
             children [
               Transform {
@@ -1502,18 +1589,21 @@ PROTO Wolfgang [
               }
             ]
           }
-          physics Physics {
-            density -1
-            mass 0.041445
-            centerOfMass [ -0.013540 0.028402 0.000002 ]
-            inertiaMatrix [
-              1.854730e-05 2.766490e-05 3.495730e-05
-              7.630580e-06 9.413860e-10 -8.718250e-10
-            ]
-          }
+          %{ end }%
+          %{if fields.enablePhysics.value then}%
+            physics Physics {
+              density -1
+              mass 0.041445
+              centerOfMass [ -0.013540 0.028402 0.000002 ]
+              inertiaMatrix [
+                1.854730e-05 2.766490e-05 3.495730e-05
+                7.630580e-06 9.413860e-10 -8.718250e-10
+              ]
+            }
+          %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF RHipYawJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -1545,10 +1635,11 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_hip_u_connectorMesh {
+                  transparency IS transparency
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF RHipRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -1580,6 +1671,7 @@ PROTO Wolfgang [
                     rotation -1.000000 0.000000 -0.000000 1.570800
                     children [
                       Wolfgang_mx-106_bodyMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1588,6 +1680,7 @@ PROTO Wolfgang [
                     rotation -0.707105 -0.707108 0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1596,6 +1689,7 @@ PROTO Wolfgang [
                     rotation 0.000000 -0.000000 -1.000000 3.141590
                     children [
                       Wolfgang_thrustbearingholderMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1604,6 +1698,7 @@ PROTO Wolfgang [
                     rotation -0.707105 0.707108 -0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -1612,10 +1707,11 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_mx-106_bodyMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF RHipPitchJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -1648,6 +1744,7 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_knee_connectorMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1656,6 +1753,7 @@ PROTO Wolfgang [
                           rotation 0.000000 1.000000 0.000000 0.000000
                           children [
                             Wolfgang_upper_legMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1664,6 +1762,7 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_part_1Mesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1672,6 +1771,7 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_xh-540Mesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1680,6 +1780,7 @@ PROTO Wolfgang [
                           rotation 1.000000 -0.000000 0.000000 1.570800
                           children [
                             Wolfgang_spring_holder_upperMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1688,6 +1789,7 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_part_1Mesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1696,6 +1798,7 @@ PROTO Wolfgang [
                           rotation 0.000000 1.000000 0.000000 0.000000
                           children [
                             Wolfgang_upper_legMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1704,6 +1807,7 @@ PROTO Wolfgang [
                           rotation -0.935113 0.250562 0.250563 1.637837
                           children [
                             Wolfgang_knee_connectorMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -1712,10 +1816,11 @@ PROTO Wolfgang [
                           rotation -0.092690 0.704064 0.704061 2.956736
                           children [
                             Wolfgang_upper_leg_spacerMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
-                        HingeJointWithBacklash {
+                        DEF RKneeJoint HingeJointWithBacklash {
                           gearMass IS gearMass
                           backlash IS backlash
                           jointParameters HingeJointParameters {
@@ -1747,6 +1852,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1755,6 +1861,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1763,6 +1870,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1771,6 +1879,7 @@ PROTO Wolfgang [
                                 rotation -0.543774 0.593428 0.593425 2.145487
                                 children [
                                   Wolfgang_lower_leg_spacerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1779,6 +1888,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_springholder_newMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1787,6 +1897,7 @@ PROTO Wolfgang [
                                 rotation 0.000001 1.000000 0.000001 3.316126
                                 children [
                                   Wolfgang_spring_holder_lowerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1795,6 +1906,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1803,10 +1915,11 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_springholder_bottomMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
-                              HingeJointWithBacklash {
+                              DEF RAnklePitchJoint HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
@@ -1839,6 +1952,7 @@ PROTO Wolfgang [
                                       rotation 0.577350 0.577352 0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1847,6 +1961,7 @@ PROTO Wolfgang [
                                       rotation -0.577350 -0.577350 -0.577352 2.094399
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1855,6 +1970,7 @@ PROTO Wolfgang [
                                       rotation -0.577350 0.577352 -0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1863,6 +1979,7 @@ PROTO Wolfgang [
                                       rotation 0.707105 0.000001 -0.707108 3.141591
                                       children [
                                         Wolfgang_thrustbearingholderMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1871,10 +1988,11 @@ PROTO Wolfgang [
                                       rotation -1.000000 -0.000000 0.000000 1.570800
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
-                                    HingeJointWithBacklash {
+                                    DEF RAnkleRollJoint HingeJointWithBacklash {
                                       gearMass IS gearMass
                                       backlash IS backlash
                                       jointParameters HingeJointParameters {
@@ -1910,6 +2028,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1918,6 +2037,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_ankleMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1926,6 +2046,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1934,6 +2055,7 @@ PROTO Wolfgang [
                                             rotation 1.000000 0.000000 -0.000000 3.141590
                                             children [
                                               Wolfgang_forcefoot_pcbMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1942,6 +2064,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1950,6 +2073,7 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_printed_rightMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1958,6 +2082,7 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 1.000000 3.141590
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1966,6 +2091,7 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_coverMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -1979,9 +2105,13 @@ PROTO Wolfgang [
                                             rotation -0.000000 0.000000 1.000000 1.570800
                                             name "r_toe"
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF rlb TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF rlb Solid {
+                                          %{end}%
                                             translation -0.030000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -1990,6 +2120,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2000,6 +2131,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rlb"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject DEF CLEAT_CAPSULE Transform {
                                               translation 0.000000 0.000000 0.005000
                                               rotation 1.000000 -0.000000 0.000000 1.570796
@@ -2010,19 +2142,26 @@ PROTO Wolfgang [
                                                 }
                                               ]
                                             }
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                -3.374920e-26 6.895340e-25 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  -3.374920e-26 6.895340e-25 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF rlf TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF rlf Solid {
+                                          %{end}%
                                             translation -0.030000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -2031,6 +2170,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2041,20 +2181,28 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rlf"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                9.475850e-26 8.925620e-25 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  9.475850e-26 8.925620e-25 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF rrf TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF rrf Solid {
+                                          %{end}%
                                             translation 0.060000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -2063,6 +2211,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2073,20 +2222,28 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rrf"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                -1.716080e-26 2.077160e-24 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  -1.716080e-26 2.077160e-24 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF rrb TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF rrb Solid {
+                                          %{end}%
                                             translation 0.060000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -2095,6 +2252,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2105,19 +2263,24 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "rrb"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                -5.419470e-26 3.455020e-24 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  -5.419470e-26 3.455020e-24 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
                                         ]
                                         name "r_foot [foot]"
+                                        %{if fields.enableBoundingObject.value then}%
                                         boundingObject Group {
                                           children [
                                             Transform {
@@ -2320,19 +2483,23 @@ PROTO Wolfgang [
                                             }
                                           ]
                                         }
-                                        physics Physics {
-                                          density -1
-                                          mass 0.268240
-                                          centerOfMass [ 0.011970 0.091109 -0.029858 ]
-                                          inertiaMatrix [
-                                            8.841070e-04 3.178300e-04 1.153640e-03
-                                            -3.293450e-05 5.014360e-06 -1.776930e-05
-                                          ]
-                                        }
+                                        %{ end }%
+                                        %{if fields.enablePhysics.value then}%
+                                          physics Physics {
+                                            density -1
+                                            mass 0.268240
+                                            centerOfMass [ 0.011970 0.091109 -0.029858 ]
+                                            inertiaMatrix [
+                                              8.841070e-04 3.178300e-04 1.153640e-03
+                                              -3.293450e-05 5.014360e-06 -1.776930e-05
+                                            ]
+                                          }
+                                        %{ end }%
                                       }
                                     }
                                   ]
                                   name "r_ankle"
+                                  %{if fields.enableBoundingObject.value then}%
                                   boundingObject Group {
                                     children [
                                       Transform {
@@ -2391,19 +2558,23 @@ PROTO Wolfgang [
                                       }
                                     ]
                                   }
-                                  physics Physics {
-                                    density -1
-                                    mass 0.319807
-                                    centerOfMass [ -0.020456 -0.015528 -0.026004 ]
-                                    inertiaMatrix [
-                                      1.167750e-04 2.684730e-04 2.728560e-04
-                                      -4.537980e-06 6.109860e-07 -7.450810e-07
-                                    ]
-                                  }
+                                  %{ end }%
+                                  %{if fields.enablePhysics.value then}%
+                                    physics Physics {
+                                      density -1
+                                      mass 0.319807
+                                      centerOfMass [ -0.020456 -0.015528 -0.026004 ]
+                                      inertiaMatrix [
+                                        1.167750e-04 2.684730e-04 2.728560e-04
+                                        -4.537980e-06 6.109860e-07 -7.450810e-07
+                                      ]
+                                    }
+                                  %{ end }%
                                 }
                               }
                             ]
                             name "r_lower_leg"
+                            %{if fields.enableBoundingObject.value then}%
                             boundingObject Group {
                               children [
                                 Transform {
@@ -2574,19 +2745,23 @@ PROTO Wolfgang [
                                 }
                               ]
                             }
-                            physics Physics {
-                              density -1
-                              mass 0.088064
-                              centerOfMass [ 0.001424 0.018357 -0.061708 ]
-                              inertiaMatrix [
-                                2.844560e-04 2.389080e-04 7.569320e-05
-                                8.111860e-07 -8.859630e-06 2.735930e-05
-                              ]
-                            }
+                            %{ end }%
+                            %{if fields.enablePhysics.value then}%
+                              physics Physics {
+                                density -1
+                                mass 0.088064
+                                centerOfMass [ 0.001424 0.018357 -0.061708 ]
+                                inertiaMatrix [
+                                  2.844560e-04 2.389080e-04 7.569320e-05
+                                  8.111860e-07 -8.859630e-06 2.735930e-05
+                                ]
+                              }
+                            %{ end }%
                           }
                         }
                       ]
                       name "r_upper_leg"
+                      %{if fields.enableBoundingObject.value then}%
                       boundingObject Group {
                         children [
                           Transform {
@@ -2931,19 +3106,23 @@ PROTO Wolfgang [
                           }
                         ]
                       }
-                      physics Physics {
-                        density -1
-                        mass 0.242311
-                        centerOfMass [ 0.004940 -0.028322 -0.133144 ]
-                        inertiaMatrix [
-                          5.017210e-04 4.589290e-04 1.134090e-04
-                          8.335820e-06 1.677430e-05 -4.689140e-06
-                        ]
-                      }
+                      %{ end }%
+                      %{if fields.enablePhysics.value then}%
+                        physics Physics {
+                          density -1
+                          mass 0.242311
+                          centerOfMass [ 0.004940 -0.028322 -0.133144 ]
+                          inertiaMatrix [
+                            5.017210e-04 4.589290e-04 1.134090e-04
+                            8.335820e-06 1.677430e-05 -4.689140e-06
+                          ]
+                        }
+                      %{ end }%
                     }
                   }
                 ]
                 name "r_hip_2"
+                %{if fields.enableBoundingObject.value then}%
                 boundingObject Group {
                   children [
                     Transform {
@@ -3002,19 +3181,23 @@ PROTO Wolfgang [
                     }
                   ]
                 }
-                physics Physics {
-                  density -1
-                  mass 0.319807
-                  centerOfMass [ 0.000014 -0.015528 -0.048641 ]
-                  inertiaMatrix [
-                    2.686270e-04 2.680490e-04 1.213310e-04
-                    6.085610e-08 6.672480e-07 3.876080e-06
-                  ]
-                }
+                %{ end }%
+                %{if fields.enablePhysics.value then}%
+                  physics Physics {
+                    density -1
+                    mass 0.319807
+                    centerOfMass [ 0.000014 -0.015528 -0.048641 ]
+                    inertiaMatrix [
+                      2.686270e-04 2.680490e-04 1.213310e-04
+                      6.085610e-08 6.672480e-07 3.876080e-06
+                    ]
+                  }
+                %{ end }%
               }
             }
           ]
           name "r_hip_1"
+          %{if fields.enableBoundingObject.value then}%
           boundingObject Group {
             children [
               Transform {
@@ -3056,18 +3239,21 @@ PROTO Wolfgang [
               }
             ]
           }
-          physics Physics {
-            density -1
-            mass 0.068973
-            centerOfMass [ 0.000000 0.010315 -0.000000 ]
-            inertiaMatrix [
-              2.189550e-05 1.071400e-04 1.105230e-04
-              -2.444750e-14 3.067930e-15 -6.566880e-11
-            ]
-          }
+          %{ end }%
+          %{if fields.enablePhysics.value then}%
+            physics Physics {
+              density -1
+              mass 0.068973
+              centerOfMass [ 0.000000 0.010315 -0.000000 ]
+              inertiaMatrix [
+                2.189550e-05 1.071400e-04 1.105230e-04
+                -2.444750e-14 3.067930e-15 -6.566880e-11
+              ]
+            }
+          %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF LHipYawJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -3099,10 +3285,11 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_hip_u_connectorMesh {
+                  transparency IS transparency
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF LHipRollJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -3134,6 +3321,7 @@ PROTO Wolfgang [
                     rotation -0.707105 0.707108 -0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -3142,6 +3330,7 @@ PROTO Wolfgang [
                     rotation -1.000000 -0.000000 0.000000 1.570800
                     children [
                       Wolfgang_mx-106_bodyMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -3150,6 +3339,7 @@ PROTO Wolfgang [
                     rotation -0.577350 0.577350 0.577352 2.094399
                     children [
                       Wolfgang_mx-106_bodyMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -3158,6 +3348,7 @@ PROTO Wolfgang [
                     rotation 0.707105 0.707108 0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -3166,10 +3357,11 @@ PROTO Wolfgang [
                     rotation 0.000000 0.000000 -1.000000 3.141590
                     children [
                       Wolfgang_thrustbearingholderMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
-                  HingeJointWithBacklash {
+                  DEF LHipPitchJoint HingeJointWithBacklash {
                     gearMass IS gearMass
                     backlash IS backlash
                     jointParameters HingeJointParameters {
@@ -3202,6 +3394,7 @@ PROTO Wolfgang [
                           rotation 0.965926 0.258819 0.000000 3.141590
                           children [
                             Wolfgang_knee_connectorMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3210,6 +3403,7 @@ PROTO Wolfgang [
                           rotation -1.000000 0.000000 -0.000000 3.141590
                           children [
                             Wolfgang_part_1Mesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3218,6 +3412,7 @@ PROTO Wolfgang [
                           rotation 0.000000 -0.000000 -1.000000 2.617990
                           children [
                             Wolfgang_knee_connectorMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3226,6 +3421,7 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 -1.000000 2.617990
                           children [
                             Wolfgang_xh-540Mesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3234,6 +3430,7 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 1.000000 2.617990
                           children [
                             Wolfgang_spring_holder_upperMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3242,6 +3439,7 @@ PROTO Wolfgang [
                           rotation 0.000000 1.000000 0.000000 0.000000
                           children [
                             Wolfgang_part_1Mesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3250,6 +3448,7 @@ PROTO Wolfgang [
                           rotation 0.000001 -0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_upper_legMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3258,6 +3457,7 @@ PROTO Wolfgang [
                           rotation 0.000001 0.707108 0.707105 3.141591
                           children [
                             Wolfgang_upper_legMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
@@ -3266,10 +3466,11 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 -1.000000 0.261799
                           children [
                             Wolfgang_upper_leg_spacerMesh {
+                              transparency IS transparency
                             }
                           ]
                         }
-                        HingeJointWithBacklash {
+                        DEF LKneeJoint HingeJointWithBacklash {
                           gearMass IS gearMass
                           backlash IS backlash
                           jointParameters HingeJointParameters {
@@ -3301,6 +3502,7 @@ PROTO Wolfgang [
                                 rotation 1.000000 -0.000000 0.000000 3.141590
                                 children [
                                   Wolfgang_springholder_newMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3309,6 +3511,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 -0.000000 -1.000000 3.141590
                                 children [
                                   Wolfgang_spring_holder_lowerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3317,6 +3520,7 @@ PROTO Wolfgang [
                                 rotation -1.000000 0.000000 0.000000 3.141590
                                 children [
                                   Wolfgang_springholder_bottomMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3325,6 +3529,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3333,6 +3538,7 @@ PROTO Wolfgang [
                                 rotation -0.543774 0.593428 0.593425 2.145487
                                 children [
                                   Wolfgang_lower_leg_spacerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3341,6 +3547,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3349,6 +3556,7 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3357,10 +3565,11 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
+                                    transparency IS transparency
                                   }
                                 ]
                               }
-                              HingeJointWithBacklash {
+                              DEF LAnklePitchJoint HingeJointWithBacklash {
                                 gearMass IS gearMass
                                 backlash IS backlash
                                 jointParameters HingeJointParameters {
@@ -3393,6 +3602,7 @@ PROTO Wolfgang [
                                       rotation 0.577350 -0.577352 -0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3401,6 +3611,7 @@ PROTO Wolfgang [
                                       rotation -0.707105 -0.000001 -0.707108 3.141591
                                       children [
                                         Wolfgang_thrustbearingholderMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3409,6 +3620,7 @@ PROTO Wolfgang [
                                       rotation -0.577350 -0.577352 0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3417,6 +3629,7 @@ PROTO Wolfgang [
                                       rotation -1.000000 -0.000000 -0.000000 1.570800
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3425,10 +3638,11 @@ PROTO Wolfgang [
                                       rotation -0.577350 0.577350 0.577352 2.094399
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
+                                          transparency IS transparency
                                         }
                                       ]
                                     }
-                                    HingeJointWithBacklash {
+                                    DEF LAnkleRollJoint HingeJointWithBacklash {
                                       gearMass IS gearMass
                                       backlash IS backlash
                                       jointParameters HingeJointParameters {
@@ -3464,6 +3678,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3472,6 +3687,7 @@ PROTO Wolfgang [
                                             rotation -0.000000 0.000000 1.000000 3.141590
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3480,6 +3696,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_printed_leftMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3488,6 +3705,7 @@ PROTO Wolfgang [
                                             rotation 1.000000 -0.000000 0.000000 3.141590
                                             children [
                                               Wolfgang_forcefoot_pcbMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3496,6 +3714,7 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_coverMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3504,6 +3723,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_ankleMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3512,6 +3732,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3520,6 +3741,7 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
+                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3533,9 +3755,13 @@ PROTO Wolfgang [
                                             rotation 0.000000 -0.000000 1.000000 1.570800
                                             name "l_toe"
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF llb TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF llb Solid {
+                                          %{end}%
                                             translation -0.060000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3544,6 +3770,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3554,20 +3781,28 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "llb"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                -2.540260e-27 -3.401230e-27 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  -2.540260e-27 -3.401230e-27 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF llf TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF llf Solid {
+                                          %{end}%
                                             translation -0.060000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3576,6 +3811,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3586,20 +3822,28 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "llf"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                2.251720e-27 8.036960e-25 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  2.251720e-27 8.036960e-25 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF lrf TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF lrf Solid {
+                                          %{end}%
                                             translation 0.030000 0.177000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3608,6 +3852,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3618,20 +3863,28 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "lrf"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ 0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                2.251720e-27 8.036960e-25 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ 0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  2.251720e-27 8.036960e-25 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
+                                          %{if fields.enableFootSensors.value then}%
                                           DEF lrb TouchSensor {
                                             type "force"
                                             resolution 0.00005
+                                          %{else}%
+                                          DEF lrb Solid {
+                                          %{end}%
                                             translation 0.030000 -0.007000 -0.034000
                                             rotation 0.70710678 0.70710678 0.0 3.141592653589793
                                             children [
@@ -3640,6 +3893,7 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
+                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3650,19 +3904,24 @@ PROTO Wolfgang [
                                               }
                                             ]
                                             name "lrb"
+                                            %{if fields.enableBoundingObject.value then}%
                                             boundingObject USE CLEAT_CAPSULE
-                                            physics Physics {
-                                              density -1
-                                              mass 0.001660
-                                              centerOfMass [ -0.000000 0.000156 -0.007759 ]
-                                              inertiaMatrix [
-                                                4.335200e-08 4.440490e-08 3.043970e-08
-                                                1.696600e-26 -1.091180e-24 -1.099300e-09
-                                              ]
-                                            }
+                                            %{ end }%
+                                            %{if fields.enablePhysics.value then}%
+                                              physics Physics {
+                                                density -1
+                                                mass 0.001660
+                                                centerOfMass [ -0.000000 0.000156 -0.007759 ]
+                                                inertiaMatrix [
+                                                  4.335200e-08 4.440490e-08 3.043970e-08
+                                                  1.696600e-26 -1.091180e-24 -1.099300e-09
+                                                ]
+                                              }
+                                            %{ end }%
                                           }
                                         ]
                                         name "l_foot [foot]"
+                                        %{if fields.enableBoundingObject.value then}%
                                         boundingObject Group {
                                           children [
                                             Transform {
@@ -3865,19 +4124,23 @@ PROTO Wolfgang [
                                             }
                                           ]
                                         }
-                                        physics Physics {
-                                          density -1
-                                          mass 0.268240
-                                          centerOfMass [ -0.012040 0.091109 -0.029858 ]
-                                          inertiaMatrix [
-                                            8.841070e-04 3.173780e-04 1.153190e-03
-                                            3.211040e-05 -5.092230e-06 -1.776930e-05
-                                          ]
-                                        }
+                                        %{ end }%
+                                        %{if fields.enablePhysics.value then}%
+                                          physics Physics {
+                                            density -1
+                                            mass 0.268240
+                                            centerOfMass [ -0.012040 0.091109 -0.029858 ]
+                                            inertiaMatrix [
+                                              8.841070e-04 3.173780e-04 1.153190e-03
+                                              3.211040e-05 -5.092230e-06 -1.776930e-05
+                                            ]
+                                          }
+                                        %{ end }%
                                       }
                                     }
                                   ]
                                   name "l_ankle"
+                                  %{if fields.enableBoundingObject.value then}%
                                   boundingObject Group {
                                     children [
                                       Transform {
@@ -3936,19 +4199,23 @@ PROTO Wolfgang [
                                       }
                                     ]
                                   }
-                                  physics Physics {
-                                    density -1
-                                    mass 0.319807
-                                    centerOfMass [ 0.020459 -0.015528 -0.026014 ]
-                                    inertiaMatrix [
-                                      1.167730e-04 2.684240e-04 2.728100e-04
-                                      4.538570e-06 -6.750130e-07 -7.240730e-07
-                                    ]
-                                  }
+                                  %{ end }%
+                                  %{if fields.enablePhysics.value then}%
+                                    physics Physics {
+                                      density -1
+                                      mass 0.319807
+                                      centerOfMass [ 0.020459 -0.015528 -0.026014 ]
+                                      inertiaMatrix [
+                                        1.167730e-04 2.684240e-04 2.728100e-04
+                                        4.538570e-06 -6.750130e-07 -7.240730e-07
+                                      ]
+                                    }
+                                  %{ end }%
                                 }
                               }
                             ]
                             name "l_lower_leg"
+                            %{if fields.enableBoundingObject.value then}%
                             boundingObject Group {
                               children [
                                 Transform {
@@ -4119,19 +4386,23 @@ PROTO Wolfgang [
                                 }
                               ]
                             }
-                            physics Physics {
-                              density -1
-                              mass 0.088064
-                              centerOfMass [ 0.001424 -0.018870 -0.061707 ]
-                              inertiaMatrix [
-                                2.849660e-04 2.389230e-04 7.617060e-05
-                                -1.116610e-06 -8.911270e-06 -2.544810e-05
-                              ]
-                            }
+                            %{ end }%
+                            %{if fields.enablePhysics.value then}%
+                              physics Physics {
+                                density -1
+                                mass 0.088064
+                                centerOfMass [ 0.001424 -0.018870 -0.061707 ]
+                                inertiaMatrix [
+                                  2.849660e-04 2.389230e-04 7.617060e-05
+                                  -1.116610e-06 -8.911270e-06 -2.544810e-05
+                                ]
+                              }
+                            %{ end }%
                           }
                         }
                       ]
                       name "l_upper_leg"
+                      %{if fields.enableBoundingObject.value then}%
                       boundingObject Group {
                         children [
                           Transform {
@@ -4476,19 +4747,23 @@ PROTO Wolfgang [
                           }
                         ]
                       }
-                      physics Physics {
-                        density -1
-                        mass 0.242311
-                        centerOfMass [ -0.004631 -0.132966 0.026322 ]
-                        inertiaMatrix [
-                          4.951120e-04 1.208280e-04 4.545970e-04
-                          -2.807040e-05 2.533730e-06 4.334050e-06
-                        ]
-                      }
+                      %{ end }%
+                      %{if fields.enablePhysics.value then}%
+                        physics Physics {
+                          density -1
+                          mass 0.242311
+                          centerOfMass [ -0.004631 -0.132966 0.026322 ]
+                          inertiaMatrix [
+                            4.951120e-04 1.208280e-04 4.545970e-04
+                            -2.807040e-05 2.533730e-06 4.334050e-06
+                          ]
+                        }
+                      %{ end }%
                     }
                   }
                 ]
                 name "l_hip_2"
+                %{if fields.enableBoundingObject.value then}%
                 boundingObject Group {
                   children [
                     Transform {
@@ -4547,19 +4822,23 @@ PROTO Wolfgang [
                     }
                   ]
                 }
-                physics Physics {
-                  density -1
-                  mass 0.319807
-                  centerOfMass [ -0.000004 -0.015528 -0.048644 ]
-                  inertiaMatrix [
-                    2.686730e-04 2.680980e-04 1.213330e-04
-                    -7.409920e-08 -6.187510e-07 3.883250e-06
-                  ]
-                }
+                %{ end }%
+                %{if fields.enablePhysics.value then}%
+                  physics Physics {
+                    density -1
+                    mass 0.319807
+                    centerOfMass [ -0.000004 -0.015528 -0.048644 ]
+                    inertiaMatrix [
+                      2.686730e-04 2.680980e-04 1.213330e-04
+                      -7.409920e-08 -6.187510e-07 3.883250e-06
+                    ]
+                  }
+                %{ end }%
               }
             }
           ]
           name "l_hip_1"
+          %{if fields.enableBoundingObject.value then}%
           boundingObject Group {
             children [
               Transform {
@@ -4600,19 +4879,22 @@ PROTO Wolfgang [
                 ]
               }
             ]
-}
-          physics Physics {
-            density -1
-            mass 0.068973
-            centerOfMass [ 0.000000 0.010315 -0.000000 ]
-            inertiaMatrix [
-              2.189550e-05 1.071400e-04 1.105230e-04
-              -2.444750e-14 3.067930e-15 -6.566880e-11
-            ]
           }
+          %{ end }%
+          %{if fields.enablePhysics.value then}%
+            physics Physics {
+              density -1
+              mass 0.068973
+              centerOfMass [ 0.000000 0.010315 -0.000000 ]
+              inertiaMatrix [
+                2.189550e-05 1.071400e-04 1.105230e-04
+                -2.444750e-14 3.067930e-15 -6.566880e-11
+              ]
+            }
+          %{ end }%
         }
       }
-      HingeJointWithBacklash {
+      DEF HeadPanJoint HingeJointWithBacklash {
         gearMass IS gearMass
         backlash IS backlash
         jointParameters HingeJointParameters {
@@ -4644,6 +4926,7 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_connector_shoulderMesh {
+                  transparency IS transparency
                 }
               ]
             }
@@ -4652,10 +4935,11 @@ PROTO Wolfgang [
               rotation 0.707105 -0.000001 0.707108 3.141591
               children [
                 Wolfgang_mx-64-bodyMesh {
+                  transparency IS transparency
                 }
               ]
             }
-            HingeJointWithBacklash {
+            DEF HeadTiltJoint HingeJointWithBacklash {
               gearMass IS gearMass
               backlash IS backlash
               jointParameters HingeJointParameters {
@@ -4687,6 +4971,7 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_lenseMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4695,6 +4980,7 @@ PROTO Wolfgang [
                     rotation 0.000000 1.000000 0.000000 0.000000
                     children [
                       Wolfgang_sea_ninjaflexMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4703,6 +4989,7 @@ PROTO Wolfgang [
                     rotation 0.000000 -0.000000 1.000000 3.141590
                     children [
                       Wolfgang_sea_connectorMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4711,6 +4998,7 @@ PROTO Wolfgang [
                     rotation 0.000000 1.000000 0.000000 0.000000
                     children [
                       Wolfgang_camera_side_basler_wolfgang_v2_2_rightMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4719,6 +5007,7 @@ PROTO Wolfgang [
                     rotation 0.000000 1.000000 0.000000 0.000000
                     children [
                       Wolfgang_camera_side_basler_wolfgang_v2_2_leftMesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4727,6 +5016,7 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_basler_ace_gige_c-mount_v01Mesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4735,6 +5025,7 @@ PROTO Wolfgang [
                     rotation 0.000000 -1.000000 0.000000 1.570800
                     children [
                       Wolfgang_camera_lower_basler_wolfgang_imu_v2_2Mesh {
+                        transparency IS transparency
                       }
                     ]
                   }
@@ -4827,6 +5118,7 @@ PROTO Wolfgang [
                   }
                 ]
                 name "head"
+                %{if fields.enableBoundingObject.value then}%
                 boundingObject Group {
                   children [
                     Transform {
@@ -4944,19 +5236,23 @@ PROTO Wolfgang [
                     }
                   ]
                 }
-                physics Physics {
-                  density -1
-                  mass 0.301358
-                  centerOfMass [ 0.000412 0.067494 -0.020065 ]
-                  inertiaMatrix [
-                    3.442650e-04 3.337130e-04 4.218980e-04
-                    -2.072630e-05 1.058260e-06 5.117220e-05
-                  ]
-                }
+                %{ end }%
+                %{if fields.enablePhysics.value then}%
+                  physics Physics {
+                    density -1
+                    mass 0.301358
+                    centerOfMass [ 0.000412 0.067494 -0.020065 ]
+                    inertiaMatrix [
+                      3.442650e-04 3.337130e-04 4.218980e-04
+                      -2.072630e-05 1.058260e-06 5.117220e-05
+                    ]
+                  }
+                %{ end }%
               }
             }
           ]
           name "neck"
+          %{if fields.enableBoundingObject.value then}%
           boundingObject Group {
             children [
               Transform {
@@ -4979,19 +5275,23 @@ PROTO Wolfgang [
               }
             ]
           }
-          physics Physics {
-            density -1
-            mass 0.148233
-            centerOfMass [ 0.018691 -0.000078 -0.022014 ]
-            inertiaMatrix [
-              3.893550e-05 5.763180e-05 6.254140e-05
-              -5.287090e-07 4.956980e-06 -2.281580e-08
-            ]
-          }
+          %{ end }%
+          %{if fields.enablePhysics.value then}%
+            physics Physics {
+              density -1
+              mass 0.148233
+              centerOfMass [ 0.018691 -0.000078 -0.022014 ]
+              inertiaMatrix [
+                3.893550e-05 5.763180e-05 6.254140e-05
+                -5.287090e-07 4.956980e-06 -2.281580e-08
+              ]
+            }
+          %{ end }%
         }
       }
     ]
-    name IS name 
+    name IS name
+    %{if fields.enableBoundingObject.value then}%
     boundingObject Group {
       children [
         Transform {
@@ -5203,14 +5503,17 @@ PROTO Wolfgang [
         }
       ]
     }
-    physics Physics {
-      density -1
-      mass 2.083900
-      centerOfMass [ -0.005644 -0.002630 0.109553 ]
-      inertiaMatrix [
-        1.838960e-02 1.587720e-02 7.803170e-03
-        -6.801730e-05 -1.408270e-03 1.040740e-04
-      ]
-    }
+    %{ end }%
+    %{if fields.enablePhysics.value then}%
+      physics Physics {
+        density -1
+        mass 2.083900
+        centerOfMass [ -0.005644 -0.002630 0.109553 ]
+        inertiaMatrix [
+          1.838960e-02 1.587720e-02 7.803170e-03
+          -6.801730e-05 -1.408270e-03 1.040740e-04
+        ]
+      }
+    %{ end }%
   }
 }

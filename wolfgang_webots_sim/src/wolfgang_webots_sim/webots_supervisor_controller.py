@@ -1,7 +1,7 @@
-from controller import Supervisor
+from controller import Supervisor, Keyboard, Node
 
 import rospy
-from geometry_msgs.msg import Quaternion, Pose, Point
+from geometry_msgs.msg import Quaternion, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
 from bitbots_msgs.srv import SetObjectPose, SetObjectPoseResponse, SetObjectPosition, SetObjectPositionResponse
 
@@ -30,8 +30,8 @@ class SupervisorController:
         self.model_states_active = model_states_active
         self.time = 0
         self.clock_msg = Clock()
-
         self.supervisor = Supervisor()
+        self.keyboard_activated = False
 
         if mode == 'normal':
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
@@ -46,19 +46,26 @@ class SupervisorController:
         self.sensors = []
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
-        # resolve the node for corresponding name
-        self.robot_names = ["amy", "rory", "jack", "donna"]
         self.robot_nodes = {}
         self.translation_fields = {}
         self.rotation_fields = {}
+        self.joint_nodes = {}
+        self.link_nodes = {}
 
-        # check if None
-        for name in self.robot_names:
-            node = self.supervisor.getFromDef(name)
-            if node is not None:
+        root = self.supervisor.getRoot()
+        children_field = root.getField('children')
+        children_count = children_field.getCount()
+        for i in range(children_count):
+            node = children_field.getMFNode(i)
+            name_field = node.getField('name')
+            if name_field is not None and node.getType() == Node.ROBOT:
+                # this is a robot
+                name = name_field.getSFString()
                 self.robot_nodes[name] = node
                 self.translation_fields[name] = node.getField("translation")
                 self.rotation_fields[name] = node.getField("rotation")
+                self.joint_nodes[name], self.link_nodes[name] = self.collect_joint_and_link_node_references(node, {},
+                                                                                                            {})
 
         if self.ros_active:
             # need to handle these topics differently or we will end up having a double //
@@ -83,6 +90,36 @@ class SupervisorController:
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
 
+    def collect_joint_and_link_node_references(self, node, joint_dict, link_dict):
+        # this is a recursive function that iterates through the whole robot as this seems to be the only way to
+        # get all joints
+        # add node if it is a joint
+        if node.getType() == Node.SOLID:
+            name = node.getDef()
+            link_dict[name] = node
+        if node.getType() == Node.HINGE_JOINT:
+            name = node.getDef()
+            # substract the "Joint" keyword due to naming convention
+            name = name[:-5]
+            joint_dict[name] = node
+            # the joints dont have children but an "endpoint" that we need to search through
+            if node.isProto():
+                endpoint_field = node.getProtoField('endPoint')
+            else:
+                endpoint_field = node.getField('endPoint')
+            endpoint_node = endpoint_field.getSFNode()
+            self.collect_joint_and_link_node_references(endpoint_node, joint_dict, link_dict)
+        # needs to be done because Webots has two different getField functions for proto nodes and normal nodes
+        if node.isProto():
+            children_field = node.getProtoField('children')
+        else:
+            children_field = node.getField('children')
+        if children_field is not None:
+            for i in range(children_field.getCount()):
+                child = children_field.getMFNode(i)
+                self.collect_joint_and_link_node_references(child, joint_dict, link_dict)
+        return joint_dict, link_dict
+
     def step_sim(self):
         self.time += self.timestep / 1000
         self.supervisor.step(self.timestep)
@@ -93,6 +130,23 @@ class SupervisorController:
             self.publish_clock()
             if self.model_states_active:
                 self.publish_model_states()
+
+    def handle_gui(self):
+        if not self.keyboard_activated:
+            self.keyboard = Keyboard()
+            self.keyboard.enable(100)
+            self.keyboard_activated = True
+        key = self.keyboard.getKey()
+        if key == ord('R'):
+            self.reset()
+        elif key == ord('P'):
+            self.set_initial_poses()
+        elif key == Keyboard.SHIFT + ord('R'):
+            try:
+                self.reset_ball()
+            except AttributeError:
+                print("No ball in simulation that can be reset")
+        return key
 
     def publish_clock(self):
         self.clock_msg.clock = rospy.Time.from_seconds(self.time)
@@ -121,6 +175,10 @@ class SupervisorController:
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
         return EmptyResponse()
+
+    def reset_robot_init(self, name="amy"):
+        self.robot_nodes[name].loadState('__init__')
+        self.robot_nodes[name].resetPhysics()
 
     def set_initial_poses(self, req=None):
         self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
@@ -240,6 +298,15 @@ class SupervisorController:
                 robot_pose.orientation = Quaternion(*orientation)
                 msg.name.append(robot_name)
                 msg.pose.append(robot_pose)
+                lin_vel, ang_vel = self.get_robot_velocity(robot_name)
+                twist = Twist()
+                twist.linear.x = lin_vel[0]
+                twist.linear.y = lin_vel[1]
+                twist.linear.z = lin_vel[2]
+                twist.angular.x = ang_vel[0]
+                twist.angular.y = ang_vel[1]
+                twist.angular.z = ang_vel[2]
+                msg.twist.append(twist)
 
                 head_node = robot_node.getFromProtoDef("head")
                 head_position = head_node.getPosition()
@@ -252,10 +319,12 @@ class SupervisorController:
                 msg.name.append(robot_name + "_head")
                 msg.pose.append(head_pose)
 
-            ball_position = self.ball.getField("translation").getSFVec3f()
-            ball_pose = Pose()
-            ball_pose.position = Point(*ball_position)
-            ball_pose.orientation = Quaternion()
-            msg.name.append("ball")
-            msg.pose.append(ball_pose)
+            if self.ball is not None:
+                ball_position = self.ball.getField("translation").getSFVec3f()
+                ball_pose = Pose()
+                ball_pose.position = Point(*ball_position)
+                ball_pose.orientation = Quaternion()
+                msg.name.append("ball")
+                msg.pose.append(ball_pose)
+
             self.model_state_publisher.publish(msg)

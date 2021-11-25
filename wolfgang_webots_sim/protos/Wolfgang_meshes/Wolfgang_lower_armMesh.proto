@@ -1,14 +1,15 @@
-#VRML_SIM R2021a utf8
+#VRML_SIM R2021b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # tags: hidden
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_lower_armMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance CarbonFiberAppearance {}
+    appearance WolfgangCarbonFiberAppearance {transparency IS transparency}
     geometry DEF lower_arm IndexedFaceSet {
       coord Coordinate {
         point [

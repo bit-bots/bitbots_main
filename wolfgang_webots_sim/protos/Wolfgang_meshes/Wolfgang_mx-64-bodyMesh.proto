@@ -1,14 +1,15 @@
-#VRML_SIM R2021a utf8
+#VRML_SIM R2021b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # tags: hidden
 # Extracted from: wolfgang.urdf
 
 PROTO Wolfgang_mx-64-bodyMesh [
+    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangMotor {}
+    appearance WolfgangMotor {transparency IS transparency}
     geometry DEF mx-64-body IndexedFaceSet {
       coord Coordinate {
         point [

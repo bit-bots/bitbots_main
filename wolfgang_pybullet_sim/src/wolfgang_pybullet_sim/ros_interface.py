@@ -42,6 +42,8 @@ class ROSInterface:
         self.odom_msg = Odometry()
         self.odom_msg.header.frame_id = "odom"
         self.odom_msg.child_frame_id = "base_link"
+        # we just use the first robot
+        self.robot_index = self.simulation.robot_indexes[0]
 
         srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
 
@@ -96,7 +98,7 @@ class ROSInterface:
         velocities = []
         efforts = []
         for name in self.joint_state_msg.name:
-            joint = self.simulation.joints[name]
+            joint = self.simulation.joints[self.robot_index][name]
             position, velocity, forces, applied_torque = joint.get_state()
             positions.append(position)
             velocities.append(velocity)
@@ -140,10 +142,10 @@ class ROSInterface:
         if len(self.simulation.pressure_sensors) == 0:
             rospy.logwarn_once("No pressure sensors found in simulation model")
             return self.foot_msg_left
-        f_llb = self.simulation.pressure_sensors["LLB"].get_force()
-        f_llf = self.simulation.pressure_sensors["LLF"].get_force()
-        f_lrf = self.simulation.pressure_sensors["LRF"].get_force()
-        f_lrb = self.simulation.pressure_sensors["LRB"].get_force()
+        f_llb = self.simulation.pressure_sensors[self.robot_index]["LLB"].get_force()
+        f_llf = self.simulation.pressure_sensors[self.robot_index]["LLF"].get_force()
+        f_lrf = self.simulation.pressure_sensors[self.robot_index]["LRF"].get_force()
+        f_lrb = self.simulation.pressure_sensors[self.robot_index]["LRB"].get_force()
         self.foot_msg_left.left_back = f_llb[1]
         self.foot_msg_left.left_front = f_llf[1]
         self.foot_msg_left.right_front = f_lrf[1]
@@ -154,10 +156,10 @@ class ROSInterface:
         if len(self.simulation.pressure_sensors) == 0:
             rospy.logwarn_once("No pressure sensors found in simulation model")
             return self.foot_msg_right
-        f_rlb = self.simulation.pressure_sensors["RLB"].get_force()
-        f_rlf = self.simulation.pressure_sensors["RLF"].get_force()
-        f_rrf = self.simulation.pressure_sensors["RRF"].get_force()
-        f_rrb = self.simulation.pressure_sensors["RRB"].get_force()
+        f_rlb = self.simulation.pressure_sensors[self.robot_index]["RLB"].get_force()
+        f_rlf = self.simulation.pressure_sensors[self.robot_index]["RLF"].get_force()
+        f_rrf = self.simulation.pressure_sensors[self.robot_index]["RRF"].get_force()
+        f_rrb = self.simulation.pressure_sensors[self.robot_index]["RRB"].get_force()
         self.foot_msg_right.left_back = f_rlb[1]
         self.foot_msg_right.left_front = f_rlf[1]
         self.foot_msg_right.right_front = f_rrf[1]
@@ -170,15 +172,15 @@ class ROSInterface:
             rospy.logwarn_once("No pressure sensors found in simulation model")
             return
 
-        f_llb = self.simulation.pressure_sensors["LLB"].get_force()
-        f_llf = self.simulation.pressure_sensors["LLF"].get_force()
-        f_lrf = self.simulation.pressure_sensors["LRF"].get_force()
-        f_lrb = self.simulation.pressure_sensors["LRB"].get_force()
+        f_llb = self.simulation.pressure_sensors[self.robot_index]["LLB"].get_force()
+        f_llf = self.simulation.pressure_sensors[self.robot_index]["LLF"].get_force()
+        f_lrf = self.simulation.pressure_sensors[self.robot_index]["LRF"].get_force()
+        f_lrb = self.simulation.pressure_sensors[self.robot_index]["LRB"].get_force()
 
-        f_rlb = self.simulation.pressure_sensors["RLB"].get_force()
-        f_rlf = self.simulation.pressure_sensors["RLF"].get_force()
-        f_rrf = self.simulation.pressure_sensors["RRF"].get_force()
-        f_rrb = self.simulation.pressure_sensors["RRB"].get_force()
+        f_rlb = self.simulation.pressure_sensors[self.robot_index]["RLB"].get_force()
+        f_rlf = self.simulation.pressure_sensors[self.robot_index]["RLF"].get_force()
+        f_rrf = self.simulation.pressure_sensors[self.robot_index]["RRF"].get_force()
+        f_rrb = self.simulation.pressure_sensors[self.robot_index]["RRB"].get_force()
 
         self.foot_msg_left.left_back = f_llb[0]
         self.foot_msg_left.left_front = f_llf[0]
@@ -252,7 +254,7 @@ class ROSInterface:
         # only put new goals into the goal vector
         i = 0
         for name in msg.joint_names:
-            self.simulation.joints[name].set_position(msg.positions[i])
+            self.simulation.joints[self.robot_index][name].set_position(msg.positions[i])
             i += 1
 
     def reset_cb(self, msg):
