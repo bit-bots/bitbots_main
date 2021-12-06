@@ -63,6 +63,27 @@
         "translation": [-1.6, -3.20, 0.43],
         "rotation": [0.0, -0.0, -1.0, 0.0]
       }
+    },
+    "4": {
+      "proto": "WolfgangRobocup",
+      "dockerTag": "latest",
+      "dockerCmd": "start defense 0",
+      "halfTimeStartingPose": {
+        "translation": [-3.6, 3.20, 0.43],
+        "rotation": [0.0, -0.0, 1.0, -1.57]
+      },
+      "reentryStartingPose": {
+        "translation": [-3.6, 3.20, 0.43],
+        "rotation": [0.0, -0.0, 1.0, -1.57]
+      },
+      "shootoutStartingPose": {
+        "translation": [2.75, -0.0, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
+      },
+      "goalKeeperStartingPose": {
+        "translation": [-1.6, 3.20, 0.43],
+        "rotation": [0.0, -0.0, -1.0, 0.0]
+      }
     }
   }
 }
