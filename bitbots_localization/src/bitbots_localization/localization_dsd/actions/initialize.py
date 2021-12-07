@@ -13,6 +13,7 @@ class AbstractInitialize(AbstractActionElement):
         if not isinstance(self, RedoLastInit):
             blackboard.last_init_action_type = self.__class__
             try:
+                rospy.sleep(1)  # wait for odom data
                 blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
                     blackboard.odom_frame,
                     blackboard.base_footprint_frame,
