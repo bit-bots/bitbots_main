@@ -1,13 +1,15 @@
 <launch>
-    <arg name="use_game_settings" default="false"/>
+    <!-- Get launch params -->
+    <arg name="use_game_settings" default="false" doc="true: loads additional game settings" />
 
-    <rosparam command="load" file="$(find humanoid_league_game_controller)/config/game_controller.yaml" />
-
-    <node pkg="humanoid_league_game_controller" type="receiver.py" name="game_controller" output="screen">
-      <rosparam command="load" file="$(find humanoid_league_game_controller)/config/game_controller_settings.yaml" />
+    <!-- Start the game controller -->
+    <node pkg="humanoid_league_game_controller" exec="game_controller" name="humanoid_league_game_controller" output="screen">
+      <!-- Set game controller config -->
+      <!-- <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller.yaml" /> -->
+      <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller_settings.yaml" />
     </node>
 
-     <group if="$(arg use_game_settings)">
-        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
-    </group>
+     <!-- <group if="$(arg use_game_settings)"> -->
+        <!-- <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" /> -->
+    <!-- </group> -->
 </launch>
