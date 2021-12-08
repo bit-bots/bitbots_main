@@ -13,11 +13,11 @@ class AbstractInitialize(AbstractActionElement):
         if not isinstance(self, RedoLastInit):
             blackboard.last_init_action_type = self.__class__
             try:
-                rospy.sleep(1)  # wait for odom data
                 blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
                     blackboard.odom_frame,
                     blackboard.base_footprint_frame,
-                    rospy.Time(0))
+                    rospy.Time(0),
+                    rospy.Duration(1.0))  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
                 rospy.logerr(f"Not able to save the odom position due to a tf error: {e}")
             print("Set last init action type to ", blackboard.last_init_action_type)
