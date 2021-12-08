@@ -1,6 +1,8 @@
 ---
 # Game controller network settings
 
-listen_host: '0.0.0.0'
-listen_port: 3838
-answer_port: 3939
+humanoid_league_game_controller:
+  ros__parameters:
+    listen_host: '0.0.0.0'
+    listen_port: 3838
+    answer_port: 3939
