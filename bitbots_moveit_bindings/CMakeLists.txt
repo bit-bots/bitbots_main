@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(bitbots_moveit_bindings)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 find_package(catkin REQUIRED COMPONENTS
     moveit_core

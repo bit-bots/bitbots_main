@@ -1,7 +1,5 @@
 #include "bitbots_dynup/dynup_stabilizer.h"
 
-#include <bitbots_splines/dynamic_balancing_goal.h>
-
 namespace bitbots_dynup {
 
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {

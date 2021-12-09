@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+
+    <rosparam command="load" file="$(find bitbots_dynup)/config/dynup_sim.yaml" />
+
+    <node name="dynup" pkg="bitbots_dynup" type="DynupNode" output="screen" />
+
+    <node name="motors_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" args="--dynup" />
+
+    <test pkg="bitbots_dynup" type="test_dynup_runs.py" test-name="dynup_runs" time-limit="300" />
+</launch>

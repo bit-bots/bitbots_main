@@ -27,8 +27,8 @@ namespace bitbots_splines {
             ROS_ERROR("joint_goals_update() called with unequal argument sizes");
         }
 
-        for (int i = 0; i < goals.first.size(); ++i) {
-            for (int j = 0; j < names.size() && j < values.size(); ++j) {
+        for (size_t i = 0; i < goals.first.size(); ++i) {
+            for (size_t j = 0; j < names.size() && j < values.size(); ++j) {
                 if (result.first.at(i) == names.at(j)) {
                     result.second.at(i) = values.at(j);
                 }
@@ -55,8 +55,8 @@ namespace bitbots_splines {
             ROS_ERROR("joint_goals_update() called with unequal argument sizes");
         }
 
-        for (int i = 0; i < goals.first.size(); ++i) {
-            for (int j = 0; j < names.size() && j < diffs.size(); ++j) {
+        for (size_t i = 0; i < goals.first.size(); ++i) {
+            for (size_t j = 0; j < names.size() && j < diffs.size(); ++j) {
                 if (result.first.at(i) == names.at(j)) {
                     result.second.at(i) += diffs.at(j);
                 }

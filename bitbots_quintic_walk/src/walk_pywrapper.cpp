@@ -61,8 +61,19 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt,
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
+moveit::py_bindings_tools::ByteString PyWalkWrapper::step_open_loop(double dt, const std::string &cmdvel_msg){
+  std::string result = to_python<geometry_msgs::PoseArray>(walk_node_->step_open_loop(dt,
+                                                                        from_python<geometry_msgs::Twist>(cmdvel_msg)));
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+
+
 moveit::py_bindings_tools::ByteString PyWalkWrapper::get_left_foot_pose() {
   std::string result = to_python<geometry_msgs::Pose>(walk_node_->get_left_foot_pose());
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+moveit::py_bindings_tools::ByteString PyWalkWrapper::get_right_foot_pose() {
+  std::string result = to_python<geometry_msgs::Pose>(walk_node_->get_right_foot_pose());
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
@@ -95,6 +106,7 @@ void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd
     walk_state = bitbots_quintic_walk::WalkState::KICK;
   } else {
     ROS_WARN("state in special reset not clear");
+    return;
   }
   walk_node_->reset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
 }
@@ -258,6 +270,12 @@ void PyWalkWrapper::set_node_dyn_reconf(const boost::python::object params) {
       dyn_conf.max_step_z = std::stof(valstr);
     } else if (keystr == "max_step_angular") {
       dyn_conf.max_step_angular = std::stof(valstr);
+    } else if (keystr == "x_speed_multiplier") {
+      dyn_conf.x_speed_multiplier = std::stof(valstr);
+    } else if (keystr == "y_speed_multiplier") {
+      dyn_conf.y_speed_multiplier = std::stof(valstr);
+    } else if (keystr == "yaw_speed_multiplier") {
+      dyn_conf.yaw_speed_multiplier = std::stof(valstr);
     } else {
       std::cout << keystr << " not known. WILL BE IGNORED\n";
     }
@@ -273,7 +291,9 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
 
         class_<PyWalkWrapper>("PyWalkWrapper", init<std::string>())
         .def("step", &PyWalkWrapper::step)
+        .def("step_open_loop", &PyWalkWrapper::step_open_loop)
         .def("get_left_foot_pose", &PyWalkWrapper::get_left_foot_pose)
+        .def("get_right_foot_pose", &PyWalkWrapper::get_right_foot_pose)
         .def("set_robot_state", &PyWalkWrapper::set_robot_state)
         .def("reset", &PyWalkWrapper::reset)
         .def("special_reset", &PyWalkWrapper::special_reset)

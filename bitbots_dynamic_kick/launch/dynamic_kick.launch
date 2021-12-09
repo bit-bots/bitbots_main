@@ -5,6 +5,7 @@
 
   <node pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" output="screen" launch-prefix="$(arg taskset)">
     <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config.yaml" />
+    <rosparam command="load" file="$(find bitbots_dynamic_kick)/config/kick_config_unstable.yaml" />
     <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
     <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
     <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>

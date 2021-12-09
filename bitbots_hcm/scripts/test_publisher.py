@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import rospy
-import time
 from sensor_msgs.msg import Imu
 from std_msgs.msg import Bool
 

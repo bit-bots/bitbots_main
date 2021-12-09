@@ -18,7 +18,6 @@ from bitbots_animation_server.resource_manager import find_all_animations_by_nam
 from humanoid_league_msgs.msg import RobotControlState
 from bitbots_animation_server.spline_animator import SplineAnimator
 
-
 class AnimationNode:
     def __init__(self):
         """Starts a simple action server and waits for requests."""
@@ -52,9 +51,9 @@ class PlayAnimationAction(object):
                 with open(animation_file) as fp:
                     self.animation_cache[animation_name] = parse(json.load(fp))
             except IOError:
-                rospy.logwarn("Animation '%s' could not be loaded" % animation_name)
+                rospy.logerr("Animation '%s' could not be loaded" % animation_name)
             except ValueError:
-                rospy.logwarn(
+                rospy.logerr(
                     "Animation '%s' had a ValueError. Probably there is a syntax error in the animation file. "
                     "See traceback" % animation_name)
                 traceback.print_exc()
@@ -93,8 +92,7 @@ class PlayAnimationAction(object):
 
         animator = self.get_animation_splines(self.current_animation)
         # start animation
-        rate = rospy.Rate(200)
-        start_time = rospy.get_time()
+        rate = rospy.Rate(500)
 
         while not rospy.is_shutdown() and animator:
             # first check if we have another goal
@@ -137,7 +135,7 @@ class PlayAnimationAction(object):
 
     def get_animation_splines(self, animation_name):
         if animation_name not in self.animation_cache:
-            rospy.logwarn("Animation '%s' not found" % animation_name)
+            rospy.logerr("Animation '%s' not found" % animation_name)
             self._as.set_aborted(False, "Animation not found")
             return
 

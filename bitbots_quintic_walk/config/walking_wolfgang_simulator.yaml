@@ -36,7 +36,7 @@ walking:
     trunk_height: 0.40
     # Trunk pitch orientation
     # (in rad)
-    trunk_pitch: 0.12
+    trunk_pitch: 0.13
     # Phase offset of trunk oscillation
     # (half cycle phase, [-1:1])
     trunk_phase: -0.1
@@ -76,7 +76,7 @@ walking:
 
   node:
     # update frequency of the engine
-    engine_freq: 100.0
+    engine_freq: 200.0
 
     # parameters for bioIK
     ik_timeout: 0.01
@@ -85,15 +85,15 @@ walking:
 
     trunkYOnlyInDoubleSupport: False
 
-    max_step_x: 0.06
-    max_step_y: 0.05
-    max_step_xy: 0.09
-    max_step_z: 0.05
-    max_step_angular: 0.45
+    max_step_x: 1
+    max_step_y: 1
+    max_step_xy: 1
+    max_step_z: 1
+    max_step_angular: 1
 
-    x_speed_multiplier: 1
-    y_speed_multiplier: 1
-    yaw_speed_multiplier: 1
+    x_speed_multiplier: 1.35
+    y_speed_multiplier: 1.66
+    yaw_speed_multiplier: 1.66
 
     vel: -1
     acc: -1
@@ -113,21 +113,21 @@ walking:
     effort_phase_reset_active: False
 
   pid_trunk_fused_pitch:
-    p: 0.25
-    i: 0
+    p: 0.111
+    i: 0.01
     d: 0
     i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
     antiwindup: False
-    publish_state: True
+    publish_state: False
 
   pid_trunk_fused_roll:
     p: 0.111
-    i: 0
+    i: 0.01
     d: 0
     i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
     antiwindup: False
-    publish_state: True
+    publish_state: False

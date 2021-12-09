@@ -8,6 +8,10 @@
         <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
         <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
         <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+        <param name="x_forward_scaling" value="1.25"/>
+        <param name="x_backward_scaling" value="0.95"/>
+        <param name="y_scaling" value="1"/>
+        <param name="yaw_scaling" value="1.4"/>
     </node>
 
     <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" launch-prefix="$(arg taskset)">

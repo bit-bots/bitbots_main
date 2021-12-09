@@ -6,6 +6,7 @@
 #include <optional>
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <unistd.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_dynup/DynUpConfig.h>
@@ -84,6 +85,7 @@ class DynUpNode {
   int stable_duration_;
   int engine_rate_;
   double last_ros_update_time_;
+  double start_time_;
   bool debug_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener listener_;

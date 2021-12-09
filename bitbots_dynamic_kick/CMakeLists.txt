@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bitbots_dynamic_kick)
 set(CMAKE_CXX_STANDARD 17)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -79,3 +80,8 @@ set_target_properties(py_dynamic_kick PROPERTIES
         PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
 )
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(catkin REQUIRED COMPONENTS bitbots_test)
+    enable_bitbots_tests()
+endif()

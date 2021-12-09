@@ -16,6 +16,7 @@ https://github.com/Rhoban/model/
 
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PointStamped.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>
@@ -63,9 +64,12 @@ class WalkNode {
       const sensor_msgs::JointState &jointstate_msg,
       const bitbots_msgs::FootPressure &pressure_left,
       const bitbots_msgs::FootPressure &pressure_right);
+  geometry_msgs::PoseArray step_open_loop(double dt, const geometry_msgs::Twist &cmdvel_msg);
+
   /**
    * Small helper method to get foot position via python wrapper
    */
+  geometry_msgs::Pose get_right_foot_pose();
   geometry_msgs::Pose get_left_foot_pose();
 
   /**
@@ -113,6 +117,8 @@ class WalkNode {
 
   void publishOdometry(WalkResponse response);
 
+  std::vector<double> get_step_from_vel(const geometry_msgs::Twist msg);
+  void stepCb(const geometry_msgs::Twist msg);
   void cmdVelCb(geometry_msgs::Twist msg);
 
   void imuCb(const sensor_msgs::Imu &msg);
@@ -207,6 +213,7 @@ class WalkNode {
   ros::Publisher pub_support_;
   tf2_ros::TransformBroadcaster odom_broadcaster_;
 
+  ros::Subscriber step_sub_;
   ros::Subscriber cmd_vel_sub_;
   ros::Subscriber robot_state_sub_;
   ros::Subscriber joint_state_sub_;
@@ -234,6 +241,8 @@ class WalkNode {
 
   double roll_vel_;
   double pitch_vel_;
+
+  bool got_new_goals_;
 };
 
 } // namespace bitbots_quintic_walk

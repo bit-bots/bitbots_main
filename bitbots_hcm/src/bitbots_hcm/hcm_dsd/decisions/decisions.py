@@ -30,7 +30,7 @@ class StartHCM(AbstractDecisionElement):
         """
         We check if any joint is has an offset from the walkready pose which is higher than a threshold
         """
-        if self.blackboard.current_joint_state is None:
+        if self.blackboard.current_joint_state is None or self.blackboard.current_joint_state == []:
             return False
         i = 0
         for joint_name in self.blackboard.current_joint_state.name:
@@ -129,7 +129,7 @@ class CheckMotors(AbstractDecisionElement):
             return "TURN_OFF"
 
         # see if we get no messages or always the exact same
-        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
+        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > self.blackboard.motor_timeout_duration:
             if self.blackboard.is_power_on:
                 if (self.blackboard.current_state == RobotControlState.STARTUP and
                         self.blackboard.current_time.to_sec() - self.blackboard.start_time.to_sec() < 10):

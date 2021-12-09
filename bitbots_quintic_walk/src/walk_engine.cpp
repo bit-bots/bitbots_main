@@ -8,16 +8,16 @@ https://github.com/Rhoban/model/
 namespace bitbots_quintic_walk {
 
 WalkEngine::WalkEngine(const std::string ns) :
+    engine_state_(WalkState::IDLE),
     phase_(0.0),
     last_phase_(0.0),
-    pause_requested_(false),
-    left_kick_requested_(false),
-    right_kick_requested_(false),
     time_paused_(0.0),
     pause_duration_(0.0),
+    pause_requested_(false),
     phase_rest_active_(false),
+    left_kick_requested_(false),
+    right_kick_requested_(false),
     is_left_support_foot_(false),
-    engine_state_(WalkState::IDLE),
     foot_pos_vel_at_foot_change_({0.0, 0.0, 0.0}),
     foot_pos_acc_at_foot_change_({0.0, 0.0, 0.0}),
     foot_orientation_pos_at_last_foot_change_({0, 0, 0}),
@@ -47,10 +47,6 @@ void WalkEngine::setGoals(const WalkRequest &goals) {
 }
 
 WalkResponse WalkEngine::update(double dt) {
-  // check if orders are zero, since we don't want to walk on the spot
-  bool orders_zero = request_.linear_orders.x() == 0 && request_.linear_orders.y() == 0 &&
-      request_.linear_orders.z() == 0 && request_.angular_z == 0;
-
   // First check cases where we do not want to update the phase: pausing, idle and phase rest
   if (engine_state_ == WalkState::PAUSED) {
     if (time_paused_ > pause_duration_) {
@@ -71,7 +67,7 @@ WalkResponse WalkEngine::update(double dt) {
     }
     // we don't have to update anything more
   } else if (engine_state_ == WalkState::IDLE) {
-    if (orders_zero || !request_.walkable_state) {
+    if ((request_.stop_walk && !request_.single_step) || !request_.walkable_state) {
       // we are in idle and are not supposed to walk. current state is fine, just do nothing
       return createResponse();
     }
@@ -84,6 +80,18 @@ WalkResponse WalkEngine::update(double dt) {
       ROS_WARN_THROTTLE(1, "PHASE REST");
       return createResponse();
     }
+  }
+
+  if (engine_state_ == WalkState::IDLE && request_.single_step){
+    float start_phase;
+    if(request_.linear_orders[1] < 0) {
+         start_phase = 0.5;
+    }else{
+        start_phase = 0.0;
+    }
+    // when we want to perform a single step to the right, we need to force using the correct leg
+    reset(WalkState::IDLE, start_phase, {request_.linear_orders[0], request_.linear_orders[1], request_.linear_orders[2], request_.angular_z}, false, true, false);
+    request_.stop_walk = true;
   }
 
   // update the current phase
@@ -100,7 +108,7 @@ WalkResponse WalkEngine::update(double dt) {
   } else if (engine_state_ == WalkState::START_MOVEMENT) {
     // in this state we do a single "step" where we only move the trunk
     if (half_step_finished) {
-      if (orders_zero) {
+      if (request_.stop_walk && !request_.single_step) {
         engine_state_ = WalkState::STOP_MOVEMENT;
         buildStopMovementTrajectories();
       } else {
@@ -111,7 +119,11 @@ WalkResponse WalkEngine::update(double dt) {
     }
   } else if (engine_state_ == WalkState::START_STEP) {
     if (half_step_finished) {
-      if (orders_zero) {
+      if (request_.single_step){
+        request_.single_step = false;
+        engine_state_ = WalkState::STOP_STEP;
+        buildStopStepTrajectories();
+      }else if (request_.stop_walk) {
         // we have zero command vel -> we should stop
         engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
@@ -139,7 +151,11 @@ WalkResponse WalkEngine::update(double dt) {
       right_kick_requested_ = false;
     } else if (half_step_finished) {
       // current step is finished, lets see if we have to change state
-      if (orders_zero) {
+      if (request_.single_step){
+        request_.single_step = false;
+        engine_state_ = WalkState::STOP_STEP;
+        buildStopStepTrajectories();
+      }else if (request_.stop_walk) {
         // we have zero command vel -> we should stop
         engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
@@ -200,7 +216,7 @@ void WalkEngine::updatePhase(double dt) {
     }
   }
   //Check for too long dt
-  if (dt > 0.25 / params_.freq) {
+  if (dt > 0.5001 / params_.freq) {
     ROS_ERROR_THROTTLE(1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }
@@ -208,9 +224,9 @@ void WalkEngine::updatePhase(double dt) {
   //Update the phase
   phase_ += dt * params_.freq;
 
-  // reset to 0 if step complete
+  // reset if step complete
   if (phase_ > 1.0) {
-    phase_ = 0.0;
+    phase_ = phase_ - 1;
   }
 }
 
@@ -229,13 +245,15 @@ void WalkEngine::setPhaseRest(bool active) {
 }
 
 void WalkEngine::reset() {
-  reset(WalkState::IDLE, 0.0, {0, 0, 0}, 0, false, false);
+  reset(WalkState::IDLE, 0.0, {0, 0, 0, 0}, true, false, false);
 }
 
-void WalkEngine::reset(WalkState state, double phase, tf2::Vector3 linear_orders, double angular_z,
-                              bool walkable_state, bool reset_odometry) {
-  request_.linear_orders = linear_orders;
-  request_.angular_z = angular_z;
+void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, bool stop_walk, bool walkable_state, bool reset_odometry) {
+  request_.linear_orders[0] = step[0];
+  request_.linear_orders[1] = step[1];
+  request_.linear_orders[2] = step[2];
+  request_.angular_z = step[3];
+  request_.stop_walk = stop_walk;
   request_.walkable_state = walkable_state;
   engine_state_ = state;
   time_paused_ = 0.0;
@@ -405,34 +423,38 @@ void WalkEngine::saveCurrentRobotState() {
 }
 
 void WalkEngine::buildNormalTrajectories() {
-  buildTrajectories(false, false, false);
+  buildTrajectories(false, false, false, false);
 }
 
 void WalkEngine::buildKickTrajectories() {
-  buildTrajectories(false, false, true);
+  buildTrajectories(false, false, true, false);
 }
 
 void WalkEngine::buildStartMovementTrajectories() {
-  buildTrajectories(true, false, false);
+  buildTrajectories(true, false, false, false);
 }
 
 void WalkEngine::buildStartStepTrajectories() {
-  buildTrajectories(false, true, false);
+  buildTrajectories(false, true, false, false);
 }
 
 void WalkEngine::buildStopStepTrajectories() {
-  buildWalkDisableTrajectories(false);
+  buildTrajectories(false, false, false, true);
 }
 
 void WalkEngine::buildStopMovementTrajectories() {
   buildWalkDisableTrajectories(true);
 }
 
-void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool kick_step) {
+void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool kick_step, bool stop_step) {
   // save the current trunk state to use it later and compute the next step position
   if (!start_movement) {
     saveCurrentRobotState();
-    stepFromOrders(request_.linear_orders, request_.angular_z);
+    if(!stop_step){
+      stepFromOrders(request_.linear_orders, request_.angular_z);
+    }else{
+      stepFromOrders({0, 0, 0}, 0);
+    }
   } else {
     // reset all foot change parameters
     // when we do start step, only transform the y coordinate since we stand still and only move trunk sideward
@@ -449,6 +471,13 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
     foot_orientation_pos_at_last_foot_change_.setZero();
     foot_orientation_vel_at_last_foot_change_.setZero();
     foot_orientation_acc_at_foot_change_.setZero();
+    support_to_last_.setIdentity();
+    support_to_next_.setIdentity();
+    if (is_left_support_foot_) {
+      support_to_next_.getOrigin()[1] = -params_.foot_distance;
+    } else {
+      support_to_next_.getOrigin()[1] = params_.foot_distance;
+    }
     stepFromOrders({0, 0, 0}, 0);
   }
 
@@ -767,9 +796,11 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
 
   //Flying foot position
   foot_spline_.x()->addPoint(0.0,
-                             support_to_last_.getOrigin().x());
+                             foot_pos_at_foot_change_.x(),
+                             foot_pos_vel_at_foot_change_.x(),
+                             foot_pos_acc_at_foot_change_.x());
   foot_spline_.x()->addPoint(double_support_length,
-                             support_to_last_.getOrigin().x());
+                             foot_pos_at_foot_change_.x());
   foot_spline_.x()->addPoint(
       double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
       0.0 + (0.0 - support_to_last_.getOrigin().x()) * params_.foot_overshoot_ratio);
@@ -779,9 +810,11 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
                              0.0);
 
   foot_spline_.y()->addPoint(0.0,
-                             support_to_last_.getOrigin().y());
+                             foot_pos_at_foot_change_.y(),
+                             foot_pos_vel_at_foot_change_.y(),
+                             foot_pos_acc_at_foot_change_.y());
   foot_spline_.y()->addPoint(double_support_length,
-                             support_to_last_.getOrigin().y());
+                             foot_pos_at_foot_change_.y());
   foot_spline_.y()->addPoint(
       double_support_length + single_support_length * params_.foot_put_down_phase * params_.foot_overshoot_phase,
       -support_sign * params_.foot_distance
@@ -811,17 +844,24 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
                                0.0);
   } else {
     //dont move the foot in last single step before stop since we only move the trunk back to the center
-    foot_spline_.z()->addPoint(0.0, 0.0);
+    foot_spline_.z()->addPoint(0.0,
+                             foot_pos_at_foot_change_.z());
     foot_spline_.z()->addPoint(half_period, 0.0);
   }
   //Flying foot orientation
-  foot_spline_.roll()->addPoint(0.0, 0.0);
+  foot_spline_.roll()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.x(),
+                                foot_orientation_vel_at_last_foot_change_.x(),
+                                foot_orientation_acc_at_foot_change_.x());
   foot_spline_.roll()->addPoint(half_period, 0.0);
 
-  foot_spline_.pitch()->addPoint(0.0, 0.0);
+  foot_spline_.pitch()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.y(),
+                                foot_orientation_vel_at_last_foot_change_.y(),
+                                foot_orientation_acc_at_foot_change_.y());
   foot_spline_.pitch()->addPoint(half_period, 0.0);
 
-  foot_spline_.yaw()->addPoint(0.0, getLastEuler().z());
+  foot_spline_.yaw()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.z(),
+                               foot_orientation_vel_at_last_foot_change_.z(),
+                               foot_orientation_acc_at_foot_change_.z());
   foot_spline_.yaw()->addPoint(double_support_length,
                                getLastEuler().z());
   foot_spline_.yaw()->addPoint(double_support_length + single_support_length * params_.foot_put_down_phase,
@@ -840,8 +880,9 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
                               trunk_pos_at_foot_change_.y(),
                               trunk_pos_vel_at_foot_change_.y(),
                               trunk_pos_acc_at_foot_change_.y());
+  // move trunk in the center
   trunk_spline_.y()->addPoint(half_period,
-                              -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
+                                -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
 
   trunk_spline_.z()->addPoint(0.0,
                               trunk_pos_at_foot_change_.z(),

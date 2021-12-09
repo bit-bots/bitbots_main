@@ -2,8 +2,8 @@ import rospy
 import actionlib
 import humanoid_league_msgs.msg
 import bitbots_msgs.msg
+from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from time import sleep
 
 from humanoid_league_msgs.msg import RobotControlState
@@ -81,7 +81,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def animation_finished(self):
         state = self.blackboard.animation_action_client.get_state()
-        return state == 3
+        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
 
 
 class PlayAnimationStandUpFront(AbstractPlayAnimation):
@@ -161,7 +161,12 @@ class PlayAnimationDynup(AbstractActionElement):
         super(PlayAnimationDynup, self).__init__(blackboard, dsd, parameters=None)
         self.direction = parameters.get('direction')
         self.first_perform = True
-        self.blackboard.current_state = RobotControlState.GETTING_UP
+
+        # A parameter 'initial' is passed when dynup is called during the startup phase,
+        # in this case we do not want to set the state to GETTING_UP.
+        initial = parameters.get('initial', False)
+        if not initial:
+            self.blackboard.current_state = RobotControlState.GETTING_UP
 
     def perform(self, reevaluate=False):
         # deactivate falling since it will be wrongly detected
@@ -213,4 +218,4 @@ class PlayAnimationDynup(AbstractActionElement):
 
     def animation_finished(self):
         state = self.blackboard.dynup_action_client.get_state()
-        return state == 3
+        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
