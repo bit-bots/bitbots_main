@@ -4,6 +4,7 @@ from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init
 from io import BytesIO
 from bitbots_moveit_bindings import bitbots_moveit_bindings
 
+
 def to_cpp(msg):
     """Return a serialized string from a ROS message
 
@@ -41,6 +42,7 @@ class _RosInitializer:
 # The ros initializer is used to automatically setup the ros structure on the
 # first call to get_position_{ik,fk} and delete it when the module is closed.
 _ros_initializer = None
+
 
 def get_position_ik(request: GetPositionIKRequest, approximate=False):
     global _ros_initializer

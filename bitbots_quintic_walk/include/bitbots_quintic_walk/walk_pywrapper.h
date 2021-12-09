@@ -9,6 +9,7 @@
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 #include "bitbots_quintic_walk/walk_utils.h"
+#include <geometry_msgs/PoseArray.h>
 
 class PyWalkWrapper {
  public:
@@ -19,7 +20,9 @@ class PyWalkWrapper {
                                              const std::string &jointstate_msg,
                                              const std::string &pressure_left,
                                              const std::string &pressure_right);
+  moveit::py_bindings_tools::ByteString step_open_loop(double dt, const std::string &cmdvel_msg);
   moveit::py_bindings_tools::ByteString get_left_foot_pose();
+  moveit::py_bindings_tools::ByteString get_right_foot_pose();
   moveit::py_bindings_tools::ByteString get_odom();
   void reset();
   void special_reset(int state, double phase, const std::string cmd_vel, bool reset_odometry);

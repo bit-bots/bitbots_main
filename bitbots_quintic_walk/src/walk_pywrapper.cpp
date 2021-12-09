@@ -61,8 +61,19 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt,
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
+moveit::py_bindings_tools::ByteString PyWalkWrapper::step_open_loop(double dt, const std::string &cmdvel_msg){
+  std::string result = to_python<geometry_msgs::PoseArray>(walk_node_->step_open_loop(dt,
+                                                                        from_python<geometry_msgs::Twist>(cmdvel_msg)));
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+
+
 moveit::py_bindings_tools::ByteString PyWalkWrapper::get_left_foot_pose() {
   std::string result = to_python<geometry_msgs::Pose>(walk_node_->get_left_foot_pose());
+  return moveit::py_bindings_tools::serializeMsg(result);
+}
+moveit::py_bindings_tools::ByteString PyWalkWrapper::get_right_foot_pose() {
+  std::string result = to_python<geometry_msgs::Pose>(walk_node_->get_right_foot_pose());
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
@@ -280,7 +291,9 @@ BOOST_PYTHON_MODULE(py_quintic_walk)
 
         class_<PyWalkWrapper>("PyWalkWrapper", init<std::string>())
         .def("step", &PyWalkWrapper::step)
+        .def("step_open_loop", &PyWalkWrapper::step_open_loop)
         .def("get_left_foot_pose", &PyWalkWrapper::get_left_foot_pose)
+        .def("get_right_foot_pose", &PyWalkWrapper::get_right_foot_pose)
         .def("set_robot_state", &PyWalkWrapper::set_robot_state)
         .def("reset", &PyWalkWrapper::reset)
         .def("special_reset", &PyWalkWrapper::special_reset)
