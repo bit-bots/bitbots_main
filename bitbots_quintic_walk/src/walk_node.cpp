@@ -292,7 +292,6 @@ geometry_msgs::Pose WalkNode::get_left_foot_pose() {
   return pose;
 }
 
-
 geometry_msgs::Pose WalkNode::get_right_foot_pose() {
   robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
   geometry_msgs::Pose pose;
@@ -361,9 +360,6 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
 
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
-  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0){
-    ROS_WARN("some speed multipliers in walking are 0. check your config!");
-  }
 
   // the engine expects orders in [m] not [m/s]
   std::vector<double> step = get_step_from_vel(msg);
@@ -502,6 +498,9 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   x_speed_multiplier_ = config.x_speed_multiplier;
   y_speed_multiplier_ = config.y_speed_multiplier;
   yaw_speed_multiplier_ = config.yaw_speed_multiplier;
+  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0){
+    ROS_WARN("some speed multipliers in walking are 0. check your config!");
+  }
 
   imu_active_ = config.imu_active;
   imu_pitch_threshold_ = config.imu_pitch_threshold;
