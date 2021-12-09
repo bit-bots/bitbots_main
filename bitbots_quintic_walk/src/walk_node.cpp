@@ -498,6 +498,9 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   x_speed_multiplier_ = config.x_speed_multiplier;
   y_speed_multiplier_ = config.y_speed_multiplier;
   yaw_speed_multiplier_ = config.yaw_speed_multiplier;
+  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0){
+    ROS_WARN("some speed multipliers in walking are 0. check your config!");
+  }
 
   imu_active_ = config.imu_active;
   imu_pitch_threshold_ = config.imu_pitch_threshold;
