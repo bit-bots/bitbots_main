@@ -1,0 +1,15 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_teleop'
+depends:
+- bitbots_docs
+- humanoid_league_msgs
+- rospy
+- std_msgs
+exec-path: bitbots_misc-master/bitbots_teleop
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_teleop'
+uri: https://github.com/bit-bots/bitbots_misc/archive/refs/heads/master.tar.gz

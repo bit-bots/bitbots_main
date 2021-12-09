@@ -1,6 +1,0 @@
-<launch>
-    <!-- just a convenience launch script -->
-    <include file="$(find bitbots_bringup)/launch/teamplayer.launch" >
-        <arg name="behave" value="false"/>
-    </include>
-</launch>

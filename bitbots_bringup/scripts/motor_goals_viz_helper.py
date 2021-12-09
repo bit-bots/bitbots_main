@@ -7,6 +7,7 @@ from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
+from bitbots_ros_patches.rate import Rate
 
 # List of all joint names. Do not change the order as it is important for Gazebo
 JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
@@ -45,7 +46,7 @@ class MotorVizHelper:
         if args.kick or args.all:
             rospy.Subscriber("kick_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         if args.dynup or args.all:
-            rospy.Subscriber("animation_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
+            rospy.Subscriber("dynup_motor_goals", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
         rospy.Subscriber("/DynamixelController/command", JointCommand, self.joint_command_cb, queue_size=10, tcp_nodelay=True)
 
         self.joint_state_msg = JointState()
@@ -62,7 +63,7 @@ class MotorVizHelper:
         self.joint_command_msg.positions = [0] * 20
         self.joint_command_msg.velocities = [-1] * 20
 
-        rate = rospy.Rate(100)
+        rate = Rate(100)
         self.update_time = rospy.Time.now()
         while not rospy.is_shutdown():
             try:
@@ -82,9 +83,12 @@ class MotorVizHelper:
     def joint_command_cb(self, msg: JointCommand):
         self.joint_command_msg.header.stamp = rospy.Time.now()
         for i in range(len(msg.joint_names)):
-            name = msg.joint_names[i]
-            self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.positions[i]
-            self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = msg.velocities[i]
+            if len(msg.positions) != 0:
+                # if msg.positions is 0, torque control is probably used.
+                # there, the visualization is not implemented yet.
+                name = msg.joint_names[i]
+                self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.positions[i]
+                self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = msg.velocities[i]
 
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = rospy.Time.now()

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_convenience_frames</name>
-  <version>1.0.0</version>
+  <version>2.1.0</version>
   <description>Publishes convenience frames for the Hamburg-BitBots code base.</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
@@ -13,6 +13,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
   <depend>rospy</depend>
   <depend>roscpp</depend>
   <depend>std_msgs</depend>

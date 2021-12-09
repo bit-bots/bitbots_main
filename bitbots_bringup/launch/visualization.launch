@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- arguments -->
+    <arg name="behavior" default="true" doc="if the behavior should be started" />
+    <arg name="localization" default="false" doc="if the localization should be used" />
+    <arg name="motion" default="true" doc="if the motion should be started" />
+    <arg name="game_controller" default="false" doc="if the game controller node should be started" />
+    <arg name="use_game_settings" default="false" doc="whether game settings should be used" />
+
+    <!-- set visualization parameter -->
+    <param name="visualization_active" value="true" />
+
+    <!-- load the robot description -->
+    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+
+    <!-- publish dummy imu -->
+    <node name="dummy_imu" pkg="bitbots_bringup" type="dummy_imu.py" />
+
+    <!-- launch motion nodes -->
+    <include if="$(arg motion)" file="$(find bitbots_bringup)/launch/motion.launch">
+        <arg name="viz" value="true" />
+        <arg name="use_game_settings" value="$(arg use_game_settings)" />
+    </include>
+
+    <!-- launch highlevel nodes, except vision and transformer (we have fake vision instead) -->
+    <include file="$(find bitbots_bringup)/launch/highlevel.launch">
+        <arg name="behavior" value="$(arg behavior)" />
+        <arg name="localization" value="$(arg localization)" />
+        <arg name="game_controller" value="$(arg game_controller)" />
+        <arg name="vision" value="false" />
+        <arg name="transformer" value="false" />
+        <arg name="use_game_settings" value="$(arg use_game_settings)" />
+    </include>
+
+    <!-- translate joint goals to joint states -->
+    <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
+
+    <!-- add some visualization tools -->
+    <include file="$(find humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
+    <include file="$(find humanoid_league_team_communication)/launch/team_comm_test_marker.launch" >
+        <arg name="rviz" value="false" />
+    </include>
+    <node name="show_world_model_objects" pkg="bitbots_body_behavior" type="show_world_model_objects.py" output="screen"/>
+</launch>

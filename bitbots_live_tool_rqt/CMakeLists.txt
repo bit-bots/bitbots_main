@@ -5,11 +5,14 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  bitbots_docs
 )
 
 catkin_python_setup()
 
 catkin_package(CATKIN_DEPENDS message_runtime)
+
+enable_bitbots_docs()
 
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

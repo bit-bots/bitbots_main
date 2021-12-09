@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>bitbots_bringup</name>
-  <version>1.0.2</version>
+  <version>2.3.1</version>
   <description>The bitbots_bringup package is a collection of util classes used in many ROS packages from
   the Hamburg Bit-Bots.</description>
 
@@ -12,6 +12,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>bitbots_docs</depend>
+  <exec_depend>robot_state_publisher</exec_depend>
 
   <export>
      <bitbots_documentation>

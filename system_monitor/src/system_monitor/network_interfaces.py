@@ -1,7 +1,11 @@
+from collections import defaultdict
+
 import rospy
 from system_monitor.msg import NetworkInterface as NetworkInterfaceMsg
 
-_msg_cache = {}
+
+_prev_msgs = defaultdict(NetworkInterfaceMsg)
+_prev_msg_time = rospy.Time(0)
 
 
 def collect_all():
@@ -37,38 +41,20 @@ def _get_interfaces():
 
 
 def _analyze_rate(msgs):
-    global _msg_cache
+    global _prev_msgs
+    global _prev_msg_time
 
-    # filter out cached messages older than 2 seconds
     now = rospy.Time.now()
-    _msg_cache = {time: msgs for time, msgs in _msg_cache.items() if time > now - rospy.Duration(2)}
-    _msg_cache[now] = msgs
-
     for interface, i_msg in msgs.items():
-        i_msg.rate_received_bytes \
-            = int(sum(i_cached_msgs[interface].received_bytes for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_received_packets \
-            = int(sum(i_cached_msgs[interface].received_packets for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_received_packets_errors \
-            = int(sum(i_cached_msgs[interface].received_packets_errors for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_received_packets_dropped \
-            = int(sum(i_cached_msgs[interface].received_packets_dropped for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_sent_bytes \
-            = int(sum(i_cached_msgs[interface].sent_bytes for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_sent_packets \
-            = int(sum(i_cached_msgs[interface].sent_packets for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_sent_packets_errors \
-            = int(sum(i_cached_msgs[interface].sent_packets_errors for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_sent_packets_dropped \
-            = int(sum(i_cached_msgs[interface].sent_packets_dropped for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
-        i_msg.rate_sent_packets_collisions \
-            = int(sum(i_cached_msgs[interface].sent_packets_collisions for i_cached_msgs in _msg_cache.values())
-                  / len(_msg_cache))
+        i_msg.rate_received_bytes = int((i_msg.received_bytes - _prev_msgs[interface].received_bytes) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_received_packets = int((i_msg.received_packets - _prev_msgs[interface].received_packets) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_received_packets_errors = int((i_msg.received_packets_errors - _prev_msgs[interface].received_packets_errors) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_received_packets_dropped = int((i_msg.received_packets_dropped - _prev_msgs[interface].received_packets_dropped) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_sent_bytes = int((i_msg.sent_bytes - _prev_msgs[interface].sent_bytes) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_sent_packets = int((i_msg.sent_packets - _prev_msgs[interface].sent_packets) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_sent_packets_errors = int((i_msg.sent_packets_errors - _prev_msgs[interface].sent_packets_errors) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_sent_packets_dropped = int((i_msg.sent_packets_dropped - _prev_msgs[interface].sent_packets_dropped) * (now - _prev_msg_time).to_sec())
+        i_msg.rate_sent_packets_collisions = int((i_msg.sent_packets_collisions - _prev_msgs[interface].sent_packets_collisions) * (now - _prev_msg_time).to_sec())
+
+    _prev_msg_time = now
+    _prev_msgs = msgs

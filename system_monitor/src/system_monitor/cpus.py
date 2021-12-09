@@ -1,4 +1,5 @@
 from collections import defaultdict
+import psutil
 
 from system_monitor.msg import Cpu as CpuMsg
 
@@ -9,10 +10,13 @@ _prev_busy = defaultdict(int)
 def collect_all():
     """
     parse /proc/stat and calculate total and busy time
+
     (more specific USER_HZ see man 5 proc for further information )
     """
     msgs = []
-    timings, running_processes = _get_cpu_stats()
+    running_processes = len(psutil.pids())
+    timings = _get_cpu_stats()
+    overall_usage = 0
 
     for cpu, timings in timings.items():
         cpu_total = sum(timings)
@@ -24,38 +28,38 @@ def collect_all():
             cpu_name=cpu,
             cpu_usage=cpu_usage
         ))
+        overall_usage += cpu_usage
 
-    return running_processes, msgs
+    # compute mean of cpu usages
+    overall_usage_percentage = overall_usage / len(timings)
+    return running_processes, msgs, overall_usage_percentage
 
 
 def _get_cpu_stats():
     """
     read and parse /proc/stat
-    :returns Tuple[timings, open_processes]
+    :returns timings which contains accumulative busy and total cpu time
     """
     timings = {}
-    processes = -1
     with open('/proc/stat', 'r') as file_obj:
         for line in file_obj:
-            if line.startswith('cpu'):
+            # only evaluate lines like cpu0, cpu1, cpu2, ...
+            if line.startswith('cpu') and line.strip().split()[0] != 'cpu':
                 line = line.strip().split()
                 timings[line[0]] = [int(x) for x in line[1:]]
 
-            elif line.startswith('procs_running'):
-                processes = int(line.strip().split()[1])
-
-    return timings, processes
+    return timings
 
 
-def _calculate_usage( cpu, total, busy):
+def _calculate_usage(cpu_num, total, busy):
     """
-    calculate usage
+    calculate usage percentage based on busy/total time
     """
-    diff_total = total - _prev_total[cpu]
-    diff_busy = busy - _prev_busy[cpu]
+    diff_total = total - _prev_total[cpu_num]
+    diff_busy = busy - _prev_busy[cpu_num]
 
-    _prev_total[cpu] = total
-    _prev_busy[cpu] = busy
+    _prev_total[cpu_num] = total
+    _prev_busy[cpu_num] = busy
 
     if diff_total == 0:
         return 0

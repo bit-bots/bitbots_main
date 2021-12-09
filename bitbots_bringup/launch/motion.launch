@@ -1,34 +1,33 @@
+<?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="viz" default="false"/>
     <arg name="walking" default="true" doc="start the walking" />
     <arg name="use_game_settings" default="false"/>
-    <arg name="dynamic_kick" default="true" />
-    <arg name="torqueless_mode" default="false" />
+    <arg name="torqueless_mode" default="false" doc="start without torque, for example for testing the falling detection"/>
 
-
-    <rosparam param="actionlib_client_sub_queue_size">-1</rosparam>
-    <rosparam param="actionlib_server_sub_queue_size">-1</rosparam>
-
+    <!-- load the general game settings -->
     <group if="$(arg use_game_settings)">
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>
 
+    <!-- if not in simulation or visualization, launch ros_control -->
     <group unless="$(arg sim)">
-        <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
-            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
-            <arg name="torqueless_mode" value="$(arg torqueless_mode)" />
-
-        </include>
-        <node name="set_volume" pkg="bitbots_bringup" type="set_volume.sh" args="100%" />
-        <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
+        <group unless="$(arg viz)">
+            <include file="$(find bitbots_ros_control)/launch/ros_control.launch">
+                <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+                <arg name="torqueless_mode" value="$(arg torqueless_mode)" />
+            </include>
+            <node name="set_volume" pkg="bitbots_bringup" type="set_volume.sh" args="100%" />
+        </group>
     </group>
 
-    <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
-
+    <!-- launch the animation server -->
     <include file="$(find bitbots_animation_server)/launch/animation.launch">
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
 
+    <!-- launch the walking -->
     <group if="$(arg walking)">
         <include file="$(find bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(arg sim)"/>
@@ -36,11 +35,18 @@
         </include>
     </group>
 
+    <!-- launch the hcm -->
     <include file="$(find bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(arg sim)"/>
+        <arg name="viz" value="$(arg viz)"/>
         <arg name="use_game_settings" value="$(arg use_game_settings)"/>
     </include>
-    <node if="$(arg dynamic_kick)" pkg="bitbots_dynamic_kick" name="dynamic_kick" type="KickNode" />
-    <node pkg="bitbots_dynup" name="dynup" type="DynupNode" />
 
+    <!-- launch the kick -->
+    <include file="$(find bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
+
+    <!-- launch dynup -->
+    <include file="$(find bitbots_dynup)/launch/dynup.launch">
+        <arg name="sim" value="$(arg sim)"/>
+    </include>
 </launch>

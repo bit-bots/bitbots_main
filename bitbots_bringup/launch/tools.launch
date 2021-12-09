@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <include file="$(find system_monitor)/launch/system_monitor.launch">
         <arg name="required" value="false" />

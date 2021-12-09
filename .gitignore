@@ -6,8 +6,8 @@
 # auto-generated documentation
 **/docs/_build
 **/docs/_out
-**/docs/conf.py
-**/docs/manifest.yaml
+**/docs/cppapi
+**/docs/pyapi
 
 # User-specific stuff:
 .idea/workspace.xml

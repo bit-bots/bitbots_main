@@ -5,27 +5,15 @@
         <rosparam command="load" file="$(find pylon_camera)/config/camera_settings.yaml"/>
         <param name="device_user_id" value="$(optenv ROBOT_NAME)" />
         <param name="camera_info_url" value="package://pylon_camera/config/camera_calibration_$(optenv ROBOT_NAME default).yaml" />
-        <remap from="~camera_info" to="/camera_info" />
     </node>
     <group if="$(arg resize)">
-        <node pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" name="debayer">
-            <remap from="image_raw"  to="/pylon_camera_node/image_raw" />
-            <remap from="image_color" to="debayered_image" />
-            <param name="height" value="20" />
-            <param name="width" value="30" />
+        <node pkg="nodelet" type="nodelet" args="standalone image_proc/crop_decimate" name="crop_decimate">
+            <remap from="/camera/image_raw"  to="/pylon_camera_node/image_raw" />
+            <remap from="/camera_out/image_raw" to="/image_resized" />
+            <rosparam command="load" file="$(find bitbots_bringup)/config/binning.yaml"/>
         </node>
-        <node pkg="nodelet" type="nodelet" args="standalone image_proc/resize" name="resizer">
-            <remap from="/image"  to="debayered_image" />
-            <remap from="~image" to="/image_resized" />
-            <param name="use_scale" type="int" value="0" />
-            <param name="width" type="int" value="620" />
-            <param name="height" type="int" value="480" />
-        </node>
-        <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters resizer">
-            <param name="use_scale" type="int" value="0" />
-            <param name="width" type="int" value="620" />
-            <param name="height" type="int" value="480" />
+        <node pkg="nodelet" type="nodelet" args="standalone white_balancer/WhiteBalanceNodelet" name="white_balancer">
+            <rosparam command="load" file="$(find white_balancer)/config/config.yaml"/>
         </node>
     </group>
-    <include file="$(find white_balancer)/launch/white_balance.launch" />
 </launch>

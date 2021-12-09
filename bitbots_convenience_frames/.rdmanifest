@@ -1,0 +1,20 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/bitbots_convenience_frames'
+depends:
+- bitbots_docs
+- geometry_msgs
+- humanoid_league_msgs
+- roscpp
+- rospy
+- std_msgs
+- tf2
+- tf2_geometry_msgs
+- tf2_ros
+exec-path: bitbots_misc-master/bitbots_convenience_frames
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/bitbots_convenience_frames'
+uri: https://github.com/bit-bots/bitbots_misc/archive/refs/heads/master.tar.gz

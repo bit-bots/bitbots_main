@@ -1,19 +1,14 @@
+<?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
-    <arg name="torqueless_mode" default="false" />
-
-    <!-- defines camera type -->
-    <arg name="basler" default="true" doc="Defines the robot camera type"/>
+    <arg name="torqueless_mode" default="false" doc="start without torque, for example for testing the falling detection"/>
 
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
         <arg name="sim" value="$(arg sim)"/>
-        <arg name="basler" value="$(arg basler)"/>
-    </include>    
+    </include>
 
     <include file="$(find bitbots_bringup)/launch/motion.launch">
         <arg name="sim" value="$(arg sim)"/>
         <arg name="torqueless_mode" value="$(arg torqueless_mode)" />
-
     </include>
-
 </launch>

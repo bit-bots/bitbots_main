@@ -1,4 +1,4 @@
-from humanoid_league_msgs.msg import BallRelative, ObstacleRelative, GoalRelative
+from humanoid_league_msgs.msg import BallRelative, ObstacleRelative
 from geometry_msgs.msg import Point, Pose
 from std_msgs.msg import Header
 import yaml
@@ -87,11 +87,11 @@ class DetectionMsg:
         for obs in data.obstacles:
             #print("here obs: " + str(obs))
             obsentry = {}
-            obsentry[DetectionMsg.label_obstacle_pos] = {"x": obs.position.x,\
-                                        "y": obs.position.y} #,\
+            obsentry[DetectionMsg.label_obstacle_pos] = {"x": obs.pose.pose.pose.position.x,\
+                                        "y": obs.pose.pose.pose.position.y} #,\
                                         #"z": obs.position.z}
 
-            obsentry[DetectionMsg.label_obstacle_info] = {DetectionMsg.label_color: obs.color}#,
+            obsentry[DetectionMsg.label_obstacle_info] = {DetectionMsg.label_color: obs.type}#,
                                                           #DetectionMsg.label_player_nr: obs.playerNumber,
                                                           #DetectionMsg.label_width: obs.width,
                                                           #DetectionMsg.label_height: obs.height,
@@ -103,11 +103,11 @@ class DetectionMsg:
 
     """
     def setGoalRelative(self, data):
-        
+
         fills the dictionary with information of the goal
         :param data: a dictionary with the transmitted information
         :return:
-        
+
         self.data[self.goalPostLeft] = {"x": data.left_post.x,
                                         "y": data.left_post.y,
                                         "z": data.left_post.z}
