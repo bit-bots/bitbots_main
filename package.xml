@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>bitbots_msgs</name>
   <version>0.2.1</version>
   <description>Messages for the code of the Hamburg Bit-Bots</description>
@@ -12,22 +13,19 @@
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
-  <depend>bitbots_docs</depend>
+  <!--depend>bitbots_docs</depend-->
 
-  <build_depend>message_generation</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
-  <build_export_depend>actionlib_msgs</build_export_depend>
-
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>actionlib_msgs</exec_depend>
+  <build_depend>rosid_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <bitbots_documentation>
       <status>starts</status>
     </bitbots_documentation>

@@ -1,57 +1,43 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_msgs)
 
-find_package(catkin REQUIRED COMPONENTS
-  actionlib_msgs
-  bitbots_docs
-  roscpp
-  rospy
-  message_generation
-  std_msgs
-  sensor_msgs
-)
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(actionlib_msgs REQUIRED)
+#find_package(bitbots_docs REQUIRED)
 
-add_action_files(
-  DIRECTORY action
-  FILES
-  DynUp.action
-  Kick.action
-)
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
-add_message_files(
-  FILES
-  ColorLookupTable.msg
-  Config.msg
-  Cpu.msg
-  FootPressure.msg
-  JointCommand.msg
-  JointTorque.msg
-  SupportState.msg
-)
-
-add_service_files(
-   FILES
-   IMURanges.srv
-   ComplementaryFilterParams.srv
-   ManualPenalize.srv
-   FootScale.srv
-   Leds.srv
-   AccelerometerCalibration.srv
-   SetAccelerometerCalibrationThreshold.srv
-   SetObjectPose.srv
-   SetObjectPosition.srv
-)
-
-
-generate_messages(
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/ColorLookupTable.msg"
+  "msg/Config.msg"
+  "msg/Cpu.msg"
+  "msg/FootPressure.msg"
+  "msg/JointCommand.msg"
+  "msg/JointTorque.msg"
+  "msg/SupportState.msg"
+  "srv/AccelerometerCalibration.srv"
+  "srv/ComplementaryFilterParams.srv"
+  "srv/FootScale.srv"
+  "srv/IMURanges.srv"
+  "srv/Leds.srv"
+  "srv/ManualPenalize.srv"
+  "srv/SetAccelerometerCalibrationThreshold.srv"
+  "srv/SetObjectPose.srv"
+  "srv/SetObjectPosition.srv"
+  "action/DynUp.action"
+  "action/Kick.action"
   DEPENDENCIES
   actionlib_msgs
-  std_msgs
   sensor_msgs
+  std_msgs
 )
 
-catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs sensor_msgs actionlib_msgs
-)
+ament_package()
 
-enable_bitbots_docs()
+# enable_bitbots_docs()

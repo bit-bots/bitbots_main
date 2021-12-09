@@ -1,4 +1,4 @@
-Header header
+std_msgs/Header header
 
 uint8 LEFT=0
 uint8 DOUBLE=1
