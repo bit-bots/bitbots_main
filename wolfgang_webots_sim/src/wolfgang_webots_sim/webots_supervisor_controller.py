@@ -61,6 +61,8 @@ class SupervisorController:
             if name_field is not None and node.getType() == Node.ROBOT:
                 # this is a robot
                 name = name_field.getSFString()
+                if name == "supervisor_robot":
+                    continue
                 self.robot_nodes[name] = node
                 self.translation_fields[name] = node.getField("translation")
                 self.rotation_fields[name] = node.getField("rotation")
