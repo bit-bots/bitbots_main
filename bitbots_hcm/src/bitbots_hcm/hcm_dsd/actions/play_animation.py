@@ -4,7 +4,6 @@ import humanoid_league_msgs.msg
 import bitbots_msgs.msg
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from time import sleep
 
 from humanoid_league_msgs.msg import RobotControlState

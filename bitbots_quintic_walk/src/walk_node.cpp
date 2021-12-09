@@ -23,6 +23,7 @@ WalkNode::WalkNode(const std::string ns) :
   robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
   current_request_.linear_orders = {0, 0, 0};
   current_request_.angular_z = 0;
+  current_request_.stop_walk = true;
   current_trunk_fused_pitch_ = 0;
   current_trunk_fused_roll_ = 0;
   current_fly_pressure_ = 0;
@@ -40,6 +41,8 @@ WalkNode::WalkNode(const std::string ns) :
   pub_controller_command_ = nh_.advertise<bitbots_msgs::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = nh_.advertise<nav_msgs::Odometry>("walk_engine_odometry", 1);
   pub_support_ = nh_.advertise<bitbots_msgs::SupportState>("walk_support_state", 1, true);
+  step_sub_ = nh_.subscribe("step", 1, &WalkNode::stepCb, this,
+                               ros::TransportHints().tcpNoDelay());
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
   robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robotStateCb, this,
@@ -89,6 +92,7 @@ void WalkNode::run() {
 
   ros::Rate loop_rate(engine_frequency_);
   double dt;
+  WalkRequest last_request;
   while (ros::ok()) {
     ros::spinOnce();
     if (loop_rate.sleep()) {
@@ -107,6 +111,13 @@ void WalkNode::run() {
         current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
             robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
             robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+
+        // reset when we start walking, otherwise PID controller will use old I value
+        if((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0) &&
+           (current_request_.linear_orders.x() != 0 || current_request_.linear_orders.y() != 0 || current_request_.angular_z != 0)){
+          stabilizer_.reset();
+        }
+        last_request = current_request_;
 
         // perform all the actual calculations
         bitbots_msgs::JointCommand joint_goals = step(dt);
@@ -145,20 +156,23 @@ void WalkNode::run() {
         odom_counter = 0;
       }
     }else{
-      sleep(0.0001);
+      usleep(1);
     }
   }
 }
 
 bitbots_msgs::JointCommand WalkNode::step(double dt) {
+  WalkRequest request(current_request_);
   // PID control on foot position. take previous goal orientation and compute difference with actual orientation
   Eigen::Quaterniond goal_orientation_eigen;
   tf2::convert(current_response_.support_foot_to_trunk.getRotation(), goal_orientation_eigen);
   rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
-  WalkRequest request(current_request_);
 
 // update walk engine response
-  walk_engine_.setGoals(request);
+  if(got_new_goals_){
+    got_new_goals_ = false;
+    walk_engine_.setGoals(request);
+  }
   checkPhaseRestAndReset();
   current_response_ = walk_engine_.update(dt);
 
@@ -220,8 +234,9 @@ void WalkNode::reset() {
 }
 
 void WalkNode::reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry) {
-  walk_engine_.reset(state, phase, {cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.linear.z}, cmd_vel.angular.z,
-                     true, reset_odometry);
+  std::vector<double> step = get_step_from_vel(cmd_vel);
+  bool stop_walk = cmd_vel.angular.x < 0;
+  walk_engine_.reset(state, phase, step, stop_walk, true, reset_odometry);
   stabilizer_.reset();
   cmdVelCb(cmd_vel);
 }
@@ -245,6 +260,31 @@ bitbots_msgs::JointCommand WalkNode::step(double dt,
   return joint_goals;
 }
 
+geometry_msgs::PoseArray WalkNode::step_open_loop(double dt, const geometry_msgs::Twist &cmdvel_msg){
+  cmdVelCb(cmdvel_msg);
+  // get cartesian goals from open loop engine
+  WalkRequest request(current_request_);
+  walk_engine_.setGoals(request);
+  current_response_ = walk_engine_.update(dt);
+
+  // change goals from support foot based coordinate system to trunk based coordinate system
+  tf2::Transform trunk_to_support_foot_goal = current_response_.support_foot_to_trunk.inverse();
+  tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * current_response_.support_foot_to_flying_foot;
+  geometry_msgs::Pose left_foot_goal_msg;
+  geometry_msgs::Pose right_foot_goal_msg;
+  // decide which foot is which
+  if (current_response_.is_left_support_foot) {
+    tf2::toMsg(trunk_to_support_foot_goal, left_foot_goal_msg);
+    tf2::toMsg(trunk_to_flying_foot_goal, right_foot_goal_msg);
+  } else {
+    tf2::toMsg(trunk_to_support_foot_goal, right_foot_goal_msg);
+    tf2::toMsg(trunk_to_flying_foot_goal, left_foot_goal_msg);
+  }
+  geometry_msgs::PoseArray pose_array;
+  pose_array.poses = {left_foot_goal_msg, right_foot_goal_msg};
+  return pose_array;
+}
+
 geometry_msgs::Pose WalkNode::get_left_foot_pose() {
   robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
   geometry_msgs::Pose pose;
@@ -252,44 +292,45 @@ geometry_msgs::Pose WalkNode::get_left_foot_pose() {
   return pose;
 }
 
-void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
-  // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
-  // other axis.
-  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0){
-    ROS_WARN("some speed multipliers in walking are 0. check your config!");
-  }
 
-  // the engine expects orders in [m] not [m/s]. We have to compute by dividing by step frequency which is a double step
+geometry_msgs::Pose WalkNode::get_right_foot_pose() {
+  robot_state::RobotStatePtr goal_state = ik_.get_goal_state();
+  geometry_msgs::Pose pose;
+  tf2::convert(goal_state->getGlobalLinkTransform("r_sole"), pose);
+  return pose;
+}
+
+std::vector<double> WalkNode::get_step_from_vel(const geometry_msgs::Twist msg){
+  // We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
   // the sidewards movement only does one step per double step, since the second foot only goes back to the initial pose
   // therefore we need to multiply it by 2
   // furthermore, the engine does not really reach the correct goal speed, dependent on the parameters
-  current_request_.linear_orders =
-      {msg.linear.x * factor * x_speed_multiplier_, msg.linear.y * factor * 2 * y_speed_multiplier_,
-       msg.linear.z * factor};
-  current_request_.angular_z = msg.angular.z * factor * yaw_speed_multiplier_;
+  std::vector<double> step = {msg.linear.x * factor * x_speed_multiplier_,
+                              msg.linear.y * factor * 2 * y_speed_multiplier_,
+                              msg.linear.z * factor,
+                              msg.angular.z * factor * yaw_speed_multiplier_};
 
   // the orders should not extend beyond a maximal step size
   for (int i = 0; i < 3; i++) {
-    current_request_.linear_orders[i] =
-        std::max(std::min(current_request_.linear_orders[i], max_step_linear_[i]), max_step_linear_[i] * -1);
+    step[i] = std::max(std::min(step[i], max_step_linear_[i]), max_step_linear_[i] * -1);
   }
-  current_request_.angular_z =
-      std::max(std::min(current_request_.angular_z, max_step_angular_), max_step_angular_ * -1);
+  step[3] = std::max(std::min(step[3], max_step_angular_), max_step_angular_ * -1);
+
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (max_step_xy_ != 0) {
-    double scaling_factor = (current_request_.linear_orders[0] + current_request_.linear_orders[1]) / max_step_xy_;
+    double scaling_factor = sqrt(pow(step[0], 2) + pow(step[1], 2)) / max_step_xy_;
     for (int i = 0; i < 2; i++) {
-      current_request_.linear_orders[i] = current_request_.linear_orders[i] / std::max(scaling_factor, 1.0);
+      step[i] = step[i] / std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg.linear.x * factor * x_speed_multiplier_ != current_request_.linear_orders[0] ||
-      msg.linear.y * factor * y_speed_multiplier_ != current_request_.linear_orders[1] / 2 ||
-      msg.linear.z * factor != current_request_.linear_orders[2] ||
-      msg.angular.z * factor * yaw_speed_multiplier_ != current_request_.angular_z) {
+  if (msg.linear.x * factor * x_speed_multiplier_ != step[0] ||
+      msg.linear.y * factor * y_speed_multiplier_ != step[1] / 2 ||
+      msg.linear.z * factor != step[2] ||
+      msg.angular.z * factor * yaw_speed_multiplier_ != step[3]) {
     ROS_WARN(
         "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
         msg.linear.x,
@@ -303,6 +344,34 @@ void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
         max_step_angular_ / factor,
         max_step_xy_ / factor);
   }
+
+  return step;
+}
+void WalkNode::stepCb(const geometry_msgs::Twist msg) {
+  current_request_.linear_orders = {msg.linear.x, msg.linear.y, msg.linear.z};
+  current_request_.angular_z = msg.angular.z;
+  current_request_.single_step = true;
+  current_request_.stop_walk = true;
+  got_new_goals_ = true;
+}
+
+void WalkNode::cmdVelCb(const geometry_msgs::Twist msg) {
+  got_new_goals_ = true;
+  current_request_.single_step = false;
+
+  // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
+  // other axis.
+  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0){
+    ROS_WARN("some speed multipliers in walking are 0. check your config!");
+  }
+
+  // the engine expects orders in [m] not [m/s]
+  std::vector<double> step = get_step_from_vel(msg);
+  current_request_.linear_orders = {step[0], step[1], step[2]};
+  current_request_.angular_z = step[3];
+
+  // special command to completely stop the walking
+  current_request_.stop_walk = msg.angular.x != 0;
 }
 
 void WalkNode::imuCb(const sensor_msgs::Imu &msg) {
@@ -482,10 +551,10 @@ nav_msgs::Odometry WalkNode::getOdometry() {
   odom_msg_.pose.pose.orientation = quat_msg;
   geometry_msgs::Twist twist;
 
-  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2;
-  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() * 2;
-  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2;
-  twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2;
+  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2 / x_speed_multiplier_;
+  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() / y_speed_multiplier_;
+  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2 ;
+  twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2 / yaw_speed_multiplier_;
 
   odom_msg_.twist.twist = twist;
   return odom_msg_;

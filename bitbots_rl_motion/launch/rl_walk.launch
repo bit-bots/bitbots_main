@@ -1,0 +1,20 @@
+<launch>
+  <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+  <arg name="sim" default="false"/>
+
+  <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+  <group if="$(arg sim)">
+    <rosparam file="$(find bitbots_rl_motion)/config/rl_walk_sim.yaml" command="load"/>
+  </group>
+  <group unless="$(arg sim)">
+    <rosparam file="$(find bitbots_rl_motion)/config/rl_walk_real.yaml" command="load"/>
+  </group>
+  <node name="rl_walk" pkg="bitbots_rl_motion" type="rl_walk.py" output="screen" launch-prefix="$(arg taskset)">
+    <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
+    <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
+    <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
+    <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+  </node>
+</launch>

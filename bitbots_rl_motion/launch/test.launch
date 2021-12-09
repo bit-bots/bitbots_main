@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="sim" default="false"/>
+  <arg name="use_darwin" default="false"/>
+
+  <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+
+  <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
+      <arg name="sim" value="$(arg sim)"/>
+  </include>
+
+  <group if="$(arg use_darwin)">
+    <rosparam file="$(find bitbots_quintic_walk)/config/walking_darwin_optimization.yaml" command="load"/>
+  </group>
+
+  <group unless="$(arg use_darwin)">
+      <group unless="$(arg sim)">
+        <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
+      </group>
+  </group>
+
+  <group if="$(arg sim)">
+    <rosparam file="$(find bitbots_rl_motion)/config/rl_walk_sim.yaml" command="load"/>
+  </group>
+  <group unless="$(arg sim)">
+    <rosparam file="$(find bitbots_rl_motion)/config/rl_walk_real.yaml" command="load"/>
+  </group>
+  <node name="walking" pkg="bitbots_rl_motion" type="rl_walk.py" output="screen" launch-prefix="$(arg taskset)">
+      <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+  </node>
+</launch>

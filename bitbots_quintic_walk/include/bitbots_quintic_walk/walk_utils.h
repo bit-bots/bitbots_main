@@ -27,7 +27,9 @@ enum WalkState {
 struct WalkRequest {
   tf2::Vector3 linear_orders = {0, 0, 0};
   double angular_z = 0;
+  bool stop_walk = false;
   bool walkable_state = false;
+  bool single_step = false;
 };
 
 struct WalkResponse {

@@ -11,5 +11,6 @@ class CancelGoals(AbstractActionElement):
         self.blackboard.dynup_action_client.cancel_all_goals()
         self.blackboard.animation_action_client.cancel_all_goals()
         self.blackboard.dynamic_kick_client.cancel_all_goals()
+        self.blackboard.cancel_move_base_goal()
         self.pop()
 

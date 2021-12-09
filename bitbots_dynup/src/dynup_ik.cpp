@@ -78,9 +78,15 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     result.first = joint_names;
     result.second = joint_goals;
     /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
-    for (size_t i = 0; i < result.first.size(); i++) {
+    for (size_t i = result.first.size(); i-- > 0;) {
       if (result.first[i] == "HeadPan") {
-        result.second[i] = 0;
+        if (direction_ == "walkready"){
+            // remove head from the goals so that we can move it freely
+            result.first.erase(result.first.begin() + i);
+            result.second.erase(result.second.begin() + i);
+        } else {
+          result.second[i] = 0;
+        }
       } else if (result.first[i] == "HeadTilt") {
         if (ik_goals.is_head_zero) {
           result.second[i] = 0;
@@ -89,6 +95,10 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
             result.second[i] = 1.0;
           } else if (direction_ == "back") {
             result.second[i] = -1.5;
+          } else if (direction_ == "walkready"){
+            // remove head from the goals so that we can move it freely
+            result.first.erase(result.first.begin() + i);
+            result.second.erase(result.second.begin() + i);
           } else {
             result.second[i] = 0;
           }

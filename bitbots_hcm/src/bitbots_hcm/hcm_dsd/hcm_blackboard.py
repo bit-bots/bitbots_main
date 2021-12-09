@@ -5,6 +5,7 @@ import json
 import rospkg
 import os
 
+from actionlib_msgs.msg import GoalID
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from std_srvs.srv import Empty
 from bitbots_hcm.fall_checker import FallChecker
@@ -137,3 +138,9 @@ class HcmBlackboard():
                     self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
 
         rospy.Subscriber("/diagnostics_agg", DiagnosticArray, diag_cb, tcp_nodelay=True, queue_size=1)
+
+        self.move_base_cancel_pub = rospy.Publisher("move_base/cancel", GoalID, queue_size=1)
+
+    def cancel_move_base_goal(self):
+        self.move_base_cancel_pub.publish(GoalID())
+
