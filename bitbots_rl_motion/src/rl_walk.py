@@ -14,7 +14,7 @@ if __name__ == '__main__':
     model_folder = rosparam.get_param("/rl_walk/model_folder")
     rospack = rospkg.RosPack()
     package_path = rospack.get_path("bitbots_rl_motion")
-    model_folder = os.path.join(package_path,"models", model_folder)
+    model_folder = os.path.join(package_path, "rl_walk_models", model_folder)
     hyperparams, stats_path = get_saved_hyperparams(model_folder, norm_reward=False, test_mode=True)
 
     # load env_kwargs if existing
