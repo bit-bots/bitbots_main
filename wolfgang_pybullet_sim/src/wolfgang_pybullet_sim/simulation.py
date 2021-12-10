@@ -12,14 +12,15 @@ import tf
 from scipy import signal
 import pybullet_data
 import rospkg
-from transforms3d.quaternions import quat2mat
+from transforms3d.euler import quat2euler, euler2quat
+from transforms3d.quaternions import quat2mat, rotate_vector, qinverse
 
 from wolfgang_pybullet_sim.terrain import Terrain
 import numpy as np
 
 
 class Simulation:
-    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain_height=True, field=False, joints_ft=False,
+    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain_height=0, field=False, joints_ft=False,
                  robot="wolfgang", load_robot=True):
         self.gui = gui
         self.paused = False
@@ -447,6 +448,23 @@ class Simulation:
     def get_robot_pose(self, robot_index=1):
         (x, y, z), (qx, qy, qz, qw) = p.getBasePositionAndOrientation(robot_index)
         return (x, y, z), (qx, qy, qz, qw)
+
+    def get_imu_quaternion(self):
+        # imu orientation has roll and pitch relative to gravity vector. yaw in world frame
+        _, robot_quat_in_world = self.get_robot_pose()
+        # change order to transform3d standard
+        robot_quat_in_world = (robot_quat_in_world[3], robot_quat_in_world[0], robot_quat_in_world[1], robot_quat_in_world[2])
+        # get global yaw
+        yrp_world_frame = quat2euler(robot_quat_in_world, axes='szxy')
+        # remove global yaw rotation from roll and pitch
+        yaw_quat = euler2quat(yrp_world_frame[0], 0, 0, axes='szxy')
+        rp = rotate_vector((yrp_world_frame[1], yrp_world_frame[2], 0), qinverse(yaw_quat))
+        # save in correct order
+        rpy = [rp[0], rp[1], 0]
+        # convert to quaternion
+        quat_wxyz = euler2quat(*rpy)
+        # change order to ros standard
+        return quat_wxyz[1], quat_wxyz[2], quat_wxyz[3], quat_wxyz[0]
 
     def get_robot_pose_rpy(self, robot_index=1):
         (x, y, z), (qx, qy, qz, qw) = p.getBasePositionAndOrientation(robot_index)

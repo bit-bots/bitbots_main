@@ -113,7 +113,7 @@ class ROSInterface:
         self.joint_publisher.publish(self.get_joint_state_msg())
 
     def get_imu_msg(self):
-        position, orientation = self.simulation.get_robot_pose()
+        orientation = self.simulation.get_imu_quaternion()
         self.imu_msg.orientation.x = orientation[0]
         self.imu_msg.orientation.y = orientation[1]
         self.imu_msg.orientation.z = orientation[2]
