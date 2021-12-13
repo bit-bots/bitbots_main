@@ -487,19 +487,19 @@ class WebotsTestCase(RosNodeTestCase):
 
         # calculate rpy values from quaternions
         real_orientation = self.get_robot_pose().orientation
-        real_rpy = quat2euler(real_orientation.w, real_orientation.x, real_orientation.y, real_orientation.z)
-        goal_rpy = quat2euler(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z)
+        real_rpy = quat2euler([real_orientation.w, real_orientation.x, real_orientation.y, real_orientation.z])
+        goal_rpy = quat2euler([pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z])
 
         # assert pose
+        self.assertRobotPosition(position=pose.position, robot_name=robot_name, threshold=lin_threshold,
+                                 x_threshold=x_threshold, y_threshold=y_threshold, z_threshold=z_threshold)
         try:
-            self.assertRobotPosition(position=pose.position, robot_name=robot_name, threshold=lin_threshold,
-                                     x_threshold=x_threshold, y_threshold=y_threshold, z_threshold=z_threshold)
             self.assertInRange(goal_rpy[0], (real_rpy[0] - roll_threshold, real_rpy[0] + roll_threshold))
             self.assertInRange(goal_rpy[1], (real_rpy[1] - pitch_threshold, real_rpy[1] + pitch_threshold))
             self.assertInRange(goal_rpy[2], (real_rpy[2] - yaw_threshold, real_rpy[2] + yaw_threshold))
         except AssertionError:
             raise AssertionError(
-                f"Robot pose is not at (or close to) target pose:\n{pose}\nActual pose:\n{real_orientation}")
+                f"Robot orientation is not at (or close to) target orientation:\n{goal_rpy}\nActual pose:\n{real_rpy}")
 
     def assertRobotStanding(self, robot_name: str = "amy"):
         """
