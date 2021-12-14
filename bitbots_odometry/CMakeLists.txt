@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_odometry)
 
-# Add support for C++11
+# Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 find_package(tf2_eigen REQUIRED)
