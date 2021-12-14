@@ -33,33 +33,3 @@ class MotionOdometry : public rclcpp::Node {
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

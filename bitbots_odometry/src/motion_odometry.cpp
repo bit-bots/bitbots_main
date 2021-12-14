@@ -212,33 +212,3 @@ int main(int argc, char **argv) {
 
   MotionOdometry o;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
