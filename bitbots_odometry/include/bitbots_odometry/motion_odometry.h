@@ -1,26 +1,27 @@
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <std_msgs/Char.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <std_msgs/msg/char.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2/utils.h>
-#include <nav_msgs/Odometry.h>
-#include <bitbots_msgs/SupportState.h>
+#include <nav_msgs/msg/odometry.hpp>
+#include <bitbots_msgs/msg/support_state.hpp>
 #include <unistd.h>
+using std::placeholders::_1;
 
-class MotionOdometry {
+class MotionOdometry : public rclcpp::Node {
  public:
   MotionOdometry();
  private:
-  ros::Time joint_update_time_;
+  rclcpp::Time joint_update_time_;
   char current_support_state_;
   char previous_support_state_;
-  ros::Time current_support_state_time_;
-  sensor_msgs::JointState current_joint_states_;
-  nav_msgs::Odometry current_odom_msg_;
+  rclcpp::Time current_support_state_time_;
+  sensor_msgs::msg::JointState current_joint_states_;
+  nav_msgs::msg::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
-  tf2_ros::Buffer tf_buffer_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
 
   double x_forward_scaling_;
@@ -28,7 +29,37 @@ class MotionOdometry {
   double y_scaling_;
   double yaw_scaling_;
 
-  void supportCallback(bitbots_msgs::SupportState msg);
-  void jointStateCb(const sensor_msgs::JointState &msg);
-  void odomCallback(nav_msgs::Odometry msg);
+  void supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg);
+  void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
+  void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
