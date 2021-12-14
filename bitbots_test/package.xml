@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_test</name>
   <version>1.1.0</version>
@@ -14,16 +15,18 @@
   <url type="repository">https://github.com/bit-bots/bitbots_tools</url>
   <url type="bugtracker">https://github.com/bit-bots/bitbots_tools/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>bitbots_docs</build_depend>
   <depend>rostest</depend>
   <depend>roscpp</depend>
   <depend>rosunit</depend>
-  <depend>rosgraph</depend>
   <depend>rosgraph_msgs</depend>
-  <depend>python3-deprecated</depend>
 
   <test_depend>boost</test_depend>
   <test_depend>python3-hypothesis</test_depend>
   <test_depend>wolfgang_webots_sim</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
