@@ -45,32 +45,3 @@ class OdometryFuser : public rclcpp::Node {
   tf2::Transform getCurrentRotationPoint();
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

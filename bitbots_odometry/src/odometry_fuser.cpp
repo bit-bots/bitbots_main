@@ -279,32 +279,3 @@ int main(int argc, char **argv) {
 
   OdometryFuser o;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
