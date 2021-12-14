@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_odometry</name>
   <version>1.0.13</version>
@@ -12,7 +12,7 @@
   <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
   <author email="jasper@bit-bots.de">Jasper Güldenstein</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>nav_msgs</depend>
   <depend>message_filters</depend>
   <depend>sensor_msgs</depend>
@@ -27,5 +27,8 @@
       <status>tested_robot</status>
       <language>c++</language>
     </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
 </package>
