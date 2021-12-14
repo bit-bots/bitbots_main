@@ -4,13 +4,13 @@
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
 #include <tf2/LinearMath/Vector3.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/msg/point.hpp>
 
 namespace bitbots_splines {
 
 class PositionSpline {
  public:
-  geometry_msgs::Point getGeometryMsgPosition(double time);
+  geometry_msgs::msg::Point getGeometryMsgPosition(double time);
 
   tf2::Vector3 getPos(double time);
   tf2::Vector3 getVel(double time);

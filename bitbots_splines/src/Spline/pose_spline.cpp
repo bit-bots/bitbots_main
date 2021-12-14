@@ -8,15 +8,15 @@ tf2::Transform PoseSpline::getTfTransform(double time) {
   trans.setRotation(getOrientation(time));
   return trans;
 }
-geometry_msgs::Pose PoseSpline::getGeometryMsgPose(double time) {
-  geometry_msgs::Pose msg;
+geometry_msgs::msg::Pose PoseSpline::getGeometryMsgPose(double time) {
+  geometry_msgs::msg::Pose msg;
   msg.position = getGeometryMsgPosition(time);
   msg.orientation = getGeometryMsgOrientation(time);
   return msg;
 }
 
-geometry_msgs::Point PoseSpline::getGeometryMsgPosition(double time) {
-  geometry_msgs::Point msg;
+geometry_msgs::msg::Point PoseSpline::getGeometryMsgPosition(double time) {
+  geometry_msgs::msg::Point msg;
   tf2::Vector3 tf_vec = getPositionPos(time);
   msg.x = tf_vec.x();
   msg.y = tf_vec.y();
@@ -24,8 +24,8 @@ geometry_msgs::Point PoseSpline::getGeometryMsgPosition(double time) {
   return msg;
 }
 
-geometry_msgs::Quaternion PoseSpline::getGeometryMsgOrientation(double time) {
-  geometry_msgs::Quaternion msg;
+geometry_msgs::msg::Quaternion PoseSpline::getGeometryMsgOrientation(double time) {
+  geometry_msgs::msg::Quaternion msg;
   tf2::convert(getOrientation(time), msg);
   return msg;
 }
