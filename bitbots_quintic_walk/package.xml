@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_quintic_walk</name>
   <version>1.6.4</version>
@@ -15,24 +15,17 @@
   <license>MIT</license>
 
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-
-  <depend>roscpp</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>humanoid_league_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>rosconsole</depend>
-  <depend>dynamic_reconfigure</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>bio_ik</depend>
-  <depend>tf_conversions</depend>
   <depend>moveit_core</depend>
   <depend>moveit_ros_move_group</depend>
   <depend>bitbots_splines</depend>
   <depend>geometry_msgs</depend>
-  <depend>message_runtime</depend>
   <depend>bitbots_msgs</depend>
   <depend>moveit_ros_robot_interaction</depend>
   <depend>moveit_ros_planning_interface</depend>
@@ -42,12 +35,16 @@
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>
-  <test_depend>bitbots_test</test_depend>
+  
 
   <export>
     <bitbots_documentation>
       <status>tested_integration</status>
       <language>c++</language>
     </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
-</package>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  </package>
