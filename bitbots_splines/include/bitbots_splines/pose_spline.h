@@ -6,9 +6,9 @@
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 namespace bitbots_splines {
@@ -17,9 +17,9 @@ class PoseSpline {
  public:
   tf2::Transform getTfTransform(double time);
 
-  geometry_msgs::Pose getGeometryMsgPose(double time);
-  geometry_msgs::Point getGeometryMsgPosition(double time);
-  geometry_msgs::Quaternion getGeometryMsgOrientation(double time);
+  geometry_msgs::msg::Pose getGeometryMsgPose(double time);
+  geometry_msgs::msg::Point getGeometryMsgPosition(double time);
+  geometry_msgs::msg::Quaternion getGeometryMsgOrientation(double time);
 
   tf2::Vector3 getPositionPos(double time);
   tf2::Vector3 getPositionVel(double time);

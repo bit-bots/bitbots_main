@@ -72,7 +72,7 @@ class AbstractVisualizer {
     // Iterate over splines, get points everywhere
     // Taking the manually set points is not enough because velocities and accelerations influence the curve
     for (double i = first_time; i <= last_time; i += (last_time - first_time) / smoothness) {
-      geometry_msgs::Point point;
+      geometry_msgs::msg::Point point;
       point.x = spline.x()->pos(i);
       point.y = spline.y()->pos(i);
       point.z = spline.z()->pos(i);

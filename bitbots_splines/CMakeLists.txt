@@ -11,6 +11,7 @@ find_package(bitbots_docs REQUIRED)
 find_package(bio_ik REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS}
   ${bitbots_docs_INCLUDE_DIRS} ${bio_ik_INCLUDE_DIRS} ${rclcpp_INCLUDE_DIRS}
@@ -31,6 +32,7 @@ add_compile_options(-Wall -Werror -Wno-unused)
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
+include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
 set(CMAKE_CXX_STANDARD 17)
@@ -65,6 +67,6 @@ ament_export_dependencies(bio_ik)
 ament_export_dependencies(rclcpp)
 ament_export_dependencies(std_msgs)
 ament_export_include_directories(${INCLUDE_DIRS})
-ament_export_libraries(${PROJECT_NAME} ${LIBS})
+ament_export_libraries(${PROJECT_NAME})
 
 ament_package()
