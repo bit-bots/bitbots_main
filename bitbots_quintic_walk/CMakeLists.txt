@@ -16,21 +16,25 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(rotconv REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(bitbots_splines REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkDebug.msg"
-        "msg/WalkEngineDebug.msg")
+        "msg/WalkEngineDebug.msg"
+        DEPENDENCIES
+        std_msgs
+        geometry_msgs)
 
-set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS})
-include_directories(${INCLUDE_DIRS})
+include_directories(include ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 add_compile_options(-Wall -Werror -Wno-unused)
@@ -50,10 +54,12 @@ set(CODE_LIBRARIES urdfdom_world urdfdom_model)
 add_executable(WalkNode ${SOURCES})
 
 ament_target_dependencies(WalkNode
+        bitbots_splines
         tf2_eigen
         tf2
         tf2_geometry_msgs
         nav_msgs
+        std_msgs
         rotconv
         geometry_msgs
         sensor_msgs
@@ -61,13 +67,27 @@ ament_target_dependencies(WalkNode
         ament_cmake
         rclcpp)
 
-target_link_libraries(WalkNode ${ament_cmake_LIBRARIES} ${CODE_LIBRARIES})
+target_link_libraries(WalkNode ${CODE_LIBRARIES})
 
 # create the lib
 add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
 
+ament_target_dependencies(py_quintic_walk
+        bitbots_splines
+        tf2_eigen
+        tf2
+        tf2_geometry_msgs
+        nav_msgs
+        std_msgs
+        rotconv
+        geometry_msgs
+        sensor_msgs
+        tf2_ros
+        ament_cmake
+        rclcpp)
+
 # link
-target_link_libraries(py_quintic_walk ${ament_cmake_LIBRARIES} ${Boost_LIBRARIES} ${CODE_LIBRARIES})
+target_link_libraries(py_quintic_walk ${Boost_LIBRARIES} ${CODE_LIBRARIES})
 
 
 #if(BUILD_TESTING)
@@ -87,7 +107,7 @@ ament_export_dependencies(sensor_msgs)
 ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(rclcpp)
-ament_export_include_directories(${INCLUDE_DIRS})
+ament_export_include_directories(include)
 ament_export_libraries(py_quintic_walk ${LIBS})
 
 ament_package()
