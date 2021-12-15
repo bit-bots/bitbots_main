@@ -57,7 +57,23 @@ MESSAGES = {
     "Char",
     "Imu",
     "SupportState",
-    "TransformStamped"
+    "TransformStamped",
+    "Transform",
+    "Twist",
+    "Pose",
+    "PoseArray",
+    "PointStamped",
+    "Marker",
+    "String",
+    "Float64",
+    "Bool",
+    "RobotState",
+    "JointCommand",
+    "FootPressure",
+    "Point",
+    "PoseStamped",
+    "Quaternion",
+    "Vector3"
 }
 
 RENAME_PACKAGE_IMPORTS = {
@@ -69,7 +85,27 @@ REMOVE_IMPORTS = [
 ]
 
 HARDCODED_REPLACEMENTS = {
-    "#include <std_msgs/Time.h>": "#include <builtin_interfaces/msg/time.hpp>"
+    "#include <std_msgs/Time.h>": "#include <builtin_interfaces/msg/time.hpp>",
+    "ros::Time": "rclcpp::Time",
+    "ros::Duration": "rclcpp::Duration",
+    "ros::WallTime": "rclcpp::WallTime",
+    "ros::Rate": "rclcpp::Rate",
+    "ros::init": "rclcpp::init",
+    r"ros::NodeHandle .*": "",
+    r"ROS_WARN\(": "RCLCPP_WARN(this->get_logger(),",
+    r"ROS_INFO\(": "RCLCPP_INFO(this->get_logger(),",
+    r"ROS_ERROR\(": "RCLCPP_ERROR(this->get_logger(),",
+    r"ROS_WARN_THROTTLE\(": "RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock()",
+    r"ROS_INFO_THROTTLE\(": "RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock()",
+    r"ROS_ERROR_THROTTLE\(": "RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()",
+    r"ROS_WARN_ONCE\(": "RCLCPP_WARN_ONCE(this->get_logger(),",
+    r"ROS_INFO_ONCE\(": "RCLCPP_INFO_ONCE(this->get_logger(),",
+    r"ROS_ERROR_ONCE\(": "RCLCPP_ERROR_ONCE(this->get_logger(),",
+    r"ros::spinOnce\(\)": "rclcpp::spin_some(std::make_shared<TODO_MIGRATION>())",
+    r"ros::ok\(\)": "rclcpp::ok()",
+    "tf2_ros::Buffer": "std::unique_ptr<tf2_ros::Buffer>",
+    "tf2_ros::TransformBroadcaster": "std::unique_ptr<tf2_ros::TransformBroadcaster>",
+    "tf2_ros::TransformListener": "std::shared_ptr<tf2_ros::TransformListener>"
 }
 
 
@@ -89,10 +125,11 @@ def source_code_replacement():
             # rename message imports, since they have an extra "/msg" and are .hpp files
             for message in MESSAGES:
                 message_snake_case = re.sub(r'(?<!^)(?=[A-Z])', '_', message).lower()
-                # import
-                content = re.sub(message + ".h>", "msg/" + message_snake_case+".hpp>", content)
-                # usage
-                content = re.sub("::" + message, "::msg::" + message, content)
+                # import. make sure that this is not a tf2 header, which sometimes has the same name -.-
+                content = re.sub("(?<!LinearMath/)" + message + ".h>", "msg/" + message_snake_case+".hpp>", content)
+                # usage with lookbehind to make sure we don't induce multiple times the ::msg:: part when
+                # calling the script multiple times
+                content = re.sub("(?<!msg)::" + message, "::msg::" + message, content)
 
             for package in REMOVE_IMPORTS:
                 content = re.sub(r"#include <" + package + ">", "", content)
@@ -100,8 +137,22 @@ def source_code_replacement():
             for find, replace in HARDCODED_REPLACEMENTS.items():
                 content = re.sub(find, replace, content)
 
+            # replace publisher
+            content = re.sub(r"ros::Publisher (.*) = n.advertise<(.*)>\((.*)\)", r"rclcpp::Publisher<\2>::SharedPtr \1 = this->create_publisher<\2>(\3)", content)
+
+            # replace subscriber
+            content = re.sub(r"ros::Subscriber (.*) = n.subscribe\((.*),(.*)\&(.*),.*\)", r"rclcpp::Subscription<TODO_MIGRATION>::SharedPtr \1 = this->create_subscription<TODO_MIGRATION>(\2, \3 std::bind(&\4, this, _1))", content)
+            # different form to write a subscriber
+            content = re.sub(r"ros::Subscriber (.*) = n.subscribe<(.*)>\((.*),(w*)(.+)\)", r"rclcpp::Subscription<\2>::SharedPtr \1 = this->create_subscription<\2>(\3, \4, std::bind(\5, this, _1))", content)
+
+            # replace parameter
+            content = re.sub(r"(.*).param<(.*)>\((.*),(.*),(.*)\);", r"this->declare_parameter<\2>(\3, \5);"+"\n"+r"this->get_parameter(\3, \4);", content)
+
             f.seek(0)
             f.write(content)
+
+            # hack to make sure that there is nothing else left
+            #f.write("\n"*10)
 
 
 def executeSedCmd(pattern, filename, dryrun=False):
