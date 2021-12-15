@@ -9,7 +9,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   left_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
   right_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
 
-  goal_state_.reset(new robot_state::RobotState(kinematic_model));
+  goal_state_.reset(new robot_state::msg::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
   reset();
 
@@ -17,12 +17,12 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
 bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // change goals from support foot based coordinate system to trunk based coordinate system
-  tf2::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
-  tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
+  tf2::msg::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
+  tf2::msg::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
 
   // make pose msg for calling IK
-  geometry_msgs::Pose left_foot_goal_msg;
-  geometry_msgs::Pose right_foot_goal_msg;
+  geometry_msgs::msg::Pose left_foot_goal_msg;
+  geometry_msgs::msg::Pose right_foot_goal_msg;
 
   // decide which foot is which
   if (ik_goals.is_left_support_foot) {
@@ -84,7 +84,7 @@ const std::vector<std::string> &WalkIK::getRightLegJointNames() {
   return right_leg_joints_group_->getJointModelNames();
 }
 
-robot_state::RobotStatePtr WalkIK::get_goal_state() {
+robot_state::msg::RobotStatePtr WalkIK::get_goal_state() {
   return goal_state_;
 }
 

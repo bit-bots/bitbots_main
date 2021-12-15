@@ -12,33 +12,33 @@ https://github.com/Rhoban/model/
 #include <chrono>
 #include <unistd.h>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseArray.h>
-#include <geometry_msgs/PointStamped.h>
-#include <visualization_msgs/Marker.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Char.h>
-#include <std_msgs/Bool.h>
-#include <sensor_msgs/JointState.h>
-#include <sensor_msgs/Imu.h>
-#include <nav_msgs/Odometry.h>
-#include <moveit_msgs/RobotState.h>
+#include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/char.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <moveit_msgs/msg/robot_state.hpp>
 #include <humanoid_league_msgs/RobotControlState.h>
-#include <bitbots_msgs/JointCommand.h>
-#include <bitbots_msgs/FootPressure.h>
-#include <bitbots_msgs/SupportState.h>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_msgs/msg/support_state.hpp>
 
 #include <dynamic_reconfigure/server.h>
 #include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2/LinearMath/Vector3.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/msg/vector3.hpp>
+#include <tf2/LinearMath/msg/quaternion.hpp>
+#include <tf2/LinearMath/msg/transform.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -56,21 +56,21 @@ namespace bitbots_quintic_walk {
 class WalkNode {
  public:
   explicit WalkNode(const std::string ns);
-  bitbots_msgs::JointCommand step(double dt);
-  bitbots_msgs::JointCommand step(
+  bitbots_msgs::msg::JointCommand step(double dt);
+  bitbots_msgs::msg::JointCommand step(
       double dt,
-      const geometry_msgs::Twist &cmdvel_msg,
-      const sensor_msgs::Imu &imu_msg,
-      const sensor_msgs::JointState &jointstate_msg,
-      const bitbots_msgs::FootPressure &pressure_left,
-      const bitbots_msgs::FootPressure &pressure_right);
-  geometry_msgs::PoseArray step_open_loop(double dt, const geometry_msgs::Twist &cmdvel_msg);
+      const geometry_msgs::msg::Twist &cmdvel_msg,
+      const sensor_msgs::msg::Imu &imu_msg,
+      const sensor_msgs::msg::JointState &jointstate_msg,
+      const bitbots_msgs::msg::FootPressure &pressure_left,
+      const bitbots_msgs::msg::FootPressure &pressure_right);
+  geometry_msgs::msg::PoseArray step_open_loop(double dt, const geometry_msgs::msg::Twist &cmdvel_msg);
 
   /**
    * Small helper method to get foot position via python wrapper
    */
-  geometry_msgs::Pose get_right_foot_pose();
-  geometry_msgs::Pose get_left_foot_pose();
+  geometry_msgs::msg::Pose get_right_foot_pose();
+  geometry_msgs::msg::Pose get_left_foot_pose();
 
   /**
    * Reset everything to initial idle state.
@@ -80,7 +80,7 @@ class WalkNode {
   /**
    * Reset walk to any given state. Necessary for using this as reference in learning.
    */
-  void reset(WalkState state, double phase, geometry_msgs::Twist cmd_vel, bool reset_odometry);
+  void reset(WalkState state, double phase, geometry_msgs::msg::Twist cmd_vel, bool reset_odometry);
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
@@ -110,30 +110,30 @@ class WalkNode {
 
   WalkEngine *getEngine();
 
-  nav_msgs::Odometry getOdometry();
+  nav_msgs::msg::Odometry getOdometry();
 
  private:
   void publishGoals(const bitbots_splines::JointGoals &goals);
 
   void publishOdometry(WalkResponse response);
 
-  std::vector<double> get_step_from_vel(const geometry_msgs::Twist msg);
-  void stepCb(const geometry_msgs::Twist msg);
-  void cmdVelCb(geometry_msgs::Twist msg);
+  std::vector<double> get_step_from_vel(const geometry_msgs::msg::Twist msg);
+  void stepCb(const geometry_msgs::msg::Twist msg);
+  void cmdVelCb(geometry_msgs::msg::Twist msg);
 
-  void imuCb(const sensor_msgs::Imu &msg);
+  void imuCb(const sensor_msgs::msg::Imu &msg);
 
   void checkPhaseRestAndReset();
-  void pressureRightCb(bitbots_msgs::FootPressure msg);
-  void pressureLeftCb(bitbots_msgs::FootPressure msg);
+  void pressureRightCb(bitbots_msgs::msg::FootPressure msg);
+  void pressureLeftCb(bitbots_msgs::msg::FootPressure msg);
 
-  void jointStateCb(const sensor_msgs::JointState &msg);
+  void jointStateCb(const sensor_msgs::msg::JointState &msg);
 
-  void kickCb(const std_msgs::BoolConstPtr &msg);
+  void kickCb(const std_msgs::msg::BoolConstPtr &msg);
 
-  void copLeftCb(geometry_msgs::PointStamped msg);
+  void copLeftCb(geometry_msgs::msg::PointStamped msg);
 
-  void copRightCb(geometry_msgs::PointStamped msg);
+  void copRightCb(geometry_msgs::msg::PointStamped msg);
 
   /**
    * This method computes the next motor goals and publishes them.
@@ -188,7 +188,7 @@ class WalkNode {
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
    * Is used to limit _currentOrders to sane values
    */
-  Eigen::Vector3d max_step_linear_;
+  Eigen::msg::Vector3d max_step_linear_;
   double max_step_angular_;
 
   /**
@@ -201,17 +201,17 @@ class WalkNode {
   double y_speed_multiplier_;
   double yaw_speed_multiplier_;
 
-  bitbots_msgs::JointCommand command_msg_;
-  nav_msgs::Odometry odom_msg_;
-  geometry_msgs::TransformStamped odom_trans_;
+  bitbots_msgs::msg::JointCommand command_msg_;
+  nav_msgs::msg::Odometry odom_msg_;
+  geometry_msgs::msg::TransformStamped odom_trans_;
 
-  ros::NodeHandle nh_;
-  ros::NodeHandle pnh_;
+  
+  
 
   ros::Publisher pub_controller_command_;
   ros::Publisher pub_odometry_;
   ros::Publisher pub_support_;
-  tf2_ros::TransformBroadcaster odom_broadcaster_;
+  tf2_ros::msg::TransformBroadcaster odom_broadcaster_;
 
   ros::Subscriber step_sub_;
   ros::Subscriber cmd_vel_sub_;
@@ -227,7 +227,7 @@ class WalkNode {
   // MoveIt!
   robot_model_loader::RobotModelLoader robot_model_loader_;
   robot_model::RobotModelPtr kinematic_model_;
-  robot_state::RobotStatePtr current_state_;
+  robot_state::msg::RobotStatePtr current_state_;
 
   WalkStabilizer stabilizer_;
   WalkIK ik_;

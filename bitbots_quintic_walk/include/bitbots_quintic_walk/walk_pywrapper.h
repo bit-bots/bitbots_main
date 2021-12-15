@@ -3,13 +3,13 @@
 #include <Python.h>
 #include "bitbots_quintic_walk/walk_node.h"
 #include <boost/python.hpp>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <map>
 #include <iostream>
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 #include "bitbots_quintic_walk/walk_utils.h"
-#include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/msg/pose_array.hpp>
 
 class PyWalkWrapper {
  public:
