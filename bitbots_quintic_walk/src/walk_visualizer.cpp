@@ -4,15 +4,18 @@ namespace bitbots_quintic_walk {
 WalkVisualizer::WalkVisualizer() {
   marker_id_ = 1;
   /* debug publisher */
-  ros::NodeHandle nh;
+  
   pub_debug_ = nh.advertise<bitbots_quintic_walk::WalkDebug>("walk_debug", 1);
   pub_engine_debug_ = nh.advertise<bitbots_quintic_walk::WalkEngineDebug>("walk_engine_debug", 1);
-  pub_debug_marker_ = nh.advertise<visualization_msgs::Marker>("walk_debug_marker", 1);
+  pub_debug_marker_ = nh.advertise<visualization_msgs::msg::Marker>("walk_debug_marker", 1);
 
-  ros::NodeHandle pnh("~");
-  pnh.param<std::string>("base_link_frame", base_link_frame_, "base_link");
-  pnh.param<std::string>("r_sole_frame", r_sole_frame_, "r_sole");
-  pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
+  
+this->declare_parameter<std::string>("base_link_frame",  "base_link");
+this->get_parameter("base_link_frame",  base_link_frame_);
+this->declare_parameter<std::string>("r_sole_frame",  "r_sole");
+this->get_parameter("r_sole_frame",  r_sole_frame_);
+this->declare_parameter<std::string>("l_sole_frame",  "l_sole");
+this->get_parameter("l_sole_frame",  l_sole_frame_);
 
 }
 
@@ -33,7 +36,7 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   bool is_left_support = response.is_left_support_foot;
   msg.is_left_support = is_left_support;
   msg.is_double_support = response.is_double_support;
-  msg.header.stamp = ros::Time::now();
+  msg.header.stamp = rclcpp::Time::now();
 
   // define current support frame
   std::string current_support_frame;
@@ -107,7 +110,7 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
 
 
   // engine output
-  geometry_msgs::Pose pose_msg;
+  geometry_msgs::msg::Pose pose_msg;
   tf2::toMsg(response.support_foot_to_flying_foot, pose_msg);
   msg.fly_goal = pose_msg;
   publishArrowMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
@@ -134,8 +137,8 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   msg.trunk_euler.z = yaw;
 
   // resulting trunk pose
-  geometry_msgs::Pose pose;
-  geometry_msgs::Point point;
+  geometry_msgs::msg::Pose pose;
+  geometry_msgs::msg::Point point;
   point.x = 0;
   point.y = 0;
   point.z = 0;
@@ -150,7 +153,7 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
 }
 
 void WalkVisualizer::publishIKDebug(WalkResponse response,
-                                    robot_state::RobotStatePtr current_state,
+                                    robot_state::msg::RobotStatePtr current_state,
                                     bitbots_splines::JointGoals joint_goals) {
   //only do something if someone is listing
   if (pub_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
@@ -158,14 +161,14 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   }
   bitbots_quintic_walk::WalkDebug msg;
 
-  tf2::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
-  tf2::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
+  tf2::msg::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
+  tf2::msg::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
 
   // goals
-  geometry_msgs::Pose pose_support_foot_goal;
+  geometry_msgs::msg::Pose pose_support_foot_goal;
   tf2::toMsg(trunk_to_support_foot, pose_support_foot_goal);
   msg.support_foot_goal = pose_support_foot_goal;
-  geometry_msgs::Pose pose_fly_foot_goal;
+  geometry_msgs::msg::Pose pose_fly_foot_goal;
   tf2::toMsg(trunk_to_flying_foot, pose_fly_foot_goal);
   msg.fly_foot_goal = pose_fly_foot_goal;
   if (response.is_left_support_foot) {
@@ -179,8 +182,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   publishArrowMarker("engine_right_goal", base_link_frame_, msg.right_foot_goal, 1, 0, 0, 1);
 
   // IK results
-  robot_state::RobotStatePtr goal_state;
-  goal_state.reset(new robot_state::RobotState(kinematic_model_));
+  robot_state::msg::RobotStatePtr goal_state;
+  goal_state.reset(new robot_state::msg::RobotState(kinematic_model_));
   std::vector<std::string> names = joint_goals.first;
   std::vector<double> goals = joint_goals.second;
   for (size_t i = 0; i < names.size(); i++) {
@@ -189,10 +192,10 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   }
 
   goal_state->updateLinkTransforms();
-  geometry_msgs::Pose pose_left_result;
+  geometry_msgs::msg::Pose pose_left_result;
   tf2::convert(goal_state->getFrameTransform("l_sole"), pose_left_result);
   msg.left_foot_ik_result = pose_left_result;
-  geometry_msgs::Pose pose_right_result;
+  geometry_msgs::msg::Pose pose_right_result;
   tf2::convert(goal_state->getFrameTransform("r_sole"), pose_right_result);
   msg.right_foot_ik_result = pose_right_result;
   if (response.is_left_support_foot) {
@@ -207,15 +210,15 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
 
 
   // IK offsets
-  tf2::Vector3 support_off;
-  tf2::Vector3 fly_off;
-  tf2::Vector3 tf_vec_left;
-  tf2::Vector3 tf_vec_right;
-  Eigen::Vector3d l_transform = goal_state->getGlobalLinkTransform("l_sole").translation();
-  Eigen::Vector3d r_transform = goal_state->getGlobalLinkTransform("r_sole").translation();
+  tf2::msg::Vector3 support_off;
+  tf2::msg::Vector3 fly_off;
+  tf2::msg::Vector3 tf_vec_left;
+  tf2::msg::Vector3 tf_vec_right;
+  Eigen::msg::Vector3d l_transform = goal_state->getGlobalLinkTransform("l_sole").translation();
+  Eigen::msg::Vector3d r_transform = goal_state->getGlobalLinkTransform("r_sole").translation();
   tf2::convert(l_transform, tf_vec_left);
   tf2::convert(r_transform, tf_vec_right);
-  geometry_msgs::Vector3 vect_msg;
+  geometry_msgs::msg::Vector3 vect_msg;
   if (response.is_left_support_foot) {
     support_off = trunk_to_support_foot.getOrigin() - tf_vec_left;
     fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_right;
@@ -237,10 +240,10 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   msg.fly_foot_ik_offset = vect_msg;
 
   // actual positions
-  geometry_msgs::Pose pose_left_actual;
+  geometry_msgs::msg::Pose pose_left_actual;
   tf2::convert(current_state->getGlobalLinkTransform("l_sole"), pose_left_actual);
   msg.left_foot_position = pose_left_actual;
-  geometry_msgs::Pose pose_right_actual;
+  geometry_msgs::msg::Pose pose_right_actual;
   tf2::convert(current_state->getGlobalLinkTransform("r_sole"), pose_right_actual);
   msg.right_foot_position = pose_right_actual;
   if (response.is_left_support_foot) {
@@ -281,9 +284,9 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
 
 void WalkVisualizer::publishArrowMarker(std::string name_space,
                                         std::string frame,
-                                        geometry_msgs::Pose pose, float r, float g, float b, float a) {
-  visualization_msgs::Marker marker_msg;
-  marker_msg.header.stamp = ros::Time::now();
+                                        geometry_msgs::msg::Pose pose, float r, float g, float b, float a) {
+  visualization_msgs::msg::Marker marker_msg;
+  marker_msg.header.stamp = rclcpp::Time::now();
   marker_msg.header.frame_id = frame;
 
   marker_msg.type = marker_msg.ARROW;
@@ -298,7 +301,7 @@ void WalkVisualizer::publishArrowMarker(std::string name_space,
   color.a = a;
   marker_msg.color = color;
 
-  geometry_msgs::Vector3 scale;
+  geometry_msgs::msg::Vector3 scale;
   scale.x = 0.01;
   scale.y = 0.003;
   scale.z = 0.003;
@@ -312,8 +315,8 @@ void WalkVisualizer::publishArrowMarker(std::string name_space,
 
 void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   //publish markers
-  visualization_msgs::Marker marker_msg;
-  marker_msg.header.stamp = ros::Time::now();
+  visualization_msgs::msg::Marker marker_msg;
+  marker_msg.header.stamp = rclcpp::Time::now();
   if (response.is_left_support_foot) {
     marker_msg.header.frame_id = l_sole_frame_;
   } else {
@@ -321,8 +324,8 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   }
   marker_msg.type = marker_msg.CUBE;
   marker_msg.action = 0;
-  marker_msg.lifetime = ros::Duration(0.0);
-  geometry_msgs::Vector3 scale;
+  marker_msg.lifetime = rclcpp::Duration(0.0);
+  geometry_msgs::msg::Vector3 scale;
   scale.x = 0.20;
   scale.y = 0.10;
   scale.z = 0.01;
@@ -336,14 +339,14 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   color.b = 0;
   color.a = 1;
   marker_msg.color = color;
-  geometry_msgs::Pose pose;
-  tf2::Vector3 step_pos = response.support_to_last.getOrigin();
-  geometry_msgs::Point point;
+  geometry_msgs::msg::Pose pose;
+  tf2::msg::Vector3 step_pos = response.support_to_last.getOrigin();
+  geometry_msgs::msg::Point point;
   point.x = step_pos[0];
   point.y = step_pos[1];
   point.z = 0;
   pose.position = point;
-  tf2::Quaternion q;
+  tf2::msg::Quaternion q;
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
   marker_msg.pose = pose;

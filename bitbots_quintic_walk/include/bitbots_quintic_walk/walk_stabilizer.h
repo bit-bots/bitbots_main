@@ -18,7 +18,7 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
  public:
   explicit WalkStabilizer(const std::string ns);
   void reset() override;
-  WalkResponse stabilize(const WalkResponse &response, const ros::Duration &dt) override;
+  WalkResponse stabilize(const WalkResponse &response, const rclcpp::Duration &dt) override;
 
  private:
   control_toolbox::Pid pid_trunk_fused_pitch_;

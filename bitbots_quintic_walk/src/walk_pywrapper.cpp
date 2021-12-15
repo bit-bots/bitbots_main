@@ -34,11 +34,11 @@ std::string to_python(const M &msg) {
 void init_ros(std::string ns) {
   // remap clock
   std::map<std::string, std::string> remap = {{"/clock", "/" + ns + "clock"}};
-  ros::init(remap, "walking", ros::init_options::AnonymousName);
+  rclcpp::init(remap, "walking", rclcpp::init_options::AnonymousName);
 }
 
 void spin_once() {
-  ros::spinOnce();
+  rclcpp::spin_some(std::make_shared<TODO_MIGRATION>());
 }
 
 PyWalkWrapper::PyWalkWrapper(const std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
@@ -52,33 +52,33 @@ moveit::py_bindings_tools::ByteString PyWalkWrapper::step(double dt,
                                                           const std::string &pressure_left,
                                                           const std::string &pressure_right) {
   std::string result =
-      to_python<bitbots_msgs::JointCommand>(walk_node_->step(dt,
-                                                             from_python<geometry_msgs::Twist>(cmdvel_msg),
-                                                             from_python<sensor_msgs::Imu>(imu_msg),
-                                                             from_python<sensor_msgs::JointState>(jointstate_msg),
-                                                             from_python<bitbots_msgs::FootPressure>(pressure_left),
-                                                             from_python<bitbots_msgs::FootPressure>(pressure_right)));
+      to_python<bitbots_msgs::msg::JointCommand>(walk_node_->step(dt,
+                                                             from_python<geometry_msgs::msg::Twist>(cmdvel_msg),
+                                                             from_python<sensor_msgs::msg::Imu>(imu_msg),
+                                                             from_python<sensor_msgs::msg::JointState>(jointstate_msg),
+                                                             from_python<bitbots_msgs::msg::FootPressure>(pressure_left),
+                                                             from_python<bitbots_msgs::msg::FootPressure>(pressure_right)));
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
 moveit::py_bindings_tools::ByteString PyWalkWrapper::step_open_loop(double dt, const std::string &cmdvel_msg){
-  std::string result = to_python<geometry_msgs::PoseArray>(walk_node_->step_open_loop(dt,
-                                                                        from_python<geometry_msgs::Twist>(cmdvel_msg)));
+  std::string result = to_python<geometry_msgs::msg::PoseArray>(walk_node_->step_open_loop(dt,
+                                                                        from_python<geometry_msgs::msg::Twist>(cmdvel_msg)));
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
 
 moveit::py_bindings_tools::ByteString PyWalkWrapper::get_left_foot_pose() {
-  std::string result = to_python<geometry_msgs::Pose>(walk_node_->get_left_foot_pose());
+  std::string result = to_python<geometry_msgs::msg::Pose>(walk_node_->get_left_foot_pose());
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 moveit::py_bindings_tools::ByteString PyWalkWrapper::get_right_foot_pose() {
-  std::string result = to_python<geometry_msgs::Pose>(walk_node_->get_right_foot_pose());
+  std::string result = to_python<geometry_msgs::msg::Pose>(walk_node_->get_right_foot_pose());
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
 moveit::py_bindings_tools::ByteString PyWalkWrapper::get_odom() {
-  std::string result = to_python<nav_msgs::Odometry>(walk_node_->getOdometry());
+  std::string result = to_python<nav_msgs::msg::Odometry>(walk_node_->getOdometry());
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
@@ -105,10 +105,10 @@ void PyWalkWrapper::special_reset(int state, double phase, const std::string cmd
   } else if (state == 7) {
     walk_state = bitbots_quintic_walk::WalkState::KICK;
   } else {
-    ROS_WARN("state in special reset not clear");
+    RCLCPP_WARN(this->get_logger(),"state in special reset not clear");
     return;
   }
-  walk_node_->reset(walk_state, phase, from_python<geometry_msgs::Twist>(cmd_vel), reset_odometry);
+  walk_node_->reset(walk_state, phase, from_python<geometry_msgs::msg::Twist>(cmd_vel), reset_odometry);
 }
 
 float PyWalkWrapper::get_phase() {

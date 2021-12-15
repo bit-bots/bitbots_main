@@ -36,8 +36,8 @@ WalkEngine::WalkEngine(const std::string ns) :
   dyn_reconf_server_->setCallback(f);
 
   // move left and right in world by foot distance for correct initialization
-  left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
-  right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
+  left_in_world_.setOrigin(tf2::msg::Vector3{0, params_.foot_distance / 2, 0});
+  right_in_world_.setOrigin(tf2::msg::Vector3{0, -1 * params_.foot_distance / 2, 0});
   // create splines one time to have no empty splines during first idle phase
   buildStartMovementTrajectories();
 }
@@ -77,7 +77,7 @@ WalkResponse WalkEngine::update(double dt) {
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
-      ROS_WARN_THROTTLE(1, "PHASE REST");
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock()1, "PHASE REST");
       return createResponse();
     }
   }
@@ -187,13 +187,13 @@ WalkResponse WalkEngine::update(double dt) {
       return createResponse();
     }
   } else {
-    ROS_ERROR("Something is wrong with the walking engine state");
+    RCLCPP_ERROR(this->get_logger(),"Something is wrong with the walking engine state");
   }
 
   //Sanity check support foot state
   if ((phase_ < 0.5 && !is_left_support_foot_) ||
       (phase_ >= 0.5 && is_left_support_foot_)) {
-    ROS_ERROR_THROTTLE(1,
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()1,
                        "WalkEngine exception invalid state phase= %f support= %d dt= %f",
                        phase_,
                        is_left_support_foot_,
@@ -211,13 +211,13 @@ void WalkEngine::updatePhase(double dt) {
     if (dt == 0.0) { //sometimes happens due to rounding
       dt = 0.0001;
     } else {
-      ROS_ERROR_THROTTLE(1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
+      RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
       return;
     }
   }
   //Check for too long dt
   if (dt > 0.5001 / params_.freq) {
-    ROS_ERROR_THROTTLE(1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }
 
@@ -280,12 +280,12 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
 
     //Reset the trunk saved state
     if (is_left_support_foot_) {
-      trunk_pos_at_foot_change_ = tf2::Vector3(
+      trunk_pos_at_foot_change_ = tf2::msg::Vector3(
           params_.trunk_x_offset,
           -params_.foot_distance / 2.0 + params_.trunk_y_offset,
           params_.trunk_height);
     } else {
-      trunk_pos_at_foot_change_ = tf2::Vector3(
+      trunk_pos_at_foot_change_ = tf2::msg::Vector3(
           params_.trunk_x_offset,
           params_.foot_distance / 2.0 + params_.trunk_y_offset,
           params_.trunk_height);
@@ -293,7 +293,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
 
     trunk_pos_vel_at_foot_change_.setZero();
     trunk_pos_acc_at_foot_change_.setZero();
-    trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(0.0, params_.trunk_pitch, 0.0);
+    trunk_orientation_pos_at_last_foot_change_ = tf2::msg::Vector3(0.0, params_.trunk_pitch, 0.0);
     trunk_orientation_vel_at_last_foot_change_.setZero();
     trunk_orientation_acc_at_foot_change_.setZero();
 
@@ -322,7 +322,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
     } else {
-      ROS_ERROR("walk reset state not known");
+      RCLCPP_ERROR(this->get_logger(),"walk reset state not known");
     }
 
     // now switch them again
@@ -338,8 +338,8 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
      // move left and right in world by foot distance for correct initialization
      left_in_world_.setIdentity();
      right_in_world_.setIdentity();
-     left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
-     right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
+     left_in_world_.setOrigin(tf2::msg::Vector3{0, params_.foot_distance / 2, 0});
+     right_in_world_.setOrigin(tf2::msg::Vector3{0, -1 * params_.foot_distance / 2, 0});
    }
 
     // build trajectories one more time with end state of previously build trajectories as a start
@@ -356,7 +356,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
     } else {
-      ROS_ERROR("walk reset state not known");
+      RCLCPP_ERROR(this->get_logger(),"walk reset state not known");
     }
   }
   last_phase_ = phase_;
@@ -377,24 +377,24 @@ void WalkEngine::saveCurrentRobotState() {
   double period_time = half_period * factor;
 
   // get the current transform to the next foot instead of the planned one (in case of phase reset)
-  tf2::Transform current_support_to_next_ = foot_spline_.getTfTransform(period_time);
+  tf2::msg::Transform current_support_to_next_ = foot_spline_.getTfTransform(period_time);
   // we use a transformation with a 0 origin, since we only want to do rotation
-  tf2::Transform rotation_to_next(current_support_to_next_);
+  tf2::msg::Transform rotation_to_next(current_support_to_next_);
   rotation_to_next.setOrigin({0, 0, 0});
 
   // get last values of trunk pose and its velocities and accelerations
-  tf2::Transform trunk_pose = trunk_spline_.getTfTransform(period_time);
-  tf2::Vector3 trunk_pos_vel = trunk_spline_.getPositionVel(period_time);
-  tf2::Vector3 trunk_pos_acc = trunk_spline_.getPositionAcc(period_time);
-  tf2::Vector3 trunk_axis_vel = trunk_spline_.getEulerVel(period_time);
-  tf2::Vector3 trunk_axis_acc = trunk_spline_.getEulerAcc(period_time);
+  tf2::msg::Transform trunk_pose = trunk_spline_.getTfTransform(period_time);
+  tf2::msg::Vector3 trunk_pos_vel = trunk_spline_.getPositionVel(period_time);
+  tf2::msg::Vector3 trunk_pos_acc = trunk_spline_.getPositionAcc(period_time);
+  tf2::msg::Vector3 trunk_axis_vel = trunk_spline_.getEulerVel(period_time);
+  tf2::msg::Vector3 trunk_axis_acc = trunk_spline_.getEulerAcc(period_time);
 
   // Convert the pose in next support foot frame and save
-  tf2::Transform trunk_pose_at_last = current_support_to_next_.inverse() * trunk_pose;
+  tf2::msg::Transform trunk_pose_at_last = current_support_to_next_.inverse() * trunk_pose;
   trunk_pos_at_foot_change_ = trunk_pose_at_last.getOrigin();
   double roll, pitch, yaw;
   tf2::Matrix3x3(trunk_pose_at_last.getRotation()).getRPY(roll, pitch, yaw);
-  trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(roll, pitch, yaw);
+  trunk_orientation_pos_at_last_foot_change_ = tf2::msg::Vector3(roll, pitch, yaw);
 
   // convert the velocities and accelerations in next support foot frame and save
   trunk_pos_vel_at_foot_change_ = rotation_to_next * trunk_pos_vel;
@@ -403,17 +403,17 @@ void WalkEngine::saveCurrentRobotState() {
   trunk_orientation_acc_at_foot_change_ = rotation_to_next * trunk_axis_acc;
 
   // get last values of foot pose and velocities and accelerations
-  tf2::Transform foot_pose = foot_spline_.getTfTransform(period_time);
-  tf2::Vector3 foot_pos_vel = foot_spline_.getPositionVel(period_time);
-  tf2::Vector3 foot_pos_acc = foot_spline_.getPositionAcc(period_time);
-  tf2::Vector3 foot_axis_vel = foot_spline_.getEulerVel(period_time);
-  tf2::Vector3 foot_axis_acc = foot_spline_.getEulerAcc(period_time);
+  tf2::msg::Transform foot_pose = foot_spline_.getTfTransform(period_time);
+  tf2::msg::Vector3 foot_pos_vel = foot_spline_.getPositionVel(period_time);
+  tf2::msg::Vector3 foot_pos_acc = foot_spline_.getPositionAcc(period_time);
+  tf2::msg::Vector3 foot_axis_vel = foot_spline_.getEulerVel(period_time);
+  tf2::msg::Vector3 foot_axis_acc = foot_spline_.getEulerAcc(period_time);
 
   // Convert the pose in next support foot frame and save
-  tf2::Transform foot_pose_at_last = current_support_to_next_.inverse();
+  tf2::msg::Transform foot_pose_at_last = current_support_to_next_.inverse();
   foot_pos_at_foot_change_ = foot_pose_at_last.getOrigin();
   tf2::Matrix3x3(foot_pose_at_last.getRotation()).getRPY(roll, pitch, yaw);
-  foot_orientation_pos_at_last_foot_change_ = tf2::Vector3(roll, pitch, yaw);
+  foot_orientation_pos_at_last_foot_change_ = tf2::msg::Vector3(roll, pitch, yaw);
 
   // convert the velocities and accelerations in next support foot frame and save
   foot_pos_vel_at_foot_change_ = rotation_to_next * foot_pos_vel;
@@ -484,8 +484,8 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   //Reset the trajectories
   is_double_support_spline_ = bitbots_splines::SmoothSpline();
   is_left_support_foot_spline_ = bitbots_splines::SmoothSpline();
-  trunk_spline_ = bitbots_splines::PoseSpline();
-  foot_spline_ = bitbots_splines::PoseSpline();
+  trunk_spline_ = bitbots_splines::msg::PoseSpline();
+  foot_spline_ = bitbots_splines::msg::PoseSpline();
 
   //Set up the trajectories for the half cycle (single step)
   double half_period = 1.0 / (2.0 * params_.freq);
@@ -601,30 +601,30 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   //Trunk support foot and next
   //support foot external
   //oscillating position
-  tf2::Vector3 trunk_point_support(
+  tf2::msg::Vector3 trunk_point_support(
       params_.trunk_x_offset
           + params_.trunk_x_offset_p_coef_forward * support_to_next_.getOrigin().x()
           + params_.trunk_x_offset_p_coef_turn * fabs(support_to_next_.getOrigin().z()),
       params_.trunk_y_offset,
       0);
-  tf2::Vector3 trunk_point_next(
+  tf2::msg::Vector3 trunk_point_next(
       support_to_next_.getOrigin().x() + params_.trunk_x_offset
           + params_.trunk_x_offset_p_coef_forward * support_to_next_.getOrigin().x()
           + params_.trunk_x_offset_p_coef_turn * fabs(getNextEuler().z()),
       support_to_next_.getOrigin().y() + params_.trunk_y_offset,
       0);
   //Trunk middle neutral (no swing) position
-  tf2::Vector3 trunk_point_middle =
+  tf2::msg::Vector3 trunk_point_middle =
       0.5 * trunk_point_support + 0.5 * trunk_point_next;
   //Trunk vector from middle to support apex
-  tf2::Vector3 trunk_vect =
+  tf2::msg::Vector3 trunk_vect =
       trunk_point_support - trunk_point_middle;
   //Apply swing amplitude ratio
   trunk_vect[1] *= params_.trunk_swing;
   //Trunk support and next apex position
-  tf2::Vector3 trunk_apex_support =
+  tf2::msg::Vector3 trunk_apex_support =
       trunk_point_middle + trunk_vect;
-  tf2::Vector3 trunk_apex_next =
+  tf2::msg::Vector3 trunk_apex_next =
       trunk_point_middle - trunk_vect;
   //Trunk forward velocity
   double trunk_vel_support =
@@ -699,13 +699,13 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
                               trunk_height_including_foot_z_movement);
 
   //Define trunk rotation as rool pitch yaw
-  tf2::Vector3 euler_at_support = tf2::Vector3(
+  tf2::msg::Vector3 euler_at_support = tf2::msg::Vector3(
       0.0,
       params_.trunk_pitch
           + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
           + params_.trunk_pitch_p_coef_turn * fabs(getNextEuler().z()),
       0.5 * getLastEuler().z() + 0.5 * getNextEuler().z());
-  tf2::Vector3 euler_at_next = tf2::Vector3(
+  tf2::msg::Vector3 euler_at_next = tf2::msg::Vector3(
       0.0,
       params_.trunk_pitch
           + params_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x()
@@ -714,7 +714,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
 
   // we set a velocity for the points in yaw since we want to keep the speed in turning direction for next step
   // in roll and pitch, no velocity is set since changes are only minor when speed changes
-  tf2::Vector3 axis_vel(
+  tf2::msg::Vector3 axis_vel(
       0.0, 0.0,
       bitbots_quintic_walk::angleDistance(
           getLastEuler().z(),
@@ -764,8 +764,8 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   //Reset the trajectories
   is_double_support_spline_ = bitbots_splines::SmoothSpline();
   is_left_support_foot_spline_ = bitbots_splines::SmoothSpline();
-  trunk_spline_ = bitbots_splines::PoseSpline();
-  foot_spline_ = bitbots_splines::PoseSpline();
+  trunk_spline_ = bitbots_splines::msg::PoseSpline();
+  foot_spline_ = bitbots_splines::msg::PoseSpline();
 
   //Set up the trajectories
   //for the half cycle
@@ -998,7 +998,7 @@ double WalkEngine::getWantedTrunkPitch() {
       + params_.trunk_pitch_p_coef_turn * fabs(support_to_next_.getOrigin().z());
 }
 
-void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
+void WalkEngine::stepFromSupport(const tf2::msg::Transform &diff) {
   //Update relative diff from support foot
   support_to_last_ = support_to_next_.inverse();
   support_to_next_ = diff;
@@ -1012,9 +1012,9 @@ void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
-void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angular_z) {
+void WalkEngine::stepFromOrders(const tf2::msg::Vector3 &linear_orders, double angular_z) {
   //Compute step diff in next support foot frame
-  tf2::Transform tmp_diff = tf2::Transform();
+  tf2::msg::Transform tmp_diff = tf2::msg::Transform();
   tmp_diff.setIdentity();
   //No change in forward step and upward step
   tmp_diff.getOrigin()[0] = linear_orders.x();
@@ -1034,7 +1034,7 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
     tmp_diff.getOrigin()[1] += linear_orders.y();
   }
   //No change in turn (in order to rotate around trunk center)
-  tf2::Quaternion quat;
+  tf2::msg::Quaternion quat;
   quat.setRPY(0, 0, angular_z);
   tmp_diff.setRotation(quat);
 
@@ -1042,25 +1042,24 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
   stepFromSupport(tmp_diff);
 }
 
-tf2::Vector3 WalkEngine::getNextEuler() {
+tf2::msg::Vector3 WalkEngine::getNextEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_next_.getRotation()).getRPY(roll, pitch, yaw);
-  return tf2::Vector3(roll, pitch, yaw);
+  return tf2::msg::Vector3(roll, pitch, yaw);
 }
 
-tf2::Vector3 WalkEngine::getLastEuler() {
+tf2::msg::Vector3 WalkEngine::getLastEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
-  return tf2::Vector3(roll, pitch, yaw);
+  return tf2::msg::Vector3(roll, pitch, yaw);
 }
 
-tf2::Transform WalkEngine::getLeft() {
+tf2::msg::Transform WalkEngine::getLeft() {
   return left_in_world_;
 }
 
-tf2::Transform WalkEngine::getRight() {
+tf2::msg::Transform WalkEngine::getRight() {
   return right_in_world_;
 }
 
 } // namespace bitbots_quintic_walk
-

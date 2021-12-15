@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 project(bitbots_odometry)
 
 # Add support for C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-endif()
+if (NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+endif ()
 
 find_package(tf2_eigen REQUIRED)
 find_package(tf2 REQUIRED)
@@ -30,34 +30,34 @@ add_executable(motion_odometry src/motion_odometry.cpp)
 
 ## Specify libraries to link a library or executable target against
 ament_target_dependencies(motion_odometry
-    tf2_eigen
-    tf2
-    nav_msgs
-    message_filters
-    tf2_geometry_msgs
-    bitbots_msgs
-    geometry_msgs
-    bitbots_docs
-    rotconv
-    sensor_msgs
-    tf2_ros
-    ament_cmake
-    rclcpp)
+        tf2_eigen
+        tf2
+        nav_msgs
+        message_filters
+        tf2_geometry_msgs
+        bitbots_msgs
+        geometry_msgs
+        bitbots_docs
+        rotconv
+        sensor_msgs
+        tf2_ros
+        ament_cmake
+        rclcpp)
 
 ament_target_dependencies(odometry_fuser
-    tf2_eigen
-    tf2
-    nav_msgs
-    message_filters
-    tf2_geometry_msgs
-    bitbots_msgs
-    geometry_msgs
-    bitbots_docs
-    rotconv
-    sensor_msgs
-    tf2_ros
-    ament_cmake
-    rclcpp)
+        tf2_eigen
+        tf2
+        nav_msgs
+        message_filters
+        tf2_geometry_msgs
+        bitbots_msgs
+        geometry_msgs
+        bitbots_docs
+        rotconv
+        sensor_msgs
+        tf2_ros
+        ament_cmake
+        rclcpp)
 target_link_libraries(odometry_fuser ${Eigen3_LIBRARIES})
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)

@@ -18,10 +18,10 @@ class WalkIK : public bitbots_splines::AbstractIK<WalkResponse> {
   const std::vector<std::string> &getLeftLegJointNames();
   const std::vector<std::string> &getRightLegJointNames();
 
-  robot_state::RobotStatePtr get_goal_state();
+  robot_state::msg::RobotStatePtr get_goal_state();
 
  private:
-  robot_state::RobotStatePtr goal_state_;
+  robot_state::msg::RobotStatePtr goal_state_;
   const moveit::core::JointModelGroup *legs_joints_group_;
   const moveit::core::JointModelGroup *left_leg_joints_group_;
   const moveit::core::JointModelGroup *right_leg_joints_group_;

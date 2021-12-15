@@ -6,7 +6,7 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <dynamic_reconfigure/server.h>
@@ -92,8 +92,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void setPauseDuration(double duration);
 
-  tf2::Transform getLeft();
-  tf2::Transform getRight();
+  tf2::msg::Transform getLeft();
+  tf2::msg::Transform getRight();
 
  private:
 
@@ -108,8 +108,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   //splines
   bitbots_splines::SmoothSpline is_double_support_spline_;
   bitbots_splines::SmoothSpline is_left_support_foot_spline_;
-  bitbots_splines::PoseSpline trunk_spline_;
-  bitbots_splines::PoseSpline foot_spline_;
+  bitbots_splines::msg::PoseSpline trunk_spline_;
+  bitbots_splines::msg::PoseSpline foot_spline_;
 
   //Movement phase between 0 and 1
   double phase_;
@@ -131,29 +131,29 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   bool is_left_support_foot_;
 
   // Pose diff [dx, dy, dtheta] from support foot to flying foot last and next position.
-  tf2::Transform support_to_last_;
-  tf2::Transform support_to_next_;
+  tf2::msg::Transform support_to_last_;
+  tf2::msg::Transform support_to_next_;
 
   // Pose integration of left and right foot in initial frame.
   // Set at "future" state taking into account next expected fot pose.
-  tf2::Transform left_in_world_;
-  tf2::Transform right_in_world_;
+  tf2::msg::Transform left_in_world_;
+  tf2::msg::Transform right_in_world_;
 
   //Trunk pose and orientation position, velocity and acceleration at last half step start.
-  tf2::Vector3 trunk_pos_at_foot_change_;
-  tf2::Vector3 trunk_pos_vel_at_foot_change_;
-  tf2::Vector3 trunk_pos_acc_at_foot_change_;
-  tf2::Vector3 trunk_orientation_pos_at_last_foot_change_;
-  tf2::Vector3 trunk_orientation_vel_at_last_foot_change_;
-  tf2::Vector3 trunk_orientation_acc_at_foot_change_;
+  tf2::msg::Vector3 trunk_pos_at_foot_change_;
+  tf2::msg::Vector3 trunk_pos_vel_at_foot_change_;
+  tf2::msg::Vector3 trunk_pos_acc_at_foot_change_;
+  tf2::msg::Vector3 trunk_orientation_pos_at_last_foot_change_;
+  tf2::msg::Vector3 trunk_orientation_vel_at_last_foot_change_;
+  tf2::msg::Vector3 trunk_orientation_acc_at_foot_change_;
 
   //Foot pose and orientation position, velocity and acceleration at last half step start.
-  tf2::Vector3 foot_pos_at_foot_change_;
-  tf2::Vector3 foot_pos_vel_at_foot_change_;
-  tf2::Vector3 foot_pos_acc_at_foot_change_;
-  tf2::Vector3 foot_orientation_pos_at_last_foot_change_;
-  tf2::Vector3 foot_orientation_vel_at_last_foot_change_;
-  tf2::Vector3 foot_orientation_acc_at_foot_change_;
+  tf2::msg::Vector3 foot_pos_at_foot_change_;
+  tf2::msg::Vector3 foot_pos_vel_at_foot_change_;
+  tf2::msg::Vector3 foot_pos_acc_at_foot_change_;
+  tf2::msg::Vector3 foot_orientation_pos_at_last_foot_change_;
+  tf2::msg::Vector3 foot_orientation_vel_at_last_foot_change_;
+  tf2::msg::Vector3 foot_orientation_acc_at_foot_change_;
 
   void updatePhase(double dt);
 
@@ -185,20 +185,20 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Set the target pose of current support foot during next support phase and update support foot.
    * The target foot pose diff is given with respect to next support foot pose (current flying foot target).
    */
-  void stepFromSupport(const tf2::Transform &diff);
+  void stepFromSupport(const tf2::msg::Transform &diff);
 
   /**
    * Set target pose of current support foot using diff orders.
    * Zero vector means in place walking.
    * Special handle of lateral and turn step to avoid foot collision.
    */
-  void stepFromOrders(const tf2::Vector3 &linear_orders, double angular_z);
+  void stepFromOrders(const tf2::msg::Vector3 &linear_orders, double angular_z);
 
   /**
    * Small helper method to get euler angle instead of quaternion.
    */
-  tf2::Vector3 getLastEuler();
-  tf2::Vector3 getNextEuler();
+  tf2::msg::Vector3 getLastEuler();
+  tf2::msg::Vector3 getNextEuler();
 
 };
 
