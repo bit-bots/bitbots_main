@@ -17,8 +17,8 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
 bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // change goals from support foot based coordinate system to trunk based coordinate system
-  tf2::msg::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
-  tf2::msg::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
+  tf2::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
+  tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
 
   // make pose msg for calling IK
   geometry_msgs::msg::Pose left_foot_goal_msg;

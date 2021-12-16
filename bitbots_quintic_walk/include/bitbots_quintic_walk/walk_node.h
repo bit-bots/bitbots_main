@@ -27,7 +27,7 @@ https://github.com/Rhoban/model/
 #include <sensor_msgs/msg/imu.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
-#include <humanoid_league_msgs/RobotControlState.h>
+#include <humanoid_league_msgs/msg/robot_control_state.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <bitbots_msgs/msg/foot_pressure.hpp>
 #include <bitbots_msgs/msg/support_state.hpp>

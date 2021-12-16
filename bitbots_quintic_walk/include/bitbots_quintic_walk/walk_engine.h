@@ -9,8 +9,6 @@ https://github.com/Rhoban/model/
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
-#include <dynamic_reconfigure/server.h>
-#include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 
 #include "bitbots_splines/abstract_engine.h"
 #include "bitbots_splines/smooth_spline.h"
@@ -92,8 +90,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void setPauseDuration(double duration);
 
-  tf2::msg::Transform getLeft();
-  tf2::msg::Transform getRight();
+  tf2::Transform getLeft();
+  tf2::Transform getRight();
 
  private:
 
@@ -131,29 +129,29 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   bool is_left_support_foot_;
 
   // Pose diff [dx, dy, dtheta] from support foot to flying foot last and next position.
-  tf2::msg::Transform support_to_last_;
-  tf2::msg::Transform support_to_next_;
+  tf2::Transform support_to_last_;
+  tf2::Transform support_to_next_;
 
   // Pose integration of left and right foot in initial frame.
   // Set at "future" state taking into account next expected fot pose.
-  tf2::msg::Transform left_in_world_;
-  tf2::msg::Transform right_in_world_;
+  tf2::Transform left_in_world_;
+  tf2::Transform right_in_world_;
 
   //Trunk pose and orientation position, velocity and acceleration at last half step start.
-  tf2::msg::Vector3 trunk_pos_at_foot_change_;
-  tf2::msg::Vector3 trunk_pos_vel_at_foot_change_;
-  tf2::msg::Vector3 trunk_pos_acc_at_foot_change_;
-  tf2::msg::Vector3 trunk_orientation_pos_at_last_foot_change_;
-  tf2::msg::Vector3 trunk_orientation_vel_at_last_foot_change_;
-  tf2::msg::Vector3 trunk_orientation_acc_at_foot_change_;
+  tf2::Vector3 trunk_pos_at_foot_change_;
+  tf2::Vector3 trunk_pos_vel_at_foot_change_;
+  tf2::Vector3 trunk_pos_acc_at_foot_change_;
+  tf2::Vector3 trunk_orientation_pos_at_last_foot_change_;
+  tf2::Vector3 trunk_orientation_vel_at_last_foot_change_;
+  tf2::Vector3 trunk_orientation_acc_at_foot_change_;
 
   //Foot pose and orientation position, velocity and acceleration at last half step start.
-  tf2::msg::Vector3 foot_pos_at_foot_change_;
-  tf2::msg::Vector3 foot_pos_vel_at_foot_change_;
-  tf2::msg::Vector3 foot_pos_acc_at_foot_change_;
-  tf2::msg::Vector3 foot_orientation_pos_at_last_foot_change_;
-  tf2::msg::Vector3 foot_orientation_vel_at_last_foot_change_;
-  tf2::msg::Vector3 foot_orientation_acc_at_foot_change_;
+  tf2::Vector3 foot_pos_at_foot_change_;
+  tf2::Vector3 foot_pos_vel_at_foot_change_;
+  tf2::Vector3 foot_pos_acc_at_foot_change_;
+  tf2::Vector3 foot_orientation_pos_at_last_foot_change_;
+  tf2::Vector3 foot_orientation_vel_at_last_foot_change_;
+  tf2::Vector3 foot_orientation_acc_at_foot_change_;
 
   void updatePhase(double dt);
 
@@ -185,20 +183,20 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Set the target pose of current support foot during next support phase and update support foot.
    * The target foot pose diff is given with respect to next support foot pose (current flying foot target).
    */
-  void stepFromSupport(const tf2::msg::Transform &diff);
+  void stepFromSupport(const tf2::Transform &diff);
 
   /**
    * Set target pose of current support foot using diff orders.
    * Zero vector means in place walking.
    * Special handle of lateral and turn step to avoid foot collision.
    */
-  void stepFromOrders(const tf2::msg::Vector3 &linear_orders, double angular_z);
+  void stepFromOrders(const tf2::Vector3 &linear_orders, double angular_z);
 
   /**
    * Small helper method to get euler angle instead of quaternion.
    */
-  tf2::msg::Vector3 getLastEuler();
-  tf2::msg::Vector3 getNextEuler();
+  tf2::Vector3 getLastEuler();
+  tf2::Vector3 getNextEuler();
 
 };
 

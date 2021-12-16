@@ -161,8 +161,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   }
   bitbots_quintic_walk::WalkDebug msg;
 
-  tf2::msg::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
-  tf2::msg::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
+  tf2::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
+  tf2::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
 
   // goals
   geometry_msgs::msg::Pose pose_support_foot_goal;
@@ -210,10 +210,10 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
 
 
   // IK offsets
-  tf2::msg::Vector3 support_off;
-  tf2::msg::Vector3 fly_off;
-  tf2::msg::Vector3 tf_vec_left;
-  tf2::msg::Vector3 tf_vec_right;
+  tf2::Vector3 support_off;
+  tf2::Vector3 fly_off;
+  tf2::Vector3 tf_vec_left;
+  tf2::Vector3 tf_vec_right;
   Eigen::msg::Vector3d l_transform = goal_state->getGlobalLinkTransform("l_sole").translation();
   Eigen::msg::Vector3d r_transform = goal_state->getGlobalLinkTransform("r_sole").translation();
   tf2::convert(l_transform, tf_vec_left);
@@ -340,13 +340,13 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   color.a = 1;
   marker_msg.color = color;
   geometry_msgs::msg::Pose pose;
-  tf2::msg::Vector3 step_pos = response.support_to_last.getOrigin();
+  tf2::Vector3 step_pos = response.support_to_last.getOrigin();
   geometry_msgs::msg::Point point;
   point.x = step_pos[0];
   point.y = step_pos[1];
   point.z = 0;
   pose.position = point;
-  tf2::msg::Quaternion q;
+  tf2::Quaternion q;
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
   marker_msg.pose = pose;
