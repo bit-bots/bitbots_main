@@ -3,15 +3,15 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <bitbots_quintic_walk/WalkDebug.h>
-#include <bitbots_quintic_walk/WalkEngineDebug.h>
+#include <bitbots_quintic_walk/msg/walk_debug.hpp>
+#include <bitbots_quintic_walk/msg/walk_engine_debug.hpp>
 #include <bitbots_quintic_walk/walk_utils.h>
 #include <bitbots_quintic_walk/walk_engine.h>
 
 #include <tf2_eigen/tf2_eigen.h>
-#include <tf2/LinearMath/msg/vector3.hpp>
-#include <tf2/LinearMath/msg/quaternion.hpp>
-#include <tf2/LinearMath/msg/transform.hpp>
+#include <tf2/LinearMath/vector3.hpp>
+#include <tf2/LinearMath/quaternion.hpp>
+#include <tf2/LinearMath/transform.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <moveit/robot_state/robot_state.h>

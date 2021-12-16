@@ -25,7 +25,7 @@ enum WalkState {
 };
 
 struct WalkRequest {
-  tf2::msg::Vector3 linear_orders = {0, 0, 0};
+  tf2::Vector3 linear_orders = {0, 0, 0};
   double angular_z = 0;
   bool stop_walk = false;
   bool walkable_state = false;
@@ -33,8 +33,8 @@ struct WalkRequest {
 };
 
 struct WalkResponse {
-  tf2::msg::Transform support_foot_to_flying_foot = tf2::msg::Transform(tf2::msg::Quaternion(0, 0, 0, 1), tf2::msg::Vector3(0, 0, 0));
-  tf2::msg::Transform support_foot_to_trunk = tf2::msg::Transform(tf2::msg::Quaternion(0, 0, 0, 1), tf2::msg::Vector3(0, 0, 0));
+  tf2::Transform support_foot_to_flying_foot = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), tf2::Vector3(0, 0, 0));
+  tf2::Transform support_foot_to_trunk = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), tf2::Vector3(0, 0, 0));
 
   // additional information for visualization
   bool is_double_support = false;
@@ -46,8 +46,8 @@ struct WalkResponse {
 
   WalkState state = WalkState::IDLE;
 
-  tf2::msg::Transform support_to_last = tf2::msg::Transform(tf2::msg::Quaternion(0, 0, 0, 1), tf2::msg::Vector3(0, 0, 0));
-  tf2::msg::Transform support_to_next = tf2::msg::Transform(tf2::msg::Quaternion(0, 0, 0, 1), tf2::msg::Vector3(0, 0, 0));
+  tf2::Transform support_to_last = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), tf2::Vector3(0, 0, 0));
+  tf2::Transform support_to_next = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), tf2::Vector3(0, 0, 0));
 
   double current_pitch = 0.0;
   double current_fused_pitch = 0.0;

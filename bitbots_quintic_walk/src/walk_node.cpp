@@ -274,8 +274,8 @@ geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt, const geometry
   current_response_ = walk_engine_.update(dt);
 
   // change goals from support foot based coordinate system to trunk based coordinate system
-  tf2::msg::Transform trunk_to_support_foot_goal = current_response_.support_foot_to_trunk.inverse();
-  tf2::msg::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * current_response_.support_foot_to_flying_foot;
+  tf2::Transform trunk_to_support_foot_goal = current_response_.support_foot_to_trunk.inverse();
+  tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * current_response_.support_foot_to_flying_foot;
   geometry_msgs::msg::Pose left_foot_goal_msg;
   geometry_msgs::msg::Pose right_foot_goal_msg;
   // decide which foot is which
@@ -377,10 +377,10 @@ void WalkNode::cmdVelCb(const geometry_msgs::msg::Twist msg) {
 }
 
 void WalkNode::imuCb(const sensor_msgs::msg::Imu &msg) {
-  // the incoming geometry_msgs::msg::Quaternion is transformed to a tf2::msg::Quaternion
-  tf2::msg::Quaternion quat;
+  // the incoming geometry_msgs::msg::Quaternion is transformed to a tf2::Quaternion
+  tf2::Quaternion quat;
   tf2::convert(msg.orientation, quat);
-  // the tf2::msg::Quaternion has a method to access roll pitch and yaw
+  // the tf2::Quaternion has a method to access roll pitch and yaw
   double roll, pitch, yaw;
   tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
@@ -531,15 +531,15 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
 
 nav_msgs::msg::Odometry WalkNode::getOdometry() {
   // odometry to trunk is transform to support foot * transform from support to trunk
-  tf2::msg::Transform support_foot_tf;
+  tf2::Transform support_foot_tf;
   if (walk_engine_.isLeftSupport()) {
     support_foot_tf = walk_engine_.getLeft();
   } else {
     support_foot_tf = walk_engine_.getRight();
   }
 
-  tf2::msg::Transform odom_to_trunk = support_foot_tf * current_response_.support_foot_to_trunk;
-  tf2::msg::Vector3 pos = odom_to_trunk.getOrigin();
+  tf2::Transform odom_to_trunk = support_foot_tf * current_response_.support_foot_to_trunk;
+  tf2::Vector3 pos = odom_to_trunk.getOrigin();
   geometry_msgs::msg::Quaternion quat_msg;
   tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
 

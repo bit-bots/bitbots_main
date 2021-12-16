@@ -31,7 +31,7 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcp
   double fused_pitch_correction =
       pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
 
-  tf2::msg::Quaternion corrected_orientation;
+  tf2::Quaternion corrected_orientation;
   goal_fused.fusedRoll += fused_roll_correction;
   goal_fused.fusedPitch += fused_pitch_correction;
   Eigen::msg::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);

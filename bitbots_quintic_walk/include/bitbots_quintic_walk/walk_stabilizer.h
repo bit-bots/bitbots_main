@@ -4,7 +4,7 @@
 #include "bitbots_splines/abstract_stabilizer.h"
 
 #include <optional>
-#include <control_toolbox/pid.h>
+#include <control_toolbox/pid.hpp>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "bitbots_quintic_walk/walk_utils.h"
 #include <rot_conv/rot_conv.h>
