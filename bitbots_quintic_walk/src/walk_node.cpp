@@ -24,7 +24,7 @@ this->declare_parameter<std::string>("odom_frame",  "odom");
 this->get_parameter("odom_frame",  odom_frame_);
 
   // init variables
-  robot_state_ = humanoid_league_msgs::RobotControlState::CONTROLLABLE;
+  robot_state_ = humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE;
   current_request_.linear_orders = {0, 0, 0};
   current_request_.angular_z = 0;
   current_request_.stop_walk = true;
@@ -104,8 +104,8 @@ void WalkNode::run() {
     if (loop_rate.sleep()) {
       dt = getTimeDelta();
 
-      if (robot_state_ == humanoid_league_msgs::RobotControlState::FALLING
-      || robot_state_ == humanoid_league_msgs::RobotControlState::GETTING_UP) {
+      if (robot_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING
+      || robot_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
         // the robot fell, we have to reset everything and do nothing else
         walk_engine_.reset();
         stabilizer_.reset();
@@ -114,9 +114,9 @@ void WalkNode::run() {
         /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
          * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
         // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-        current_request_.walkable_state = robot_state_ == humanoid_league_msgs::RobotControlState::CONTROLLABLE ||
-            robot_state_ == humanoid_league_msgs::RobotControlState::WALKING ||
-            robot_state_ == humanoid_league_msgs::RobotControlState::MOTOR_OFF;
+        current_request_.walkable_state = robot_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
+            robot_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING ||
+            robot_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF;
 
         // reset when we start walking, otherwise PID controller will use old I value
         if((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0) &&
@@ -452,7 +452,7 @@ void WalkNode::checkPhaseRestAndReset() {
   }
 }
 
-void WalkNode::robotStateCb(const humanoid_league_msgs::RobotControlState msg) {
+void WalkNode::robotStateCb(const humanoid_league_msgs::msg::RobotControlState msg) {
   robot_state_ = msg.state;
 }
 

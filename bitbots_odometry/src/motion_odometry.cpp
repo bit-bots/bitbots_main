@@ -94,7 +94,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
                 tf_buffer_->lookupTransform(previous_support_link,
                                      current_support_link,
                                      foot_change_time,
-                                     rclcpp::Duration(0.1));
+                                     rclcpp::Duration(0.1*1e9));
             tf2::Transform previous_to_current_support = tf2::Transform();
             tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
             // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
@@ -188,7 +188,7 @@ void MotionOdometry::supportCallback(const bitbots_msgs::msg::SupportState::Shar
     try {
       geometry_msgs::msg::TransformStamped
           base_to_current_support_msg =
-          tf_buffer_->lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0), rclcpp::Duration(10.0));
+          tf_buffer_->lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0), rclcpp::Duration(1e9));
       odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
     } catch (tf2::TransformException &ex) {

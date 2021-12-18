@@ -26,6 +26,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
+find_package(bitbots_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkDebug.msg"
@@ -65,9 +67,19 @@ ament_target_dependencies(WalkNode
         sensor_msgs
         tf2_ros
         ament_cmake
+        rclcpp
+        humanoid_league_msgs
+        bitbots_msgs
         rclcpp)
 
+install(TARGETS WalkNode
+        DESTINATION lib/${PROJECT_NAME})
+
+rosidl_target_interfaces(WalkNode
+        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 target_link_libraries(WalkNode ${CODE_LIBRARIES})
+
 
 # create the lib
 add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
@@ -84,7 +96,16 @@ ament_target_dependencies(py_quintic_walk
         sensor_msgs
         tf2_ros
         ament_cmake
+        rclcpp
+        humanoid_league_msgs
+        bitbots_msgs
         rclcpp)
+
+install(TARGETS py_quintic_walk
+        DESTINATION lib/${PROJECT_NAME})
+
+rosidl_target_interfaces(py_quintic_walk
+        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 # link
 target_link_libraries(py_quintic_walk ${Boost_LIBRARIES} ${CODE_LIBRARIES})
@@ -107,6 +128,7 @@ ament_export_dependencies(sensor_msgs)
 ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(rclcpp)
+ament_export_dependencies(rosidl_default_runtime)
 ament_export_include_directories(include)
 ament_export_libraries(py_quintic_walk ${LIBS})
 

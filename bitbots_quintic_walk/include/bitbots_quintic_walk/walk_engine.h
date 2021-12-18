@@ -66,11 +66,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    */
   bool isDoubleSupport();
 
-  /**
-   * Assign given parameters vector
-   */
-  void reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level);
-
   void requestKick(bool left);
 
   void requestPause();
@@ -99,15 +94,11 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   WalkRequest request_;
 
-  // Currently used parameters
-  bitbots_quintic_walk_engine_paramsConfig params_;
-  dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig> *dyn_reconf_server_;
-
   //splines
   bitbots_splines::SmoothSpline is_double_support_spline_;
   bitbots_splines::SmoothSpline is_left_support_foot_spline_;
-  bitbots_splines::msg::PoseSpline trunk_spline_;
-  bitbots_splines::msg::PoseSpline foot_spline_;
+  bitbots_splines::PoseSpline trunk_spline_;
+  bitbots_splines::PoseSpline foot_spline_;
 
   //Movement phase between 0 and 1
   double phase_;

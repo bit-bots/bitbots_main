@@ -7,7 +7,6 @@
 #include <map>
 #include <iostream>
 #include <moveit/py_bindings_tools/serialize_msg.h>
-#include <bitbots_quintic_walk/bitbots_quintic_walk_engine_paramsConfig.h>
 #include "bitbots_quintic_walk/walk_utils.h"
 #include <geometry_msgs/msg/pose_array.hpp>
 
