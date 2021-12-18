@@ -27,18 +27,15 @@ https://github.com/Rhoban/model/
 #include <sensor_msgs/msg/imu.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
-#include <humanoid_league_msgs/msg/robot_control_state.hpp>
-#include <bitbots_msgs/msg/joint_command.hpp>
-#include <bitbots_msgs/msg/foot_pressure.hpp>
-#include <bitbots_msgs/msg/support_state.hpp>
-
-#include <dynamic_reconfigure/server.h>
-#include <bitbots_quintic_walk/bitbots_quintic_walk_paramsConfig.h>
+#include "humanoid_league_msgs/msg/robot_control_state.hpp"
+#include "bitbots_msgs/msg/joint_command.hpp"
+#include "bitbots_msgs/msg/foot_pressure.hpp"
+#include "bitbots_msgs/msg/support_state.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2/LinearMath/msg/vector3.hpp>
-#include <tf2/LinearMath/msg/quaternion.hpp>
-#include <tf2/LinearMath/msg/transform.hpp>
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -89,15 +86,6 @@ class WalkNode {
   void run();
 
   /**
-   * Dynamic reconfigure callback. Takes in new parameters and applies them to the needed software parts
-   * @param config New configuration
-   * @param level Number which represents which classes of configuration options were changed.
-   *      Each parameter can be defined with a level in the .cfg file. The levels of all changed values then
-   *      get bitwise ORed and passed to this callback
-   */
-  void reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level);
-
-  /**
    * Initialize internal WalkEngine to correctly zeroed, usable state
    */
   void initializeEngine();
@@ -106,7 +94,7 @@ class WalkNode {
    * Sets the current state of the robot
    * @param msg The current state
    */
-  void robotStateCb(humanoid_league_msgs::RobotControlState msg);
+  void robotStateCb(humanoid_league_msgs::msg::RobotControlState msg);
 
   WalkEngine *getEngine();
 
@@ -127,9 +115,9 @@ class WalkNode {
   void pressureRightCb(bitbots_msgs::msg::FootPressure msg);
   void pressureLeftCb(bitbots_msgs::msg::FootPressure msg);
 
-  void jointStateCb(const sensor_msgs::msg::JointState &msg);
+  void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr &msg);
 
-  void kickCb(const std_msgs::msg::BoolConstPtr &msg);
+  void kickCb(const std_msgs::msg::Bool::SharedPtr &msg);
 
   void copLeftCb(geometry_msgs::msg::PointStamped msg);
 
@@ -188,7 +176,7 @@ class WalkNode {
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
    * Is used to limit _currentOrders to sane values
    */
-  Eigen::msg::Vector3d max_step_linear_;
+  Eigen::Vector3d max_step_linear_;
   double max_step_angular_;
 
   /**
@@ -205,29 +193,26 @@ class WalkNode {
   nav_msgs::msg::Odometry odom_msg_;
   geometry_msgs::msg::TransformStamped odom_trans_;
 
-  
-  
 
-  ros::Publisher pub_controller_command_;
-  ros::Publisher pub_odometry_;
-  ros::Publisher pub_support_;
-  tf2_ros::msg::TransformBroadcaster odom_broadcaster_;
+  rclcpp::Publisher pub_controller_command_;
+  rclcpp::Publisher pub_odometry_;
+  rclcpp::Publisher pub_support_;
+  tf2_ros::TransformBroadcaster odom_broadcaster_;
 
-  ros::Subscriber step_sub_;
-  ros::Subscriber cmd_vel_sub_;
-  ros::Subscriber robot_state_sub_;
-  ros::Subscriber joint_state_sub_;
-  ros::Subscriber kick_sub_;
-  ros::Subscriber imu_sub_;
-  ros::Subscriber pressure_sub_left_;
-  ros::Subscriber pressure_sub_right_;
+  rclcpp::Subscription step_sub_;
+  rclcpp::Subscription cmd_vel_sub_;
+  rclcpp::Subscription robot_state_sub_;
+  rclcpp::Subscription joint_state_sub_;
+  rclcpp::Subscription kick_sub_;
+  rclcpp::Subscription imu_sub_;
+  rclcpp::Subscription pressure_sub_left_;
+  rclcpp::Subscription pressure_sub_right_;
 
-  dynamic_reconfigure::Server<bitbots_quintic_walk_paramsConfig> *dyn_reconf_server_;
 
   // MoveIt!
   robot_model_loader::RobotModelLoader robot_model_loader_;
   robot_model::RobotModelPtr kinematic_model_;
-  robot_state::msg::RobotStatePtr current_state_;
+  robot_state::RobotStatePtr current_state_;
 
   WalkStabilizer stabilizer_;
   WalkIK ik_;

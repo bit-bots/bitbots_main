@@ -2,8 +2,8 @@
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_VISUALIZER_H_
 
 #include <tf2/LinearMath/Vector3.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <bitbots_splines/pose_spline.h>
 
 namespace bitbots_splines {

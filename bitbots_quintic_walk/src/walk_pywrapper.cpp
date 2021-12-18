@@ -120,7 +120,7 @@ float PyWalkWrapper::get_freq() {
 }
 
 void PyWalkWrapper::set_robot_state(int state) {
-  humanoid_league_msgs::RobotControlState state_msg;
+  humanoid_league_msgs::msg::RobotControlState state_msg;
   state_msg.state = state;
   walk_node_->robotStateCb(state_msg);
 }
