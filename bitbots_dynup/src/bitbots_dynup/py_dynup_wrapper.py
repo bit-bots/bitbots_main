@@ -61,6 +61,15 @@ class PyDynup(object):
 
         return result
 
+    def step_open_loop(self, dt: float):
+        if dt == 0.0:
+            dt = 0.001
+        stepi = self.py_dynup_wrapper.step_open_loop(dt)
+
+        result = self._from_cpp(stepi, JointCommand)
+
+        return result
+
     def get_poses(self):
         poses = self.py_dynup_wrapper.get_poses()
         result = self._from_cpp(poses, DynupPoses)

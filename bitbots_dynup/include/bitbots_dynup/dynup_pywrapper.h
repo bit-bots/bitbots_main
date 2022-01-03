@@ -17,6 +17,7 @@ public:
     moveit::py_bindings_tools::ByteString step(double dt,
                                                const std::string &imu_msg,
                                                const std::string &jointstate_msg);
+    moveit::py_bindings_tools::ByteString step_open_loop(double dt);
     moveit::py_bindings_tools::ByteString get_poses();
     void reset();
     void special_reset(double time);

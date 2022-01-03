@@ -53,6 +53,12 @@ moveit::py_bindings_tools::ByteString PyDynupWrapper::step(double dt,
     return moveit::py_bindings_tools::serializeMsg(result);
 }
 
+moveit::py_bindings_tools::ByteString PyDynupWrapper::step_open_loop(double dt) {
+    std::string result =
+            to_python<bitbots_msgs::JointCommand>(dynup_node_->step(dt));
+    return moveit::py_bindings_tools::serializeMsg(result);
+}
+
 void PyDynupWrapper::reset() {
     dynup_node_->reset();
 }
@@ -205,6 +211,7 @@ BOOST_PYTHON_MODULE(py_dynup)
 
                 class_<PyDynupWrapper>("PyDynupWrapper", init<std::string>())
                 .def("step", &PyDynupWrapper::step)
+                .def("step_open_loop", &PyDynupWrapper::step_open_loop)
                 .def("reset", &PyDynupWrapper::reset)
                 .def("special_reset", &PyDynupWrapper::special_reset)
                 .def("set_node_dyn_reconf",
