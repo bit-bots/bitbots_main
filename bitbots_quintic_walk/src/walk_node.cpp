@@ -10,18 +10,19 @@ namespace bitbots_quintic_walk {
 WalkNode::WalkNode(const std::string ns) :
     walk_engine_(ns),
     robot_model_loader_(ns + "robot_description", false),
-    stabilizer_(ns) {
+    stabilizer_(ns),
+    Node("QuinticWalk") {
   nh_ = ros::NodeHandle(ns);
   pnh_ = ros::NodeHandle("~");
 
-this->declare_parameter<std::string>("base_link_frame",  "base_link");
-this->get_parameter("base_link_frame",  base_link_frame_);
-this->declare_parameter<std::string>("r_sole_frame",  "r_sole");
-this->get_parameter("r_sole_frame",  r_sole_frame_);
-this->declare_parameter<std::string>("l_sole_frame",  "l_sole");
-this->get_parameter("l_sole_frame",  l_sole_frame_);
-this->declare_parameter<std::string>("odom_frame",  "odom");
-this->get_parameter("odom_frame",  odom_frame_);
+  this->declare_parameter<std::string>("base_link_frame", "base_link");
+  this->get_parameter("base_link_frame", base_link_frame_);
+  this->declare_parameter<std::string>("r_sole_frame", "r_sole");
+  this->get_parameter("r_sole_frame", r_sole_frame_);
+  this->declare_parameter<std::string>("l_sole_frame", "l_sole");
+  this->get_parameter("l_sole_frame", l_sole_frame_);
+  this->declare_parameter<std::string>("odom_frame", "odom");
+  this->get_parameter("odom_frame", odom_frame_);
 
   // init variables
   robot_state_ = humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE;
@@ -38,17 +39,39 @@ this->get_parameter("odom_frame",  odom_frame_);
   yaw_speed_multiplier_ = 1;
 
   // read config
-this->declare_parameter<double>("engine_frequency",  100.0);
-this->get_parameter("engine_frequency",  engine_frequency_);
-this->declare_parameter<bool>("simulation_active",  false);
-this->get_parameter("simulation_active",  simulation_active_);
+  this->declare_parameter<double>("engine_frequency", 100.0);
+  this->get_parameter("engine_frequency", engine_frequency_);
+  this->declare_parameter<bool>("simulation_active", false);
+  this->get_parameter("simulation_active", simulation_active_);
+
+  this->declare_parameter<int>("param_odom_pub_factor");
+  this->declare_parameter<double>("param_ik_timeout");
+  this->declare_parameter<double>("param_ground_min_pressure");
+  this->declare_parameter<double>("param_phase_reset_phase");
+  this->declare_parameter<double>("param_joint_min_effort");
+  this->declare_parameter<double>("param_pause_duration");
+  this->declare_parameter<double>("param_imu_pitch_threshold");
+  this->declare_parameter<double>("param_imu_roll_threshold");
+  this->declare_parameter<double>("param_imu_pitch_vel_threshold");
+  this->declare_parameter<double>("param_imu_roll_vel_threshold");
+  this->declare_parameter<double>("param_max_step_x");
+  this->declare_parameter<double>("param_max_step_y");
+  this->declare_parameter<double>("param_max_step_xy");
+  this->declare_parameter<double>("param_max_step_z");
+  this->declare_parameter<double>("param_max_step_angular");
+  this->declare_parameter<double>("param_x_speed_multiplier");
+  this->declare_parameter<double>("param_y_speed_multiplier");
+  this->declare_parameter<double>("param_yaw_speed_multiplier");
+
+
+
 
   /* init publisher and subscriber */
   pub_controller_command_ = nh_.advertise<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = nh_.advertise<nav_msgs::msg::Odometry>("walk_engine_odometry", 1);
   pub_support_ = nh_.advertise<bitbots_msgs::msg::SupportState>("walk_support_state", 1, true);
   step_sub_ = nh_.subscribe("step", 1, &WalkNode::stepCb, this,
-                               ros::TransportHints().tcpNoDelay());
+                            ros::TransportHints().tcpNoDelay());
   cmd_vel_sub_ = nh_.subscribe("cmd_vel", 1, &WalkNode::cmdVelCb, this,
                                ros::TransportHints().tcpNoDelay());
   robot_state_sub_ = nh_.subscribe("robot_state", 1, &WalkNode::robotStateCb, this,
@@ -105,7 +128,7 @@ void WalkNode::run() {
       dt = getTimeDelta();
 
       if (robot_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING
-      || robot_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
+          || robot_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
         // the robot fell, we have to reset everything and do nothing else
         walk_engine_.reset();
         stabilizer_.reset();
@@ -119,8 +142,10 @@ void WalkNode::run() {
             robot_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF;
 
         // reset when we start walking, otherwise PID controller will use old I value
-        if((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0) &&
-           (current_request_.linear_orders.x() != 0 || current_request_.linear_orders.y() != 0 || current_request_.angular_z != 0)){
+        if ((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0)
+            &&
+                (current_request_.linear_orders.x() != 0 || current_request_.linear_orders.y() != 0
+                    || current_request_.angular_z != 0)) {
           stabilizer_.reset();
         }
         last_request = current_request_;
@@ -161,7 +186,7 @@ void WalkNode::run() {
         pub_odometry_.publish(getOdometry());
         odom_counter = 0;
       }
-    }else{
+    } else {
       usleep(1);
     }
   }
@@ -175,7 +200,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
 // update walk engine response
-  if(got_new_goals_){
+  if (got_new_goals_) {
     got_new_goals_ = false;
     walk_engine_.setGoals(request);
   }
@@ -221,7 +246,7 @@ double WalkNode::getTimeDelta() {
   double current_ros_time = rclcpp::Time::now().toSec();
   dt = current_ros_time - last_ros_update_time_;
   if (dt == 0) {
-    RCLCPP_WARN(this->get_logger(),"dt was 0");
+    RCLCPP_WARN(this->get_logger(), "dt was 0");
     dt = 0.001;
   }
   last_ros_update_time_ = current_ros_time;
@@ -248,11 +273,11 @@ void WalkNode::reset(WalkState state, double phase, geometry_msgs::msg::Twist cm
 }
 
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt,
-                                          const geometry_msgs::msg::Twist &cmdvel_msg,
-                                          const sensor_msgs::msg::Imu &imu_msg,
-                                          const sensor_msgs::msg::JointState &jointstate_msg,
-                                          const bitbots_msgs::msg::FootPressure &pressure_left,
-                                          const bitbots_msgs::msg::FootPressure &pressure_right) {
+                                               const geometry_msgs::msg::Twist &cmdvel_msg,
+                                               const sensor_msgs::msg::Imu &imu_msg,
+                                               const sensor_msgs::msg::JointState &jointstate_msg,
+                                               const bitbots_msgs::msg::FootPressure &pressure_left,
+                                               const bitbots_msgs::msg::FootPressure &pressure_right) {
   // method for python interface. take all messages as parameters instead of using ROS
   cmdVelCb(cmdvel_msg);
   imuCb(imu_msg);
@@ -266,7 +291,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt,
   return joint_goals;
 }
 
-geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt, const geometry_msgs::msg::Twist &cmdvel_msg){
+geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt, const geometry_msgs::msg::Twist &cmdvel_msg) {
   cmdVelCb(cmdvel_msg);
   // get cartesian goals from open loop engine
   WalkRequest request(current_request_);
@@ -305,7 +330,7 @@ geometry_msgs::msg::Pose WalkNode::get_right_foot_pose() {
   return pose;
 }
 
-std::vector<double> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twist msg){
+std::vector<double> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twist msg) {
   // We have to compute by dividing by step frequency which is a double step
   // factor 2 since the order distance is only for a single step, not double step
   double factor = (1.0 / (walk_engine_.getFreq())) / 2.0;
@@ -337,17 +362,17 @@ std::vector<double> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twist 
       msg.linear.z * factor != step[2] ||
       msg.angular.z * factor * yaw_speed_multiplier_ != step[3]) {
     RCLCPP_WARN(this->get_logger(),
-        "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
-        msg.linear.x,
-        msg.linear.y,
-        msg.linear.z,
-        msg.angular.z,
-        msg.linear.x + msg.linear.y,
-        max_step_linear_[0] / factor,
-        max_step_linear_[1] / factor / 2,
-        max_step_linear_[2] / factor,
-        max_step_angular_ / factor,
-        max_step_xy_ / factor);
+                "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f",
+                msg.linear.x,
+                msg.linear.y,
+                msg.linear.z,
+                msg.angular.z,
+                msg.linear.x + msg.linear.y,
+                max_step_linear_[0] / factor,
+                max_step_linear_[1] / factor / 2,
+                max_step_linear_[2] / factor,
+                max_step_angular_ / factor,
+                max_step_xy_ / factor);
   }
 
   return step;
@@ -404,13 +429,13 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu &msg) {
         abs(pitch_vel_) > imu_pitch_vel_threshold_ || abs(roll_vel_) > imu_roll_vel_threshold_) {
       walk_engine_.requestPause();
       if (abs(roll) > imu_roll_threshold_) {
-        RCLCPP_WARN(this->get_logger(),"imu roll angle stop");
+        RCLCPP_WARN(this->get_logger(), "imu roll angle stop");
       } else if (abs(pitch_delta) > imu_pitch_threshold_) {
-        RCLCPP_WARN(this->get_logger(),"imu pitch angle stop");
+        RCLCPP_WARN(this->get_logger(), "imu pitch angle stop");
       } else if (abs(pitch_vel_) > imu_pitch_vel_threshold_) {
-        RCLCPP_WARN(this->get_logger(),"imu roll vel stop");
+        RCLCPP_WARN(this->get_logger(), "imu roll vel stop");
       } else {
-        RCLCPP_WARN(this->get_logger(),"imu pitch vel stop");
+        RCLCPP_WARN(this->get_logger(), "imu pitch vel stop");
       }
     }
   }
@@ -478,7 +503,8 @@ void WalkNode::jointStateCb(const sensor_msgs::msg::JointState &msg) {
     }
     current_fly_effort_ = effort_sum;
   } else {
-    RCLCPP_WARN_ONCE(this->get_logger(),"Joint states have no effort information. Phase reset based on this will not work.");
+    RCLCPP_WARN_ONCE(this->get_logger(),
+                     "Joint states have no effort information. Phase reset based on this will not work.");
   }
 }
 
@@ -487,7 +513,7 @@ void WalkNode::kickCb(const std_msgs::msg::BoolConstPtr &msg) {
 }
 
 void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsConfig &config, uint32_t level) {
-  params_ = config;
+  params_= config;
 
   ik_.setIKTimeout(config.ik_timeout);
 
@@ -504,8 +530,8 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
   x_speed_multiplier_ = config.x_speed_multiplier;
   y_speed_multiplier_ = config.y_speed_multiplier;
   yaw_speed_multiplier_ = config.yaw_speed_multiplier;
-  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0){
-    RCLCPP_WARN(this->get_logger(),"some speed multipliers in walking are 0. check your config!");
+  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0) {
+    RCLCPP_WARN(this->get_logger(), "some speed multipliers in walking are 0. check your config!");
   }
 
   imu_active_ = config.imu_active;
@@ -525,8 +551,8 @@ void WalkNode::reconfCallback(bitbots_quintic_walk::bitbots_quintic_walk_paramsC
     walk_engine_.setPhaseRest(false);
   }
 
-  params_.pause_duration = config.pause_duration;
-  walk_engine_.setPauseDuration(params_.pause_duration);
+  params_pause_duration = config.pause_duration;
+  walk_engine_.setPauseDuration(params_pause_duration);
 }
 
 nav_msgs::msg::Odometry WalkNode::getOdometry() {
@@ -543,7 +569,7 @@ nav_msgs::msg::Odometry WalkNode::getOdometry() {
   geometry_msgs::msg::Quaternion quat_msg;
   tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
 
-  rclcpp::Time current_time = rclcpp::Time::now();
+  rclcpp::Time current_time = this->now();
 
   // send the odometry as message
   odom_msg_.header.stamp = current_time;
@@ -558,7 +584,7 @@ nav_msgs::msg::Odometry WalkNode::getOdometry() {
 
   twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2 / x_speed_multiplier_;
   twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() / y_speed_multiplier_;
-  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2 ;
+  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2;
   twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2 / yaw_speed_multiplier_;
 
   odom_msg_.twist.twist = twist;
@@ -576,7 +602,7 @@ WalkEngine *WalkNode::getEngine() {
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
-  rclcpp::init(argc, argv, "walking");
+  rclcpp::init(argc, argv);
   // init node
   bitbots_quintic_walk::WalkNode node("");
 

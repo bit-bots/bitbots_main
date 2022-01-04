@@ -4,7 +4,7 @@
 #include "bitbots_splines/abstract_stabilizer.h"
 
 #include <optional>
-#include <control_toolbox/pid.hpp>
+#include <control_toolbox/pid_ros.hpp>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "bitbots_quintic_walk/walk_utils.h"
 #include <rot_conv/rot_conv.h>
@@ -16,13 +16,14 @@ namespace bitbots_quintic_walk {
 
 class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
-  explicit WalkStabilizer(const std::string ns);
+  explicit WalkStabilizer(rclcpp::Node* node);
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const rclcpp::Duration &dt) override;
 
  private:
-  control_toolbox::Pid pid_trunk_fused_pitch_;
-  control_toolbox::Pid pid_trunk_fused_roll_;
+  std::shared_ptr<rclcpp::Node> node_;
+  control_toolbox::PidROS pid_trunk_fused_pitch_;
+  control_toolbox::PidROS pid_trunk_fused_roll_;
 };
 } // namespace bitbots_quintic_walk
 
