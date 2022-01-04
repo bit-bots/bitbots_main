@@ -35,20 +35,20 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
 
   void publishEngineDebug(WalkResponse response);
   void publishIKDebug(WalkResponse response,
-                      robot_state::msg::RobotStatePtr current_state,
+                      moveit::core::RobotStatePtr current_state,
                       bitbots_splines::JointGoals joint_goals);
   void publishWalkMarkers(WalkResponse response);
 
-  void init(robot_model::RobotModelPtr kinematic_model);
+  void init(moveit::core::RobotModelPtr kinematic_model);
 
  private:
 
   int marker_id_;
 
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_engine_debug_;
-  ros::Publisher pub_debug_marker_;
-  robot_model::RobotModelPtr kinematic_model_;
+  rclcpp::Publisher pub_debug_;
+  rclcpp::Publisher pub_engine_debug_;
+  rclcpp::Publisher pub_debug_marker_;
+  moveit::core::RobotModelPtr kinematic_model_;
 
   std::string base_link_frame_, l_sole_frame_, r_sole_frame_;
 };

@@ -9,10 +9,9 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   left_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
   right_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
 
-  goal_state_.reset(new robot_state::msg::RobotState(kinematic_model));
+  goal_state_.reset(new moveit::core::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
   reset();
-
 }
 
 bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
@@ -84,7 +83,7 @@ const std::vector<std::string> &WalkIK::getRightLegJointNames() {
   return right_leg_joints_group_->getJointModelNames();
 }
 
-robot_state::msg::RobotStatePtr WalkIK::get_goal_state() {
+moveit::core::RobotStatePtr WalkIK::get_goal_state() {
   return goal_state_;
 }
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <moveit/robot_model/robot_model.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace bitbots_splines {
 
@@ -20,11 +21,12 @@ namespace bitbots_splines {
  */
     inline JointGoals joint_goals_update(const JointGoals &goals,
                                          const std::vector<std::string> &names,
-                                         const std::vector<double> &values) {
+                                         const std::vector<double> &values,
+                                         rclcpp::Logger logger) {
         JointGoals result = goals;
 
         if (names.size() != values.size()) {
-            ROS_ERROR("joint_goals_update() called with unequal argument sizes");
+          RCLCPP_ERROR(logger, "joint_goals_update() called with unequal argument sizes");
         }
 
         for (size_t i = 0; i < goals.first.size(); ++i) {
@@ -48,11 +50,12 @@ namespace bitbots_splines {
  */
     inline JointGoals joint_goals_update_diff(const JointGoals &goals,
                                               const std::vector<std::string> &names,
-                                              const std::vector<double> &diffs) {
+                                              const std::vector<double> &diffs,
+                                              rclcpp::Logger logger) {
         JointGoals result = goals;
 
         if (names.size() != diffs.size()) {
-            ROS_ERROR("joint_goals_update() called with unequal argument sizes");
+          RCLCPP_ERROR(logger, "joint_goals_update() called with unequal argument sizes");
         }
 
         for (size_t i = 0; i < goals.first.size(); ++i) {

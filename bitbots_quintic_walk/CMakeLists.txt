@@ -28,6 +28,8 @@ find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(moveit REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkDebug.msg"
@@ -70,7 +72,8 @@ ament_target_dependencies(WalkNode
         rclcpp
         humanoid_league_msgs
         bitbots_msgs
-        rclcpp)
+        moveit
+        moveit_ros_planning_interface)
 
 install(TARGETS WalkNode
         DESTINATION lib/${PROJECT_NAME})
@@ -99,7 +102,8 @@ ament_target_dependencies(py_quintic_walk
         rclcpp
         humanoid_league_msgs
         bitbots_msgs
-        rclcpp)
+        moveit
+        moveit_ros_planning_interface)
 
 install(TARGETS py_quintic_walk
         DESTINATION lib/${PROJECT_NAME})
@@ -129,6 +133,7 @@ ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(rclcpp)
 ament_export_dependencies(rosidl_default_runtime)
+ament_export_dependencies(moveit_ros_planning_interface)
 ament_export_include_directories(include)
 ament_export_libraries(py_quintic_walk ${LIBS})
 
