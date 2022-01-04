@@ -50,7 +50,7 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-class WalkNode {
+class WalkNode : public rclcpp::Node {
  public:
   explicit WalkNode(const std::string ns);
   bitbots_msgs::msg::JointCommand step(double dt);
@@ -170,8 +170,6 @@ class WalkNode {
   WalkResponse current_stabilized_response_;
   bitbots_splines::JointGoals motor_goals_;
 
-  bitbots_quintic_walk_paramsConfig params_;
-
   /**
    * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
    * Is used to limit _currentOrders to sane values
@@ -193,7 +191,6 @@ class WalkNode {
   nav_msgs::msg::Odometry odom_msg_;
   geometry_msgs::msg::TransformStamped odom_trans_;
 
-
   rclcpp::Publisher pub_controller_command_;
   rclcpp::Publisher pub_odometry_;
   rclcpp::Publisher pub_support_;
@@ -207,7 +204,6 @@ class WalkNode {
   rclcpp::Subscription imu_sub_;
   rclcpp::Subscription pressure_sub_left_;
   rclcpp::Subscription pressure_sub_right_;
-
 
   // MoveIt!
   robot_model_loader::RobotModelLoader robot_model_loader_;
@@ -228,6 +224,46 @@ class WalkNode {
   double pitch_vel_;
 
   bool got_new_goals_;
+
+  // Max freq of engine update rate [hz] range: [1,1000]
+  double param_engine_freq;
+  // Publish odom every [int] update of walk engine range: [1,1000]
+  int param_odom_pub_factor;
+  // Timeout time for bioIK [s] range: [0,0.05]
+  double param_ik_timeout;
+  // Minimal pressure on flying foot to say that it has contact to the ground. Used to invoke phase reset. range: [0,1000]
+  double param_ground_min_pressure;
+  // Minimal phase distance to end of step to invoke phase reset range: [0,1]
+  double param_phase_reset_phase;
+  // Minimal effort on flying leg joints to say that it has contact to the ground. Used to invoke phase reset. range: [0,100]
+  double param_joint_min_effort;
+  // Time that the walking is paused when becoming unstable [s] range: [0,10]
+  double param_pause_duration;
+  // Threshold for stopping for the robot pitch [rad] range: [0,1]
+  double param_imu_pitch_threshold;
+  // Threshold for stopping for the robot roll [rad] range: [0,1]
+  double param_imu_roll_threshold;
+  // Threshold for stopping for the robot pitch angular velocity [rad/s] range: [0,10]
+  double param_imu_pitch_vel_threshold;
+  // Threshold for stopping for the robot roll angular velocity [rad/s] range: [0,10]
+  double param_imu_roll_vel_threshold;
+  // Maximal step length in X [m]) range: [0,1]
+  double param_max_step_x;
+  // Maximal step length in Y [m]) range: [0,1]
+  double param_max_step_y;
+  // Maximal step length in X and Y combined [m]) range: [0,1]
+  double param_max_step_xy;
+  // Maximal step height in Z [m] range: [0,1]
+  double param_max_step_z;
+  // Maximal step turn in yaw [rad]) range: [0,1.5]
+  double param_max_step_angular;
+  // Multiplier to correctly reach the commanded velocity) range: [0,10]
+  double param_x_speed_multiplier;
+  // Multiplier to correctly reach the commanded velocity) range: [0,10]
+  double param_y_speed_multiplier;
+  // Multiplier to correctly reach the commanded velocity) range: [0,10]
+  double param_yaw_speed_multiplier;
+
 };
 
 } // namespace bitbots_quintic_walk

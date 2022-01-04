@@ -18,6 +18,65 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
+struct EngineParams{
+  // Full walk cycle frequency (in Hz, > 0) range: [0.1,5]
+  double freq;
+  // Length of double support phase in half cycle(ratio, [0:1]) range: [0,1]
+  double double_support_ratio;
+  // Lateral distance between the feet center (in m, >= 0) range: [0,1]
+  double foot_distance;
+  // Maximum flying foot height (in m, >= 0) range: [0,2]
+  double foot_rise;
+  // Trunk lateral oscillation amplitude ratio (ratio, >= 0) range: [0,2]
+  double trunk_swing;
+  // Height of the trunk from ground (in m, > 0) range: [0,1]
+  double trunk_height;
+  // Trunk pitch orientation (in rad) range: [-1,1]
+  double trunk_pitch;
+  // Trunk pitch orientation proportional to forward/backward step (in rad/m) range: [0,20]
+  double trunk_pitch_p_coef_forward;
+  // Phase offset of trunk oscillation (half cycle phase, [-1:1]) range: [-1,1]
+  double trunk_phase;
+  // Pause of Z movement on highest point (single support cycle ratio, [0,1]) range: [0,1]
+  double foot_z_pause;
+  // Let the foot's downward trajectory end above the ground this is helpful if the support leg bends, (in m, >= 0)) range: [0,0.1]
+  double foot_put_down_z_offset;
+  // Phase time for moving the foot from Z offset to ground (phase between apex and single support end [0:1]) range: [0,1]
+  double foot_put_down_phase;
+  // Phase of flying foot apex(single support cycle phase, [0:1]) range: [0,1]
+  double foot_apex_phase;
+  // Foot X/Y overshoot in ratio of step length(ratio, >= 0) range: [0,1]
+  double foot_overshoot_ratio;
+  // Foot X/Y overshoot phase (single support cycle phase, [foot_apex_phase:1] range: [0,1]
+  double foot_overshoot_phase;
+  // Trunk forward offset (in m) range: [-0.2,0.2]
+  double trunk_x_offset;
+  // Trunk lateral offset (in m) range: [-0.2,0.2]
+  double trunk_y_offset;
+  // Trunk swing pause length in phase at apex (half cycle ratio, [0:1]) range: [0,1]
+  double trunk_pause;
+  // Trunk forward offset proportional to forward step (in 1) range: [0,1]
+  double trunk_x_offset_p_coef_forward;
+  // Trunk forward offset proportional to rotation step (in m/rad) range: [0,1]
+  double trunk_x_offset_p_coef_turn;
+  // Trunk pitch orientation proportional to rotation step (in 1) range: [-20,20]
+  double trunk_pitch_p_coef_turn;
+  // Length of kick movement [m] range: [0,1]
+  double kick_length;
+  // vel kick [m/s] range: [0,100]
+  double kick_vel;
+  // Time of kick apex [ratio of single support phase] range: [0,1]
+  double kick_phase;
+  // Roll offset on flying foot at put down [rad] range: [-1,1]
+  double foot_put_down_roll_offset;
+  // Give extra swing to first step for better start range: [0,10]
+  double first_step_swing_factor;
+  // Trunk phase for the fist step range: [-1,1]
+  double first_step_trunk_phase;
+  // Amount of movement in z direction for trunk (around trunk_height) [m] range: [0.0,0.1]
+  double trunk_z_movement;
+};
+
 /**
  * QuinticWalk
  *
@@ -26,40 +85,45 @@ namespace bitbots_quintic_walk {
  */
 class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
-  explicit WalkEngine(const std::string ns);
+  explicit WalkEngine(rclcpp::Node* node);
 
   // methods from abstract engine class
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
   void reset() override;
-  int getPercentDone() const override;
+  [[nodiscard]] int getPercentDone() const override;
 
   /**
    * Resets the engine to any given state. Necessary for using it as reference in learning.
    */
-  void reset(WalkState state, double phase, std::vector<double> step, bool stop_walk, bool walkable_state, bool reset_odometry);
+  void reset(WalkState state,
+             double phase,
+             std::vector<double> step,
+             bool stop_walk,
+             bool walkable_state,
+             bool reset_odometry);
 
   /**
    * Return current walk phase between 0 and 1
    */
-  double getPhase() const;
+  [[nodiscard]] double getPhase() const;
 
   /**
     * Returns the phase of one single step, on which we can start doing phase resets.
       Basically the phase when the flying foot reached its apex.
     */
 
-  double getPhaseResetPhase() const;
+  [[nodiscard]] double getPhaseResetPhase() const;
 
   /**
    * Return current time between 0 and half period for trajectories evaluation
    */
-  double getTrajsTime() const;
+  [[nodiscard]] double getTrajsTime() const;
 
   /**
    * Return if true if left is current support foot
    */
-  bool isLeftSupport();
+  [[nodiscard]] bool isLeftSupport() const;
 
   /**
    * Return true if both feet are currently on the ground
@@ -79,7 +143,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   WalkState getState();
 
-  double getFreq();
+  [[nodiscard]] double getFreq() const;
 
   double getWantedTrunkPitch();
 
@@ -88,7 +152,11 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   tf2::Transform getLeft();
   tf2::Transform getRight();
 
+  EngineParams params_;
+
  private:
+
+  rclcpp::Node* node_;
 
   WalkState engine_state_;
 

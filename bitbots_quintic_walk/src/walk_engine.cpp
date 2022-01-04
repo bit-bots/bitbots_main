@@ -1,5 +1,5 @@
 /*
-This code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+node_ code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -7,7 +7,9 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-WalkEngine::WalkEngine(const std::string ns) :
+WalkEngine::WalkEngine(rclcpp::Node* node) :
+    params_(),
+    node_(node),
     engine_state_(WalkState::IDLE),
     phase_(0.0),
     last_phase_(0.0),
@@ -22,18 +24,43 @@ WalkEngine::WalkEngine(const std::string ns) :
     foot_pos_acc_at_foot_change_({0.0, 0.0, 0.0}),
     foot_orientation_pos_at_last_foot_change_({0, 0, 0}),
     foot_orientation_vel_at_last_foot_change_({0, 0, 0}),
-    foot_orientation_acc_at_foot_change_({0, 0, 0}) {
+    foot_orientation_acc_at_foot_change_({0, 0, 0})
+    {
   left_in_world_.setIdentity();
   right_in_world_.setIdentity();
   reset();
 
-  // init dynamic reconfigure
-  dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
-          ns + "walking/engine"));
-  dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
-  dyn_reconf_server_->setCallback(f);
+  // need to use the node reference to get the parameters
+  node_->declare_parameter<double>("freq", 0);
+  node_->declare_parameter<double>("double_support_ratio", 0);
+  node_->declare_parameter<double>("foot_distance", 0);
+  node_->declare_parameter<double>("foot_rise", 0);
+  node_->declare_parameter<double>("trunk_swing", 0);
+  node_->declare_parameter<double>("trunk_height", 0);
+  node_->declare_parameter<double>("trunk_pitch", 0);
+  node_->declare_parameter<double>("trunk_pitch_p_coef_forward", 0);
+  node_->declare_parameter<double>("trunk_phase", 0);
+  node_->declare_parameter<double>("foot_z_pause", 0);
+  node_->declare_parameter<double>("foot_put_down_z_offset", 0);
+  node_->declare_parameter<double>("foot_put_down_phase", 0);
+  node_->declare_parameter<double>("foot_apex_phase", 0);
+  node_->declare_parameter<double>("foot_overshoot_ratio", 0);
+  node_->declare_parameter<double>("foot_overshoot_phase", 0);
+  node_->declare_parameter<double>("trunk_x_offset", 0);
+  node_->declare_parameter<double>("trunk_y_offset", 0);
+  node_->declare_parameter<double>("trunk_pause", 0);
+  node_->declare_parameter<double>("trunk_x_offset_p_coef_forward", 0);
+  node_->declare_parameter<double>("trunk_x_offset_p_coef_turn", 0);
+  node_->declare_parameter<double>("trunk_pitch_p_coef_turn", 0);
+  node_->declare_parameter<double>("kick_length", 0);
+  node_->declare_parameter<double>("kick_vel", 0);
+  node_->declare_parameter<double>("kick_phase", 0);
+  node_->declare_parameter<double>("foot_put_down_roll_offset", 0);
+  node_->declare_parameter<double>("first_step_swing_factor", 0);
+  node_->declare_parameter<double>("first_step_trunk_phase", 0);
+  node_->declare_parameter<double>("trunk_z_movement", 0);
+
+
 
   // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
@@ -72,12 +99,12 @@ WalkResponse WalkEngine::update(double dt) {
       return createResponse();
     }
   } else if (engine_state_ == WalkState::WALKING) {
-    // check if the step would finish with this update of the phase
+    // check if the step would finish with node_ update of the phase
     bool step_will_finish = (phase_ < 0.5 && phase_ + dt * params_.freq > 0.5) || phase_ + dt * params_.freq > 1.0;
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock()1, "PHASE REST");
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1, "PHASE REST");
       return createResponse();
     }
   }
@@ -97,7 +124,7 @@ WalkResponse WalkEngine::update(double dt) {
   // update the current phase
   updatePhase(dt);
 
-  // check if we will finish a half step with this update
+  // check if we will finish a half step with node_ update
   bool half_step_finished = (last_phase_ < 0.5 && phase_ >= 0.5) || (last_phase_ > 0.5 && phase_ < 0.5);
 
   // small state machine
@@ -106,7 +133,7 @@ WalkResponse WalkEngine::update(double dt) {
     buildStartMovementTrajectories();
     engine_state_ = WalkState::START_MOVEMENT;
   } else if (engine_state_ == WalkState::START_MOVEMENT) {
-    // in this state we do a single "step" where we only move the trunk
+    // in node_ state we do a single "step" where we only move the trunk
     if (half_step_finished) {
       if (request_.stop_walk && !request_.single_step) {
         engine_state_ = WalkState::STOP_MOVEMENT;
@@ -166,34 +193,34 @@ WalkResponse WalkEngine::update(double dt) {
       }
     }
   } else if (engine_state_ == WalkState::KICK) {
-    // in this state we do a kick while doing a step
+    // in node_ state we do a kick while doing a step
     if (half_step_finished) {
       //kick step is finished, go on walking
       engine_state_ = WalkState::WALKING;
       buildNormalTrajectories();
     }
   } else if (engine_state_ == WalkState::STOP_STEP) {
-    // in this state we do a step back to get feet into idle pose
+    // in node_ state we do a step back to get feet into idle pose
     if (half_step_finished) {
       //stop step is finished, go to stop movement state
       engine_state_ = WalkState::STOP_MOVEMENT;
       buildStopMovementTrajectories();
     }
   } else if (engine_state_ == WalkState::STOP_MOVEMENT) {
-    // in this state we do a "step" where we move the trunk back to idle position
+    // in node_ state we do a "step" where we move the trunk back to idle position
     if (half_step_finished) {
       //stop movement is finished, go to idle state
       engine_state_ = WalkState::IDLE;
       return createResponse();
     }
   } else {
-    RCLCPP_ERROR(this->get_logger(),"Something is wrong with the walking engine state");
+    RCLCPP_ERROR(node_->get_logger(),"Something is wrong with the walking engine state");
   }
 
   //Sanity check support foot state
   if ((phase_ < 0.5 && !is_left_support_foot_) ||
       (phase_ >= 0.5 && is_left_support_foot_)) {
-    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()1,
+    RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 1,
                        "WalkEngine exception invalid state phase= %f support= %d dt= %f",
                        phase_,
                        is_left_support_foot_,
@@ -211,13 +238,13 @@ void WalkEngine::updatePhase(double dt) {
     if (dt == 0.0) { //sometimes happens due to rounding
       dt = 0.0001;
     } else {
-      RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
+      RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
       return;
     }
   }
   //Check for too long dt
   if (dt > 0.5001 / params_.freq) {
-    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
+    RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
     return;
   }
 
@@ -308,7 +335,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     }
     phase_ = phase;
 
-    // build trajectories for this state once to get correct start point for new trajectory
+    // build trajectories for node_ state once to get correct start point for new trajectory
     if (state == WalkState::WALKING) {
       buildNormalTrajectories();
     } else if (state == WalkState::START_MOVEMENT) {
@@ -322,7 +349,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
     } else {
-      RCLCPP_ERROR(this->get_logger(),"walk reset state not known");
+      RCLCPP_ERROR(node_->get_logger(),"walk reset state not known");
     }
 
     // now switch them again
@@ -356,7 +383,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
     } else {
-      RCLCPP_ERROR(this->get_logger(),"walk reset state not known");
+      RCLCPP_ERROR(node_->get_logger(),"walk reset state not known");
     }
   }
   last_phase_ = phase_;
@@ -484,8 +511,8 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   //Reset the trajectories
   is_double_support_spline_ = bitbots_splines::SmoothSpline();
   is_left_support_foot_spline_ = bitbots_splines::SmoothSpline();
-  trunk_spline_ = bitbots_splines::msg::PoseSpline();
-  foot_spline_ = bitbots_splines::msg::PoseSpline();
+  trunk_spline_ = bitbots_splines::PoseSpline();
+  foot_spline_ = bitbots_splines::PoseSpline();
 
   //Set up the trajectories for the half cycle (single step)
   double half_period = 1.0 / (2.0 * params_.freq);
@@ -677,7 +704,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   }
 
   // When walking downwards, the correct trunk height is the one relative to the flying
-  // foot goal position, this results in lowering the trunk correctly during the step
+  // foot goal position, node_ results in lowering the trunk correctly during the step
   double
       trunk_height_including_foot_z_movement = params_.trunk_height + std::min(0.0, support_to_next_.getOrigin().z());
   // Periodic z movement of trunk is at lowest point at double support center, highest at single support center
@@ -764,8 +791,8 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   //Reset the trajectories
   is_double_support_spline_ = bitbots_splines::SmoothSpline();
   is_left_support_foot_spline_ = bitbots_splines::SmoothSpline();
-  trunk_spline_ = bitbots_splines::msg::PoseSpline();
-  foot_spline_ = bitbots_splines::msg::PoseSpline();
+  trunk_spline_ = bitbots_splines::PoseSpline();
+  foot_spline_ = bitbots_splines::PoseSpline();
 
   //Set up the trajectories
   //for the half cycle
@@ -951,7 +978,7 @@ double WalkEngine::getTrajsTime() const {
   return t;
 }
 
-bool WalkEngine::isLeftSupport() {
+bool WalkEngine::isLeftSupport() const {
   return is_left_support_foot_;
 }
 
@@ -959,10 +986,6 @@ bool WalkEngine::isDoubleSupport() {
   // returns true if the value of the "is_double_support" spline is currently higher than 0.5
   // the spline should only have values of 0 or 1
   return is_double_support_spline_.pos(getTrajsTime()) >= 0.5;
-}
-
-void WalkEngine::reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level) {
-  params_ = params;
 }
 
 void WalkEngine::requestKick(bool left) {
@@ -989,7 +1012,7 @@ void WalkEngine::setPauseDuration(double duration) {
   pause_duration_ = duration;
 }
 
-double WalkEngine::getFreq() {
+double WalkEngine::getFreq() const {
   return params_.freq;
 }
 
@@ -1045,13 +1068,13 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
 tf2::Vector3 WalkEngine::getNextEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_next_.getRotation()).getRPY(roll, pitch, yaw);
-  return tf2::Vector3(roll, pitch, yaw);
+  return {roll, pitch, yaw};
 }
 
 tf2::Vector3 WalkEngine::getLastEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
-  return tf2::Vector3(roll, pitch, yaw);
+  return {roll, pitch, yaw};
 }
 
 tf2::Transform WalkEngine::getLeft() {
