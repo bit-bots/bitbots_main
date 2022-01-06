@@ -187,7 +187,7 @@ def param_replacement():
         with open(filename, "r+") as f:
             content = f.read()
             # create correct lines for c++ out of parameter config file
-            content = re.sub(r'.*.add\("(.*)", (.*), .*\n* .*"(.*)".*\n*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)', r'// \3 range: [\4,\5]\n\2 param_\1;\nthis->declare_parameter<\2>("param_\1");', content)
+            content = re.sub(r'.*.add\("(.*)", (.*), .*\n* .*"(.*)".*\n*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)', r'// \3 range: [\4,\5]\n\2 param_\1_;\nthis->declare_parameter<\2>("param_\1", 0);\n} else if (parameter.get_name() == "\1") {\n      param_\1_ = parameter.as_\2();', content)
 
             # rename some parameter types so that they fit
             content = re.sub("double_t", "double", content)
@@ -197,17 +197,31 @@ def param_replacement():
 
             header_lines = []
             code_lines = []
+            reconf_lines = []
             for line in iter(content.splitlines()):
-                if "this->declare_parameter" in line:
+                if "load_manifest" in line:
+                    continue
+                elif "//" in line:
+                    header_lines.append(line)
+                elif "this->declare_parameter" in line:
                     code_lines.append(line)
-                elif ";" in line or "//" in line:
+                elif "if" in line or "as_" in line:
+                    reconf_lines.append(line)
+                elif ";" in line:
                     header_lines.append(line)
 
-            print(f"###\nFILE {filename}\n###")
+
+            print(f"###\n    FROM FILE {filename}\n###")
+            print(f"### DECLARATION OF PARAMETER VARIABLES (put in header file) ###")
             for line in header_lines:
                 print(line)
             print("\n\n")
+            print(f"### DECLARATION OF PARAMETERS ON SERVER (put in constructor) ###")
             for line in code_lines:
+                print(line)
+            print("\n\n")
+            print(f"### UPDATING PARAMETERS FOR CALLBACK (put in callback) ###")
+            for line in reconf_lines:
                 print(line)
             print("\n\n")
 
