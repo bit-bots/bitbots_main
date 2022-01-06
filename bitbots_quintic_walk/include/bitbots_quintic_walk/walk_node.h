@@ -50,18 +50,59 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
+struct NodeParams{
+  // Max freq of engine update rate [hz] range: [1,1000]
+  double engine_freq;
+  // Publish odom every [int] update of walk engine range: [1,1000]
+  int odom_pub_factor;
+  // Timeout time for bioIK [s] range: [0,0.05]
+  double ik_timeout;
+  // Minimal pressure on flying foot to say that it has contact to the ground. Used to invoke phase reset. range: [0,1000]
+  double ground_min_pressure;
+  // Minimal phase distance to end of step to invoke phase reset range: [0,1]
+  double phase_reset_phase;
+  // Minimal effort on flying leg joints to say that it has contact to the ground. Used to invoke phase reset. range: [0,100]
+  double joint_min_effort;
+  // Time that the walking is paused when becoming unstable [s] range: [0,10]
+  double pause_duration;
+  // Threshold for stopping for the robot pitch [rad] range: [0,1]
+  double imu_pitch_threshold;
+  // Threshold for stopping for the robot roll [rad] range: [0,1]
+  double imu_roll_threshold;
+  // Threshold for stopping for the robot pitch angular velocity [rad/s] range: [0,10]
+  double imu_pitch_vel_threshold;
+  // Threshold for stopping for the robot roll angular velocity [rad/s] range: [0,10]
+  double imu_roll_vel_threshold;
+  // Maximal step length in X [m]) range: [0,1]
+  double max_step_x;
+  // Maximal step length in Y [m]) range: [0,1]
+  double max_step_y;
+  // Maximal step length in X and Y combined [m]) range: [0,1]
+  double max_step_xy;
+  // Maximal step height in Z [m] range: [0,1]
+  double max_step_z;
+  // Maximal step turn in yaw [rad]) range: [0,1.5]
+  double max_step_angular;
+  // Multiplier to correctly reach the commanded velocity) range: [0,10]
+  double x_speed_multiplier;
+  // Multiplier to correctly reach the commanded velocity) range: [0,10]
+  double y_speed_multiplier;
+  // Multiplier to correctly reach the commanded velocity) range: [0,10]
+  double yaw_speed_multiplier;
+};
+
 class WalkNode : public rclcpp::Node {
  public:
-  explicit WalkNode(const std::string ns);
+  explicit WalkNode(std::string ns);
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(
       double dt,
-      const geometry_msgs::msg::Twist &cmdvel_msg,
-      const sensor_msgs::msg::Imu &imu_msg,
-      const sensor_msgs::msg::JointState &jointstate_msg,
-      const bitbots_msgs::msg::FootPressure &pressure_left,
-      const bitbots_msgs::msg::FootPressure &pressure_right);
-  geometry_msgs::msg::PoseArray step_open_loop(double dt, const geometry_msgs::msg::Twist &cmdvel_msg);
+      geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
+      sensor_msgs::msg::Imu::SharedPtr imu_msg,
+      sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
+      bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
+      bitbots_msgs::msg::FootPressure::SharedPtr pressure_right);
+  geometry_msgs::msg::PoseArray step_open_loop(double dt, const geometry_msgs::msg::Twist::SharedPtr cmdvel_msg);
 
   /**
    * Small helper method to get foot position via python wrapper
@@ -77,7 +118,7 @@ class WalkNode : public rclcpp::Node {
   /**
    * Reset walk to any given state. Necessary for using this as reference in learning.
    */
-  void reset(WalkState state, double phase, geometry_msgs::msg::Twist cmd_vel, bool reset_odometry);
+  void reset(WalkState state, double phase, geometry_msgs::msg::Twist::SharedPtr cmd_vel, bool reset_odometry);
 
   /**
    * This is the main loop which takes care of stopping and starting of the walking.
@@ -94,39 +135,31 @@ class WalkNode : public rclcpp::Node {
    * Sets the current state of the robot
    * @param msg The current state
    */
-  void robotStateCb(humanoid_league_msgs::msg::RobotControlState msg);
+  void robotStateCb(humanoid_league_msgs::msg::RobotControlState::SharedPtr msg);
 
   WalkEngine *getEngine();
 
   nav_msgs::msg::Odometry getOdometry();
 
  private:
-  void publishGoals(const bitbots_splines::JointGoals &goals);
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> & parameters);
+  std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
+  void stepCb(geometry_msgs::msg::Twist::SharedPtr msg);
+  void cmdVelCb(geometry_msgs::msg::Twist::SharedPtr msg);
 
-  void publishOdometry(WalkResponse response);
-
-  std::vector<double> get_step_from_vel(const geometry_msgs::msg::Twist msg);
-  void stepCb(const geometry_msgs::msg::Twist msg);
-  void cmdVelCb(geometry_msgs::msg::Twist msg);
-
-  void imuCb(const sensor_msgs::msg::Imu &msg);
+  void imuCb(sensor_msgs::msg::Imu::SharedPtr msg);
 
   void checkPhaseRestAndReset();
-  void pressureRightCb(bitbots_msgs::msg::FootPressure msg);
-  void pressureLeftCb(bitbots_msgs::msg::FootPressure msg);
+  void pressureRightCb(bitbots_msgs::msg::FootPressure::SharedPtr msg);
+  void pressureLeftCb(bitbots_msgs::msg::FootPressure::SharedPtr msg);
 
-  void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr &msg);
+  void jointStateCb(sensor_msgs::msg::JointState::SharedPtr msg);
 
-  void kickCb(const std_msgs::msg::Bool::SharedPtr &msg);
+  void kickCb(std_msgs::msg::Bool::SharedPtr msg);
 
-  void copLeftCb(geometry_msgs::msg::PointStamped msg);
+  NodeParams params_;
 
-  void copRightCb(geometry_msgs::msg::PointStamped msg);
-
-  /**
-   * This method computes the next motor goals and publishes them.
-   */
-  void calculateAndPublishJointGoals(const WalkResponse &response, double dt);
+  OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
   double getTimeDelta();
 
@@ -141,6 +174,7 @@ class WalkNode : public rclcpp::Node {
 
   double engine_frequency_;
 
+  bool phase_reset_active_;
   bool pressure_phase_reset_active_;
   bool effort_phase_reset_active_;
   double phase_reset_phase_;
@@ -191,24 +225,23 @@ class WalkNode : public rclcpp::Node {
   nav_msgs::msg::Odometry odom_msg_;
   geometry_msgs::msg::TransformStamped odom_trans_;
 
-  rclcpp::Publisher pub_controller_command_;
-  rclcpp::Publisher pub_odometry_;
-  rclcpp::Publisher pub_support_;
-  tf2_ros::TransformBroadcaster odom_broadcaster_;
+  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
+  rclcpp::Publisher<bitbots_msgs::msg::SupportState>::SharedPtr pub_support_;
 
-  rclcpp::Subscription step_sub_;
-  rclcpp::Subscription cmd_vel_sub_;
-  rclcpp::Subscription robot_state_sub_;
-  rclcpp::Subscription joint_state_sub_;
-  rclcpp::Subscription kick_sub_;
-  rclcpp::Subscription imu_sub_;
-  rclcpp::Subscription pressure_sub_left_;
-  rclcpp::Subscription pressure_sub_right_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr step_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+  rclcpp::Subscription<humanoid_league_msgs::msg::RobotControlState>::SharedPtr robot_state_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr kick_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_sub_left_;
+  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_sub_right_;
 
   // MoveIt!
   robot_model_loader::RobotModelLoader robot_model_loader_;
-  robot_model::RobotModelPtr kinematic_model_;
-  robot_state::RobotStatePtr current_state_;
+  moveit::core::RobotModelPtr kinematic_model_;
+  moveit::core::RobotStatePtr current_state_;
 
   WalkStabilizer stabilizer_;
   WalkIK ik_;
@@ -224,45 +257,6 @@ class WalkNode : public rclcpp::Node {
   double pitch_vel_;
 
   bool got_new_goals_;
-
-  // Max freq of engine update rate [hz] range: [1,1000]
-  double param_engine_freq;
-  // Publish odom every [int] update of walk engine range: [1,1000]
-  int param_odom_pub_factor;
-  // Timeout time for bioIK [s] range: [0,0.05]
-  double param_ik_timeout;
-  // Minimal pressure on flying foot to say that it has contact to the ground. Used to invoke phase reset. range: [0,1000]
-  double param_ground_min_pressure;
-  // Minimal phase distance to end of step to invoke phase reset range: [0,1]
-  double param_phase_reset_phase;
-  // Minimal effort on flying leg joints to say that it has contact to the ground. Used to invoke phase reset. range: [0,100]
-  double param_joint_min_effort;
-  // Time that the walking is paused when becoming unstable [s] range: [0,10]
-  double param_pause_duration;
-  // Threshold for stopping for the robot pitch [rad] range: [0,1]
-  double param_imu_pitch_threshold;
-  // Threshold for stopping for the robot roll [rad] range: [0,1]
-  double param_imu_roll_threshold;
-  // Threshold for stopping for the robot pitch angular velocity [rad/s] range: [0,10]
-  double param_imu_pitch_vel_threshold;
-  // Threshold for stopping for the robot roll angular velocity [rad/s] range: [0,10]
-  double param_imu_roll_vel_threshold;
-  // Maximal step length in X [m]) range: [0,1]
-  double param_max_step_x;
-  // Maximal step length in Y [m]) range: [0,1]
-  double param_max_step_y;
-  // Maximal step length in X and Y combined [m]) range: [0,1]
-  double param_max_step_xy;
-  // Maximal step height in Z [m] range: [0,1]
-  double param_max_step_z;
-  // Maximal step turn in yaw [rad]) range: [0,1.5]
-  double param_max_step_angular;
-  // Multiplier to correctly reach the commanded velocity) range: [0,10]
-  double param_x_speed_multiplier;
-  // Multiplier to correctly reach the commanded velocity) range: [0,10]
-  double param_y_speed_multiplier;
-  // Multiplier to correctly reach the commanded velocity) range: [0,10]
-  double param_yaw_speed_multiplier;
 
 };
 

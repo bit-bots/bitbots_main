@@ -16,7 +16,7 @@ namespace bitbots_quintic_walk {
 
 class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> {
  public:
-  explicit WalkStabilizer(rclcpp::Node* node);
+  explicit WalkStabilizer(rclcpp::Node::SharedPtr node);
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const rclcpp::Duration &dt) override;
 

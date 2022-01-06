@@ -85,7 +85,7 @@ struct EngineParams{
  */
 class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkResponse> {
  public:
-  explicit WalkEngine(rclcpp::Node* node);
+  explicit WalkEngine(rclcpp::Node::SharedPtr node);
 
   // methods from abstract engine class
   WalkResponse update(double dt) override;
@@ -156,7 +156,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
  private:
 
-  rclcpp::Node* node_;
+  rclcpp::Node::SharedPtr node_;
 
   WalkState engine_state_;
 

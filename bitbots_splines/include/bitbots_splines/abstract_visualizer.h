@@ -17,15 +17,15 @@ class AbstractVisualizer {
    * @param frame The frame in which the position is given
    * @return The visualization marker
    */
-  visualization_msgs::Marker getMarker(const tf2::Vector3 &position, const std::string &frame) {
-    visualization_msgs::Marker marker;
+  visualization_msgs::msg::Marker getMarker(const tf2::Vector3 &position, const std::string &frame, rclcpp::Node* node) {
+    visualization_msgs::msg::Marker marker;
 
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.lifetime = ros::Duration(1000);
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.type = visualization_msgs::msg::Marker::SPHERE;
+    marker.lifetime = rclcpp::Duration(1e9*1000);
     marker.frame_locked = false;
     marker.header.frame_id = frame;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = node->now();
     marker.pose.position.x = position.x();
     marker.pose.position.y = position.y();
     marker.pose.position.z = position.z();
@@ -45,23 +45,24 @@ class AbstractVisualizer {
    * @param smoothness The smoothness of the splines
    * @return The visualization markers
    */
-  visualization_msgs::MarkerArray getPath(bitbots_splines::PoseSpline &spline,
+  visualization_msgs::msg::MarkerArray getPath(bitbots_splines::PoseSpline &spline,
                                      const std::string &frame,
-                                     const double smoothness) {
+                                     const double smoothness,
+                                     rclcpp::Node* node) {
 
-    visualization_msgs::MarkerArray marker_array;
-    visualization_msgs::Marker base_marker;
-    base_marker.action = visualization_msgs::Marker::ADD;
-    base_marker.lifetime = ros::Duration(1000);
+    visualization_msgs::msg::MarkerArray marker_array;
+    visualization_msgs::msg::Marker base_marker;
+    base_marker.action = visualization_msgs::msg::Marker::ADD;
+    base_marker.lifetime = rclcpp::Duration(1e9*1000);
     base_marker.frame_locked = true;
     base_marker.header.frame_id = frame;
-    base_marker.header.stamp = ros::Time::now();
+    base_marker.header.stamp = node->now();
     base_marker.pose.orientation.w = 1;
     base_marker.color.a = 1;
 
     // Marker for spline path
-    visualization_msgs::Marker path_marker = base_marker;
-    path_marker.type = visualization_msgs::Marker::LINE_STRIP;
+    visualization_msgs::msg::Marker path_marker = base_marker;
+    path_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
     path_marker.id = id++;
     path_marker.scale.x = 0.01;
 
@@ -96,11 +97,11 @@ class AbstractVisualizer {
     times.sort();
     times.unique();
 
-    visualization_msgs::Marker orientation_marker = base_marker;
+    visualization_msgs::msg::Marker orientation_marker = base_marker;
     orientation_marker.scale.x = 0.05;
     orientation_marker.scale.y = 0.005;
     orientation_marker.scale.z = 0.005;
-    orientation_marker.type = visualization_msgs::Marker::ARROW;
+    orientation_marker.type = visualization_msgs::msg::Marker::ARROW;
     for (double time : times) {
       orientation_marker.id = id++;
       orientation_marker.pose.position = spline.getGeometryMsgPosition(time);
