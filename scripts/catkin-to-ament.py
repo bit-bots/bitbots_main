@@ -73,7 +73,8 @@ MESSAGES = {
     "Point",
     "PoseStamped",
     "Quaternion",
-    "Vector3"
+    "Vector3",
+    "RobotControlState",
 }
 
 RENAME_PACKAGE_IMPORTS = {
@@ -86,18 +87,22 @@ REMOVE_IMPORTS = [
 
 HARDCODED_REPLACEMENTS = {
     "#include <std_msgs/Time.h>": "#include <builtin_interfaces/msg/time.hpp>",
+    "ros::Time::now()": "this->now()",
+    "now().toSec()": "now().seconds()",
     "ros::Time": "rclcpp::Time",
+    "ros::Duration(": "rclcpp::Duration(1e9*",  # is now nanoseconds
     "ros::Duration": "rclcpp::Duration",
     "ros::WallTime": "rclcpp::WallTime",
     "ros::Rate": "rclcpp::Rate",
     "ros::init": "rclcpp::init",
     r"ros::NodeHandle .*": "",
     r"ROS_WARN\(": "RCLCPP_WARN(this->get_logger(),",
+    r"ROS_FATAL\(": "RCLCPP_FATAL(this->get_logger(),",
     r"ROS_INFO\(": "RCLCPP_INFO(this->get_logger(),",
     r"ROS_ERROR\(": "RCLCPP_ERROR(this->get_logger(),",
-    r"ROS_WARN_THROTTLE\(": "RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock()",
-    r"ROS_INFO_THROTTLE\(": "RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock()",
-    r"ROS_ERROR_THROTTLE\(": "RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock()",
+    r"ROS_WARN_THROTTLE\(": "RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), ",
+    r"ROS_INFO_THROTTLE\(": "RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), ",
+    r"ROS_ERROR_THROTTLE\(": "RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), ",
     r"ROS_WARN_ONCE\(": "RCLCPP_WARN_ONCE(this->get_logger(),",
     r"ROS_INFO_ONCE\(": "RCLCPP_INFO_ONCE(this->get_logger(),",
     r"ROS_ERROR_ONCE\(": "RCLCPP_ERROR_ONCE(this->get_logger(),",
@@ -105,7 +110,13 @@ HARDCODED_REPLACEMENTS = {
     r"ros::ok\(\)": "rclcpp::ok()",
     "tf2_ros::Buffer": "std::unique_ptr<tf2_ros::Buffer>",
     "tf2_ros::TransformBroadcaster": "std::unique_ptr<tf2_ros::TransformBroadcaster>",
-    "tf2_ros::TransformListener": "std::shared_ptr<tf2_ros::TransformListener>"
+    "tf2_ros::TransformListener": "std::shared_ptr<tf2_ros::TransformListener>",
+    "#include <dynamic_reconfigure/server.h>": "",
+    "#include <control_toolbox/pid.h>": "#include <control_toolbox/pid.hpp>",
+    "robot_state::": "moveit::core::",
+    ".getNumSubscribers": "->get_subscription_count",
+    ".publish": "->publish",
+    "robot_state::msg::RobotStatePtr": "moveit::core::RobotStatePtr",
 }
 
 
@@ -126,10 +137,10 @@ def source_code_replacement():
             for message in MESSAGES:
                 message_snake_case = re.sub(r'(?<!^)(?=[A-Z])', '_', message).lower()
                 # import. make sure that this is not a tf2 header, which sometimes has the same name -.-
-                content = re.sub("(?<!LinearMath/)" + message + ".h>", "msg/" + message_snake_case+".hpp>", content)
+                content = re.sub("(?<!LinearMath/)" + message + ".h>", "msg/" + message_snake_case + ".hpp>", content)
                 # usage with lookbehind to make sure we don't induce multiple times the ::msg:: part when
                 # calling the script multiple times
-                content = re.sub("(?<!msg)::" + message, "::msg::" + message, content)
+                content = re.sub("(?<!(msg|tf2))::" + message, "::msg::" + message, content)
 
             for package in REMOVE_IMPORTS:
                 content = re.sub(r"#include <" + package + ">", "", content)
@@ -138,21 +149,67 @@ def source_code_replacement():
                 content = re.sub(find, replace, content)
 
             # replace publisher
-            content = re.sub(r"ros::Publisher (.*) = n.advertise<(.*)>\((.*)\)", r"rclcpp::Publisher<\2>::SharedPtr \1 = this->create_publisher<\2>(\3)", content)
+            content = re.sub(r"ros::Publisher (.*) = n.advertise<(.*)>\((.*)\)",
+                             r"rclcpp::Publisher<\2>::SharedPtr \1 = this->create_publisher<\2>(\3)", content)
+            # in header
+            content = re.sub("ros::Publisher", "rclcpp::Publisher", content)
 
             # replace subscriber
-            content = re.sub(r"ros::Subscriber (.*) = n.subscribe\((.*),(.*)\&(.*),.*\)", r"rclcpp::Subscription<TODO_MIGRATION>::SharedPtr \1 = this->create_subscription<TODO_MIGRATION>(\2, \3 std::bind(&\4, this, _1))", content)
+            content = re.sub(r"ros::Subscriber (.*) = n.subscribe\((.*),(.*)\&(.*),.*\)",
+                             r"rclcpp::Subscription<TODO_MIGRATION>::SharedPtr \1 = this->create_subscription<TODO_MIGRATION>(\2, \3 std::bind(&\4, this, _1))",
+                             content)
             # different form to write a subscriber
-            content = re.sub(r"ros::Subscriber (.*) = n.subscribe<(.*)>\((.*),(w*)(.+)\)", r"rclcpp::Subscription<\2>::SharedPtr \1 = this->create_subscription<\2>(\3, \4, std::bind(\5, this, _1))", content)
+            content = re.sub(r"ros::Subscriber (.*) = n.subscribe<(.*)>\((.*),(w*)(.+)\)",
+                             r"rclcpp::Subscription<\2>::SharedPtr \1 = this->create_subscription<\2>(\3, \4, std::bind(\5, this, _1))",
+                             content)
+            # in header
+            content = re.sub("ros::Subscriber", "rclcpp::Subscription", content)
+
 
             # replace parameter
-            content = re.sub(r"(.*).param<(.*)>\((.*),(.*),(.*)\);", r"this->declare_parameter<\2>(\3, \5);"+"\n"+r"this->get_parameter(\3, \4);", content)
+            content = re.sub(r"(.*).param<(.*)>\((.*),(.*),(.*)\);",
+                             r"this->declare_parameter<\2>(\3, \5);" + "\n" + r"this->get_parameter(\3, \4);", content)
 
             f.seek(0)
             f.write(content)
 
             # hack to make sure that there is nothing else left
-            #f.write("\n"*10)
+            # f.write("\n"*10)
+
+def param_replacement():
+    files = list(Path(".").rglob(r"*"))
+    cfg_files = []
+    for file in files:
+        if ".cfg" in file.name:
+            cfg_files.append(file)
+    for filename in cfg_files:
+        # replace the regex with the replacement in the given file
+        with open(filename, "r+") as f:
+            content = f.read()
+            # create correct lines for c++ out of parameter config file
+            content = re.sub(r'.*.add\("(.*)", (.*), .*\n* .*"(.*)".*\n*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)', r'// \3 range: [\4,\5]\n\2 param_\1;\nthis->declare_parameter<\2>("param_\1");', content)
+
+            # rename some parameter types so that they fit
+            content = re.sub("double_t", "double", content)
+            content = re.sub("int_t", "int", content)
+
+            #TODO sortieren und rest weg werfen
+
+            header_lines = []
+            code_lines = []
+            for line in iter(content.splitlines()):
+                if "this->declare_parameter" in line:
+                    code_lines.append(line)
+                elif ";" in line or "//" in line:
+                    header_lines.append(line)
+
+            print(f"###\nFILE {filename}\n###")
+            for line in header_lines:
+                print(line)
+            print("\n\n")
+            for line in code_lines:
+                print(line)
+            print("\n\n")
 
 
 def executeSedCmd(pattern, filename, dryrun=False):
@@ -696,6 +753,10 @@ if __name__ == '__main__':
         "--only-source",
         action="store_true",
         help='only modify the source files')
+    parser.add_argument(
+        "--only-params",
+        action="store_true",
+        help='only modify the dynamic parameters')
     args = parser.parse_args()
 
     # Quick check to make sure this script was run from within
@@ -709,7 +770,7 @@ if __name__ == '__main__':
     if args.dryrun:
         print("Performing a dryrun...")
 
-    if not args.only_source:
+    if not args.only_source and not args.only_params:
         # Port the package XML
         if not PackageXmlPorter.port(args.dryrun):
             print("ERROR: Failed to port package XML")
@@ -720,4 +781,8 @@ if __name__ == '__main__':
             print("ERROR: Failed to port CMakeLists.txt")
             exit(3)
 
-    source_code_replacement()
+    if not args.only_params:
+        source_code_replacement()
+
+    if not args.only_source:
+        param_replacement()
