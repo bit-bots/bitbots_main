@@ -7,7 +7,7 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-WalkEngine::WalkEngine(rclcpp::Node* node) :
+WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
     params_(),
     node_(node),
     engine_state_(WalkState::IDLE),

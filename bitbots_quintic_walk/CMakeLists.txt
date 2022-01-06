@@ -30,6 +30,7 @@ find_package(humanoid_league_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(moveit REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(control_toolbox REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkDebug.msg"
@@ -73,7 +74,8 @@ ament_target_dependencies(WalkNode
         humanoid_league_msgs
         bitbots_msgs
         moveit
-        moveit_ros_planning_interface)
+        moveit_ros_planning_interface
+        control_toolbox)
 
 install(TARGETS WalkNode
         DESTINATION lib/${PROJECT_NAME})
@@ -85,34 +87,34 @@ target_link_libraries(WalkNode ${CODE_LIBRARIES})
 
 
 # create the lib
-add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
-
-ament_target_dependencies(py_quintic_walk
-        bitbots_splines
-        tf2_eigen
-        tf2
-        tf2_geometry_msgs
-        nav_msgs
-        std_msgs
-        rotconv
-        geometry_msgs
-        sensor_msgs
-        tf2_ros
-        ament_cmake
-        rclcpp
-        humanoid_league_msgs
-        bitbots_msgs
-        moveit
-        moveit_ros_planning_interface)
-
-install(TARGETS py_quintic_walk
-        DESTINATION lib/${PROJECT_NAME})
-
-rosidl_target_interfaces(py_quintic_walk
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-# link
-target_link_libraries(py_quintic_walk ${Boost_LIBRARIES} ${CODE_LIBRARIES})
+#add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
+#
+#ament_target_dependencies(py_quintic_walk
+#        bitbots_splines
+#        tf2_eigen
+#        tf2
+#        tf2_geometry_msgs
+#        nav_msgs
+#        std_msgs
+#        rotconv
+#        geometry_msgs
+#        sensor_msgs
+#        tf2_ros
+#        ament_cmake
+#        rclcpp
+#        humanoid_league_msgs
+#        bitbots_msgs
+#        moveit
+#        moveit_ros_planning_interface)
+#
+#install(TARGETS py_quintic_walk
+#        DESTINATION lib/${PROJECT_NAME})
+#
+#rosidl_target_interfaces(py_quintic_walk
+#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+#
+## link
+#target_link_libraries(py_quintic_walk ${Boost_LIBRARIES} ${CODE_LIBRARIES})
 
 
 #if(BUILD_TESTING)

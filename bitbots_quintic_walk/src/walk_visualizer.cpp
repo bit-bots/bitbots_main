@@ -1,42 +1,42 @@
 #include "bitbots_quintic_walk/walk_visualizer.h"
 
 namespace bitbots_quintic_walk {
-WalkVisualizer::WalkVisualizer() {
+WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node) : node_(node){
   marker_id_ = 1;
   /* debug publisher */
   
-  pub_debug_ = nh.advertise<bitbots_quintic_walk::WalkDebug>("walk_debug", 1);
-  pub_engine_debug_ = nh.advertise<bitbots_quintic_walk::WalkEngineDebug>("walk_engine_debug", 1);
-  pub_debug_marker_ = nh.advertise<visualization_msgs::msg::Marker>("walk_debug_marker", 1);
+  pub_debug_ = node_->create_publisher<bitbots_quintic_walk::msg::WalkDebug>("walk_debug", 1);
+  pub_engine_debug_ = node_->create_publisher<bitbots_quintic_walk::msg::WalkEngineDebug>("walk_engine_debug", 1);
+  pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("walk_debug_marker", 1);
 
-  
-this->declare_parameter<std::string>("base_link_frame",  "base_link");
-this->get_parameter("base_link_frame",  base_link_frame_);
-this->declare_parameter<std::string>("r_sole_frame",  "r_sole");
-this->get_parameter("r_sole_frame",  r_sole_frame_);
-this->declare_parameter<std::string>("l_sole_frame",  "l_sole");
-this->get_parameter("l_sole_frame",  l_sole_frame_);
+
+  node_->declare_parameter<std::string>("base_link_frame",  "base_link");
+  node_->get_parameter("base_link_frame",  base_link_frame_);
+  node_->declare_parameter<std::string>("r_sole_frame",  "r_sole");
+  node_->get_parameter("r_sole_frame",  r_sole_frame_);
+  node_->declare_parameter<std::string>("l_sole_frame",  "l_sole");
+  node_->get_parameter("l_sole_frame",  l_sole_frame_);
 
 }
 
-void WalkVisualizer::init(robot_model::RobotModelPtr kinematic_model) {
+void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = kinematic_model;
 }
 
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   //only do something if someone is listing
-  if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
+  if (pub_engine_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
     return;
   }
 
   /*
   This method publishes various debug / visualization information.
   */
-  bitbots_quintic_walk::WalkEngineDebug msg;
+  bitbots_quintic_walk::msg::WalkEngineDebug msg;
   bool is_left_support = response.is_left_support_foot;
   msg.is_left_support = is_left_support;
   msg.is_double_support = response.is_double_support;
-  msg.header.stamp = rclcpp::Time::now();
+  msg.header.stamp = node_->now();
 
   // define current support frame
   std::string current_support_frame;
@@ -149,17 +149,17 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   pose.orientation.w = 1;
   publishArrowMarker("trunk_result", base_link_frame_, pose, r, g, b, a);
 
-  pub_engine_debug_.publish(msg);
+  pub_engine_debug_->publish(msg);
 }
 
 void WalkVisualizer::publishIKDebug(WalkResponse response,
-                                    robot_state::msg::RobotStatePtr current_state,
+                                    moveit::core::RobotStatePtr current_state,
                                     bitbots_splines::JointGoals joint_goals) {
   //only do something if someone is listing
-  if (pub_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
+  if (pub_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
     return;
   }
-  bitbots_quintic_walk::WalkDebug msg;
+  bitbots_quintic_walk::msg::WalkDebug msg;
 
   tf2::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
   tf2::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
@@ -182,8 +182,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   publishArrowMarker("engine_right_goal", base_link_frame_, msg.right_foot_goal, 1, 0, 0, 1);
 
   // IK results
-  robot_state::msg::RobotStatePtr goal_state;
-  goal_state.reset(new robot_state::msg::RobotState(kinematic_model_));
+  moveit::core::RobotStatePtr goal_state;
+  goal_state.reset(new moveit::core::RobotState(kinematic_model_));
   std::vector<std::string> names = joint_goals.first;
   std::vector<double> goals = joint_goals.second;
   for (size_t i = 0; i < names.size(); i++) {
@@ -214,29 +214,41 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   tf2::Vector3 fly_off;
   tf2::Vector3 tf_vec_left;
   tf2::Vector3 tf_vec_right;
-  Eigen::msg::Vector3d l_transform = goal_state->getGlobalLinkTransform("l_sole").translation();
-  Eigen::msg::Vector3d r_transform = goal_state->getGlobalLinkTransform("r_sole").translation();
+  Eigen::Vector3d l_transform = goal_state->getGlobalLinkTransform("l_sole").translation();
+  Eigen::Vector3d r_transform = goal_state->getGlobalLinkTransform("r_sole").translation();
   tf2::convert(l_transform, tf_vec_left);
   tf2::convert(r_transform, tf_vec_right);
   geometry_msgs::msg::Vector3 vect_msg;
   if (response.is_left_support_foot) {
     support_off = trunk_to_support_foot.getOrigin() - tf_vec_left;
     fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_right;
-    tf2::convert(support_off, vect_msg);
+    vect_msg.x = support_off.x();
+    vect_msg.y = support_off.y();
+    vect_msg.z = support_off.z();
     msg.left_foot_ik_offset = vect_msg;
-    tf2::convert(fly_off, vect_msg);
+    vect_msg.x = fly_off.x();
+    vect_msg.y = fly_off.y();
+    vect_msg.z = fly_off.z();
     msg.right_foot_ik_offset = vect_msg;
   } else {
     support_off = trunk_to_support_foot.getOrigin() - tf_vec_right;
     fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_left;
-    tf2::convert(fly_off, vect_msg);
+    vect_msg.x = fly_off.x();
+    vect_msg.y = fly_off.y();
+    vect_msg.z = fly_off.z();
     msg.left_foot_ik_offset = vect_msg;
-    tf2::convert(support_off, vect_msg);
+    vect_msg.x = support_off.x();
+    vect_msg.y = support_off.y();
+    vect_msg.z = support_off.z();
     msg.right_foot_ik_offset = vect_msg;
   }
-  tf2::convert(support_off, vect_msg);
+  vect_msg.x = support_off.x();
+  vect_msg.y = support_off.y();
+  vect_msg.z = support_off.z();
   msg.support_foot_ik_offset = vect_msg;
-  tf2::convert(fly_off, vect_msg);
+  vect_msg.x = fly_off.x();
+  vect_msg.y = fly_off.y();
+  vect_msg.z = fly_off.z();
   msg.fly_foot_ik_offset = vect_msg;
 
   // actual positions
@@ -262,31 +274,43 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   if (response.is_left_support_foot) {
     support_off = trunk_to_support_foot.getOrigin() - tf_vec_left;
     fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_right;
-    tf2::convert(support_off, vect_msg);
+    vect_msg.x = support_off.x();
+    vect_msg.y = support_off.y();
+    vect_msg.z = support_off.z();
     msg.left_foot_actual_offset = vect_msg;
-    tf2::convert(fly_off, vect_msg);
+    vect_msg.x = fly_off.x();
+    vect_msg.y = fly_off.y();
+    vect_msg.z = fly_off.z();
     msg.right_foot_actual_offset = vect_msg;
   } else {
     support_off = trunk_to_support_foot.getOrigin() - tf_vec_right;
     fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_left;
-    tf2::convert(fly_off, vect_msg);
+    vect_msg.x = fly_off.x();
+    vect_msg.y = fly_off.y();
+    vect_msg.z = fly_off.z();
     msg.left_foot_actual_offset = vect_msg;
-    tf2::convert(support_off, vect_msg);
+    vect_msg.x = support_off.x();
+    vect_msg.y = support_off.y();
+    vect_msg.z = support_off.z();
     msg.right_foot_actual_offset = vect_msg;
   }
-  tf2::convert(support_off, vect_msg);
+  vect_msg.x = support_off.x();
+  vect_msg.y = support_off.y();
+  vect_msg.z = support_off.z();
   msg.support_foot_actual_offset = vect_msg;
-  tf2::convert(fly_off, vect_msg);
+  vect_msg.x = fly_off.x();
+  vect_msg.y = fly_off.y();
+  vect_msg.z = fly_off.z();
   msg.fly_foot_actual_offset = vect_msg;
 
-  pub_debug_.publish(msg);
+  pub_debug_->publish(msg);
 }
 
 void WalkVisualizer::publishArrowMarker(std::string name_space,
                                         std::string frame,
                                         geometry_msgs::msg::Pose pose, float r, float g, float b, float a) {
   visualization_msgs::msg::Marker marker_msg;
-  marker_msg.header.stamp = rclcpp::Time::now();
+  marker_msg.header.stamp = node_->now();
   marker_msg.header.frame_id = frame;
 
   marker_msg.type = marker_msg.ARROW;
@@ -294,7 +318,7 @@ void WalkVisualizer::publishArrowMarker(std::string name_space,
   marker_msg.action = marker_msg.ADD;
   marker_msg.pose = pose;
 
-  std_msgs::ColorRGBA color;
+  std_msgs::msg::ColorRGBA color;
   color.r = r;
   color.g = g;
   color.b = b;
@@ -310,13 +334,13 @@ void WalkVisualizer::publishArrowMarker(std::string name_space,
   marker_msg.id = marker_id_;
   marker_id_++;
 
-  pub_debug_marker_.publish(marker_msg);
+  pub_debug_marker_->publish(marker_msg);
 }
 
 void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   //publish markers
   visualization_msgs::msg::Marker marker_msg;
-  marker_msg.header.stamp = rclcpp::Time::now();
+  marker_msg.header.stamp = node_->now();
   if (response.is_left_support_foot) {
     marker_msg.header.frame_id = l_sole_frame_;
   } else {
@@ -333,7 +357,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   //last step
   marker_msg.ns = "last_step";
   marker_msg.id = 1;
-  std_msgs::ColorRGBA color;
+  std_msgs::msg::ColorRGBA color;
   color.r = 0;
   color.g = 0;
   color.b = 0;
@@ -350,7 +374,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
   marker_msg.pose = pose;
-  pub_debug_marker_.publish(marker_msg);
+  pub_debug_marker_->publish(marker_msg);
 
   //last step center
   marker_msg.ns = "step_center";
@@ -359,7 +383,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   scale.y = 0.01;
   scale.z = 0.01;
   marker_msg.scale = scale;
-  pub_debug_marker_.publish(marker_msg);
+  pub_debug_marker_->publish(marker_msg);
 
   // next step
   marker_msg.id = marker_id_;
@@ -380,7 +404,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
   marker_msg.pose = pose;
-  pub_debug_marker_.publish(marker_msg);
+  pub_debug_marker_->publish(marker_msg);
 
   marker_id_++;
 }
