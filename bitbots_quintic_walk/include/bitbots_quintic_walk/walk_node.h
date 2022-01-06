@@ -50,47 +50,6 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-struct NodeParams{
-  // Max freq of engine update rate [hz] range: [1,1000]
-  double engine_freq;
-  // Publish odom every [int] update of walk engine range: [1,1000]
-  int odom_pub_factor;
-  // Timeout time for bioIK [s] range: [0,0.05]
-  double ik_timeout;
-  // Minimal pressure on flying foot to say that it has contact to the ground. Used to invoke phase reset. range: [0,1000]
-  double ground_min_pressure;
-  // Minimal phase distance to end of step to invoke phase reset range: [0,1]
-  double phase_reset_phase;
-  // Minimal effort on flying leg joints to say that it has contact to the ground. Used to invoke phase reset. range: [0,100]
-  double joint_min_effort;
-  // Time that the walking is paused when becoming unstable [s] range: [0,10]
-  double pause_duration;
-  // Threshold for stopping for the robot pitch [rad] range: [0,1]
-  double imu_pitch_threshold;
-  // Threshold for stopping for the robot roll [rad] range: [0,1]
-  double imu_roll_threshold;
-  // Threshold for stopping for the robot pitch angular velocity [rad/s] range: [0,10]
-  double imu_pitch_vel_threshold;
-  // Threshold for stopping for the robot roll angular velocity [rad/s] range: [0,10]
-  double imu_roll_vel_threshold;
-  // Maximal step length in X [m]) range: [0,1]
-  double max_step_x;
-  // Maximal step length in Y [m]) range: [0,1]
-  double max_step_y;
-  // Maximal step length in X and Y combined [m]) range: [0,1]
-  double max_step_xy;
-  // Maximal step height in Z [m] range: [0,1]
-  double max_step_z;
-  // Maximal step turn in yaw [rad]) range: [0,1.5]
-  double max_step_angular;
-  // Multiplier to correctly reach the commanded velocity) range: [0,10]
-  double x_speed_multiplier;
-  // Multiplier to correctly reach the commanded velocity) range: [0,10]
-  double y_speed_multiplier;
-  // Multiplier to correctly reach the commanded velocity) range: [0,10]
-  double yaw_speed_multiplier;
-};
-
 class WalkNode : public rclcpp::Node {
  public:
   explicit WalkNode(std::string ns);
@@ -156,8 +115,6 @@ class WalkNode : public rclcpp::Node {
   void jointStateCb(sensor_msgs::msg::JointState::SharedPtr msg);
 
   void kickCb(std_msgs::msg::Bool::SharedPtr msg);
-
-  NodeParams params_;
 
   OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
