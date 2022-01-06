@@ -52,6 +52,7 @@ WalkNode::WalkNode(const std::string ns) :
   this->declare_parameter<double>("phase_reset_phase", 0);
   this->declare_parameter<double>("joint_min_effort", 0);
   this->declare_parameter<double>("pause_duration", 0);
+  this->declare_parameter<bool>("imu_active", false);
   this->declare_parameter<double>("imu_pitch_threshold", 0);
   this->declare_parameter<double>("imu_roll_threshold", 0);
   this->declare_parameter<double>("imu_pitch_vel_threshold", 0);
@@ -555,7 +556,7 @@ rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::ve
     } else if (parameter.get_name() == "effort_phase_reset_active") {
       effort_phase_reset_active_ = parameter.as_bool();
     } else if (parameter.get_name() == "ground_min_pressure") {
-      joint_min_effort_ = parameter.as_double();
+      ground_min_pressure_ = parameter.as_double();
     } else if (parameter.get_name() == "joint_min_effort") {
       joint_min_effort_ = parameter.as_double();
     } else if (parameter.get_name() == "pause_duration") {
