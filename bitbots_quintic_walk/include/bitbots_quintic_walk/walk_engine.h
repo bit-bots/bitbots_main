@@ -161,6 +161,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   WalkState engine_state_;
 
   WalkRequest request_;
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> & parameters);
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
   //splines
   bitbots_splines::SmoothSpline is_double_support_spline_;

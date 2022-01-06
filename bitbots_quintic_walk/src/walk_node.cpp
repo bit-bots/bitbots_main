@@ -10,7 +10,6 @@ namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns) :
     Node("QuinticWalk"),
-    params_(),
     walk_engine_(SharedPtr(this)),
     robot_model_loader_(SharedPtr(this), "robot_description", false),
     stabilizer_(SharedPtr(this)),
