@@ -181,6 +181,12 @@ class YOEORobotDetector(YOEODetectorTemplate):
 class YOEOSegmentationTemplate(ABC):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         self._yoeo_handler = yoeo_handler
+        
+    def set_image(self, image) -> None:
+        self._yoeo_handler.set_image(image)
+
+    def compute(self) -> None:
+        self._yoeo_handler.predict()
 
     @abstractmethod
     def get_mask(self):
