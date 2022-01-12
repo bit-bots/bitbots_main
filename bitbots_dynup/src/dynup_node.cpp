@@ -85,6 +85,14 @@ bitbots_msgs::JointCommand DynupNode::step(double dt) {
     return createGoalMsg(goals);
 }
 
+geometry_msgs::PoseArray DynupNode::step_open_loop(double dt) {
+    DynupNode::step(dt);
+    geometry_msgs::PoseArray pose_array;
+    bitbots_dynup::DynupPoses pose_msg = DynupNode::getCurrentPoses();
+    pose_array.poses = {pose_msg.l_leg_pose, pose_msg.r_leg_pose, pose_msg.l_arm_pose, pose_msg.r_arm_pose};
+    return pose_array;
+}
+
 void DynupNode::jointStateCallback(const sensor_msgs::JointState &jointstates) {
   ik_.setCurrentJointStates(jointstates);
 }

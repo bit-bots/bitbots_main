@@ -17,6 +17,7 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
 #include <bitbots_msgs/DynUpAction.h>
 #include <bitbots_msgs/JointCommand.h>
 #include <bitbots_dynup/DynupPoses.h>
@@ -82,6 +83,7 @@ class DynupNode {
   bitbots_msgs::JointCommand step(double dt,
                                   const sensor_msgs::Imu &imu_msg,
                                   const sensor_msgs::JointState &jointstate_msg);
+  geometry_msgs::PoseArray step_open_loop(double dt);
 
   void reset(int time=0);
 

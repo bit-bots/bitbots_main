@@ -53,8 +53,7 @@ moveit::py_bindings_tools::ByteString PyDynupWrapper::step(double dt,
 }
 
 moveit::py_bindings_tools::ByteString PyDynupWrapper::step_open_loop(double dt) {
-    std::string result =
-            to_python<bitbots_msgs::JointCommand>(dynup_node_->step(dt));
+    std::string result = to_python<geometry_msgs::PoseArray>(dynup_node_->step_open_loop(dt));
     return moveit::py_bindings_tools::serializeMsg(result);
 }
 

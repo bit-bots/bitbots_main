@@ -6,7 +6,7 @@ from std_msgs.msg import Int64
 from bitbots_dynup.py_dynup import PyDynupWrapper, init_ros, spin_once
 from bitbots_dynup.msg import DynupPoses
 from bitbots_msgs.msg import JointCommand, FootPressure
-from geometry_msgs.msg import Twist, Pose
+from geometry_msgs.msg import Twist, Pose, PoseArray
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
@@ -57,7 +57,7 @@ class PyDynup(object):
             dt = 0.001
         stepi = self.py_dynup_wrapper.step(dt, self._to_cpp(imu_msg), self._to_cpp(jointstate_msg))
 
-        result = self._from_cpp(stepi, JointCommand)
+        result = self._from_cpp(stepi, PoseArray)
 
         return result
 
