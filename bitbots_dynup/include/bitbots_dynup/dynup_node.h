@@ -63,7 +63,7 @@ class DynupNode {
    * Callback that gets executed whenever #m_server receives a new goal.
    * @param goal New goal to process
    */
-  void executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal);
+  void goalCb();
 
   void imuCallback(const sensor_msgs::Imu &msg);
 
