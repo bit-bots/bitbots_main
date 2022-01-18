@@ -505,7 +505,7 @@ class Simulation:
             pos, vel, tor = joint.update()
             if scaled:
                 joint_positions.append(joint.get_scaled_position())
-                joint_positions.append(joint.get_scaled_velocity())
+                joint_velocities.append(joint.get_scaled_velocity())
             else:
                 joint_positions.append(pos)
                 joint_velocities.append(vel)
