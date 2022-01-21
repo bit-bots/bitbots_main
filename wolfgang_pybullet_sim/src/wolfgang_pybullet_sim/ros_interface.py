@@ -45,7 +45,7 @@ class ROSInterface:
         # we just use the first robot
         self.robot_index = self.simulation.robot_indexes[0]
 
-        srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
+        #srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
 
         # publisher
         self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_left/raw", FootPressure,
@@ -57,7 +57,7 @@ class ROSInterface:
         self.right_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_right/filtered",
                                                                       FootPressure, queue_size=1)
         self.joint_publisher = rospy.Publisher(self.namespace + "joint_states", JointState, queue_size=1)
-        self.imu_publisher = rospy.Publisher(self.namespace + "imu/data", Imu, queue_size=1)
+        self.imu_publisher = rospy.Publisher(self.namespace + "imu/data_raw", Imu, queue_size=1)
         self.clock_publisher = rospy.Publisher(self.namespace + "clock", Clock, queue_size=1)
         self.real_time_factor_publisher = rospy.Publisher(self.namespace + "real_time_factor", Float32, queue_size=1)
         self.true_odom_publisher = rospy.Publisher(self.namespace + "true_odom", Odometry, queue_size=1)
@@ -99,6 +99,9 @@ class ROSInterface:
         efforts = []
         for name in self.joint_state_msg.name:
             joint = self.simulation.joints[self.robot_index][name]
+            # this is necessary to update the joint state
+            # it is not done automatically in the simulation step, since we might not need this info
+            joint.update()
             position, velocity, forces, applied_torque = joint.get_state()
             positions.append(position)
             velocities.append(velocity)

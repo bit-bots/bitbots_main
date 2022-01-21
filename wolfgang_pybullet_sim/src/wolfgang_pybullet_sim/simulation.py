@@ -365,8 +365,8 @@ class Simulation:
                     self.realtime = not self.realtime
                     print("Realtime is " + str(self.realtime))
                 if zKey in keys and keys[zKey] & p.KEY_WAS_TRIGGERED:
-                    self.time_multiplier = (self.time_multiplier + 1) % 3
-                    print(self.time_multiplier)
+                    self.time_multiplier = (self.time_multiplier + 1) % 10
+                    print(self.time_multiplier +1)
                 if fKey in keys and keys[fKey] & p.KEY_WAS_TRIGGERED:
                     # generate new terrain
                     self.terrain.randomize(self.terrain_height)
