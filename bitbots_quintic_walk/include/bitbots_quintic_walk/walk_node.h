@@ -32,7 +32,7 @@ https://github.com/Rhoban/model/
 #include "bitbots_msgs/msg/foot_pressure.hpp"
 #include "bitbots_msgs/msg/support_state.hpp"
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>

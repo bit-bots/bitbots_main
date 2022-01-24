@@ -212,7 +212,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   current_response_.current_fused_pitch = current_trunk_fused_pitch_;
 
   // get stabilized goals from stabilizer
-  current_stabilized_response_ = stabilizer_.stabilize(current_response_, rclcpp::Duration(dt));
+  current_stabilized_response_ = stabilizer_.stabilize(current_response_, rclcpp::Duration::from_nanoseconds(1e9 * dt));
 
   // compute motor goals from IK
   motor_goals_ = ik_.calculate(current_stabilized_response_);

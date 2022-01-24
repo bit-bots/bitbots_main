@@ -28,7 +28,7 @@ find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
-find_package(moveit REQUIRED)
+find_package(moveit_ros REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(control_toolbox REQUIRED)
 
@@ -73,7 +73,7 @@ ament_target_dependencies(WalkNode
         rclcpp
         humanoid_league_msgs
         bitbots_msgs
-        moveit
+        moveit_ros
         moveit_ros_planning_interface
         control_toolbox)
 
@@ -104,7 +104,7 @@ target_link_libraries(WalkNode ${CODE_LIBRARIES})
 #        rclcpp
 #        humanoid_league_msgs
 #        bitbots_msgs
-#        moveit
+#        moveit_ros
 #        moveit_ros_planning_interface)
 #
 #install(TARGETS py_quintic_walk

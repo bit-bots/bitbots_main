@@ -348,7 +348,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   }
   marker_msg.type = marker_msg.CUBE;
   marker_msg.action = 0;
-  marker_msg.lifetime = rclcpp::Duration(0.0);
+  marker_msg.lifetime = rclcpp::Duration::from_nanoseconds(0.0);
   geometry_msgs::msg::Vector3 scale;
   scale.x = 0.20;
   scale.y = 0.10;

@@ -56,7 +56,7 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   rclcpp::sleep_for(std::chrono::milliseconds(500));
 
   // wait for transforms from joints
-  while (!tf_buffer_->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0), rclcpp::Duration(1 * 1e9))
+  while (!tf_buffer_->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1 * 1e9))
       && rclcpp::ok()) {
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30, "Waiting for transforms from robot joints");
   }
@@ -209,7 +209,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
   }
 
   // Wait for the forward kinematics of both legs (simplified by transforming from one to the other) to be avalible for the current fusing operation
-  tf_buffer_->canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration(0.1 * 1e9));
+  tf_buffer_->canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
 
   // otherwise point of rotation is current support foot sole or center point of the soles if double support
   if (current_support_state == bitbots_msgs::msg::SupportState::RIGHT
