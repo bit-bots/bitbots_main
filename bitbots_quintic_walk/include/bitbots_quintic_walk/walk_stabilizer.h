@@ -9,8 +9,8 @@
 #include "bitbots_quintic_walk/walk_utils.h"
 #include <rot_conv/rot_conv.h>
 #include <Eigen/Geometry>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 namespace bitbots_quintic_walk {
 

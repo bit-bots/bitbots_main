@@ -66,7 +66,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
     if (r.sleep()) {
       //check if joint states were received, otherwise we can't provide odometry
       rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
-      if (joints_delta_t > rclcpp::Duration(0.05 * 1e9)) {
+      if (joints_delta_t > rclcpp::Duration::from_nanoseconds(0.05 * 1e9)) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30, "No joint states received. Will not provide odometry.");
       } else {
         // check if step finished, meaning left->right or right->left support. double support is skipped
@@ -94,7 +94,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
                 tf_buffer_->lookupTransform(previous_support_link,
                                      current_support_link,
                                      foot_change_time,
-                                     rclcpp::Duration(0.1*1e9));
+                                     rclcpp::Duration::from_nanoseconds(0.1*1e9));
             tf2::Transform previous_to_current_support = tf2::Transform();
             tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
             // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
@@ -188,7 +188,7 @@ void MotionOdometry::supportCallback(const bitbots_msgs::msg::SupportState::Shar
     try {
       geometry_msgs::msg::TransformStamped
           base_to_current_support_msg =
-          tf_buffer_->lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0), rclcpp::Duration(1e9));
+          tf_buffer_->lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9));
       odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
     } catch (tf2::TransformException &ex) {

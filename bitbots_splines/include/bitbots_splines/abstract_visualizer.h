@@ -22,7 +22,7 @@ class AbstractVisualizer {
 
     marker.action = visualization_msgs::msg::Marker::ADD;
     marker.type = visualization_msgs::msg::Marker::SPHERE;
-    marker.lifetime = rclcpp::Duration(1e9*1000);
+    marker.lifetime = rclcpp::Duration::from_nanoseconds(1e9*1000);
     marker.frame_locked = false;
     marker.header.frame_id = frame;
     marker.header.stamp = node->now();
@@ -53,7 +53,7 @@ class AbstractVisualizer {
     visualization_msgs::msg::MarkerArray marker_array;
     visualization_msgs::msg::Marker base_marker;
     base_marker.action = visualization_msgs::msg::Marker::ADD;
-    base_marker.lifetime = rclcpp::Duration(1e9*1000);
+    base_marker.lifetime = rclcpp::Duration::from_nanoseconds(1e9*1000);
     base_marker.frame_locked = true;
     base_marker.header.frame_id = frame;
     base_marker.header.stamp = node->now();

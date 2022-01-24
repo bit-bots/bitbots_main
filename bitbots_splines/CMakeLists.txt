@@ -13,9 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS}
-  ${bitbots_docs_INCLUDE_DIRS} ${bio_ik_INCLUDE_DIRS} ${rclcpp_INCLUDE_DIRS}
-  ${std_msgs_INCLUDE_DIRS})
+set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})
 
 set(LIBRARY_DIRS ${ament_cmake_LIBRARY_DIRS} ${bitbots_docs_LIBRARY_DIRS} ${bio_ik_LIBRARY_DIRS}
