@@ -78,4 +78,14 @@ ament_export_dependencies(ament_cmake)
 ament_export_dependencies(rclcpp)
 ament_export_include_directories(include)
 
+install(TARGETS motion_odometry
+        DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS odometry_fuser
+        DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
+
+
 ament_package()

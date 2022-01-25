@@ -77,12 +77,6 @@ ament_target_dependencies(WalkNode
         moveit_ros_planning_interface
         control_toolbox)
 
-install(TARGETS WalkNode
-        DESTINATION lib/${PROJECT_NAME})
-
-install(DIRECTORY launch
-        DESTINATION share/${PROJECT_NAME})
-
 rosidl_target_interfaces(WalkNode
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
@@ -141,5 +135,11 @@ ament_export_dependencies(rosidl_default_runtime)
 ament_export_dependencies(moveit_ros_planning_interface)
 ament_export_include_directories(include)
 ament_export_libraries(py_quintic_walk ${LIBS})
+
+install(TARGETS WalkNode
+        DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
 
 ament_package()

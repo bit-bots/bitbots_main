@@ -44,7 +44,9 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(50), imu_sub, motion_odom_sub);
 
   sync.registerCallback(&OdometryFuser::imuCallback, this);
+}
 
+void OdometryFuser::loop() {
   geometry_msgs::msg::TransformStamped tf;
 
   static std::unique_ptr<tf2_ros::TransformBroadcaster> br;
@@ -56,7 +58,8 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   rclcpp::sleep_for(std::chrono::milliseconds(500));
 
   // wait for transforms from joints
-  while (!tf_buffer_->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1 * 1e9))
+  while (!tf_buffer_
+      ->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1 * 1e9))
       && rclcpp::ok()) {
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30, "Waiting for transforms from robot joints");
   }
@@ -276,6 +279,7 @@ void OdometryFuser::imuCallback(
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-
-  OdometryFuser o;
+  auto node = std::make_shared<OdometryFuser>();
+  node->loop();
+  rclcpp::shutdown();
 }

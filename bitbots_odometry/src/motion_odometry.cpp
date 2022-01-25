@@ -1,9 +1,9 @@
 #include <bitbots_odometry/motion_odometry.h>
 
-MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
-  bool publish_walk_odom_tf;
+MotionOdometry::MotionOdometry()
+    : Node("MotionOdometry"), tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
   this->declare_parameter<bool>("publish_walk_odom_tf", false);
-  this->get_parameter("publish_walk_odom_tf", publish_walk_odom_tf);
+  this->get_parameter("publish_walk_odom_tf", publish_walk_odom_tf_);
   this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
   this->declare_parameter<std::string>("r_sole_frame", "r_sole");
@@ -22,20 +22,16 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
   this->get_parameter("yaw_scaling", yaw_scaling_);
   current_support_state_ = -1;
   previous_support_state_ = -1;
-  std::string previous_support_link = r_sole_frame_;
-  std::string current_support_link;
   rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walk_support_state_sub =
       this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
                                                                  1,
                                                                  std::bind(&MotionOdometry::supportCallback,
-                                                                           this,
-                                                                           _1));
+                                                                           this, _1));
   rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr kick_support_state_sub =
       this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&MotionOdometry::supportCallback,
-                                                                           this,
-                                                                           _1));
+                                                                           this, _1));
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub =
       this->create_subscription<sensor_msgs::msg::JointState>("joint_states",
                                                               1,
@@ -45,29 +41,33 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
                                                          1,
                                                          std::bind(&MotionOdometry::odomCallback, this, _1));
 
-  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr
-      pub_odometry = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
+  pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
   // set the origin to 0. will be set correctly on recieving first support state
   odometry_to_support_foot_.setOrigin({0, 0, 0});
   odometry_to_support_foot_.setRotation(tf2::Quaternion(0, 0, 0, 1));
+}
 
-  rclcpp::Time foot_change_time;
-
+void MotionOdometry::loop() {
   std::unique_ptr<tf2_ros::TransformBroadcaster> br;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   // wait till connection with publishers has been established
   // so we do not immediately blast something into the log output
   rclcpp::sleep_for(std::chrono::milliseconds(500));
 
-  rclcpp::Rate r(200.0);
+  rclcpp::Time foot_change_time;
+  std::string previous_support_link = r_sole_frame_;
+  std::string current_support_link;
+  auto node_pointer = this->shared_from_this();
 
+  rclcpp::Rate r(200.0);
   while (rclcpp::ok()) {
-    rclcpp::spin_some(std::make_shared<MotionOdometry>());
+    rclcpp::spin_some(node_pointer);
     if (r.sleep()) {
       //check if joint states were received, otherwise we can't provide odometry
       rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
       if (joints_delta_t > rclcpp::Duration::from_nanoseconds(0.05 * 1e9)) {
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30, "No joint states received. Will not provide odometry.");
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30,
+                             "No joint states received. Will not provide odometry.");
       } else {
         // check if step finished, meaning left->right or right->left support. double support is skipped
         // the support foot change is published when the joint goals for the last movements are published.
@@ -92,9 +92,9 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
             // we wait a bit for the transform as the joint messages are maybe a bit behind
             geometry_msgs::msg::TransformStamped previous_to_current_support_msg =
                 tf_buffer_->lookupTransform(previous_support_link,
-                                     current_support_link,
-                                     foot_change_time,
-                                     rclcpp::Duration::from_nanoseconds(0.1*1e9));
+                                            current_support_link,
+                                            foot_change_time,
+                                            rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
             tf2::Transform previous_to_current_support = tf2::Transform();
             tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
             // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
@@ -140,7 +140,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
           odom_to_base_link_msg.header.stamp = current_support_to_base_msg.header.stamp;
           odom_to_base_link_msg.header.frame_id = odom_frame_;
           odom_to_base_link_msg.child_frame_id = base_link_frame_;
-          if (publish_walk_odom_tf) {
+          if (publish_walk_odom_tf_) {
             RCLCPP_WARN_ONCE(this->get_logger(), "Sending Tf from walk odometry directly");
             br->sendTransform(odom_to_base_link_msg);
           }
@@ -155,7 +155,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), tf_buffer_(std::make_
           odom_msg.pose.pose.position.z = odom_to_base_link_msg.transform.translation.z;
           odom_msg.pose.pose.orientation = odom_to_base_link_msg.transform.rotation;
           odom_msg.twist = current_odom_msg_.twist;
-          pub_odometry->publish(odom_msg);
+          pub_odometry_->publish(odom_msg);
 
         } catch (tf2::TransformException &ex) {
           RCLCPP_WARN(this->get_logger(), "%s", ex.what());
@@ -188,7 +188,10 @@ void MotionOdometry::supportCallback(const bitbots_msgs::msg::SupportState::Shar
     try {
       geometry_msgs::msg::TransformStamped
           base_to_current_support_msg =
-          tf_buffer_->lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9));
+          tf_buffer_->lookupTransform(base_link_frame_,
+                                      current_support_link,
+                                      rclcpp::Time(0),
+                                      rclcpp::Duration::from_nanoseconds(1e9));
       odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
     } catch (tf2::TransformException &ex) {
@@ -209,6 +212,7 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-
-  MotionOdometry o;
+  auto node = std::make_shared<MotionOdometry>();
+  node->loop();
+  rclcpp::shutdown();
 }
