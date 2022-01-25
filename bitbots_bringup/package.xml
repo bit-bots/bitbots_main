@@ -13,6 +13,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>bitbots_docs</depend>
   <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <export>
      <bitbots_documentation>
