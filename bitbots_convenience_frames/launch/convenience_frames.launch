@@ -1,16 +1,17 @@
 <launch>
-    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+    <arg name="tf_prefix" value="$(eval env('ROS_NAMESPACE') + '/' if env('ROS_NAMESPACE') !=  '' else '')"/>
 
     <node pkg="bitbots_convenience_frames" type="convenience_frames" name="convenience_frames">
-        <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
-        <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
-        <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
-        <param name="r_toe_frame" value="$(arg tf_prefix)r_toe"/>
-        <param name="l_toe_frame" value="$(arg tf_prefix)l_toe"/>
-        <param name="approach_frame" value="$(arg tf_prefix)approach_frame"/>
-        <param name="ball_frame" value="$(arg tf_prefix)ball"/>
-        <param name="right_post_frame" value="$(arg tf_prefix)right_post"/>
-        <param name="left_post_frame" value="$(arg tf_prefix)left_post"/>
-        <param name="general_post_frame" value="$(arg tf_prefix)post_"/>
+        <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+        <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+        <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+        <param name="r_toe_frame" value="$(var tf_prefix)r_toe"/>
+        <param name="l_toe_frame" value="$(var tf_prefix)l_toe"/>
+        <param name="approach_frame" value="$(var tf_prefix)approach_frame"/>
+        <param name="ball_frame" value="$(var tf_prefix)ball"/>
+        <param name="right_post_frame" value="$(var tf_prefix)right_post"/>
+        <param name="left_post_frame" value="$(var tf_prefix)left_post"/>
+        <param name="general_post_frame" value="$(var tf_prefix)post_"/>
     </node>
 </launch>
+unch>
