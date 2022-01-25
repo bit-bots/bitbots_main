@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+    <let name="tf_prefix" value="$(eval env('ROS_NAMESPACE') + '/' if env('ROS_NAMESPACE') !=  '' else '')"/>
     <arg name="sim" default="false"/>
-    <arg name="sim_ns" default="/" doc="namespace for gazebo plugins" />
-    <arg name="fake_walk" default="False" doc="fake walk controller for simulation" />
+    <arg name="sim_ns" default="/" documentation="namespace for gazebo plugins" />
+    <arg name="fake_walk" default="False" documentation="fake walk controller for simulation" />
 
     <param name="robot_description" command="$(find xacro)/xacro $(find wolfgang_description)/urdf/robot.urdf use_fake_walk:=$(arg fake_walk) sim_ns:=$(arg sim_ns)" />
     <param name="urdf" value="$(find wolfgang_description)/urdf/robot.urdf" />
@@ -21,17 +21,19 @@
 
     <!-- publish tfs, change topic depending if the simulation is used -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
-        <param name="tf_prefix" value="$(optenv ROS_NAMESPACE)"/>
-        <param name="prefix_tf_with" value="$(optenv ROS_NAMESPACE)/"/>
+        <param name="tf_prefix" value="$(env ROS_NAMESPACE)"/>
+        <param name="prefix_tf_with" value="$(env ROS_NAMESPACE)/"/>
     </node>
     <param name="simulation_active" value="$(arg sim)"/>
     <param name="/use_sim_time" value="$(arg sim)"/>
 
-    <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
+    <group>
+        <include file="$(find humanoid_base_footprint)/launch/base_footprint.launch"/>
+        <include file="$(find bitbots_convenience_frames)/launch/convenience_frames.launch"/>
+    </group>
 
     <group unless="$(arg fake_walk)">
         <include file="$(find bitbots_odometry)/launch/odometry.launch"/>
     </group>
 
-    <include file="$(find bitbots_convenience_frames)/launch/convenience_frames.launch"/>
 </launch>
