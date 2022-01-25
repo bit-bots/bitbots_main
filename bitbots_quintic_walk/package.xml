@@ -36,7 +36,8 @@
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>
-  
+
+  <exec_depend>ros2launch</exec_depend>
 
   <export>
     <bitbots_documentation>

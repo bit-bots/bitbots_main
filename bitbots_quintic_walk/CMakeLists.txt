@@ -80,6 +80,9 @@ ament_target_dependencies(WalkNode
 install(TARGETS WalkNode
         DESTINATION lib/${PROJECT_NAME})
 
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
+
 rosidl_target_interfaces(WalkNode
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
