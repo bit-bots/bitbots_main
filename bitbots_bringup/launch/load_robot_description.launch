@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE /)\'')"/>
+  <!--<arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>-->
+    <!-- a bit hacky as we can not have an empty string as default value for an environment variable -->
+    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
     <arg name="sim" default="false"/>
     <arg name="sim_ns" default="/" description="namespace for gazebo plugins" />
     <arg name="fake_walk" default="False" description="fake walk controller for simulation" />
@@ -16,15 +18,10 @@
 
         <param from="$(find-pkg-share wolfgang_moveit_config)/config/wolfgang.srdf" />
         <param from="$(find-pkg-share wolfgang_moveit_config)/config/kinematics.yaml"/>
-    </node>
-
-    <!-- Load updated joint limits (override information from URDF) -->
-    <group ns="robot_description_planning">
         <param from="$(find-pkg-share wolfgang_moveit_config)/config/joint_limits.yaml"/>
-    </group>
-
+    </node>
     <!-- publish tfs, change topic depending if the simulation is used -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" respawn="false" output="screen">
         <param name="tf_prefix" value="$(env ROS_NAMESPACE /)"/>
         <param name="prefix_tf_with" value="$(env ROS_NAMESPACE /)/"/>
     </node>
@@ -34,7 +31,7 @@
         <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch"/>
     </group>
 
-    <group unless="$(arg fake_walk)">
+    <group unless="$(var fake_walk)">
         <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch"/>
     </group>
 
