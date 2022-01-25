@@ -49,11 +49,13 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : Node("convenience
                                                                                    1,
                                                                                    std::bind(&ConvenienceFramesBroadcaster::goalPostsCallback,
                                                                                              this, _1));
-
+}
+void ConvenienceFramesBroadcaster::loop() {
   rclcpp::Rate r(200.0);
   rclcpp::Time last_published_time;
+  auto node_pointer = this->shared_from_this();
   while (rclcpp::ok()) {
-    rclcpp::spin_some(std::make_shared<ConvenienceFramesBroadcaster>());
+    rclcpp::spin_some(node_pointer);
     geometry_msgs::msg::TransformStamped tf_right, // right foot in baselink frame
     tf_left, tf_right_toe, // right toes baselink frame
     tf_left_toe, support_foot, // support foot in baselink frame
@@ -227,6 +229,8 @@ void ConvenienceFramesBroadcaster::publishTransform(std::string header_frame_id,
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  ConvenienceFramesBroadcaster b;
+  auto node = std::make_shared<ConvenienceFramesBroadcaster>();
+  node->loop();
+  rclcpp::shutdown();
 }
 

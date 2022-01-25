@@ -62,4 +62,12 @@ ament_export_dependencies(tf2)
 ament_export_dependencies(rclpy)
 ament_export_include_directories(${INCLUDE_DIRS})
 
+
+install(TARGETS convenience_frames
+        DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
+
+
 ament_package()

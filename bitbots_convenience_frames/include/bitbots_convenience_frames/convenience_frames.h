@@ -15,6 +15,7 @@ using std::placeholders::_1;
 class ConvenienceFramesBroadcaster : public rclcpp::Node {
  public:
   ConvenienceFramesBroadcaster();
+  void loop();
  private:
   std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
   geometry_msgs::msg::TransformStamped tf_{geometry_msgs::msg::TransformStamped()};
