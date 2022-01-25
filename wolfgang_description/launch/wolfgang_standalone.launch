@@ -6,8 +6,6 @@
   </group>
 
   <!-- We do not have a robot connected, so publish fake joint states -->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" exec="joint_state_publisher">
-    <param name="/use_gui" value="true"/>
-  </node>
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui"/>
 
 </launch>
