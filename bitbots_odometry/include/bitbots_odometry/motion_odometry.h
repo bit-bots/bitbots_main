@@ -14,6 +14,7 @@ using std::placeholders::_1;
 class MotionOdometry : public rclcpp::Node {
  public:
   MotionOdometry();
+  void loop();
  private:
   rclcpp::Time joint_update_time_;
   char current_support_state_;
@@ -24,13 +25,17 @@ class MotionOdometry : public rclcpp::Node {
   tf2::Transform odometry_to_support_foot_;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
 
   double x_forward_scaling_;
   double x_backward_scaling_;
   double y_scaling_;
   double yaw_scaling_;
+  bool publish_walk_odom_tf_;
+
 
   void supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg);
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+
 };

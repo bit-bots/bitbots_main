@@ -28,6 +28,7 @@ using std::placeholders::_1;
 class OdometryFuser : public rclcpp::Node {
  public:
   OdometryFuser();
+  void loop();
  private:
   sensor_msgs::msg::Imu imu_data_;
   nav_msgs::msg::Odometry odom_data_;
