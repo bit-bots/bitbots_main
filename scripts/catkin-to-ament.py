@@ -90,7 +90,7 @@ HARDCODED_REPLACEMENTS = {
     "ros::Time::now()": "this->now()",
     "now().toSec()": "now().seconds()",
     "ros::Time": "rclcpp::Time",
-    "ros::Duration(": "rclcpp::Duration(1e9*",  # is now nanoseconds
+    r"ros::Duration\(": "rclcpp::Duration::from_nanoseconds(1e9*",  # is now nanoseconds
     "ros::Duration": "rclcpp::Duration",
     "ros::WallTime": "rclcpp::WallTime",
     "ros::Rate": "rclcpp::Rate",
@@ -117,6 +117,8 @@ HARDCODED_REPLACEMENTS = {
     ".getNumSubscribers": "->get_subscription_count",
     ".publish": "->publish",
     "robot_state::msg::RobotStatePtr": "moveit::core::RobotStatePtr",
+    "tf2_eigen/tf2_eigen.h": "tf2_eigen/tf2_eigen.hpp",
+    "tf2_geometry_msgs/tf2_geometry_msgs.h": "tf2_geometry_msgs/tf2_geometry_msgs.hpp",
 }
 
 
@@ -224,6 +226,23 @@ def param_replacement():
             for line in reconf_lines:
                 print(line)
             print("\n\n")
+
+def launch_replacement():
+    files = list(Path(".").rglob(r"*"))
+    launch_files = []
+    for file in files:
+        if ".launch" in file.name:
+            launch_files.append(file)
+    for filename in launch_files:
+        # replace the regex with the replacement in the given file
+        with open(filename, "r+") as f:
+            content = f.read()
+
+            content = re.sub("optenv", "env", content)
+            content = re.sub("doc", "documentation", content)
+
+            f.seek(0)
+            f.write(content)
 
 
 def executeSedCmd(pattern, filename, dryrun=False):
@@ -771,6 +790,10 @@ if __name__ == '__main__':
         "--only-params",
         action="store_true",
         help='only modify the dynamic parameters')
+    parser.add_argument(
+        "--only-launch",
+        action="store_true",
+        help='only modify the launch files')
     args = parser.parse_args()
 
     # Quick check to make sure this script was run from within
@@ -795,8 +818,11 @@ if __name__ == '__main__':
             print("ERROR: Failed to port CMakeLists.txt")
             exit(3)
 
-    if not args.only_params:
+    if not args.only_params and not args.only_launch:
         source_code_replacement()
 
-    if not args.only_source:
+    if not args.only_source and not args.only_launch:
         param_replacement()
+
+    if not args.only_source and not args.only_params:
+        launch_replacement()
