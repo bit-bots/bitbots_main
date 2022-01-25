@@ -1,10 +1,10 @@
 <launch>
     <include file="$(find bitbots_bringup)/launch/load_robot_description.launch"/>
 
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
+    <param from="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
 
-    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen"/>
-    <node name="joint_goal_viz" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" output="screen" args="--walking"/>
-    <node pkg="rviz" type="rviz" args="-d $(find bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
+    <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen"/>
+    <node name="joint_goal_viz" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py" output="screen" args="--walking"/>
+    <node pkg="rviz" exec="rviz" args="-d $(find bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
 
 </launch>

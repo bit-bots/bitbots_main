@@ -3,7 +3,7 @@
     <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
     <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
 
-    <node name="motion_odometry" pkg="bitbots_odometry" type="motion_odometry" launch-prefix="$(arg taskset)">
+    <node name="motion_odometry" pkg="bitbots_odometry" exec="motion_odometry" launch-prefix="$(arg taskset)">
         <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
         <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
         <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
@@ -14,7 +14,7 @@
         <param name="yaw_scaling" value="1.4"/>
     </node>
 
-    <node name="odometry_fuser" pkg="bitbots_odometry" type="odometry_fuser" launch-prefix="$(arg taskset)">
+    <node name="odometry_fuser" pkg="bitbots_odometry" exec="odometry_fuser" launch-prefix="$(arg taskset)">
         <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
         <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
         <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
