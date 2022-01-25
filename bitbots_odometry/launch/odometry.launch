@@ -1,26 +1,26 @@
 <launch>
-    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 4"/>
-    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
-    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+    <let name="taskset" if="$(env IS_ROBOT false)" value="\'taskset -c 4\'"/>
+    <let name="taskset" unless="$(env IS_ROBOT false)" value=""/>
 
-    <node name="motion_odometry" pkg="bitbots_odometry" exec="motion_odometry" launch-prefix="$(arg taskset)">
-        <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
-        <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
-        <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
-        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+    <node name="motion_odometry" pkg="bitbots_odometry" exec="motion_odometry" launch-prefix="$(var taskset)">
+        <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+        <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+        <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+        <param name="odom_frame" value="$(var tf_prefix)odom"/>
         <param name="x_forward_scaling" value="1.25"/>
         <param name="x_backward_scaling" value="0.95"/>
         <param name="y_scaling" value="1"/>
         <param name="yaw_scaling" value="1.4"/>
     </node>
 
-    <node name="odometry_fuser" pkg="bitbots_odometry" exec="odometry_fuser" launch-prefix="$(arg taskset)">
-        <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
-        <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
-        <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
-        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
-        <param name="rotation_frame" value="$(arg tf_prefix)rotation"/>
-        <param name="imu_frame" value="$(arg tf_prefix)imu_frame"/>
-        <param name="cop_frame" value="$(arg tf_prefix)cop"/>
+    <node name="odometry_fuser" pkg="bitbots_odometry" exec="odometry_fuser" launch-prefix="$(var taskset)">
+        <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+        <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+        <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+        <param name="odom_frame" value="$(var tf_prefix)odom"/>
+        <param name="rotation_frame" value="$(var tf_prefix)rotation"/>
+        <param name="imu_frame" value="$(var tf_prefix)imu_frame"/>
+        <param name="cop_frame" value="$(var tf_prefix)cop"/>
     </node>
 </launch>
