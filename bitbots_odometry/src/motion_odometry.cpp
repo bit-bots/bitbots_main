@@ -12,13 +12,13 @@ MotionOdometry::MotionOdometry()
   this->get_parameter("l_sole_frame", l_sole_frame_);
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
-  this->declare_parameter<double>("x_forward_scaling", 1);
+  this->declare_parameter<double>("x_forward_scaling", 1.0);
   this->get_parameter("x_forward_scaling", x_forward_scaling_);
-  this->declare_parameter<double>("x_backward_scaling", 1);
+  this->declare_parameter<double>("x_backward_scaling", 1.0);
   this->get_parameter("x_backward_scaling", x_backward_scaling_);
-  this->declare_parameter<double>("y_scaling", 1);
+  this->declare_parameter<double>("y_scaling", 1.0);
   this->get_parameter("y_scaling", y_scaling_);
-  this->declare_parameter<double>("yaw_scaling", 1);
+  this->declare_parameter<double>("yaw_scaling", 1.0);
   this->get_parameter("yaw_scaling", yaw_scaling_);
   current_support_state_ = -1;
   previous_support_state_ = -1;
