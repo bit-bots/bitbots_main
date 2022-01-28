@@ -75,6 +75,8 @@ MESSAGES = {
     "Quaternion",
     "Vector3",
     "RobotControlState",
+    "PoseWithCertainty",
+    "PoseWithCertaintyArray"
 }
 
 RENAME_PACKAGE_IMPORTS = {
@@ -106,7 +108,7 @@ HARDCODED_REPLACEMENTS = {
     r"ROS_WARN_ONCE\(": "RCLCPP_WARN_ONCE(this->get_logger(),",
     r"ROS_INFO_ONCE\(": "RCLCPP_INFO_ONCE(this->get_logger(),",
     r"ROS_ERROR_ONCE\(": "RCLCPP_ERROR_ONCE(this->get_logger(),",
-    r"ros::spinOnce\(\)": "rclcpp::spin_some(std::make_shared<TODO_MIGRATION>())",
+    r"ros::spinOnce\(\)": "rclcpp::spin_some(node_pointer)",
     r"ros::ok\(\)": "rclcpp::ok()",
     "tf2_ros::Buffer": "std::unique_ptr<tf2_ros::Buffer>",
     "tf2_ros::TransformBroadcaster": "std::unique_ptr<tf2_ros::TransformBroadcaster>",
@@ -115,10 +117,13 @@ HARDCODED_REPLACEMENTS = {
     "#include <control_toolbox/pid.h>": "#include <control_toolbox/pid.hpp>",
     "robot_state::": "moveit::core::",
     ".getNumSubscribers": "->get_subscription_count",
-    ".publish": "->publish",
+    "\.publish": "->publish",
+    "\.sendTransform": "->send_transform",
+    "\.lookupTransform": "->lookup_transform",
     "robot_state::msg::RobotStatePtr": "moveit::core::RobotStatePtr",
     "tf2_eigen/tf2_eigen.h": "tf2_eigen/tf2_eigen.hpp",
     "tf2_geometry_msgs/tf2_geometry_msgs.h": "tf2_geometry_msgs/tf2_geometry_msgs.hpp",
+    "ConstPtr": "SharedPtr"
 }
 
 
@@ -238,8 +243,27 @@ def launch_replacement():
         with open(filename, "r+") as f:
             content = f.read()
 
+            content = re.sub("type=", "exec=", content)
             content = re.sub("optenv", "env", content)
-            content = re.sub("doc", "documentation", content)
+            content = re.sub("doc", "description", content)
+            content = re.sub("\$\(find", "$(find-pkg-share", content)
+            content = re.sub("\$\(arg", "$(var", content)
+
+            f.seek(0)
+            f.write(content)
+
+def cmake_replacement():
+    files = list(Path(".").rglob(r"*"))
+    launch_files = []
+    for file in files:
+        if "CMakeLists.txt" in file.name:
+            launch_files.append(file)
+    for filename in launch_files:
+        # replace the regex with the replacement in the given file
+        with open(filename, "r+") as f:
+            content = f.read()
+
+            content = re.sub("enable_bitbots_docs\(\)", "include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)\nenable_bitbots_docs()", content)
 
             f.seek(0)
             f.write(content)
@@ -807,7 +831,7 @@ if __name__ == '__main__':
     if args.dryrun:
         print("Performing a dryrun...")
 
-    if not args.only_source and not args.only_params:
+    if not args.only_source and not args.only_params and not args.only_launch:
         # Port the package XML
         if not PackageXmlPorter.port(args.dryrun):
             print("ERROR: Failed to port package XML")
@@ -817,6 +841,8 @@ if __name__ == '__main__':
         if not CmakeListsPorter.port(args.dryrun):
             print("ERROR: Failed to port CMakeLists.txt")
             exit(3)
+
+        cmake_replacement()
 
     if not args.only_params and not args.only_launch:
         source_code_replacement()
