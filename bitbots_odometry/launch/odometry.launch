@@ -10,7 +10,7 @@
         <param name="odom_frame" value="$(var tf_prefix)odom"/>
         <param name="x_forward_scaling" value="1.25"/>
         <param name="x_backward_scaling" value="0.95"/>
-        <param name="y_scaling" value="1"/>
+        <param name="y_scaling" value="1.0"/>
         <param name="yaw_scaling" value="1.4"/>
     </node>
 
