@@ -25,7 +25,7 @@
             <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py"/>
     </group>
 
-<!--
+
     <group>
         <include file="$(find-pkg-share humanoid_base_footprint)/launch/base_footprint.launch"/>
         <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch"/>
@@ -33,5 +33,5 @@
 
     <group unless="$(var fake_walk)">
         <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch"/>
-    </group> -->
+    </group>
 </launch>
