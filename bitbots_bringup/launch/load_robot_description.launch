@@ -13,12 +13,7 @@
         <param name="/use_sim_time" value="$(var sim)"/>
 
         <param name="robot_type_name" value="Wolfgang"/>
-        <param name="robot_description" value="$(eval '\'$(find-pkg-share xacro)/xacro $(find-pkg-share wolfgang_description)/urdf/robot.urdf use_fake_walk:=$(var fake_walk) sim_ns:=$(var sim_ns)\'')" />
-        <param name="urdf" value="$(find-pkg-share wolfgang_description)/urdf/robot.urdf" />
 
-        <param from="$(find-pkg-share wolfgang_moveit_config)/config/wolfgang.srdf" />
-        <param from="$(find-pkg-share wolfgang_moveit_config)/config/kinematics.yaml"/>
-        <param from="$(find-pkg-share wolfgang_moveit_config)/config/joint_limits.yaml"/>
     </node>
     <!-- publish tfs, change topic depending if the simulation is used -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" respawn="false" output="screen">
@@ -27,12 +22,16 @@
     </node>
 
     <group>
+            <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py"/>
+    </group>
+
+<!--
+    <group>
         <include file="$(find-pkg-share humanoid_base_footprint)/launch/base_footprint.launch"/>
         <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch"/>
     </group>
 
     <group unless="$(var fake_walk)">
         <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch"/>
-    </group>
-
+    </group> -->
 </launch>
