@@ -172,7 +172,6 @@ def source_code_replacement():
             # in header
             content = re.sub("ros::Subscriber", "rclcpp::Subscription", content)
 
-
             # replace parameter
             content = re.sub(r"(.*).param<(.*)>\((.*),(.*),(.*)\);",
                              r"this->declare_parameter<\2>(\3, \5);" + "\n" + r"this->get_parameter(\3, \4);", content)
@@ -182,6 +181,7 @@ def source_code_replacement():
 
             # hack to make sure that there is nothing else left
             # f.write("\n"*10)
+
 
 def param_replacement():
     files = list(Path(".").rglob(r"*"))
@@ -194,13 +194,15 @@ def param_replacement():
         with open(filename, "r+") as f:
             content = f.read()
             # create correct lines for c++ out of parameter config file
-            content = re.sub(r'.*.add\("(.*)", (.*), .*\n* .*"(.*)".*\n*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)', r'// \3 range: [\4,\5]\n\2 param_\1_;\nthis->declare_parameter<\2>("param_\1", 0);\n} else if (parameter.get_name() == "\1") {\n      param_\1_ = parameter.as_\2();', content)
+            content = re.sub(r'.*.add\("(.*)", (.*), .*\n* .*"(.*)".*\n*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)',
+                             r'// \3 range: [\4,\5]\n\2 param_\1_;\nthis->declare_parameter<\2>("param_\1", 0);\n} else if (parameter.get_name() == "\1") {\n      param_\1_ = parameter.as_\2();',
+                             content)
 
             # rename some parameter types so that they fit
             content = re.sub("double_t", "double", content)
             content = re.sub("int_t", "int", content)
 
-            #TODO sortieren und rest weg werfen
+            # TODO sortieren und rest weg werfen
 
             header_lines = []
             code_lines = []
@@ -217,7 +219,6 @@ def param_replacement():
                 elif ";" in line:
                     header_lines.append(line)
 
-
             print(f"###\n    FROM FILE {filename}\n###")
             print(f"### DECLARATION OF PARAMETER VARIABLES (put in header file) ###")
             for line in header_lines:
@@ -231,6 +232,7 @@ def param_replacement():
             for line in reconf_lines:
                 print(line)
             print("\n\n")
+
 
 def launch_replacement():
     files = list(Path(".").rglob(r"*"))
@@ -252,6 +254,7 @@ def launch_replacement():
             f.seek(0)
             f.write(content)
 
+
 def cmake_replacement():
     files = list(Path(".").rglob(r"*"))
     launch_files = []
@@ -263,8 +266,48 @@ def cmake_replacement():
         with open(filename, "r+") as f:
             content = f.read()
 
-            content = re.sub("enable_bitbots_docs\(\)", "include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)\nenable_bitbots_docs()", content)
+            content = re.sub("enable_bitbots_docs\(\)",
+                             "include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)\nenable_bitbots_docs()",
+                             content)
 
+            f.seek(0)
+            f.write(content)
+
+
+python_replacements = {
+    "import rospy": "import rclpy\nfrom rclpy.node import Node",
+    "rospy.Rate": "self.create_rate",
+    "not rospy.is_shutdown\(\)": "rclpy.ok()",
+    "rospy.Time.now\(\)": "self.get_clock().now()",
+    "stamp = self.get_clock().now()": "stamp = self.get_clock().now().to_msg()",
+    "rospy.spin\(\)": "rclpy.spin(self)",
+    "rospy.logwarn\(": "self.get_logger().warn(",
+    "rospy.loginfo\(": "self.get_logger().info(",
+    "rospy.logerr\(": "self.get_logger().error(",
+    "rospy.logdebug\(": "self.get_logger().debug(",
+}
+
+
+def python_replacement():
+    files = list(Path(".").rglob(r"*"))
+    launch_files = []
+    for file in files:
+        if ".py" in file.name:
+            launch_files.append(file)
+    for filename in launch_files:
+        # replace the regex with the replacement in the given file
+        with open(filename, "r+") as f:
+            content = f.read()
+
+            for find, replace in python_replacements.items():
+                content = re.sub(find, replace, content)
+            content = re.sub("rospy.init_node\(.*\)", "rclpy.init(args=None)", content)
+            content = re.sub("rospy.Publisher\((.*), (.*), queue_size=(.*)\)", r"self.create_publisher(\2, \1, \3)",
+                             content)
+            content = re.sub("rospy.Publisher\((.*), (.*), queue_size=(.*), tcp_nodelay = True\)",
+                             r"self.create_publisher(\2, \1, \3)", content)
+            content = re.sub("rospy.Subscriber\((.*), (.*), (.*), queue_size=(.*), tcp_nodelay=True\)",
+                             r"self.create_subscription(\2, \1', \3.listener_callback, \4)", content)
             f.seek(0)
             f.write(content)
 
@@ -818,6 +861,10 @@ if __name__ == '__main__':
         "--only-launch",
         action="store_true",
         help='only modify the launch files')
+    parser.add_argument(
+        "--only-python",
+        action="store_true",
+        help='only modify the python files')
     args = parser.parse_args()
 
     # Quick check to make sure this script was run from within
@@ -831,7 +878,7 @@ if __name__ == '__main__':
     if args.dryrun:
         print("Performing a dryrun...")
 
-    if not args.only_source and not args.only_params and not args.only_launch:
+    if not args.only_source and not args.only_params and not args.only_launch and not args.only_python:
         # Port the package XML
         if not PackageXmlPorter.port(args.dryrun):
             print("ERROR: Failed to port package XML")
@@ -844,11 +891,14 @@ if __name__ == '__main__':
 
         cmake_replacement()
 
-    if not args.only_params and not args.only_launch:
+    if not args.only_params and not args.only_launch and not args.only_python:
         source_code_replacement()
 
-    if not args.only_source and not args.only_launch:
+    if not args.only_source and not args.only_launch and not args.only_python:
         param_replacement()
 
-    if not args.only_source and not args.only_params:
+    if not args.only_source and not args.only_params and not args.only_python:
         launch_replacement()
+
+    if not args.only_source and not args.only_params and not args.only_launch:
+        python_replacement()
