@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" />
 
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+    <rosparam file="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
 
-    <node name="motors_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" args="--walk" />
+    <node name="motors_helper" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py" args="--walk" />
 
-    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen" />
+    <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" />
 
-    <test pkg="bitbots_quintic_walk" type="test_walk_runs.py" test-name="walk_runs" time-limit="300" />
+    <test pkg="bitbots_quintic_walk" exec="test_walk_runs.py" test-name="walk_runs" time-limit="300" />
 </launch>

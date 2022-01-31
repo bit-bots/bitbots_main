@@ -15,11 +15,8 @@ WalkNode::WalkNode(const std::string ns) :
     stabilizer_(SharedPtr(this)),
     visualizer_(SharedPtr(this)) {
 
-  this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
-  this->declare_parameter<std::string>("r_sole_frame", "r_sole");
   this->get_parameter("r_sole_frame", r_sole_frame_);
-  this->declare_parameter<std::string>("l_sole_frame", "l_sole");
   this->get_parameter("l_sole_frame", l_sole_frame_);
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
