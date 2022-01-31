@@ -64,10 +64,10 @@ def generate_launch_description():
 
     # Trajectory Execution Functionality
     moveit_simple_controllers_yaml = load_yaml(
-        "wolfgang_moveit_config", "config/ros_controllers.yaml"
+        "wolfgang_moveit_config", "config/fake_controllers.yaml"
     )
     moveit_controllers = {
-        # "moveit_simple_controller_manager": moveit_simple_controllers_yaml,
+        "moveit_simple_controller_manager": moveit_simple_controllers_yaml,
         "moveit_controller_manager": "moveit_simple_controller_manager/MoveItSimpleControllerManager",
     }
 
@@ -91,7 +91,7 @@ def generate_launch_description():
                     output='screen',
                     parameters=[{
                         'robot_description': robot_description,
-                        'publish_frequency': 15.0
+                        'publish_frequency': 1000.0
                     }],
                     arguments=['--ros-args', '--log-level', 'WARN']
                     )
