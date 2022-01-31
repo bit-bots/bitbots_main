@@ -53,21 +53,19 @@ void OdometryFuser::loop() {
 
   // This specifies the throttle of error messages
   float msg_rate = 10.0;
-  // wait till connection with publishers has been established
-  // so we do not immediately blast something the log output
-  rclcpp::sleep_for(std::chrono::milliseconds(500));
 
   // wait for transforms from joints
   while (!tf_buffer_
       ->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1 * 1e9))
       && rclcpp::ok()) {
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30, "Waiting for transforms from robot joints");
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000, "Waiting for transforms from robot joints");
   }
 
+  auto node_pointer = this->shared_from_this();
   rclcpp::Rate r(500.0);
   rclcpp::Time last_time_stamp;
   while (rclcpp::ok()) {
-    rclcpp::spin_some(std::make_shared<OdometryFuser>());
+    rclcpp::spin_some(node_pointer);
     if (r.sleep()) {
       // in simulation, the time does not always advance between loop iteration
       // in that case, we do not want to republish the transform
@@ -280,6 +278,9 @@ void OdometryFuser::imuCallback(
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<OdometryFuser>();
+  // wait till connection with publishers has been established
+  // so we do not immediately blast something the log output
+  rclcpp::sleep_for(std::chrono::milliseconds(500));
   node->loop();
   rclcpp::shutdown();
 }

@@ -16,10 +16,10 @@ class MotionOdometry : public rclcpp::Node {
   MotionOdometry();
   void loop();
  private:
-  rclcpp::Time joint_update_time_;
+  rclcpp::Time joint_update_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   char current_support_state_;
   char previous_support_state_;
-  rclcpp::Time current_support_state_time_;
+  rclcpp::Time current_support_state_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   sensor_msgs::msg::JointState current_joint_states_;
   nav_msgs::msg::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
