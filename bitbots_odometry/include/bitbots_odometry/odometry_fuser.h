@@ -24,6 +24,7 @@
 #include <unistd.h>
 using std::placeholders::_1;
 
+typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Imu, nav_msgs::msg::Odometry> SyncPolicy;
 
 class OdometryFuser : public rclcpp::Node {
  public:
@@ -36,6 +37,9 @@ class OdometryFuser : public rclcpp::Node {
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   rclcpp::Time fused_time_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_;
+
+  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walk_support_state_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr kick_support_state_sub_;
 
   message_filters::Cache<bitbots_msgs::msg::SupportState> support_state_cache_;
 
