@@ -16,6 +16,10 @@ Since we had some issues with the microcontrollers performance we switched to an
 
 Because we did not want to redesign the analog part of the board, we designed an adapter board from the ESP32 to the BluePill pinout.
 
+The load cells we use are called TAL230A as described here: loadcell_. 
+
+
+.. _loadcell: http://www.htc-sensor.com/products/146.html
 .. _ForceFoot: https://www.github.com/Rhoban/ForceFoot
 .. _repository: https://www.github.com/bit-bots/bit_foot
 
