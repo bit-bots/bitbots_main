@@ -10,4 +10,6 @@
     <param name="rate" value="100"/>
   </node>
 
+  <node name="dummy_imu" pkg="bitbots_bringup" exec="dummy_imu.py"/>
+
 </launch>
