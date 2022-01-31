@@ -50,11 +50,8 @@ MotionOdometry::MotionOdometry()
 void MotionOdometry::loop() {
   std::unique_ptr<tf2_ros::TransformBroadcaster> br;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-  // wait till connection with publishers has been established
-  // so we do not immediately blast something into the log output
-  rclcpp::sleep_for(std::chrono::milliseconds(500));
 
-  rclcpp::Time foot_change_time;
+  rclcpp::Time foot_change_time(0, 0, RCL_ROS_TIME);
   std::string previous_support_link = r_sole_frame_;
   std::string current_support_link;
   auto node_pointer = this->shared_from_this();
@@ -66,7 +63,7 @@ void MotionOdometry::loop() {
       //check if joint states were received, otherwise we can't provide odometry
       rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
       if (joints_delta_t > rclcpp::Duration::from_nanoseconds(0.05 * 1e9)) {
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30,
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
                              "No joint states received. Will not provide odometry.");
       } else {
         // check if step finished, meaning left->right or right->left support. double support is skipped
@@ -131,7 +128,7 @@ void MotionOdometry::loop() {
         try {
           geometry_msgs::msg::TransformStamped
               current_support_to_base_msg =
-              tf_buffer_->lookupTransform(previous_support_link, base_link_frame_, rclcpp::Time(0));
+              tf_buffer_->lookupTransform(previous_support_link, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
           tf2::Transform current_support_to_base;
           tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
           tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
@@ -190,7 +187,7 @@ void MotionOdometry::supportCallback(const bitbots_msgs::msg::SupportState::Shar
           base_to_current_support_msg =
           tf_buffer_->lookupTransform(base_link_frame_,
                                       current_support_link,
-                                      rclcpp::Time(0),
+                                      rclcpp::Time(0, 0, RCL_ROS_TIME),
                                       rclcpp::Duration::from_nanoseconds(1e9));
       odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
@@ -213,6 +210,9 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<MotionOdometry>();
+  // wait till connection with publishers has been established
+  // so we do not immediately blast something into the log output
+  rclcpp::sleep_for(std::chrono::milliseconds(500));
   node->loop();
   rclcpp::shutdown();
 }
