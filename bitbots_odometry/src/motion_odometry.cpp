@@ -22,21 +22,21 @@ MotionOdometry::MotionOdometry()
   this->get_parameter("yaw_scaling", yaw_scaling_);
   current_support_state_ = -1;
   previous_support_state_ = -1;
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walk_support_state_sub =
+  walk_support_state_sub_ =
       this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
                                                                  1,
                                                                  std::bind(&MotionOdometry::supportCallback,
                                                                            this, _1));
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr kick_support_state_sub =
+  kick_support_state_sub_ =
       this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&MotionOdometry::supportCallback,
                                                                            this, _1));
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub =
+  joint_state_sub_ =
       this->create_subscription<sensor_msgs::msg::JointState>("joint_states",
                                                               1,
                                                               std::bind(&MotionOdometry::jointStateCb, this, _1));
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber =
+  odom_subscriber_ =
       this->create_subscription<nav_msgs::msg::Odometry>("walk_engine_odometry",
                                                          1,
                                                          std::bind(&MotionOdometry::odomCallback, this, _1));
@@ -48,7 +48,7 @@ MotionOdometry::MotionOdometry()
 }
 
 void MotionOdometry::loop() {
-  std::unique_ptr<tf2_ros::TransformBroadcaster> br;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br = std::make_unique<tf2_ros::TransformBroadcaster>(this);
   std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   rclcpp::Time foot_change_time(0, 0, RCL_ROS_TIME);
@@ -62,7 +62,7 @@ void MotionOdometry::loop() {
     if (r.sleep()) {
       //check if joint states were received, otherwise we can't provide odometry
       rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
-      if (joints_delta_t > rclcpp::Duration::from_nanoseconds(0.05 * 1e9)) {
+      if (joints_delta_t.seconds() > 0.1) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
                              "No joint states received. Will not provide odometry.");
       } else {

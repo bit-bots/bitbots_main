@@ -27,15 +27,17 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   this->declare_parameter<std::string>("imu_frame", "imu_frame");
   this->get_parameter("imu_frame", imu_frame_);
 
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walk_support_state_sub =
+  walk_support_state_sub_ =
       this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr kick_support_state_sub =
+  kick_support_state_sub_ =
       this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
+}
 
+void OdometryFuser::loop() {
   message_filters::Subscriber<sensor_msgs::msg::Imu> imu_sub(this, "imu/data");
   message_filters::Subscriber<nav_msgs::msg::Odometry> motion_odom_sub(this, "motion_odometry");
 
@@ -44,26 +46,25 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(50), imu_sub, motion_odom_sub);
 
   sync.registerCallback(&OdometryFuser::imuCallback, this);
-}
 
-void OdometryFuser::loop() {
   geometry_msgs::msg::TransformStamped tf;
 
-  static std::unique_ptr<tf2_ros::TransformBroadcaster> br;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
   // This specifies the throttle of error messages
   float msg_rate = 10.0;
 
   // wait for transforms from joints
   while (!tf_buffer_
-      ->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1 * 1e9))
+      ->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME), rclcpp::Duration::from_nanoseconds(1 * 1e9))
       && rclcpp::ok()) {
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000, "Waiting for transforms from robot joints");
   }
 
   auto node_pointer = this->shared_from_this();
   rclcpp::Rate r(500.0);
-  rclcpp::Time last_time_stamp;
+  rclcpp::Time last_time_stamp(0, 0, RCL_ROS_TIME);
+  fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   while (rclcpp::ok()) {
     rclcpp::spin_some(node_pointer);
     if (r.sleep()) {
