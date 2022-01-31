@@ -56,7 +56,10 @@ void OdometryFuser::loop() {
 
   // wait for transforms from joints
   while (!tf_buffer_
-      ->canTransform(l_sole_frame_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME), rclcpp::Duration::from_nanoseconds(1 * 1e9))
+      ->canTransform(l_sole_frame_,
+                     base_link_frame_,
+                     rclcpp::Time(0, 0, RCL_ROS_TIME),
+                     rclcpp::Duration::from_nanoseconds(1 * 1e9))
       && rclcpp::ok()) {
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000, "Waiting for transforms from robot joints");
   }

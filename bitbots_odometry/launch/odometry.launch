@@ -2,6 +2,7 @@
     <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
     <let name="taskset" if="$(env IS_ROBOT false)" value="\'taskset -c 4\'"/>
     <let name="taskset" unless="$(env IS_ROBOT false)" value=""/>
+    <let name="taskset" value=""/>
 
     <node name="motion_odometry" pkg="bitbots_odometry" exec="motion_odometry" launch-prefix="$(var taskset)">
         <param name="base_link_frame" value="$(var tf_prefix)base_link"/>

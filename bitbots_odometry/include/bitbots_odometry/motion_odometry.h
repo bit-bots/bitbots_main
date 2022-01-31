@@ -37,7 +37,6 @@ class MotionOdometry : public rclcpp::Node {
   double yaw_scaling_;
   bool publish_walk_odom_tf_;
 
-
   void supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg);
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
