@@ -7,25 +7,25 @@
   <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
   <group>
-      <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
-          <arg name="sim" value="$(arg sim)"/>
+      <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" >
+          <arg name="sim" value="$(var sim)"/>
       </include>
   </group>
 
-  <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(arg taskset)">
+  <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
       <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
-      <group if="$(arg use_darwin)">
-          <param from="$(find bitbots_quintic_walk)/config/walking_darwin_optimization.yaml"/>
+      <group if="$(var use_darwin)">
+          <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_darwin_optimization.yaml"/>
         </group>
 
-        <group unless="$(arg use_darwin)">
-            <group unless="$(arg sim)">
-              <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
-              <param from="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml"/>
+        <group unless="$(var use_darwin)">
+            <group unless="$(var sim)">
+              <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+              <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml"/>
             </group>
 
-            <group if="$(arg sim)">
-              <param from="$(find bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml"/>
+            <group if="$(var sim)">
+              <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml"/>
             </group>
         </group>
   </node>

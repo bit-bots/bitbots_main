@@ -8,24 +8,24 @@
   <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
   <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-  <group if="$(arg sim)">
-    <param from="$(find bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
-        <group if="$(arg use_game_settings)">
-            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+  <group if="$(var sim)">
+    <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
+        <group if="$(var use_game_settings)">
+            <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
         </group>
   </group>
-  <group unless="$(arg sim)">
-    <param from="$(find bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
-        <group if="$(arg use_game_settings)">
-            <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+  <group unless="$(var sim)">
+    <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
+        <group if="$(var use_game_settings)">
+            <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
         </group>
   </group>   
-  <group unless="$(arg no_node)">
-    <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(arg taskset)">
-      <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
-      <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
-      <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
-      <param name="odom_frame" value="$(arg tf_prefix)odom"/>
+  <group unless="$(var no_node)">
+    <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+      <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+      <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+      <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+      <param name="odom_frame" value="$(var tf_prefix)odom"/>
     </node>
   </group>
 </launch>
