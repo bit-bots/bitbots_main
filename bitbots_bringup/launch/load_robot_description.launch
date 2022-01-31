@@ -15,11 +15,6 @@
         <param name="robot_type_name" value="Wolfgang"/>
 
     </node>
-    <!-- publish tfs, change topic depending if the simulation is used -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" respawn="false" output="screen">
-        <param name="tf_prefix" value="$(env ROS_NAMESPACE /)"/>
-        <param name="prefix_tf_with" value="$(env ROS_NAMESPACE /)/"/>
-    </node>
 
     <group>
             <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py"/>

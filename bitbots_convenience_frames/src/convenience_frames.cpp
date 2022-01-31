@@ -230,6 +230,9 @@ void ConvenienceFramesBroadcaster::publishTransform(std::string header_frame_id,
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<ConvenienceFramesBroadcaster>();
+  // wait till connection with publishers has been established
+  // so we do not immediately blast something into the log output
+  rclcpp::sleep_for(std::chrono::milliseconds(500));
   node->loop();
   rclcpp::shutdown();
 }

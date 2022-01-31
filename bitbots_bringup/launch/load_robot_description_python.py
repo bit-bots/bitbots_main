@@ -92,7 +92,8 @@ def generate_launch_description():
                     parameters=[{
                         'robot_description': robot_description,
                         'publish_frequency': 15.0
-                    }]
+                    }],
+                    arguments=['--ros-args', '--log-level', 'WARN']
                     )
 
     move_group_node = Node(package='moveit_ros_move_group',
@@ -108,7 +109,8 @@ def generate_launch_description():
                                ompl_planning_pipeline_config,
                                trajectory_execution,
                                moveit_controllers,
-                               planning_scene_monitor_parameters, ]
+                               planning_scene_monitor_parameters, ],
+                           arguments=['--ros-args', '--log-level', 'WARN']
                            ) #todo joint limits
 
     return LaunchDescription([fake_walk_arg, sim_ns_arg, move_group_node, rsp_node])
