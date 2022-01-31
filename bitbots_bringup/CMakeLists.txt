@@ -23,6 +23,12 @@ set(LIBS ${bitbots_docs_LIBRARIES} ${ament_cmake_LIBRARIES})
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 
+install(PROGRAMS scripts/dummy_imu.py
+  DESTINATION lib/${PROJECT_NAME})
+
+install(PROGRAMS scripts/motor_goals_viz_helper.py
+  DESTINATION lib/${PROJECT_NAME})
+
 ament_export_dependencies(bitbots_docs)
 ament_export_dependencies(ament_cmake)
 ament_export_include_directories(${INCLUDE_DIRS})
