@@ -1,27 +1,20 @@
 import time
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_msgs.msg import FootPressure, JointCommand
 from geometry_msgs.msg import PointStamped
 from nav_msgs.msg import Odometry
+from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Float32, Bool
-from tf.transformations import euler_from_quaternion
-
-from wolfgang_pybullet_sim.cfg import simConfig
-from dynamic_reconfigure.server import Server
+from tf_transformations import euler_from_quaternion
 
 
-class ROSInterface:
+class ROSInterface(Node):
     def __init__(self, simulation, namespace='', node=True):
+        super().__init__('pybullet_sim')
         self.namespace = namespace
-        # give possibility to use the interface directly as class with setting node=False
-        if node:
-            if namespace == '':
-                rospy.init_node("pybullet_sim")
-            else:
-                rospy.init_node('pybullet_sim', anonymous=True, argv=['clock:=/' + self.namespace + '/clock'])
-
         self.simulation = simulation
         self.namespace = namespace
         self.last_time = time.time()
@@ -45,31 +38,52 @@ class ROSInterface:
         # we just use the first robot
         self.robot_index = self.simulation.robot_indexes[0]
 
-        srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
+        self.declare_parameter("contact_stiffness", 0.0)
+        self.declare_parameter("joint_damping", 0.0)
+        self.declare_parameter("spinning_friction", 0.0)
+        self.declare_parameter("contact_damping", 0.0)
+        self.declare_parameter("lateral_friction", 0.0)
+        self.declare_parameter("rolling_friction", 0.0)
+        self.declare_parameter("cutoff", 0)
+        self.declare_parameter("order", 0)
+
+        self.add_on_set_parameters_callback(self.parameters_callback)
+
+        self.simulation.set_foot_dynamics(self.get_parameter("contact_damping").get_parameter_value().double_value,
+                                          self.get_parameter("contact_stiffness").get_parameter_value().double_value,
+                                          self.get_parameter("joint_damping").get_parameter_value().double_value,
+                                          self.get_parameter("lateral_friction").get_parameter_value().double_value,
+                                          self.get_parameter("spinning_friction").get_parameter_value().double_value,
+                                          self.get_parameter("rolling_friction").get_parameter_value().double_value)
+        self.simulation.set_filter_params(self.get_parameter("cutoff").get_parameter_value().integer_value,
+                                          self.get_parameter("order").get_parameter_value().integer_value)
 
         # publisher
-        self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_left/raw", FootPressure,
-                                                            queue_size=1)
-        self.right_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_right/raw", FootPressure,
-                                                             queue_size=1)
-        self.left_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_left/filtered",
-                                                                     FootPressure, queue_size=1)
-        self.right_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_right/filtered",
-                                                                      FootPressure, queue_size=1)
-        self.joint_publisher = rospy.Publisher(self.namespace + "joint_states", JointState, queue_size=1)
-        self.imu_publisher = rospy.Publisher(self.namespace + "imu/data", Imu, queue_size=1)
-        self.clock_publisher = rospy.Publisher(self.namespace + "clock", Clock, queue_size=1)
-        self.real_time_factor_publisher = rospy.Publisher(self.namespace + "real_time_factor", Float32, queue_size=1)
-        self.true_odom_publisher = rospy.Publisher(self.namespace + "true_odom", Odometry, queue_size=1)
-        self.cop_l_pub_ = rospy.Publisher(self.namespace + "cop_l", PointStamped, queue_size=1)
-        self.cop_r_pub_ = rospy.Publisher(self.namespace + "cop_r", PointStamped, queue_size=1)
+        self.left_foot_pressure_publisher = self.create_publisher(FootPressure,
+                                                                  self.namespace + "foot_pressure_left/raw", 1)
+        self.right_foot_pressure_publisher = self.create_publisher(FootPressure,
+                                                                   self.namespace + "foot_pressure_right/raw", 1)
+        self.left_foot_pressure_publisher_filtered = self.create_publisher(FootPressure,
+                                                                           self.namespace + "foot_pressure_left/filtered",
+                                                                           1)
+        self.right_foot_pressure_publisher_filtered = self.create_publisher(FootPressure,
+                                                                            self.namespace + "foot_pressure_right/filtered",
+                                                                            1)
+        self.joint_publisher = self.create_publisher(JointState, self.namespace + "joint_states", 1)
+        self.imu_publisher = self.create_publisher(Imu, self.namespace + "imu/data", 1)
+        self.clock_publisher = self.create_publisher(Clock, self.namespace + "clock", 1)
+        self.real_time_factor_publisher = self.create_publisher(Float32, self.namespace + "real_time_factor", 1)
+        self.true_odom_publisher = self.create_publisher(Odometry, self.namespace + "true_odom", 1)
+        self.cop_l_pub_ = self.create_publisher(PointStamped, self.namespace + "cop_l", 1)
+        self.cop_r_pub_ = self.create_publisher(PointStamped, self.namespace + "cop_r", 1)
 
         # subscriber
-        self.joint_goal_subscriber = rospy.Subscriber(self.namespace + "DynamixelController/command", JointCommand,
-                                                      self.joint_goal_cb, queue_size=1, tcp_nodelay=True)
+        self.joint_goal_subscriber = self.create_subscription(JointCommand,
+                                                              self.namespace + "DynamixelController/command",
+                                                              self.joint_goal_cb, 1)
 
-        self.reset_subscriber = rospy.Subscriber(self.namespace + "reset", Bool, self.reset_cb, queue_size=1,
-                                                 tcp_nodelay=True)
+        self.reset_subscriber = self.create_subscription(Bool, self.namespace + "reset",
+                                                         self.reset_cb, 1)
 
     def step(self):
         self.simulation.step()
@@ -77,13 +91,16 @@ class ROSInterface:
         self.publish_imu()
         self.publish_foot_pressure()
         self.publish_true_odom()
-        self.clock_msg.clock = rospy.Time.from_seconds(self.simulation.time)
+        self.clock_msg.clock = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         self.clock_publisher.publish(self.clock_msg)
         self.compute_real_time_factor()
 
     def run_simulation(self, duration=None, sleep=0):
-        start_time = rospy.get_time()
-        while not rospy.is_shutdown() and (duration is None or rospy.get_time() - start_time < duration):
+        start_time = self.get_clock().now().seconds_nanoseconds()[0] + \
+                     self.get_clock().now().seconds_nanoseconds()[1] / 1e9
+        while rclpy.ok() and (duration is None or (self.get_clock().now().seconds_nanoseconds()[0] +
+                                                   self.get_clock().now().seconds_nanoseconds()[1] / 1e9)
+                              - start_time < duration):
             self.step()
             time.sleep(sleep)
 
@@ -106,7 +123,8 @@ class ROSInterface:
         self.joint_state_msg.position = positions
         self.joint_state_msg.velocity = velocities
         self.joint_state_msg.effort = efforts
-        self.joint_state_msg.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        self.joint_state_msg.header.stamp = Time(seconds=int(self.simulation.time),
+                                                 nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         return self.joint_state_msg
 
     def publish_joints(self):
@@ -125,14 +143,14 @@ class ROSInterface:
         # simple acceleration computation by using diff of velocities
         linear_acc = tuple(map(lambda i, j: i - j, self.last_linear_vel, linear_vel))
         self.last_linear_vel = linear_vel
-        #adding gravity to the acceleration
-        r,p,y = euler_from_quaternion(orientation)
-        gravity = [r*9.81,p*9.81,y*9.81]
-        linear_acc = tuple([linear_acc[0]+gravity[0], linear_acc[1]+gravity[1], linear_acc[2]+gravity[2]])
+        # adding gravity to the acceleration
+        r, p, y = euler_from_quaternion(orientation)
+        gravity = [r * 9.81, p * 9.81, y * 9.81]
+        linear_acc = tuple([linear_acc[0] + gravity[0], linear_acc[1] + gravity[1], linear_acc[2] + gravity[2]])
         self.imu_msg.linear_acceleration.x = linear_acc[0]
         self.imu_msg.linear_acceleration.y = linear_acc[1]
         self.imu_msg.linear_acceleration.z = linear_acc[2]
-        self.imu_msg.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        self.imu_msg.header.stamp = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         return self.imu_msg
 
     def publish_imu(self):
@@ -140,36 +158,36 @@ class ROSInterface:
 
     def get_pressure_filtered_left(self):
         if len(self.simulation.pressure_sensors) == 0:
-            rospy.logwarn_once("No pressure sensors found in simulation model")
+            self.get_logger().warn_once("No pressure sensors found in simulation model")
             return self.foot_msg_left
         f_llb = self.simulation.pressure_sensors[self.robot_index]["LLB"].get_force()
         f_llf = self.simulation.pressure_sensors[self.robot_index]["LLF"].get_force()
         f_lrf = self.simulation.pressure_sensors[self.robot_index]["LRF"].get_force()
         f_lrb = self.simulation.pressure_sensors[self.robot_index]["LRB"].get_force()
-        self.foot_msg_left.left_back = f_llb[1]
-        self.foot_msg_left.left_front = f_llf[1]
-        self.foot_msg_left.right_front = f_lrf[1]
-        self.foot_msg_left.right_back = f_lrb[1]
+        self.foot_msg_left.left_back = float(f_llb[1])
+        self.foot_msg_left.left_front = float(f_llf[1])
+        self.foot_msg_left.right_front = float(f_lrf[1])
+        self.foot_msg_left.right_back = float(f_lrb[1])
         return self.foot_msg_left
 
     def get_pressure_filtered_right(self):
         if len(self.simulation.pressure_sensors) == 0:
-            rospy.logwarn_once("No pressure sensors found in simulation model")
+            self.get_logger().warn_once("No pressure sensors found in simulation model")
             return self.foot_msg_right
         f_rlb = self.simulation.pressure_sensors[self.robot_index]["RLB"].get_force()
         f_rlf = self.simulation.pressure_sensors[self.robot_index]["RLF"].get_force()
         f_rrf = self.simulation.pressure_sensors[self.robot_index]["RRF"].get_force()
         f_rrb = self.simulation.pressure_sensors[self.robot_index]["RRB"].get_force()
-        self.foot_msg_right.left_back = f_rlb[1]
-        self.foot_msg_right.left_front = f_rlf[1]
-        self.foot_msg_right.right_front = f_rrf[1]
-        self.foot_msg_right.right_back = f_rrb[1]
+        self.foot_msg_right.left_back = float(f_rlb[1])
+        self.foot_msg_right.left_front = float(f_rlf[1])
+        self.foot_msg_right.right_front = float(f_rrf[1])
+        self.foot_msg_right.right_back = float(f_rrb[1])
         return self.foot_msg_right
 
     def publish_foot_pressure(self):
         # some models dont have sensors
         if len(self.simulation.pressure_sensors) == 0:
-            rospy.logwarn_once("No pressure sensors found in simulation model")
+            self.get_logger().warn_once("No pressure sensors found in simulation model")
             return
 
         f_llb = self.simulation.pressure_sensors[self.robot_index]["LLB"].get_force()
@@ -182,28 +200,28 @@ class ROSInterface:
         f_rrf = self.simulation.pressure_sensors[self.robot_index]["RRF"].get_force()
         f_rrb = self.simulation.pressure_sensors[self.robot_index]["RRB"].get_force()
 
-        self.foot_msg_left.left_back = f_llb[0]
-        self.foot_msg_left.left_front = f_llf[0]
-        self.foot_msg_left.right_front = f_lrf[0]
-        self.foot_msg_left.right_back = f_lrb[0]
+        self.foot_msg_left.left_back = float(f_llb[0])
+        self.foot_msg_left.left_front = float(f_llf[0])
+        self.foot_msg_left.right_front = float(f_lrf[0])
+        self.foot_msg_left.right_back = float(f_lrb[0])
         self.left_foot_pressure_publisher.publish(self.foot_msg_left)
 
-        self.foot_msg_right.left_back = f_rlb[0]
-        self.foot_msg_right.left_front = f_rlf[0]
-        self.foot_msg_right.right_front = f_rrf[0]
-        self.foot_msg_right.right_back = f_rrb[0]
+        self.foot_msg_right.left_back = float(f_rlb[0])
+        self.foot_msg_right.left_front = float(f_rlf[0])
+        self.foot_msg_right.right_front = float(f_rrf[0])
+        self.foot_msg_right.right_back = float(f_rrb[0])
         self.right_foot_pressure_publisher.publish(self.foot_msg_right)
 
-        self.foot_msg_left.left_back = f_llb[1]
-        self.foot_msg_left.left_front = f_llf[1]
-        self.foot_msg_left.right_front = f_lrf[1]
-        self.foot_msg_left.right_back = f_lrb[1]
+        self.foot_msg_left.left_back = float(f_llb[1])
+        self.foot_msg_left.left_front = float(f_llf[1])
+        self.foot_msg_left.right_front = float(f_lrf[1])
+        self.foot_msg_left.right_back = float(f_lrb[1])
         self.left_foot_pressure_publisher_filtered.publish(self.foot_msg_left)
 
-        self.foot_msg_right.left_back = f_rlb[1]
-        self.foot_msg_right.left_front = f_rlf[1]
-        self.foot_msg_right.right_front = f_rrf[1]
-        self.foot_msg_right.right_back = f_rrb[1]
+        self.foot_msg_right.left_back = float(f_rlb[1])
+        self.foot_msg_right.left_front = float(f_rlf[1])
+        self.foot_msg_right.right_front = float(f_rrf[1])
+        self.foot_msg_right.right_back = float(f_rrb[1])
         self.right_foot_pressure_publisher_filtered.publish(self.foot_msg_right)
 
         # center position on foot
@@ -213,7 +231,7 @@ class ROSInterface:
 
         cop_l = PointStamped()
         cop_l.header.frame_id = "l_sole"
-        cop_l.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        cop_l.header.stamp = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         sum_of_forces = f_llb[1] + f_llf[1] + f_lrf[1] + f_lrb[1]
         if sum_of_forces > threshold:
             cop_l.point.x = (f_llf[1] + f_lrf[1] - f_llb[1] - f_lrb[1]) * pos_x / sum_of_forces
@@ -221,13 +239,13 @@ class ROSInterface:
             cop_l.point.y = (f_llf[1] + f_llb[1] - f_lrf[1] - f_lrb[1]) * pos_y / sum_of_forces
             cop_l.point.y = max(min(cop_l.point.y, pos_y), -pos_y)
         else:
-            cop_l.point.x = 0
-            cop_l.point.y = 0
+            cop_l.point.x = float(0)
+            cop_l.point.y = float(0)
         self.cop_l_pub_.publish(cop_l)
 
         cop_r = PointStamped()
         cop_r.header.frame_id = "r_sole"
-        cop_r.header.stamp = rospy.Time.from_seconds(self.simulation.time)
+        cop_r.header.stamp = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         sum_of_forces = f_rlb[1] + f_rlf[1] + f_rrf[1] + f_rrb[1]
         if sum_of_forces > threshold:
             cop_r.point.x = (f_rlf[1] + f_rrf[1] - f_rlb[1] - f_rrb[1]) * pos_x / sum_of_forces
@@ -235,8 +253,8 @@ class ROSInterface:
             cop_r.point.y = (f_rlf[1] + f_rlb[1] - f_rrf[1] - f_rrb[1]) * pos_y / sum_of_forces
             cop_r.point.y = max(min(cop_r.point.y, pos_y), -pos_y)
         else:
-            cop_r.point.x = 0
-            cop_r.point.y = 0
+            cop_r.point.x = float(0)
+            cop_r.point.y = float(0)
         self.cop_r_pub_.publish(cop_r)
 
     def publish_true_odom(self):
@@ -260,9 +278,13 @@ class ROSInterface:
     def reset_cb(self, msg):
         self.simulation.reset()
 
-    def _dynamic_reconfigure_callback(self, config, level):
-        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"],
-                                          config["joint_damping"], config["lateral_friction"],
-                                          config["spinning_friction"], config["rolling_friction"])
-        self.simulation.set_filter_params(config["cutoff"], config["order"])
-        return config
+    def parameters_callback(self, params):
+        # we just get all parameters again, since it is easier
+        self.simulation.set_foot_dynamics(self.get_parameter("contact_damping").get_parameter_value().double_value,
+                                          self.get_parameter("contact_stiffness").get_parameter_value().double_value,
+                                          self.get_parameter("joint_damping").get_parameter_value().double_value,
+                                          self.get_parameter("lateral_friction").get_parameter_value().double_value,
+                                          self.get_parameter("spinning_friction").get_parameter_value().double_value,
+                                          self.get_parameter("rolling_friction").get_parameter_value().double_value)
+        self.simulation.set_filter_params(self.get_parameter("cutoff").get_parameter_value().int_value,
+                                          self.get_parameter("order").get_parameter_value().int_value)

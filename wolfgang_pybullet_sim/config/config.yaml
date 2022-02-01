@@ -1,9 +1,16 @@
-contact_stiffness: -1.0
-contact_damping: -1.0
-joint_damping: 1.0
-lateral_friction: 1.0
-spinning_friction: 0.1
-rolling_friction: 0.1
-resistution: 0.9
-order: 5
-cutoff: 10
+/**:
+  ros__parameters:
+    simulation_active: true
+    /use_sim_time: true
+
+pybullet_sim:
+  ros__parameters:
+    contact_stiffness: -1.0
+    contact_damping: -1.0
+    joint_damping: 1.0
+    lateral_friction: 1.0
+    spinning_friction: 0.1
+    rolling_friction: 0.1
+    resistution: 0.9
+    order: 5
+    cutoff: 10

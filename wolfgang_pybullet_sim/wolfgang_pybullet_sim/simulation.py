@@ -7,19 +7,22 @@ import os
 import pybullet as p
 from time import sleep, time
 
-import rospy
-import tf
+import rclpy
+import tf_transformations
+from rclpy.node import Node
+import tf2_py
 from scipy import signal
 import pybullet_data
 import rospkg
 from transforms3d.quaternions import quat2mat
+from ament_index_python import get_package_share_directory
 
 from wolfgang_pybullet_sim.terrain import Terrain
 import numpy as np
 
 
 class Simulation:
-    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain_height=True, field=False, joints_ft=False,
+    def __init__(self, gui, urdf_path=None, foot_link_names=[], terrain_height=0, field=False, joints_ft=False,
                  robot="wolfgang", load_robot=True):
         self.gui = gui
         self.paused = False
@@ -117,6 +120,7 @@ class Simulation:
         self.field_index = None
         if self.field_on:
             # Load field
+
             rospack = rospkg.RosPack()
             path = os.path.join(rospack.get_path('wolfgang_pybullet_sim'), 'models')
             p.setAdditionalSearchPath(path)  # needed to find field model
@@ -140,11 +144,11 @@ class Simulation:
             # use standards
             rospack = rospkg.RosPack()
             if self.robot_type == "op2":
-                self.urdf_path = rospack.get_path("robotis_op2_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("robotis_op2_description") + "/urdf/robot.urdf"
             elif self.robot_type == "sigmaban":
-                self.urdf_path = rospack.get_path("sigmaban_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("sigmaban_description") + "/urdf/robot.urdf"
             else:
-                self.urdf_path = rospack.get_path("wolfgang_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("wolfgang_description") + "/urdf/robot.urdf"
         robot_index = p.loadURDF(self.urdf_path, self.start_position, self.start_orientation, flags=flags,
                                  useFixedBase=not physics_active)
         self.robot_indexes.append(robot_index)
@@ -441,7 +445,7 @@ class Simulation:
                 joint.set_position(pos_in_rad)
 
     def reset_robot_pose_rpy(self, position, rpy, robot_index=1):
-        quat = tf.transformations.quaternion_from_euler(*rpy)
+        quat = tf_transformations.quaternion_from_euler(*rpy)
         self.reset_robot_pose(position, quat, robot_index=robot_index)
 
     def get_robot_pose(self, robot_index=1):

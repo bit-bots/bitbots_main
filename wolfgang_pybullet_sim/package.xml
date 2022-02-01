@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>wolfgang_pybullet_sim</name>
   <version>1.3.0</version>
@@ -13,7 +13,7 @@
   
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>urdf</depend>
@@ -28,5 +28,26 @@
         <status>unknown</status>
         <language>python</language>
       </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
 </package>
