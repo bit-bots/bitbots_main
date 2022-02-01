@@ -38,6 +38,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   std_msgs
 )
 
-ament_package()
+include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
+enable_bitbots_docs()
 
-# enable_bitbots_docs()
+ament_package()
