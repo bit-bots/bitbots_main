@@ -4,20 +4,22 @@
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
 import math
 import os
+import threading
 
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 
 import sys, select, termios, tty
-import actionlib
-from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from rclpy.action import ActionClient
+from bitbots_msgs.action import Kick
 from geometry_msgs.msg import Vector3, Quaternion
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 __ids__ = [
     "HeadPan",
@@ -141,208 +143,220 @@ headBindings = {
 }
 
 
-def getKey():
-    tty.setraw(sys.stdin.fileno())
-    select.select([sys.stdin], [], [], 0)
-    key = sys.stdin.read(1)
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return key
+class TeleopKeyboard(Node):
 
+    def __init__(self):
+        super().__init__("TeleopKeyboard")
+        self.settings = termios.tcgetattr(sys.stdin)
 
-head_pan_pos = 0
-head_tilt_pos = 0
+        # Walking Part
+        self.pub = self.create_publisher(Twist, 'cmd_vel', 1)
 
+        self.head_pan_pos = 0
+        self.head_tilt_pos = 0
 
-def joint_state_cb(msg):
-    global head_pan_pos
-    global head_tilt_pos
+        self.x_speed_step = 0.01
+        self.y_speed_step = 0.01
+        self.turn_speed_step = 0.01
 
-    if "HeadPan" in msg.name and "HeadTilt" in msg.name:
-        head_pan_pos = msg.position[msg.name.index("HeadPan")]
-        head_tilt_pos = msg.position[msg.name.index("HeadTilt")]
+        self.x = 0
+        self.y = 0
+        self.a_x = -1
+        self.th = 0
+        self.status = 0
+
+        # Head Part
+        self.create_subscription(JointState, "joint_states", self.joint_state_cb, 1)
+        self.declare_parameter("sim_active", False)
+        if self.get_parameter("sim_active"):
+            self.head_pub = self.create_publisher(JointCommand, "head_motor_goals", 1)
+        else:
+            self.head_pub = self.create_publisher(JointCommand, "DynamixelController/command", 1)
+        self.head_msg = JointCommand()
+        self.head_msg.max_currents = [float(-1)] * 2
+        self.head_msg.velocities = [float(5)] * 2
+        self.head_msg.accelerations = [float(40)] * 2
+        self.head_msg.joint_names = ['HeadPan', 'HeadTilt']
+        self.head_msg.positions = [float(0)] * 2
+
+        self.head_pan_step = 0.05
+        self.head_tilt_step = 0.05
+
+        self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
+        self.joint_pub = self.create_publisher(JointCommand, "DynamixelController/command", 1)
+
+        self.reset_robot = self.create_client(Empty, "/reset_pose")
+        self.reset_ball = self.create_client(Empty, "/reset_ball")
+
+        print(msg)
+
+        self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
+        self.client = ActionClient(self, Kick, 'dynamic_kick')
+
+    def getKey(self):
+        tty.setraw(sys.stdin.fileno())
+        select.select([sys.stdin], [], [], 0)
+        key = sys.stdin.read(1)
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
+        return key
+
+    def generate_kick_goal(self, x, y, direction):
+        kick_goal = Kick.Goal()
+        kick_goal.header.stamp = self.get_clock().now().to_msg()
+        kick_goal.header.frame_id = self.frame_prefix + "base_footprint"
+        kick_goal.ball_position.x = float(x)
+        kick_goal.ball_position.y = float(y)
+        kick_goal.ball_position.z = float(0)
+        x, y, z, w = quaternion_from_euler(0, 0, direction)
+        kick_goal.kick_direction.x = float(x)
+        kick_goal.kick_direction.y = float(y)
+        kick_goal.kick_direction.z = float(z)
+        kick_goal.kick_direction.w = float(w)
+        kick_goal.kick_speed = float(1)
+        return kick_goal
+
+    def joint_state_cb(self, msg):
+        if "HeadPan" in msg.name and "HeadTilt" in msg.name:
+            self.head_pan_pos = msg.position[msg.name.index("HeadPan")]
+            self.head_tilt_pos = msg.position[msg.name.index("HeadTilt")]
+
+    def loop(self):
+        try:
+            while True:
+                key = self.getKey()
+                if key in moveBindings.keys():
+                    self.x += moveBindings[key][0] * self.x_speed_step
+
+                    self.x = round(self.x, 2)
+                    self.y += moveBindings[key][1] * self.y_speed_step
+                    self.y = round(self.y, 2)
+                    self.th += moveBindings[key][2] * self.turn_speed_step
+                    self.th = round(self.th, 2)
+                    self.a_x = 0
+                elif key in headBindings.keys():
+                    self.head_msg.positions[0] = self.head_pan_pos + headBindings[key][1] * self.head_pan_step
+                    self.head_msg.positions[1] = self.head_tilt_pos + headBindings[key][0] * self.head_tilt_step
+                    self.head_pub.publish(self.head_msg)
+                elif key == 'k' or key == 'K':
+                    # put head back in init
+                    self.head_msg.positions[0] = 0
+                    self.head_msg.positions[1] = 0
+                    self.head_pub.publish(self.head_msg)
+                elif key == 'y':
+                    # kick left forward
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
+                elif key == '<':
+                    # kick left side ball left
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
+                elif key == '>':
+                    # kick left side ball center
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
+                elif key == 'c':
+                    # kick right forward
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
+                elif key == 'v':
+                    # kick right side ball right
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
+                elif key == 'V':
+                    # kick right side ball center
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
+                elif key == "x":
+                    # kick center forward
+                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0, 0))
+                elif key == "X":
+                    # kick center backwards
+                    self.client.send_goal_async(self.generate_kick_goal(-0.2, 0, 0))
+                elif key == "b":
+                    # kick left backwards
+                    self.client.send_goal_async(self.generate_kick_goal(-0.2, 0.1, 0))
+                elif key == "n":
+                    # kick right backwards
+                    self.client.send_goal_async(self.generate_kick_goal(-0.2, -0.1, 0))
+                elif key == "B":
+                    # kick left backwards
+                    self.client.send_goal_async(self.generate_kick_goal(0, 0.14, -1.57))
+                elif key == "N":
+                    # kick right backwards
+                    self.client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
+                elif key == 'Y':
+                    # kick left walk
+                    self.walk_kick_pub.publish(False)
+                elif key == 'C':
+                    # kick right walk
+                    self.walk_kick_pub.publish(True)
+                elif key == 'F':
+                    # play walkready animation
+                    walkready.header.stamp = self.get_clock().now().to_msg()
+                    self.joint_pub.publish(walkready)
+                elif key == 'r':
+                    # reset robot in sim
+                    try:
+                        self.reset_robot.call_async(Empty())
+                    except:
+                        pass
+                elif key == 'R':
+                    # reset ball in sim
+                    try:
+                        self.reset_ball.call_async(Empty())
+                    except:
+                        pass
+                elif key == 'f':
+                    # complete walk stop
+                    self.x = 0
+                    self.y = 0
+                    self.z = 0
+                    self.a_x = -1
+                    self.th = 0
+                else:
+                    self.x = 0
+                    self.y = 0
+                    self.z = 0
+                    self.a_x = 0
+                    self.th = 0
+                    if (key == '\x03'):
+                        self.a_x = -1
+                        break
+
+                twist = Twist()
+                twist.linear.x = float(self.x)
+                twist.linear.y = float(self.y)
+                twist.linear.z = float(0)
+                twist.angular.x = float(self.a_x)
+                twist.angular.y = float(0)
+                twist.angular.z = float(self.th)
+                self.pub.publish(twist)
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                print(
+                    f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \n\n")
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            print("\n")
+            twist = Twist()
+            twist.linear.x = float(0)
+            twist.linear.y = float(0)
+            twist.linear.z = float(0)
+            twist.angular.x = float(0)
+            twist.angular.y = float(0)
+            twist.angular.z = float(0)
+            self.pub.publish(twist)
+
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
 
 
 if __name__ == "__main__":
-    settings = termios.tcgetattr(sys.stdin)
+    rclpy.init(args=None)
+    node = TeleopKeyboard()
+    # necessary so that sleep in loop() is not blocking
+    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+    thread.start()
+    node.loop()
 
-    rospy.init_node('teleop_twist_keyboard')
-
-    # Walking Part
-    pub = rospy.Publisher('cmd_vel', Twist, queue_size=1, latch=True)
-
-    x_speed_step = 0.01
-    y_speed_step = 0.01
-    turn_speed_step = 0.01
-
-    x = 0
-    y = 0
-    a_x = -1
-    th = 0
-    status = 0
-
-    # Head Part
-    rospy.Subscriber("joint_states", JointState, joint_state_cb, queue_size=1)
-    if rospy.get_param("sim_active", default=False):
-        head_pub = rospy.Publisher("head_motor_goals", JointCommand, queue_size=1)
-    else:
-        head_pub = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=1)
-    head_msg = JointCommand()
-    head_msg.max_currents = [-1] * 2
-    head_msg.velocities = [5] * 2
-    head_msg.accelerations = [40] * 2
-    head_msg.joint_names = ['HeadPan', 'HeadTilt']
-    head_msg.positions = [0] * 2
-
-    head_pan_step = 0.05
-    head_tilt_step = 0.05
-
-    walk_kick_pub = rospy.Publisher("kick", Bool, queue_size=1)
-    joint_pub = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=1)
-
-    reset_robot = rospy.ServiceProxy("/reset_pose", Empty)
-    reset_ball = rospy.ServiceProxy("/reset_ball", Empty)
-
-    print(msg)
-
-    frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
-    def generate_kick_goal(x, y, direction):
-        kick_goal = KickGoal()
-        kick_goal.header.stamp = rospy.Time.now()
-        kick_goal.header.frame_id = frame_prefix + "base_footprint"
-        kick_goal.ball_position.x = x
-        kick_goal.ball_position.y = y
-        kick_goal.ball_position.z = 0
-        kick_goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, direction))
-        kick_goal.kick_speed = 1
-        return kick_goal
-
-
-    client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
-
-    try:
-        while True:
-            key = getKey()
-            if key in moveBindings.keys():
-                x += moveBindings[key][0] * x_speed_step
-
-                x = round(x, 2)
-                y += moveBindings[key][1] * y_speed_step
-                y = round(y, 2)
-                th += moveBindings[key][2] * turn_speed_step
-                th = round(th, 2)
-                a_x = 0
-            elif key in headBindings.keys():
-                head_msg.positions[0] = head_pan_pos + headBindings[key][1] * head_pan_step
-                head_msg.positions[1] = head_tilt_pos + headBindings[key][0] * head_tilt_step
-                head_pub.publish(head_msg)
-            elif key == 'k' or key == 'K':
-                # put head back in init
-                head_msg.positions[0] = 0
-                head_msg.positions[1] = 0
-                head_pub.publish(head_msg)
-            elif key == 'y':
-                # kick left forward
-                client.send_goal(generate_kick_goal(0.2, 0.1, 0))
-            elif key == '<':
-                # kick left side ball left
-                client.send_goal(generate_kick_goal(0.2, 0.1, -1.57))
-            elif key == '>':
-                # kick left side ball center
-                client.send_goal(generate_kick_goal(0.2, 0, -1.57))
-            elif key == 'c':
-                # kick right forward
-                client.send_goal(generate_kick_goal(0.2, -0.1, 0))
-            elif key == 'v':
-                # kick right side ball right
-                client.send_goal(generate_kick_goal(0.2, -0.1, 1.57))
-            elif key == 'V':
-                # kick right side ball center
-                client.send_goal(generate_kick_goal(0.2, 0, 1.57))
-            elif key == "x":
-                # kick center forward
-                client.send_goal(generate_kick_goal(0.2, 0, 0))
-            elif key == "X":
-                # kick center backwards
-                client.send_goal(generate_kick_goal(-0.2, 0, 0))
-            elif key == "b":
-                # kick left backwards
-                client.send_goal(generate_kick_goal(-0.2, 0.1, 0))
-            elif key == "n":
-                # kick right backwards
-                client.send_goal(generate_kick_goal(-0.2, -0.1, 0))
-            elif key == "B":
-                # kick left backwards
-                client.send_goal(generate_kick_goal(0, 0.14, -1.57))
-            elif key == "N":
-                # kick right backwards
-                client.send_goal(generate_kick_goal(0, -0.14, 1.57))
-            elif key == 'Y':
-                # kick left walk
-                walk_kick_pub.publish(False)
-            elif key == 'C':
-                # kick right walk
-                walk_kick_pub.publish(True)
-            elif key == 'F':
-                # play walkready animation
-                walkready.header.stamp = rospy.Time.now()
-                joint_pub.publish(walkready)
-            elif key == 'r':
-                # reset robot in sim
-                try:
-                    reset_robot()
-                except:
-                    pass
-            elif key == 'R':
-                # reset ball in sim
-                try:
-                    reset_ball()
-                except:
-                    pass
-            elif key == 'f':
-                # complete walk stop
-                x = 0
-                y = 0
-                z = 0
-                a_x = -1
-                th = 0
-            else:
-                x = 0
-                y = 0
-                z = 0
-                a_x = 0
-                th = 0
-                if (key == '\x03'):
-                    a_x = -1
-                    break
-
-            twist = Twist()
-            twist.linear.x = x
-            twist.linear.y = y
-            twist.linear.z = 0
-            twist.angular.x = a_x
-            twist.angular.y = 0
-            twist.angular.z = th
-            pub.publish(twist)
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            print(
-                f"x:    {x}          \ny:    {y}          \nturn: {th}          \n\n")
-
-    except Exception as e:
-        print(e)
-
-    finally:
-        print("\n")
-        twist = Twist()
-        twist.linear.x = 0
-        twist.linear.y = 0
-        twist.linear.z = 0
-        twist.angular.x = 0
-        twist.angular.y = 0
-        twist.angular.z = 0
-        pub.publish(twist)
-
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+    node.destroy_node()
+    rclpy.shutdown()

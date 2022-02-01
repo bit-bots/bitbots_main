@@ -1,37 +1,43 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-import rospy
-import actionlib
+import threading
+
+import rclpy
+from humanoid_league_msgs.action import PlayAnimation
+from rclpy.duration import Duration
+from rclpy.node import Node
+from rclpy.action import ActionClient
 import copy
 
 from pathlib import Path
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from humanoid_league_msgs.msg import Audio, HeadMode
-import humanoid_league_msgs.msg
 from bitbots_msgs.msg import JointCommand
 
+from bitbots_animation_server.action import PlayAnimationAction
 
-class JoyNode(object):
+
+class JoyNode(Node):
     """ This node controls the roboter via Gamepad.
     """
 
     #TODO read max values from config
 
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
-        rospy.init_node("joy_to_twist", log_level=log_level, anonymous=False)
+        super().__init__('joy_node')
+        rclpy.init(args=None)
 
-        self.config = rospy.get_param("~" + rospy.get_param("~type"))
+        self.config = self..get_param("~" + self.get_param("~type"))
 
         # --- Initialize Topics ---
-        rospy.Subscriber("joy", Joy, self.joy_cb, queue_size=1)
-        self.speak_pub = rospy.Publisher('speak', Audio, queue_size=1)
+        self.create_subscription(Joy,"joy", self.joy_cb, 1)
+        self.speak_pub = self.create_publisher(Audio, 'speak', 1)
         self.speak_msg = Audio()
 
         self.speak_msg.priority = 1
 
-        self.walk_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.walk_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
 
         self.walk_msg = Twist()
         self.last_walk_msg = Twist()
@@ -44,9 +50,9 @@ class JoyNode(object):
         self.walk_msg.angular.y = 0.0
         self.walk_msg.angular.z = 0.0
 
-        self.head_pub = rospy.Publisher("head_motor_goals", JointCommand, queue_size=1)
+        self.head_pub = self.create_publisher(JointCommand, "head_motor_goals", 1)
 
-        self.head_mode_pub = rospy.Publisher("head_mode", HeadMode, queue_size=1)
+        self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
 
         self.head_msg = JointCommand()
         self.head_msg.max_currents = [-1] * 2
@@ -56,38 +62,37 @@ class JoyNode(object):
         self.head_modes = HeadMode()
 
         # --- init animation action ---
-        self.anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
-        self.anim_goal = humanoid_league_msgs.msg.PlayAnimationGoal()
+        self.anim_client = ActionClient(self, PlayAnimationAction, 'animation')
+        self.anim_goal = PlayAnimationAction.Goal()
         self.anim_goal.hcm = False
 
-        first_try = self.anim_client.wait_for_server(rospy.Duration(1))
+        first_try = self.anim_client.wait_for_server(Duration(seconds=1))
 
         if not first_try:
-            rospy.logerr(
+            self.get_logger().error(
                 "Animation Action Server not running! Teleop can not work without animation action server. "
                 "Will now wait until server is accessible!")
         self.anim_client.wait_for_server()
-        rospy.logwarn("Animation server running, will go on.")
+        self.get_logger().warn("Animation server running, will go on.")
 
-        rospy.spin()
 
     def play_animation(self, name):
         self.anim_goal.animation = name
-        self.anim_client.send_goal(self.anim_goal)
+        self.anim_client.send_goal_async(self.anim_goal)
         self.anim_client.wait_for_result()
 
     def send_text(self, text):
         self.speak_msg.text = text
         self.speak_pub.publish(self.speak_msg)
         # don't send it multiple times
-        rospy.sleep(0.1)
+        self.get_clock().sleep_for(Duration(seconds=0.1))
 
     def set_head_mode(self, mode):
         msg = HeadMode()
         msg.headMode = mode
         self.head_mode_pub.publish(msg)
 
-    def denormalize_joy(self, gain, axis, msg, deadzone=0):
+    def denormalize_joy(self, gain, axis, msg, deadzone=0.0):
         if abs(msg.axes[axis]) > deadzone:
             return gain * msg.axes[axis]
         else:
@@ -121,7 +126,7 @@ class JoyNode(object):
         self.last_walk_msg = copy.deepcopy(self.walk_msg)
 
         # head movement with right joystick
-        if rospy.get_param("~head", False):
+        if self.get_parameter("~head"):
             pan_goal = self.denormalize_joy(
                 self.config['head']['gain_pan'],
                 self.config['head']['stick_pan'],
@@ -171,5 +176,13 @@ class JoyNode(object):
             self.send_text("Thank you university hamburg for funding.")
 
 if __name__ == "__main__":
-    joy = JoyNode()
-    rospy.spin()
+    rclpy.init(args=None)
+    node = JoyNode()
+    # necessary so that sleep in loop() is not blocking
+    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+    thread.start()
+    rclpy.spin(node)
+
+    node.destroy_node()
+    rclpy.shutdown()
+
