@@ -85,15 +85,7 @@ WalkNode::WalkNode(const std::string ns) :
   this->get_parameter("node.x_speed_multiplier", x_speed_multiplier_);
   this->get_parameter("node.y_speed_multiplier", y_speed_multiplier_);
   this->get_parameter("node.yaw_speed_multiplier", yaw_speed_multiplier_);
-
-  RCLCPP_WARN(this->get_logger(), "max_step_linear: %f", max_step_linear_[0]);
-  RCLCPP_WARN(this->get_logger(), "max_step_linear: %f", max_step_linear_[1]);
-  RCLCPP_WARN(this->get_logger(), "max_step_linear: %f", max_step_linear_[2]);
-  RCLCPP_WARN(this->get_logger(), "max_step_xy: %f", max_step_xy_);
-  RCLCPP_WARN(this->get_logger(), "max_step_angular: %f", max_step_angular_);
-
-
-
+  
   /* init publisher and subscriber */
   pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("walk_engine_odometry", 1);

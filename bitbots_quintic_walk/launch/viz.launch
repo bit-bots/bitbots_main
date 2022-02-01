@@ -5,7 +5,7 @@
 
     <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen">
         <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml"/>
-        <param from="$(find-pkg-share wolfgang_moveit_config)/config/kinematics2.yaml"/>
+        <param from="$(find-pkg-share wolfgang_moveit_config)/config/kinematics2.yaml"/>  <!--todo this shold not be a different yaml than moveit conf -->
     </node>
 
     <node name="joint_goal_viz" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py" output="screen" args="--walking"/>
