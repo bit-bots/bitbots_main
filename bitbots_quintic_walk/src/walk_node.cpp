@@ -35,32 +35,64 @@ WalkNode::WalkNode(const std::string ns) :
   y_speed_multiplier_ = 1;
   yaw_speed_multiplier_ = 1;
 
-  // read config
-  this->declare_parameter<double>("engine_frequency", 100.0);
-  this->get_parameter("engine_frequency", engine_frequency_);
-  this->declare_parameter<bool>("simulation_active", false);
-  this->get_parameter("simulation_active", simulation_active_);
 
-  this->declare_parameter<bool>("debug_active", false);
-  this->declare_parameter<int>("odom_pub_factor", 0);
-  this->declare_parameter<double>("ik_timeout", 0);
-  this->declare_parameter<double>("ground_min_pressure", 0);
-  this->declare_parameter<double>("phase_reset_phase", 0);
-  this->declare_parameter<double>("joint_min_effort", 0);
-  this->declare_parameter<double>("pause_duration", 0);
-  this->declare_parameter<bool>("imu_active", false);
-  this->declare_parameter<double>("imu_pitch_threshold", 0);
-  this->declare_parameter<double>("imu_roll_threshold", 0);
-  this->declare_parameter<double>("imu_pitch_vel_threshold", 0);
-  this->declare_parameter<double>("imu_roll_vel_threshold", 0);
-  this->declare_parameter<double>("max_step_x", 0);
-  this->declare_parameter<double>("max_step_y", 0);
-  this->declare_parameter<double>("max_step_xy", 0);
-  this->declare_parameter<double>("max_step_z", 0);
-  this->declare_parameter<double>("max_step_angular", 0);
-  this->declare_parameter<double>("x_speed_multiplier", 0);
-  this->declare_parameter<double>("y_speed_multiplier", 0);
-  this->declare_parameter<double>("yaw_speed_multiplier", 0);
+  // read config
+  this->declare_parameter<double>("node.engine_freq", 100.0);
+  this->declare_parameter<bool>("node.debug_active", false);
+  this->declare_parameter<int>("node.odom_pub_factor", 0);
+  this->declare_parameter<double>("node.ik_timeout", 0);
+  this->declare_parameter<double>("node.ground_min_pressure", 0);
+  this->declare_parameter<double>("node.phase_reset_phase", 0);
+  this->declare_parameter<double>("node.joint_min_effort", 0);
+  this->declare_parameter<double>("node.pause_duration", 0);
+  this->declare_parameter<bool>("node.imu_active", false);
+  this->declare_parameter<double>("node.imu_pitch_threshold", 0);
+  this->declare_parameter<double>("node.imu_roll_threshold", 0);
+  this->declare_parameter<double>("node.imu_pitch_vel_threshold", 0);
+  this->declare_parameter<double>("node.imu_roll_vel_threshold", 0);
+  this->declare_parameter<double>("node.max_step_x", 0);
+  this->declare_parameter<double>("node.max_step_y", 0);
+  this->declare_parameter<double>("node.max_step_xy", 0);
+  this->declare_parameter<double>("node.max_step_z", 0);
+  this->declare_parameter<double>("node.max_step_angular", 0);
+  this->declare_parameter<double>("node.x_speed_multiplier", 0);
+  this->declare_parameter<double>("node.y_speed_multiplier", 0);
+  this->declare_parameter<double>("node.yaw_speed_multiplier", 0);
+
+  // read config values one time during start
+  this->get_parameter("node.engine_freq", engine_frequency_);
+  this->get_parameter("node.debug_active", debug_active_);
+  this->get_parameter("node.odom_pub_factor", odom_pub_factor_);
+  double timeout;
+  this->get_parameter("node.ik_timeout", timeout);
+  ik_.setIKTimeout(timeout);
+  this->get_parameter("node.ground_min_pressure", ground_min_pressure_);
+  this->get_parameter("node.phase_reset_phase", phase_reset_phase_);
+  this->get_parameter("node.joint_min_effort", joint_min_effort_);
+  double pause_duration;
+  this->get_parameter("node.pause_duration", pause_duration);
+  walk_engine_.setPauseDuration(pause_duration);
+  this->get_parameter("node.imu_active", imu_active_);
+  this->get_parameter("node.imu_pitch_threshold", imu_pitch_threshold_);
+  this->get_parameter("node.imu_roll_threshold", imu_roll_threshold_);
+  this->get_parameter("node.imu_pitch_vel_threshold", imu_pitch_vel_threshold_);
+  this->get_parameter("node.imu_roll_vel_threshold", imu_roll_vel_threshold_);
+  this->get_parameter("node.max_step_x", max_step_linear_[0]);
+  this->get_parameter("node.max_step_y", max_step_linear_[1]);
+  this->get_parameter("node.max_step_z", max_step_linear_[2]);
+  this->get_parameter("node.max_step_xy", max_step_xy_);
+  this->get_parameter("node.max_step_angular", max_step_angular_);
+  this->get_parameter("node.x_speed_multiplier", x_speed_multiplier_);
+  this->get_parameter("node.y_speed_multiplier", y_speed_multiplier_);
+  this->get_parameter("node.yaw_speed_multiplier", yaw_speed_multiplier_);
+
+  RCLCPP_WARN(this->get_logger(), "max_step_linear: %f", max_step_linear_[0]);
+  RCLCPP_WARN(this->get_logger(), "max_step_linear: %f", max_step_linear_[1]);
+  RCLCPP_WARN(this->get_logger(), "max_step_linear: %f", max_step_linear_[2]);
+  RCLCPP_WARN(this->get_logger(), "max_step_xy: %f", max_step_xy_);
+  RCLCPP_WARN(this->get_logger(), "max_step_angular: %f", max_step_angular_);
+
+
 
   /* init publisher and subscriber */
   pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
@@ -118,13 +150,14 @@ void WalkNode::run() {
   // publish the starting support state once, especially for odometry. we always start with the same foot
   bitbots_msgs::msg::SupportState sup_state;
   sup_state.state = bitbots_msgs::msg::SupportState::LEFT;
+  sup_state.header.stamp = this->get_clock()->now();
   pub_support_->publish(sup_state);
 
-  rclcpp::Rate loop_rate(engine_frequency_);
+  rclcpp::Rate loop_rate(1000);
   double dt;
   WalkRequest last_request;
   while (rclcpp::ok()) {
-    rclcpp::spin_some(SharedPtr(this));
+    rclcpp::spin_some(this->get_node_base_interface());
     if (loop_rate.sleep()) {
       dt = getTimeDelta();
 
@@ -216,7 +249,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
 
   // change to joint command message type
   bitbots_msgs::msg::JointCommand command;
-  command.header.stamp = this->now();
+  command.header.stamp = this->get_clock()->now();
   /*
    * Since our JointGoals type is a vector of strings
    *  combined with a vector of numbers (motor name -> target position)
@@ -240,7 +273,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
 double WalkNode::getTimeDelta() {
   // compute time delta depended if we are currently in simulation or reality
   double dt;
-  double current_ros_time = this->now().seconds();
+  double current_ros_time = this->get_clock()->now().seconds();
   dt = current_ros_time - last_ros_update_time_;
   if (dt == 0) {
     RCLCPP_WARN(this->get_logger(), "dt was 0");
@@ -510,55 +543,58 @@ void WalkNode::kickCb(const std_msgs::msg::Bool::SharedPtr msg) {
 }
 
 rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
+  RCLCPP_WARN(this->get_logger(), "Set parameters");
   for (const auto &parameter: parameters) {
-    if (parameter.get_name() == "ik_timeout") {
+    if (parameter.get_name() == "node.ik_timeout") {
       ik_.setIKTimeout(parameter.as_double());
-    } else if (parameter.get_name() == "debug_active") {
+    } else if (parameter.get_name() == "node.debug_active") {
       debug_active_ = parameter.as_bool();
-    } else if (parameter.get_name() == "engine_frequency") {
+    } else if (parameter.get_name() == "node.engine_freq") {
       engine_frequency_ = parameter.as_double();
-    } else if (parameter.get_name() == "odom_pub_factor") {
+    } else if (parameter.get_name() == "node.odom_pub_factor") {
       odom_pub_factor_ = parameter.as_int();
-    } else if (parameter.get_name() == "max_step_x") {
+    } else if (parameter.get_name() == "node.max_step_x") {
       max_step_linear_[0] = parameter.as_double();
-    } else if (parameter.get_name() == "max_step_y") {
+    } else if (parameter.get_name() == "node.max_step_y") {
       max_step_linear_[1] = parameter.as_double();
-    } else if (parameter.get_name() == "max_step_z") {
+    } else if (parameter.get_name() == "node.max_step_z") {
       max_step_linear_[2] = parameter.as_double();
-    } else if (parameter.get_name() == "max_step_angular") {
+    } else if (parameter.get_name() == "node.max_step_angular") {
       max_step_angular_ = parameter.as_double();
-    } else if (parameter.get_name() == "max_step_xy") {
+    } else if (parameter.get_name() == "node.max_step_xy") {
       max_step_xy_ = parameter.as_double();
-    } else if (parameter.get_name() == "x_speed_multiplier") {
+    } else if (parameter.get_name() == "node.x_speed_multiplier") {
       x_speed_multiplier_ = parameter.as_double();
-    } else if (parameter.get_name() == "y_speed_multiplier") {
+    } else if (parameter.get_name() == "node.y_speed_multiplier") {
       y_speed_multiplier_ = parameter.as_double();
-    } else if (parameter.get_name() == "yaw_speed_multiplier") {
+    } else if (parameter.get_name() == "node.yaw_speed_multiplier") {
       yaw_speed_multiplier_ = parameter.as_double();
-    } else if (parameter.get_name() == "imu_active") {
+    } else if (parameter.get_name() == "node.imu_active") {
       imu_active_ = parameter.as_bool();
-    } else if (parameter.get_name() == "imu_pitch_threshold") {
+    } else if (parameter.get_name() == "node.imu_pitch_threshold") {
       imu_pitch_threshold_ = parameter.as_double();
-    } else if (parameter.get_name() == "imu_roll_threshold") {
+    } else if (parameter.get_name() == "node.imu_roll_threshold") {
       imu_roll_threshold_ = parameter.as_double();
-    } else if (parameter.get_name() == "imu_pitch_vel_threshold") {
+    } else if (parameter.get_name() == "node.imu_pitch_vel_threshold") {
       imu_pitch_vel_threshold_ = parameter.as_double();
-    } else if (parameter.get_name() == "imu_roll_vel_threshold") {
+    } else if (parameter.get_name() == "node.imu_roll_vel_threshold") {
       imu_roll_vel_threshold_ = parameter.as_double();
-    } else if (parameter.get_name() == "phase_reset_active") {
+    } else if (parameter.get_name() == "node.phase_reset_active") {
       phase_reset_active_ = parameter.as_bool();
-    } else if (parameter.get_name() == "pressure_phase_reset_active") {
+    } else if (parameter.get_name() == "node.pressure_phase_reset_active") {
       pressure_phase_reset_active_ = parameter.as_bool();
-    } else if (parameter.get_name() == "effort_phase_reset_active") {
+    } else if (parameter.get_name() == "node.effort_phase_reset_active") {
       effort_phase_reset_active_ = parameter.as_bool();
-    } else if (parameter.get_name() == "ground_min_pressure") {
+    } else if (parameter.get_name() == "node.ground_min_pressure") {
       ground_min_pressure_ = parameter.as_double();
-    } else if (parameter.get_name() == "joint_min_effort") {
+    } else if (parameter.get_name() == "node.joint_min_effort") {
       joint_min_effort_ = parameter.as_double();
-    } else if (parameter.get_name() == "pause_duration") {
+    } else if (parameter.get_name() == "node.pause_duration") {
       walk_engine_.setPauseDuration(parameter.as_double());
     } else {
-      RCLCPP_WARN(this->get_logger(), "Unknown parameter: %s", parameter.get_name().c_str());
+      if (!walk_engine_.onSetParameters(parameter)) {
+        RCLCPP_WARN(this->get_logger(), "Unknown parameter: %s", parameter.get_name().c_str());
+      }
     }
   }
 
@@ -592,7 +628,7 @@ nav_msgs::msg::Odometry WalkNode::getOdometry() {
   geometry_msgs::msg::Quaternion quat_msg;
   tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
 
-  rclcpp::Time current_time = this->now();
+  rclcpp::Time current_time = this->get_clock()->now();
 
   // send the odometry as message
   odom_msg_.header.stamp = current_time;

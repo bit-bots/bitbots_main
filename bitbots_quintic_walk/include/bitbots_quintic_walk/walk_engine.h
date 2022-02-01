@@ -153,6 +153,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   tf2::Transform getRight();
 
   EngineParams params_;
+  bool onSetParameters(const rclcpp::Parameter & parameter);
 
  private:
 
@@ -161,7 +162,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   WalkState engine_state_;
 
   WalkRequest request_;
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> & parameters);
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
   //splines

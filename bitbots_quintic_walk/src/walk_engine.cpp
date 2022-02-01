@@ -30,38 +30,63 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
   reset();
 
   // need to use the node reference to get the parameters
-  node_->declare_parameter<double>("freq", 0);
-  node_->declare_parameter<double>("double_support_ratio", 0);
-  node_->declare_parameter<double>("foot_distance", 0);
-  node_->declare_parameter<double>("foot_rise", 0);
-  node_->declare_parameter<double>("trunk_swing", 0);
-  node_->declare_parameter<double>("trunk_height", 0);
-  node_->declare_parameter<double>("trunk_pitch", 0);
-  node_->declare_parameter<double>("trunk_pitch_p_coef_forward", 0);
-  node_->declare_parameter<double>("trunk_phase", 0);
-  node_->declare_parameter<double>("foot_z_pause", 0);
-  node_->declare_parameter<double>("foot_put_down_z_offset", 0);
-  node_->declare_parameter<double>("foot_put_down_phase", 0);
-  node_->declare_parameter<double>("foot_apex_phase", 0);
-  node_->declare_parameter<double>("foot_overshoot_ratio", 0);
-  node_->declare_parameter<double>("foot_overshoot_phase", 0);
-  node_->declare_parameter<double>("trunk_x_offset", 0);
-  node_->declare_parameter<double>("trunk_y_offset", 0);
-  node_->declare_parameter<double>("trunk_pause", 0);
-  node_->declare_parameter<double>("trunk_x_offset_p_coef_forward", 0);
-  node_->declare_parameter<double>("trunk_x_offset_p_coef_turn", 0);
-  node_->declare_parameter<double>("trunk_pitch_p_coef_turn", 0);
-  node_->declare_parameter<double>("kick_length", 0);
-  node_->declare_parameter<double>("kick_vel", 0);
-  node_->declare_parameter<double>("kick_phase", 0);
-  node_->declare_parameter<double>("foot_put_down_roll_offset", 0);
-  node_->declare_parameter<double>("first_step_swing_factor", 0);
-  node_->declare_parameter<double>("first_step_trunk_phase", 0);
-  node_->declare_parameter<double>("trunk_z_movement", 0);
+  node_->declare_parameter<double>("engine.freq", 0);
+  node_->declare_parameter<double>("engine.double_support_ratio", 0);
+  node_->declare_parameter<double>("engine.foot_distance", 0);
+  node_->declare_parameter<double>("engine.foot_rise", 0);
+  node_->declare_parameter<double>("engine.trunk_swing", 0);
+  node_->declare_parameter<double>("engine.trunk_height", 0);
+  node_->declare_parameter<double>("engine.trunk_pitch", 0);
+  node_->declare_parameter<double>("engine.trunk_pitch_p_coef_forward", 0);
+  node_->declare_parameter<double>("engine.trunk_phase", 0);
+  node_->declare_parameter<double>("engine.foot_z_pause", 0);
+  node_->declare_parameter<double>("engine.foot_put_down_z_offset", 0);
+  node_->declare_parameter<double>("engine.foot_put_down_phase", 0);
+  node_->declare_parameter<double>("engine.foot_apex_phase", 0);
+  node_->declare_parameter<double>("engine.foot_overshoot_ratio", 0);
+  node_->declare_parameter<double>("engine.foot_overshoot_phase", 0);
+  node_->declare_parameter<double>("engine.trunk_x_offset", 0);
+  node_->declare_parameter<double>("engine.trunk_y_offset", 0);
+  node_->declare_parameter<double>("engine.trunk_pause", 0);
+  node_->declare_parameter<double>("engine.trunk_x_offset_p_coef_forward", 0);
+  node_->declare_parameter<double>("engine.trunk_x_offset_p_coef_turn", 0);
+  node_->declare_parameter<double>("engine.trunk_pitch_p_coef_turn", 0);
+  node_->declare_parameter<double>("engine.kick_length", 0);
+  node_->declare_parameter<double>("engine.kick_vel", 0);
+  node_->declare_parameter<double>("engine.kick_phase", 0);
+  node_->declare_parameter<double>("engine.foot_put_down_roll_offset", 0);
+  node_->declare_parameter<double>("engine.first_step_swing_factor", 0);
+  node_->declare_parameter<double>("engine.first_step_trunk_phase", 0);
+  node_->declare_parameter<double>("engine.trunk_z_movement", 0);
 
-  callback_handle_ =
-      node_->add_on_set_parameters_callback(std::bind(&WalkEngine::onSetParameters, this, std::placeholders::_1));
-
+  node_->get_parameter("engine.freq", params_.freq);
+  node_->get_parameter("engine.double_support_ratio", params_.double_support_ratio);
+  node_->get_parameter("engine.foot_distance", params_.foot_distance);
+  node_->get_parameter("engine.foot_rise", params_.foot_rise);
+  node_->get_parameter("engine.trunk_swing", params_.trunk_swing);
+  node_->get_parameter("engine.trunk_height", params_.trunk_height);
+  node_->get_parameter("engine.trunk_pitch", params_.trunk_pitch);
+  node_->get_parameter("engine.trunk_pitch_p_coef_forward", params_.trunk_pitch_p_coef_forward);
+  node_->get_parameter("engine.trunk_phase", params_.trunk_phase);
+  node_->get_parameter("engine.foot_z_pause", params_.foot_z_pause);
+  node_->get_parameter("engine.foot_put_down_z_offset", params_.foot_put_down_z_offset);
+  node_->get_parameter("engine.foot_put_down_phase", params_.foot_put_down_phase);
+  node_->get_parameter("engine.foot_apex_phase", params_.foot_apex_phase);
+  node_->get_parameter("engine.foot_overshoot_ratio", params_.foot_overshoot_ratio);
+  node_->get_parameter("engine.foot_overshoot_phase", params_.foot_overshoot_phase);
+  node_->get_parameter("engine.trunk_x_offset", params_.trunk_x_offset);
+  node_->get_parameter("engine.trunk_y_offset", params_.trunk_y_offset);
+  node_->get_parameter("engine.trunk_pause", params_.trunk_pause);
+  node_->get_parameter("engine.trunk_x_offset_p_coef_forward", params_.trunk_x_offset_p_coef_forward);
+  node_->get_parameter("engine.trunk_x_offset_p_coef_turn", params_.trunk_x_offset_p_coef_turn);
+  node_->get_parameter("engine.trunk_pitch_p_coef_turn", params_.trunk_pitch_p_coef_turn);
+  node_->get_parameter("engine.kick_length", params_.kick_length);
+  node_->get_parameter("engine.kick_vel", params_.kick_vel);
+  node_->get_parameter("engine.kick_phase", params_.kick_phase);
+  node_->get_parameter("engine.foot_put_down_roll_offset", params_.foot_put_down_roll_offset);
+  node_->get_parameter("engine.first_step_swing_factor", params_.first_step_swing_factor);
+  node_->get_parameter("engine.first_step_trunk_phase", params_.first_step_trunk_phase);
+  node_->get_parameter("engine.trunk_z_movement", params_.trunk_z_movement);
 
   // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
@@ -1107,69 +1132,69 @@ tf2::Transform WalkEngine::getRight() {
   return right_in_world_;
 }
 
-rcl_interfaces::msg::SetParametersResult WalkEngine::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  for (const auto &parameter: parameters) {
-    if (parameter.get_name() == "freq") {
-      params_.freq = parameter.as_double();
-    } else if (parameter.get_name() == "double_support_ratio") {
-      params_.double_support_ratio = parameter.as_double();
-    } else if (parameter.get_name() == "foot_distance") {
-      params_.foot_distance = parameter.as_double();
-    } else if (parameter.get_name() == "foot_rise") {
-      params_.foot_rise = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_swing") {
-      params_.trunk_swing = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_height") {
-      params_.trunk_height = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_pitch") {
-      params_.trunk_pitch = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_pitch_p_coef_forward") {
-      params_.trunk_pitch_p_coef_forward = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_phase") {
-      params_.trunk_phase = parameter.as_double();
-    } else if (parameter.get_name() == "foot_z_pause") {
-      params_.foot_z_pause = parameter.as_double();
-    } else if (parameter.get_name() == "foot_put_down_z_offset") {
-      params_.foot_put_down_z_offset = parameter.as_double();
-    } else if (parameter.get_name() == "foot_put_down_phase") {
-      params_.foot_put_down_phase = parameter.as_double();
-    } else if (parameter.get_name() == "foot_apex_phase") {
-      params_.foot_apex_phase = parameter.as_double();
-    } else if (parameter.get_name() == "foot_overshoot_ratio") {
-      params_.foot_overshoot_ratio = parameter.as_double();
-    } else if (parameter.get_name() == "foot_overshoot_phase") {
-      params_.foot_overshoot_phase = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_x_offset") {
-      params_.trunk_x_offset = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_y_offset") {
-      params_.trunk_y_offset = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_pause") {
-      params_.trunk_pause = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_x_offset_p_coef_forward") {
-      params_.trunk_x_offset_p_coef_forward = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_x_offset_p_coef_turn") {
-      params_.trunk_x_offset_p_coef_turn = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_pitch_p_coef_turn") {
-      params_.trunk_pitch_p_coef_turn = parameter.as_double();
-    } else if (parameter.get_name() == "kick_length") {
-      params_.kick_length = parameter.as_double();
-    } else if (parameter.get_name() == "kick_vel") {
-      params_.kick_vel = parameter.as_double();
-    } else if (parameter.get_name() == "kick_phase") {
-      params_.kick_phase = parameter.as_double();
-    } else if (parameter.get_name() == "foot_put_down_roll_offset") {
-      params_.foot_put_down_roll_offset = parameter.as_double();
-    } else if (parameter.get_name() == "first_step_swing_factor") {
-      params_.first_step_swing_factor = parameter.as_double();
-    } else if (parameter.get_name() == "first_step_trunk_phase") {
-      params_.first_step_trunk_phase = parameter.as_double();
-    } else if (parameter.get_name() == "trunk_z_movement") {
-      params_.trunk_z_movement = parameter.as_double();
-    }
+bool WalkEngine::onSetParameters(const rclcpp::Parameter &parameter) {
+  RCLCPP_WARN(node_->get_logger(), "dt was 0");
+
+  if (parameter.get_name() == "engine.freq") {
+    params_.freq = parameter.as_double();
+  } else if (parameter.get_name() == "engine.double_support_ratio") {
+    params_.double_support_ratio = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_distance") {
+    params_.foot_distance = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_rise") {
+    params_.foot_rise = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_swing") {
+    params_.trunk_swing = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_height") {
+    params_.trunk_height = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pitch") {
+    params_.trunk_pitch = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pitch_p_coef_forward") {
+    params_.trunk_pitch_p_coef_forward = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_phase") {
+    params_.trunk_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_z_pause") {
+    params_.foot_z_pause = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_put_down_z_offset") {
+    params_.foot_put_down_z_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_put_down_phase") {
+    params_.foot_put_down_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_apex_phase") {
+    params_.foot_apex_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_overshoot_ratio") {
+    params_.foot_overshoot_ratio = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_overshoot_phase") {
+    params_.foot_overshoot_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_x_offset") {
+    params_.trunk_x_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_y_offset") {
+    params_.trunk_y_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pause") {
+    params_.trunk_pause = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_x_offset_p_coef_forward") {
+    params_.trunk_x_offset_p_coef_forward = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_x_offset_p_coef_turn") {
+    params_.trunk_x_offset_p_coef_turn = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pitch_p_coef_turn") {
+    params_.trunk_pitch_p_coef_turn = parameter.as_double();
+  } else if (parameter.get_name() == "engine.kick_length") {
+    params_.kick_length = parameter.as_double();
+  } else if (parameter.get_name() == "engine.kick_vel") {
+    params_.kick_vel = parameter.as_double();
+  } else if (parameter.get_name() == "engine.kick_phase") {
+    params_.kick_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_put_down_roll_offset") {
+    params_.foot_put_down_roll_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.first_step_swing_factor") {
+    params_.first_step_swing_factor = parameter.as_double();
+  } else if (parameter.get_name() == "engine.first_step_trunk_phase") {
+    params_.first_step_trunk_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_z_movement") {
+    params_.trunk_z_movement = parameter.as_double();
+  } else {
+    return false;
   }
-  rcl_interfaces::msg::SetParametersResult result;
-  result.successful = true;
-  return result;
+  return true;
 }
 
 } // namespace bitbots_quintic_walk
