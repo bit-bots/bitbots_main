@@ -15,7 +15,7 @@
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_docs</depend>
-  <depend>ros-rolling-tf-transformations</depend>
+  <depend>tf-transformations</depend>
 
   <exec_depend>std_msgs</exec_depend>
 

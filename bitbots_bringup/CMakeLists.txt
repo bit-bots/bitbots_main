@@ -18,7 +18,8 @@ link_directories(${LIBRARY_DIRS})
 
 set(LIBS ${bitbots_docs_LIBRARIES} ${ament_cmake_LIBRARIES})
 
-#enable_bitbots_docs()
+include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
+enable_bitbots_docs()
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})

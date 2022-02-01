@@ -88,7 +88,7 @@ def generate_launch_description():
     rsp_node = Node(package='robot_state_publisher',
                     executable='robot_state_publisher',
                     respawn=True,
-                    output='screen',
+                    #output='screen',
                     parameters=[{
                         'robot_description': robot_description,
                         'publish_frequency': 1000.0
@@ -98,7 +98,7 @@ def generate_launch_description():
 
     move_group_node = Node(package='moveit_ros_move_group',
                            executable='move_group',
-                           output='screen',
+                           #output='screen',
                            # hacky merging dicts
                            parameters=[{
                                'robot_description': robot_description,
