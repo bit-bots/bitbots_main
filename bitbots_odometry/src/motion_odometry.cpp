@@ -200,7 +200,7 @@ void MotionOdometry::supportCallback(const bitbots_msgs::msg::SupportState::Shar
 
 void MotionOdometry::jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg) {
   current_joint_states_ = *msg;
-  joint_update_time_ = this->now();
+  joint_update_time_ = msg->header.stamp;
 }
 
 void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
