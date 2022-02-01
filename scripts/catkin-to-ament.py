@@ -89,7 +89,7 @@ REMOVE_IMPORTS = [
 
 HARDCODED_REPLACEMENTS = {
     "#include <std_msgs/Time.h>": "#include <builtin_interfaces/msg/time.hpp>",
-    "ros::Time::now()": "this->now()",
+    "ros::Time::now()": "this->get_clock()->now()",
     "now().toSec()": "now().seconds()",
     "ros::Time": "rclcpp::Time",
     r"ros::Duration\(": "rclcpp::Duration::from_nanoseconds(1e9*",  # is now nanoseconds
@@ -108,7 +108,7 @@ HARDCODED_REPLACEMENTS = {
     r"ROS_WARN_ONCE\(": "RCLCPP_WARN_ONCE(this->get_logger(),",
     r"ROS_INFO_ONCE\(": "RCLCPP_INFO_ONCE(this->get_logger(),",
     r"ROS_ERROR_ONCE\(": "RCLCPP_ERROR_ONCE(this->get_logger(),",
-    r"ros::spinOnce\(\)": "rclcpp::spin_some(node_pointer)",
+    r"ros::spinOnce\(\)": "rclcpp::spin_some(this->get_node_base_interface())",
     r"ros::ok\(\)": "rclcpp::ok()",
     "tf2_ros::Buffer": "std::unique_ptr<tf2_ros::Buffer>",
     "tf2_ros::TransformBroadcaster": "std::unique_ptr<tf2_ros::TransformBroadcaster>",
@@ -194,8 +194,8 @@ def param_replacement():
         with open(filename, "r+") as f:
             content = f.read()
             # create correct lines for c++ out of parameter config file
-            content = re.sub(r'.*.add\("(.*)", (.*), .*\n* .*"(.*)".*\n*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)',
-                             r'// \3 range: [\4,\5]\n\2 param_\1_;\nthis->declare_parameter<\2>("param_\1", 0);\n} else if (parameter.get_name() == "\1") {\n      param_\1_ = parameter.as_\2();',
+            content = re.sub(r'.*.add\("(.*)", (.*), .* .*"(.*)".*.*min=([-, \d, \.]*), max=([-, \d, \.]*)\)',
+                             r'// \3 range: [\4,\5]\n\2 param_\1_;\nthis->declare_parameter<\2>("\1", 0);\n} else if (parameter.get_name() == "\1") {\n      param_\1_ = parameter.as_\2();\nself.declare_parameter("\1", 0.0)\nself.get_parameter("\1").get_parameter_value().\2_value\nif param.name == \1:\n    self.\1=\1',
                              content)
 
             # rename some parameter types so that they fit
@@ -207,6 +207,8 @@ def param_replacement():
             header_lines = []
             code_lines = []
             reconf_lines = []
+            python_lines = []
+            python_update_lines = []
             for line in iter(content.splitlines()):
                 if "load_manifest" in line:
                     continue
@@ -214,10 +216,14 @@ def param_replacement():
                     header_lines.append(line)
                 elif "this->declare_parameter" in line:
                     code_lines.append(line)
-                elif "if" in line or "as_" in line:
+                elif "declare_parameter" in line or "get_parameter" in line:
+                    python_lines.append(line)
+                elif "if (" in line or "as_" in line:
                     reconf_lines.append(line)
                 elif ";" in line:
                     header_lines.append(line)
+                elif not "PACKAGE" in line and not "ParameterGenerator" in line and not "python3" in line and not "import" in line:
+                    python_update_lines.append(line)
 
             print(f"###\n    FROM FILE {filename}\n###")
             print(f"### DECLARATION OF PARAMETER VARIABLES (put in header file) ###")
@@ -233,6 +239,14 @@ def param_replacement():
                 print(line)
             print("\n\n")
 
+            print(f"### DECLARATION OF PARAMETERS IN INIT (put in INIT) PYTHON###")
+            for line in python_lines:
+                print(line)
+            print("\n\n")
+
+            print(f"### UPDATING PARAMETERS FOR CALLBACK (put in callback) PYTHON###")
+            for line in python_update_lines:
+                print(line)
 
 def launch_replacement():
     files = list(Path(".").rglob(r"*"))
@@ -250,6 +264,7 @@ def launch_replacement():
             content = re.sub("doc", "description", content)
             content = re.sub("\$\(find", "$(find-pkg-share", content)
             content = re.sub("\$\(arg", "$(var", content)
+            content = re.sub("rosparam file", "param from", content)
 
             f.seek(0)
             f.write(content)
@@ -269,6 +284,9 @@ def cmake_replacement():
             content = re.sub("enable_bitbots_docs\(\)",
                              "include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)\nenable_bitbots_docs()",
                              content)
+            content = re.sub(r"generate_dynamic_reconfigure_options\((.*)\)", "", content)
+
+            content = re.sub(r"ament_package\(\)", "install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})\ninstall(DIRECTORY launch DESTINATION share/${PROJECT_NAME})\ninstall(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})\n\nament_package()", content)
 
             f.seek(0)
             f.write(content)
@@ -285,6 +303,18 @@ python_replacements = {
     "rospy.loginfo\(": "self.get_logger().info(",
     "rospy.logerr\(": "self.get_logger().error(",
     "rospy.logdebug\(": "self.get_logger().debug(",
+    "rospy.logwarn_once\(": "self.get_logger().warn_once(",
+    "rospy.loginfo_once\(": "self.get_logger().info_once(",
+    "rospy.logerr_once\(": "self.get_logger().error_once(",
+    "rospy.logdebug_once\(": "self.get_logger().debug_once(",
+    "import actionlib": "from rclpy.action import ActionClient",
+    ".send_goal\(": ".send_goal_async(",
+    "rospy.Duration\(": "Duration(seconds=",
+    "rospy.sleep\(": "self.get_clock().sleep_for(Duration(seconds=",
+    "from tf.transformations": "from tf_transformations",
+    "rospy.get_time\(\)": "float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)",
+    r"from (.*)cfg import": "",
+    "from dynamic_reconfigure.server import Server": ""
 }
 
 
@@ -307,7 +337,14 @@ def python_replacement():
             content = re.sub("rospy.Publisher\((.*), (.*), queue_size=(.*), tcp_nodelay = True\)",
                              r"self.create_publisher(\2, \1, \3)", content)
             content = re.sub("rospy.Subscriber\((.*), (.*), (.*), queue_size=(.*), tcp_nodelay=True\)",
-                             r"self.create_subscription(\2, \1', \3.listener_callback, \4)", content)
+                             r"self.create_subscription(\2, \1, \3, \4)", content)
+            content = re.sub("rospy.ServiceProxy\((.*), (.*)\)", r"self.create_client(\2, \1)", content)
+
+            content = re.sub("actionlib.SimpleActionClient\((.*), (.*)\)", r"ActionClient(self, \2, \1)", content)
+
+            content = re.sub("rospy.Time.from_seconds\((.*)\)", r"Time(seconds=int(\1), nanoseconds=\1 % 1 * 1e9)",
+                             content)
+
             f.seek(0)
             f.write(content)
 
