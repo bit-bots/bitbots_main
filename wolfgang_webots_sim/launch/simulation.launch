@@ -1,81 +1,81 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="gui" default="true" doc="Whether or not to launch webots with rendering"/>
+    <arg name="gui" default="true" description="Whether or not to launch webots with rendering"/>
     <arg name="headless" default="false"
-         doc="If true, launches webots completely headless with a virtual frame buffer"/>
+         description="If true, launches webots completely headless with a virtual frame buffer"/>
     <arg name="num_robots" default="4"
-         doc="Number of robots for which a ROS controller is started. 1 if multi_robot=True "/>
+         description="Number of robots for which a ROS controller is started. 1 if multi_robot=True "/>
     <arg name="imu_filter" default="true"
-         doc="If an IMU filter should be started, otherwise only imu/raw will be available"/>
-    <arg name="multi_robot" default="false" doc="Start world with either one or four robots"/>
-    <arg name="sim_id" default="" doc="Namespace if multiple simulations should be run at the same time"/>
-    <arg name="camera" default="true" doc="Turn on or off the camera (to speed up if only motion is required)"/>
-    <arg name="recognition" default="false" doc="Turn on or off automatic recognition for collection of training data"/>
+         description="If an IMU filter should be started, otherwise only imu/raw will be available"/>
+    <arg name="multi_robot" default="false" description="Start world with either one or four robots"/>
+    <arg name="sim_id" default="" description="Namespace if multiple simulations should be run at the same time"/>
+    <arg name="camera" default="true" description="Turn on or off the camera (to speed up if only motion is required)"/>
+    <arg name="recognition" default="false" description="Turn on or off automatic recognition for collection of training data"/>
     <param name="/simulation_active" value="true"/>
     <param name="/use_sim_time" value="true"/>
 
     <arg name="multi_robot_flag" value="$(eval '--multi-robot' if arg('multi_robot') else '')"
-         doc="do not set, used internally"/>
+         description="do not set, used internally"/>
     <arg name="gui_flag" value="$(eval '' if arg('gui') else '--nogui')"
-         doc="do not set, used internally"/>
+         description="do not set, used internally"/>
     <arg name="headless_flag" value="$(eval '--headless' if arg('headless') else '')"
-         doc="do not set, used internally"/>
+         description="do not set, used internally"/>
 
     <!-- delete ros parameter "/webots_pid" + sim_id since its used to communicate the process id of the simulation -->
-    <rosparam command="delete" param="/webots_pid$(arg sim_id)"/>
+    <rosparam command="delete" param="/webots_pid$(var sim_id)"/>
 
     <!-- start simulation and supervisor either with or without gui -->
-    <node pkg="wolfgang_webots_sim" type="start_simulator.sh" name="webots_sim" required="true" 
-          output="screen" args="$(arg multi_robot_flag) $(arg gui_flag) $(arg headless_flag)"/>
-    <node pkg="wolfgang_webots_sim" type="start_webots_ros_supervisor.sh" name="webots_ros_supervisor" respawn="true"
+    <node pkg="wolfgang_webots_sim" exec="start_simulator.sh" name="webots_sim" required="true" 
+          output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag)"/>
+    <node pkg="wolfgang_webots_sim" exec="start_webots_ros_supervisor.sh" name="webots_ros_supervisor" respawn="true"
           output="screen" />
 
-    <group unless="$(arg multi_robot)">
-        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch">
-            <arg name="camera" value="$(arg camera)"/>
-            <arg name="recognition" value="$(arg recognition)"/>
+    <group unless="$(var multi_robot)">
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
+            <arg name="camera" value="$(var camera)"/>
+            <arg name="recognition" value="$(var recognition)"/>
         </include>
-        <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
     </group>
 
     <!-- case for multiple robots -->
-    <group if="$(arg multi_robot)">
+    <group if="$(var multi_robot)">
         <!-- start single controllers based on num_robots as ros or void controller -->
-        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="amy">
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="amy">
             <arg name="robot_name" value="amy"/>
             <arg name="tf_prefix" value="amy/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 1)"/>
-            <arg name="camera" value="$(arg camera)"/>
-            <arg name="recognition" value="$(arg recognition)"/>
+            <arg name="camera" value="$(var camera)"/>
+            <arg name="recognition" value="$(var recognition)"/>
         </include>
-        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="rory">
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="rory">
             <arg name="robot_name" value="rory"/>
             <arg name="tf_prefix" value="rory/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 2)"/>
-            <arg name="camera" value="$(arg camera)"/>
-            <arg name="recognition" value="$(arg recognition)"/>
+            <arg name="camera" value="$(var camera)"/>
+            <arg name="recognition" value="$(var recognition)"/>
         </include>
-        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="jack">
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="jack">
             <arg name="robot_name" value="jack"/>
             <arg name="tf_prefix" value="jack/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 3)"/>
-            <arg name="camera" value="$(arg camera)"/>
-            <arg name="recognition" value="$(arg recognition)"/>
+            <arg name="camera" value="$(var camera)"/>
+            <arg name="recognition" value="$(var recognition)"/>
         </include>
-        <include file="$(find wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="donna">
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch" ns="donna">
             <arg name="robot_name" value="donna"/>
             <arg name="tf_prefix" value="donna/"/>
             <arg name="void_controller" value="$(eval arg('num_robots') &lt; 4)"/>
-            <arg name="camera" value="$(arg camera)"/>
-            <arg name="recognition" value="$(arg recognition)"/>
+            <arg name="camera" value="$(var camera)"/>
+            <arg name="recognition" value="$(var recognition)"/>
         </include>
 
         <!-- imu filter for each robot, does not cost performance if there are no messages coming in -->
-        <group if="$(arg imu_filter)">
-            <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="amy"/>
-            <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="rory"/>
-            <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="jack"/>
-            <include file="$(find wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="donna"/>
+        <group if="$(var imu_filter)">
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="amy"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="rory"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="jack"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" ns="donna"/>
         </group>
     </group>
 </launch>

@@ -49,6 +49,7 @@ ament_export_include_directories(${INCLUDE_DIRS})
 
 install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY models DESTINATION share/${PROJECT_NAME})
 
 ament_python_install_package(${PROJECT_NAME})
 

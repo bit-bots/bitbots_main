@@ -3,7 +3,8 @@ import os
 import argparse
 import time
 
-import rospy
+import rclpy
+from rclpy.node import Node
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -12,7 +13,7 @@ if __name__ == "__main__":
     pid_param_name = "/webots_pid" + args.sim_id
 
     while not rospy.has_param(pid_param_name):
-        rospy.logdebug("Waiting for parameter " + pid_param_name + " to be set..")
+        self.get_logger().debug("Waiting for parameter " + pid_param_name + " to be set..")
         time.sleep(2.0)
 
     webots_pid = rospy.get_param(pid_param_name)
@@ -22,6 +23,6 @@ if __name__ == "__main__":
 
     from wolfgang_webots_sim.webots_supervisor_controller import SupervisorController
     supervisor_controller = SupervisorController(ros_active=True)
-    rospy.loginfo("started webots ros supervisor")
-    while not rospy.is_shutdown():
+    self.get_logger().info("started webots ros supervisor")
+    while rclpy.ok():
         supervisor_controller.step()

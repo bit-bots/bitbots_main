@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>wolfgang_webots_sim</name>
   <version>1.4.0</version>
@@ -13,7 +13,7 @@
   
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>urdf</depend>
@@ -25,11 +25,14 @@
   <depend>gazebo_msgs</depend>
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>xvfb</exec_depend>
+  <depend>gazebo_msgs</depend>
+
 
   <export>
       <bitbots_documentation>
         <status>unknown</status>
         <language>python</language>
       </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

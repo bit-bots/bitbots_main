@@ -1,9 +1,11 @@
 from controller import Supervisor, Keyboard, Node
 
-import rospy
+import rclpy
+from rclpy.node import Node as RclpyNode
 from geometry_msgs.msg import Quaternion, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
 from bitbots_msgs.srv import SetObjectPose, SetObjectPoseResponse, SetObjectPosition, SetObjectPositionResponse
+from rclpy.time import Time
 
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty, EmptyResponse
@@ -14,7 +16,7 @@ import numpy as np
 G = 9.81
 
 
-class SupervisorController:
+class SupervisorController(RclpyNode):
     def __init__(self, ros_active=False, mode='normal', do_ros_init=True, base_ns='', model_states_active=True):
         """
         The SupervisorController, a Webots controller that can control the world.
@@ -25,6 +27,7 @@ class SupervisorController:
         :param do_ros_init: Whether rospy.init_node should be called
         :param base_ns: The namespace of this node, can normally be left empty
         """
+        super().__init__('supervisor_controller')
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
         self.model_states_active = model_states_active
@@ -78,16 +81,16 @@ class SupervisorController:
                 clock_topic = base_ns + "clock"
                 model_topic = base_ns + "model_states"
             if do_ros_init:
-                rospy.init_node("webots_ros_supervisor", argv=['clock:=' + clock_topic])
-            self.clock_publisher = rospy.Publisher(clock_topic, Clock, queue_size=1)
-            self.model_state_publisher = rospy.Publisher(model_topic, ModelStates, queue_size=1)
-            self.reset_service = rospy.Service(base_ns + "reset", Empty, self.reset)
-            self.reset_pose_service = rospy.Service(base_ns + "reset_pose", Empty, self.set_initial_poses)
-            self.set_robot_pose_service = rospy.Service(base_ns + "set_robot_pose", SetObjectPose,
-                                                        self.robot_pose_callback)
-            self.reset_ball_service = rospy.Service(base_ns + "reset_ball", Empty, self.reset_ball)
-            self.set_ball_position_service = rospy.Service(base_ns + "set_ball_position", SetObjectPosition,
-                                                           self.ball_pos_callback)
+                rclpy.init(args=None)
+            self.clock_publisher = self.create_publisher(Clock, clock_topic, 1)
+            self.model_state_publisher = self.create_publisher(ModelStates, model_topic, 1)
+            self.reset_service = self.create_service(Empty, base_ns + "reset", self.reset)
+            self.reset_pose_service = self.create_service(Empty, base_ns + "reset_pose", self.set_initial_poses)
+            self.set_robot_pose_service = self.create_service(SetObjectPose, base_ns + "set_robot_pose",
+                                                              self.robot_pose_callback)
+            self.reset_ball_service = self.create_service(Empty, base_ns + "reset_ball", self.reset_ball)
+            self.set_ball_position_service = self.create_service(SetObjectPosition, base_ns + "set_ball_position",
+                                                                 self.ball_pos_callback)
 
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
@@ -151,7 +154,7 @@ class SupervisorController:
         return key
 
     def publish_clock(self):
-        self.clock_msg.clock = rospy.Time.from_seconds(self.time)
+        self.clock_msg.clock = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         self.clock_publisher.publish(self.clock_msg)
 
     def set_gravity(self, active):

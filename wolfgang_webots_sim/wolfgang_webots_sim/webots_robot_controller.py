@@ -4,8 +4,10 @@ import time
 
 from controller import Robot, Node, Field
 
-import rospy
+import rclpy
+from rclpy.node import Node as RclpyNode
 from geometry_msgs.msg import PointStamped
+from rclpy.time import Time
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 
 from bitbots_msgs.msg import JointCommand, FootPressure
@@ -13,7 +15,7 @@ from bitbots_msgs.msg import JointCommand, FootPressure
 CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
-class RobotController:
+class RobotController(RclpyNode):
     def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, robot_node=None, base_ns='',
                  recognize=False, camera_active=True, foot_sensors_active=True):
         """
@@ -27,6 +29,7 @@ class RobotController:
         :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
         :param base_ns: The namespace of this node, can normally be left empty
         """
+        super().__init__('robot_controller')
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
@@ -162,34 +165,34 @@ class RobotController:
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
 
-        self.imu_frame = rospy.get_param("~imu_frame", "imu_frame")
+        self.imu_frame = self.get_parameter('"~imu_frame"').get_parameter_value().double_value
         if self.ros_active:
             if base_ns == "":
                 clock_topic = "/clock"
             else:
                 clock_topic = base_ns + "clock"
             if do_ros_init:
-                rospy.init_node("webots_ros_interface", argv=['clock:=' + clock_topic])
-            self.l_sole_frame = rospy.get_param("~l_sole_frame", "l_sole")
-            self.r_sole_frame = rospy.get_param("~r_sole_frame", "r_sole")
-            self.camera_optical_frame = rospy.get_param("~camera_optical_frame", "camera_optical_frame")
-            self.head_imu_frame = rospy.get_param("~head_imu_frame", "imu_frame_2")
-            self.pub_js = rospy.Publisher(base_ns + "joint_states", JointState, queue_size=1)
-            self.pub_imu = rospy.Publisher(base_ns + "imu/data_raw", Imu, queue_size=1)
+                rclpy.init(args=None)
+            self.l_sole_frame = self.get_parameter('"~l_sole_frame"').get_parameter_value().double_value
+            self.r_sole_frame = self.get_parameter('"~r_sole_frame"').get_parameter_value().double_value
+            self.camera_optical_frame = self.get_parameter('"~camera_optical_frame"').get_parameter_value().double_value
+            self.head_imu_frame = self.get_parameter('"~head_imu_frame"').get_parameter_value().double_value
+            self.pub_js = self.create_publisher(JointState, base_ns + "joint_states", 1)
+            self.pub_imu = self.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
-            self.pub_imu_head = rospy.Publisher(base_ns + "imu_head/data", Imu, queue_size=1)
-            self.pub_cam = rospy.Publisher(base_ns + "camera/image_proc", Image, queue_size=1)
-            self.pub_cam_info = rospy.Publisher(base_ns + "camera/camera_info", CameraInfo, queue_size=1, latch=True)
+            self.pub_imu_head = self.create_publisher(Imu, base_ns + "imu_head/data", 1)
+            self.pub_cam = self.create_publisher(Image, base_ns + "camera/image_proc", 1)
+            self.pub_cam_info = self.create_publisher(CameraInfo, base_ns + "camera/camera_info", 1)
 
-            self.pub_pres_left = rospy.Publisher(base_ns + "foot_pressure_left/raw", FootPressure, queue_size=1)
-            self.pub_pres_right = rospy.Publisher(base_ns + "foot_pressure_right/raw", FootPressure, queue_size=1)
-            self.cop_l_pub_ = rospy.Publisher(base_ns + "cop_l", PointStamped, queue_size=1)
-            self.cop_r_pub_ = rospy.Publisher(base_ns + "cop_r", PointStamped, queue_size=1)
-            rospy.Subscriber(base_ns + "DynamixelController/command", JointCommand, self.command_cb)
+            self.pub_pres_left = self.create_publisher(FootPressure, base_ns + "foot_pressure_left/raw", 1)
+            self.pub_pres_right = self.create_publisher(FootPressure, base_ns + "foot_pressure_right/raw", 1)
+            self.cop_l_pub_ = self.create_publisher(PointStamped, base_ns + "cop_l", 1)
+            self.cop_r_pub_ = self.create_publisher(PointStamped, base_ns + "cop_r", 1)
+            self.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
 
             # publish camera info once, it will be latched
             self.cam_info = CameraInfo()
-            self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
+            self.cam_info.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
             self.cam_info.header.frame_id = self.camera_optical_frame
             self.cam_info.height = self.camera.getHeight()
             self.cam_info.width = self.camera.getWidth()
@@ -311,7 +314,7 @@ class RobotController:
     def get_joint_state_msg(self):
         js = JointState()
         js.name = []
-        js.header.stamp = rospy.Time.from_seconds(self.time)
+        js.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
         js.position = []
         js.effort = []
         for joint_name in self.external_motor_names:
@@ -328,7 +331,7 @@ class RobotController:
 
     def get_imu_msg(self, head=False):
         msg = Imu()
-        msg.header.stamp = rospy.Time.from_seconds(self.time)
+        msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
         if head:
             msg.header.frame_id = self.head_imu_frame
         else:
@@ -370,7 +373,7 @@ class RobotController:
 
     def publish_camera(self):
         img_msg = Image()
-        img_msg.header.stamp = rospy.Time.from_seconds(self.time)
+        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
         img_msg.header.frame_id = self.camera_optical_frame
         img_msg.height = self.camera.getHeight()
         img_msg.width = self.camera.getWidth()
@@ -422,7 +425,7 @@ class RobotController:
 
     def get_pressure_message(self):
 
-        current_time = rospy.Time.from_sec(self.time)
+        current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
         if not self.foot_sensors_active:
             cop_r = PointStamped()
             cop_r.header.frame_id = self.r_sole_frame

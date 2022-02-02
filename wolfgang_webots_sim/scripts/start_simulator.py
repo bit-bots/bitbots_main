@@ -6,7 +6,8 @@ import argparse
 import time
 
 import rospkg
-import rospy
+import rclpy
+from rclpy.node import Node
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -73,7 +74,7 @@ if __name__ == "__main__":
 
     # set webots pid on rosparam server
     print(f"webots_pid is {webots_pid}")
-    rospy.set_param("/webots_pid" + args.sim_id, str(webots_pid))
+    self.set_parameters([rclpy.parameter.Parameter("/webots_pid" + args.sim_id, rclpy.Parameter.Type.DOUBLE, str(webots_pid))])
 
     # join with child process
     try:
