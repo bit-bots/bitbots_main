@@ -248,6 +248,7 @@ def param_replacement():
             for line in python_update_lines:
                 print(line)
 
+
 def launch_replacement():
     files = list(Path(".").rglob(r"*"))
     launch_files = []
@@ -286,7 +287,9 @@ def cmake_replacement():
                              content)
             content = re.sub(r"generate_dynamic_reconfigure_options\((.*)\)", "", content)
 
-            content = re.sub(r"ament_package\(\)", "install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})\ninstall(DIRECTORY launch DESTINATION share/${PROJECT_NAME})\ninstall(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})\n\nament_package()", content)
+            content = re.sub(r"ament_package\(\)",
+                             "install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})\ninstall(DIRECTORY launch DESTINATION share/${PROJECT_NAME})\ninstall(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})\n\nament_package()",
+                             content)
 
             f.seek(0)
             f.write(content)
@@ -303,10 +306,14 @@ python_replacements = {
     "rospy.loginfo\(": "self.get_logger().info(",
     "rospy.logerr\(": "self.get_logger().error(",
     "rospy.logdebug\(": "self.get_logger().debug(",
-    "rospy.logwarn_once\(": "self.get_logger().warn_once(",
-    "rospy.loginfo_once\(": "self.get_logger().info_once(",
-    "rospy.logerr_once\(": "self.get_logger().error_once(",
-    "rospy.logdebug_once\(": "self.get_logger().debug_once(",
+    "rospy.logwarn_once\((.*)\)": "self.get_logger().warn(\1, once=True)",
+    "rospy.loginfo_once\((.*)\)": "self.get_logger().info(\1, once=True)",
+    "rospy.logerr_once\((.*)\)": "self.get_logger().error(\1, once=True)",
+    "rospy.logdebug_once\((.*)\)": "self.get_logger().debug(\1, once=True)",
+    "rospy.logwarn_throttle\((.*), (.*)\)": "self.get_logger().warn(\2, throttle_duration_sec=\1",
+    "rospy.loginfo_throttle\((.*), (.*)\)": "self.get_logger().info(\2, throttle_duration_sec=\1",
+    "rospy.logerr_throttle\((.*), (.*)\)": "self.get_logger().error(\2, throttle_duration_sec=\1",
+    "rospy.logdebug_throttle\((.*), (.*)\)": "self.get_logger().debug(\2, throttle_duration_sec=\1",
     "import actionlib": "from rclpy.action import ActionClient",
     ".send_goal\(": ".send_goal_async(",
     "rospy.Duration\(": "Duration(seconds=",
@@ -314,7 +321,9 @@ python_replacements = {
     "from tf.transformations": "from tf_transformations",
     "rospy.get_time\(\)": "float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)",
     r"from (.*)cfg import": "",
-    "from dynamic_reconfigure.server import Server": ""
+    "from dynamic_reconfigure.server import Server": "",
+    "rospy.get_name\(\)": "self.get_name()",
+    "get_num_connections\(\)": "get_subscription_count()"
 }
 
 
@@ -344,6 +353,12 @@ def python_replacement():
 
             content = re.sub("rospy.Time.from_seconds\((.*)\)", r"Time(seconds=int(\1), nanoseconds=\1 % 1 * 1e9)",
                              content)
+            content = re.sub("rospy.get_param\((.*), (.*)\)",
+                             r"self.get_parameter('\1').get_parameter_value().double_value", content)
+            content = re.sub("rospy.set_param\((.*), (.*)\)",
+                             r"self.set_parameters([rclpy.parameter.Parameter(\1, rclpy.Parameter.Type.DOUBLE, \2)])",
+                             content)
+            content = re.sub("rospy.Service\((.*), (.*), (.*)\)", r"self.create_client(\2, \1, \3)", content)
 
             f.seek(0)
             f.write(content)
