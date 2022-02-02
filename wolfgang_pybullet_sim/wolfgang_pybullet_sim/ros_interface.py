@@ -70,7 +70,7 @@ class ROSInterface(Node):
                                                                             self.namespace + "foot_pressure_right/filtered",
                                                                             1)
         self.joint_publisher = self.create_publisher(JointState, self.namespace + "joint_states", 1)
-        self.imu_publisher = self.create_publisher(Imu, self.namespace + "imu/data", 1)
+        self.imu_publisher = self.create_publisher(Imu, self.namespace + "imu/data_raw", 1)
         self.clock_publisher = self.create_publisher(Clock, self.namespace + "clock", 1)
         self.real_time_factor_publisher = self.create_publisher(Float32, self.namespace + "real_time_factor", 1)
         self.true_odom_publisher = self.create_publisher(Odometry, self.namespace + "true_odom", 1)

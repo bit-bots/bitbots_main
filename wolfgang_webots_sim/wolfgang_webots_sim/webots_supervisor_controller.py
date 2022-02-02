@@ -4,11 +4,11 @@ import rclpy
 from rclpy.node import Node as RclpyNode
 from geometry_msgs.msg import Quaternion, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetObjectPose, SetObjectPoseResponse, SetObjectPosition, SetObjectPositionResponse
+from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 from rclpy.time import Time
 
 from rosgraph_msgs.msg import Clock
-from std_srvs.srv import Empty, EmptyResponse
+from std_srvs.srv import Empty
 
 import transforms3d
 import numpy as np
@@ -17,14 +17,13 @@ G = 9.81
 
 
 class SupervisorController(RclpyNode):
-    def __init__(self, ros_active=False, mode='normal', do_ros_init=True, base_ns='', model_states_active=True):
+    def __init__(self, ros_active=False, mode='normal', base_ns='', model_states_active=True):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
 
         :param ros_active: Whether to publish ROS messages
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
-        :param do_ros_init: Whether rospy.init_node should be called
         :param base_ns: The namespace of this node, can normally be left empty
         """
         super().__init__('supervisor_controller')
@@ -80,8 +79,6 @@ class SupervisorController(RclpyNode):
             else:
                 clock_topic = base_ns + "clock"
                 model_topic = base_ns + "model_states"
-            if do_ros_init:
-                rclpy.init(args=None)
             self.clock_publisher = self.create_publisher(Clock, clock_topic, 1)
             self.model_state_publisher = self.create_publisher(ModelStates, model_topic, 1)
             self.reset_service = self.create_service(Empty, base_ns + "reset", self.reset)
@@ -126,14 +123,22 @@ class SupervisorController(RclpyNode):
         return joint_dict, link_dict
 
     def step_sim(self):
+        print("b")
         self.time += self.timestep / 1000
+        print("b1")
         self.supervisor.step(self.timestep)
+        print("b2")
 
     def step(self):
+        print("a")
         self.step_sim()
+        print("a2")
         if self.ros_active:
+            print("a3")
             self.publish_clock()
+            print("4")
             if self.model_states_active:
+                print("a5")
                 self.publish_model_states()
 
     def handle_gui(self):
@@ -179,7 +184,7 @@ class SupervisorController(RclpyNode):
     def reset(self, req=None):
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
-        return EmptyResponse()
+        return Empty.Response()
 
     def reset_robot_init(self, name="amy"):
         self.robot_nodes[name].loadState('__init__')
@@ -191,23 +196,23 @@ class SupervisorController(RclpyNode):
         self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
         self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
         self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
-        return EmptyResponse()
+        return Empty.Response()
 
     def robot_pose_callback(self, req=None):
         self.reset_robot_pose([req.pose.position.x, req.pose.position.y, req.pose.position.z],
                               [req.pose.orientation.x, req.pose.orientation.y, req.pose.orientation.z,
                                req.pose.orientation.w], req.object_name)
-        return SetObjectPoseResponse()
+        return SetObjectPose.Response()
 
     def reset_ball(self, req=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
         self.ball.getField("rotation").setSFRotation([0, 0, 1, 0])
         self.ball.resetPhysics()
-        return EmptyResponse()
+        return Empty.Response()
 
     def ball_pos_callback(self, req=None):
         self.set_ball_pose([req.position.x, req.position.y, req.position.z])
-        return SetObjectPositionResponse()
+        return SetObjectPosition.Response()
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))

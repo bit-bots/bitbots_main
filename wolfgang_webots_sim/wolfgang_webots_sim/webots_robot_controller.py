@@ -16,8 +16,8 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
 class RobotController(RclpyNode):
-    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, robot_node=None, base_ns='',
-                 recognize=False, camera_active=True, foot_sensors_active=True):
+    def __init__(self, ros_active=False, robot='wolfgang', robot_node=None, base_ns='', recognize=False,
+                 camera_active=True, foot_sensors_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -25,7 +25,6 @@ class RobotController(RclpyNode):
 
         :param ros_active: Whether ROS messages should be published
         :param robot: The name of the robot to use, currently one of wolfgang, darwin, nao, op3
-        :param do_ros_init: Whether to call rospy.init_node (only used when ros_active is True)
         :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
         :param base_ns: The namespace of this node, can normally be left empty
         """
@@ -165,18 +164,21 @@ class RobotController(RclpyNode):
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
 
-        self.imu_frame = self.get_parameter('"~imu_frame"').get_parameter_value().double_value
+        self.declare_parameter("imu_frame", "imu_frame")
+        self.imu_frame = self.get_parameter("imu_frame").get_parameter_value().string_value
         if self.ros_active:
             if base_ns == "":
                 clock_topic = "/clock"
             else:
                 clock_topic = base_ns + "clock"
-            if do_ros_init:
-                rclpy.init(args=None)
-            self.l_sole_frame = self.get_parameter('"~l_sole_frame"').get_parameter_value().double_value
-            self.r_sole_frame = self.get_parameter('"~r_sole_frame"').get_parameter_value().double_value
-            self.camera_optical_frame = self.get_parameter('"~camera_optical_frame"').get_parameter_value().double_value
-            self.head_imu_frame = self.get_parameter('"~head_imu_frame"').get_parameter_value().double_value
+            self.declare_parameter("l_sole_frame", "l_sole")
+            self.declare_parameter("r_sole_frame", "r_sole")
+            self.declare_parameter("camera_optical_frame", "camera_optical_frame")
+            self.declare_parameter("head_imu_frame", "head_imu_frame")
+            self.l_sole_frame = self.get_parameter("l_sole_frame").get_parameter_value().string_value
+            self.r_sole_frame = self.get_parameter("r_sole_frame").get_parameter_value().string_value
+            self.camera_optical_frame = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
+            self.head_imu_frame = self.get_parameter("head_imu_frame").get_parameter_value().string_value
             self.pub_js = self.create_publisher(JointState, base_ns + "joint_states", 1)
             self.pub_imu = self.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
@@ -200,12 +202,12 @@ class RobotController(RclpyNode):
                 self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
                 self.cam_info.height)
             f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-            self.cam_info.K = [f_x, 0, self.cam_info.width / 2,
-                               0, f_y, self.cam_info.height / 2,
-                               0, 0, 1]
-            self.cam_info.P = [f_x, 0, self.cam_info.width / 2, 0,
-                               0, f_y, self.cam_info.height / 2, 0,
-                               0, 0, 1, 0]
+            self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2,
+                               0.0, f_y, self.cam_info.height / 2,
+                               0.0, 0.0, 1.0]
+            self.cam_info.p = [f_x, 0.0, self.cam_info.width / 2, 0.0,
+                               0.0, f_y, self.cam_info.height / 2, 0.0,
+                               0.0, 0.0, 1.0, 0.0]
             self.pub_cam_info.publish(self.cam_info)
 
         if robot == "op3":
@@ -314,7 +316,7 @@ class RobotController(RclpyNode):
     def get_joint_state_msg(self):
         js = JointState()
         js.name = []
-        js.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
+        js.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         js.position = []
         js.effort = []
         for joint_name in self.external_motor_names:
@@ -331,7 +333,7 @@ class RobotController(RclpyNode):
 
     def get_imu_msg(self, head=False):
         msg = Imu()
-        msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
+        msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         if head:
             msg.header.frame_id = self.head_imu_frame
         else:
@@ -373,7 +375,7 @@ class RobotController(RclpyNode):
 
     def publish_camera(self):
         img_msg = Image()
-        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
+        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         img_msg.header.frame_id = self.camera_optical_frame
         img_msg.height = self.camera.getHeight()
         img_msg.width = self.camera.getWidth()
@@ -425,7 +427,7 @@ class RobotController(RclpyNode):
 
     def get_pressure_message(self):
 
-        current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9)
+        current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         if not self.foot_sensors_active:
             cop_r = PointStamped()
             cop_r.header.frame_id = self.r_sole_frame

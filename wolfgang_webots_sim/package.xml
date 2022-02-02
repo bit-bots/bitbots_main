@@ -14,7 +14,6 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>urdf</depend>
   <depend>bitbots_msgs</depend>
@@ -25,7 +24,6 @@
   <depend>gazebo_msgs</depend>
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>xvfb</exec_depend>
-  <depend>gazebo_msgs</depend>
 
 
   <export>

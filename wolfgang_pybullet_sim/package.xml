@@ -14,7 +14,6 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>urdf</depend>
   <depend>bitbots_msgs</depend>

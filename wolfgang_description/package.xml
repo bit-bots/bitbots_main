@@ -15,9 +15,8 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
   <depend>urdf</depend>
   <depend>xacro</depend>
   <depend>bitbots_docs</depend>
