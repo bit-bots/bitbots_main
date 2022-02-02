@@ -34,23 +34,23 @@ class RobotNode(Node):
         os.environ["WEBOTS_ROBOT_NAME"] = robot_name
 
         if void_controller:
-            self.get_logger().debug("Starting void interface for " + robot_name)
+            self.get_logger().info("Starting void interface for " + robot_name)
             self.robot = Robot()
         else:
-            self.get_logger().debug("Starting ros interface for " + robot_name)
+            self.get_logger().info("Starting ros interface for " + robot_name)
             self.robot = RobotController(ros_active=True, recognize=recognize, camera_active=(not disable_camera))
 
     def run(self):
         while rclpy.ok():
-            print("Running")
             if self.void_controller:
                 self.robot.step(int(self.robot.getBasicTimeStep()))
             else:
                 self.robot.step()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--robot_name', help="which robot should be started" , default="amy")
+    parser.add_argument('--robot_name', help="which robot should be started", default="amy")
     parser.add_argument('--sim_id', help="identifier of the simulation", default="")
     parser.add_argument('--void-controller', action='store_true',
                         help="if true, a controller that only steps and does nothing else")

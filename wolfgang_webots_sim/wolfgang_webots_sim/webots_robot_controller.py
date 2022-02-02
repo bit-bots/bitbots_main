@@ -278,6 +278,7 @@ class RobotController(RclpyNode):
                 print(f"invalid motor specified ({joint_names[i]})")
 
     def command_cb(self, command: JointCommand):
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         if len(command.positions) != 0:
             # position control
             # todo maybe needs to match external motor names to interal ones fist?

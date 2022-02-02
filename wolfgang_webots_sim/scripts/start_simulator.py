@@ -90,20 +90,17 @@ class WebotsSim(Node):
 
 
 if __name__ == "__main__":
-    print("starting webots simulation")
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--headless', help='Starts webots completely headless on a virtual framebuffer. '
-                                          'This also automatically enables --batch and --no-rendering for webots',
-                       action='store_true', default=False)
+    group.add_argument('--headless',
+                       help='Starts webots completely headless on a virtual framebuffer. This also automatically enables --batch and --no-rendering for webots',
+                       action='store_true')
     group.add_argument('--nogui', help="Deactivate gui", action='store_true')
     parser.add_argument('--sim_id', help="identifier of the simulation", default="")
     parser.add_argument('--multi-robot', help="start world with a single robot", action='store_true')
     args, _ = parser.parse_known_args()
 
     rclpy.init()
-    print("aaaaaaaaa")
-    print(args.nogui)
     node = WebotsSim(args.nogui, args.multi_robot, args.headless, args.sim_id)
     thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
     thread.start()

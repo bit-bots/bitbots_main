@@ -58,11 +58,8 @@ install(PROGRAMS
   scripts/localization_faker.py
   scripts/setenvs.sh
   scripts/start_simulator.py
-  scripts/start_simulator.sh
   scripts/start_single.py
-  scripts/start_single.sh
   scripts/start_webots_ros_supervisor.py
-  scripts/start_webots_ros_supervisor.sh
   DESTINATION lib/${PROJECT_NAME} )
 
 ament_python_install_package(${PROJECT_NAME})

@@ -5,14 +5,14 @@
   <arg name="camera" default="false" description="Turn on or off the camera (to speed up if only motion is required)"/>
   <arg name="recognition" default="false" description="Turn on or off automatic recognition for collection of training data"/>
   <arg name="void_controller" default="false" description="If set to true, the robot is not controllable"/>
-  <arg name="void_flag" default="$(eval '\'--void-controller\' if \'(var void_controller)\' else \'\'')"
+  <arg name="void_flag" default="$(eval '\'--void-controller\' if \'(var void_controller)\'==\'true\' else \'\'')"
        description="do not set, used internally"/>
-  <arg name="recognition_flag" default="$(eval '\'--recognize\' if \'(var recognition)\' else \'\'')"
+  <arg name="recognition_flag" default="$(eval '\'--recognize\' if \'(var recognition)\'==\'true\' else \'\'')"
        description="do not set, used internally"/>
-  <arg name="camera_disable_flag" default="$(eval '\'--disable-camera\' if not \'(var camera)\' else \'\'')"
+  <arg name="camera_disable_flag" default="$(eval '\'--disable-camera\' if not \'(var camera)\'==\'true\' else \'\'')"
        description="do not set, used internally"/>
 
-  <node pkg="wolfgang_webots_sim" exec="start_single.sh" name="webots_ros_interface" respawn="true"
+  <node pkg="wolfgang_webots_sim" exec="start_single.py" name="webots_ros_interface" respawn="true" output="screen"
         args="--robot_name $(var robot_name) $(var void_flag) $(var recognition_flag) $(var camera_disable_flag)">
     <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
     <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>

@@ -123,22 +123,14 @@ class SupervisorController(RclpyNode):
         return joint_dict, link_dict
 
     def step_sim(self):
-        print("b")
         self.time += self.timestep / 1000
-        print("b1")
         self.supervisor.step(self.timestep)
-        print("b2")
 
     def step(self):
-        print("a")
         self.step_sim()
-        print("a2")
         if self.ros_active:
-            print("a3")
             self.publish_clock()
-            print("4")
             if self.model_states_active:
-                print("a5")
                 self.publish_model_states()
 
     def handle_gui(self):
@@ -299,13 +291,13 @@ class SupervisorController(RclpyNode):
         return velocity[:3], velocity[3:]
 
     def publish_model_states(self):
-        if self.model_state_publisher.get_num_connections() != 0:
+        if self.model_state_publisher.get_subscription_count() != 0:
             msg = ModelStates()
             for robot_name, robot_node in self.robot_nodes.items():
                 position, orientation = self.get_robot_pose_quat(name=robot_name)
                 robot_pose = Pose()
-                robot_pose.position = Point(*position)
-                robot_pose.orientation = Quaternion(*orientation)
+                robot_pose.position = Point(x=position[0], y=position[1], z=position[2])
+                robot_pose.orientation = Quaternion(x=orientation[0], y=orientation[1], z=orientation[2], w=orientation[3])
                 msg.name.append(robot_name)
                 msg.pose.append(robot_pose)
                 lin_vel, ang_vel = self.get_robot_velocity(robot_name)
@@ -323,16 +315,16 @@ class SupervisorController(RclpyNode):
                 head_orientation = head_node.getOrientation()
                 head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3, 3)))
                 head_pose = Pose()
-                head_pose.position = Point(*head_position)
-                head_pose.orientation = Quaternion(head_orientation_quat[1], head_orientation_quat[2],
-                                                   head_orientation_quat[3], head_orientation_quat[0])
+                head_pose.position = Point(x=head_position[0], y=head_position[1], z=head_position[2])
+                head_pose.orientation = Quaternion(x=head_orientation_quat[1], y=head_orientation_quat[2],
+                                                   z=head_orientation_quat[3], w=head_orientation_quat[0])
                 msg.name.append(robot_name + "_head")
                 msg.pose.append(head_pose)
 
             if self.ball is not None:
                 ball_position = self.ball.getField("translation").getSFVec3f()
                 ball_pose = Pose()
-                ball_pose.position = Point(*ball_position)
+                ball_pose.position = Point(x=ball_position[0], y=ball_position[1], z=ball_position[2])
                 ball_pose.orientation = Quaternion()
                 msg.name.append("ball")
                 msg.pose.append(ball_pose)

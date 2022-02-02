@@ -35,7 +35,6 @@ class SupervisorNode(Node):
 
     def run(self):
         while rclpy.ok():
-            print("ahoi")
             self.supervisor_controller.step()
 
 
