@@ -2,18 +2,18 @@
 
 import os
 
-import rosparam
-import rospkg
-import rospy
+import rclpy
+from ament_index_python import get_package_share_directory
+from rclpy.node import Node
 import deep_quintic
 import yaml
 from deep_quintic import env
 from deep_quintic.ros_runner import ALGOS, create_test_env, get_saved_hyperparams
 
 if __name__ == '__main__':
-    model_folder = rosparam.get_param("/rl_walk/model_folder")
-    rospack = rospkg.RosPack()
-    package_path = rospack.get_path("bitbots_rl_motion")
+    node = Node('rl_walk')
+    model_folder = node.get_parameter("/rl_walk/model_folder").get_parameter_value()
+    package_path = get_package_share_directory("bitbots_rl_motion")
     model_folder = os.path.join(package_path, "rl_walk_models", model_folder)
     hyperparams, stats_path = get_saved_hyperparams(model_folder, norm_reward=False, test_mode=True)
 
@@ -29,6 +29,7 @@ if __name__ == '__main__':
         print(f"No args.yml found in {args_path}")
         exit()
 
+    env_kwargs["node"] = node
     print(env_kwargs)
     venv = create_test_env(
         "ExecuteEnv-v1",
@@ -48,7 +49,7 @@ if __name__ == '__main__':
         "clip_range": lambda _: 0.0,
     }
     model_path = os.path.join(model_folder, "model.zip")
-    rospy.loginfo(f"Loading model from {model_path}")
+    node.get_logger().info(f"Loading model from {model_path}")
     model = ALGOS[loaded_args['algo']].load(model_path, env=venv, custom_objects=custom_objects)
 
     env.run_node(model, venv)
