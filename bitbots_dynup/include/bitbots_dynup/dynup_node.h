@@ -64,13 +64,14 @@ class DynupNode {
    * Callback that gets executed whenever #m_server receives a new goal.
    * @param goal New goal to process
    */
-  void goalCb();
+  void goalCb(const bitbots_msgs::DynUpGoalConstPtr &goal);
 
   void imuCallback(const sensor_msgs::Imu &msg);
 
   void jointStateCallback(const sensor_msgs::JointState &jointstates);
 
   DynupEngine *getEngine();
+  DynupIK *getIK();
 
   /**
   * Retrieve current positions of left foot and trunk relative to right foot

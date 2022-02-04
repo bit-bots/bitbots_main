@@ -65,6 +65,20 @@ void PyDynupWrapper::special_reset(double time) {
     dynup_node_->reset(time);
 }
 
+void PyDynupWrapper::set_engine_goal(std::string direction) {
+    bitbots_dynup::DynupPoses poses = dynup_node_->getCurrentPoses();
+    if (!poses.header.stamp.sec == 0) {
+        DynupRequest request;
+        request.direction = direction;
+        request.l_foot_pose = poses.l_leg_pose;
+        request.r_foot_pose = poses.r_leg_pose;
+        request.l_hand_pose = poses.l_arm_pose;
+        request.r_hand_pose = poses.r_arm_pose;
+        dynup_node_->getIK()->setDirection(request.direction);
+        dynup_node_->getEngine()->setGoals(request);
+    }
+}
+
 int PyDynupWrapper::get_direction() {
     return dynup_node_->getEngine()->getDirection();
 }
@@ -215,8 +229,8 @@ BOOST_PYTHON_MODULE(py_dynup)
                 .def("set_node_dyn_reconf",
                 &PyDynupWrapper::set_node_dyn_reconf)
                 .def("get_poses", &PyDynupWrapper::get_poses)
-                .def("get_direction", &PyDynupWrapper::get_direction);
-
+                .def("get_direction", &PyDynupWrapper::get_direction)
+                .def("set_engine_goal", &PyDynupWrapper::set_engine_goal);
                 def("init_ros", &init_ros);
                 def("spin_once", &spin_once);
         }

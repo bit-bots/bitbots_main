@@ -21,6 +21,7 @@ public:
     moveit::py_bindings_tools::ByteString get_poses();
     void reset();
     void special_reset(double time);
+    void set_engine_goal(std::string direction);
     int get_direction();
     void set_node_dyn_reconf(const boost::python::object params);
 

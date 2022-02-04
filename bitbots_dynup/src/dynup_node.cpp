@@ -3,7 +3,7 @@
 namespace bitbots_dynup {
 
 DynupNode::DynupNode(const std::string &ns) :
-    server_(node_handle_, "dynup", false),
+    server_(node_handle_, "dynup", boost::bind(&DynupNode::goalCb, this, _1), false),
     visualizer_("debug/dynup"),
     listener_(tf_buffer_),
     robot_model_loader_(ns + "robot_description", false) {
@@ -13,8 +13,6 @@ DynupNode::DynupNode(const std::string &ns) :
   pnh.param<std::string>("l_sole_frame", l_sole_frame_, "l_sole");
   pnh.param<std::string>("r_wrist_frame", r_wrist_frame_, "r_wrist");
   pnh.param<std::string>("l_wrist_frame", l_wrist_frame_, "l_wrist");
-
-  server_.registerGoalCallback(boost::bind(&DynupNode::goalCb, this));
 
   robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
   robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
@@ -124,9 +122,7 @@ void DynupNode::reset(int time) {
     stabilizer_.reset();
 }
 
-void DynupNode::goalCb() {
-  bitbots_msgs::DynUpGoal goal;
-  goal = *(server_.acceptNewGoal());
+void DynupNode::goalCb(const bitbots_msgs::DynUpGoalConstPtr &goal) {
   ROS_INFO("Dynup accepted new goal");
   reset();
   last_ros_update_time_ = 0;
@@ -134,7 +130,7 @@ void DynupNode::goalCb() {
   bitbots_dynup::DynupPoses poses = getCurrentPoses();
   if (!poses.header.stamp.sec == 0) {
     DynupRequest request;
-    request.direction = goal.direction;
+    request.direction = goal->direction;
     ik_.setDirection(request.direction);
     request.l_foot_pose = poses.l_leg_pose;
     request.r_foot_pose = poses.r_leg_pose;
@@ -275,6 +271,10 @@ bitbots_msgs::JointCommand DynupNode::createGoalMsg(const bitbots_splines::Joint
 
 DynupEngine *DynupNode::getEngine() {
     return &engine_;
+}
+
+DynupIK *DynupNode::getIK() {
+    return &ik_;
 }
 
 }

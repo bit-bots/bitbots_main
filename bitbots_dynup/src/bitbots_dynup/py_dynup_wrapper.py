@@ -52,6 +52,9 @@ class PyDynup(object):
     def special_reset(self, time: float):
         self.py_dynup_wrapper.special_reset(time)
 
+    def set_engine_goal(self, direction):
+        self.py_dynup_wrapper.set_engine_goal(direction)
+
     def step(self, dt: float, imu_msg, jointstate_msg):
         if dt == 0.0:
             dt = 0.001
