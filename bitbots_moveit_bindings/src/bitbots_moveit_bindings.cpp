@@ -4,11 +4,11 @@
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/GetPositionIK.h>
 #include <moveit_msgs/GetPositionFK.h>
-#include <moveit_msgs/RobotState.h>
+#include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/py_bindings_tools/serialize_msg.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
 
 /**
@@ -49,19 +49,19 @@ moveit::core::RobotModelPtr getRobotModel() {
   static robot_model_loader::RobotModelLoader loader(robot_description);
   moveit::core::RobotModelPtr robot_model = loader.getModel();
   if (!robot_model) {
-    ROS_ERROR("failed to load robot model %s", robot_description.c_str());
+    RCLCPP_ERROR(this->get_logger(),"failed to load robot model %s", robot_description.c_str());
   }
   return robot_model;
 }
 
-planning_scene::PlanningSceneConstPtr getPlanningScene() {
+planning_scene::PlanningSceneSharedPtr getPlanningScene() {
   std::string robot_description = "robot_description";
   static auto planning_scene_monitor =
       std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(robot_description);
-  planning_scene::PlanningSceneConstPtr planning_scene =
+  planning_scene::PlanningSceneSharedPtr planning_scene =
       planning_scene_monitor->getPlanningScene();
   if (!planning_scene) {
-    ROS_ERROR_ONCE("failed to connect to planning scene");
+    RCLCPP_ERROR_ONCE(this->get_logger(),"failed to connect to planning scene");
   }
   return planning_scene;
 }
@@ -83,7 +83,7 @@ moveit::py_bindings_tools::ByteString getPositionIK(const std::string& request_s
     return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
   }
 
-  static moveit::core::RobotState robot_state(robot_model);
+  static moveit::core::msg::RobotState robot_state(robot_model);
   robot_state.update();
 
   if (!request.ik_request.robot_state.joint_state.name.empty() ||
@@ -101,7 +101,7 @@ moveit::py_bindings_tools::ByteString getPositionIK(const std::string& request_s
 
   moveit::core::GroupStateValidityCallbackFn callback;
   if (request.ik_request.avoid_collisions) {
-    callback = [](moveit::core::RobotState *state,
+    callback = [](moveit::core::msg::RobotState *state,
                   const moveit::core::JointModelGroup *group,
                   const double *values) {
       auto planning_scene = getPlanningScene();
@@ -168,14 +168,14 @@ moveit::py_bindings_tools::ByteString getPositionFK(const std::string& request_s
     return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionFK::Response>(response));
   }
 
-  static moveit::core::RobotState robot_state(robot_model);
-  sensor_msgs::JointState joint_state = request.robot_state.joint_state;
+  static moveit::core::msg::RobotState robot_state(robot_model);
+  sensor_msgs::msg::JointState joint_state = request.robot_state.joint_state;
   for (size_t i = 0; i < joint_state.name.size(); ++i) {
     robot_state.setJointPositions(joint_state.name[i], &joint_state.position[i]);
   }
   robot_state.update();
   Eigen::Isometry3d pose;
-  geometry_msgs::PoseStamped pose_stamped;
+  geometry_msgs::msg::PoseStamped pose_stamped;
   pose_stamped.header = request.header;
   for (std::string& link_name : request.fk_link_names) {
     if (!robot_model->hasLinkModel(link_name)) {
