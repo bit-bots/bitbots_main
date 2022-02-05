@@ -2,7 +2,7 @@ from moveit_msgs.srv import GetPositionIKResponse, GetPositionIKRequest
 from moveit_msgs.srv import GetPositionFKResponse, GetPositionFKRequest
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 from io import BytesIO
-from bitbots_moveit_bindings import bitbots_moveit_bindings
+from bitbots_moveit_bindings import libbitbots_moveit_bindings
 
 
 def to_cpp(msg):
@@ -49,7 +49,7 @@ def get_position_ik(request: GetPositionIKRequest, approximate=False):
     if _ros_initializer is None:
         _ros_initializer = _RosInitializer()
     request_str = to_cpp(request)
-    result_str = bitbots_moveit_bindings.getPositionIK(request_str, approximate)
+    result_str = libbitbots_moveit_bindings.getPositionIK(request_str, approximate)
     return from_cpp(result_str, GetPositionIKResponse)
 
 
@@ -58,5 +58,5 @@ def get_position_fk(request: GetPositionFKRequest):
     if _ros_initializer is None:
         _ros_initializer = _RosInitializer()
     request_str = to_cpp(request)
-    result_str = bitbots_moveit_bindings.getPositionFK(request_str)
+    result_str = libbitbots_moveit_bindings.getPositionFK(request_str)
     return from_cpp(result_str, GetPositionFKResponse)

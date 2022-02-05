@@ -2,8 +2,8 @@
 #include <boost/python.hpp>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/conversions.h>
-#include <moveit_msgs/GetPositionIK.h>
-#include <moveit_msgs/GetPositionFK.h>
+#include <moveit_msgs/srv/get_position_ik.h>
+#include <moveit_msgs/srv/get_position_fk.h>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
