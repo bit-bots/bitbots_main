@@ -1,9 +1,10 @@
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+from setuptools import setup, Extension
+import os
 
-d = generate_distutils_setup(
+setup(
+    name='bitbots_moveit_bindings',
     packages=['bitbots_moveit_bindings'],
-    package_dir={'': 'src'},
+    zip_safe=True,
+    keywords=['ROS'],
+    license='MIT',
 )
-
-setup(**d)
