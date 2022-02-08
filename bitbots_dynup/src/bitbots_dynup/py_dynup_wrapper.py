@@ -78,6 +78,7 @@ class PyDynup(object):
         return result
 
     def set_node_dyn_reconf(self, param_dict):
+        rospy.logerr("python params", param_dict)
         self.py_dynup_wrapper.set_node_dyn_reconf(param_dict)
 
     def get_direction(self):

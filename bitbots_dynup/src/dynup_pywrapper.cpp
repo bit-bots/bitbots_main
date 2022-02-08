@@ -96,7 +96,7 @@ bool string2bool(const std::string &v) {
 
 void PyDynupWrapper::set_node_dyn_reconf(const boost::python::object params) {
     using namespace boost::python;
-
+    ROS_ERROR_STREAM("params" << params);
     extract<dict> cppdict_ext(params);
     if (!cppdict_ext.check()) {
         throw std::runtime_error(
@@ -117,95 +117,95 @@ void PyDynupWrapper::set_node_dyn_reconf(const boost::python::object params) {
         std::string keystr = extract<std::string>(str(keylist[i]));
         std::string valstr = extract<std::string>(str(cppdict[keylist[i]]));
         if (keystr == "engine_rate") {
-            dyn_conf.engine_rate = string2bool(valstr);
+            dyn_conf.engine_rate = stof(valstr);
         } else if (keystr == "arm_extended_length") {
-            dyn_conf.arm_extended_length = string2bool(valstr);
+            dyn_conf.arm_extended_length = stof(valstr);
         } else if (keystr == "foot_distance") {
-            dyn_conf.foot_distance = string2bool(valstr);
+            dyn_conf.foot_distance = stof(valstr);
         } else if (keystr == "trunk_x_final") {
-            dyn_conf.trunk_x_final = string2bool(valstr);
+            dyn_conf.trunk_x_final = stof(valstr);
         } else if (keystr == "hand_walkready_pitch") {
-            dyn_conf.hand_walkready_pitch = string2bool(valstr);
+            dyn_conf.hand_walkready_pitch = stof(valstr);
         } else if (keystr == "hand_walkready_height") {
-            dyn_conf.hand_walkready_height = string2bool(valstr);
+            dyn_conf.hand_walkready_height = stof(valstr);
         } else if (keystr == "trunk_height") {
-            dyn_conf.trunk_height = string2bool(valstr);
+            dyn_conf.trunk_height = stof(valstr);
         } else if (keystr == "trunk_pitch") {
-            dyn_conf.trunk_pitch = string2bool(valstr);
+            dyn_conf.trunk_pitch = stof(valstr);
         } else if (keystr == "time_walkready") {
-            dyn_conf.time_walkready = string2bool(valstr);
+            dyn_conf.time_walkready = stof(valstr);
         } else if (keystr == "rise_time") {
-            dyn_conf.rise_time = string2bool(valstr);
+            dyn_conf.rise_time = stof(valstr);
         } else if (keystr == "descend_time") {
-            dyn_conf.descend_time = string2bool(valstr);
+            dyn_conf.descend_time = stof(valstr);
         } else if (keystr == "arm_side_offset_back") {
-            dyn_conf.arm_side_offset_back = string2bool(valstr);
+            dyn_conf.arm_side_offset_back = stof(valstr);
         } else if (keystr == "leg_min_length_back") {
-            dyn_conf.leg_min_length_back = string2bool(valstr);
+            dyn_conf.leg_min_length_back = stof(valstr);
         } else if (keystr == "hands_behind_back_x") {
-            dyn_conf.hands_behind_back_x = string2bool(valstr);
+            dyn_conf.hands_behind_back_x = stof(valstr);
         } else if (keystr == "hands_behind_back_z") {
-            dyn_conf.hands_behind_back_z = string2bool(valstr);
+            dyn_conf.hands_behind_back_z = stof(valstr);
         } else if (keystr == "trunk_height_back") {
-            dyn_conf.trunk_height_back = string2bool(valstr);
+            dyn_conf.trunk_height_back = stof(valstr);
         } else if (keystr == "com_shift_1") {
-            dyn_conf.com_shift_1 = string2bool(valstr);
+            dyn_conf.com_shift_1 = stof(valstr);
         } else if (keystr == "com_shift_2") {
-            dyn_conf.com_shift_2 = string2bool(valstr);
+            dyn_conf.com_shift_2 = stof(valstr);
         } else if (keystr == "foot_angle") {
-            dyn_conf.foot_angle = string2bool(valstr);
+            dyn_conf.foot_angle = stof(valstr);
         } else if (keystr == "trunk_overshoot_angle_back") {
-            dyn_conf.trunk_overshoot_angle_back = string2bool(valstr);
+            dyn_conf.trunk_overshoot_angle_back = stof(valstr);
         } else if (keystr == "arms_angle_back") {
-            dyn_conf.arms_angle_back = string2bool(valstr);
+            dyn_conf.arms_angle_back = stof(valstr);
         } else if (keystr == "time_legs_close") {
-            dyn_conf.time_legs_close = string2bool(valstr);
+            dyn_conf.time_legs_close = stof(valstr);
         } else if (keystr == "time_foot_ground_back") {
-            dyn_conf.time_foot_ground_back = string2bool(valstr);
+            dyn_conf.time_foot_ground_back = stof(valstr);
         } else if (keystr == "time_full_squat_hands") {
-            dyn_conf.time_full_squat_hands = string2bool(valstr);
+            dyn_conf.time_full_squat_hands = stof(valstr);
         } else if (keystr == "time_full_squat_legs") {
-            dyn_conf.time_full_squat_legs = string2bool(valstr);
+            dyn_conf.time_full_squat_legs = stof(valstr);
         } else if (keystr == "wait_in_squat_back") {
-            dyn_conf.wait_in_squat_back = string2bool(valstr);
+            dyn_conf.wait_in_squat_back = stof(valstr);
         } else if (keystr == "arm_side_offset_front") {
-            dyn_conf.arm_side_offset_front = string2bool(valstr);
+            dyn_conf.arm_side_offset_front = stof(valstr);
         } else if (keystr == "leg_min_length_front") {
-            dyn_conf.leg_min_length_front = string2bool(valstr);
+            dyn_conf.leg_min_length_front = stof(valstr);
         } else if (keystr == "trunk_x_front") {
-            dyn_conf.trunk_x_front = string2bool(valstr);
+            dyn_conf.trunk_x_front = stof(valstr);
         } else if (keystr == "max_leg_angle") {
-            dyn_conf.max_leg_angle = string2bool(valstr);
+            dyn_conf.max_leg_angle = stof(valstr);
         } else if (keystr == "trunk_overshoot_angle_front") {
-            dyn_conf.trunk_overshoot_angle_front = string2bool(valstr);
+            dyn_conf.trunk_overshoot_angle_front = stof(valstr);
         } else if (keystr == "hands_pitch") {
-            dyn_conf.hands_pitch = string2bool(valstr);
+            dyn_conf.hands_pitch = stof(valstr);
         } else if (keystr == "time_hands_side") {
-            dyn_conf.time_hands_side = string2bool(valstr);
+            dyn_conf.time_hands_side = stof(valstr);
         } else if (keystr == "time_hands_rotate") {
-            dyn_conf.time_hands_rotate = string2bool(valstr);
+            dyn_conf.time_hands_rotate = stof(valstr);
         } else if (keystr == "time_foot_close") {
-            dyn_conf.time_foot_close = string2bool(valstr);
+            dyn_conf.time_foot_close = stof(valstr);
         } else if (keystr == "time_hands_front") {
-            dyn_conf.time_hands_front = string2bool(valstr);
+            dyn_conf.time_hands_front = stof(valstr);
         } else if (keystr == "time_foot_ground_front") {
-            dyn_conf.time_foot_ground_front = string2bool(valstr);
+            dyn_conf.time_foot_ground_front = stof(valstr);
         } else if (keystr == "time_torso_45") {
-            dyn_conf.time_torso_45 = string2bool(valstr);
+            dyn_conf.time_torso_45 = stof(valstr);
         } else if (keystr == "time_to_squat") {
-            dyn_conf.time_to_squat = string2bool(valstr);
+            dyn_conf.time_to_squat = stof(valstr);
         } else if (keystr == "wait_in_squat_front") {
-            dyn_conf.wait_in_squat_front = string2bool(valstr);
+            dyn_conf.wait_in_squat_front = stof(valstr);
         } else if (keystr == "stabilizing") {
             dyn_conf.stabilizing = string2bool(valstr);
         } else if (keystr == "minimal_displacement") {
             dyn_conf.minimal_displacement = string2bool(valstr);
         } else if (keystr == "stable_threshold") {
-            dyn_conf.stable_threshold = string2bool(valstr);
+            dyn_conf.stable_threshold = stof(valstr);
         } else if (keystr == "stable_duration") {
-            dyn_conf.stable_duration = string2bool(valstr);
+            dyn_conf.stable_duration = stof(valstr);
         } else if (keystr == "stabilization_timeout") {
-            dyn_conf.stabilization_timeout = string2bool(valstr);
+            dyn_conf.stabilization_timeout = stof(valstr);
         } else if (keystr == "display_debug") {
             dyn_conf.display_debug = string2bool(valstr);
         } else {
