@@ -96,7 +96,6 @@ bool string2bool(const std::string &v) {
 
 void PyDynupWrapper::set_node_dyn_reconf(const boost::python::object params) {
     using namespace boost::python;
-    ROS_ERROR_STREAM("params" << params);
     extract<dict> cppdict_ext(params);
     if (!cppdict_ext.check()) {
         throw std::runtime_error(

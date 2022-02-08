@@ -37,6 +37,13 @@ DynupNode::DynupNode(const std::string &ns) :
   ik_.init(kinematic_model);
   stabilizer_.init(kinematic_model);
 
+  dyn_reconf_server_ =
+          new dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig>(ros::NodeHandle(
+                  ns + "dynup/node"));
+  dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig>::CallbackType f;
+  f = boost::bind(&bitbots_dynup::DynupNode::reconfigureCallback, this, _1, _2);
+  dyn_reconf_server_->setCallback(f);
+
   joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = node_handle_.advertise<visualization_msgs::Marker>("debug_markers", 1);
   cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynupNode::imuCallback, this);
@@ -283,12 +290,6 @@ int main(int argc, char *argv[]) {
   /* Setup ROS node */
   ros::init(argc, argv, "dynup");
   bitbots_dynup::DynupNode node;
-
-  /* Setup dynamic_reconfigure */
-  dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig> dyn_reconf_server;
-  dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig>::CallbackType f;
-  f = boost::bind(&bitbots_dynup::DynupNode::reconfigureCallback, &node, _1, _2);
-  dyn_reconf_server.setCallback(f);
 
   ROS_INFO("Initialized DynUp and waiting for actions");
   ros::spin();

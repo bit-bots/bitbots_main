@@ -96,6 +96,8 @@ class DynupNode {
   ros::Subscriber cop_subscriber_;
   ros::Subscriber joint_state_subscriber_;
 
+  dynamic_reconfigure::Server<DynUpConfig> *dyn_reconf_server_;
+
   ActionServer server_;
   DynupEngine engine_;
   Stabilizer stabilizer_;
