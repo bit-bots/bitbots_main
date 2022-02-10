@@ -52,16 +52,16 @@ class GoToDefensePosition(AbstractActionElement):
 
         if self.mode == "freekick_first":
             vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
-            # pos between ball and goal but 1m away from ball
-            defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
+            # pos between ball and goal but 1.5m away from ball
+            defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1.5 + np.array(ball_position)
             pose_msg.pose.position.x = defense_pos[0]
             pose_msg.pose.position.y = defense_pos[1]
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
             pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
         elif self.mode == "freekick_second":
             vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
-            # pos between ball and goal but 1m away from ball and 1m to the side which is closer to us
-            defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1 + np.array(ball_position)
+            # pos between ball and goal but 1.5m away from ball and 1m to the side which is closer to us
+            defense_pos = vector_ball_to_goal / np.linalg.norm(vector_ball_to_goal) * 1.5 + np.array(ball_position)
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
 
             # decide on side that is closer
