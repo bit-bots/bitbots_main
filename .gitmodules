@@ -1,6 +1,6 @@
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
-	url = https://github.com/TAMS-Group/bio_ik.git
+	url = ../../TAMS-Group/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = ../../bit-bots/DynamixelSDK.git
@@ -9,10 +9,10 @@
 	url = ../../bit-bots/dynamixel-workbench.git
 [submodule "lib/dynamixel-workbench-msgs"]
 	path = lib/dynamixel-workbench-msgs
-	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
+	url = ../../ROBOTIS-GIT/dynamixel-workbench-msgs.git
 [submodule "lib/bio_ik_service"]
 	path = lib/bio_ik_service
-	url = https://github.com/TAMS-Group/bio_ik_service.git
+	url = ../../TAMS-Group/bio_ik_service.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = ../../bit-bots/dynamic_stack_decider.git
