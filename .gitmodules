@@ -74,3 +74,11 @@
 	path = lib/spatio_temporal_voxel_layer
 	url = ../../bit-bots/spatio_temporal_voxel_layer
 	branch = melodic-devel
+[submodule "lib/navigation2"]
+	path = lib/navigation2
+	url = ../../ros-planning/navigation2.git
+	branch = main
+[submodule "lib/robot_controllers"]
+	path = lib/robot_controllers
+	url = ../../fetchrobotics/robot_controllers.git
+	branch = ros2
