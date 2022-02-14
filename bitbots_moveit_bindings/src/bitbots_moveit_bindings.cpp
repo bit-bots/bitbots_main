@@ -1,15 +1,15 @@
 #include <Python.h>
 #include <boost/python.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/srv/get_position_ik.h>
 #include <moveit_msgs/srv/get_position_fk.h>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include <moveit/py_bindings_tools/serialize_msg.h>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
+#include <pybind11/pybind11.h>
 
 /**
  * Read a ROS message from a serialized string.
@@ -191,7 +191,8 @@ moveit::py_bindings_tools::ByteString getPositionFK(const std::string& request_s
   return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionFK::Response>(response));
 }
 
-BOOST_PYTHON_MODULE(bitbots_moveit_bindings) {
-  boost::python::def("getPositionIK", &getPositionIK);
-  boost::python::def("getPositionFK", &getPositionFK);
+PYBIND11_MODULE(bitbots_moveit_bindings, m)
+{
+    m.def("getPositionIK", &getPositionIK, "Calls the IK to provide a solution");
+    m.def("getPositionFK", &getPositionFK, "Calls the FK to provide a solution");
 }
