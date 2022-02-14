@@ -12,6 +12,7 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
+find_package(pybind11 REQUIRED)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
@@ -28,7 +29,7 @@ endif()
 add_library(bitbots_moveit_bindings SHARED src/bitbots_moveit_bindings.cpp)
 target_include_directories(bitbots_moveit_bindings
   PRIVATE ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(bitbots_moveit_bindings ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(bitbots_moveit_bindings ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} moveit_py_bindings_tools)
 
 ament_target_dependencies(bitbots_moveit_bindings
     moveit_core
@@ -44,5 +45,11 @@ ament_export_dependencies(moveit_ros_planning)
 
 install(TARGETS bitbots_moveit_bindings DESTINATION ${PYTHON_INSTALL_DIR}/bitbots_moveit_bindings)
 ament_python_install_package(${PROJECT_NAME})
+
+pybind11_add_module(mymodule src/bitbots_moveit_bindings.cpp)
+install(TARGETS bitbots_moveit_bindings
+  DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+)
+
 
 ament_package()
