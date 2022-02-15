@@ -14,23 +14,22 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(moveit_ros REQUIRED)
 find_package(pybind11 REQUIRED)
+find_package (Python3 COMPONENTS Interpreter Development)
 
 add_compile_options(-Wall -Werror -Wno-unused)
-
-find_package(PythonLibs COMPONENTS Interpreter Development)
-if(PYTHONLIBS_VERSION_STRING VERSION_LESS "3.8")
-  find_package(Boost REQUIRED COMPONENTS python3)
-else()
-  find_package(Boost REQUIRED COMPONENTS python)
-endif()
 
 #include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 #enable_bitbots_docs()
 
-add_library(bitbots_moveit_bindings SHARED src/bitbots_moveit_bindings.cpp)
-target_include_directories(bitbots_moveit_bindings
-  PRIVATE ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(bitbots_moveit_bindings ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} moveit_py_bindings_tools)
+add_library(bitbots_moveit_bindings src/bitbots_moveit_bindings.cpp)
+target_link_libraries(bitbots_moveit_bindings pybind11:module)
+target_include_directories(bitbots_moveit_bindings PRIVATE ${Python3_INCLUDE_DIRS})
+pybind11_extension(bitbots_moveit_bindings)
+pybind11_strip(bitbots_moveit_bindings)
+
+set_target_properties(bitbots_moveit_bindings PROPERTIES
+    CXX_VISIBILITY_PRESET "hidden"
+    CUDA_VISIBILITY_PRESET "hidden")
 
 ament_target_dependencies(bitbots_moveit_bindings
     moveit_core
@@ -46,13 +45,10 @@ ament_export_dependencies(moveit_ros_planning_interface)
 ament_export_dependencies(moveit_ros_planning)
 ament_export_dependencies(moveit_ros)
 
-install(TARGETS bitbots_moveit_bindings DESTINATION ${PYTHON_INSTALL_DIR}/bitbots_moveit_bindings)
 ament_python_install_package(${PROJECT_NAME})
 
-#pybind11_add_module(mymodule src/bitbots_moveit_bindings.cpp)
-#install(TARGETS bitbots_moveit_bindings
-#  DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
-#)
-
+install(TARGETS bitbots_moveit_bindings
+  DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+)
 
 ament_package()
