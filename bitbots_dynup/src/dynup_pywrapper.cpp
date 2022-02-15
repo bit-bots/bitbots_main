@@ -74,8 +74,8 @@ void PyDynupWrapper::set_engine_goal(std::string direction) {
         request.r_foot_pose = poses.r_leg_pose;
         request.l_hand_pose = poses.l_arm_pose;
         request.r_hand_pose = poses.r_arm_pose;
-        dynup_node_->getIK()->setDirection(request.direction);
         dynup_node_->getEngine()->setGoals(request);
+        dynup_node_->getIK()->setDirection(request.direction);
     }
 }
 

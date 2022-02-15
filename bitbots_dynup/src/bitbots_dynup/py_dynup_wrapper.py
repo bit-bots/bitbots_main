@@ -60,7 +60,6 @@ class PyDynup(object):
             dt = 0.001
         stepi = self.py_dynup_wrapper.step(dt, self._to_cpp(imu_msg), self._to_cpp(jointstate_msg))
         result = self._from_cpp(stepi, JointCommand)
-
         return result
 
     def step_open_loop(self, dt: float):
@@ -69,7 +68,6 @@ class PyDynup(object):
         stepi = self.py_dynup_wrapper.step_open_loop(dt)
 
         result = self._from_cpp(stepi, PoseArray)
-
         return result
 
     def get_poses(self):

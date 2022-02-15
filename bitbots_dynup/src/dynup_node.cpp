@@ -39,7 +39,7 @@ DynupNode::DynupNode(const std::string &ns) :
 
   dyn_reconf_server_ =
           new dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig>(ros::NodeHandle(
-                  ns + "dynup/node"));
+                  ns + "dynup"));
   dynamic_reconfigure::Server<bitbots_dynup::DynUpConfig>::CallbackType f;
   f = boost::bind(&bitbots_dynup::DynupNode::reconfigureCallback, this, _1, _2);
   dyn_reconf_server_->setCallback(f);
