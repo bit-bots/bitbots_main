@@ -13,16 +13,84 @@
 #include <rclcpp/serialization.hpp>
 namespace py = pybind11;
 
+typedef void destroy_ros_message_function (void *);
+
+std::unique_ptr<void, destroy_ros_message_function *> create_from_py(py::object pymessage) {
+  typedef void * create_ros_message_function (void);
+
+  py::object pymetaclass = pymessage.attr("__class__");
+
+  py::object value = pymetaclass.attr("_CREATE_ROS_MESSAGE");
+  auto capsule_ptr = static_cast<void *>(value.cast<py::capsule>());
+  auto create_ros_message =
+      reinterpret_cast<create_ros_message_function *>(capsule_ptr);
+  if (!create_ros_message) {
+    throw py::error_already_set();
+  }
+
+  value = pymetaclass.attr("_DESTROY_ROS_MESSAGE");
+  capsule_ptr = static_cast<void *>(value.cast<py::capsule>());
+  auto destroy_ros_message =
+      reinterpret_cast<destroy_ros_message_function *>(capsule_ptr);
+  if (!destroy_ros_message) {
+    throw py::error_already_set();
+  }
+
+  void * message = create_ros_message();
+  if (!message) {
+    throw std::bad_alloc();
+  }
+  return std::unique_ptr<
+      void, destroy_ros_message_function *>(message, destroy_ros_message);
+}
+
+std::unique_ptr<void, destroy_ros_message_function *> convert_from_py(py::object pymessage) {
+  typedef bool convert_from_py_signature (PyObject *, void *);
+
+  std::unique_ptr<void, destroy_ros_message_function *> message =
+      create_from_py(pymessage);
+
+  py::object pymetaclass = pymessage.attr("__class__");
+
+  auto capsule_ptr = static_cast<void *>(
+      pymetaclass.attr("_CONVERT_FROM_PY").cast<py::capsule>());
+  auto convert =
+      reinterpret_cast<convert_from_py_signature *>(capsule_ptr);
+  if (!convert) {
+    throw py::error_already_set();
+  }
+
+  if (!convert(pymessage.ptr(), message.get())) {
+    throw py::error_already_set();
+  }
+
+  return message;
+}
+
+py::object convert_to_py(void * message, py::object pyclass) {
+  py::object pymetaclass = pyclass.attr("__class__");
+
+  auto capsule_ptr = static_cast<void *>(
+      pymetaclass.attr("_CONVERT_TO_PY").cast<py::capsule>());
+
+  typedef PyObject * convert_to_py_function (void *);
+  auto convert = reinterpret_cast<convert_to_py_function *>(capsule_ptr);
+  if (!convert) {
+    throw py::error_already_set();
+  }
+  return py::reinterpret_steal<py::object>(convert(message));
+}
+
 class BitbotsMoveitBindings : public rclcpp::Node
 {
  public:
   BitbotsMoveitBindings():Node("BitbotsMoveitBindings"){
-    std::string robot_description = "robot_description";
+    /*std::string robot_description = "robot_description";
     robot_model_loader::RobotModelLoader loader(SharedPtr(this), robot_description, false);
     robot_model_ = loader.getModel();
     if (!robot_model_) {
       RCLCPP_ERROR(this->get_logger(), "failed to load robot model %s", robot_description.c_str());
-    }
+    }*/
   }
   virtual ~BitbotsMoveitBindings() = default;
 /*
@@ -129,19 +197,13 @@ class BitbotsMoveitBindings : public rclcpp::Node
     return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
   }
   */
-  py::bytes getPositionFK(const std::string& request_str) {
+  py::bytes getPositionFK(const py::object& request) {
+    auto ros_msg = convert_from_py(request);
+
     rclcpp::Serialization<moveit_msgs::srv::GetPositionFK::Request> serializer_request;
     rclcpp::Serialization<moveit_msgs::srv::GetPositionFK::Response> serializer_response;
     // deserialize request from string to msg
-    moveit_msgs::srv::GetPositionFK::Request request;
-    size_t size = request_str.capacity();
-    rcl_serialized_message_t msg;
-    rcutils_allocator_t allocator = rcutils_get_default_allocator();
-    rmw_serialized_message_init(&msg, size, &allocator);
-    std::memcpy(&msg.buffer, request_str.c_str(), size);
-    rclcpp::SerializedMessage smsg(msg);
-    serializer_request.deserialize_message(&smsg, &request);
-    printf("%s\n", request.header.frame_id.c_str());
+    printf("%s\n", ((moveit_msgs::srv::GetPositionFK::Request *) ros_msg.get())->header.frame_id.c_str());
 
     /*moveit_msgs::srv::GetPositionFK::Response response;
     if (!robot_model_) {
@@ -180,10 +242,16 @@ class BitbotsMoveitBindings : public rclcpp::Node
  private:
   moveit::core::RobotModelPtr robot_model_;
 };
-PYBIND11_MODULE(bitbots_moveit_bindings, m)
-{
-    py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
-    .def(py::init<>())
-    //.def("getPositionIK", &getPositionIK, "Calls the IK to provide a solution")
-    .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
+
+void initRos() {
+  //char *argv[] = {NULL};
+  rclcpp::init(0, nullptr);
+}
+
+PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
+  m.def("initRos", &initRos);
+  py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
+  .def(py::init<>())
+  //.def("getPositionIK", &getPositionIK, "Calls the IK to provide a solution")
+  .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
 }
