@@ -63,7 +63,6 @@ bitbots_msgs::JointCommand DynupNode::step(double dt,
 }
 
 bitbots_msgs::JointCommand DynupNode::step(double dt) {
-    bitbots_msgs::JointCommand msg;
     if (dt <= 0) {
         dt = 0.001;
     }
@@ -85,7 +84,6 @@ bitbots_msgs::JointCommand DynupNode::step(double dt) {
     if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing) ||
                                          (ros::Time::now().toSec() - start_time_ >= engine_.getDuration() + params_.stabilization_timeout))) {
         ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter_);
-        return msg;
     }
     return createGoalMsg(goals);
 }
