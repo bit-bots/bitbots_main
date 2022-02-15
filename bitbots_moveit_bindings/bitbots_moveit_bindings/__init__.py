@@ -1,7 +1,5 @@
-from moveit_msgs.srv import GetPositionIKResponse, GetPositionIKRequest
-from moveit_msgs.srv import GetPositionFKResponse, GetPositionFKRequest
-from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
-from io import BytesIO
+from moveit_msgs.srv import GetPositionIK, GetPositionIK
+from moveit_msgs.srv import GetPositionFK, GetPositionFK
 from bitbots_moveit_bindings.bitbots_moveit_bindings import *
 from rclpy.serialization import serialize_message, deserialize_message
 
@@ -19,19 +17,19 @@ class _RosInitializer:
 _ros_initializer = None
 
 
-def get_position_ik(request: GetPositionIKRequest, approximate=False):
+def get_position_ik(request: GetPositionIK.Request, approximate=False):
     global _ros_initializer
     if _ros_initializer is None:
         _ros_initializer = _RosInitializer()
     request_str = serialize_message(request)
     result_str = _ros_initializer.getPositionIK(request_str, approximate)
-    return deserialize_message(result_str, GetPositionIKResponse)
+    return deserialize_message(result_str, GetPositionIK.Response)
 
 
-def get_position_fk(request: GetPositionFKRequest):
+def get_position_fk(request: GetPositionFK.Request):
     global _ros_initializer
     if _ros_initializer is None:
         _ros_initializer = _RosInitializer()
     request_str = serialize_message(request)
     result_str = _ros_initializer.getPositionFK(request_str)
-    return deserialize_message(result_str, GetPositionFKResponse)
+    return deserialize_message(result_str, GetPositionFK.Response)

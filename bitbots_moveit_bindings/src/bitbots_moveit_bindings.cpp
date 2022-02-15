@@ -1,5 +1,3 @@
-#include <Python.h>
-#include <boost/python.hpp>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/srv/get_position_ik.hpp>
@@ -21,11 +19,12 @@ class BitbotsMoveitBindings : public rclcpp::Node
   BitbotsMoveitBindings():Node("BitbotsMoveitBindings"){
     std::string robot_description = "robot_description";
     robot_model_loader::RobotModelLoader loader(SharedPtr(this), robot_description, false);
-    moveit::core::RobotModelPtr robot_model_ = loader.getModel();
+    robot_model_ = loader.getModel();
     if (!robot_model_) {
       RCLCPP_ERROR(this->get_logger(), "failed to load robot model %s", robot_description.c_str());
     }
   }
+  virtual ~BitbotsMoveitBindings() = default;
 /*
   planning_scene::PlanningSceneSharedPtr getPlanningScene() {
     std::string robot_description = "robot_description";
@@ -135,16 +134,24 @@ class BitbotsMoveitBindings : public rclcpp::Node
     rclcpp::Serialization<moveit_msgs::srv::GetPositionFK::Response> serializer_response;
     // deserialize request from string to msg
     moveit_msgs::srv::GetPositionFK::Request request;
-    serializer_request.deserialize_message(request_str, &request);
+    size_t size = request_str.capacity();
+    rcl_serialized_message_t msg;
+    rcutils_allocator_t allocator = rcutils_get_default_allocator();
+    rmw_serialized_message_init(&msg, size, &allocator);
+    std::memcpy(&msg.buffer, request_str.c_str(), size);
+    rclcpp::SerializedMessage smsg(msg);
+    serializer_request.deserialize_message(&smsg, &request);
+    printf("%s\n", request.header.frame_id.c_str());
 
-    moveit_msgs::srv::GetPositionFK::Response response;
+    /*moveit_msgs::srv::GetPositionFK::Response response;
     if (!robot_model_) {
       response.error_code.val = moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME;
       rclcpp::SerializedMessage response_serialized;
       serializer_response.serialize_message(response, &response_serialized);
       auto response_str = response_serialized.get_rcl_serialized_message();
       return response_str.buffer;
-    }
+    }*/
+    return {};
   }
   /*
     static moveit::core::msg::RobotState robot_state(robot_model);
@@ -175,7 +182,8 @@ class BitbotsMoveitBindings : public rclcpp::Node
 };
 PYBIND11_MODULE(bitbots_moveit_bindings, m)
 {
-    py::class_<BitbotsMoveitBindings>(m, "BitbotsMoveitBindings")
+    py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
+    .def(py::init<>())
     //.def("getPositionIK", &getPositionIK, "Calls the IK to provide a solution")
-    .def("getPositionFK", &getPositionFK, "Calls the FK to provide a solution");
+    .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
 }
