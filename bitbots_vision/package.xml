@@ -32,6 +32,7 @@
   <depend>message_runtime</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
+  <depend>soccer_vision_msgs</depend>
   <depend>humanoid_league_msgs</depend>
 
 
