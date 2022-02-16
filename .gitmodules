@@ -82,3 +82,6 @@
 	path = lib/robot_controllers
 	url = ../../fetchrobotics/robot_controllers.git
 	branch = ros2
+[submodule "lib/fp"]
+	path = lib/fp
+	url = https://github.com/tylerjw/fp.git
