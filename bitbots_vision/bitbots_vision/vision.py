@@ -25,7 +25,7 @@ logger = logging.get_logger('bitbots_vision')
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
-    profile = id
+    profile = lambda x: x
     logger.info("No Profiling avalabile")
 
 
@@ -182,10 +182,10 @@ class Vision(Node):
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
                 r'^field_color_detector_') and not config['field_color_detector_use_hsv']:
-                # Set the static field color detector
-                self._field_color_detector = color.PixelListColorDetector(
-                    config,
-                    self._package_path)
+            # Set the static field color detector
+            self._field_color_detector = color.PixelListColorDetector(
+                config,
+                self._package_path)
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
@@ -597,11 +597,11 @@ class Vision(Node):
 
         # Check, if field mask image should be published
         if self._publish_field_mask_image:
-                # Mask image
-                field_mask = self._field_color_detector.get_mask_image()
-                # Publish mask image
-                self._pub_field_mask_image.publish(
-                    ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
+            # Mask image
+            field_mask = self._field_color_detector.get_mask_image()
+            # Publish mask image
+            self._pub_field_mask_image.publish(
+                ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
 
         # Check if we should draw debug image
         if self._debug_image_creator.active:
