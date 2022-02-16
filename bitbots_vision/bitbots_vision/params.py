@@ -3,67 +3,68 @@
 from rcl_interfaces.msg import ParameterDescriptor, FloatingPointRange, IntegerRange, ParameterType
 
 class ParameterGenerator:  # TODO own file
-  def __init__(self):
-    self.param_cache = []
+    def __init__(self):
+        self.param_cache = []
 
-  def declare_params(self, node):
-    node.declare_parameter('', self.param_cache)
+    def declare_params(self, node):
+        for param in self.param_cache:
+            node.declare_parameter(*param)
 
-  def add(self, param_name, param_type=None, default=None, description=None, min=None, max=None, step=None):
-    describtor = ParameterDescriptor()
-    describtor.name = param_name
-    if description is None:
-      describtor.description = param_name
-    else:
-      describtor.description = description
+    def add(self, param_name, param_type=None, default=None, description=None, min=None, max=None, step=None):
+        describtor = ParameterDescriptor()
+        describtor.name = param_name
+        if description is None:
+            describtor.description = param_name
+        else:
+            describtor.description = description
 
-    if param_type is None and default is not None:
-      param_type = type(default)
+        if param_type is None and default is not None:
+            param_type = type(default)
 
-    py2ros_param_type =  {
-      None: ParameterType.PARAMETER_NOT_SET,
-      bool: ParameterType.PARAMETER_BOOL,
-      int: ParameterType.PARAMETER_INTEGER,
-      float: ParameterType.PARAMETER_DOUBLE,
-      str: ParameterType.PARAMETER_STRING
-    }
+        py2ros_param_type =  {
+            None: ParameterType.PARAMETER_NOT_SET,
+            bool: ParameterType.PARAMETER_BOOL,
+            int: ParameterType.PARAMETER_INTEGER,
+            float: ParameterType.PARAMETER_DOUBLE,
+            str: ParameterType.PARAMETER_STRING
+        }
 
-    param_type = py2ros_param_type.get(param_type, param_type)
+        param_type = py2ros_param_type.get(param_type, param_type)
 
-    describtor.type = param_type
+        describtor.type = param_type
 
-    if param_type == ParameterType.PARAMETER_INTEGER:
-      if step is None:
-        step = 1
-      if all(x is not None or isinstance(x, int) for x in [min, max, step]):
-        param_range = IntegerRange()
-        param_range.from_value = min
-        param_range.to_value = max
-        param_range.step = step
-        describtor.integer_range = [param_range]
+        if param_type == ParameterType.PARAMETER_INTEGER:
+            if step is None:
+                step = 1
+            if all(x is not None or isinstance(x, int) for x in [min, max, step]):
+                param_range = IntegerRange()
+                param_range.from_value = min
+                param_range.to_value = max
+                param_range.step = step
+                describtor.integer_range = [param_range]
 
-    if param_type == ParameterType.PARAMETER_DOUBLE:
-      if step is None:
-        step = 0.01
-      if all(x is not None for x in [min, max]):
-        param_range = FloatingPointRange()
-        param_range.from_value = float(min)
-        param_range.to_value = float(max)
-        param_range.step = float(step)
-        describtor.floating_point_range = [param_range]
+        if param_type == ParameterType.PARAMETER_DOUBLE:
+            if step is None:
+                step = 0.01
+            if all(x is not None for x in [min, max]):
+                param_range = FloatingPointRange()
+                param_range.from_value = float(min)
+                param_range.to_value = float(max)
+                param_range.step = float(step)
+                describtor.floating_point_range = [param_range]
 
-    type2default_default = {
-      ParameterType.PARAMETER_NOT_SET: 0,
-      ParameterType.PARAMETER_BOOL: False,
-      ParameterType.PARAMETER_INTEGER: 0,
-      ParameterType.PARAMETER_DOUBLE: 0.0,
-      ParameterType.PARAMETER_STRING: ""
-    }
+        type2default_default = {
+            ParameterType.PARAMETER_NOT_SET: 0,
+            ParameterType.PARAMETER_BOOL: False,
+            ParameterType.PARAMETER_INTEGER: 0,
+            ParameterType.PARAMETER_DOUBLE: 0.0,
+            ParameterType.PARAMETER_STRING: ""
+        }
 
-    if default is None:
-      default = type2default_default[param_type]
+        if default is None:
+            default = type2default_default[param_type]
 
-    self.param_cache.append((param_name, default, describtor))
+        self.param_cache.append((param_name, default, describtor))
 
 gen = ParameterGenerator()
 
