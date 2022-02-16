@@ -62,7 +62,6 @@ class FieldBoundaryDetector(object):
         :param image: the current frame of the video feed
         """
         detectors = {
-            'dynamic': DynamicFieldBoundaryDetector,
             'binary': BinaryFieldBoundaryDetector,
             'reversed': ReversedFieldBoundaryDetector,
             'downsampling_reversed': DownsamplingReversedFieldBoundaryDetector,
@@ -452,76 +451,6 @@ class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
         """
         super(DownsamplingReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
         self._algorithm = DownsamplingReversedFieldBoundaryAlgorithm
-
-
-class DynamicFieldBoundaryDetector(FieldBoundaryDetector):
-    """
-    The :class:`.DynamicFieldBoundaryDetector` switches dynamically between the iteration and reversed iteration method depending on how much the robot's head is tilted.
-    This improves performance (iteration) and enables operation with two field next to each other (reversed).
-    """
-    def __init__(self, config, field_color_detector):
-        """
-        Initialization of the DynamicFieldBoundaryDetector
-
-        :param config: the configuration contained in visionparams.yaml
-        :param field_color_detector: checks whether a color is part of the field colors
-        """
-        super(DynamicFieldBoundaryDetector, self).__init__(config, field_color_detector)
-
-        self._over_horizon_algorithm = ReversedFieldBoundaryAlgorithm
-        self._under_horizon_algorithm = IterationFieldBoundaryAlgorithm
-        self._base_frame = "camera_optical_frame"
-        self._camera_frame = "base_footprint"
-        self._tilt_threshold = math.radians(config['field_boundary_detector_head_tilt_threshold'])
-
-        # TF stuff
-        self._tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
-        self._tf_listener = tf2.TransformListener(self._tf_buffer)
-
-    def _only_field_visible(self):
-        """
-        Check head orientation and decide if we should use the iteration or reversed iteration method.
-        """
-        # Check if we can use tf. Otherwise switch to reversed iteration detector
-        try:
-            # Get quaternion from newest tf
-            orientation = self._tf_buffer.lookup_transform(self._camera_frame, self._base_frame, rospy.Time(0)).transform.rotation
-            # Convert into an usable tilt angle
-            tilt_angle =  (1.5 * math.pi - euler_from_quaternion((
-                orientation.x,
-                orientation.y,
-                orientation.z,
-                orientation.w))[0]) % (2 * math.pi)
-            # Check if it satisfied the threshold
-            if tilt_angle > self._tilt_threshold and tilt_angle < math.pi:
-                return True
-            else:
-                return False
-        # Switch to reversed iteration detector
-        except tf2.LookupException:
-            rospy.logwarn_throttle(2, "TF for dynamic field boundary algorithm selection not active. Maybe TF becomes avalabile in a few seconds. Using reversed iteration method instead",
-                logger_name="vision_field_boundary")
-            return False
-        except tf2.ExtrapolationException as ecp:
-            # Warn user
-            rospy.logwarn_throttle(2, "Extrapolation exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead",
-                logger_name="vision_field_boundary")
-            return False
-        except tf2.ConnectivityException as ecp:
-            # Warn user
-            rospy.logwarn_throttle(2, "Connectivity exception! Not able to use tf for dynamic field boundary algorithm selection. Using reversed iteration method instead. \n" + ecp)
-            return False
-
-    def _compute_field_boundary_points(self):
-        """
-        Calls the method to compute the field boundary and saves it in the class variable _field_boundary_points
-        """
-        if self._only_field_visible():
-            self._algorithm = self._under_horizon_algorithm
-        else:
-            self._algorithm = self._over_horizon_algorithm
-        # Calc field boundary
-        super(DynamicFieldBoundaryDetector, self)._compute_field_boundary_points()
 
 
 class FieldBoundaryAlgorithm():
