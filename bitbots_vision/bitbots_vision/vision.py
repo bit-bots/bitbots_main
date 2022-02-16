@@ -25,6 +25,7 @@ logger = logging.get_logger('bitbots_vision')
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
+    profile = id
     logger.info("No Profiling avalabile")
 
 
