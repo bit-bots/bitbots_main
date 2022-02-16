@@ -1,5 +1,4 @@
-from moveit_msgs.srv import GetPositionIK, GetPositionIK
-from moveit_msgs.srv import GetPositionFK, GetPositionFK
+from moveit_msgs.srv import GetPositionFK, GetPositionIK
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import BitbotsMoveitBindings
 from rclpy.serialization import serialize_message, deserialize_message
 
@@ -20,5 +19,5 @@ def get_position_fk(request: GetPositionFK.Request):
     global bindings
     if bindings is None:
         bindings = BitbotsMoveitBindings()
-    result_str = bindings.getPositionFK(request)
+    result_str = bindings.getPositionFK(serialize_message(request))
     return deserialize_message(result_str, GetPositionFK.Response)
