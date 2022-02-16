@@ -5,6 +5,8 @@
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit/planning_scene/planning_scene.h>
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
@@ -13,72 +15,58 @@
 #include <rclcpp/serialization.hpp>
 namespace py = pybind11;
 
-typedef void destroy_ros_message_function (void *);
 
-std::unique_ptr<void, destroy_ros_message_function *> create_from_py(py::object pymessage) {
-  typedef void * create_ros_message_function (void);
+/**
+ * Convert the result of a ROS message serialized in Python to a C++ message
+ * @tparam T C++ ROS message type
+ * @param bytes message serialized in Python
+ * @return the converted message
+ */
+template <typename T>
+T from_python(py::bytes &bytes) {
+  // buffer_info is used to extract data pointer and size of bytes
+  py::buffer_info info(py::buffer(bytes).request());
 
-  py::object pymetaclass = pymessage.attr("__class__");
+  // initialize serialized message struct
+  rmw_serialized_message_t serialized_message = rmw_get_zero_initialized_serialized_message();
+  auto allocator = rcl_get_default_allocator();
+  rmw_serialized_message_init(&serialized_message, info.size, &allocator);
+  serialized_message.buffer = reinterpret_cast<uint8_t *>(info.ptr);
+  serialized_message.buffer_length = info.size;
+  auto ts = rosidl_typesupport_cpp::get_message_type_support_handle<T>();
 
-  py::object value = pymetaclass.attr("_CREATE_ROS_MESSAGE");
-  auto capsule_ptr = static_cast<void *>(value.cast<py::capsule>());
-  auto create_ros_message =
-      reinterpret_cast<create_ros_message_function *>(capsule_ptr);
-  if (!create_ros_message) {
-    throw py::error_already_set();
+  T out;
+  // do the deserialization
+  rmw_ret_t result2 = rmw_deserialize(&serialized_message, ts, &out);
+  if (result2 != RMW_RET_OK) {
+    printf("Failed to deserialize message!\n");
   }
 
-  value = pymetaclass.attr("_DESTROY_ROS_MESSAGE");
-  capsule_ptr = static_cast<void *>(value.cast<py::capsule>());
-  auto destroy_ros_message =
-      reinterpret_cast<destroy_ros_message_function *>(capsule_ptr);
-  if (!destroy_ros_message) {
-    throw py::error_already_set();
-  }
-
-  void * message = create_ros_message();
-  if (!message) {
-    throw std::bad_alloc();
-  }
-  return std::unique_ptr<
-      void, destroy_ros_message_function *>(message, destroy_ros_message);
+  return out;
 }
 
-std::unique_ptr<void, destroy_ros_message_function *> convert_from_py(py::object pymessage) {
-  typedef bool convert_from_py_signature (PyObject *, void *);
+/**
+ * Convert a C++ ROS message to a Python ByteString that can be deserialized to the message
+ * @tparam T C++ ROS message type
+ * @param msg C++ ROS message
+ * @return the message serialized into a Python ByteString
+ */
+template <typename T>
+py::bytes to_python(T& msg) {
+  // initialize serialized message struct
+  rmw_serialized_message_t serialized_message = rmw_get_zero_initialized_serialized_message();
+  auto type_support = rosidl_typesupport_cpp::get_message_type_support_handle<T>();
+  auto allocator = rcl_get_default_allocator();
+  rmw_serialized_message_init(&serialized_message, 0u, &allocator);
 
-  std::unique_ptr<void, destroy_ros_message_function *> message =
-      create_from_py(pymessage);
-
-  py::object pymetaclass = pymessage.attr("__class__");
-
-  auto capsule_ptr = static_cast<void *>(
-      pymetaclass.attr("_CONVERT_FROM_PY").cast<py::capsule>());
-  auto convert =
-      reinterpret_cast<convert_from_py_signature *>(capsule_ptr);
-  if (!convert) {
-    throw py::error_already_set();
+  // do the serialization
+  rmw_ret_t result = rmw_serialize(&msg, type_support, &serialized_message);
+  if (result != RMW_RET_OK) {
+    printf("Failed to serialize message!\n");
   }
 
-  if (!convert(pymessage.ptr(), message.get())) {
-    throw py::error_already_set();
-  }
-
-  return message;
-}
-
-py::object convert_to_py(void * message, py::object pyclass) {
-  py::object pymetaclass = pyclass.attr("__class__");
-
-  auto capsule_ptr = static_cast<void *>(
-      pymetaclass.attr("_CONVERT_TO_PY").cast<py::capsule>());
-
-  typedef PyObject * convert_to_py_function (void *);
-  auto convert = reinterpret_cast<convert_to_py_function *>(capsule_ptr);
-  if (!convert) {
-    throw py::error_already_set();
-  }
-  return py::reinterpret_steal<py::object>(convert(message));
+  // convert the result to python bytes by using the data and length
+  return {reinterpret_cast<const char *>(serialized_message.buffer), serialized_message.buffer_length};
 }
 
 class BitbotsMoveitBindings : public rclcpp::Node
@@ -92,7 +80,6 @@ class BitbotsMoveitBindings : public rclcpp::Node
       RCLCPP_ERROR(this->get_logger(), "failed to load robot model %s", robot_description.c_str());
     }*/
   }
-  virtual ~BitbotsMoveitBindings() = default;
 /*
   planning_scene::PlanningSceneSharedPtr getPlanningScene() {
     std::string robot_description = "robot_description";
@@ -197,23 +184,15 @@ class BitbotsMoveitBindings : public rclcpp::Node
     return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
   }
   */
-  py::bytes getPositionFK(const py::object& request) {
-    auto ros_msg = convert_from_py(request);
+  py::bytes getPositionFK(py::bytes &msg) {
+    auto request = from_python<moveit_msgs::srv::GetPositionFK::Request>(msg);
 
-    rclcpp::Serialization<moveit_msgs::srv::GetPositionFK::Request> serializer_request;
-    rclcpp::Serialization<moveit_msgs::srv::GetPositionFK::Response> serializer_response;
-    // deserialize request from string to msg
-    printf("%s\n", ((moveit_msgs::srv::GetPositionFK::Request *) ros_msg.get())->header.frame_id.c_str());
-
-    /*moveit_msgs::srv::GetPositionFK::Response response;
+    moveit_msgs::srv::GetPositionFK::Response response;
     if (!robot_model_) {
-      response.error_code.val = moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME;
-      rclcpp::SerializedMessage response_serialized;
-      serializer_response.serialize_message(response, &response_serialized);
-      auto response_str = response_serialized.get_rcl_serialized_message();
-      return response_str.buffer;
-    }*/
-    return {};
+      response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_OBJECT_NAME;
+      return to_python(response);
+    }
+    return to_python(response);
   }
   /*
     static moveit::core::msg::RobotState robot_state(robot_model);
