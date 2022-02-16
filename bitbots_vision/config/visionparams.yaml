@@ -14,15 +14,13 @@ bitbots_vision:
     ROS_obstacle_msg_topic: 'obstacles_in_image'  # ROS topic of the obstacles message
     ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
     ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message
-    ROS_dynamic_color_lookup_table_msg_topic: 'dynamic_color_lookup_table'  # ROS topic of the dynamic color lookup table message
     ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
     ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'  # ROS topic of the white HSV color detector mask debug image message
     ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'  # ROS topic of the red HSV color detector mask debug image message
     ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'  # ROS topic of the blue HSV color detector mask debug image message
     ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
-    ROS_dynamic_color_lookup_table_field_mask_image_msg_topic: 'dynamic_field_mask'  # ROS topic of the dynamic color lookup table field mask debug image message
 
-    yolo_darknet_model_path: '2019_07_03_jonas_yolo'  # Name of the yolo model
+    yolo_darknet_model_path: '2021_04_22_jonas_torso21_tiny'  # Name of the yolo model
     yolo_openvino_model_path: '2020_11_12_flo_yolo_openvino'  # Name of the yolo model
     yolo_nms_threshold: 0.4  # Non maximum suppression threshold
     yolo_confidence_threshold: 0.5  # Yolo: confidence threshold
@@ -36,13 +34,6 @@ bitbots_vision:
 
     field_color_detector_path: 'basler_f031.pickle'  # Color lookup table for the field color detector
     field_color_detector_use_hsv: false
-
-    dynamic_color_lookup_table_active: true  # Turn dynamic color lookup table ON or OFF
-    dynamic_color_lookup_table_max_fps: 1.0  # Maximum FPS of the dynamic color lookup table node
-    dynamic_color_lookup_table_queue_max_size: 20  # Maximum size of queue that holds the latest added colors
-    dynamic_color_lookup_table_threshold: 0.55  # Necessary amount of previously detected color inside the kernel in percentage
-    dynamic_color_lookup_table_kernel_radius: 1  # Radius surrounding the center-element of kernel-matrix, defines relevant surrounding of pixel
-    dynamic_color_lookup_table_field_boundary_detector_search_method: 'downsampling_reversed'  # Search method for FieldBoundaryFinder used by DynamicColorLookupTable (iteration, reversed, binary or dynamic)
 
     white_color_detector_color_lookup_table_path: 'basler_f031_lines.pickle' # Color lookup table for the line detector
     white_color_detector_use_color_lookup_table: true # Should the white color detector use a color lookup table or a HSV range
@@ -75,7 +66,7 @@ bitbots_vision:
     field_color_detector_upper_values_s: 255  # Upper bound for the field color detector saturation
     field_color_detector_upper_values_v: 255  # Upper bound for the field color detector value/brightness
 
-    field_boundary_detector_search_method: 'downsampling_reversed'  # Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary, dynamic)
+    field_boundary_detector_search_method: 'downsampling_reversed'  # Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary)
     field_boundary_detector_vertical_steps: 30  # Number of steps on each scanline
     field_boundary_detector_horizontal_steps: 30  # Number of scanlines
     field_boundary_detector_roi_height: 2  # Region Of Interest height in which we are looking for green
