@@ -3,9 +3,12 @@ import cv2
 import rclpy
 import abc
 import math
-from .color import ColorDetector
 from operator import itemgetter
+from rclpy import logging
+from .color import ColorDetector
 
+
+logger = logging.get_logger('vision_field_boundary')
 
 class FieldBoundaryDetector(object):
     """
@@ -340,7 +343,7 @@ class FieldBoundaryDetector(object):
         :return a boolean if point is under field_boundary:
         """
         if not 0 <= point[0] < len(self.get_full_field_boundary()):
-            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point', logger_name="vision_field_boundary")
+            logger.warning("point_under_field_boundary got called with an out of bounds field_boundary point")
             return False
         return point[1] + offset > self.get_full_field_boundary()[point[0]]
 
@@ -354,7 +357,7 @@ class FieldBoundaryDetector(object):
         :return a boolean if point is under the convex field_boundary:
         """
         if not 0 <= point[0] < len(self.get_full_convex_field_boundary()):
-            rospy.logwarn('point_under_field_boundary got called with an out of bounds field_boundary point', logger_name="vision_field_boundary")
+            logger.warning("point_under_field_boundary got called with an out of bounds field_boundary point")
             return False
         return point[1] + offset > self.get_full_convex_field_boundary()[point[0]]
 
