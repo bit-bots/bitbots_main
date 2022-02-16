@@ -2,14 +2,15 @@
 """
 Command line tool to publish lines on the /line_in_image topic
 """
-import rospy
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import LineInformationInImage, LineSegmentInImage
 import sys
 import signal
 
 
 def _signal_term_handler(signal, frame):
-    rospy.logerr('User Keyboard interrupt')
+    self.get_logger().error('User Keyboard interrupt')
     sys.exit(0)
 
 
@@ -17,8 +18,8 @@ if __name__ == "__main__":
     # handle keyboard interrupts
     signal.signal(signal.SIGINT, _signal_term_handler)
 
-    rospy.init_node("line_tester")
-    pub = rospy.Publisher("line_in_image", LineInformationInImage, queue_size=10)
+    rclpy.init(args=None)
+    pub = self.create_publisher(LineInformationInImage, "line_in_image", 10)
 
     x_start_str = input("x_start:")
     try:
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     while True:
         li = LineInformationInImage()
         # press play in simulation first!
-        li.header.stamp = rospy.get_rostime() - rospy.Duration(0.2)
+        li.header.stamp = rospy.get_rostime() - Duration(seconds=0.2)
         seg = LineSegmentInImage()
         seg.start.x = x_start
         seg.start.y = y_start

@@ -2,7 +2,8 @@
 """
 Tool to transform gazebo objects
 """
-import rospy
+import rclpy
+from rclpy.node import Node
 import tf
 from geometry_msgs.msg import TransformStamped, PoseWithCovarianceStamped
 from gazebo_msgs.msg import ModelStates
@@ -11,15 +12,15 @@ from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 
 class TFWorld(object):
     def __init__(self):
-        rospy.init_node("world_transformer")
-        rospy.Subscriber("/gazebo/model_states", ModelStates, self._callback, queue_size=1, tcp_nodelay=True)
+        rclpy.init(args=None)
+        self.create_subscription(ModelStates, "/gazebo/model_states", self._callback, 1)
 
-        self.robot_pub = rospy.Publisher("amcl_pose", PoseWithCovarianceStamped, queue_size=1, tcp_nodelay=True)
+        self.robot_pub = self.create_publisher(PoseWithCovarianceStamped, "amcl_pose", 1, tcp_nodelay=True)
         self.robo_msg = PoseWithCovarianceStamped()
 
-        self.balls_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1, tcp_nodelay=True)
+        self.balls_pub = self.create_publisher(PoseWithCertaintyArray, "balls_relative", 1, tcp_nodelay=True)
         self.balls = []
-        rospy.spin()
+        rclpy.spin(self)
 
 
     def _callback(self, msg):
@@ -28,21 +29,21 @@ class TFWorld(object):
             if msg.name[i] == "/":
                 transform = TransformStamped()
                 transform.header.frame_id = "world"
-                transform.header.stamp = rospy.Time.now()
+                transform.header.stamp = self.get_clock().now()
                 transform.child_frame_id = "base_link"
                 transform.transform.translation = msg.pose[i].position
                 transform.transform.rotation = msg.pose[i].orientation
                 br.sendTransformMessage(transform)
 
                 self.robo_msg.pose.pose = msg.pose[i]
-                self.robo_msg.header.stamp = rospy.Time.now()
+                self.robo_msg.header.stamp = self.get_clock().now()
                 self.robo_msg.header.frame_id = "world"
                 self.robot_pub.publish(self.robo_msg)
 
             elif msg.name[i] == "teensize_ball":
                 transform = TransformStamped()
                 transform.header.frame_id = "world"
-                transform.header.stamp = rospy.Time.now()
+                transform.header.stamp = self.get_clock().now()
                 transform.child_frame_id = "ball"
                 transform.transform.translation = msg.pose[i].position
                 transform.transform.rotation = msg.pose[i].orientation
@@ -62,14 +63,14 @@ class TFWorld(object):
 
         balls_msg = PoseWithCertaintyArray()
         balls_msg.header.frame_id = "world"
-        balls_msg.header.stamp = rospy.Time.now()
+        balls_msg.header.stamp = self.get_clock().now()
         balls_msg.poses = self.balls
         self.balls_pub.publish(balls_msg)
 
 
         transform = TransformStamped()
         transform.header.frame_id = "world"
-        transform.header.stamp = rospy.Time.now()
+        transform.header.stamp = self.get_clock().now()
         transform.child_frame_id = "map"
 
         transform.transform.translation.x = -10.15/2

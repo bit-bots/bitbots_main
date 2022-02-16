@@ -2,7 +2,8 @@
 """
 Command line tool to publish balls on the /ball_in_image topic
 """
-import rospy
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray
 import sys
 import signal
@@ -10,7 +11,7 @@ import signal
 
 
 def _signal_term_handler(signal, frame):
-    rospy.logerr('User Keyboard interrupt')
+    self.get_logger().error('User Keyboard interrupt')
     sys.exit(0)
 
 
@@ -18,8 +19,8 @@ if __name__ == "__main__":
     # handle keyboard interrupts
     signal.signal(signal.SIGINT, _signal_term_handler)
 
-    rospy.init_node("ball_tester")
-    pub = rospy.Publisher("balls_in_image", BallInImageArray, queue_size=10)
+    rclpy.init(args=None)
+    pub = self.create_publisher(BallInImageArray, "balls_in_image", 10)
 
     while True:
         x_str = input("x:")
@@ -36,7 +37,7 @@ if __name__ == "__main__":
             continue
 
         ba = BallInImageArray()
-        ba.header.stamp = rospy.get_rostime() - rospy.Duration(0.2)
+        ba.header.stamp = rospy.get_rostime() - Duration(seconds=0.2)
         ball = BallInImage()
         ball.confidence = 1
         ball.center.x = x

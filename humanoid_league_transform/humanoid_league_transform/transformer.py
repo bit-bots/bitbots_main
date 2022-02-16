@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import cv2
-import rospy
+import rclpy
+from rclpy.node import Node
 import tf2_ros
 import numpy as np
 import sensor_msgs.point_cloud2 as pc2
@@ -17,37 +18,37 @@ from humanoid_league_msgs.msg import LineInformationInImage, LineInformationRela
 
 class Transformer(object):
     def __init__(self):
-        rospy.init_node("humanoid_league_transformer")
+        rclpy.init(args=None)
 
-        self._tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(10.0))
+        self._tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=10.0))
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
         self._cv_bridge = CvBridge()
 
         # Parameters
-        self._ball_height = rospy.get_param("~ball/ball_radius", 0.075)
-        self._bar_height = rospy.get_param("~goalposts/bar_height", 2.0)
-        self._publish_frame = rospy.get_param("~publish_frame", "base_footprint")
-        self._base_footprint_frame = rospy.get_param("~base_footprint_frame", "base_footprint")
+        self._ball_height = self.get_parameter('"~ball/ball_radius"').get_parameter_value().double_value
+        self._bar_height = self.get_parameter('"~goalposts/bar_height"').get_parameter_value().double_value
+        self._publish_frame = self.get_parameter('"~publish_frame"').get_parameter_value().double_value
+        self._base_footprint_frame = self.get_parameter('"~base_footprint_frame"').get_parameter_value().double_value
         self._obstacle_footpoint_out_of_image_threshold = \
-            rospy.get_param("~obstacles/footpoint_out_of_image_threshold", 0.8)
+            self.get_parameter('"~obstacles/footpoint_out_of_image_threshold"').get_parameter_value().double_value
         self._goalpost_footpoint_out_of_image_threshold = \
-            rospy.get_param("~goalposts/footpoint_out_of_image_threshold", 0.8)
+            self.get_parameter('"~goalposts/footpoint_out_of_image_threshold"').get_parameter_value().double_value
 
-        camera_info_topic = rospy.get_param("~camera_info/camera_info_topic", "camera/camera_info")
-        ball_in_image_array_topic = rospy.get_param("~ball/ball_topic", "balls_in_image")
-        lines_in_image_topic = rospy.get_param("~lines/lines_topic", "line_in_image")
-        goalposts_in_image_topic = rospy.get_param("~goalposts/goalposts_topic", "goalposts_in_image")
-        obstacles_in_image_topic = rospy.get_param("~obstacles/obstacles_topic", "obstacles_in_image")
+        camera_info_topic = self.get_parameter('"~camera_info/camera_info_topic"').get_parameter_value().double_value
+        ball_in_image_array_topic = self.get_parameter('"~ball/ball_topic"').get_parameter_value().double_value
+        lines_in_image_topic = self.get_parameter('"~lines/lines_topic"').get_parameter_value().double_value
+        goalposts_in_image_topic = self.get_parameter('"~goalposts/goalposts_topic"').get_parameter_value().double_value
+        obstacles_in_image_topic = self.get_parameter('"~obstacles/obstacles_topic"').get_parameter_value().double_value
         field_boundary_in_image_topic = rospy.get_param("~field_boundary/field_boundary_topic",
                                                         "field_boundary_in_image")
         line_mask_in_image_topic = rospy.get_param("~masks/line_mask/topic",
                                                         "line_mask_in_image")
 
-        line_mask_scaling = rospy.get_param("~masks/line_mask/scale", 1.0)
+        line_mask_scaling = self.get_parameter('"~masks/line_mask/scale"').get_parameter_value().double_value
 
-        publish_lines_as_lines_relative = rospy.get_param("~lines/lines_relative", True)
-        publish_lines_as_pointcloud = rospy.get_param("~lines/pointcloud", False)
+        publish_lines_as_lines_relative = self.get_parameter('"~lines/lines_relative"').get_parameter_value().double_value
+        publish_lines_as_pointcloud = self.get_parameter('"~lines/pointcloud"').get_parameter_value().double_value
 
         self._camera_info = None
         rospy.Subscriber(camera_info_topic, CameraInfo, self._callback_camera_info, queue_size=1)
@@ -55,10 +56,10 @@ class Transformer(object):
         # Wait for Camera info
         cam_info_counter = 0
         while self._camera_info is None:
-            rospy.sleep(0.1)
+            self.get_clock().sleep_for(Duration(seconds=0.1)
             cam_info_counter += 1
             if cam_info_counter > 100:
-                rospy.logerr_throttle(5, rospy.get_name() + ": Camera Info not received on topic '" +
+                self.get_logger().error(, throttle_duration_sec= + ": Camera Info not received on topic '" +
                                       camera_info_topic + "'")
             if rospy.is_shutdown():
                 return
@@ -68,28 +69,28 @@ class Transformer(object):
         while not self._tf_buffer.can_transform(self._publish_frame,
                                                 self._camera_info.header.frame_id,
                                                 rospy.Time(0),
-                                                timeout=rospy.Duration(5)):
-            rospy.logerr(rospy.get_name() + ": Could not get transformation from " + self._publish_frame +
+                                                timeout=Duration(seconds=5)):
+            self.get_logger().error(self.get_name() + ": Could not get transformation from " + self._publish_frame +
                          "to " + self._camera_info.header.frame_id)
 
         # Also check if we can transform from optical frame to base_footprint
         while not self._tf_buffer.can_transform(self._base_footprint_frame,
                                                 self._camera_info.header.frame_id,
                                                 rospy.Time(0),
-                                                timeout=rospy.Duration(5)):
-            rospy.logerr(rospy.get_name() + ": Could not get transformation from " + self._base_footprint_frame +
+                                                timeout=Duration(seconds=5)):
+            self.get_logger().error(self.get_name() + ": Could not get transformation from " + self._base_footprint_frame +
                          " to " + self._camera_info.header.frame_id)
 
         # Publishers TODO make topics configurable
-        self._balls_relative_pub = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=1)
+        self._balls_relative_pub = self.create_publisher(PoseWithCertaintyArray, "balls_relative", 1)
         if publish_lines_as_lines_relative:
-            self._line_relative_pub = rospy.Publisher("line_relative", LineInformationRelative, queue_size=1)
+            self._line_relative_pub = self.create_publisher(LineInformationRelative, "line_relative", 1)
         if publish_lines_as_pointcloud:
-            self._line_relative_pc_pub = rospy.Publisher("line_relative_pc", PointCloud2, queue_size=1)
-        self._line_mask_relative_pc_pub = rospy.Publisher("line_mask_relative_pc", PointCloud2, queue_size=1)
-        self._goalposts_relative = rospy.Publisher("goal_posts_relative", PoseWithCertaintyArray, queue_size=1)
-        self._obstacle_relative_pub = rospy.Publisher("obstacles_relative", ObstacleRelativeArray, queue_size=1)
-        self._field_boundary_pub = rospy.Publisher("field_boundary_relative", PolygonStamped, queue_size=1)
+            self._line_relative_pc_pub = self.create_publisher(PointCloud2, "line_relative_pc", 1)
+        self._line_mask_relative_pc_pub = self.create_publisher(PointCloud2, "line_mask_relative_pc", 1)
+        self._goalposts_relative = self.create_publisher(PoseWithCertaintyArray, "goal_posts_relative", 1)
+        self._obstacle_relative_pub = self.create_publisher(ObstacleRelativeArray, "obstacles_relative", 1)
+        self._field_boundary_pub = self.create_publisher(PolygonStamped, "field_boundary_relative", 1)
 
         # Subscribers
         rospy.Subscriber(ball_in_image_array_topic, BallInImageArray, self._callback_ball, queue_size=1)
@@ -107,11 +108,11 @@ class Transformer(object):
                 self._line_mask_relative_pc_pub,
                 scale=line_mask_scaling), queue_size=1)
 
-        rospy.spin()
+        rclpy.spin(self)
 
     def _callback_camera_info(self, camera_info):
         if camera_info.K[0] == 0:
-            rospy.logerr_throttle(5.0, rospy.get_name() + ": Invalid CameraInfo received. Check your camera settings.")
+            self.get_logger().error(, throttle_duration_sec=
         self._camera_info = camera_info
 
     def _callback_ball(self, msg):
@@ -169,7 +170,7 @@ class Transformer(object):
         if line.segments or line.intersections:
             self._line_relative_pub.publish(line)
         else:
-            rospy.logwarn_throttle(5.0, rospy.get_name() +
+            self.get_logger().warn(, throttle_duration_sec= +
                                    ": Could not transform any segments or intersections" +
                                    " in LineInformationInImage message.")
 
@@ -187,7 +188,7 @@ class Transformer(object):
                 num_transformed_correctly += 1
 
         if num_transformed_correctly == 0:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": No line points could be transformed")
+            self.get_logger().warn(, throttle_duration_sec=
         pc_header = msg.header
         pc_header.frame_id = self._publish_frame
         self._line_relative_pc_pub.publish(pc2.create_cloud_xyz32(pc_header, points[:num_transformed_correctly]))
@@ -216,7 +217,7 @@ class Transformer(object):
                 # Transform footpoint
                 relative_foot_point = self._transform_point(goal_post_in_image.foot_point, field, msg.header.stamp)
                 if relative_foot_point is None:
-                    rospy.logwarn_throttle(5.0, rospy.get_name() +
+                    self.get_logger().warn(, throttle_duration_sec= +
                                         ": Got a post with foot point ({},{}) I could not transform.".format(
                                             goal_post_in_image.foot_point.x,
                                             goal_post_in_image.foot_point.y))
@@ -254,7 +255,7 @@ class Transformer(object):
                     obstacle.pose.pose.pose.position = position
                     obstacles.obstacles.append(obstacle)
                 else:
-                    rospy.logwarn_throttle(5.0, rospy.get_name() + ": Got an obstacle I could not transform")
+                    self.get_logger().warn(, throttle_duration_sec=
 
         self._obstacle_relative_pub.publish(obstacles)
 
@@ -272,7 +273,7 @@ class Transformer(object):
             if p_relative is not None:
                 field_boundary.polygon.points.append(p_relative)
             else:
-                rospy.logwarn_throttle(5.0, rospy.get_name() +
+                self.get_logger().warn(, throttle_duration_sec= +
                                        ": At least one point of the Field Boundary could not be transformed," +
                                        " dropping message")
                 return
@@ -317,10 +318,10 @@ class Transformer(object):
                 self._camera_info.header.frame_id,
                 msg.header.stamp)
         except tf2_ros.LookupException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return
         except tf2_ros.ExtrapolationException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return
 
         # Transform the whole point cloud accordingly
@@ -343,12 +344,12 @@ class Transformer(object):
         try:
             field_normal = self._tf_buffer.transform(field_normal,
                                                      self._camera_info.header.frame_id,
-                                                     timeout=rospy.Duration(0.2))
+                                                     timeout=Duration(seconds=0.2))
         except tf2_ros.LookupException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return None
         except tf2_ros.ExtrapolationException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return None
 
         field_point = PointStamped()
@@ -360,10 +361,10 @@ class Transformer(object):
         try:
             field_point = self._tf_buffer.transform(field_point, self._camera_info.header.frame_id)
         except tf2_ros.LookupException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return None
         except tf2_ros.ExtrapolationException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return None
 
         field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])
@@ -406,10 +407,10 @@ class Transformer(object):
         try:
             intersection_transformed = self._tf_buffer.transform(intersection_stamped, self._publish_frame)
         except tf2_ros.LookupException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return None
         except tf2_ros.ExtrapolationException as ex:
-            rospy.logwarn_throttle(5.0, rospy.get_name() + ": " + str(ex))
+            self.get_logger().warn(, throttle_duration_sec=
             return None
 
         return intersection_transformed.point
