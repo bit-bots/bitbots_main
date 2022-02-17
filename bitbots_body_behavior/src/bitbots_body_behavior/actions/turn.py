@@ -59,3 +59,17 @@ class TurnZero(TurnAround):
         x, y, _ = pose
         self.theta = 0
         self.pose_msg = create_pose_msg(self.blackboard.map_frame, x, y, self.theta)
+
+
+class TurnToOwnSide(TurnAround):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+
+        self.orientation_thresh = parameters.get('thresh', 0.5)
+        pose = self.blackboard.world_model.get_current_position()
+        if pose is None:
+            self.pop()
+            return
+        x, y, _ = pose
+        self.theta = math.pi
+        self.pose_msg = create_pose_msg(self.blackboard.map_frame, x, y, self.theta)
