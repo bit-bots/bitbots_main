@@ -44,13 +44,14 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
 set(SOURCES src/walk_visualizer.cpp
         src/walk_engine.cpp
         src/walk_stabilizer.cpp
         src/walk_ik.cpp
         src/walk_node.cpp)
+
 
 set(CODE_LIBRARIES urdfdom_world urdfdom_model)
 
@@ -115,8 +116,8 @@ install(TARGETS libpy_quintic_walk
 #  enable_bitbots_tests()
 #endif()
 
-#include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
-#enable_bitbots_docs()
+include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
+enable_bitbots_docs()
 
 #ament_export_dependencies(bitbots_test)
 ament_export_dependencies(tf2_eigen)
