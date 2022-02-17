@@ -15,6 +15,7 @@ find_package(moveit_ros_planning REQUIRED)
 find_package(moveit_ros REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(ros2_python_extension)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
@@ -24,12 +25,14 @@ add_compile_options(-Wall -Werror -Wno-unused)
 pybind11_add_module(libbitbots_moveit_bindings SHARED
   src/bitbots_moveit_bindings.cpp
 )
+
 ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
   moveit_core
   moveit_msgs
   moveit_ros_planning_interface
   moveit_ros_planning
   moveit_ros
+  ros2_python_extension
 )
 
 ament_python_install_package(${PROJECT_NAME})
