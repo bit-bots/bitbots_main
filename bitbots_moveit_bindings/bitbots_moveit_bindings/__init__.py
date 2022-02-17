@@ -16,8 +16,10 @@ def get_position_ik(request: GetPositionIK.Request, approximate=False):
 
 
 def get_position_fk(request: GetPositionFK.Request):
+    print("ahoi")
     global bindings
     if bindings is None:
         bindings = BitbotsMoveitBindings()
+    print("ahoi")
     result_str = bindings.getPositionFK(serialize_message(request))
     return deserialize_message(result_str, GetPositionFK.Response)
