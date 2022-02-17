@@ -1,6 +1,6 @@
 from std_msgs.msg import Int64
 
-from bitbots_quintic_walk.libpy_quintic_walk import PyWalkWrapper, init_ros, spin_once
+from bitbots_quintic_walk.libpy_quintic_walk import PyWalkWrapper, spin_once
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose, PoseArray
 from sensor_msgs.msg import Imu, JointState

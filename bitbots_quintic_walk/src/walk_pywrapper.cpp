@@ -4,7 +4,7 @@ void PyWalkWrapper::spin_some() {
   rclcpp::spin_some(walk_node_);
 }
 
-PyWalkWrapper::PyWalkWrapper(py::bytes ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
+PyWalkWrapper::PyWalkWrapper(std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
   set_robot_state(0);
 }
 
