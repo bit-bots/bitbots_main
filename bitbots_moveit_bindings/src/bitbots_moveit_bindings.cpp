@@ -215,7 +215,6 @@ class BitbotsMoveitBindings : public rclcpp::Node {
 };
 
 void initRos() {
-  //char *argv[] = {NULL};
   rclcpp::init(0, nullptr);
 }
 
@@ -223,6 +222,6 @@ PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
   m.def("initRos", &initRos);
   py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
       .def(py::init<>())
-      .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK, "Calls the IK to provide a solution")
+      .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
       .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
 }
