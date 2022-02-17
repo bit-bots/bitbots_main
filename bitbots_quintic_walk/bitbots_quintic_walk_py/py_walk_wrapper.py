@@ -1,6 +1,6 @@
 from std_msgs.msg import Int64
 
-from bitbots_quintic_walk.libpy_quintic_walk import PyWalkWrapper, spin_once
+from bitbots_quintic_walk.libpy_quintic_walk import PyWalkWrapper, initRos
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose, PoseArray
 from sensor_msgs.msg import Imu, JointState
@@ -8,17 +8,16 @@ from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from rclpy.serialization import serialize_message, deserialize_message
 
-
 class PyWalk:
     def __init__(self, namespace=""):
         # make namespace end with a /
         if namespace != "" and namespace[-1] != '/':
             namespace = namespace + "/"
-        init_ros(namespace)
+        initRos()
         self.py_walk_wrapper = PyWalkWrapper(namespace)
 
     def spin_ros(self):
-        spin_once()
+        self.py_walk_wrapper.spin_some()
 
     def reset(self):
         self.py_walk_wrapper.reset()

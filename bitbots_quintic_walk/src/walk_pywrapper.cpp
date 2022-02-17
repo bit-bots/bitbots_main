@@ -112,8 +112,14 @@ void PyWalkWrapper::set_parameters(py::dict params) {
   walk_node_->onSetParameters(parameters);
 }
 
-PYBIND11_MODULE(py_quintic_walk, m) {
+void initRoss() {
+  rclcpp::init(0, nullptr);
+}
+
+PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
+
+  m.def("initRos", &initRoss);
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
       .def(py::init<std::string>())
