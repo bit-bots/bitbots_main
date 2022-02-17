@@ -102,7 +102,8 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         bitbots_msgs
         moveit_ros
         moveit_ros_planning_interface
-        ros2_python_extension)
+        ros2_python_extension
+        control_toolbox)
 
 target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 
