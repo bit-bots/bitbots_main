@@ -5,69 +5,16 @@
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit/planning_scene/planning_scene.h>
-#include <std_msgs/msg/string.hpp>
-#include <std_msgs/msg/bool.hpp>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
 #include <pybind11/pybind11.h>
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/serialization.hpp>
 #include <rclcpp/duration.hpp>
+#include <ros2_python_extension/init.hpp>
+#include <ros2_python_extension/serialization.hpp>
 namespace py = pybind11;
 
-/**
- * Convert the result of a ROS message serialized in Python to a C++ message
- * @tparam T C++ ROS message type
- * @param bytes message serialized in Python
- * @return the converted message
- */
-template<typename T>
-T from_python(py::bytes &bytes) {
-  // buffer_info is used to extract data pointer and size of bytes
-  py::buffer_info info(py::buffer(bytes).request());
-
-  // initialize serialized message struct
-  rmw_serialized_message_t serialized_message = rmw_get_zero_initialized_serialized_message();
-  auto allocator = rcl_get_default_allocator();
-  rmw_serialized_message_init(&serialized_message, info.size, &allocator);
-  serialized_message.buffer = reinterpret_cast<uint8_t *>(info.ptr);
-  serialized_message.buffer_length = info.size;
-  auto ts = rosidl_typesupport_cpp::get_message_type_support_handle<T>();
-
-  T out;
-  // do the deserialization
-  rmw_ret_t result2 = rmw_deserialize(&serialized_message, ts, &out);
-  if (result2 != RMW_RET_OK) {
-    printf("Failed to deserialize message!\n");
-  }
-
-  return out;
-}
-
-/**
- * Convert a C++ ROS message to a Python ByteString that can be deserialized to the message
- * @tparam T C++ ROS message type
- * @param msg C++ ROS message
- * @return the message serialized into a Python ByteString
- */
-template<typename T>
-py::bytes to_python(T &msg) {
-  // initialize serialized message struct
-  rmw_serialized_message_t serialized_message = rmw_get_zero_initialized_serialized_message();
-  auto type_support = rosidl_typesupport_cpp::get_message_type_support_handle<T>();
-  auto allocator = rcl_get_default_allocator();
-  rmw_serialized_message_init(&serialized_message, 0u, &allocator);
-
-  // do the serialization
-  rmw_ret_t result = rmw_serialize(&msg, type_support, &serialized_message);
-  if (result != RMW_RET_OK) {
-    printf("Failed to serialize message!\n");
-  }
-
-  // convert the result to python bytes by using the data and length
-  return {reinterpret_cast<const char *>(serialized_message.buffer), serialized_message.buffer_length};
-}
 
 class BitbotsMoveitBindings {
  public:
@@ -92,19 +39,19 @@ class BitbotsMoveitBindings {
   }
 
   py::bytes getPositionIK(py::bytes &msg, bool approximate = false) {
-    auto request = from_python<moveit_msgs::srv::GetPositionIK::Request>(msg);
+    auto request = ros2_python_extension::fromPython<moveit_msgs::srv::GetPositionIK::Request>(msg);
     moveit_msgs::srv::GetPositionIK::Response response;
     if (!robot_model_) {
       response.error_code.val =
           moveit_msgs::msg::MoveItErrorCodes::INVALID_OBJECT_NAME;
-      return to_python<moveit_msgs::srv::GetPositionIK::Response>(response);
+      return ros2_python_extension::toPython<moveit_msgs::srv::GetPositionIK::Response>(response);
     }
 
     auto joint_model_group =
         robot_model_->getJointModelGroup(request.ik_request.group_name);
     if (!joint_model_group) {
       response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_GROUP_NAME;
-      return to_python<moveit_msgs::srv::GetPositionIK::Response>(response);
+      return ros2_python_extension::toPython<moveit_msgs::srv::GetPositionIK::Response>(response);
     }
 
     robot_state_->update();
@@ -173,16 +120,16 @@ class BitbotsMoveitBindings {
     } else {
       response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
     }
-    return to_python<moveit_msgs::srv::GetPositionIK::Response>(response);
+    return ros2_python_extension::toPython<moveit_msgs::srv::GetPositionIK::Response>(response);
   }
 
   py::bytes getPositionFK(py::bytes &msg) {
-    auto request = from_python<moveit_msgs::srv::GetPositionFK::Request>(msg);
+    auto request = ros2_python_extension::fromPython<moveit_msgs::srv::GetPositionFK::Request>(msg);
 
     moveit_msgs::srv::GetPositionFK::Response response;
     if (!robot_model_) {
       response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_OBJECT_NAME;
-      return to_python(response);
+      return ros2_python_extension::toPython(response);
     }
 
     sensor_msgs::msg::JointState joint_state = request.robot_state.joint_state;
@@ -196,7 +143,7 @@ class BitbotsMoveitBindings {
     for (std::string &link_name: request.fk_link_names) {
       if (!robot_model_->hasLinkModel(link_name)) {
         response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
-        return to_python<moveit_msgs::srv::GetPositionFK::Response>(response);
+        return ros2_python_extension::toPython<moveit_msgs::srv::GetPositionFK::Response>(response);
       }
       response.fk_link_names.push_back(link_name);
       pose = robot_state_->getGlobalLinkTransform(link_name);
@@ -204,7 +151,7 @@ class BitbotsMoveitBindings {
       response.pose_stamped.push_back(pose_stamped);
     }
     response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
-    return to_python<moveit_msgs::srv::GetPositionFK::Response>(response);
+    return ros2_python_extension::toPython<moveit_msgs::srv::GetPositionFK::Response>(response);
   }
 
  private:
@@ -214,12 +161,8 @@ class BitbotsMoveitBindings {
   std::shared_ptr<rclcpp::Node> node_;
 };
 
-void initRos() {
-  rclcpp::init(0, nullptr);
-}
-
 PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
-  m.def("initRos", &initRos);
+  m.def("initRos", &ros2_python_extension::initRos);
   py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
       .def(py::init<>())
       .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
