@@ -13,8 +13,8 @@
 #include <pybind11/pybind11.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/serialization.hpp>
+#include <rclcpp/duration.hpp>
 namespace py = pybind11;
-
 
 /**
  * Convert the result of a ROS message serialized in Python to a C++ message
@@ -22,7 +22,7 @@ namespace py = pybind11;
  * @param bytes message serialized in Python
  * @return the converted message
  */
-template <typename T>
+template<typename T>
 T from_python(py::bytes &bytes) {
   // buffer_info is used to extract data pointer and size of bytes
   py::buffer_info info(py::buffer(bytes).request());
@@ -51,8 +51,8 @@ T from_python(py::bytes &bytes) {
  * @param msg C++ ROS message
  * @return the message serialized into a Python ByteString
  */
-template <typename T>
-py::bytes to_python(T& msg) {
+template<typename T>
+py::bytes to_python(T &msg) {
   // initialize serialized message struct
   rmw_serialized_message_t serialized_message = rmw_get_zero_initialized_serialized_message();
   auto type_support = rosidl_typesupport_cpp::get_message_type_support_handle<T>();
@@ -69,56 +69,50 @@ py::bytes to_python(T& msg) {
   return {reinterpret_cast<const char *>(serialized_message.buffer), serialized_message.buffer_length};
 }
 
-class BitbotsMoveitBindings : public rclcpp::Node
-{
+class BitbotsMoveitBindings : public rclcpp::Node {
  public:
-  BitbotsMoveitBindings():Node("BitbotsMoveitBindings"){
-    /*std::string robot_description = "robot_description";
+  BitbotsMoveitBindings() : Node("BitbotsMoveitBindings") {
+    std::string robot_description = "robot_description";
+    // get the robot description from the blackboard
     robot_model_loader::RobotModelLoader loader(SharedPtr(this), robot_description, false);
     robot_model_ = loader.getModel();
     if (!robot_model_) {
-      RCLCPP_ERROR(this->get_logger(), "failed to load robot model %s", robot_description.c_str());
-    }*/
-  }
-/*
-  planning_scene::PlanningSceneSharedPtr getPlanningScene() {
-    std::string robot_description = "robot_description";
-    static auto planning_scene_monitor =
-        std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(robot_description);
-    planning_scene::PlanningSceneSharedPtr planning_scene =
-        planning_scene_monitor->getPlanningScene();
-    if (!planning_scene) {
+      RCLCPP_ERROR(this->get_logger(),
+                   "failed to load robot model %s. Did you start the blackboard (bitbots_bringup load_robot_description.launch)?",
+                   robot_description.c_str());
+    }
+    robot_state_.reset(new moveit::core::RobotState(robot_model_));
+
+    auto planning_scene_monitor =
+        std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description);
+    planning_scene_ = planning_scene_monitor->getPlanningScene();
+    if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(this->get_logger(), "failed to connect to planning scene");
     }
-    return planning_scene;
   }
 
-  py::bytes getPositionIK(const std::string& request_str, bool approximate = false) {
-    auto request = from_python<moveit_msgs::GetPositionIK::Request>(request_str);
-    moveit_msgs::GetPositionIK::Response response;
-    static moveit::core::RobotModelPtr robot_model = getRobotModel();
-    if (!robot_model) {
+  py::bytes getPositionIK(py::bytes &msg, bool approximate = false) {
+    auto request = from_python<moveit_msgs::srv::GetPositionIK::Request>(msg);
+    moveit_msgs::srv::GetPositionIK::Response response;
+    if (!robot_model_) {
       response.error_code.val =
-          moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME;
-      return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
+          moveit_msgs::msg::MoveItErrorCodes::INVALID_OBJECT_NAME;
+      return to_python<moveit_msgs::srv::GetPositionIK::Response>(response);
     }
 
     auto joint_model_group =
-        robot_model->getJointModelGroup(request.ik_request.group_name);
+        robot_model_->getJointModelGroup(request.ik_request.group_name);
     if (!joint_model_group) {
-      response.error_code.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
-      return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
+      response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_GROUP_NAME;
+      return to_python<moveit_msgs::srv::GetPositionIK::Response>(response);
     }
 
-    static moveit::core::msg::RobotState robot_state(robot_model);
-    robot_state.update();
-
+    robot_state_->update();
     if (!request.ik_request.robot_state.joint_state.name.empty() ||
         !request.ik_request.robot_state.multi_dof_joint_state.joint_names
              .empty()) {
-      moveit::core::robotStateMsgToRobotState(request.ik_request.robot_state,
-                                              robot_state);
-      robot_state.update();
+      moveit::core::robotStateMsgToRobotState(request.ik_request.robot_state, *robot_state_);
+      robot_state_->update();
     }
 
     bool success = true;
@@ -128,27 +122,25 @@ class BitbotsMoveitBindings : public rclcpp::Node
 
     moveit::core::GroupStateValidityCallbackFn callback;
     if (request.ik_request.avoid_collisions) {
-      callback = [](moveit::core::msg::RobotState *state,
+      callback = [this](moveit::core::RobotState *state,
                     const moveit::core::JointModelGroup *group,
                     const double *values) {
-        auto planning_scene = getPlanningScene();
         state->setJointGroupPositions(group, values);
         state->update();
-        return !planning_scene ||
-               !planning_scene->isStateColliding(*state, group->getName());
+        return !planning_scene_ || !planning_scene_->isStateColliding(*state, group->getName());
       };
     }
 
     if (request.ik_request.pose_stamped_vector.empty()) {
       if (request.ik_request.ik_link_name.empty()) {
-        success = robot_state.setFromIK(
+        success = robot_state_->setFromIK(
             joint_model_group, request.ik_request.pose_stamped.pose,
-            request.ik_request.timeout.toSec(),
+            rclcpp::Duration(request.ik_request.timeout).seconds(),
             callback, ik_options);
       } else {
-        success = robot_state.setFromIK(
+        success = robot_state_->setFromIK(
             joint_model_group, request.ik_request.pose_stamped.pose,
-            request.ik_request.ik_link_name, request.ik_request.timeout.toSec(),
+            request.ik_request.ik_link_name, rclcpp::Duration(request.ik_request.timeout).seconds(),
             callback, ik_options);
       }
     } else {
@@ -161,29 +153,29 @@ class BitbotsMoveitBindings : public rclcpp::Node
       if (request.ik_request.ik_link_names.empty()) {
         std::vector<std::string> end_effector_names;
         joint_model_group->getEndEffectorTips(end_effector_names);
-        success = robot_state.setFromIK(
+        success = robot_state_->setFromIK(
             joint_model_group, poses, end_effector_names,
-            request.ik_request.timeout.toSec(),
+            rclcpp::Duration(request.ik_request.timeout).seconds(),
             callback, ik_options);
       } else {
-        success = robot_state.setFromIK(
+        success = robot_state_->setFromIK(
             joint_model_group, poses, request.ik_request.ik_link_names,
-            request.ik_request.timeout.toSec(),
+            rclcpp::Duration(request.ik_request.timeout).seconds(),
             callback, ik_options);
       }
     }
 
-    robot_state.update();
+    robot_state_->update();
 
-    moveit::core::robotStateToRobotStateMsg(robot_state, response.solution);
+    moveit::core::robotStateToRobotStateMsg(*robot_state_, response.solution);
     if (success) {
-      response.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+      response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
     } else {
-      response.error_code.val = moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION;
+      response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
     }
-    return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionIK::Response>(response));
+    return to_python<moveit_msgs::srv::GetPositionIK::Response>(response);
   }
-  */
+
   py::bytes getPositionFK(py::bytes &msg) {
     auto request = from_python<moveit_msgs::srv::GetPositionFK::Request>(msg);
 
@@ -192,34 +184,33 @@ class BitbotsMoveitBindings : public rclcpp::Node
       response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_OBJECT_NAME;
       return to_python(response);
     }
-    return to_python(response);
-  }
-  /*
-    static moveit::core::msg::RobotState robot_state(robot_model);
+
     sensor_msgs::msg::JointState joint_state = request.robot_state.joint_state;
     for (size_t i = 0; i < joint_state.name.size(); ++i) {
-      robot_state.setJointPositions(joint_state.name[i], &joint_state.position[i]);
+      robot_state_->setJointPositions(joint_state.name[i], &joint_state.position[i]);
     }
-    robot_state.update();
+    robot_state_->update();
     Eigen::Isometry3d pose;
     geometry_msgs::msg::PoseStamped pose_stamped;
     pose_stamped.header = request.header;
     for (std::string& link_name : request.fk_link_names) {
-      if (!robot_model->hasLinkModel(link_name)) {
-        response.error_code.val = moveit_msgs::MoveItErrorCodes::INVALID_LINK_NAME;
-        return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionFK::Response>(response));
+      if (!robot_model_->hasLinkModel(link_name)) {
+        response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
+        return to_python<moveit_msgs::srv::GetPositionFK::Response>(response);
       }
       response.fk_link_names.push_back(link_name);
-      pose = robot_state.getGlobalLinkTransform(link_name);
+      pose = robot_state_->getGlobalLinkTransform(link_name);
       pose_stamped.pose = tf2::toMsg(pose);
       response.pose_stamped.push_back(pose_stamped);
     }
-    response.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
-    return moveit::py_bindings_tools::serializeMsg(to_python<moveit_msgs::GetPositionFK::Response>(response));
+    response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+    return to_python<moveit_msgs::srv::GetPositionFK::Response>(response);
   }
-  */
+
  private:
   moveit::core::RobotModelPtr robot_model_;
+  moveit::core::RobotStatePtr robot_state_;
+  planning_scene::PlanningScenePtr planning_scene_;
 };
 
 void initRos() {
@@ -230,7 +221,7 @@ void initRos() {
 PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
   m.def("initRos", &initRos);
   py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
-  .def(py::init<>())
-  //.def("getPositionIK", &getPositionIK, "Calls the IK to provide a solution")
-  .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
+      .def(py::init<>())
+      .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK, "Calls the IK to provide a solution")
+      .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
 }
