@@ -25,7 +25,7 @@ set(LIBS ${ament_cmake_LIBRARIES} ${bitbots_docs_LIBRARIES} ${bio_ik_LIBRARIES}
   ${rclcpp_LIBRARIES} ${std_msgs_LIBRARIES})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
