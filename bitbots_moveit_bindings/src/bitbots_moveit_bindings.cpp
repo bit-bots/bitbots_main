@@ -69,25 +69,25 @@ py::bytes to_python(T &msg) {
   return {reinterpret_cast<const char *>(serialized_message.buffer), serialized_message.buffer_length};
 }
 
-class BitbotsMoveitBindings : public rclcpp::Node {
+class BitbotsMoveitBindings {
  public:
-  BitbotsMoveitBindings() : Node("BitbotsMoveitBindings") {
+  BitbotsMoveitBindings() : node_{std::make_shared<rclcpp::Node>("BitbotsMoveitBindings")} {
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
-    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), robot_description, false);
-    robot_model_ = loader_->getModel();
+    robot_model_loader::RobotModelLoader loader(node_, robot_description, false);
+    robot_model_ = loader.getModel();
     if (!robot_model_) {
-      RCLCPP_ERROR(this->get_logger(),
+      RCLCPP_ERROR(node_->get_logger(),
                    "failed to load robot model %s. Did you start the blackboard (bitbots_bringup load_robot_description.launch)?",
                    robot_description.c_str());
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
 
     auto planning_scene_monitor =
-        std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description);
+        std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(node_, robot_description);
     planning_scene_ = planning_scene_monitor->getPlanningScene();
     if (!planning_scene_) {
-      RCLCPP_ERROR_ONCE(this->get_logger(), "failed to connect to planning scene");
+      RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
   }
 
@@ -110,7 +110,7 @@ class BitbotsMoveitBindings : public rclcpp::Node {
     robot_state_->update();
     if (!request.ik_request.robot_state.joint_state.name.empty() ||
         !request.ik_request.robot_state.multi_dof_joint_state.joint_names
-             .empty()) {
+            .empty()) {
       moveit::core::robotStateMsgToRobotState(request.ik_request.robot_state, *robot_state_);
       robot_state_->update();
     }
@@ -123,8 +123,8 @@ class BitbotsMoveitBindings : public rclcpp::Node {
     moveit::core::GroupStateValidityCallbackFn callback;
     if (request.ik_request.avoid_collisions) {
       callback = [this](moveit::core::RobotState *state,
-                    const moveit::core::JointModelGroup *group,
-                    const double *values) {
+                        const moveit::core::JointModelGroup *group,
+                        const double *values) {
         state->setJointGroupPositions(group, values);
         state->update();
         return !planning_scene_ || !planning_scene_->isStateColliding(*state, group->getName());
@@ -146,7 +146,7 @@ class BitbotsMoveitBindings : public rclcpp::Node {
     } else {
       EigenSTL::vector_Isometry3d poses;
       poses.reserve(request.ik_request.pose_stamped_vector.size());
-      for (auto &pose : request.ik_request.pose_stamped_vector) {
+      for (auto &pose: request.ik_request.pose_stamped_vector) {
         poses.emplace_back();
         tf2::convert(pose.pose, poses.back());
       }
@@ -193,7 +193,7 @@ class BitbotsMoveitBindings : public rclcpp::Node {
     Eigen::Isometry3d pose;
     geometry_msgs::msg::PoseStamped pose_stamped;
     pose_stamped.header = request.header;
-    for (std::string& link_name : request.fk_link_names) {
+    for (std::string &link_name: request.fk_link_names) {
       if (!robot_model_->hasLinkModel(link_name)) {
         response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
         return to_python<moveit_msgs::srv::GetPositionFK::Response>(response);
@@ -208,10 +208,10 @@ class BitbotsMoveitBindings : public rclcpp::Node {
   }
 
  private:
-  robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
   planning_scene::PlanningScenePtr planning_scene_;
+  std::shared_ptr<rclcpp::Node> node_;
 };
 
 void initRos() {
