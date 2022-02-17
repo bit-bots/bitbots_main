@@ -106,7 +106,7 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
 
 target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 
-#ament_python_install_package(${PROJECT_NAME})
+ament_python_install_package(bitbots_quintic_walk_py)
 
 install(TARGETS libpy_quintic_walk
         DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
