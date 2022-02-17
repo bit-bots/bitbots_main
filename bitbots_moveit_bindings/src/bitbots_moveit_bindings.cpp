@@ -74,8 +74,8 @@ class BitbotsMoveitBindings : public rclcpp::Node {
   BitbotsMoveitBindings() : Node("BitbotsMoveitBindings") {
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
-    robot_model_loader::RobotModelLoader loader(SharedPtr(this), robot_description, false);
-    robot_model_ = loader.getModel();
+    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), robot_description, false);
+    robot_model_ = loader_->getModel();
     if (!robot_model_) {
       RCLCPP_ERROR(this->get_logger(),
                    "failed to load robot model %s. Did you start the blackboard (bitbots_bringup load_robot_description.launch)?",
@@ -208,6 +208,7 @@ class BitbotsMoveitBindings : public rclcpp::Node {
   }
 
  private:
+  robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
   planning_scene::PlanningScenePtr planning_scene_;
