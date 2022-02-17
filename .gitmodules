@@ -85,3 +85,6 @@
 [submodule "lib/fp"]
 	path = lib/fp
 	url = https://github.com/tylerjw/fp.git
+[submodule "lib/ros2_python_extension"]
+	path = lib/ros2_python_extension
+	url = git@github.com:bit-bots/ros2_python_extension.git
