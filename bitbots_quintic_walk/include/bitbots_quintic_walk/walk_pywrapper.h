@@ -1,37 +1,44 @@
 #ifndef BITBOTS_QUINTIC_WALK_BITBOTS_QUINTIC_WALK_SRC_WALK_PYWRAPPER_H_
 #define BITBOTS_QUINTIC_WALK_BITBOTS_QUINTIC_WALK_SRC_WALK_PYWRAPPER_H_
-#include <Python.h>
 #include "bitbots_quintic_walk/walk_node.h"
-#include <boost/python.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <map>
 #include <iostream>
-#include <moveit/py_bindings_tools/serialize_msg.h>
 #include "bitbots_quintic_walk/walk_utils.h"
 #include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <humanoid_league_msgs/msg/robot_control_state.hpp>
+#include <pybind11/pybind11.h>
+#include <ros2_python_extension/init.hpp>
+#include <ros2_python_extension/serialization.hpp>
+
+namespace py = pybind11;
+using namespace ros2_python_extension;
 
 class PyWalkWrapper {
  public:
-  PyWalkWrapper(const std::string ns);
-  moveit::py_bindings_tools::ByteString step(double dt,
-                                             const std::string &cmdvel_msg,
-                                             const std::string &imu_msg,
-                                             const std::string &jointstate_msg,
-                                             const std::string &pressure_left,
-                                             const std::string &pressure_right);
-  moveit::py_bindings_tools::ByteString step_open_loop(double dt, const std::string &cmdvel_msg);
-  moveit::py_bindings_tools::ByteString get_left_foot_pose();
-  moveit::py_bindings_tools::ByteString get_right_foot_pose();
-  moveit::py_bindings_tools::ByteString get_odom();
+  PyWalkWrapper(py::bytes ns);
+  py::bytes step(double dt,
+                 py::bytes &cmdvel_msg,
+                 py::bytes &imu_msg,
+                 py::bytes &jointstate_msg,
+                 py::bytes &pressure_left,
+                 py::bytes &pressure_right);
+  py::bytes step_open_loop(double dt, py::bytes &cmdvel_msg);
+  py::bytes get_left_foot_pose();
+  py::bytes get_right_foot_pose();
+  py::bytes get_odom();
   void reset();
-  void special_reset(int state, double phase, const std::string cmd_vel, bool reset_odometry);
+  void special_reset(int state, double phase, py::bytes cmd_vel, bool reset_odometry);
   void set_robot_state(int state);
-  void set_engine_dyn_reconf(const boost::python::object params);
-  void set_node_dyn_reconf(const boost::python::object params);
-  float get_phase();
-  float get_freq();
+  void set_parameters(const py::dict dict);
+  double get_phase();
+  double get_freq();
+  void spin_some();
 
- private:
+    private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
 };
 

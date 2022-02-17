@@ -100,8 +100,9 @@ class WalkNode : public rclcpp::Node {
 
   nav_msgs::msg::Odometry getOdometry();
 
- private:
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> & parameters);
+
+ private:
   std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
   void stepCb(geometry_msgs::msg::Twist::SharedPtr msg);
   void cmdVelCb(geometry_msgs::msg::Twist::SharedPtr msg);

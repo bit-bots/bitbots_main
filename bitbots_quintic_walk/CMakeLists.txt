@@ -10,7 +10,6 @@ endif ()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(PythonLibs)
-find_package(Boost REQUIRED COMPONENTS python)
 find_package(PythonLibs COMPONENTS Interpreter Development)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2 REQUIRED)
@@ -31,6 +30,9 @@ find_package(bitbots_msgs REQUIRED)
 find_package(moveit_ros REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(control_toolbox REQUIRED)
+find_package(ros2_python_extension)
+find_package(pybind11 REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkDebug.msg"
@@ -39,7 +41,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         std_msgs
         geometry_msgs)
 
-include_directories(include ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+include_directories(include ${PYTHON_INCLUDE_DIRS})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 add_compile_options(-Wall -Werror -Wno-unused)
@@ -49,10 +51,6 @@ set(SOURCES src/walk_visualizer.cpp
         src/walk_stabilizer.cpp
         src/walk_ik.cpp
         src/walk_node.cpp)
-
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
 
 set(CODE_LIBRARIES urdfdom_world urdfdom_model)
 
@@ -77,49 +75,48 @@ ament_target_dependencies(WalkNode
         moveit_ros_planning_interface
         control_toolbox)
 
-rosidl_target_interfaces(WalkNode
+rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-target_link_libraries(WalkNode ${CODE_LIBRARIES})
+target_link_libraries(WalkNode ${CODE_LIBRARIES} "${cpp_typesupport_target}")
 
 
 # create the lib
-#add_library(py_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
-#
-#ament_target_dependencies(py_quintic_walk
-#        bitbots_splines
-#        tf2_eigen
-#        tf2
-#        tf2_geometry_msgs
-#        nav_msgs
-#        std_msgs
-#        rotconv
-#        geometry_msgs
-#        sensor_msgs
-#        tf2_ros
-#        ament_cmake
-#        rclcpp
-#        humanoid_league_msgs
-#        bitbots_msgs
-#        moveit_ros
-#        moveit_ros_planning_interface)
-#
-#install(TARGETS py_quintic_walk
-#        DESTINATION lib/${PROJECT_NAME})
-#
-#rosidl_target_interfaces(py_quintic_walk
-#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-#
-## link
-#target_link_libraries(py_quintic_walk ${Boost_LIBRARIES} ${CODE_LIBRARIES})
+pybind11_add_module(libpy_quintic_walk SHARED
+        src/walk_pywrapper.cpp ${SOURCES})
+ament_target_dependencies(libpy_quintic_walk PUBLIC
+        bitbots_splines
+        tf2_eigen
+        tf2
+        tf2_geometry_msgs
+        nav_msgs
+        std_msgs
+        rotconv
+        geometry_msgs
+        sensor_msgs
+        tf2_ros
+        ament_cmake
+        rclcpp
+        humanoid_league_msgs
+        bitbots_msgs
+        moveit_ros
+        moveit_ros_planning_interface
+        ros2_python_extension)
 
+target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
+
+#ament_python_install_package(${PROJECT_NAME})
+
+install(TARGETS libpy_quintic_walk
+        DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+        )
 
 #if(BUILD_TESTING)
 #  enable_bitbots_tests()
 #endif()
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
-enable_bitbots_docs()
+#include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
+#enable_bitbots_docs()
 
 #ament_export_dependencies(bitbots_test)
 ament_export_dependencies(tf2_eigen)
