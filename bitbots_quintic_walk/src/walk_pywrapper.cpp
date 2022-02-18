@@ -6,6 +6,7 @@ void PyWalkWrapper::spin_some() {
 
 PyWalkWrapper::PyWalkWrapper(std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
   set_robot_state(0);
+  walk_node_->initializeEngine();
 }
 
 py::bytes PyWalkWrapper::step(double dt,
@@ -112,14 +113,10 @@ void PyWalkWrapper::set_parameters(py::dict params) {
   walk_node_->onSetParameters(parameters);
 }
 
-void initRoss() {
-  rclcpp::init(0, nullptr);
-}
-
 PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
 
-  m.def("initRos", &initRoss);
+  m.def("initRos", &ros2_python_extension::initRos);
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
       .def(py::init<std::string>())
