@@ -299,6 +299,7 @@ python_replacements = {
     "import rospy": "import rclpy\nfrom rclpy.node import Node",
     "rospy.Rate": "self.create_rate",
     "not rospy.is_shutdown\(\)": "rclpy.ok()",
+    "rospy.is_shutdown\(\)": "not rclpy.ok()",
     "rospy.Time.now\(\)": "self.get_clock().now()",
     "stamp = self.get_clock().now()": "stamp = self.get_clock().now().to_msg()",
     "rospy.spin\(\)": "rclpy.spin(self)",
@@ -306,14 +307,14 @@ python_replacements = {
     "rospy.loginfo\(": "self.get_logger().info(",
     "rospy.logerr\(": "self.get_logger().error(",
     "rospy.logdebug\(": "self.get_logger().debug(",
-    "rospy.logwarn_once\((.*)\)": "self.get_logger().warn(\1, once=True)",
-    "rospy.loginfo_once\((.*)\)": "self.get_logger().info(\1, once=True)",
-    "rospy.logerr_once\((.*)\)": "self.get_logger().error(\1, once=True)",
-    "rospy.logdebug_once\((.*)\)": "self.get_logger().debug(\1, once=True)",
-    "rospy.logwarn_throttle\((.*), (.*)\)": "self.get_logger().warn(\2, throttle_duration_sec=\1",
-    "rospy.loginfo_throttle\((.*), (.*)\)": "self.get_logger().info(\2, throttle_duration_sec=\1",
-    "rospy.logerr_throttle\((.*), (.*)\)": "self.get_logger().error(\2, throttle_duration_sec=\1",
-    "rospy.logdebug_throttle\((.*), (.*)\)": "self.get_logger().debug(\2, throttle_duration_sec=\1",
+    "rospy.logwarn_once\((.*)\)": r"self.get_logger().warn(\1, once=True)",
+    "rospy.loginfo_once\((.*)\)": r"self.get_logger().info(\1, once=True)",
+    "rospy.logerr_once\((.*)\)": r"self.get_logger().error(\1, once=True)",
+    "rospy.logdebug_once\((.*)\)": r"self.get_logger().debug(\1, once=True)",
+    "rospy.logwarn_throttle\((.*), (.*)\)": r"self.get_logger().warn(\2, throttle_duration_sec=\1",
+    "rospy.loginfo_throttle\((.*), (.*)\)": r"self.get_logger().info(\2, throttle_duration_sec=\1",
+    "rospy.logerr_throttle\((.*), (.*)\)": r"self.get_logger().error(\2, throttle_duration_sec=\1",
+    "rospy.logdebug_throttle\((.*), (.*)\)": r"self.get_logger().debug(\2, throttle_duration_sec=\1",
     "import actionlib": "from rclpy.action import ActionClient",
     ".send_goal\(": ".send_goal_async(",
     "rospy.Duration\(": "Duration(seconds=",
@@ -331,7 +332,7 @@ def python_replacement():
     files = list(Path(".").rglob(r"*"))
     launch_files = []
     for file in files:
-        if ".py" in file.name:
+        if ".py" in file.name and not ".pyc" in file.name:
             launch_files.append(file)
     for filename in launch_files:
         # replace the regex with the replacement in the given file
@@ -348,10 +349,8 @@ def python_replacement():
             content = re.sub("rospy.Subscriber\((.*), (.*), (.*), queue_size=(.*), tcp_nodelay=True\)",
                              r"self.create_subscription(\2, \1, \3, \4)", content)
             content = re.sub("rospy.ServiceProxy\((.*), (.*)\)", r"self.create_client(\2, \1)", content)
-
             content = re.sub("actionlib.SimpleActionClient\((.*), (.*)\)", r"ActionClient(self, \2, \1)", content)
-
-            content = re.sub("rospy.Time.from_seconds\((.*)\)", r"Time(seconds=int(\1), nanoseconds=\1 % 1 * 1e9)",
+            content = re.sub("rospy.Time.from_sec\((.*)\)", r"Time(seconds=int(\1), nanoseconds=\1 % 1 * 1e9)",
                              content)
             content = re.sub("rospy.get_param\((.*), (.*)\)",
                              r"self.get_parameter('\1').get_parameter_value().double_value", content)
@@ -359,7 +358,6 @@ def python_replacement():
                              r"self.set_parameters([rclpy.parameter.Parameter(\1, rclpy.Parameter.Type.DOUBLE, \2)])",
                              content)
             content = re.sub("rospy.Service\((.*), (.*), (.*)\)", r"self.create_client(\2, \1, \3)", content)
-
             f.seek(0)
             f.write(content)
 
@@ -921,7 +919,7 @@ if __name__ == '__main__':
 
     # Quick check to make sure this script was run from within
     # a ROS catkin package
-    if not exists(PACKAGE_XML) or not exists(CMAKELISTS):
+    if (not exists(PACKAGE_XML) or not exists(CMAKELISTS)) and not args.only_python:
         print(
             "ERROR: you must run this script from within a ROS " +
             "catkin package directory!")
