@@ -110,7 +110,7 @@ target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 ament_python_install_package(bitbots_quintic_walk_py)
 
 install(TARGETS libpy_quintic_walk
-        DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+        DESTINATION "${PYTHON_INSTALL_DIR}/bitbots_quintic_walk_py"
         )
 
 #if(BUILD_TESTING)
