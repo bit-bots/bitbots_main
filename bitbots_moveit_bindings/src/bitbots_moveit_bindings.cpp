@@ -13,12 +13,39 @@
 #include <rclcpp/duration.hpp>
 #include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
+#include "rcl_interfaces/srv/get_parameters.hpp"
 namespace py = pybind11;
-
+using namespace std::chrono_literals;
 
 class BitbotsMoveitBindings {
  public:
-  BitbotsMoveitBindings() : node_{std::make_shared<rclcpp::Node>("BitbotsMoveitBindings")} {
+  BitbotsMoveitBindings() {
+    rclcpp::NodeOptions options = rclcpp::NodeOptions().allow_undeclared_parameters(true);
+    node_ = std::make_shared<rclcpp::Node>("BitbotsMoveitBindings", options);
+
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
+    while (!parameters_client->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        rclcpp::shutdown();
+      }
+      RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
+    }
+    rcl_interfaces::msg::ListParametersResult parameter_list = parameters_client->list_parameters({"robot_description_kinematics"},10);
+    /*for (auto & name : parameter_list.names) {
+      RCLCPP_INFO(node_->get_logger(), "Found parameter %s", name.c_str());
+    }*/
+    auto parameters = parameters_client->get_parameters(parameter_list.names);
+
+    std::stringstream ss;
+    // Get a few of the parameters just set.
+    /*for (auto & parameter : parameters)
+    {
+      RCLCPP_INFO(node_->get_logger(), "Parameter name: %s ", parameter.get_name().c_str());
+      RCLCPP_INFO(node_->get_logger(), "Parameter value %s", parameter.value_to_string().c_str());
+    }*/
+    node_->set_parameters(parameters);
+
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
     robot_model_loader::RobotModelLoader loader(node_, robot_description, false);
@@ -36,6 +63,10 @@ class BitbotsMoveitBindings {
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
+
+    /*while(rclcpp::ok()){
+      rclcpp::spin(node_);
+    }*/
   }
 
   py::bytes getPositionIK(py::bytes &msg, bool approximate = false) {
