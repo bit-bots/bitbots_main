@@ -85,7 +85,16 @@ WalkNode::WalkNode(const std::string ns) :
   this->get_parameter("node.x_speed_multiplier", x_speed_multiplier_);
   this->get_parameter("node.y_speed_multiplier", y_speed_multiplier_);
   this->get_parameter("node.yaw_speed_multiplier", yaw_speed_multiplier_);
-  
+  if (x_speed_multiplier_ == 0) {
+    x_speed_multiplier_ = 1;
+  }
+  if (y_speed_multiplier_ == 0) {
+    y_speed_multiplier_ = 1;
+  }
+  if (yaw_speed_multiplier_ == 0) {
+    yaw_speed_multiplier_ = 1;
+  }
+
   /* init publisher and subscriber */
   pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("walk_engine_odometry", 1);
@@ -168,9 +177,9 @@ void WalkNode::run() {
             robot_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF;
 
         // reset when we start walking, otherwise PID controller will use old I value
-        if ((last_request.linear_orders.x() == 0 && last_request.linear_orders.y() == 0 && last_request.angular_z == 0)
+        if ((last_request.linear_orders[0] == 0 && last_request.linear_orders[1] == 0 && last_request.angular_z == 0)
             &&
-                (current_request_.linear_orders.x() != 0 || current_request_.linear_orders.y() != 0
+                (current_request_.linear_orders[0] != 0 || current_request_.linear_orders[1] != 0
                     || current_request_.angular_z != 0)) {
           stabilizer_.reset();
         }
@@ -328,11 +337,11 @@ geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt,
   geometry_msgs::msg::Pose right_foot_goal_msg;
   // decide which foot is which
   if (current_response_.is_left_support_foot) {
-    tf2::toMsg(trunk_to_support_foot_goal, left_foot_goal_msg);
-    tf2::toMsg(trunk_to_flying_foot_goal, right_foot_goal_msg);
+    bitbots_quintic_walk::tf_pose_to_msg(trunk_to_support_foot_goal, left_foot_goal_msg);
+    bitbots_quintic_walk::tf_pose_to_msg(trunk_to_flying_foot_goal, right_foot_goal_msg);
   } else {
-    tf2::toMsg(trunk_to_support_foot_goal, right_foot_goal_msg);
-    tf2::toMsg(trunk_to_flying_foot_goal, left_foot_goal_msg);
+    bitbots_quintic_walk::tf_pose_to_msg(trunk_to_support_foot_goal, right_foot_goal_msg);
+    bitbots_quintic_walk::tf_pose_to_msg(trunk_to_flying_foot_goal, left_foot_goal_msg);
   }
   geometry_msgs::msg::PoseArray pose_array;
   pose_array.poses = {left_foot_goal_msg, right_foot_goal_msg};
@@ -535,7 +544,6 @@ void WalkNode::kickCb(const std_msgs::msg::Bool::SharedPtr msg) {
 }
 
 rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  RCLCPP_WARN(this->get_logger(), "Set parameters");
   for (const auto &parameter: parameters) {
     if (parameter.get_name() == "node.ik_timeout") {
       ik_.setIKTimeout(parameter.as_double());
@@ -618,7 +626,11 @@ nav_msgs::msg::Odometry WalkNode::getOdometry() {
   tf2::Transform odom_to_trunk = support_foot_tf * current_response_.support_foot_to_trunk;
   tf2::Vector3 pos = odom_to_trunk.getOrigin();
   geometry_msgs::msg::Quaternion quat_msg;
-  tf2::convert(odom_to_trunk.getRotation().normalize(), quat_msg);
+  tf2::Quaternion quat_normalized = odom_to_trunk.getRotation().normalize();
+  quat_msg.x = quat_normalized.x();
+  quat_msg.y = quat_normalized.y();
+  quat_msg.z = quat_normalized.z();
+  quat_msg.w = quat_normalized.w();
 
   rclcpp::Time current_time = this->get_clock()->now();
 
@@ -629,13 +641,12 @@ nav_msgs::msg::Odometry WalkNode::getOdometry() {
   odom_msg_.pose.pose.position.x = pos[0];
   odom_msg_.pose.pose.position.y = pos[1];
   odom_msg_.pose.pose.position.z = pos[2];
-
   odom_msg_.pose.pose.orientation = quat_msg;
-  geometry_msgs::msg::Twist twist;
 
-  twist.linear.x = current_request_.linear_orders.x() * walk_engine_.getFreq() * 2 / x_speed_multiplier_;
-  twist.linear.y = current_request_.linear_orders.y() * walk_engine_.getFreq() / y_speed_multiplier_;
-  twist.linear.z = current_request_.linear_orders.z() * walk_engine_.getFreq() * 2;
+  geometry_msgs::msg::Twist twist;
+  twist.linear.x = current_request_.linear_orders[0] * walk_engine_.getFreq() * 2 / x_speed_multiplier_;
+  twist.linear.y = current_request_.linear_orders[1] * walk_engine_.getFreq() / y_speed_multiplier_;
+  twist.linear.z = current_request_.linear_orders[2] * walk_engine_.getFreq() * 2;
   twist.angular.z = current_request_.angular_z * walk_engine_.getFreq() * 2 / yaw_speed_multiplier_;
 
   odom_msg_.twist.twist = twist;

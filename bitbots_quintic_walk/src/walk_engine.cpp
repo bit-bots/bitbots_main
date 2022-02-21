@@ -30,7 +30,7 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
   reset();
 
   // need to use the node reference to get the parameters
-  node_->declare_parameter<double>("engine.freq", 0);
+  node_->declare_parameter<double>("engine.freq", 1);
   node_->declare_parameter<double>("engine.double_support_ratio", 0);
   node_->declare_parameter<double>("engine.foot_distance", 0);
   node_->declare_parameter<double>("engine.foot_rise", 0);
@@ -93,6 +93,10 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
   right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
   // create splines one time to have no empty splines during first idle phase
   buildStartMovementTrajectories();
+
+  if(params_.foot_distance == 0){
+    RCLCPP_WARN(node_->get_logger(), "Parameters are probably not loaded correctly");
+  }
 
 }
 
@@ -1082,13 +1086,13 @@ void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
-void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angular_z) {
+void WalkEngine::stepFromOrders(const std::vector<double> &linear_orders, double angular_z) {
   //Compute step diff in next support foot frame
   tf2::Transform tmp_diff = tf2::Transform();
   tmp_diff.setIdentity();
   //No change in forward step and upward step
-  tmp_diff.getOrigin()[0] = linear_orders.x();
-  tmp_diff.getOrigin()[2] = linear_orders.z();
+  tmp_diff.getOrigin()[0] = linear_orders[0];
+  tmp_diff.getOrigin()[2] = linear_orders[1];
   //Add lateral foot offset
   if (is_left_support_foot_) {
     tmp_diff.getOrigin()[1] = params_.foot_distance;
@@ -1098,10 +1102,10 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if (
-      (is_left_support_foot_ && linear_orders.y() > 0.0) ||
-          (!is_left_support_foot_ && linear_orders.y() < 0.0)
+      (is_left_support_foot_ && linear_orders[1] > 0.0) ||
+          (!is_left_support_foot_ && linear_orders[1] < 0.0)
       ) {
-    tmp_diff.getOrigin()[1] += linear_orders.y();
+    tmp_diff.getOrigin()[1] += linear_orders[1];
   }
   //No change in turn (in order to rotate around trunk center)
   tf2::Quaternion quat;
