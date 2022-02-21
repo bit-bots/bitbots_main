@@ -20,9 +20,11 @@ using namespace std::chrono_literals;
 class BitbotsMoveitBindings {
  public:
   BitbotsMoveitBindings() {
+    // create a node with allowing undeclared parameters, as we will copy some from the move_group node
     rclcpp::NodeOptions options = rclcpp::NodeOptions().allow_undeclared_parameters(true);
     node_ = std::make_shared<rclcpp::Node>("BitbotsMoveitBindings", options);
 
+    // get all kinematics parameters from the move_group node
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
     while (!parameters_client->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
@@ -32,19 +34,12 @@ class BitbotsMoveitBindings {
       RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
     }
     rcl_interfaces::msg::ListParametersResult parameter_list = parameters_client->list_parameters({"robot_description_kinematics"},10);
-    /*for (auto & name : parameter_list.names) {
-      RCLCPP_INFO(node_->get_logger(), "Found parameter %s", name.c_str());
-    }*/
     auto parameters = parameters_client->get_parameters(parameter_list.names);
 
-    // Get a few of the parameters just set.
-    /*for (auto & parameter : parameters)
-    {
-      RCLCPP_INFO(node_->get_logger(), "Parameter name: %s ", parameter.get_name().c_str());
-      RCLCPP_INFO(node_->get_logger(), "Parameter value %s", parameter.value_to_string().c_str());
-    }*/
+    // set the parameters to our node
     node_->set_parameters(parameters);
 
+    // now that all parameters are set we can load the robot model and the kinematic solvers
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
     loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(robot_model_loader::RobotModelLoader(node_, robot_description, false));
@@ -57,16 +52,13 @@ class BitbotsMoveitBindings {
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
 
+    // get planning scene for collision checking
     planning_scene_monitor_ =
         std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(node_, robot_description);
     planning_scene_ = planning_scene_monitor_->getPlanningScene();
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
-
-    /*while(rclcpp::ok()){
-      rclcpp::spin(node_);
-    }*/
   }
 
   py::bytes getPositionIK(py::bytes &msg, bool approximate = false) {
