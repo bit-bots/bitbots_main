@@ -5,15 +5,32 @@
 #include <memory>
 #include <iostream>
 using std::placeholders::_1;
+using namespace std::chrono_literals;
 
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns) :
-    Node("QuinticWalk"),
+    Node("QuinticWalk", rclcpp::NodeOptions().allow_undeclared_parameters(true)),
     walk_engine_(SharedPtr(this)),
     robot_model_loader_(SharedPtr(this), "robot_description", false),
     stabilizer_(SharedPtr(this)),
     visualizer_(SharedPtr(this)) {
+
+  // get all kinematics parameters from the move_group node
+  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+  while (!parameters_client->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+      rclcpp::shutdown();
+    }
+    RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+  }
+  rcl_interfaces::msg::ListParametersResult
+      parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+  auto parameters = parameters_client->get_parameters(parameter_list.names);
+
+  // set the parameters to our node
+  this->set_parameters(parameters);
 
   this->get_parameter("base_link_frame", base_link_frame_);
   this->get_parameter("r_sole_frame", r_sole_frame_);
