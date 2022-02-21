@@ -37,7 +37,6 @@ class BitbotsMoveitBindings {
     }*/
     auto parameters = parameters_client->get_parameters(parameter_list.names);
 
-    std::stringstream ss;
     // Get a few of the parameters just set.
     /*for (auto & parameter : parameters)
     {
@@ -48,8 +47,9 @@ class BitbotsMoveitBindings {
 
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
-    robot_model_loader::RobotModelLoader loader(node_, robot_description, false);
-    robot_model_ = loader.getModel();
+    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(robot_model_loader::RobotModelLoader(node_, robot_description, false));
+    loader_->loadKinematicsSolvers();
+    robot_model_ = loader_->getModel();
     if (!robot_model_) {
       RCLCPP_ERROR(node_->get_logger(),
                    "failed to load robot model %s. Did you start the blackboard (bitbots_bringup load_robot_description.launch)?",
@@ -57,9 +57,9 @@ class BitbotsMoveitBindings {
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
 
-    auto planning_scene_monitor =
+    planning_scene_monitor_ =
         std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(node_, robot_description);
-    planning_scene_ = planning_scene_monitor->getPlanningScene();
+    planning_scene_ = planning_scene_monitor_->getPlanningScene();
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
@@ -186,8 +186,10 @@ class BitbotsMoveitBindings {
   }
 
  private:
+  robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
+  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
   std::shared_ptr<rclcpp::Node> node_;
 };
