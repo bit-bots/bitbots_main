@@ -42,6 +42,21 @@ class PyWalk:
         result = deserialize_message(stepi, JointCommand)
         return result
 
+    def step_relative(self, dt: float, step_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
+        if dt == 0.0:
+            # preventing weird spline interpolation errors on edge case
+            dt = 0.001
+        stepi = self.py_walk_wrapper.step_relative(
+            dt,
+            serialize_message(step_msg),
+            serialize_message(imu_msg),
+            serialize_message(jointstate_msg),
+            serialize_message(pressure_left),
+            serialize_message(pressure_right))
+
+        result = deserialize_message(stepi, JointCommand)
+        return result
+
     def step_open_loop(self, dt: float, cmdvel_msg: Twist):
         if dt == 0.0:
             # preventing weird spline interpolation errors on edge case

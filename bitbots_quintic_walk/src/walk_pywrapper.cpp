@@ -29,6 +29,27 @@ py::bytes PyWalkWrapper::step(double dt,
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
+
+py::bytes PyWalkWrapper::step_relative(double dt,
+                              py::bytes &step_msg,
+                              py::bytes &imu_msg,
+                              py::bytes &jointstate_msg,
+                              py::bytes &pressure_left,
+                              py::bytes &pressure_right) {
+  bitbots_msgs::msg::JointCommand result = walk_node_->step_relative(dt,
+                                                            std::make_shared<geometry_msgs::msg::Twist>(fromPython<
+                                                                geometry_msgs::msg::Twist>(step_msg)),
+                                                            std::make_shared<sensor_msgs::msg::Imu>(fromPython<
+                                                                sensor_msgs::msg::Imu>(imu_msg)),
+                                                            std::make_shared<sensor_msgs::msg::JointState>(fromPython<
+                                                                sensor_msgs::msg::JointState>(jointstate_msg)),
+                                                            std::make_shared<bitbots_msgs::msg::FootPressure>(fromPython<
+                                                                bitbots_msgs::msg::FootPressure>(pressure_left)),
+                                                            std::make_shared<bitbots_msgs::msg::FootPressure>(fromPython<
+                                                                bitbots_msgs::msg::FootPressure>(pressure_right)));
+  return toPython<bitbots_msgs::msg::JointCommand>(result);
+}
+
 py::bytes PyWalkWrapper::step_open_loop(double dt, py::bytes &cmdvel_msg) {
   geometry_msgs::msg::PoseArray result = walk_node_->step_open_loop(dt,
                                                                     std::make_shared<geometry_msgs::msg::Twist>(
@@ -121,6 +142,7 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
       .def(py::init<std::string>())
       .def("step", &PyWalkWrapper::step)
+      .def("step_relative", &PyWalkWrapper::step_relative)
       .def("step_open_loop", &PyWalkWrapper::step_open_loop)
       .def("get_left_foot_pose", &PyWalkWrapper::get_left_foot_pose)
       .def("get_right_foot_pose", &PyWalkWrapper::get_right_foot_pose)
