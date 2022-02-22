@@ -27,6 +27,12 @@ class PyWalkWrapper {
                  py::bytes &jointstate_msg,
                  py::bytes &pressure_left,
                  py::bytes &pressure_right);
+  py::bytes step_relative(double dt,
+                          py::bytes &step_msg,
+                          py::bytes &imu_msg,
+                          py::bytes &jointstate_msg,
+                          py::bytes &pressure_left,
+                          py::bytes &pressure_right);
   py::bytes step_open_loop(double dt, py::bytes &cmdvel_msg);
   py::bytes get_left_foot_pose();
   py::bytes get_right_foot_pose();
@@ -39,7 +45,7 @@ class PyWalkWrapper {
   double get_freq();
   void spin_some();
 
-    private:
+ private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
 };
 

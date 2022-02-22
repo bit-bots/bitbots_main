@@ -339,6 +339,34 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt,
   return joint_goals;
 }
 
+bitbots_msgs::msg::JointCommand WalkNode::step_relative(double dt,
+                                               const geometry_msgs::msg::Twist::SharedPtr step_msg,
+                                               const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                               const sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
+                                               const bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
+                                               const bitbots_msgs::msg::FootPressure::SharedPtr pressure_right) {
+  // method for python interface. take all messages as parameters instead of using ROS
+  // use length of next step instead of cmd_vel
+  got_new_goals_ = true;
+  current_request_.single_step = false;
+
+  current_request_.linear_orders = {step_msg->linear.x, step_msg->linear.y, step_msg->linear.z};
+  current_request_.angular_z = step_msg->angular.z;
+
+  // special command to completely stop the walking
+  current_request_.stop_walk = step_msg->angular.x != 0;
+
+  imuCb(imu_msg);
+  jointStateCb(jointstate_msg);
+  pressureLeftCb(pressure_left);
+  pressureRightCb(pressure_right);
+  // we don't use external robot state
+  current_request_.walkable_state = true;
+  // update walk engine response
+  bitbots_msgs::msg::JointCommand joint_goals = step(dt);
+  return joint_goals;
+}
+
 geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt,
                                                        const geometry_msgs::msg::Twist::SharedPtr cmdvel_msg) {
   cmdVelCb(cmdvel_msg);

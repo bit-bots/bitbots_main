@@ -54,14 +54,19 @@ class WalkNode : public rclcpp::Node {
  public:
   explicit WalkNode(std::string ns);
   bitbots_msgs::msg::JointCommand step(double dt);
-  bitbots_msgs::msg::JointCommand step(
-      double dt,
-      geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
-      sensor_msgs::msg::Imu::SharedPtr imu_msg,
-      sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
-      bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
-      bitbots_msgs::msg::FootPressure::SharedPtr pressure_right);
-  geometry_msgs::msg::PoseArray step_open_loop(double dt, const geometry_msgs::msg::Twist::SharedPtr cmdvel_msg);
+  bitbots_msgs::msg::JointCommand step(double dt,
+                                       geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
+                                       sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                       sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
+                                       bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
+                                       bitbots_msgs::msg::FootPressure::SharedPtr pressure_right);
+  bitbots_msgs::msg::JointCommand step_relative(double dt,
+                                                geometry_msgs::msg::Twist::SharedPtr step_msg,
+                                                sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                                sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
+                                                bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
+                                                bitbots_msgs::msg::FootPressure::SharedPtr pressure_right);
+  geometry_msgs::msg::PoseArray step_open_loop(double dt, geometry_msgs::msg::Twist::SharedPtr cmdvel_msg);
 
   /**
    * Small helper method to get foot position via python wrapper
