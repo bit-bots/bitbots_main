@@ -117,20 +117,12 @@ void PyWalkWrapper::set_robot_state(int state) {
   walk_node_->robotStateCb(std::make_shared<humanoid_league_msgs::msg::RobotControlState>(state_msg));
 }
 
-bool string2bool(std::string &v) {
-  return !v.empty() &&
-      (strcasecmp(v.c_str(), "true") == 0 ||
-          atoi(v.c_str()) != 0);
-}
+void PyWalkWrapper::set_parameter(py::bytes parameter_msg) {
+  // convert serialized parameter msg to parameter object
+  rclcpp::Parameter parameter = rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
 
-void PyWalkWrapper::set_parameters(py::dict params) {
-  std::vector<rclcpp::Parameter> parameters;
-  for (auto item: params) {
-    rclcpp::Parameter parameter =
-        rclcpp::Parameter(item.first.cast<std::string>(), rclcpp::ParameterValue(item.second.cast<std::string>()));
-    parameters.push_back(parameter);
-  };
-
+  // needs to be a vector
+  std::vector<rclcpp::Parameter> parameters = {parameter};
   walk_node_->onSetParameters(parameters);
 }
 
@@ -149,7 +141,7 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
       .def("set_robot_state", &PyWalkWrapper::set_robot_state)
       .def("reset", &PyWalkWrapper::reset)
       .def("special_reset", &PyWalkWrapper::special_reset)
-      .def("set_parameters", &PyWalkWrapper::set_parameters)
+      .def("set_parameter", &PyWalkWrapper::set_parameter)
       .def("get_phase", &PyWalkWrapper::get_phase)
       .def("get_freq", &PyWalkWrapper::get_freq)
       .def("get_odom", &PyWalkWrapper::get_odom)

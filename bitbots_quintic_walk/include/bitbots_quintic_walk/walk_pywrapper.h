@@ -14,7 +14,6 @@
 #include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
 
-
 namespace py = pybind11;
 using namespace ros2_python_extension;
 
@@ -40,7 +39,7 @@ class PyWalkWrapper {
   void reset();
   void special_reset(int state, double phase, py::bytes cmd_vel, bool reset_odometry);
   void set_robot_state(int state);
-  void set_parameters(const py::dict dict);
+  void set_parameter(const py::bytes parameter_msg);
   double get_phase();
   double get_freq();
   void spin_some();
