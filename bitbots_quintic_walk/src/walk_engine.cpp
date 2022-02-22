@@ -1137,8 +1137,6 @@ tf2::Transform WalkEngine::getRight() {
 }
 
 bool WalkEngine::onSetParameters(const rclcpp::Parameter &parameter) {
-  RCLCPP_WARN(node_->get_logger(), "dt was 0");
-
   if (parameter.get_name() == "engine.freq") {
     params_.freq = parameter.as_double();
   } else if (parameter.get_name() == "engine.double_support_ratio") {

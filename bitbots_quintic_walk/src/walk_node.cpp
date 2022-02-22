@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns) :
-    Node("QuinticWalk", rclcpp::NodeOptions().allow_undeclared_parameters(true)),
+    Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true)),
     walk_engine_(SharedPtr(this)),
     robot_model_loader_(SharedPtr(this), "robot_description", false),
     stabilizer_(SharedPtr(this)),
@@ -28,7 +28,6 @@ WalkNode::WalkNode(const std::string ns) :
   rcl_interfaces::msg::ListParametersResult
       parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
   auto parameters = parameters_client->get_parameters(parameter_list.names);
-
   // set the parameters to our node
   this->set_parameters(parameters);
 
@@ -634,6 +633,8 @@ rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::ve
       ground_min_pressure_ = parameter.as_double();
     } else if (parameter.get_name() == "node.joint_min_effort") {
       joint_min_effort_ = parameter.as_double();
+    } else if (parameter.get_name() == "node.phase_reset_phase") {
+      phase_reset_phase_ = parameter.as_double();
     } else if (parameter.get_name() == "node.pause_duration") {
       walk_engine_.setPauseDuration(parameter.as_double());
     } else {

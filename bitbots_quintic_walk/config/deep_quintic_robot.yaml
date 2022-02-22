@@ -84,21 +84,15 @@ walking:
 
       debug_active: False
 
-      trunkYOnlyInDoubleSupport: False
+      max_step_x: 10000.0
+      max_step_y: 10000.0
+      max_step_xy: 10000.0
+      max_step_z: 100000.0
+      max_step_angular: 10000.0
 
-      max_step_x: 10000
-      max_step_y: 10000
-      max_step_xy: 10000
-      max_step_z: 100000
-      max_step_angular: 10000
-
-      x_speed_multiplier: 1
-      y_speed_multiplier: 1
-      yaw_speed_multiplier: 1
-
-      vel: -1
-      acc: -1
-      pwm: -1
+      x_speed_multiplier: 1.0
+      y_speed_multiplier: 1.0
+      yaw_speed_multiplier: 1.0
 
       imu_active: False
       imu_pitch_threshold: 0.19
@@ -110,27 +104,25 @@ walking:
       phase_reset_active: False
       ground_min_pressure: 1.5
       phase_reset_phase: 0.25
-      joint_min_effort: 35
+      joint_min_effort: 35.0
       effort_phase_reset_active: False
-
-      publish_odom_tf: False
 
     pid_trunk_fused_pitch:
       p: 0.0
-      i: 0
-      d: 0
-      i_clamp: 0
-      i_clamp_min: 0
-      i_clamp_max: 0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0.0
+      i_clamp_min: 0.0
+      i_clamp_max: 0.0
       antiwindup: False
       publish_state: False
 
     pid_trunk_fused_roll:
       p: 0.0
-      i: 0
-      d: 0
-      i_clamp: 0
-      i_clamp_min: 0
-      i_clamp_max: 0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0.0
+      i_clamp_min: 0.0
+      i_clamp_max: 0.0
       antiwindup: False
       publish_state: False

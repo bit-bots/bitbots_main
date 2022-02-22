@@ -1,3 +1,4 @@
+from ros2param.api import parse_parameter_dict
 from std_msgs.msg import Int64
 
 from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper, initRos
@@ -7,7 +8,7 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from rclpy.serialization import serialize_message, deserialize_message
-
+from rclpy.parameter import Parameter
 
 class PyWalk:
     def __init__(self, namespace=""):
@@ -77,7 +78,9 @@ class PyWalk:
         return result
 
     def set_parameters(self, param_dict):
-        self.py_walk_wrapper.set_parameters(param_dict)
+        parameters = parse_parameter_dict(namespace="", parameter_dict=param_dict)
+        for parameter in parameters:
+            self.py_walk_wrapper.set_parameter(serialize_message(parameter))
 
     def get_phase(self):
         return self.py_walk_wrapper.get_phase()
