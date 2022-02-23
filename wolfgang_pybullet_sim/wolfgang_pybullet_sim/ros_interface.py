@@ -11,9 +11,9 @@ from std_msgs.msg import Float32, Bool
 from tf_transformations import euler_from_quaternion
 
 
-class ROSInterface(Node):
-    def __init__(self, simulation, namespace='', node=True):
-        super().__init__('pybullet_sim')
+class ROSInterface():
+    def __init__(self, node:Node, simulation, namespace=''):
+        self.node = node
         self.namespace = namespace
         self.simulation = simulation
         self.namespace = namespace
@@ -38,51 +38,51 @@ class ROSInterface(Node):
         # we just use the first robot
         self.robot_index = self.simulation.robot_indexes[0]
 
-        self.declare_parameter("contact_stiffness", 0.0)
-        self.declare_parameter("joint_damping", 0.0)
-        self.declare_parameter("spinning_friction", 0.0)
-        self.declare_parameter("contact_damping", 0.0)
-        self.declare_parameter("lateral_friction", 0.0)
-        self.declare_parameter("rolling_friction", 0.0)
-        self.declare_parameter("cutoff", 0)
-        self.declare_parameter("order", 0)
+        self.node.declare_parameter("contact_stiffness", 0.0)
+        self.node.declare_parameter("joint_damping", 0.0)
+        self.node.declare_parameter("spinning_friction", 0.0)
+        self.node.declare_parameter("contact_damping", 0.0)
+        self.node.declare_parameter("lateral_friction", 0.0)
+        self.node.declare_parameter("rolling_friction", 0.0)
+        self.node.declare_parameter("cutoff", 0)
+        self.node.declare_parameter("order", 0)
 
-        self.add_on_set_parameters_callback(self.parameters_callback)
+        self.node.add_on_set_parameters_callback(self.parameters_callback)
 
-        self.simulation.set_foot_dynamics(self.get_parameter("contact_damping").get_parameter_value().double_value,
-                                          self.get_parameter("contact_stiffness").get_parameter_value().double_value,
-                                          self.get_parameter("joint_damping").get_parameter_value().double_value,
-                                          self.get_parameter("lateral_friction").get_parameter_value().double_value,
-                                          self.get_parameter("spinning_friction").get_parameter_value().double_value,
-                                          self.get_parameter("rolling_friction").get_parameter_value().double_value)
-        self.simulation.set_filter_params(self.get_parameter("cutoff").get_parameter_value().integer_value,
-                                          self.get_parameter("order").get_parameter_value().integer_value)
+        self.simulation.set_foot_dynamics(self.node.get_parameter("contact_damping").get_parameter_value().double_value,
+                                          self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
+                                          self.node.get_parameter("joint_damping").get_parameter_value().double_value,
+                                          self.node.get_parameter("lateral_friction").get_parameter_value().double_value,
+                                          self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
+                                          self.node.get_parameter("rolling_friction").get_parameter_value().double_value)
+        self.simulation.set_filter_params(self.node.get_parameter("cutoff").get_parameter_value().integer_value,
+                                          self.node.get_parameter("order").get_parameter_value().integer_value)
 
         # publisher
-        self.left_foot_pressure_publisher = self.create_publisher(FootPressure,
+        self.left_foot_pressure_publisher = self.node.create_publisher(FootPressure,
                                                                   self.namespace + "foot_pressure_left/raw", 1)
-        self.right_foot_pressure_publisher = self.create_publisher(FootPressure,
+        self.right_foot_pressure_publisher = self.node.create_publisher(FootPressure,
                                                                    self.namespace + "foot_pressure_right/raw", 1)
-        self.left_foot_pressure_publisher_filtered = self.create_publisher(FootPressure,
+        self.left_foot_pressure_publisher_filtered = self.node.create_publisher(FootPressure,
                                                                            self.namespace + "foot_pressure_left/filtered",
                                                                            1)
-        self.right_foot_pressure_publisher_filtered = self.create_publisher(FootPressure,
+        self.right_foot_pressure_publisher_filtered = self.node.create_publisher(FootPressure,
                                                                             self.namespace + "foot_pressure_right/filtered",
                                                                             1)
-        self.joint_publisher = self.create_publisher(JointState, self.namespace + "joint_states", 1)
-        self.imu_publisher = self.create_publisher(Imu, self.namespace + "imu/data_raw", 1)
-        self.clock_publisher = self.create_publisher(Clock, self.namespace + "clock", 1)
-        self.real_time_factor_publisher = self.create_publisher(Float32, self.namespace + "real_time_factor", 1)
-        self.true_odom_publisher = self.create_publisher(Odometry, self.namespace + "true_odom", 1)
-        self.cop_l_pub_ = self.create_publisher(PointStamped, self.namespace + "cop_l", 1)
-        self.cop_r_pub_ = self.create_publisher(PointStamped, self.namespace + "cop_r", 1)
+        self.joint_publisher = self.node.create_publisher(JointState, self.namespace + "joint_states", 1)
+        self.imu_publisher = self.node.create_publisher(Imu, self.namespace + "imu/data_raw", 1)
+        self.clock_publisher = self.node.create_publisher(Clock, self.namespace + "clock", 1)
+        self.real_time_factor_publisher = self.node.create_publisher(Float32, self.namespace + "real_time_factor", 1)
+        self.true_odom_publisher = self.node.create_publisher(Odometry, self.namespace + "true_odom", 1)
+        self.cop_l_pub_ = self.node.create_publisher(PointStamped, self.namespace + "cop_l", 1)
+        self.cop_r_pub_ = self.node.create_publisher(PointStamped, self.namespace + "cop_r", 1)
 
         # subscriber
-        self.joint_goal_subscriber = self.create_subscription(JointCommand,
+        self.joint_goal_subscriber = self.node.create_subscription(JointCommand,
                                                               self.namespace + "DynamixelController/command",
                                                               self.joint_goal_cb, 1)
 
-        self.reset_subscriber = self.create_subscription(Bool, self.namespace + "reset",
+        self.reset_subscriber = self.node.create_subscription(Bool, self.namespace + "reset",
                                                          self.reset_cb, 1)
 
     def step(self):
@@ -96,10 +96,10 @@ class ROSInterface(Node):
         self.compute_real_time_factor()
 
     def run_simulation(self, duration=None, sleep=0):
-        start_time = self.get_clock().now().seconds_nanoseconds()[0] + \
-                     self.get_clock().now().seconds_nanoseconds()[1] / 1e9
-        while rclpy.ok() and (duration is None or (self.get_clock().now().seconds_nanoseconds()[0] +
-                                                   self.get_clock().now().seconds_nanoseconds()[1] / 1e9)
+        start_time = self.node.get_clock().now().seconds_nanoseconds()[0] + \
+                     self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9
+        while rclpy.ok() and (duration is None or (self.node.get_clock().now().seconds_nanoseconds()[0] +
+                                                   self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
                               - start_time < duration):
             self.step()
             time.sleep(sleep)
@@ -158,7 +158,7 @@ class ROSInterface(Node):
 
     def get_pressure_filtered_left(self):
         if len(self.simulation.pressure_sensors) == 0:
-            self.get_logger().warn_once("No pressure sensors found in simulation model")
+            self.node.get_logger().warn_once("No pressure sensors found in simulation model")
             return self.foot_msg_left
         f_llb = self.simulation.pressure_sensors[self.robot_index]["LLB"].get_force()
         f_llf = self.simulation.pressure_sensors[self.robot_index]["LLF"].get_force()
@@ -172,7 +172,7 @@ class ROSInterface(Node):
 
     def get_pressure_filtered_right(self):
         if len(self.simulation.pressure_sensors) == 0:
-            self.get_logger().warn_once("No pressure sensors found in simulation model")
+            self.node.get_logger().warn_once("No pressure sensors found in simulation model")
             return self.foot_msg_right
         f_rlb = self.simulation.pressure_sensors[self.robot_index]["RLB"].get_force()
         f_rlf = self.simulation.pressure_sensors[self.robot_index]["RLF"].get_force()
@@ -187,7 +187,7 @@ class ROSInterface(Node):
     def publish_foot_pressure(self):
         # some models dont have sensors
         if len(self.simulation.pressure_sensors) == 0:
-            self.get_logger().warn_once("No pressure sensors found in simulation model")
+            self.node.get_logger().warn_once("No pressure sensors found in simulation model")
             return
 
         f_llb = self.simulation.pressure_sensors[self.robot_index]["LLB"].get_force()
@@ -280,11 +280,11 @@ class ROSInterface(Node):
 
     def parameters_callback(self, params):
         # we just get all parameters again, since it is easier
-        self.simulation.set_foot_dynamics(self.get_parameter("contact_damping").get_parameter_value().double_value,
-                                          self.get_parameter("contact_stiffness").get_parameter_value().double_value,
-                                          self.get_parameter("joint_damping").get_parameter_value().double_value,
-                                          self.get_parameter("lateral_friction").get_parameter_value().double_value,
-                                          self.get_parameter("spinning_friction").get_parameter_value().double_value,
-                                          self.get_parameter("rolling_friction").get_parameter_value().double_value)
-        self.simulation.set_filter_params(self.get_parameter("cutoff").get_parameter_value().int_value,
-                                          self.get_parameter("order").get_parameter_value().int_value)
+        self.simulation.set_foot_dynamics(self.node.get_parameter("contact_damping").get_parameter_value().double_value,
+                                          self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
+                                          self.node.get_parameter("joint_damping").get_parameter_value().double_value,
+                                          self.node.get_parameter("lateral_friction").get_parameter_value().double_value,
+                                          self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
+                                          self.node.get_parameter("rolling_friction").get_parameter_value().double_value)
+        self.simulation.set_filter_params(self.node.get_parameter("cutoff").get_parameter_value().int_value,
+                                          self.node.get_parameter("order").get_parameter_value().int_value)

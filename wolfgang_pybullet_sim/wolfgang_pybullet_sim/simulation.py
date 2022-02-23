@@ -9,7 +9,6 @@ from time import sleep, time
 
 import rclpy
 import tf_transformations
-from rclpy.node import Node
 import tf2_py
 from scipy import signal
 import pybullet_data
@@ -142,7 +141,6 @@ class Simulation:
 
         if self.urdf_path is None:
             # use standards
-            rospack = rospkg.RosPack()
             if self.robot_type == "op2":
                 self.urdf_path = get_package_share_directory("robotis_op2_description") + "/urdf/robot.urdf"
             elif self.robot_type == "sigmaban":
