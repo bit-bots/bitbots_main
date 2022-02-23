@@ -71,7 +71,8 @@ walking:
     joint_min_effort: 35
     effort_phase_reset_active: False
 
-  pid_trunk_pitch:
+pid_trunk_pitch:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -79,9 +80,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_trunk_roll:
+pid_trunk_roll:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -89,9 +90,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_trunk_fused_pitch:
+pid_trunk_fused_pitch:
+  ros__parameters:
     p: 0.0
     i: 0
     d: 0
@@ -99,9 +100,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_trunk_fused_roll:
+pid_trunk_fused_roll:
+  ros__parameters:
     p: 0.0
     i: 0
     d: 0
@@ -109,9 +110,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_trunk_gyro_roll:
+pid_trunk_gyro_roll:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -119,9 +120,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_trunk_gyro_pitch:
+pid_trunk_gyro_pitch:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -129,9 +130,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_cop_x:
+pid_cop_x:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -139,9 +140,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_cop_y:
+pid_cop_y:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -149,9 +150,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_ankle_left_pitch:
+pid_ankle_left_pitch:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -159,9 +160,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_ankle_right_pitch:
+pid_ankle_right_pitch:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -169,9 +170,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_ankle_left_roll:
+pid_ankle_left_roll:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -179,9 +180,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_ankle_right_roll:
+pid_ankle_right_roll:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -189,9 +190,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_hip_pitch:
+pid_hip_pitch:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -199,9 +200,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_hip_roll:
+pid_hip_roll:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -209,9 +210,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_foot_pos_x:
+pid_foot_pos_x:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -219,9 +220,9 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True
 
-  pid_foot_pos_y:
+pid_foot_pos_y:
+  ros__parameters:
     p: 0
     i: 0
     d: 0
@@ -229,4 +230,3 @@ walking:
     i_clamp_min: 0
     i_clamp_max: 0
     antiwindup: False
-    publish_state: True

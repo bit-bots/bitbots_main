@@ -13,7 +13,7 @@ WalkNode::WalkNode(const std::string ns) :
     Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true)),
     walk_engine_(SharedPtr(this)),
     robot_model_loader_(SharedPtr(this), "robot_description", false),
-    stabilizer_(SharedPtr(this)),
+    stabilizer_(),
     visualizer_(SharedPtr(this)) {
 
   // get all kinematics parameters from the move_group node
