@@ -12,9 +12,8 @@ from cv_bridge import CvBridge
 from threading import Thread, Lock
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PolygonStamped
-from humanoid_league_msgs.msg import BallInImageArray, LineInformationInImage, \
-    ObstacleInImageArray, ObstacleInImage, RegionOfInterestWithImage, \
-    GoalPostInImageArray, Audio
+from humanoid_league_msgs.msg import LineInformationInImage, Audio
+from soccer_vision_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
 
@@ -25,6 +24,7 @@ logger = logging.get_logger('bitbots_vision')
 try:
     from profilehooks import profile, timecall # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
+    profile = lambda x: x
     logger.info("No Profiling avalabile")
 
 
@@ -66,11 +66,9 @@ class Vision(Node):
         self._pub_red_mask_image = None
         self._pub_blue_mask_image = None
         self._pub_field_mask_image = None
-        self._pub_dynamic_color_lookup_table_field_mask_image = None
 
         # Subscriber placeholder
         self._sub_image = None
-        self._sub_dynamic_color_lookup_table_msg_topic = None
 
         # Debug image drawer placeholder
         self._debug_image_creator = None
@@ -157,13 +155,13 @@ class Vision(Node):
             else:
                 logger.info('HSV mask image publishing is disabled')
 
-        # Should the (dynamic color lookup table-) field mask image be published?
+        # Should the field mask image be published?
         if ros_utils.config_param_change(self._config, config, 'vision_publish_field_mask_image'):
             self._publish_field_mask_image = config['vision_publish_field_mask_image']
             if self._publish_field_mask_image:
-                logger.info('(Dynamic color lookup table-) Field mask image publishing is enabled')
+                logger.info('Field mask image publishing is enabled')
             else:
-                logger.info('(Dynamic color lookup table-) Field mask image publishing is disabled')
+                logger.info('Field mask image publishing is disabled')
 
         # Set the white color detector
         if ros_utils.config_param_change(self._config, config, r'^white_color_detector_'):
@@ -182,33 +180,18 @@ class Vision(Node):
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
-                r'^field_color_detector_|dynamic_color_lookup_table_') and not config['field_color_detector_use_hsv']:
-            # Check if the dynamic color lookup table field color detector or the static field color detector should be used
-            if config['dynamic_color_lookup_table_active']:
-                # Set dynamic color lookup table field color detector
-                self._field_color_detector = color.DynamicPixelListColorDetector(
-                    config,
-                    self._package_path)
-            else:
-                # Unregister old subscriber
-                if self._sub_dynamic_color_lookup_table_msg_topic is not None:
-                    # self._sub_dynamic_color_lookup_table_msg_topic.unregister()  # Do not use this method, does not work
-                    self._sub_dynamic_color_lookup_table_msg_topic = None
-                # Set the static field color detector
-                self._field_color_detector = color.PixelListColorDetector(
-                    config,
-                    self._package_path)
+                r'^field_color_detector_') and not config['field_color_detector_use_hsv']:
+            # Set the static field color detector
+            self._field_color_detector = color.PixelListColorDetector(
+                config,
+                self._package_path)
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
                 r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
-            # Unregister old subscriber
-            if self._sub_dynamic_color_lookup_table_msg_topic is not None:
-                # self._sub_dynamic_color_lookup_table_msg_topic.unregister()  # Do not use this method, does not work
-                self._sub_dynamic_color_lookup_table_msg_topic = None
-
             # Override field color hsv detector
             self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
+
         # Get field boundary detector class by name from _config
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method'])
@@ -322,9 +305,6 @@ class Vision(Node):
             self._line_detector,
         ]
 
-        # Publish Config-message (mainly for the dynamic color lookup table node)
-        # ros_utils.publish_vision_config(config, self._pub_config)
-
         # The old _config gets replaced with the new _config
         self._config = config
 
@@ -338,18 +318,17 @@ class Vision(Node):
         :return: None
         """
         self._pub_audio = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
-        self._pub_balls = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallInImageArray)
+        self._pub_balls = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallArray)
         self._pub_lines = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
         self._pub_line_mask = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', ObstacleInImageArray, queue_size=3)
-        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalPostInImageArray, queue_size=3)
+        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', RobotArray, queue_size=3)
+        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalpostArray, queue_size=3)
         self._pub_debug_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', PolygonStamped)
+        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundary)
         self._pub_white_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
         self._pub_red_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
         self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
         self._pub_field_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
-        self._pub_dynamic_color_lookup_table_field_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_dynamic_color_lookup_table_field_mask_image, 'ROS_dynamic_color_lookup_table_field_mask_image_msg_topic', Image)
 
     def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
@@ -360,10 +339,6 @@ class Vision(Node):
         :return: None
         """
         self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'])
-
-        if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
-            self._sub_dynamic_color_lookup_table_msg_topic = ros_utils.create_or_update_subscriber(self._config, config, self._sub_dynamic_color_lookup_table_msg_topic, 'ROS_dynamic_color_lookup_table_msg_topic', ColorLookupTable, callback=self._field_color_detector.color_lookup_table_callback, queue_size=1, buff_size=2 ** 20)
-
     def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
@@ -461,7 +436,7 @@ class Vision(Node):
             balls_under_field_boundary,
             self._ball_candidate_threshold)
         # Convert ball cancidate list to ball message list
-        list_of_balls = map(ros_utils.build_ball_msg, top_balls)
+        list_of_balls = list(map(ros_utils.build_ball_msg, top_balls))
         # Create balls msg with the list of balls
         balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
         # Publish balls
@@ -488,13 +463,13 @@ class Vision(Node):
         # Init list for obstacle msgs
         list_of_obstacle_msgs = []
         # Add red obstacles
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.ROBOT_MAGENTA,
+        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(Robot.TEAM_OWN, # TODO read if red is our color or not if avalible
                                                                    self._red_obstacle_detector.get_candidates()))
         # Add blue obstacles
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.ROBOT_CYAN,
+        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(Robot.TEAM_OPPONENT,
                                                                    self._blue_obstacle_detector.get_candidates()))
         # Add UFO's (Undefined Found Obstacles)
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(ObstacleInImage.ROBOT_UNDEFINED,
+        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(Robot.TEAM_UNKNOWN,
                                                                    self._unknown_obstacle_detector.get_candidates()))
         # Build obstacles msgs containing all obstacles
         obstacles_msg = ros_utils.build_obstacle_array_msg(image_msg.header, list_of_obstacle_msgs)
@@ -621,21 +596,11 @@ class Vision(Node):
 
         # Check, if field mask image should be published
         if self._publish_field_mask_image:
-            if isinstance(self._field_color_detector, color.DynamicPixelListColorDetector):
-                # Mask image
-                dyn_field_mask = self._field_color_detector.get_mask_image()
-                static_field_mask = self._field_color_detector.get_static_mask_image()
-                # Publish mask image
-                self._pub_dynamic_color_lookup_table_field_mask_image.publish(
-                    ros_utils.build_image_msg(image_msg.header, dyn_field_mask, '8UC1'))
-                self._pub_field_mask_image.publish(
-                    ros_utils.build_image_msg(image_msg.header, static_field_mask, '8UC1'))
-            else:
-                # Mask image
-                field_mask = self._field_color_detector.get_mask_image()
-                # Publish mask image
-                self._pub_field_mask_image.publish(
-                    ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
+            # Mask image
+            field_mask = self._field_color_detector.get_mask_image()
+            # Publish mask image
+            self._pub_field_mask_image.publish(
+                ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
 
         # Check if we should draw debug image
         if self._debug_image_creator.active:

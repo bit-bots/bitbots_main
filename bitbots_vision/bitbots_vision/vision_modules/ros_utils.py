@@ -4,9 +4,11 @@ import rclpy
 import yaml
 from  rclpy import logging
 from cv_bridge import CvBridge
-from geometry_msgs.msg import Point32, PolygonStamped
-from humanoid_league_msgs.msg import BallInImage, BallInImageArray, LineInformationInImage, LineSegmentInImage, ObstacleInImageArray, \
-     ObstacleInImage, GoalPostInImageArray, GoalPostInImage, Audio, RegionOfInterestWithImage
+from geometry_msgs.msg import Point, Pose2D
+from vision_msgs.msg import BoundingBox2D
+from humanoid_league_msgs.msg import LineInformationInImage, LineSegmentInImage, Audio
+from soccer_vision_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray
+
 
 """
 This module provides some methods needed for the ros environment,
@@ -70,16 +72,32 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
+def build_bounding_box_2d(candidate):
+    """
+    Builds a BoundingBox2D message out of a vision Candidate
+
+    :param candidate: A vision Candidate
+    :return: BoundingBox2D message
+    """
+    return BoundingBox2D(
+        size_x=float(candidate.get_width()),
+        size_y=float(candidate.get_height()),
+        center=Pose2D(
+            x=float(candidate.get_center_x()),
+            y=float(candidate.get_center_y()) 
+        )
+    )
+
 def build_goal_post_array_msg(header, goal_post_msgs):
     """
-    Builds a GoalPostInImageArray message out of a list of GoalPostInImage messages
+    Builds a GoalpostArray message out of a list of Goalpost messages
 
     :param header: ros header of the new message. Mostly the header of the image
     :param goal_post_msgs: List of goal post messages
-    :return: GoalPostInImageArray message
+    :return: GoalpostArray message
     """
     # Create goalposts msg
-    goal_posts_msg = GoalPostInImageArray()
+    goal_posts_msg = GoalpostArray()
     # Add header
     goal_posts_msg.header.frame_id = header.frame_id
     goal_posts_msg.header.stamp = header.stamp
@@ -89,75 +107,74 @@ def build_goal_post_array_msg(header, goal_post_msgs):
 
 def build_goal_post_msgs(goalposts):
     """
-    Builds a list of goalpost messages
+    Builds a list of Goalpost messages
 
     :param goalposts: goalpost candidates
-    :return: List of goalpost messages
+    :return: List of Goalpost messages
     """
     # Create an empty list of goalposts
     message_list = []
     # Iterate over all goalpost candidates
     for goalpost in goalposts:
         # Create a empty post message
-        post_msg = GoalPostInImage()
+        post_msg = Goalpost()
         post_msg.width = float(goalpost.get_width())
+        post_msg.bottom.x = float(goalpost.get_center_x())
+        post_msg.bottom.y = float(goalpost.get_lower_right_y())
+        post_msg.top.x = float(goalpost.get_center_x())
+        post_msg.top.y = float(goalpost.get_upper_left_y())
         if goalpost.get_rating() is not None:
             post_msg.confidence = float(goalpost.get_rating())
-        post_msg.foot_point.x = float(goalpost.get_center_x())
-        post_msg.foot_point.y =float(goalpost.get_lower_right_y())
-        post_msg.top_point.x = float(goalpost.get_center_x())
-        post_msg.top_point.y = float(goalpost.get_upper_left_y())
+        post_msg.bb = build_bounding_box_2d(goalpost)
         message_list.append(post_msg)
     return message_list
 
 def build_balls_msg(header, balls):
     """
-    Builds a balls message out of a list of ball messages
+    Builds a BallArray message out of a list of ball messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param balls: A list of BallInImage messages
-    :return: balls msg
+    :param balls: A list of Ball messages
+    :return: BallArray msg
     """
     # create ball msg
-    balls_msg = BallInImageArray()
+    balls_msg = BallArray()
     # Set header
     balls_msg.header.frame_id = header.frame_id
     balls_msg.header.stamp = header.stamp
     # Add balls
-    for ball in balls:
-        balls_msg.candidates.append(ball)
+    balls_msg.balls = balls
     return balls_msg
 
-def build_ball_msg(top_ball_candidate):
+def build_ball_msg(ball_candidate):
     """
-    Builds a ball message
+    Builds a Ball message
 
-    :param top_ball_candidate: best rated ball candidate
-    :return: ball msg
+    :param ball_candidate: ball Candidate
+    :return: Ball msg
     """
     # Create a empty ball message
-    ball_msg = BallInImage()
-    ball_msg.center.x = float(top_ball_candidate.get_center_x())
-    ball_msg.center.y = float(top_ball_candidate.get_center_y())
-    ball_msg.diameter = float(top_ball_candidate.get_diameter())
-    ball_msg.confidence = float(top_ball_candidate.get_rating())
+    ball_msg = Ball()
+    ball_msg.center.x = float(ball_candidate.get_center_x())
+    ball_msg.center.y = float(ball_candidate.get_center_y())
+    ball_msg.bb = build_bounding_box_2d(ball_candidate)
     return ball_msg
 
 def build_obstacle_array_msg(header, obstacles):
     """
-    Builds a ObstacleInImageArray message containing a list of obstacle messages
+    Builds a RobotArray message containing a list of Robot messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param obstacles: a list of obstacle messages
-    :return: ObstacleInImageArray message
+    :param obstacles: a list of Robot messages
+    :return: RobotArray message
     """
     # Create obstacle msg
-    obstacles_msg = ObstacleInImageArray()
+    obstacles_msg = RobotArray()
     # Add header
     obstacles_msg.header.frame_id = header.frame_id
     obstacles_msg.header.stamp = header.stamp
     # Add obstacles
-    obstacles_msg.obstacles = obstacles
+    obstacles_msg.robots = obstacles
     return obstacles_msg
 
 def build_obstacle_msgs(obstacle_type, detections):
@@ -166,42 +183,36 @@ def build_obstacle_msgs(obstacle_type, detections):
 
     :param obstacle_type: type of the obstacles
     :param detections: obstacle candidates
-    :return: list of obstacle msgs
+    :return: list of Robot msgs
     """
     message_list = []
     for detected_obstacle in detections:
-        obstacle_msg = ObstacleInImage()
-        obstacle_msg.type = obstacle_type
-        obstacle_msg.top_left.x = float(detected_obstacle.get_upper_left_x())
-        obstacle_msg.top_left.y = float(detected_obstacle.get_upper_left_y())
-        obstacle_msg.height = int(detected_obstacle.get_height())
-        obstacle_msg.width = int(detected_obstacle.get_width())
+        obstacle_msg = Robot()
+        obstacle_msg.team = obstacle_type
+        obstacle_msg.bb = build_bounding_box_2d(detected_obstacle)
         if detected_obstacle.get_rating() is not None:
             obstacle_msg.confidence = float(detected_obstacle.get_rating())
-        else:
-            obstacle_msg.confidence = 1.0
-        obstacle_msg.player_number = 42
         message_list.append(obstacle_msg)
     return message_list
 
 def build_field_boundary_polygon_msg(header, field_boundary):
     """
-    Builds a PolygonStamped ROS geometry message containing the field boundary.
+    Builds a FieldBoundary ROS geometry message containing the field boundary.
 
     :param header: ros header of the new message. Mostly the header of the image
     :param field_boundary: List of tuples containing the field boundary points.
-    :return: PolygonStamped message
+    :return: FieldBoundary message
     """
     # Create message
-    field_boundary_msg = PolygonStamped()
+    field_boundary_msg = FieldBoundary()
     # Add header
-    field_boundary_msg.header = header
+    #field_boundary_msg.header = header # TODO use header again
     # Add field boundary points
     for point in field_boundary:
-        p = Point32()
+        p = Point()
         p.x = float(point[0])
         p.y = float(point[1])
-        field_boundary_msg.polygon.points.append(p)
+        field_boundary_msg.points.append(p)
 
     return field_boundary_msg
 

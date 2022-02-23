@@ -1,6 +1,9 @@
 import abc
 import rclpy
+from rclpy import logging
 
+
+logger = logging.get_logger('vision_candidate')
 
 class Candidate:
     """
@@ -129,7 +132,7 @@ class Candidate:
         :param float rating: Rating to set.
         """
         if self._rating is not None:
-            rospy.logwarn('Candidate rating has already been set.', logger_name='Candidate')
+            logger.warning("Candidate rating has already been set.")
             return
         self._rating = rating
 
