@@ -12,7 +12,6 @@ namespace bitbots_quintic_walk {
 WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
     Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters)),
     walk_engine_(SharedPtr(this)),
-    robot_model_loader_(SharedPtr(this), "robot_description", false),
     stabilizer_(),
     visualizer_(SharedPtr(this)) {
   // get all kinematics parameters from the move_group node
@@ -141,8 +140,9 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
                                                                                              _1));
 
   //load MoveIt! model
-  robot_model_loader_.loadKinematicsSolvers();
-  kinematic_model_ = robot_model_loader_.getModel();
+  robot_model_loader_ =
+      std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
+  kinematic_model_ = robot_model_loader_->getModel();
   if (!kinematic_model_) {
     RCLCPP_FATAL(this->get_logger(), "No robot model loaded, killing quintic walk.");
     exit(1);
@@ -338,11 +338,11 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt,
 }
 
 bitbots_msgs::msg::JointCommand WalkNode::step_relative(double dt,
-                                               const geometry_msgs::msg::Twist::SharedPtr step_msg,
-                                               const sensor_msgs::msg::Imu::SharedPtr imu_msg,
-                                               const sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
-                                               const bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
-                                               const bitbots_msgs::msg::FootPressure::SharedPtr pressure_right) {
+                                                        const geometry_msgs::msg::Twist::SharedPtr step_msg,
+                                                        const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                                        const sensor_msgs::msg::JointState::SharedPtr jointstate_msg,
+                                                        const bitbots_msgs::msg::FootPressure::SharedPtr pressure_left,
+                                                        const bitbots_msgs::msg::FootPressure::SharedPtr pressure_right) {
   // method for python interface. take all messages as parameters instead of using ROS
   // use length of next step instead of cmd_vel
   got_new_goals_ = true;

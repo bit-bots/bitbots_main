@@ -203,7 +203,7 @@ class WalkNode : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_sub_right_;
 
   // MoveIt!
-  robot_model_loader::RobotModelLoader robot_model_loader_;
+  std::shared_ptr<robot_model_loader::RobotModelLoader> robot_model_loader_;
   moveit::core::RobotModelPtr kinematic_model_;
   moveit::core::RobotStatePtr current_state_;
 
