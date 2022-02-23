@@ -29,36 +29,6 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
   right_in_world_.setIdentity();
   reset();
 
-  // need to use the node reference to get the parameters
-  node_->declare_parameter<double>("engine.freq", 1);
-  node_->declare_parameter<double>("engine.double_support_ratio", 0);
-  node_->declare_parameter<double>("engine.foot_distance", 0);
-  node_->declare_parameter<double>("engine.foot_rise", 0);
-  node_->declare_parameter<double>("engine.trunk_swing", 0);
-  node_->declare_parameter<double>("engine.trunk_height", 0);
-  node_->declare_parameter<double>("engine.trunk_pitch", 0);
-  node_->declare_parameter<double>("engine.trunk_pitch_p_coef_forward", 0);
-  node_->declare_parameter<double>("engine.trunk_phase", 0);
-  node_->declare_parameter<double>("engine.foot_z_pause", 0);
-  node_->declare_parameter<double>("engine.foot_put_down_z_offset", 0);
-  node_->declare_parameter<double>("engine.foot_put_down_phase", 0);
-  node_->declare_parameter<double>("engine.foot_apex_phase", 0);
-  node_->declare_parameter<double>("engine.foot_overshoot_ratio", 0);
-  node_->declare_parameter<double>("engine.foot_overshoot_phase", 0);
-  node_->declare_parameter<double>("engine.trunk_x_offset", 0);
-  node_->declare_parameter<double>("engine.trunk_y_offset", 0);
-  node_->declare_parameter<double>("engine.trunk_pause", 0);
-  node_->declare_parameter<double>("engine.trunk_x_offset_p_coef_forward", 0);
-  node_->declare_parameter<double>("engine.trunk_x_offset_p_coef_turn", 0);
-  node_->declare_parameter<double>("engine.trunk_pitch_p_coef_turn", 0);
-  node_->declare_parameter<double>("engine.kick_length", 0);
-  node_->declare_parameter<double>("engine.kick_vel", 0);
-  node_->declare_parameter<double>("engine.kick_phase", 0);
-  node_->declare_parameter<double>("engine.foot_put_down_roll_offset", 0);
-  node_->declare_parameter<double>("engine.first_step_swing_factor", 0);
-  node_->declare_parameter<double>("engine.first_step_trunk_phase", 0);
-  node_->declare_parameter<double>("engine.trunk_z_movement", 0);
-
   node_->get_parameter("engine.freq", params_.freq);
   node_->get_parameter("engine.double_support_ratio", params_.double_support_ratio);
   node_->get_parameter("engine.foot_distance", params_.foot_distance);
@@ -94,7 +64,7 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
   // create splines one time to have no empty splines during first idle phase
   buildStartMovementTrajectories();
 
-  if(params_.foot_distance == 0){
+  if (params_.foot_distance == 0) {
     RCLCPP_WARN(node_->get_logger(), "Parameters are probably not loaded correctly");
   }
 

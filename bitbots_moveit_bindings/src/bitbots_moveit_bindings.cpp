@@ -9,6 +9,7 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/duration.hpp>
 #include <ros2_python_extension/init.hpp>
@@ -19,31 +20,40 @@ using namespace std::chrono_literals;
 
 class BitbotsMoveitBindings {
  public:
-  BitbotsMoveitBindings() {
-    // create a node with allowing undeclared parameters, as we will copy some from the move_group node
-    rclcpp::NodeOptions options = rclcpp::NodeOptions().allow_undeclared_parameters(true);
+  BitbotsMoveitBindings(std::vector<py::bytes> parameter_msgs = {}) {
+    // deserialize parameters
+    std::vector<rclcpp::Parameter> cpp_parameters = {};
+    for (auto &parameter_msg: parameter_msgs) {
+      cpp_parameters.push_back(rclcpp::Parameter::from_parameter_msg(
+          ros2_python_extension::fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
+    }
+    rclcpp::NodeOptions
+        options = rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(cpp_parameters).automatically_declare_parameters_from_overrides(true);
     node_ = std::make_shared<rclcpp::Node>("BitbotsMoveitBindings", options);
 
-    // get all kinematics parameters from the move_group node
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
-    while (!parameters_client->wait_for_service(1s)) {
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        rclcpp::shutdown();
+    if (cpp_parameters.empty()) {
+      // get all kinematics parameters from the move_group node if they are not provided via the constructor
+      auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
+      while (!parameters_client->wait_for_service(1s)) {
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+          rclcpp::shutdown();
+        }
+        RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
       }
-      RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
+      rcl_interfaces::msg::ListParametersResult
+          parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+      auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+
+      // set the parameters to our node
+      node_->set_parameters(copied_parameters);
     }
-    rcl_interfaces::msg::ListParametersResult parameter_list = parameters_client->list_parameters({"robot_description_kinematics"},10);
-    auto parameters = parameters_client->get_parameters(parameter_list.names);
-
-    // set the parameters to our node
-    node_->set_parameters(parameters);
-
     // now that all parameters are set we can load the robot model and the kinematic solvers
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
-    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(robot_model_loader::RobotModelLoader(node_, robot_description, false));
-    loader_->loadKinematicsSolvers();
+    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(robot_model_loader::RobotModelLoader(node_,
+                                                                                                          robot_description,
+                                                                                                          true));
     robot_model_ = loader_->getModel();
     if (!robot_model_) {
       RCLCPP_ERROR(node_->get_logger(),
@@ -189,7 +199,7 @@ class BitbotsMoveitBindings {
 PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
   m.def("initRos", &ros2_python_extension::initRos);
   py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
-      .def(py::init<>())
+      .def(py::init<std::vector<py::bytes>>())
       .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
       .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
 }

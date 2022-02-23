@@ -10,24 +10,27 @@ using namespace std::chrono_literals;
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
-    Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters)),
+    Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     walk_engine_(SharedPtr(this)),
     stabilizer_(),
     visualizer_(SharedPtr(this)) {
-  // get all kinematics parameters from the move_group node
-  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
-  while (!parameters_client->wait_for_service(1s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-      rclcpp::shutdown();
+  // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  std::string check_kinematic_parameters;
+  if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+    while (!parameters_client->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        rclcpp::shutdown();
+      }
+      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10*1e9, "Can't copy parameters from move_group node. Service not available, waiting again...");
     }
-    RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+    rcl_interfaces::msg::ListParametersResult
+        parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+    // set the parameters to our node
+    this->set_parameters(copied_parameters);
   }
-  rcl_interfaces::msg::ListParametersResult
-      parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-  auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
-  // set the parameters to our node
-  this->set_parameters(copied_parameters);
 
   this->get_parameter("base_link_frame", base_link_frame_);
   this->get_parameter("r_sole_frame", r_sole_frame_);
@@ -49,29 +52,6 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   y_speed_multiplier_ = 1;
   yaw_speed_multiplier_ = 1;
 
-
-  // read config
-  this->declare_parameter<double>("node.engine_freq", 100.0);
-  this->declare_parameter<bool>("node.debug_active", false);
-  this->declare_parameter<int>("node.odom_pub_factor", 0);
-  this->declare_parameter<double>("node.ik_timeout", 0);
-  this->declare_parameter<double>("node.ground_min_pressure", 0);
-  this->declare_parameter<double>("node.phase_reset_phase", 0);
-  this->declare_parameter<double>("node.joint_min_effort", 0);
-  this->declare_parameter<double>("node.pause_duration", 0);
-  this->declare_parameter<bool>("node.imu_active", false);
-  this->declare_parameter<double>("node.imu_pitch_threshold", 0);
-  this->declare_parameter<double>("node.imu_roll_threshold", 0);
-  this->declare_parameter<double>("node.imu_pitch_vel_threshold", 0);
-  this->declare_parameter<double>("node.imu_roll_vel_threshold", 0);
-  this->declare_parameter<double>("node.max_step_x", 0);
-  this->declare_parameter<double>("node.max_step_y", 0);
-  this->declare_parameter<double>("node.max_step_xy", 0);
-  this->declare_parameter<double>("node.max_step_z", 0);
-  this->declare_parameter<double>("node.max_step_angular", 0);
-  this->declare_parameter<double>("node.x_speed_multiplier", 0);
-  this->declare_parameter<double>("node.y_speed_multiplier", 0);
-  this->declare_parameter<double>("node.yaw_speed_multiplier", 0);
 
   // read config values one time during start
   this->get_parameter("node.engine_freq", engine_frequency_);
@@ -138,7 +118,6 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
                                                                                    std::bind(&WalkNode::pressureRightCb,
                                                                                              this,
                                                                                              _1));
-
   //load MoveIt! model
   robot_model_loader_ =
       std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
