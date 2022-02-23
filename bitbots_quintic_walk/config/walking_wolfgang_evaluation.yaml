@@ -19,17 +19,17 @@ walking:
     fall_sum: 0.0
     first_step_trunk_phase: -0.5
     foot_apex_phase: 0.5
-    foot_overshoot_phase: 1
+    foot_overshoot_phase: 1.0
     foot_overshoot_ratio: 0.0
-    foot_put_down_phase: 1
-    foot_z_pause: 0
+    foot_put_down_phase: 1.0
+    foot_z_pause: 0.0
     gyro_obj: 0.006583455791882188
     last_pose_obj: 0.2759057237031307
     orientation_obj: 0.1545917664648956
     pose_obj: 0.11224960109409649
     stability_obj: 0.0805876111283889
     termination_reason: pose
-    trunk_pause: 0
+    trunk_pause: 0.0
     s_nsga2:generation: 10.0
     s_nsga2:parents: [215322, 215250]
 

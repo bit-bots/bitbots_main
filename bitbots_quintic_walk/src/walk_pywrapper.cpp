@@ -4,7 +4,14 @@ void PyWalkWrapper::spin_some() {
   rclcpp::spin_some(walk_node_);
 }
 
-PyWalkWrapper::PyWalkWrapper(std::string ns) : walk_node_(std::make_shared<bitbots_quintic_walk::WalkNode>(ns)) {
+PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs) {
+  // create parameters from serialized messages
+  std::vector<rclcpp::Parameter> cpp_parameters = {};
+  for (auto &parameter_msg: parameter_msgs) {
+    cpp_parameters
+        .push_back(rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
+  }
+  walk_node_ = std::make_shared<bitbots_quintic_walk::WalkNode>(ns, cpp_parameters);
   set_robot_state(0);
   walk_node_->initializeEngine();
 }
@@ -29,24 +36,30 @@ py::bytes PyWalkWrapper::step(double dt,
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
-
 py::bytes PyWalkWrapper::step_relative(double dt,
-                              py::bytes &step_msg,
-                              py::bytes &imu_msg,
-                              py::bytes &jointstate_msg,
-                              py::bytes &pressure_left,
-                              py::bytes &pressure_right) {
+                                       py::bytes &step_msg,
+                                       py::bytes &imu_msg,
+                                       py::bytes &jointstate_msg,
+                                       py::bytes &pressure_left,
+                                       py::bytes &pressure_right) {
   bitbots_msgs::msg::JointCommand result = walk_node_->step_relative(dt,
-                                                            std::make_shared<geometry_msgs::msg::Twist>(fromPython<
-                                                                geometry_msgs::msg::Twist>(step_msg)),
-                                                            std::make_shared<sensor_msgs::msg::Imu>(fromPython<
-                                                                sensor_msgs::msg::Imu>(imu_msg)),
-                                                            std::make_shared<sensor_msgs::msg::JointState>(fromPython<
-                                                                sensor_msgs::msg::JointState>(jointstate_msg)),
-                                                            std::make_shared<bitbots_msgs::msg::FootPressure>(fromPython<
-                                                                bitbots_msgs::msg::FootPressure>(pressure_left)),
-                                                            std::make_shared<bitbots_msgs::msg::FootPressure>(fromPython<
-                                                                bitbots_msgs::msg::FootPressure>(pressure_right)));
+                                                                     std::make_shared<geometry_msgs::msg::Twist>(
+                                                                         fromPython<
+                                                                             geometry_msgs::msg::Twist>(step_msg)),
+                                                                     std::make_shared<sensor_msgs::msg::Imu>(fromPython<
+                                                                         sensor_msgs::msg::Imu>(imu_msg)),
+                                                                     std::make_shared<sensor_msgs::msg::JointState>(
+                                                                         fromPython<
+                                                                             sensor_msgs::msg::JointState>(
+                                                                             jointstate_msg)),
+                                                                     std::make_shared<bitbots_msgs::msg::FootPressure>(
+                                                                         fromPython<
+                                                                             bitbots_msgs::msg::FootPressure>(
+                                                                             pressure_left)),
+                                                                     std::make_shared<bitbots_msgs::msg::FootPressure>(
+                                                                         fromPython<
+                                                                             bitbots_msgs::msg::FootPressure>(
+                                                                             pressure_right)));
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
@@ -119,7 +132,8 @@ void PyWalkWrapper::set_robot_state(int state) {
 
 void PyWalkWrapper::set_parameter(py::bytes parameter_msg) {
   // convert serialized parameter msg to parameter object
-  rclcpp::Parameter parameter = rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
+  rclcpp::Parameter
+      parameter = rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
 
   // needs to be a vector
   std::vector<rclcpp::Parameter> parameters = {parameter};
@@ -132,7 +146,7 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
   m.def("initRos", &ros2_python_extension::initRos);
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
-      .def(py::init<std::string>())
+      .def(py::init<std::string, std::vector<py::bytes>>())
       .def("step", &PyWalkWrapper::step)
       .def("step_relative", &PyWalkWrapper::step_relative)
       .def("step_open_loop", &PyWalkWrapper::step_open_loop)

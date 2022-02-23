@@ -8,14 +8,17 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from rclpy.serialization import serialize_message, deserialize_message
-from rclpy.parameter import Parameter
+from rcl_interfaces.msg import Parameter
 
 class PyWalk:
-    def __init__(self, namespace=""):
+    def __init__(self, namespace="", parameters: [Parameter]=[]):
         # make namespace end with a /
         if namespace != "" and namespace[-1] != '/':
             namespace = namespace + "/"
-        self.py_walk_wrapper = PyWalkWrapper(namespace)
+        serialized_parameters = []
+        for parameter in parameters:
+            serialized_parameters.append(serialize_message(parameter))
+        self.py_walk_wrapper = PyWalkWrapper(namespace, serialized_parameters)
 
     def spin_ros(self):
         self.py_walk_wrapper.spin_some()

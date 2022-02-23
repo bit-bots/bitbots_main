@@ -11,6 +11,7 @@
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <humanoid_league_msgs/msg/robot_control_state.hpp>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
 
@@ -19,7 +20,7 @@ using namespace ros2_python_extension;
 
 class PyWalkWrapper {
  public:
-  PyWalkWrapper(std::string ns);
+  PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs = {});
   py::bytes step(double dt,
                  py::bytes &cmdvel_msg,
                  py::bytes &imu_msg,

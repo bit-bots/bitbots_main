@@ -47,12 +47,13 @@ https://github.com/Rhoban/model/
 #include "bitbots_quintic_walk/walk_ik.h"
 #include "bitbots_splines/abstract_ik.h"
 #include "bitbots_quintic_walk/walk_visualizer.h"
+#include <control_toolbox/pid_ros.hpp>
 
 namespace bitbots_quintic_walk {
 
 class WalkNode : public rclcpp::Node {
  public:
-  explicit WalkNode(std::string ns);
+  explicit WalkNode(std::string ns, std::vector<rclcpp::Parameter> parameters = {});
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(double dt,
                                        geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
