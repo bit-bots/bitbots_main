@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_msgs.msg import FootPressure
 from gazebo_msgs.msg import ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, SetModelStateRequest
@@ -46,7 +47,7 @@ def state_update(state_msg):
 
 
 if __name__ == "__main__":
-    rospy.init_node("keep_stable_sim")
+    rclpy.init(args=None)
     rospy.wait_for_service("/gazebo/set_model_state")
     set_state = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
 
@@ -59,8 +60,8 @@ if __name__ == "__main__":
     ball_request.model_state.model_name = "teensize_ball"
     # wait because we want to be called
     rospy.sleep(1.0)
-    rate = rospy.Rate(10)
-    while not rospy.is_shutdown():
+    rate = self.create_rate(10)
+    while rclpy.ok():
         try:
             # check if we have values already, otherwise we will do math with none
             if(yaw):

@@ -115,7 +115,7 @@ class MotorVizHelper(Node):
             else:
                 old_pos = self.joint_state_msg.position[JOINT_NAMES.index(name)]
                 time_delta = self.get_clock().now() - self.update_time
-                time_delta_secs = time_delta.to_sec()
+                time_delta_secs = time_delta.nanoseconds / 1e9
                 max_rad = time_delta_secs * msg.velocities[i]
                 if msg.positions[i] - old_pos > max_rad:
                     new_pos = old_pos + max_rad

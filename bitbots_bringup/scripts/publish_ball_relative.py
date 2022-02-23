@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import sys
 import random
 from humanoid_league_msgs.msg import PoseWithCertainty, PoseWithCertaintyArray
@@ -15,14 +16,14 @@ max_z = 0
 min_z = 0
 
 if __name__ == "__main__":
-    rospy.init_node("ball_relative_publisher")
-    balls_relative_publisher = rospy.Publisher("balls_relative", PoseWithCertaintyArray, queue_size=10, tcp_nodelay=True)
+    rclpy.init(args=None)
+    balls_relative_publisher = self.create_publisher(PoseWithCertaintyArray, "balls_relative", 10, tcp_nodelay=True)
 
     x = random.uniform(min_x, max_x) / 4
     y = random.uniform(min_y, max_y) / 4
     z = random.uniform(min_z, max_z) / 4
 
-    while not rospy.is_shutdown():
+    while rclpy.ok():
         ball_msg = PoseWithCertainty()
         if len(sys.argv) is in [3, 4]:
             ball_msg.pose.pose.position.x = float(sys.argv[1])
@@ -42,8 +43,9 @@ if __name__ == "__main__":
         ball_msg.confidence = 1.0
 
         balls_msg = PoseWithCertaintyArray()
-        balls_msg.header.stamp = rospy.Time.now()
+        balls_msg.header.stamp = self.get_clock().now()
         balls_msg.poses = [ball_msg]
         balls_relative_publisher.publish(balls_msg)
 
         rospy.sleep(0.5)
+0.5)

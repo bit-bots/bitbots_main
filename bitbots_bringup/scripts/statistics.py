@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 
 # this script listens to statistic messages, sorts them and republishes them on new topics for better plotting
-import rospy
+import rclpy
+from rclpy.node import Node
 import re
 from rosgraph_msgs.msg import TopicStatistics
 
 
 class StatisticSorter():
     def __init__(self):
-        rospy.init_node("statistic_sorter")
+        rclpy.init(args=None)
 
-        self.motor_goals_pub = rospy.Publisher("stat_motor_goals", TopicStatistics, queue_size=100)
-        self.walking_motor_goals_pub = rospy.Publisher("stat_walking_motor_goals", TopicStatistics, queue_size=100)
-        self.imu_pub = rospy.Publisher("stat_imu", TopicStatistics, queue_size=100)
-        self.joint_pub = rospy.Publisher("stat_joint_states", TopicStatistics, queue_size=100)
-        self.animation_pub = rospy.Publisher("stat_animation", TopicStatistics, queue_size=100)
+        self.motor_goals_pub = self.create_publisher(TopicStatistics, "stat_motor_goals", 100)
+        self.walking_motor_goals_pub = self.create_publisher(TopicStatistics, "stat_walking_motor_goals", 100)
+        self.imu_pub = self.create_publisher(TopicStatistics, "stat_imu", 100)
+        self.joint_pub = self.create_publisher(TopicStatistics, "stat_joint_states", 100)
+        self.animation_pub = self.create_publisher(TopicStatistics, "stat_animation", 100)
 
         self.motor_goal_number = 0
         self.motor_goals_mean = 0
@@ -38,7 +39,7 @@ class StatisticSorter():
 
         rospy.Subscriber("statistics", TopicStatistics, self.stat_cb, queue_size=1000)
 
-        rospy.spin()
+        rclpy.spin(self)
 
         if self.motor_goal_number > 0:
             print("motor")
@@ -109,3 +110,4 @@ class StatisticSorter():
 
 if __name__ == "__main__":
     listener = StatisticSorter()
+rter()

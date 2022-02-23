@@ -14,8 +14,6 @@
 
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
-  <depend>rospy</depend>
-  <depend>roscpp</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>

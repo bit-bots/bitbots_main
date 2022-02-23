@@ -12,13 +12,11 @@
         <param name="/use_sim_time" value="$(var sim)"/>
 
         <param name="robot_type_name" value="Wolfgang"/>
-
     </node>
 
     <group>
             <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py"/>
     </group>
-
 
     <group>
         <include file="$(find-pkg-share humanoid_base_footprint)/launch/base_footprint.launch"/>

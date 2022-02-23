@@ -3,7 +3,8 @@ import argparse
 import time
 from collections import deque, defaultdict
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import tf2_ros
 from tf2_msgs.msg import TFMessage
 
@@ -42,7 +43,7 @@ class TFMonitor:
             self.tf_buffer = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
             print(f'Waiting for transform chain to become available between {frame_a} and {frame_b}...')
-            while not rospy.is_shutdown():
+            while rclpy.ok():
                 if self.tf_buffer.can_transform(frame_a, frame_b, rospy.Time()):
                     try:
                         self.chain = self.tf_buffer._chain(frame_b, rospy.Time(), frame_a, rospy.Time(), frame_b)
@@ -75,19 +76,19 @@ class TFMonitor:
             if is_static:
                 delay = 0
             else:
-                delay = (rospy.Time.now() - transform.header.stamp).to_sec()
+                delay = (self.get_clock().now() - transform.header.stamp).to_sec()
             delay_sum += delay
             self.frame_delay_dict[transform.child_frame_id].append(delay)
 
         # Update the information about the broadcaster of this message
         average_delay = delay_sum / max(1, len(msg.transforms))
         self.broadcaster_delay_dict[broadcaster].append(average_delay)
-        self.broadcaster_frequency_dict[broadcaster].append(rospy.Time.now().to_sec())
+        self.broadcaster_frequency_dict[broadcaster].append(self.get_clock().now().to_sec())
 
         if update_chain and self.use_chain:
             # Update the chain delay
             tmp = self.tf_buffer.lookup_transform(self.frame_a, self.frame_b, rospy.Time())
-            delay = (rospy.Time.now() - tmp.header.stamp).to_sec()
+            delay = (self.get_clock().now() - tmp.header.stamp).to_sec()
             self.chain_delay.append(delay)
 
     def display_frames(self, event=None):
@@ -148,7 +149,7 @@ class TFMonitor:
 
 
 if __name__ == '__main__':
-    rospy.init_node('tf_monitor', anonymous=True)
+    rclpy.init(args=None)
 
     parser = argparse.ArgumentParser(usage='%(prog)s [-h] [--tf-topic TOPIC] [--display-rate HZ] [frame_a frame_b]\n',
                                      description='Monitor the published tf messages. Without command line arguments, '
@@ -170,7 +171,7 @@ if __name__ == '__main__':
         # This is not supported because it is not possible to change the tf topic for the ros tf listener
         parser.error('Monitoring a specific chain is not supported with a custom tf topic')
 
-    while rospy.Time.now() == rospy.Time() and not rospy.is_shutdown():
+    while self.get_clock().now() == rospy.Time() and rclpy.ok():
         rospy.loginfo_throttle(10, 'tf_monitor waiting for time to be published')
         time.sleep(0.1)
 
@@ -178,4 +179,4 @@ if __name__ == '__main__':
     rospy.Subscriber(args.tf_topic, TFMessage, lambda msg: monitor.callback(msg, False))
     rospy.Subscriber(args.tf_topic + '_static', TFMessage, lambda msg: monitor.callback(msg, True))
     rospy.Timer(rospy.Duration(1/args.display_rate), monitor.display_frames)
-    rospy.spin()
+    rclpy.spin(self)

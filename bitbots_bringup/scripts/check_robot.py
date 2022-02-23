@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import os
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import rosnode
 import roslaunch
 import rospkg
@@ -115,7 +116,7 @@ def imu_callback(msg: Imu):
 if __name__ == '__main__':
     print_info("### This script will check the robot hardware and motions. Please follow the instructions\n")
 
-    rospy.init_node("checker")
+    rclpy.init(args=None)
 
     # start subscribers
     imu_sub = rospy.Subscriber("imu/data", Imu, imu_callback, tcp_nodelay=True)
@@ -198,7 +199,7 @@ if __name__ == '__main__':
                                           callback_args=False,
                                           tcp_nodelay=True)
     rospy.sleep(0.5)
-    while (not left_pressure) and (not right_pressure) and (not rospy.is_shutdown()):
+    while (not left_pressure) and (not right_pressure) and (rclpy.ok()):
         rospy.loginfo_throttle(1, "Waiting to receive pressure msgs\n")
     print_info("Pressure messages received\n")
     both_okay = True
@@ -253,7 +254,7 @@ if __name__ == '__main__':
           "Press enter when you're done.\n")
 
     # check walk motion
-    walk_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+    walk_pub = self.create_publisher(Twist, "/cmd_vel", 1)
     text = input_info(
         "\nWe will check walking of the robot. After pressing enter, robot will start walking in different directions. "
         "It will stop when it is finished. Please make sure there is space and catch it if it falls. Press y if you want to check walking.")
@@ -316,7 +317,7 @@ if __name__ == '__main__':
                 print_info()
 
         goal = KickGoal()
-        goal.header.stamp = rospy.Time.now()
+        goal.header.stamp = self.get_clock().now()
         goal.header.frame_id = "base_footprint"
         goal.ball_position.x = 0.2
         goal.ball_position.y = -0.09

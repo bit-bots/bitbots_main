@@ -2,17 +2,18 @@
 #  -*- coding: utf8 -*-
 from math import pi
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import time
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 if __name__ == "__main__":
-    rospy.init_node('motor_position_sender')
+    rclpy.init(args=None)
     ns = rospy.get_param("ns")
-    joint_goal_publisher = rospy.Publisher(ns +'/controller/command', JointTrajectory, queue_size=10, tcp_nodelay=True)
+    joint_goal_publisher = self.create_publisher(JointTrajectory, ns +'/controller/command', 10, tcp_nodelay=True)
 
     i = -1.5
-    while not rospy.is_shutdown():
+    while rclpy.ok():
         msg = JointTrajectoryPoint()
         msg.positions = [i, -0.4]
         msg.time_from_start.nsecs = 10000000
@@ -21,7 +22,7 @@ if __name__ == "__main__":
         traj_msg.joint_names = ['HeadPan', 'HeadTilt']
         traj_msg.points = []
         traj_msg.points.append(msg)
-        traj_msg.header.stamp = rospy.Time.now()
+        traj_msg.header.stamp = self.get_clock().now()
 
         rospy.logwarn(traj_msg)
 
@@ -32,4 +33,4 @@ if __name__ == "__main__":
         else:
             i = -1.5
 
-    rospy.spin()
+    rclpy.spin(self)

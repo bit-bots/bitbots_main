@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from swri_profiler_msgs.msg import ProfileDataArray
 from bitbots_msgs.msg import ProfileDataStamped
 
 """
 This script extracts data from the SWRI profiler to later use it in combination with the rosbag_to_pandas script.
 """
-rospy.init_node("extract_profiler")
-pub = rospy.Publisher("/profiler/single_data", ProfileDataStamped, queue_size=1)
+rclpy.init(args=None)
+pub = self.create_publisher(ProfileDataStamped, "/profiler/single_data", 1)
 
 
 def cb(msg):
@@ -16,4 +17,4 @@ def cb(msg):
 
 
 rospy.Subscriber("/profiler/data", ProfileDataArray, cb)
-rospy.spin()
+rclpy.spin(self)
