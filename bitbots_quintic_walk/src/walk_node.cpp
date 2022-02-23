@@ -9,13 +9,12 @@ using namespace std::chrono_literals;
 
 namespace bitbots_quintic_walk {
 
-WalkNode::WalkNode(const std::string ns) :
-    Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true)),
+WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
+    Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters)),
     walk_engine_(SharedPtr(this)),
     robot_model_loader_(SharedPtr(this), "robot_description", false),
     stabilizer_(),
     visualizer_(SharedPtr(this)) {
-
   // get all kinematics parameters from the move_group node
   auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
   while (!parameters_client->wait_for_service(1s)) {
@@ -27,9 +26,9 @@ WalkNode::WalkNode(const std::string ns) :
   }
   rcl_interfaces::msg::ListParametersResult
       parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-  auto parameters = parameters_client->get_parameters(parameter_list.names);
+  auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
   // set the parameters to our node
-  this->set_parameters(parameters);
+  this->set_parameters(copied_parameters);
 
   this->get_parameter("base_link_frame", base_link_frame_);
   this->get_parameter("r_sole_frame", r_sole_frame_);
