@@ -21,7 +21,7 @@
   </group>
 
   <group if="$(var sim)">
-    <node name="walking" pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
       <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
       <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml"/>
     </node>

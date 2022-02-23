@@ -107,22 +107,22 @@ walking:
       joint_min_effort: 35.0
       effort_phase_reset_active: False
 
-    pid_trunk_fused_pitch:
-      p: 0.0
-      i: 0.0
-      d: 0.0
-      i_clamp: 0.0
-      i_clamp_min: 0.0
-      i_clamp_max: 0.0
-      antiwindup: False
-      publish_state: False
+pid_trunk_fused_pitch:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: 0.0
+    i_clamp_max: 0.0
+    antiwindup: False
 
-    pid_trunk_fused_roll:
-      p: 0.0
-      i: 0.0
-      d: 0.0
-      i_clamp: 0.0
-      i_clamp_min: 0.0
-      i_clamp_max: 0.0
-      antiwindup: False
-      publish_state: False
+pid_trunk_fused_roll:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: 0.0
+    i_clamp_max: 0.0
+    antiwindup: False
