@@ -138,7 +138,6 @@ class WalkNode : public rclcpp::Node {
 
   double engine_frequency_;
 
-  bool phase_reset_active_;
   bool pressure_phase_reset_active_;
   bool effort_phase_reset_active_;
   double phase_reset_phase_;

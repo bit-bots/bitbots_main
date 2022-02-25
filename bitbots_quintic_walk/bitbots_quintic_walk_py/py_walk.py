@@ -18,6 +18,9 @@ class PyWalk:
         serialized_parameters = []
         for parameter in parameters:
             serialized_parameters.append(serialize_message(parameter))
+            if parameter.value.type == 2:
+                print(f"Gave parameter {parameter.name} of integer type. If the code crashes it is maybe because this "
+                      f"should be a float. You may need to add an .0 in some yaml file.")
         self.py_walk_wrapper = PyWalkWrapper(namespace, serialized_parameters)
 
     def spin_ros(self):

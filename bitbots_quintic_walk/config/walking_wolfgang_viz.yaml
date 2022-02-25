@@ -84,8 +84,6 @@ walking:
 
       debug_active: True
 
-      trunkYOnlyInDoubleSupport: False
-
       max_step_x: 0.06
       max_step_y: 0.05
       max_step_xy: 0.09
@@ -96,10 +94,6 @@ walking:
       y_speed_multiplier: 1.0
       yaw_speed_multiplier: 1.0
 
-      vel: -1.0
-      acc: -1.0
-      pwm: -1.0
-
       imu_active: True
       imu_pitch_threshold: 0.5
       imu_roll_threshold: 0.4
@@ -107,7 +101,7 @@ walking:
       imu_roll_vel_threshold: 1.0
       pause_duration: 0.5
 
-      phase_reset_active: True
+      pressure_phase_reset_active: True
       ground_min_pressure: 1.5
       phase_reset_phase: 0.25
       joint_min_effort: 35.0
