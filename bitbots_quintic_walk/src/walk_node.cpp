@@ -60,9 +60,11 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   double timeout;
   this->get_parameter("node.ik_timeout", timeout);
   ik_.setIKTimeout(timeout);
+  this->get_parameter("node.pressure_phase_reset_active", pressure_phase_reset_active_);
   this->get_parameter("node.ground_min_pressure", ground_min_pressure_);
   this->get_parameter("node.phase_reset_phase", phase_reset_phase_);
   this->get_parameter("node.joint_min_effort", joint_min_effort_);
+  this->get_parameter("node.effort_phase_reset_active", effort_phase_reset_active_);
   double pause_duration;
   this->get_parameter("node.pause_duration", pause_duration);
   walk_engine_.setPauseDuration(pause_duration);
@@ -79,15 +81,10 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   this->get_parameter("node.x_speed_multiplier", x_speed_multiplier_);
   this->get_parameter("node.y_speed_multiplier", y_speed_multiplier_);
   this->get_parameter("node.yaw_speed_multiplier", yaw_speed_multiplier_);
-  if (x_speed_multiplier_ == 0) {
-    x_speed_multiplier_ = 1;
+  if (x_speed_multiplier_ == 0 || y_speed_multiplier_ == 0 || yaw_speed_multiplier_ == 0) {
+    RCLCPP_WARN(this->get_logger(), "Speed multipliers should not be zero!");
   }
-  if (y_speed_multiplier_ == 0) {
-    y_speed_multiplier_ = 1;
-  }
-  if (yaw_speed_multiplier_ == 0) {
-    yaw_speed_multiplier_ = 1;
-  }
+
 
   /* init publisher and subscriber */
   pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
@@ -148,12 +145,13 @@ void WalkNode::run() {
   sup_state.header.stamp = this->get_clock()->now();
   pub_support_->publish(sup_state);
 
-  rclcpp::Rate loop_rate(1000);
+  rclcpp::Time next_loop_time;
   double dt;
   WalkRequest last_request;
   while (rclcpp::ok()) {
     rclcpp::spin_some(this->get_node_base_interface());
-    if (loop_rate.sleep()) {
+    next_loop_time = this->get_clock()->now() + rclcpp::Duration::from_seconds(1.0 / engine_frequency_);
+    if (this->get_clock()->sleep_until(next_loop_time)) {
       dt = getTimeDelta();
 
       if (robot_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING
@@ -216,6 +214,7 @@ void WalkNode::run() {
         odom_counter = 0;
       }
     } else {
+      RCLCPP_WARN(this->get_logger(), "There is some time issue.");
       usleep(1);
     }
   }
@@ -601,8 +600,6 @@ rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::ve
       imu_pitch_vel_threshold_ = parameter.as_double();
     } else if (parameter.get_name() == "node.imu_roll_vel_threshold") {
       imu_roll_vel_threshold_ = parameter.as_double();
-    } else if (parameter.get_name() == "node.phase_reset_active") {
-      phase_reset_active_ = parameter.as_bool();
     } else if (parameter.get_name() == "node.pressure_phase_reset_active") {
       pressure_phase_reset_active_ = parameter.as_bool();
     } else if (parameter.get_name() == "node.effort_phase_reset_active") {
@@ -627,11 +624,8 @@ rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::ve
   }
 
   // phase rest can only work if one phase resetting method is active
-  if (effort_phase_reset_active_ || pressure_phase_reset_active_) {
-    walk_engine_.setPhaseRest(phase_reset_active_);
-  } else {
-    walk_engine_.setPhaseRest(false);
-  }
+  walk_engine_.setPhaseRest(effort_phase_reset_active_ || pressure_phase_reset_active_);
+
 
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;

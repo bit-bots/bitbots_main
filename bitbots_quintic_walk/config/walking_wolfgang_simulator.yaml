@@ -1,3 +1,6 @@
+/**:
+  ros__parameters:
+    use_sim_time: false
 walking:
   ros__parameters:
     engine:
@@ -84,8 +87,6 @@ walking:
 
       debug_active: True
 
-      trunkYOnlyInDoubleSupport: False
-
       max_step_x: 1.0
       max_step_y: 1.0
       max_step_xy: 1.0
@@ -96,10 +97,6 @@ walking:
       y_speed_multiplier: 1.66
       yaw_speed_multiplier: 1.66
 
-      vel: -1.0
-      acc: -1.0
-      pwm: -1.0
-
       imu_active: False
       imu_pitch_threshold: 0.19
       imu_roll_threshold: 0.4
@@ -107,7 +104,7 @@ walking:
       imu_roll_vel_threshold: 5.7
       pause_duration: 3.0
 
-      phase_reset_active: False
+      pressure_phase_reset_active: False
       ground_min_pressure: 1.5
       phase_reset_phase: 0.25
       joint_min_effort: 35.0

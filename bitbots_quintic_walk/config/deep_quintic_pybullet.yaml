@@ -65,7 +65,7 @@ walking:
       imu_roll_vel_threshold: 5.7
       pause_duration: 3.0
 
-      phase_reset_active: False
+      pressure_phase_reset_active: False
       ground_min_pressure: 1.5
       phase_reset_phase: 0.25
       joint_min_effort: 35.0
