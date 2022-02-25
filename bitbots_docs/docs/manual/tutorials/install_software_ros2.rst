@@ -7,7 +7,7 @@ In this tutorial, we will learn how to install ROS2 Rolling Ridley on Ubuntu 20.
 
 As ROS works best on Ubuntu, we are using this distribution.
 Currently, ROS 2 Rolling runs on Ubuntu 20.04.
-If you are not already using Ubuntu 20.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had so with it; https://www.virtualbox.org/) or use the ROS 2 docker (https://github.com/timonegk/rosdocked)
+If you are not already using Ubuntu 20.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS 2 docker (https://github.com/timonegk/rosdocked)
 
 **1. Setup and Install ROS 2**
 
@@ -27,14 +27,14 @@ If you are not already using Ubuntu 20.04, consider installing it on your system
           This is were your source code will live and grow.
         - Move to this directory with: ``cd ~/git/bitbots``
     - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_meta.git``
-      Confirm the host key by typing ``yes``.
+      Confirm the host key by typing ``yes``, if asked.
     - Move into the newly created directory with: ``cd bitbots_meta``
     - Clone all sub-repositories and other files by running: ``make pull-init``
     - Switch to our ROS 2 software version (as it is not the default yet):
         - Switch branch of bitbots_meta repo: ``git switch feature/ros-2-migration``
         - Switch branches of all sub-repositories: ``make switch-ros2``
         - Update all repos: ``make pull-all``
-- If you want to run the robot's cameras on your system, also run the following command: ``make basler`` Confirm the host key by typing ``yes``.
+- If you want to run the robot's cameras on your system, also run the following command: ``make basler`` Confirm the host key by typing ``yes``, if asked.
 
 **3. Install additional dependencies**
 
@@ -45,7 +45,7 @@ We need to install additional python packages using ``pip``, the python package 
 
 **4. Setup colcon workspace**
 
-`Colcon <https://docs.ros.org/en/rolling/Tutorials/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be lounched later.
+`Colcon <https://docs.ros.org/en/rolling/Tutorials/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
 The colcon workspace is where your source code gets build and where we use colcon.
 
 - Create colcon workspace directory (typically ``~/colcon_ws/``)
@@ -54,12 +54,12 @@ The colcon workspace is where your source code gets build and where we use colco
 
 **5. Final touches**
 
-To let your system know where it should find all the ROS 2 dependencies and packages, we add a little bit of config to your ``~/.bashrc`` file, which will be run everytime you open a new terminal.
+To let your system know where it should find all the ROS 2 dependencies and packages, we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
+In case you are not using the bash shell, replace ``~/.bashrc`` with your shell's configuration file.
 
 - Run the following three commands:
     - ``echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc``
     - ``echo 'source /opt/ros/rolling/setup.bash' >> ~/.bashrc``
-    - ``echo 'source $HOME/colcon_ws/install/setup.bash' >> ~/.bashrc``
 
 **TODOs**
 
