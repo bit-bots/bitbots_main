@@ -1,7 +1,7 @@
 from collections import defaultdict
 import psutil
 
-from system_monitor.msg import Cpu as CpuMsg
+from bitbots_msgs.msg import Cpu as CpuMsg
 
 _prev_total = defaultdict(int)
 _prev_busy = defaultdict(int)
@@ -64,4 +64,4 @@ def _calculate_usage(cpu_num, total, busy):
     if diff_total == 0:
         return 0
     else:
-        return int(diff_busy / diff_total * 100)
+        return float(int(diff_busy / diff_total * 100))

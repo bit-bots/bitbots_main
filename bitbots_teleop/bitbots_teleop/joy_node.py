@@ -175,7 +175,7 @@ class JoyNode(Node):
             # right arrow
             self.send_text("Thank you university hamburg for funding.")
 
-if __name__ == "__main__":
+def main():
     rclpy.init(args=None)
     node = JoyNode()
     # necessary so that sleep in loop() is not blocking

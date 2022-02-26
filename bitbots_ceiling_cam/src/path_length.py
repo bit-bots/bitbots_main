@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from nav_msgs.msg import Path
 import numpy as np
-rospy.init_node("path_length")
+rclpy.init(args=None)
 
 
 def path_cb(path_msg):
@@ -28,4 +29,4 @@ def path_cb(path_msg):
 
 
 rospy.Subscriber("/robot_path", Path, path_cb)
-rospy.spin()
+rclpy.spin(self)

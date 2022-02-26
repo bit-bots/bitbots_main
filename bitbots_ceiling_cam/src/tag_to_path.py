@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from apriltag_ros.msg import AprilTagDetectionArray
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 
 
-rospy.init_node("tag_to_path_node")
+rclpy.init(args=None)
 
-pub = rospy.Publisher("/robot_path", Path, queue_size=1)
+pub = self.create_publisher(Path, "/robot_path", 1)
 
 mypath = Path()
 def tag_cb(msg):
@@ -22,9 +23,9 @@ def tag_cb(msg):
 
 rospy.Subscriber("/ceiling_cam/tag_detections", AprilTagDetectionArray, tag_cb)
 
-while not rospy.is_shutdown():
+while rclpy.ok():
     input("Press enter to reset path")
     mypath = Path()
     print("Path reset")
 
-rospy.spin()
+rclpy.spin(self)
