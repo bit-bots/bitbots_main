@@ -22,5 +22,5 @@ cd ./humanoid_league_msgs && git switch feature/ros-2-upgrade ; cd -
 cd ./humanoid_league_visualization && git switch migrate/ros2/interactive_marker ; cd -
 cd ./udp_bridge && git switch master ; cd -
 cd ./wolfgang_robot && git switch ros2-devel ; cd -
-cd ./lib/bio_ik && git switch master ; cd -
+cd ./lib/bio_ik && git switch ros2 ; cd -
 cd ./lib/bio_ik_service && git switch ros2 ; cd -
