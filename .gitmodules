@@ -1,6 +1,6 @@
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
-	url = git@github.com:tylerjw/bio_ik.git
+	url = ../../tylerjw/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = ../../bit-bots/DynamixelSDK.git
@@ -84,7 +84,10 @@
 	branch = ros2
 [submodule "lib/fp"]
 	path = lib/fp
-	url = https://github.com/tylerjw/fp.git
+	url = ../../tylerjw/fp.git
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
-	url = git@github.com:bit-bots/ros2_python_extension.git
+	url = ../../bit-bots/ros2_python_extension.git
+[submodule "soccer_interfaces"]
+	path = soccer_interfaces
+	url = ../../ros-sports/soccer_interfaces.git
