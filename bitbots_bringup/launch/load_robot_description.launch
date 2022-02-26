@@ -9,21 +9,29 @@
     <!-- global parameters -->
     <node name="parameter_blackboard" pkg="demo_nodes_cpp" exec="parameter_blackboard">
         <param name="simulation_active" value="$(var sim)"/>
-        <param name="/use_sim_time" value="$(var sim)"/>
+        <param name="use_sim_time" value="$(var sim)"/>
 
         <param name="robot_type_name" value="Wolfgang"/>
     </node>
 
     <group>
-            <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py"/>
+            <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py">
+              <arg name="sim" value="$(var sim)"/>
+            </include>
     </group>
 
     <group>
-        <include file="$(find-pkg-share humanoid_base_footprint)/launch/base_footprint.launch"/>
-        <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch"/>
+        <include file="$(find-pkg-share humanoid_base_footprint)/launch/base_footprint.launch">
+          <arg name="sim" value="$(var sim)"/>
+        </include>
+        <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch">
+          <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
 
     <group unless="$(var fake_walk)">
-        <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch"/>
+        <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
+          <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
 </launch>

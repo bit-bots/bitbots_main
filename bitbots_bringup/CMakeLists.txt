@@ -21,6 +21,8 @@ set(LIBS ${bitbots_docs_LIBRARIES} ${ament_cmake_LIBRARIES})
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
+ament_python_install_package(${PROJECT_NAME})
+
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 
