@@ -13,22 +13,21 @@ find_package(tf2 REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-set(INCLUDE_DIRS ${std_msgs_INCLUDE_DIRS}${ament_cmake_INCLUDE_DIRS} 
+set(INCLUDE_DIRS ${std_msgs_INCLUDE_DIRS}${ament_cmake_INCLUDE_DIRS}
   ${bitbots_docs_INCLUDE_DIRS} ${tf2_INCLUDE_DIRS}
   ${sensor_msgs_INCLUDE_DIRS} ${geometry_msgs_INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
 
-set(LIBRARY_DIRS ${std_msgs_LIBRARY_DIRS} ${ament_cmake_LIBRARY_DIRS} 
+set(LIBRARY_DIRS ${std_msgs_LIBRARY_DIRS} ${ament_cmake_LIBRARY_DIRS}
   ${bitbots_docs_LIBRARY_DIRS} ${tf2_LIBRARY_DIRS}
   ${sensor_msgs_LIBRARY_DIRS} ${geometry_msgs_LIBRARY_DIRS})
 
 link_directories(${LIBRARY_DIRS})
 
-set(LIBS ${std_msgs_LIBRARIES} ${ament_cmake_LIBRARIES} 
-  ${bitbots_docs_LIBRARIES} ${tf2_LIBRARIES} ${sensor_msgs_LIBRARIES} 
+set(LIBS ${std_msgs_LIBRARIES} ${ament_cmake_LIBRARIES}
+  ${bitbots_docs_LIBRARIES} ${tf2_LIBRARIES} ${sensor_msgs_LIBRARIES}
   ${geometry_msgs_LIBRARIES})
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
 install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
