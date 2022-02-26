@@ -23,7 +23,6 @@ include_directories(${INCLUDE_DIRS})
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
 set(SOURCES src/Spline/polynom.cpp
