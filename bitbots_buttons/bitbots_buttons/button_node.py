@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import rclpy
+from rclpy.logging import LoggingSeverity
 from rclpy.node import Node
 import time
 from humanoid_league_msgs.msg import Audio
@@ -12,20 +13,25 @@ from bitbots_msgs.srv import ManualPenalize
 from bitbots_msgs.msg import Buttons
 
 
-class ButtonNode(object):
+class ButtonNode(Node):
     """ This node handles pressing of buttons on the robot. It should be used to call services on other nodes,
     as an sort of event driven architecture for the buttons.
     """
 
     def __init__(self):
-        log_level = rospy.DEBUG if self.get_parameter('debug_active').get_parameter_value().double_value else rospy.INFO
-        rclpy.init(args=None)
+        super().__init__('bitbots_buttons')
 
         # --- Params ---
-        self.speaking_active = self.get_parameter('speak_active').get_parameter_value().double_value
+        self.declare_parameter('speak_active', True)
+        self.declare_parameter('short_time', 2.0)
+        self.declare_parameter('manual_penalty', True)
+        self.declare_parameter('in_game', True)
+        self.declare_parameter('debounce_time', 0.1)
+
+        self.speaking_active = self.get_parameter('speak_active').get_parameter_value().bool_value
         self.short_time = self.get_parameter('short_time').get_parameter_value().double_value
-        self.manual_penality_mode = self.get_parameter('manual_penalty').get_parameter_value().double_value
-        self.in_game_mode = self.get_parameter('in_game').get_parameter_value().double_value
+        self.manual_penality_mode = self.get_parameter('manual_penalty').get_parameter_value().bool_value
+        self.in_game_mode = self.get_parameter('in_game').get_parameter_value().bool_value
         self.debounce_time = self.get_parameter('debounce_time').get_parameter_value().double_value
 
         # --- Class variables ---
@@ -35,29 +41,24 @@ class ButtonNode(object):
         self.button2_time = 0
 
         # --- Initialize Topics ---
-        rospy.Subscriber("/buttons", Buttons, self.button_cb)
+        self.create_subscription(Buttons, "/buttons", self.button_cb, 1)
         self.speak_publisher = self.create_publisher(Audio, '/speak', 10)
         self.shoot_publisher = self.create_publisher(Bool, '/shoot_button', 1)
 
         if self.manual_penality_mode:
-            self.get_logger().info("Waiting for manual penalize service.")
-            try:
-                rospy.wait_for_service("manual_penalize", 0.5)
-            except rospy.exceptions.ROSException as exc:
-                # we can not be sure that the HCM is running, since we may only started the low level software
-                pass
             self.manual_penalize_method = self.create_client(ManualPenalize, "manual_penalize")
+            while True:
+                if self.manual_penalize_method.wait_for_service(timeout_sec=3):
+                    continue
+                self.get_logger().info("Waiting for manual penalize service.")
 
         if not self.in_game_mode:
-            self.get_logger().info("Waiting for foot zeroing service")
-            try:
-                rospy.wait_for_service("set_foot_zero", 5.0)
-            except:
-                self.get_logger().error("service 'set_foot_zero' not available. Please start ROS Control.")
             self.foot_zero_method = self.create_client(Empty, "set_foot_zero")
-
+            while True:
+                if self.manual_penalize_method.wait_for_service(timeout_sec=3):
+                    continue
+                self.get_logger().info("service 'set_foot_zero' not available. Please start ROS Control.")
         self.get_logger().info("Button node running")
-        rclpy.spin(self)
 
     def button_cb(self, msg):
         """Callback for msg about pressed buttons."""
@@ -99,13 +100,12 @@ class ButtonNode(object):
         self.shoot_publisher.publish(Bool(True))
 
         if self.manual_penality_mode:
-        # switch penalty state by calling service on motion
-
-            try:
-                response = self.manual_penalize_method(0)  # unpenalize
-            except rospy.ServiceException as exc:
+            # switch penalty state by calling service on motion          
+            if self.manual_penalize_method.service_is_ready():
+                self.manual_penalize_method.call_async(0)  # penalize
+            else:
                 speak("Unpause failed", self.speak_publisher, speaking_active=self.speaking_active)
-                print("Penalize service did not process request: " + str(exc))
+                self.get_logger().warn("Penalize service did not process request.")
 
     def button1_long(self):
         """
@@ -113,11 +113,11 @@ class ButtonNode(object):
         """
         self.get_logger().warn('Unpause button (1) pressed long')
         speak("1 long", self.speak_publisher, speaking_active=self.speaking_active)
-        try:
-            response = self.foot_zero_method()
-        except rospy.ServiceException as exc:
+        if self.foot_zero_method.service_is_ready():
+            self.foot_zero_method.call_async(1)  # penalize
+        else:
             speak("Foot zeroing failed", self.speak_publisher, speaking_active=self.speaking_active)
-            print("foot zeroing service did not process request: " + str(exc))
+            self.get_logger().warn("foot zeroing service did not process request.")
 
     def button1_short(self):
         """
@@ -126,13 +126,13 @@ class ButtonNode(object):
         self.get_logger().warn('Pause button (2) pressed short')
         speak("2 short", self.speak_publisher, speaking_active=self.speaking_active)
         if self.manual_penality_mode:
-            # switch penalty state by calling service on motion
-
-            try:
-                response = self.manual_penalize_method(1)  # penalize
-            except rospy.ServiceException as exc:
+            # switch penalty state by calling service on motion          
+            if self.manual_penalize_method.service_is_ready():
+                self.manual_penalize_method.call_async(1)  # penalize
+            else:
                 speak("Pause failed", self.speak_publisher, speaking_active=self.speaking_active)
-                print("Penalize service did not process request: " + str(exc))
+                self.get_logger().warn("Penalize service did not process request.")
+
 
     def button2_long(self):
         """
@@ -141,8 +141,15 @@ class ButtonNode(object):
         self.get_logger().warn('Pause button (2) pressed long')
         speak("2 long", self.speak_publisher, speaking_active=self.speaking_active)
 
-def main():
-    ButtonNode()
+def main(args=None):
+    rclpy.init(args=args)
+    node = ButtonNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == "__main__":
     main()

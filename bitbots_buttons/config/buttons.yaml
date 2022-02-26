@@ -1,5 +1,7 @@
-manual_penalty: True
-in_game: True
-speak_active: True
-short_time: 2 #[s]
-debounce_time: 0.1 #[s]
+bitbots_buttons:
+  ros__parameters:
+    manual_penalty: True
+    in_game: True
+    speak_active: True
+    short_time: 2.0 #[s]
+    debounce_time: 0.1 #[s]
