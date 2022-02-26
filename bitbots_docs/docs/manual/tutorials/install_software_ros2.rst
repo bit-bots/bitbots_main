@@ -55,7 +55,7 @@ The colcon workspace is where your source code gets build and where we use colco
 **5. Final touches**
 
 To let your system know where it should find all the ROS 2 dependencies and packages and to add coloured output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
-In case you are not using the bash shell, replace ``~/.bashrc`` with your shell's configuration file.
+In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
 
 - Run the following command:
 
@@ -95,8 +95,8 @@ In case you are not using the bash shell, replace ``~/.bashrc`` with your shell'
   alias cca='colcon clean packages'
   alias cbv='colcon build --symlink-install --packages-up-to bitbots_vision'
 
-  alias sr='source /opt/ros/rolling/setup.zsh'
-  alias sc='source \$COLCON_WS/install/setup.zsh'
+  alias sr='source /opt/ros/rolling/setup.bash'
+  alias sc='source \$COLCON_WS/install/setup.bash'
   alias sa='sr && sc && sz'
   EOF
 
