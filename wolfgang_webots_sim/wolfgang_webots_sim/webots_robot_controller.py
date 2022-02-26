@@ -484,8 +484,8 @@ class RobotController(RclpyNode):
                              right_pressure.right_front - right_pressure.right_back) * pos_y / sum
             cop_r.point.y = max(min(cop_r.point.x, pos_y), -pos_y)
         else:
-            cop_r.point.x = 0
-            cop_r.point.y = 0
+            cop_r.point.x = 0.0
+            cop_r.point.y = 0.0
 
         return left_pressure, right_pressure, cop_l, cop_r
 
