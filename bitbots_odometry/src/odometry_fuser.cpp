@@ -65,86 +65,80 @@ void OdometryFuser::loop() {
   }
 
   auto node_pointer = this->shared_from_this();
-  rclcpp::Rate r(500.0);
   rclcpp::Time last_time_stamp(0, 0, RCL_ROS_TIME);
   fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   while (rclcpp::ok()) {
+    rclcpp::Time startTime = this->get_clock()->now();
+
     rclcpp::spin_some(node_pointer);
-    if (r.sleep()) {
-      // in simulation, the time does not always advance between loop iteration
-      // in that case, we do not want to republish the transform
-      if (fused_time_ == last_time_stamp) {
-        r.sleep();
-        continue;
-      }
 
-      // get roll an pitch from imu
-      tf2::Quaternion imu_orientation;
-      tf2::fromMsg(imu_data_.orientation, imu_orientation);
+    // get roll an pitch from imu
+    tf2::Quaternion imu_orientation;
+    tf2::fromMsg(imu_data_.orientation, imu_orientation);
 
-      // get motion_odom transform
-      tf2::Transform motion_odometry;
-      tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
+    // get motion_odom transform
+    tf2::Transform motion_odometry;
+    tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
 
-      // combine orientations to new quaternion if IMU is active, use purely odom otherwise
-      tf2::Transform fused_odometry;
+    // combine orientations to new quaternion if IMU is active, use purely odom otherwise
+    tf2::Transform fused_odometry;
 
-      // compute the point of rotation (in base_link frame)
-      tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
-      // publish rotation point as debug
-      geometry_msgs::msg::TransformStamped rotation_point_msg;
-      rotation_point_msg.header.stamp = fused_time_;
-      rotation_point_msg.header.frame_id = base_link_frame_;
-      rotation_point_msg.child_frame_id = rotation_frame_;
-      geometry_msgs::msg::Transform rotation_point_transform_msg;
-      rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
-      rotation_point_msg.transform = rotation_point_transform_msg;
-      br->sendTransform(rotation_point_msg);
-      // get base_link in rotation point frame
-      tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
+    // compute the point of rotation (in base_link frame)
+    tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
+    // publish rotation point as debug
+    geometry_msgs::msg::TransformStamped rotation_point_msg;
+    rotation_point_msg.header.stamp = fused_time_;
+    rotation_point_msg.header.frame_id = base_link_frame_;
+    rotation_point_msg.child_frame_id = rotation_frame_;
+    geometry_msgs::msg::Transform rotation_point_transform_msg;
+    rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
+    rotation_point_msg.transform = rotation_point_transform_msg;
+    br->sendTransform(rotation_point_msg);
+    // get base_link in rotation point frame
+    tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
 
-      // get only translation and yaw from motion odometry
-      tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(
-          motion_odometry.getRotation());
-      tf2::Transform motion_odometry_yaw;
-      motion_odometry_yaw.setRotation(odom_orientation_yaw);
-      motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
+    // get only translation and yaw from motion odometry
+    tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(
+        motion_odometry.getRotation());
+    tf2::Transform motion_odometry_yaw;
+    motion_odometry_yaw.setRotation(odom_orientation_yaw);
+    motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
-      // Get the rotation offset between the IMU and the baselink
-      tf2::Transform imu_mounting_offset;
-      try {
-        geometry_msgs::msg::TransformStamped imu_mounting_transform = tf_buffer_->lookupTransform(
-            base_link_frame_, imu_frame_, fused_time_);
-        fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
-      } catch (tf2::TransformException &ex) {
-        RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU%s", ex.what());
-      }
-
-      // get imu transform without yaw
-      tf2::Quaternion imu_orientation_without_yaw_component = getCurrentImuRotationWithoutYaw(
-          imu_orientation * imu_mounting_offset.getRotation());
-      tf2::Transform imu_without_yaw_component;
-      imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
-      imu_without_yaw_component.setOrigin({0, 0, 0});
-
-      // transformation chain to get correctly rotated odom frame
-      // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-      fused_odometry =
-          motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point;
-
-      // combine it all into a tf
-      tf.header.stamp = fused_time_;
-      tf.header.frame_id = odom_frame_;
-      tf.child_frame_id = base_link_frame_;
-      geometry_msgs::msg::Transform fused_odom_msg;
-      fused_odom_msg = toMsg(fused_odometry);
-      tf.transform = fused_odom_msg;
-      br->sendTransform(tf);
-
-      last_time_stamp = fused_time_;
-    } else {
-      usleep(1);
+    // Get the rotation offset between the IMU and the baselink
+    tf2::Transform imu_mounting_offset;
+    try {
+      geometry_msgs::msg::TransformStamped imu_mounting_transform = tf_buffer_->lookupTransform(
+          base_link_frame_, imu_frame_, fused_time_);
+      fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
+    } catch (tf2::TransformException &ex) {
+      RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU%s", ex.what());
     }
+
+    // get imu transform without yaw
+    tf2::Quaternion imu_orientation_without_yaw_component = getCurrentImuRotationWithoutYaw(
+        imu_orientation * imu_mounting_offset.getRotation());
+    tf2::Transform imu_without_yaw_component;
+    imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
+    imu_without_yaw_component.setOrigin({0, 0, 0});
+
+    // transformation chain to get correctly rotated odom frame
+    // go to the rotation point in the odom frame. rotate the transform to the base link at this point
+    fused_odometry =
+        motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point;
+
+    // combine it all into a tf
+    tf.header.stamp = fused_time_;
+    tf.header.frame_id = odom_frame_;
+    tf.child_frame_id = base_link_frame_;
+    geometry_msgs::msg::Transform fused_odom_msg;
+    fused_odom_msg = toMsg(fused_odometry);
+    tf.transform = fused_odom_msg;
+    br->sendTransform(tf);
+
+    last_time_stamp = fused_time_;
+
+    this->get_clock()->sleep_until(
+      startTime + rclcpp::Duration::from_nanoseconds(1e9 / 500));
   }
 }
 

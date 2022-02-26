@@ -4,40 +4,39 @@
 #include <optional>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
-#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/msg/imu.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <bitbots_splines/abstract_stabilizer.h>
 #include "dynup_utils.h"
-#include <bitbots_dynup/DynUpConfig.h>
 #include <moveit/robot_state/robot_state.h>
 #include <tf2_ros/transform_listener.h>
-#include <control_toolbox/pid.h>
+#include <control_toolbox/pid.hpp>
 #include <rot_conv/rot_conv.h>
 #include <Eigen/Geometry>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 namespace bitbots_dynup {
 
 class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
   void init(moveit::core::RobotModelPtr kinematic_model);
-  DynupResponse stabilize(const DynupResponse &response, const ros::Duration &dt) override;
-  void setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk);
-  void setParams(DynUpConfig params);
+  DynupResponse stabilize(const DynupResponse &response, const rclcpp::Duration &dt) override;
+  void setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk);
+  void setParams(std::vector<rclcpp::Parameter> params);
   void setRobotModel(moveit::core::RobotModelPtr model);
   void reset() override;
-  void setImu(sensor_msgs::Imu imu);
+  void setImu(sensor_msgs::msg::Imu imu);
   bool isStable();
 
  private:
-  sensor_msgs::Imu imu_;
+  sensor_msgs::msg::Imu imu_;
   control_toolbox::Pid pid_trunk_pitch_;
   control_toolbox::Pid pid_trunk_roll_;
-  robot_state::RobotStatePtr goal_state_;
-  robot_model::RobotModelPtr kinematic_model_;
+  moveit::core::RobotStatePtr goal_state_;
+  moveit::core::RobotModelPtr kinematic_model_;
   //Transform from r_sole frame to base_link frame, as we want to stabilize the base link.
-  geometry_msgs::TransformStamped r_sole_to_trunk_;
+  geometry_msgs::msg::TransformStamped r_sole_to_trunk_;
 
   bool stabilize_now_;
 

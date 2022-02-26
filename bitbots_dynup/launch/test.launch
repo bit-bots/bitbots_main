@@ -3,22 +3,22 @@
   <arg name="sim" default="false"/>
   <arg name="use_game_settings" default="false" />
 
-  <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
-    <arg name="sim" value="$(arg sim)"/>
+  <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" >
+    <arg name="sim" value="$(var sim)"/>
   </include>
 
-  <group unless="$(arg sim)">
-    <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
-    <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
+  <group unless="$(var sim)">
+    <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+    <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
   </group>
-  <group if="$(arg sim)">
-    <rosparam file="$(find bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
+  <group if="$(var sim)">
+    <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
   </group>
 
-  <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
-  <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+  <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-  <node name="dynup" pkg="bitbots_dynup" type="DynupNode" output="screen" launch-prefix="$(arg taskset)">
+  <node name="dynup" pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
     <remap from="/dynup_motor_goals" to="/DynamixelController/command"/>
   </node>
 

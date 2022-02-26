@@ -3,7 +3,7 @@ from bitbots_test.test_case import RosNodeTestCase
 from bitbots_test.mocks import MockSubscriber
 from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.msg import DynUpAction, DynUpGoal, JointCommand
-import actionlib
+from rclpy.action import ActionClient
 
 
 class DynupRunsTestCase(RosNodeTestCase):
@@ -16,12 +16,12 @@ class DynupRunsTestCase(RosNodeTestCase):
 
         sub = MockSubscriber('dynup_motor_goals', JointCommand)
         self.with_assertion_grace_period(lambda: self.assertNodeRunning("dynup"), 20)
-        client = actionlib.SimpleActionClient('dynup', DynUpAction)
+        client = ActionClient(self, DynUpAction, 'dynup')
         assert client.wait_for_server(), "Dynup action server not running"
 
         goal = DynUpGoal()
         goal.direction = direction
-        client.send_goal(goal)
+        client.send_goal_async(goal)
         client.done_cb = done_cb
         client.wait_for_result()
         sub.wait_until_connected()
