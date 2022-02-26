@@ -62,14 +62,14 @@ In case you are not using the bash shell, replace ``~/.bashrc`` with your shell'
 .. code-block:: bash
 
   cat >> ~/.bashrc << EOF
-  export PATH=$PATH:$HOME/.local/bin
-  export COLCON_WS="$HOME/colcon_ws"
+  export PATH=\$PATH:\$HOME/.local/bin
+  export COLCON_WS="\$HOME/colcon_ws"
   export COLCON_LOG_LEVEL=30
   export RCUTILS_COLORIZED_OUTPUT=1 
   export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
   source /opt/ros/rolling/setup.bash
-  eval "$(register-python-argcomplete3 ros2)"
-  eval "$(register-python-argcomplete3 colcon)"
+  eval "\$(register-python-argcomplete3 ros2)"
+  eval "\$(register-python-argcomplete3 colcon)"
   EOF
 
 - Optionally, run the following command to set some useful shortcuts for various ROS2 commands:
@@ -96,7 +96,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` with your shell'
   alias cbv='colcon build --symlink-install --packages-up-to bitbots_vision'
 
   alias sr='source /opt/ros/rolling/setup.zsh'
-  alias sc='source $COLCON_WS/install/setup.zsh'
+  alias sc='source \$COLCON_WS/install/setup.zsh'
   alias sa='sr && sc && sz'
   EOF
 
