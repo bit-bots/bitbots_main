@@ -84,12 +84,15 @@
 	branch = ros2
 [submodule "lib/fp"]
 	path = lib/fp
-	url = ../../tylerjw/fp.git
+	url = https://github.com/tylerjw/fp.git
+	branch = main
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
+	branch = main
 	url = ../../bit-bots/ros2_python_extension.git
 [submodule "soccer_interfaces"]
 	path = soccer_interfaces
+	branch = rolling
 	url = ../../ros-sports/soccer_interfaces.git
 [submodule "lib/orocos_kinematics_dynamics"]
 	path = lib/orocos_kinematics_dynamics
