@@ -221,8 +221,7 @@ void DynupNode::execute(const bitbots_msgs::DynUpGoalSharedPtr &goal) {
         visualizer_.displaySplines(engine_.getRHandSplines(), base_link_frame_);
       }
     }
-    rclcpp::Rate loop_rate(engine_rate_);
-    loopEngine(loop_rate);
+    loopEngine(engine_rate_);
     bitbots_msgs::DynUpResult r;
     if (server_.isPreemptRequested()) {
       &goal->canceled(result);
@@ -278,20 +277,21 @@ double DynupNode::getTimeDelta() {
   return dt;
 }
 
-void DynupNode::loopEngine(rclcpp::Rate loop_rate) {
+void DynupNode::loopEngine(int loop_rate) {
   double dt;
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
   while (server_.isActive() && !server_.isPreemptRequested()) {
+    rclcpp::Time startTime = this->get_clock()->now();
     rclcpp::spin_some(this->get_node_base_interface());
-    if (loop_rate.sleep()) {
-      dt = getTimeDelta();
-      msg = step(dt);
-      if (msg.joint_names.empty()) {
-          break;
-      }
+    this->get_clock()->sleep_until(
+      startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
+    dt = getTimeDelta();
+    msg = step(dt);
+    if (msg.joint_names.empty()) {
+        break;
     }
-      joint_goal_publisher_->publish(msg);
+    joint_goal_publisher_->publish(msg);
   }
 }
 

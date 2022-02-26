@@ -93,7 +93,7 @@ class DynupNode : public rclcpp::Node {
 
  private:
   rclcpp::Publisher debug_publisher_;
-  
+
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
   rclcpp::Subscription<DynupNode::imuCallback> cop_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
@@ -122,7 +122,7 @@ class DynupNode : public rclcpp::Node {
    * Do main loop in which DynUpEngine::tick() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */
-  void loopEngine(rclcpp::Rate loop_rate);
+  void loopEngine(int);
 
   /**
    * Publish the current support_foot so that a correct base_footprint can be calculated
