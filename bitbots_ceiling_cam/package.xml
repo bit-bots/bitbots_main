@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_ceiling_cam</name>
   <version>1.0.0</version>
@@ -9,11 +9,12 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <export>
      <bitbots_documentation>
       <status>unknown</status>
     </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
