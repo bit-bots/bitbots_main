@@ -2,15 +2,18 @@
 AnimationCapsule
 ^^^^^^^^^^^^^^^^
 """
-import actionlib
-import rospy
+from rclpy.action import ActionClient
+import rclpy
+from rclpy.duration import Duration
+from rclpy.node import Node
 from humanoid_league_msgs.msg import PlayAnimationGoal, PlayAnimationAction
 
 
 class AnimationCapsule:
-    def __init__(self):
+    def __init__(self, node: Node):
+        self.node = node
         self.active = False
-        self.animation_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
+        self.animation_client = ActionClient(self, PlayAnimationAction, 'animation')
 
     def play_animation(self, animation):
         """
@@ -22,20 +25,20 @@ class AnimationCapsule:
             return False
 
         if animation is None or animation == "":
-            rospy.logwarn("Tried to play an animation with an empty name!")
+            self.get_logger().warn("Tried to play an animation with an empty name!")
             return False
         first_try = self.animation_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+            Duration(seconds=self.node.get_parameter("hcm/anim_server_wait_time").get_parameter_value().double_value))
         if not first_try:
-            rospy.logerr(
+            self.get_logger().error(
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
             self.animation_client.wait_for_server()
-            rospy.logwarn("Animation server now running, hcm will go on.")
+            self.get_logger().warn("Animation server now running, hcm will go on.")
         goal = PlayAnimationGoal()
         goal.animation = animation
         goal.hcm = False  # the animation is from the hcm
-        self.animation_client.send_goal(goal, done_cb=self.cb_unset_is_busy)
+        self.animation_client.send_goal_async(goal, done_cb=self.cb_unset_is_busy)
         self.active = True
 
     def cb_unset_is_busy(self, _p1, _p2):

@@ -1,7 +1,9 @@
 from io import BytesIO
 import math
 import numpy as np
-import rospy
+import rclpy
+from rclpy.duration import Duration
+from rclpy.node import Node
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
 from bitbots_head_behavior.collision_checker import CollisionChecker
@@ -25,7 +27,7 @@ class HeadCapsule:
         self.position_publisher = None  # type: rospy.Publisher
         self.visual_compass_record_trigger = None  # type: rospy.Publisher
 
-        self.tf_buffer = tf2.Buffer(rospy.Duration(5))
+        self.tf_buffer = tf2.Buffer(Duration(seconds=5))
         # tf_listener is necessary, even though unused!
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
 
@@ -70,7 +72,7 @@ class HeadCapsule:
         :param current_tilt_position: Current tilt joint state for better interpolation (only active if both joints are set).
         :return: False if the target position collides, True otherwise
         """
-        rospy.logdebug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
+        self.get_logger().debug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
         if clip:
             pan_position, tilt_position = self.pre_clip(pan_position, tilt_position)
@@ -79,7 +81,7 @@ class HeadCapsule:
         if current_pan_position and current_tilt_position:
             if resolve_collision:
                 success = self.avoid_collision_on_path(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
-                if not success: rospy.logerr("Unable to resolve head colision")
+                if not success: self.get_logger().error("Unable to resolve head colision")
                 return success
             else:
                 self.move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
@@ -87,7 +89,7 @@ class HeadCapsule:
         else: # Passes the stuff through
             self.pos_msg.positions = pan_position, tilt_position
             self.pos_msg.velocities = [pan_speed, tilt_speed]
-            self.pos_msg.header.stamp = rospy.Time.now()
+            self.pos_msg.header.stamp = self.get_clock().now()
             self.position_publisher.publish(self.pos_msg)
             return True
 
@@ -133,7 +135,7 @@ class HeadCapsule:
         # Send new joint values
         self.pos_msg.positions = goal_pan, goal_tilt
         self.pos_msg.velocities = [pan_speed, tilt_speed]
-        self.pos_msg.header.stamp = rospy.Time.now()
+        self.pos_msg.header.stamp = self.get_clock().now()
         self.position_publisher.publish(self.pos_msg)
 
     def pre_clip(self, pan, tilt):

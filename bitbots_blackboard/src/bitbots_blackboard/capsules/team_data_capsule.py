@@ -4,15 +4,18 @@ TeamDataCapsule
 """
 import math
 from collections import defaultdict
-
-import rospy
+from rclpy.duration import Duration
+from rclpy.time import Time
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import Strategy, TeamData
 from geometry_msgs.msg import PointStamped
 
 
 class TeamDataCapsule:
-    def __init__(self):
-        self.bot_id = rospy.get_param("bot_id", 1)
+    def __init__(self, node: Node):
+        self.node = node
+        self.bot_id = self.node.get_parameter("bot_id").get_parameter_value().double_value
         self.strategy_sender = None  # type: rospy.Publisher
         self.time_to_ball_publisher = None  # type: rospy.Publisher
         # indexed with one to match robot ids
@@ -33,17 +36,17 @@ class TeamDataCapsule:
         }
         self.own_time_to_ball = 9999.0
         self.strategy = Strategy()
-        self.strategy.role = self.roles[rospy.get_param('role')]
+        self.strategy.role = self.roles[self.node.get_parameter('role').get_parameter_value().string_value]
         self.strategy_update = None
         self.action_update = None
         self.role_update = None
-        self.data_timeout = rospy.get_param("team_data_timeout", 2)
-        self.ball_max_covariance = rospy.get_param("ball_max_covariance", 0.5)
-        self.ball_lost_time = rospy.Duration(rospy.get_param('behavior/body/ball_lost_time', 8.0))
-        self.pose_precision_threshold = rospy.get_param('behavior/body/pose_precision_threshold', None)
+        self.data_timeout = self.node.get_parameter("team_data_timeout").get_parameter_value().double_value
+        self.ball_max_covariance = self.node.get_parameter("ball_max_covariance").get_parameter_value().double_value
+        self.ball_lost_time = Duration(seconds=self.node.get_parameter('behavior/body/ball_lost_time').get_parameter_value().double_value)
+        self.pose_precision_threshold = self.node.get_parameter('behavior/body/pose_precision_threshold').get_parameter_value().double_value
 
     def is_valid(self, data: TeamData):
-        return rospy.Time.now() - data.header.stamp < rospy.Duration(self.data_timeout) \
+        return self.get_clock().now() - data.header.stamp < Duration(seconds=self.data_timeout) \
                and data.state != TeamData.STATE_PENALIZED
 
     def get_goalie_ball_position(self):
@@ -124,7 +127,7 @@ class TeamDataCapsule:
         assert role in [Strategy.ROLE_STRIKER, Strategy.ROLE_SUPPORTER, Strategy.ROLE_DEFENDER,
                         Strategy.ROLE_OTHER, Strategy.ROLE_GOALIE, Strategy.ROLE_IDLING]
         self.strategy.role = role
-        self.role_update = rospy.get_time()
+        self.role_update = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
 
     def get_role(self):
         return self.strategy.role, self.role_update
@@ -137,7 +140,7 @@ class TeamDataCapsule:
                           Strategy.ACTION_TRYING_TO_SCORE, Strategy.ACTION_WAITING, Strategy.ACTION_SEARCHING,
                           Strategy.ACTION_KICKING, Strategy.ACTION_LOCALIZING]
         self.strategy.action = action
-        self.action_update = rospy.get_time()
+        self.action_update = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
 
     def get_action(self):
         return self.strategy.action, self.action_update
@@ -145,7 +148,7 @@ class TeamDataCapsule:
     def set_kickoff_strategy(self, strategy):
         assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
         self.strategy.offensive_side = strategy
-        self.strategy_update = rospy.get_time()
+        self.strategy_update = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
 
     def get_kickoff_strategy(self):
         return self.strategy.offensive_side, self.strategy_update
@@ -178,7 +181,7 @@ class TeamDataCapsule:
         if teammate_ball is not None:
             return teammate_ball.header.stamp
         else:
-            return rospy.Time(0)
+            return rclpy.Time(seconds=0, nanoseconds=0)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""
@@ -202,7 +205,7 @@ class TeamDataCapsule:
             robot = single_teamdata.robot_position
             robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
             stamp = single_teamdata.header.stamp
-            if rospy.Time.now() - stamp < self.ball_lost_time:
+            if self.get_clock().now() - stamp < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
                     if robot_x_std_dev < self.pose_precision_threshold['x_sdev'] and \
                             robot_y_std_dev < self.pose_precision_threshold['y_sdev'] and \
