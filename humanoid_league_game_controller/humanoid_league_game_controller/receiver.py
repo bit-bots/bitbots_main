@@ -119,7 +119,7 @@ class GameStateReceiver(Node):
                 self.time += 5  # Resend message every five seconds
                 logger.info("No GameController message received, allowing robot to move", throttle_duration_sec=5)
                 msg = GameStateMsg()
-                msg.game_state = 3 #PLAYING
+                msg.game_state = 3 # PLAYING
                 self.state_publisher.publish(msg)
                 msg2 = Bool()
                 msg2.data = False
@@ -147,14 +147,15 @@ class GameStateReceiver(Node):
             The information is processed and published as a standard message to a ROS topic.
             :param state: Game State
         """
-        if state.teams[0].team_number == self.team_number:
-            own_team = state.teams[0]
-            rival_team = state.teams[1]
-        elif state.teams[1].team_number == self.team_number:
-            own_team = state.teams[1]
-            rival_team = state.teams[0]
-        else:
-            rospy.logerr('Team {} not playing, only {} and {}'.format(self.team_number,
+
+        is_own_team = lambda number: number == self.team_number
+        own_team = self.select_team_by(is_own_team, state.teams)
+
+        is_not_own_team = lambda number: number != self.team_number
+        rival_team = self.select_team_by(is_not_own_team, state.teams)
+
+        if not own_team or not rival_team:
+            logger.error('Team {} not playing, only {} and {}'.format(self.team_number,
                                                                       state.teams[0].team_number,
                                                                       state.teams[1].team_number))
             return
