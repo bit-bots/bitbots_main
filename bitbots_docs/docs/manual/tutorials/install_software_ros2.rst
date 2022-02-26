@@ -88,12 +88,14 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   alias rpl='ros2 param list'
   alias rpg='ros2 param get'
 
-  alias cba='colcon build --symlink-install'
-  alias cbn='colcon build --symlink-install --packages-select'
-  alias cb='colcon build --symlink-install --packages-up-to'
-  alias cc='colcon clean packages --packages-select'
-  alias cca='colcon clean packages'
-  alias cbv='colcon build --symlink-install --packages-up-to bitbots_vision'
+  alias cdc='cd \$COLCON_WS'
+
+  alias cba='cdc && colcon build --symlink-install'
+  alias cbn='cdc && colcon build --symlink-install --packages-select'
+  alias cb='cdc && colcon build --symlink-install --packages-up-to'
+  alias cc='cdc && colcon clean packages --packages-select'
+  alias cca='cdc && colcon clean packages'
+  alias cbv='cdc && colcon build --symlink-install --packages-up-to bitbots_vision'
 
   alias sr='source /opt/ros/rolling/setup.bash'
   alias sc='source \$COLCON_WS/install/setup.bash'
