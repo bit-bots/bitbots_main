@@ -24,3 +24,4 @@ cd ./udp_bridge && git switch master ; cd -
 cd ./wolfgang_robot && git switch ros2-devel ; cd -
 cd ./lib/bio_ik && git switch ros2 ; cd -
 cd ./lib/bio_ik_service && git switch ros2 ; cd -
+cd ./lib/fp && git switch main ; cd -
