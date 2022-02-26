@@ -54,12 +54,51 @@ The colcon workspace is where your source code gets build and where we use colco
 
 **5. Final touches**
 
-To let your system know where it should find all the ROS 2 dependencies and packages, we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
+To let your system know where it should find all the ROS 2 dependencies and packages and to add coloured output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
 In case you are not using the bash shell, replace ``~/.bashrc`` with your shell's configuration file.
 
-- Run the following three commands:
-    - ``echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc``
-    - ``echo 'source /opt/ros/rolling/setup.bash' >> ~/.bashrc``
+- Run the following command:
+
+.. code-block:: bash
+
+  cat >> ~/.bashrc << EOF
+  export PATH=$PATH:$HOME/.local/bin
+  export COLCON_WS="$HOME/colcon_ws"
+  export COLCON_LOG_LEVEL=30
+  export RCUTILS_COLORIZED_OUTPUT=1 
+  export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
+  source /opt/ros/rolling/setup.bash
+  eval "$(register-python-argcomplete3 ros2)"
+  eval "$(register-python-argcomplete3 colcon)"
+  EOF
+
+- Optionally, run the following command to set some useful shortcuts for various ROS2 commands:
+
+.. code-block:: bash
+
+  cat >> ~/.bashrc << EOF
+  alias rr='ros2 run'
+  alias rl='ros2 launch'
+
+  alias rte='ros2 topic echo'
+  alias rtl='ros2 topic list'
+  alias rth='ros2 topic hz'
+  alias rtp='ros2 topic pub'
+
+  alias rpl='ros2 param list'
+  alias rpg='ros2 param get'
+
+  alias cba='colcon build --symlink-install'
+  alias cbn='colcon build --symlink-install --packages-select'
+  alias cb='colcon build --symlink-install --packages-up-to'
+  alias cc='colcon clean packages --packages-select'
+  alias cca='colcon clean packages'
+  alias cbv='colcon build --symlink-install --packages-up-to bitbots_vision'
+
+  alias sr='source /opt/ros/rolling/setup.zsh'
+  alias sc='source $COLCON_WS/install/setup.zsh'
+  alias sa='sr && sc && sz'
+  EOF
 
 **TODOs**
 
