@@ -88,7 +88,9 @@
 	branch = main
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
+	branch = main
 	url = ../../bit-bots/ros2_python_extension.git
 [submodule "soccer_interfaces"]
 	path = soccer_interfaces
+	branch = rolling
 	url = ../../ros-sports/soccer_interfaces.git
