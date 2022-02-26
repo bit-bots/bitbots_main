@@ -57,26 +57,11 @@ ament_target_dependencies(odometry_fuser
         sensor_msgs
         tf2_ros
         ament_cmake
-        rclcpp)
-target_link_libraries(odometry_fuser ${Eigen3_LIBRARIES})
+        rclcpp
+        Eigen3)
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
-
-ament_export_dependencies(tf2_eigen)
-ament_export_dependencies(tf2)
-ament_export_dependencies(nav_msgs)
-ament_export_dependencies(message_filters)
-ament_export_dependencies(tf2_geometry_msgs)
-ament_export_dependencies(bitbots_msgs)
-ament_export_dependencies(geometry_msgs)
-ament_export_dependencies(bitbots_docs)
-ament_export_dependencies(rotconv)
-ament_export_dependencies(sensor_msgs)
-ament_export_dependencies(tf2_ros)
-ament_export_dependencies(ament_cmake)
-ament_export_dependencies(rclcpp)
-ament_export_include_directories(include)
 
 install(TARGETS motion_odometry
         DESTINATION lib/${PROJECT_NAME})

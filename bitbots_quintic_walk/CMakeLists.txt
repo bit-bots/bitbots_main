@@ -8,29 +8,27 @@ endif ()
 
 #find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(PythonLibs)
-find_package(PythonLibs COMPONENTS Interpreter Development)
-find_package(tf2_eigen REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(rotconv REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(bitbots_splines REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(PkgConfig REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(bitbots_splines REQUIRED)
+find_package(control_msgs REQUIRED)
+find_package(control_toolbox REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
 find_package(moveit_ros REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
-find_package(control_toolbox REQUIRED)
-find_package(ros2_python_extension)
+find_package(nav_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(rotconv REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
@@ -58,23 +56,25 @@ set(CODE_LIBRARIES urdfdom_world urdfdom_model)
 add_executable(WalkNode ${SOURCES})
 
 ament_target_dependencies(WalkNode
-        bitbots_splines
-        tf2_eigen
-        tf2
-        tf2_geometry_msgs
-        nav_msgs
-        std_msgs
-        rotconv
-        geometry_msgs
-        sensor_msgs
-        tf2_ros
         ament_cmake
-        rclcpp
-        humanoid_league_msgs
         bitbots_msgs
+        bitbots_splines
+        control_msgs
+        control_toolbox
+        geometry_msgs
+        humanoid_league_msgs
         moveit_ros
         moveit_ros_planning_interface
-        control_toolbox)
+        nav_msgs
+        rclcpp
+        rotconv
+        sensor_msgs
+        std_msgs
+        tf2
+        tf2_eigen
+        tf2_geometry_msgs
+        tf2_ros
+        Eigen3)
 
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -86,24 +86,25 @@ target_link_libraries(WalkNode ${CODE_LIBRARIES} "${cpp_typesupport_target}")
 pybind11_add_module(libpy_quintic_walk SHARED
         src/walk_pywrapper.cpp ${SOURCES})
 ament_target_dependencies(libpy_quintic_walk PUBLIC
-        bitbots_splines
-        tf2_eigen
-        tf2
-        tf2_geometry_msgs
-        nav_msgs
-        std_msgs
-        rotconv
-        geometry_msgs
-        sensor_msgs
-        tf2_ros
         ament_cmake
-        rclcpp
-        humanoid_league_msgs
         bitbots_msgs
+        bitbots_splines
+        control_msgs
+        control_toolbox
+        geometry_msgs
+        humanoid_league_msgs
         moveit_ros
         moveit_ros_planning_interface
+        nav_msgs
+        rclcpp
         ros2_python_extension
-        control_toolbox)
+        rotconv
+        sensor_msgs
+        std_msgs
+        tf2
+        tf2_eigen
+        tf2_geometry_msgs
+        tf2_ros)
 
 target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 
@@ -119,21 +120,6 @@ install(TARGETS libpy_quintic_walk
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
-
-#ament_export_dependencies(bitbots_test)
-ament_export_dependencies(tf2_eigen)
-ament_export_dependencies(tf2)
-ament_export_dependencies(tf2_geometry_msgs)
-ament_export_dependencies(tf2_ros)
-ament_export_dependencies(rotconv)
-ament_export_dependencies(sensor_msgs)
-ament_export_dependencies(geometry_msgs)
-ament_export_dependencies(ament_cmake)
-ament_export_dependencies(rclcpp)
-ament_export_dependencies(rosidl_default_runtime)
-ament_export_dependencies(moveit_ros_planning_interface)
-ament_export_include_directories(include)
-ament_export_libraries(py_quintic_walk ${LIBS})
 
 install(TARGETS WalkNode
         DESTINATION lib/${PROJECT_NAME})
