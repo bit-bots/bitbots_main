@@ -119,7 +119,7 @@ class GameStateReceiver(Node):
                 self.time += 5  # Resend message every five seconds
                 logger.info("No GameController message received, allowing robot to move", throttle_duration_sec=5)
                 msg = GameStateMsg()
-                msg.game_state = 3 #PLAYING
+                msg.game_state = 3 # PLAYING
                 self.state_publisher.publish(msg)
                 msg2 = Bool()
                 msg2.data = False
