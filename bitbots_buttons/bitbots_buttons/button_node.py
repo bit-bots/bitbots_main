@@ -3,13 +3,13 @@
 import rclpy
 from rclpy.node import Node
 import time
-from bitbots_buttons.msg import Buttons
 from humanoid_league_msgs.msg import Audio
 from std_srvs.srv import Empty
 
 from humanoid_league_speaker.speaker import speak
 from std_msgs.msg import Bool
 from bitbots_msgs.srv import ManualPenalize
+from bitbots_msgs.msg import Buttons
 
 
 class ButtonNode(object):
