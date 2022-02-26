@@ -41,17 +41,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-add_compile_options(-Wall -Werror -Wno-unused -fPIC)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 set(SOURCES src/walk_visualizer.cpp
         src/walk_engine.cpp
         src/walk_stabilizer.cpp
         src/walk_ik.cpp
         src/walk_node.cpp)
-
-
-set(CODE_LIBRARIES urdfdom_world urdfdom_model)
 
 add_executable(WalkNode ${SOURCES})
 
@@ -79,7 +75,7 @@ ament_target_dependencies(WalkNode
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-target_link_libraries(WalkNode ${CODE_LIBRARIES} "${cpp_typesupport_target}")
+target_link_libraries(WalkNode "${cpp_typesupport_target}")
 
 
 # create the lib
@@ -118,7 +114,6 @@ install(TARGETS libpy_quintic_walk
 #  enable_bitbots_tests()
 #endif()
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
 install(TARGETS WalkNode
