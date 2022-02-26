@@ -33,6 +33,9 @@
             <param name="vision_publish_debug_image" value="$(var debug)" />
             <param name="vision_publish_HSV_mask_image" value="$(var debug)" />
             <param name="vision_publish_field_mask_image" value="$(var debug)" />
+
+            <!-- Use sim time-->
+            <param name="use_sim_time" value="true"/>
         </node>
     </group>
 </launch>
