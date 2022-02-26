@@ -469,8 +469,8 @@ class RobotController(RclpyNode):
                              left_pressure.right_front - left_pressure.right_back) * pos_y / sum
             cop_l.point.y = max(min(cop_l.point.x, pos_y), -pos_y)
         else:
-            cop_l.point.x = 0
-            cop_l.point.y = 0
+            cop_l.point.x = 0.0
+            cop_l.point.y = 0.0
 
         cop_r = PointStamped()
         cop_r.header.frame_id = self.r_sole_frame
