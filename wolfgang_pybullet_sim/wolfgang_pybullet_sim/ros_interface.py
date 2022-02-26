@@ -242,8 +242,8 @@ class ROSInterface():
             cop_l.point.y = (f_llf[1] + f_llb[1] - f_lrf[1] - f_lrb[1]) * pos_y / sum_of_forces
             cop_l.point.y = max(min(cop_l.point.y, pos_y), -pos_y)
         else:
-            cop_l.point.x = float(0)
-            cop_l.point.y = float(0)
+            cop_l.point.x = 0.0
+            cop_l.point.y = 0.0
         self.cop_l_pub_.publish(cop_l)
 
         cop_r = PointStamped()
@@ -256,8 +256,8 @@ class ROSInterface():
             cop_r.point.y = (f_rlf[1] + f_rlb[1] - f_rrf[1] - f_rrb[1]) * pos_y / sum_of_forces
             cop_r.point.y = max(min(cop_r.point.y, pos_y), -pos_y)
         else:
-            cop_r.point.x = float(0)
-            cop_r.point.y = float(0)
+            cop_r.point.x = 0.0
+            cop_r.point.y = 0.0
         self.cop_r_pub_.publish(cop_r)
 
     def publish_true_odom(self):

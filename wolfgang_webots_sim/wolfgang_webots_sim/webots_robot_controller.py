@@ -167,10 +167,6 @@ class RobotController(RclpyNode):
         self.declare_parameter("imu_frame", "imu_frame")
         self.imu_frame = self.get_parameter("imu_frame").get_parameter_value().string_value
         if self.ros_active:
-            if base_ns == "":
-                clock_topic = "/clock"
-            else:
-                clock_topic = base_ns + "clock"
             self.declare_parameter("l_sole_frame", "l_sole")
             self.declare_parameter("r_sole_frame", "r_sole")
             self.declare_parameter("camera_optical_frame", "camera_optical_frame")
@@ -469,8 +465,8 @@ class RobotController(RclpyNode):
                              left_pressure.right_front - left_pressure.right_back) * pos_y / sum
             cop_l.point.y = max(min(cop_l.point.x, pos_y), -pos_y)
         else:
-            cop_l.point.x = 0
-            cop_l.point.y = 0
+            cop_l.point.x = 0.0
+            cop_l.point.y = 0.0
 
         cop_r = PointStamped()
         cop_r.header.frame_id = self.r_sole_frame
@@ -484,8 +480,8 @@ class RobotController(RclpyNode):
                              right_pressure.right_front - right_pressure.right_back) * pos_y / sum
             cop_r.point.y = max(min(cop_r.point.x, pos_y), -pos_y)
         else:
-            cop_r.point.x = 0
-            cop_r.point.y = 0
+            cop_r.point.x = 0.0
+            cop_r.point.y = 0.0
 
         return left_pressure, right_pressure, cop_l, cop_r
 
