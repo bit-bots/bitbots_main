@@ -32,7 +32,7 @@ class BallFilter(Node):
         # Setup dynamic reconfigure config
         self.config = {}
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
-        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
+        #self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
     def _dynamic_reconfigure_callback(self, config):
         """
@@ -101,7 +101,7 @@ class BallFilter(Node):
         )
         
         self.reset_service = self.create_service(
-            Trigger, #ist Trigger der type?
+            Trigger,
             config['ball_filter_reset_service_name'],
             self.reset_filter_cb
         )
@@ -128,7 +128,7 @@ class BallFilter(Node):
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.get_logger().warning(str(e))
 
-    def reset_filter_cb(self, req, response): #hier response informieren? wenn man nichts damit macht?
+    def reset_filter_cb(self, req, response):
         self.get_logger().info("Resetting bitbots ball filter...")
         self.filter_initialized = False
         return True, ""
