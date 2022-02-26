@@ -2,6 +2,7 @@
 import cv2
 import rclpy
 import tf2_ros
+import threading
 import numpy as np
 #import sensor_msgs.point_cloud2 as pc2 #TODO
 from rclpy.node import Node
@@ -61,6 +62,10 @@ class Transformer(Node):
         self._camera_info = None
         self.create_subscription(CameraInfo, camera_info_topic, self._callback_camera_info, 1)
 
+        # Start new thread to spin node and aquire new data.
+        x = threading.Thread(target=rclpy.spin, args=(self,))
+        x.start()
+
         # Wait for Camera info
         cam_info_counter = 0
         while self._camera_info is None:
@@ -77,7 +82,7 @@ class Transformer(Node):
         # Time(0) gets the most recent transform
         while not self._tf_buffer.can_transform(self._publish_frame,
                                                 self._camera_info.header.frame_id,
-                                                Time(0),
+                                                Time(seconds=0),
                                                 timeout=Duration(seconds=5)):
             self.get_logger().error("Could not get transformation from " + self._publish_frame +
                          "to " + self._camera_info.header.frame_id)
@@ -85,7 +90,7 @@ class Transformer(Node):
         # Also check if we can transform from optical frame to base_footprint
         while not self._tf_buffer.can_transform(self._base_footprint_frame,
                                                 self._camera_info.header.frame_id,
-                                                Time(0),
+                                                Time(seconds=0),
                                                 timeout=Duration(seconds=5)):
             self.get_logger().error("Could not get transformation from " + self._base_footprint_frame +
                          " to " + self._camera_info.header.frame_id)
@@ -109,8 +114,13 @@ class Transformer(Node):
                 self._line_mask_relative_pc_pub,
                 scale=line_mask_scaling), 1)
 
+        try:
+            x.join()
+        except KeyboardInterrupt:
+            return
+
     def _callback_camera_info(self, camera_info: CameraInfo):
-        if camera_info.K[0] == 0:
+        if camera_info.k[0] == 0:
             self.get_logger().error(
                 "Invalid CameraInfo received. Check your camera settings.",
                 throttle_duration_sec=5)
@@ -223,6 +233,7 @@ class Transformer(Node):
         """
         Projects a mask from the input image as a pointcloud on the field plane.
         """
+        return
         # Get field plane
         field = self.get_plane(msg.header.stamp, 0.0)
         if field is None:
@@ -308,7 +319,7 @@ class Transformer(Node):
         """
         Projects an numpy array of points to the correspoding places on the field plane (in the camera frame).
         """
-        camera_projection_matrix = self._camera_info.K
+        camera_projection_matrix = self._camera_info.k
 
         binning_x = max(self._camera_info.binning_x, 1) / scale
         binning_y = max(self._camera_info.binning_y, 1) / scale
@@ -370,10 +381,7 @@ class Transformer(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Transformer()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
+
     node.destroy_node()
     rclpy.shutdown()
 
