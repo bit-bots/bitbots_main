@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# Refreshes submodules
+git submodule sync
 
 # This script switches submodules to the ros2 development branch.
 cd ./bitbots_behavior && git switch master ; cd -
