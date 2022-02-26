@@ -9,8 +9,8 @@
 
 #include <particle_filter/CRandomNumberGenerator.h>
 #include <particle_filter/StateDistribution.h>
-#include <bitbots_localization/RobotState.h>
-#include <ros/ros.h>
+#include <bitbots_localization/msg/robot_state.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 class RobotStateDistribution : public particle_filter::StateDistribution<RobotState> {
  public:

@@ -4,7 +4,7 @@
 
 #include "../include/bitbots_localization/StateDistribution.h"
 
-RobotStateDistribution::RobotStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator,
+RobotStateDistribution::msg::RobotStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator,
                                                std::pair<double, double> initial_robot_pose,
                                                std::pair<double, double> field_size) : random_number_generator_(
         random_number_generator) {
@@ -24,7 +24,7 @@ const RobotState RobotStateDistribution::draw() const {
 
 }
 
-RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
+RobotStateDistributionStartLeft::msg::RobotStateDistributionStartLeft(
         particle_filter::CRandomNumberGenerator &random_number_generator,
         std::pair<double, double> field_size) {
     field_size = field_size;
@@ -43,7 +43,7 @@ const RobotState RobotStateDistributionStartLeft::draw() const {
     }
 }
 
-RobotStateDistributionStartRight::RobotStateDistributionStartRight(
+RobotStateDistributionStartRight::msg::RobotStateDistributionStartRight(
         particle_filter::CRandomNumberGenerator &random_number_generator,
         std::pair<double, double> field_size) {
       field_x = field_size.first;
@@ -61,7 +61,7 @@ const RobotState RobotStateDistributionStartRight::draw() const {
     }
 }
 
-RobotStateDistributionLeftHalf::RobotStateDistributionLeftHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
+RobotStateDistributionLeftHalf::msg::RobotStateDistributionLeftHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
                                                                std::pair<double, double> field_size) : random_number_generator_(
         random_number_generator) {
     // only own half
@@ -77,7 +77,7 @@ const RobotState RobotStateDistributionLeftHalf::draw() const {
                        random_number_generator_.getUniform(-M_PI, M_PI)));
 }
 
-RobotStateDistributionRightHalf::RobotStateDistributionRightHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
+RobotStateDistributionRightHalf::msg::RobotStateDistributionRightHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
                                                std::pair<double, double> field_size) : random_number_generator_(
         random_number_generator) {
 
@@ -95,7 +95,7 @@ const RobotState RobotStateDistributionRightHalf::draw() const {
 
 }
 
-RobotStateDistributionPosition::RobotStateDistributionPosition(
+RobotStateDistributionPosition::msg::RobotStateDistributionPosition(
         particle_filter::CRandomNumberGenerator &random_number_generator,
         double x,
         double y) {
@@ -112,7 +112,7 @@ const RobotState RobotStateDistributionPosition::draw() const {
                        random_number_generator_.getUniform(-M_PI, M_PI)));
 }
 
-RobotStateDistributionPose::RobotStateDistributionPose(
+RobotStateDistributionPose::msg::RobotStateDistributionPose(
         particle_filter::CRandomNumberGenerator &random_number_generator,
         double x,
         double y,

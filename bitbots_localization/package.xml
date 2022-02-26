@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_localization</name>
   <version>0.4.1</version>
@@ -6,7 +6,7 @@
   <maintainer email="2hartfil@informatik.uni-hamburg.de">Judith Hartfill</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>cv_bridge</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>geometry_msgs</depend>
@@ -22,8 +22,6 @@
   <depend>bitbots_blackboard</depend>
   <depend>visualization_msgs</depend>
 
-  <build_depend>message_generation</build_depend>
-
   <exec_depend>map_server</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
@@ -33,5 +31,9 @@
 
   <export>
 
+  <build_type>ament_cmake</build_type>
   </export>
-</package>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  </package>

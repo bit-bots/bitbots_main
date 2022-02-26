@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import sys
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
@@ -12,10 +13,10 @@ This script simulates precision messages coming from a perfect localization.
 
 if __name__ == "__main__":
 
-    rospy.init_node('sim_localization')
+    rclpy.init(args=None)
 
-    pose_publisher = rospy.Publisher('pose_with_covariance', PoseWithCovarianceStamped, queue_size=1, latch=True)
-    rate = rospy.Rate(20)  # rate of 20 Hz
+    pose_publisher = self.create_publisher(PoseWithCovarianceStamped, 'pose_with_covariance', 1, latch=True)
+    rate = self.create_rate(20)  # rate of 20 Hz
 
     pose = PoseWithCovarianceStamped()
     pose.header.frame_id = 'map'
@@ -24,7 +25,7 @@ if __name__ == "__main__":
         pose.pose.covariance[7] = 100
         pose.pose.covariance[35] = 100
 
-    while not rospy.is_shutdown():
-        pose.header.stamp = rospy.Time.now()
+    while rclpy.ok():
+        pose.header.stamp = self.get_clock().now()
         pose_publisher.publish(pose)
         rate.sleep()

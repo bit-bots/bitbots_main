@@ -6,14 +6,14 @@
 #define BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 
 #include <particle_filter/ParticleFilter.h>
-#include <bitbots_localization/RobotState.h>
+#include <bitbots_localization/msg/robot_state.hpp>
 #include <bitbots_localization/map.h>
 #include <bitbots_localization/tools.h>
 #include <bitbots_localization/LocalizationConfig.h>
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/LineIntersectionRelative.h>
-#include <humanoid_league_msgs/PoseWithCertainty.h>
-#include <humanoid_league_msgs/PoseWithCertaintyArray.h>
+#include <humanoid_league_msgs/msg/pose_with_certainty.hpp>
+#include <humanoid_league_msgs/msg/pose_with_certainty_array.hpp>
 #include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
@@ -45,9 +45,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_measurement_lines(hlm::LineInformationRelative measurement);
 
-  void set_measurement_lines_pc(sm::PointCloud2 measurement);
+  void set_measurement_lines_pc(sm::msg::PointCloud2 measurement);
 
-  void set_measurement_goal(hlm::PoseWithCertaintyArray measurement);
+  void set_measurement_goal(hlm::msg::PoseWithCertaintyArray measurement);
 
   void set_measurement_field_boundary(gm::PolygonStamped measurement);
 

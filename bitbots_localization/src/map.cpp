@@ -20,7 +20,7 @@ Map::Map(const std::string& name, const std::string& type, const bl::Localizatio
   //load map
   map = cv::imread(absolute_map_path.string(), cv::IMREAD_GRAYSCALE);
   if (!map.data) {
-    ROS_ERROR("No image data '%s'", map_path.c_str());
+    RCLCPP_ERROR(this->get_logger(),"No image data '%s'", map_path.c_str());
   }
 }
 

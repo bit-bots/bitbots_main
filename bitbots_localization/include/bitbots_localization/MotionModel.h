@@ -9,8 +9,8 @@
 #include <cstdlib>
 
 #include <particle_filter/MovementModel.h>
-#include <bitbots_localization/RobotState.h>
-#include <geometry_msgs/Vector3.h>
+#include <bitbots_localization/msg/robot_state.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 #include <particle_filter/CRandomNumberGenerator.h>
 #include <bitbots_localization/tools.h>
 
@@ -42,7 +42,7 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
    * @param linear Linear movement relative to the base footprint in cartesian space
    * @param angular Anular movement of of the robot in its z-axis, therefore only the z axis needs to be set
    */
-  void drift(RobotState &state, geometry_msgs::Vector3 linear, geometry_msgs::Vector3 angular) const override;
+  void drift(RobotState &state, geometry_msgs::msg::Vector3 linear, geometry_msgs::msg::Vector3 angular) const override;
 
   /**
    * The diffusion consists of a very small gaussian jitter on the

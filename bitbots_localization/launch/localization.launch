@@ -1,34 +1,34 @@
 <launch>
-    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+    <arg name="tf_prefix" value="$(eval env('ROS_NAMESPACE') + '/' if env('ROS_NAMESPACE') !=  '' else '')"/>
     <!-- define parameters -->
-    <arg name="sim" default="false" doc="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
-    <arg unless="$(arg sim)" name="fieldname" default="feldraum" doc="Loads field settings (feldraum, webots, gazebo)." />
-    <arg if="$(arg sim)" name="fieldname" default="webots" doc="Loads field settings (feldraum, webots, gazebo)." />
+    <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg unless="$(var sim)" name="fieldname" default="feldraum" description="Loads field settings (feldraum, webots, gazebo)." />
+    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (feldraum, webots, gazebo)." />
 
-    <param name="~fieldname" value="$(arg fieldname)"/>
+    <param name="~fieldname" value="$(var fieldname)"/>
 
     <!-- load localization -->
-    <node pkg="bitbots_localization" type="localization" name="bitbots_localization" output="screen">
+    <node pkg="bitbots_localization" exec="localization" name="bitbots_localization" output="screen">
         <!-- load base parameters -->
-        <rosparam command="load" file="$(find bitbots_localization)/config/config.yaml"/>
+        <rosparam command="load" file="$(find-pkg-share bitbots_localization)/config/config.yaml"/>
         <!-- load field specific paramters -->
-        <rosparam command="load" file="$(find bitbots_localization)/config/fields/$(arg fieldname)/config.yaml"/>
+        <rosparam command="load" file="$(find-pkg-share bitbots_localization)/config/fields/$(var fieldname)/config.yaml"/>
         <!-- load correct frames for namespace -->
-        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
-        <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
-        <param name="map_frame" value="$(arg tf_prefix)map"/>
-        <param name="publishing_frame" value="$(arg tf_prefix)localization_raw"/>
+        <param name="odom_frame" value="$(var tf_prefix)odom"/>
+        <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
+        <param name="map_frame" value="$(var tf_prefix)map"/>
+        <param name="publishing_frame" value="$(var tf_prefix)localization_raw"/>
 
     </node>
 
-    <node pkg="bitbots_localization" type="localization_handler.py" name="bitbots_localization_handler" output="screen">
-        <param name="odom_frame" value="$(arg tf_prefix)odom"/>
-        <param name="base_footprint_frame" value="$(arg tf_prefix)base_footprint"/>
+    <node pkg="bitbots_localization" exec="localization_handler.py" name="bitbots_localization_handler" output="screen">
+        <param name="odom_frame" value="$(var tf_prefix)odom"/>
+        <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
     </node>
 
     <!-- load the map for rviz-->
-    <node name="field_map_server" pkg="map_server" type="map_server" output="screen" args="$(find bitbots_localization)/config/fields/$(arg fieldname)/map_server.yaml">
-        <param name="frame_id" value="$(arg tf_prefix)map" />
+    <node name="field_map_server" pkg="map_server" exec="map_server" output="screen" args="$(find-pkg-share bitbots_localization)/config/fields/$(var fieldname)/map_server.yaml">
+        <param name="frame_id" value="$(var tf_prefix)map" />
         <remap from="map" to="field/map"/>
         <remap from="map_metadata" to="field/map_metadata"/>
     </node>

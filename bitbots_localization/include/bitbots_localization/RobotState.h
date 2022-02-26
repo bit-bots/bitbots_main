@@ -59,9 +59,9 @@ class RobotState {
 
   bool is_explorer_;
 
-  visualization_msgs::Marker renderMarker(std::string n_space,
+  visualization_msgs::msg::Marker renderMarker(std::string n_space,
                                           std::string frame,
-                                          ros::Duration lifetime,
+                                          rclcpp::Duration lifetime,
                                           std_msgs::ColorRGBA color) const;
 
  private:

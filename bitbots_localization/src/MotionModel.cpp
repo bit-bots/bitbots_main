@@ -22,8 +22,8 @@ RobotMotionModel::RobotMotionModel(
 }
 
 void RobotMotionModel::drift(RobotState &state,
-                             geometry_msgs::Vector3 linear_movement,
-                             geometry_msgs::Vector3 rotational_movement) const {
+                             geometry_msgs::msg::Vector3 linear_movement,
+                             geometry_msgs::msg::Vector3 rotational_movement) const {
 
   // Convert cartesian coordinates to polarcoordinates with an orientation
   auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);

@@ -1,19 +1,19 @@
 <launch>
-    <test pkg="bitbots_localization" type="test_inital_localization_side.py" test-name="test_inital_localization_side"/>
+    <test pkg="bitbots_localization" exec="test_inital_localization_side.py" test-name="test_inital_localization_side"/>
 
     <!-- load the general simulator and motion -->
-    <include file="$(find bitbots_bringup)/launch/simulator.launch">
+    <include file="$(find-pkg-share bitbots_bringup)/launch/simulator.launch">
         <arg name="fake_walk" value="false" />
         <arg name="headless" value="true" />
     </include>
 
-    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch"/>
+    <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch"/>
 
     <!-- set head mode to 3=field_features -->
     <param name="behavior/head/defaults/head_mode" value="0"/>
 
     <!-- load highlevel stuff -->
-    <include file="$(find bitbots_bringup)/launch/highlevel.launch">
+    <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
         <arg name="behavior" default="false" />
         <arg name="game_controller" default="false"/>
         <arg name="localization" default="true" />

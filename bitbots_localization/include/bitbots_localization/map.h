@@ -5,12 +5,12 @@
 #ifndef BITBOTS_LOCALIZATION_MAP_H
 #define BITBOTS_LOCALIZATION_MAP_H
 
-#include <ros/ros.h>
-#include <geometry_msgs/Point.h>
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/point.hpp>
 
-#include <bitbots_localization/RobotState.h>
+#include <bitbots_localization/msg/robot_state.hpp>
 #include <bitbots_localization/LocalizationConfig.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/msg/point.hpp>
 #include <bitbots_localization/tools.h>
 
 #include <opencv2/opencv.hpp>
