@@ -32,6 +32,7 @@
 from geometry_msgs.msg import (PointStamped, PoseStamped,
                                PoseWithCovarianceStamped, Vector3Stamped)
 import numpy as np
+import PyKDL
 import tf2_ros
 
 

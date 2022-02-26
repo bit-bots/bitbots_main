@@ -91,3 +91,6 @@
 [submodule "soccer_interfaces"]
 	path = soccer_interfaces
 	url = ../../ros-sports/soccer_interfaces.git
+[submodule "lib/orocos_kinematics_dynamics"]
+	path = lib/orocos_kinematics_dynamics
+	url = ../../mjbogusz/orocos_kinematics_dynamics.git
