@@ -14,6 +14,7 @@ cd ./bitbots_navigation && git switch master ; cd -
 cd ./bitbots_tools && git switch ros2 ; cd -
 cd ./bitbots_vision && git switch ros2-devel ; cd -
 cd ./bitbots_world_model && git switch feature/ros2 ; cd -
+cd ./bitbots_behavior && git switch ros-2-migration ; cd -
 cd ./center_of_mass && git switch master ; cd -
 cd ./dynamic_stack_decider && git switch master ; cd -
 cd ./humanoid_base_footprint && git switch ros2 ; cd -
