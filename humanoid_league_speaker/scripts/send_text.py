@@ -1,30 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-import rospy
+import argparse
+
+import rclpy
 from humanoid_league_msgs.msg import Audio
 
-
-def sender():
-    pub = rospy.Publisher('speak', Audio, queue_size=10)
-    rospy.init_node('send_text', anonymous=False)
-    if rospy.has_param("~text") or rospy.has_param("~filename"):
-        msg = Audio()
-        if rospy.has_param("~text"):
-            msg.text = rospy.get_param("~text")
-        if rospy.has_param("~filename"):
-            msg.filename = rospy.get_param("~filename")
-        if rospy.has_param("~prio"):
-            msg.priority = rospy.get_param("~prio")
-        else:
-            msg.priority = 1
-        pub.publish(msg)
-    else:
-        print("Please specify Text by adding _text:=YOURTEXT at the end of rosrun")
-
-
 if __name__ == '__main__':
-    # run with "rosrun humanoid_league_speaker send_text.py _text:=TEXT"
-    # you can add _prio:=NUMBER with a number between 0 and 2 to set the priority level
-    # if you use _filename instead of _text you can give out a file with the corresponding path
-    print("Sending Message")
-    sender()
+    rclpy.init(args=None)
+    node = rclpy.create_node('send_text')
+    pub = node.create_publisher(Audio, 'speak', 10)
+    args = argparse.ArgumentParser()
+    args.add_argument("text", type=str)
+    args.add_argument("--priority", type=int , default=None)
+    args = args.parse_args()
+
+    msg = Audio()
+    msg.text = args.text
+    if args.priority:
+        msg.priority = args.priority
+    else:
+        msg.priority = 1
+    pub.publish(msg)

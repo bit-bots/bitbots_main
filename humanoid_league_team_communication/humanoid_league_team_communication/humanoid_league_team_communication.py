@@ -3,12 +3,16 @@ import math
 import socket
 from typing import Optional
 
-import rospy
+import rclpy
+from rclpy.duration import Duration
+from rclpy.node import Node
 import rospkg
 import struct
 
 import tf2_ros
 import transforms3d
+from rclpy.time import Time
+from rclpy.timer import Timer
 from std_msgs.msg import Header, Float32
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy, \
@@ -23,24 +27,40 @@ class HumanoidLeagueTeamCommunication:
         rospack = rospkg.RosPack()
         self._package_path = rospack.get_path("humanoid_league_team_communication")
         self.socket = None
+        self.node = Node("team_comm")
+        self.node.get_logger().info("Initializing humanoid_league_team_communication...", logger_name="team_comm")
 
-        rospy.init_node("humanoid_league_team_communication")
-        rospy.loginfo("Initializing humanoid_league_team_communication...", logger_name="team_comm")
+        self.node.declare_parameter('bot_id', 1)
+        self.node.declare_parameter('team_id', 1)
+        self.node.declare_parameter('map_frame', 'map')
+        self.node.declare_parameter('target_host', '127.0.0.1')
+        self.node.declare_parameter('target_port', 9999)
+        self.node.declare_parameter('receive_port', 9998)
+        self.node.declare_parameter('local_target_ports', [])
+        self.node.declare_parameter('rate', 1)
+        self.node.declare_parameter('life_time', 1)
+        self.node.declare_parameter('avg_walking_speed', 0.0)
+        self.player_id = self.node.get_parameter('bot_id').get_parameter_value().integer_value
+        self.team_id = self.node.get_parameter('team_id').get_parameter_value().integer_value
+        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
+        self.target_host = self.node.get_parameter('target_host').get_parameter_value().string_value
+        self.local_target_ports = self.node.get_parameter(
+            'local_target_ports').get_parameter_value().integer_array_value
+        self.target_port = self.node.get_parameter('target_port').get_parameter_value().integer_value
+        self.receive_port = self.node.get_parameter('receive_port').get_parameter_value().integer_value
+        self.rate = self.node.get_parameter('rate').get_parameter_value().integer_value
+        self.lifetime = self.node.get_parameter('life_time').get_parameter_value().integer_value
+        self.avg_walking_speed = self.node.get_parameter('avg_walking_speed').get_parameter_value().double_value
 
-        self.player_id = rospy.get_param('bot_id')
-        self.team_id = rospy.get_param('team_id')
+        self.topics = self.node.get_parameters_by_prefix('topics')
 
-        self.config = rospy.get_param("~")
-        self.map_frame = self.config.get('map_frame', 'map')
-
-        self.target_host = self.config['target_host']
         if self.target_host == '127.0.0.1':
             # local mode, bind to port depending on bot id and team id
-            self.target_ports = [port + 10 * self.team_id for port in self.config['local_target_ports']]
+            self.target_ports = [port + 10 * self.team_id for port in self.local_target_ports]
             self.receive_port = self.target_ports[self.player_id - 1]
         else:
-            self.target_ports = [self.config['target_port']]
-            self.receive_port = self.config['receive_port']
+            self.target_ports = [self.target_port]
+            self.receive_port = self.receive_port
 
         self.create_publishers()
         self.create_subscribers()
@@ -48,14 +68,14 @@ class HumanoidLeagueTeamCommunication:
         self.gamestate = None  # type: GameState
         self.pose = None  # type: PoseWithCovarianceStamped
         self.cmd_vel = None  # type: Twist
-        self.cmd_vel_time = rospy.Time(0)
+        self.cmd_vel_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
         self.ball = None  # type: Optional[PointStamped]
         self.ball_vel = (0, 0, 0)
         self.ball_covariance = None
         self.strategy = None  # type: Strategy
-        self.strategy_time = rospy.Time(0)
+        self.strategy_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
         self.time_to_ball = None
-        self.time_to_ball_time = rospy.Time(0)
+        self.time_to_ball_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
         self.obstacles = None  # type: ObstacleRelativeArray
         self.move_base_goal = None  # type: PoseStamped
 
@@ -92,33 +112,35 @@ class HumanoidLeagueTeamCommunication:
         )
 
         self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
 
         # we will try multiple times till we manage to get a connection
-        while not rospy.is_shutdown() and self.socket is None:
+        while rclpy.ok() and self.socket is None:
             self.socket = self.get_connection()
-            rospy.sleep(1)
+            self.node.get_clock().sleep_for(Duration(seconds=1))
+            rclpy.spin_once(self.node)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-        rospy.Timer(rospy.Duration.from_sec(1 / self.config['rate']), self.send_message)
+        self.node.create_timer(1 / self.rate, self.send_message)
         self.receive_forever()
 
     def create_publishers(self):
-        self.pub_team_data = rospy.Publisher(self.config['team_data_topic'], TeamData, queue_size=1)
+        self.pub_team_data = self.node.create_publisher(TeamData, self.topics['team_data_topic'], 1)
 
     def create_subscribers(self):
-        rospy.Subscriber(self.config['gamestate_topic'], GameState, self.gamestate_cb, queue_size=1)
-        rospy.Subscriber(self.config['pose_topic'], PoseWithCovarianceStamped, self.pose_cb, queue_size=1)
-        rospy.Subscriber(self.config['cmd_vel_topic'], Twist, self.cmd_vel_cb, queue_size=1)
-        rospy.Subscriber(self.config['ball_topic'], PoseWithCovarianceStamped, self.ball_cb, queue_size=1)
-        rospy.Subscriber(self.config['ball_velocity_topic'], TwistWithCovarianceStamped, self.ball_vel_cb, queue_size=1)
-        rospy.Subscriber(self.config['strategy_topic'], Strategy, self.strategy_cb, queue_size=1)
-        rospy.Subscriber(self.config['time_to_ball_topic'], Float32, self.time_to_ball_cb, queue_size=1)
-        rospy.Subscriber(self.config['obstacle_topic'], ObstacleRelativeArray, self.obstacle_cb, queue_size=1)
-        rospy.Subscriber(self.config['move_base_goal_topic'], PoseStamped, self.move_base_goal_cb, queue_size=1)
+        self.node.create_subscription(GameState, self.topics['gamestate_topic'], self.gamestate_cb, 1)
+        self.node.create_subscription(PoseWithCovarianceStamped, self.topics['pose_topic'], self.pose_cb, 1)
+        self.node.create_subscription(Twist, self.topics['cmd_vel_topic'], self.cmd_vel_cb, 1)
+        self.node.create_subscription(PoseWithCovarianceStamped, self.topics['ball_topic'], self.ball_cb, 1)
+        self.node.create_subscription(TwistWithCovarianceStamped, self.topics['ball_velocity_topic'], self.ball_vel_cb,
+                                      1)
+        self.node.create_subscription(Strategy, self.topics['strategy_topic'], self.strategy_cb, 1)
+        self.node.create_subscription(Float32, self.topics['time_to_ball_topic'], self.time_to_ball_cb, 1)
+        self.node.create_subscription(ObstacleRelativeArray, self.topics['obstacle_topic'], self.obstacle_cb, 1)
+        self.node.create_subscription(PoseStamped, self.topics['move_base_goal_topic'], self.move_base_goal_cb, 1)
 
     def get_connection(self):
-        rospy.loginfo(f"Binding to port {self.receive_port}", logger_name="team_comm")
+        self.node.get_logger().info(f"Binding to port {self.receive_port}", logger_name="team_comm")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.bind(('0.0.0.0', self.receive_port))
         return sock
@@ -126,7 +148,7 @@ class HumanoidLeagueTeamCommunication:
     def close_connection(self):
         if self.socket:
             self.socket.close()
-            rospy.loginfo("Connection closed.", logger_name="team_comm")
+            self.node.get_logger().info("Connection closed.", logger_name="team_comm")
 
     def receive_msg(self):
         return self.socket.recv(1024)
@@ -139,15 +161,15 @@ class HumanoidLeagueTeamCommunication:
 
     def cmd_vel_cb(self, msg):
         self.cmd_vel = msg
-        self.cmd_vel_time = rospy.Time.now()
+        self.cmd_vel_time = self.node.get_clock().now()
 
     def strategy_cb(self, msg):
         self.strategy = msg
-        self.strategy_time = rospy.Time.now()
+        self.strategy_time = self.node.get_clock().now()
 
     def time_to_ball_cb(self, msg):
         self.time_to_ball = msg.data
-        self.time_to_ball_time = rospy.Time.now()
+        self.time_to_ball_time = self.node.get_clock().now()
 
     def move_base_goal_cb(self, msg):
         self.move_base_goal = msg
@@ -159,20 +181,21 @@ class HumanoidLeagueTeamCommunication:
             # Transform to map
             obstacle_pose = PoseStamped(msg.header, obstacle.pose.pose.pose)
             try:
-                obstacle_map = self.tf_buffer.transform(obstacle_pose, self.map_frame, timeout=rospy.Duration.from_sec(0.3))
+                obstacle_map = self.tf_buffer.transform(obstacle_pose, self.map_frame,
+                                                        timeout=Duration(nanoseconds=0.3e9))
                 obstacle.pose.pose.pose = obstacle_map.pose
                 self.obstacles.obstacles.append(obstacle)
             except tf2_ros.TransformException:
-                rospy.logerr("TeamComm: Could not transform obstacle to map frame")
+                self.node.get_logger().error("TeamComm: Could not transform obstacle to map frame")
 
     def ball_cb(self, msg: PoseWithCovarianceStamped):
         # Transform to map
         ball_point = PointStamped(msg.header, msg.pose.pose.position)
         try:
-            self.ball = self.tf_buffer.transform(ball_point, self.map_frame, timeout=rospy.Duration.from_sec(0.3))
+            self.ball = self.tf_buffer.transform(ball_point, self.map_frame, timeout=Duration(nanoseconds=0.3e9))
             self.ball_covariance = msg.pose.covariance
         except tf2_ros.TransformException:
-            rospy.logerr("TeamComm: Could not transform ball to map frame")
+            self.node.get_logger().error("TeamComm: Could not transform ball to map frame")
             self.ball = None
 
     def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
@@ -182,7 +205,7 @@ class HumanoidLeagueTeamCommunication:
         self.close_connection()
 
     def receive_forever(self):
-        while not rospy.is_shutdown():
+        while rclpy.ok():
             try:
                 msg = self.receive_msg()
             except (struct.error, socket.timeout):
@@ -231,7 +254,7 @@ class HumanoidLeagueTeamCommunication:
 
         header = Header()
         # The robots' times can differ, therefore use our own time here
-        header.stamp = rospy.Time.now()
+        header.stamp = self.node.get_clock().now()
         header.frame_id = self.map_frame
 
         # Handle timestamp
@@ -312,14 +335,15 @@ class HumanoidLeagueTeamCommunication:
             fmat3.z.z = ros_covariance[35]
 
         message = robocup_extension_pb2.Message()
-        now = rospy.Time.now()
-        message.timestamp.seconds = now.secs
-        message.timestamp.nanos = now.nsecs
+        now = self.node.get_clock().now()
+        message.timestamp.seconds = now.seconds_nanoseconds()[0]
+        message.timestamp.nanos = now.seconds_nanoseconds()[1]
 
         message.current_pose.player_id = self.player_id
         message.current_pose.team = self.team_id
 
-        if self.gamestate and rospy.Time.now() - self.gamestate.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.gamestate and self.node.get_clock().now() - self.gamestate.header.stamp < Duration(
+                seconds=self.lifetime):
             if self.gamestate.penalized:
                 # If we are penalized, we are not allowed to send team communication
                 return
@@ -328,7 +352,7 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.state = robocup_extension_pb2.State.UNKNOWN_STATE
 
-        if self.pose and rospy.Time.now() - self.pose.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.pose and self.node.get_clock().now() - self.pose.header.stamp < Duration(seconds=self.lifetime):
             message.current_pose.position.x = self.pose.pose.pose.position.x
             message.current_pose.position.y = self.pose.pose.pose.position.y
             q = self.pose.pose.pose.orientation
@@ -341,19 +365,19 @@ class HumanoidLeagueTeamCommunication:
             message.current_pose.covariance.y.y = 100
             message.current_pose.covariance.z.z = 100
 
-        if self.cmd_vel and rospy.Time.now() - self.cmd_vel_time < rospy.Duration(self.config['lifetime']):
+        if self.cmd_vel and self.node.get_clock().now() - self.cmd_vel_time < Duration(seconds=self.lifetime):
             message.walk_command.x = self.cmd_vel.linear.x
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        if self.move_base_goal and rospy.Time.now() - self.move_base_goal.header.stamp < rospy.Duration(
-                self.config['lifetime']):
+        if self.move_base_goal and self.node.get_clock().now() - self.move_base_goal.header.stamp < Duration(
+                seconds=self.lifetime):
             message.target_pose.position.x = self.move_base_goal.pose.position.x
             message.target_pose.position.y = self.move_base_goal.pose.position.y
             q = self.move_base_goal.pose.orientation
             message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
 
-        if self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.ball and self.node.get_clock().now() - self.ball.header.stamp < Duration(seconds=self.lifetime):
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
             message.ball.position.z = self.ball.point.z
@@ -367,7 +391,8 @@ class HumanoidLeagueTeamCommunication:
             message.ball.covariance.y.y = 100
             message.ball.covariance.z.z = 100
 
-        if self.obstacles and rospy.Time.now() - self.obstacles.header.stamp < rospy.Duration(self.config['lifetime']):
+        if self.obstacles and self.node.get_clock().now() - self.obstacles.header.stamp < Duration(
+                seconds=self.lifetime):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
                 if obstacle.type in (ObstacleRelative.ROBOT_CYAN,
                                      ObstacleRelative.ROBOT_MAGENTA,
@@ -383,13 +408,13 @@ class HumanoidLeagueTeamCommunication:
                     message.others.append(robot)
                     message.other_robot_confidence.append(obstacle.pose.confidence)
 
-        if (self.ball and rospy.Time.now() - self.ball.header.stamp < rospy.Duration(self.config['lifetime']) and
-                self.pose and rospy.Time.now() - self.pose.header.stamp < rospy.Duration(self.config['lifetime'])):
+        if (self.ball and self.node.get_clock().now() - self.ball.header.stamp < Duration(seconds=self.lifetime) and
+                self.pose and self.node.get_clock().now() - self.pose.header.stamp < Duration(seconds=self.lifetime)):
             ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x) ** 2 +
                                       (self.ball.point.y - self.pose.pose.pose.position.y) ** 2)
-            message.time_to_ball = ball_distance / self.config['avg_walking_speed']
+            message.time_to_ball = ball_distance / self.avg_walking_speed
 
-        if self.strategy and rospy.Time.now() - self.strategy_time < rospy.Duration(self.config['lifetime']):
+        if self.strategy and self.node.get_clock().now() - self.strategy_time < Duration(seconds=self.lifetime):
             role_mapping = dict(((b, a) for a, b in self.role_mapping))
             message.role = role_mapping[self.strategy.role]
 
@@ -399,16 +424,21 @@ class HumanoidLeagueTeamCommunication:
             side_mapping = dict(((b, a) for a, b in self.side_mapping))
             message.offensive_side = side_mapping[self.strategy.offensive_side]
 
-        if self.time_to_ball and rospy.Time.now() - self.time_to_ball_time < rospy.Duration(self.config['lifetime']):
+        if self.time_to_ball and self.node.get_clock().now() - self.time_to_ball_time < Duration(seconds=self.lifetime):
             message.time_to_ball = self.time_to_ball
         else:
             message.time_to_ball = 9999.0
 
         msg = message.SerializeToString()
         for port in self.target_ports:
-            rospy.logdebug(f'Sending to {port} on {self.target_host}', logger_name="team_comm")
+            self.node.get_logger().debug(f'Sending to {port} on {self.target_host}', logger_name="team_comm")
             self.socket.sendto(msg, (self.target_host, port))
 
 
-if __name__ == '__main__':
+def main():
+    rclpy.init(args=None)
     HumanoidLeagueTeamCommunication()
+
+
+if __name__ == '__main__':
+    main()
