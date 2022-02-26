@@ -1,7 +1,7 @@
 <launch>
     <let name="tf_prefix" value=""/>
 
-    <node name="humanoid_league_transformer" pkg="humanoid_league_transform" output="screen" exec="transformer.py">
+    <node pkg="humanoid_league_transform" output="screen" exec="transformer.py">
         <param from="$(find-pkg-share humanoid_league_transform)/config/transformer.yaml"/>
         <param name="publish_frame" value="$(var tf_prefix)base_footprint"/>
         <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>

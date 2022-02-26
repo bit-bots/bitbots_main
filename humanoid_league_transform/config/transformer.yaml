@@ -1,32 +1,32 @@
-ball:
-  ball_topic: 'balls_in_image'
-  # ballradius in meter
-  ball_radius: 0.075
+humanoid_league_transform:
+  ros__parameters:
+    ball:
+      ball_topic: 'balls_in_image'
+      # ballradius in meter
+      ball_radius: 0.075
 
-lines:
-  lines_topic: 'line_in_image'
-  # if the line_in_image message is used to only to sent points and a point cloud should be published
-  lines_relative: true
-  pointcloud: true
+    lines:
+      lines_topic: 'line_in_image'
+      # if the line_in_image message is used to only to sent points and a point cloud should be published
+      lines_relative: true
+      pointcloud: true
 
-goalposts:
-  goalposts_topic: 'goal_posts_in_image'
-  footpoint_out_of_image_threshold: 0.8
-  bar_height: 2.0
+    goalposts:
+      goalposts_topic: 'goal_posts_in_image'
+      footpoint_out_of_image_threshold: 0.8
+      bar_height: 2.0
 
-obstacles:
-  obstacles_topic: 'obstacles_in_image'
-  footpoint_out_of_image_threshold: 0.8
+    obstacles:
+      obstacles_topic: 'obstacles_in_image'
+      footpoint_out_of_image_threshold: 0.8
 
-field_boundary:
-  field_boundary_topic: 'field_boundary_in_image'
+    field_boundary:
+      field_boundary_topic: 'field_boundary_in_image'
 
-camera_info:
-  camera_info_topic: 'camera/camera_info'
+    camera_info:
+      camera_info_topic: 'camera/camera_info'
 
-masks:
-  line_mask:
-    topic: 'line_mask_in_image'
-    scale: 0.25
-
-
+    masks:
+      line_mask:
+        topic: 'line_mask_in_image'
+        scale: 0.25
