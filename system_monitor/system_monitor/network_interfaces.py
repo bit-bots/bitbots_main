@@ -1,16 +1,14 @@
 from collections import defaultdict
-
-import rospy
-from system_monitor.msg import NetworkInterface as NetworkInterfaceMsg
-
+from bitbots_msgs.msg import NetworkInterface as NetworkInterfaceMsg
+from rclpy.time import Time
 
 _prev_msgs = defaultdict(NetworkInterfaceMsg)
-_prev_msg_time = rospy.Time(0)
+_prev_msg_time = Time(seconds=0)
 
 
-def collect_all():
+def collect_all(clock):
     msgs = _get_interfaces()
-    _analyze_rate(msgs)
+    _analyze_rate(msgs, clock)
     return list(msgs.values())
 
 
@@ -40,11 +38,11 @@ def _get_interfaces():
     return result
 
 
-def _analyze_rate(msgs):
+def _analyze_rate(msgs, clock):
     global _prev_msgs
     global _prev_msg_time
 
-    now = rospy.Time.now()
+    now = clock.now()
     for interface, i_msg in msgs.items():
         i_msg.rate_received_bytes = int((i_msg.received_bytes - _prev_msgs[interface].received_bytes) * (now - _prev_msg_time).to_sec())
         i_msg.rate_received_packets = int((i_msg.received_packets - _prev_msgs[interface].received_packets) * (now - _prev_msg_time).to_sec())

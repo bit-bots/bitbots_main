@@ -43,4 +43,6 @@ ament_export_dependencies(ament_cmake)
 ament_export_dependencies(humanoid_league_msgs)
 ament_export_include_directories(${INCLUDE_DIRS})
 
+ament_python_install_package(${PROJECT_NAME})
+
 ament_package()

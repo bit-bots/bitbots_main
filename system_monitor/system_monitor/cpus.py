@@ -1,7 +1,7 @@
 from collections import defaultdict
 import psutil
 
-from system_monitor.msg import Cpu as CpuMsg
+from bitbots_msgs.msg import Cpu as CpuMsg
 
 _prev_total = defaultdict(int)
 _prev_busy = defaultdict(int)

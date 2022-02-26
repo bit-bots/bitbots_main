@@ -1,10 +1,16 @@
-# -*- coding:utf-8 -*-
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+from setuptools import setup, find_packages
 
-d = generate_distutils_setup(
-    packages=['system_monitor'],
-    package_dir={'': 'src'}
+package_name = 'system_monitor'
+
+setup(
+    name=package_name,
+    packages=find_packages(),
+    install_requires=[
+        'setuptools',
+    ],
+    entry_points={
+        'console_scripts': [
+            'monitor = system_monitor.monitor:main',
+        ],
+    }
 )
-
-setup(**d)
