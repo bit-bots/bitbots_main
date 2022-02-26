@@ -4,19 +4,20 @@ import rclpy
 import tf2_ros
 import threading
 import numpy as np
-#import sensor_msgs.point_cloud2 as pc2 #TODO
+import transforms3d
 from rclpy.node import Node
 from rclpy.duration import Duration
 from rclpy.time import Time
 from rclpy.publisher import Publisher
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image, CameraInfo, PointCloud2
+from sensor_msgs.msg import Image, CameraInfo, PointCloud2, PointField
 from geometry_msgs.msg import Point, PolygonStamped
 from tf2_geometry_msgs import PointStamped
-#from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from soccer_vision_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty, ObstacleRelativeArray, ObstacleRelative
+from numba import jit
+
 
 class Transformer(Node):
     def __init__(self):
@@ -233,7 +234,6 @@ class Transformer(Node):
         """
         Projects a mask from the input image as a pointcloud on the field plane.
         """
-        return
         # Get field plane
         field = self.get_plane(msg.header.stamp, 0.0)
         if field is None:
@@ -258,9 +258,6 @@ class Transformer(Node):
             field,
             scale=scale)
 
-        # Make a pointcloud2 out of them
-        pc_in_image_frame = pc2.create_cloud_xyz32(msg.header, points_on_plane_from_cam)
-
         # Lookup the transform from the camera to the field plane
         try:
             trans = self._tf_buffer.lookup_transform(
@@ -272,10 +269,64 @@ class Transformer(Node):
             return None
 
         # Transform the whole point cloud accordingly
-        pc_relative = do_transform_cloud(pc_in_image_frame, trans)
+        points_in_world = Transformer.do_transform_cloud(points_on_plane_from_cam, trans)
+
+        # Make a pointcloud2 out of them
+        pc = self.make_point_cloud(msg.header, points_in_world)
 
         # Publish point cloud
-        publisher.publish(pc_relative)
+        publisher.publish(pc)
+
+    @staticmethod
+    @jit
+    def do_transform_cloud(cloud, t):
+        t3d_transform = transforms3d.affines.compose(
+            [   t.transform.translation.x,
+                t.transform.translation.y,
+                t.transform.translation.z],
+            transforms3d.quaternions.quat2mat(
+                [   t.transform.rotation.w,
+                    t.transform.rotation.x,
+                    t.transform.rotation.y,
+                    t.transform.rotation.z]),
+            np.ones(3))
+        for i in range(len(cloud)):
+            p = transforms3d.affines.compose(cloud[i], np.eye(3), np.ones(3))
+            cloud[i] = transforms3d.affines.decompose(np.matmul(p, t3d_transform))[0]
+        return cloud
+
+    def make_point_cloud(self, header, points):
+        # Convert data to f32, flatten it and cat it to a byte string
+        data = points.astype(np.float32).reshape(-1).tobytes()
+        # Define offsets
+        point_value_bits = 32 # float32
+        point_num_values = 3 # 3 values are a point
+        point_value_bytes = point_value_bits // 8 # Number of bytes used for one value
+        point_bytes = (point_num_values * point_value_bits) // 8 # Bytes used by one point
+
+        # This function generates a point field describing the stored raw data for one dimension
+        def make_point_field(element):
+            i = element[0]
+            name = element[1]
+            return PointField(
+                name = name,
+                offset = i * point_value_bytes,
+                datatype = PointField.FLOAT32,
+                count = 1)
+
+        # Make a point field for each of the major axis
+        fields = list(map(make_point_field, enumerate(['x', 'y', 'z'])))
+        # Put everything together
+        return PointCloud2(
+            header = header,
+            height = 1,
+            width = len(points),
+            is_dense = False,
+            is_bigendian = False,
+            fields = fields,
+            point_step = point_bytes,
+            row_step = point_bytes * len(points),
+            data = data)
 
     def get_plane(self, stamp, object_height):
         """ returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal"""
@@ -287,7 +338,7 @@ class Transformer(Node):
         field_normal.header.stamp = stamp
         field_normal.point.x = 0.0
         field_normal.point.y = 0.0
-        field_normal.point.z = 1.0
+        field_normal.point.z = object_height + 1.0
         try:
             field_normal = self._tf_buffer.transform(field_normal,
                                                      self._camera_info.header.frame_id,
@@ -381,7 +432,6 @@ class Transformer(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Transformer()
-
     node.destroy_node()
     rclpy.shutdown()
 
