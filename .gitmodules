@@ -84,7 +84,8 @@
 	branch = ros2
 [submodule "lib/fp"]
 	path = lib/fp
-	url = ../../tylerjw/fp.git
+	url = https://github.com/tylerjw/fp.git
+	branch = main
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
 	url = ../../bit-bots/ros2_python_extension.git
