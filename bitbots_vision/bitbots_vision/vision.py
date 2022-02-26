@@ -339,6 +339,7 @@ class Vision(Node):
         :return: None
         """
         self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'])
+
     def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
