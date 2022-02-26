@@ -167,10 +167,6 @@ class RobotController(RclpyNode):
         self.declare_parameter("imu_frame", "imu_frame")
         self.imu_frame = self.get_parameter("imu_frame").get_parameter_value().string_value
         if self.ros_active:
-            if base_ns == "":
-                clock_topic = "/clock"
-            else:
-                clock_topic = base_ns + "clock"
             self.declare_parameter("l_sole_frame", "l_sole")
             self.declare_parameter("r_sole_frame", "r_sole")
             self.declare_parameter("camera_optical_frame", "camera_optical_frame")
