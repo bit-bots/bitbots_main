@@ -39,6 +39,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   double getDuration() const;
 
+  int getDirection();
+
   bool isStabilizingNeeded() const;
 
   bool isHeadZero() const;
@@ -54,6 +56,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   void setParams(DynUpConfig params);
 
   void reset() override;
+  void reset(double time);
 
   void publishArrowMarker(std::string name_space,
                           std::string frame,
