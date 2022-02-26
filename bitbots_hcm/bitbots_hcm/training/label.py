@@ -1,6 +1,7 @@
 import pickle
 import random
-import rospy
+import rclpy
+from rclpy.node import Node
 import keyboard
 
 from geometry_msgs.msg import PointStamped
@@ -13,7 +14,7 @@ joint_states = None
 cop_left = None
 cop_right = None
 
-rospy.init_node("labeling")
+rclpy.init(args=None)
 
 
 def imu_cb(msg):
@@ -61,10 +62,10 @@ keyboard.add_hotkey('4', key_cb, args='4')
 keyboard.add_hotkey('s', key_cb, args='s')
 
 frequency = 200
-rate = rospy.Rate(frequency)
+rate = self.create_rate(frequency)
 print("Press \'s\' top stop. 0,1,2,3,4 to label stable,front,back,left,right")
 while True:
-    frame = Frame(rospy.Time.now(), joint_states=joint_states, imu=imu, cop_l=cop_left, cop_r=cop_right, image=None)
+    frame = Frame(self.get_clock().now(), joint_states=joint_states, imu=imu, cop_l=cop_left, cop_r=cop_right, image=None)
     if current_key == '5':
         if previous_key != '5':
             print("Not labeling")

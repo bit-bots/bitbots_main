@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
+from rclpy.node import Node
 import time
 from sensor_msgs.msg import Imu
 
 class SubTest():
 
     def __init__(self):
-        rospy.init_node("test_sub")
+        rclpy.init(args=None)
         self.arrt = []
         self.arrn = []
         self.sum =0
@@ -15,7 +16,7 @@ class SubTest():
         self.sub = rospy.Subscriber("test", Imu, self.cb, queue_size=1)
         self.f = open("latencies", 'w')
 
-        while not rospy.is_shutdown():
+        while rclpy.ok():
             time.sleep(1)
         if self.count !=0:
             print("mean: " + str((self.sum/self.count)*1000))
@@ -28,7 +29,7 @@ class SubTest():
         self.f.close()
 
     def cb(self, msg:Imu):
-        diff = rospy.get_time() - msg.header.stamp.to_sec()
+        diff = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - msg.header.stamp.to_sec()
         self.arrt.append(diff)
         self.arrn.append(msg.header.seq)
         self.sum += diff

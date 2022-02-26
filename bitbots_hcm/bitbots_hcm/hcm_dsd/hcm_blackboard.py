@@ -1,5 +1,6 @@
 import numpy
-import rospy
+import rclpy
+from rclpy.node import Node
 import math
 import json
 import rospkg
@@ -18,21 +19,22 @@ import rospkg
 
 
 class HcmBlackboard():
-    def __init__(self):
+    def __init__(self, node:Node):
+        self.node = node
         self.current_state = RobotControlState.STARTUP
         self.stopped = False
         self.shut_down_request = False
-        self.simulation_active = rospy.get_param("/simulation_active", False)
-        self.visualization_active = rospy.get_param("/visualization_active", False)
+        self.simulation_active = self.node.get_parameter('simulation_active').get_parameter_value().bool_value
+        self.visualization_active = self.node.get_parameter('visualization_active').get_parameter_value().bool_value
 
         # this is used to prevent calling rospy.Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
-        self.current_time = rospy.Time().now()
-        self.start_time = rospy.Time().now()
+        self.current_time = self.node.get_clock().now()
+        self.start_time = self.current_time
 
         # Imu
         self.last_imu_update_time = None
-        self.imu_timeout_duration = rospy.get_param("hcm/imu_timeout_duration")
+        self.imu_timeout_duration = self.node.get_parameter("hcm/imu_timeout_duration")
         self.accel = numpy.array([0, 0, 0])
         self.gyro = numpy.array([0, 0, 0])
         self.smooth_accel = numpy.array([0, 0, 0])
@@ -42,13 +44,13 @@ class HcmBlackboard():
         self.pickup_accel_threshold = 1000
 
         # Pressure sensors
-        self.pressure_sensors_installed = rospy.get_param("hcm/pressure_sensors_installed", False)
-        self.pressure_timeout_duration = rospy.get_param("hcm/pressure_timeout_duration")
+        self.pressure_sensors_installed = self.node.get_parameter('hcm/pressure_sensors_installed').get_parameter_value().double_value
+        self.pressure_timeout_duration = self.node.get_parameter("hcm/pressure_timeout_duration")
         self.last_pressure_update_time = None
         # initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
         self.pressures = [100] * 8
-        foot_zero_service_name = rospy.get_param("hcm/foot_zero_service")
-        self.foot_zero_service = rospy.ServiceProxy(foot_zero_service_name, Empty)
+        foot_zero_service_name = self.node.get_parameter("hcm/foot_zero_service")
+        self.foot_zero_service = self.node.create_client(Empty, foot_zero_service_name)
 
         # Animation
         self.animation_action_client = None
@@ -75,8 +77,8 @@ class HcmBlackboard():
 
         # motors
         # initialize with current time, or motors will be turned off on start
-        self.last_motor_goal_time = rospy.Time.now()
-        self.last_motor_update_time = rospy.Time.from_sec(0)
+        self.last_motor_goal_time = self.get_clock().now()
+        self.last_motor_update_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
         self.motor_timeout_duration = rospy.get_param("hcm/motor_timeout_duration")
         self.motor_off_time = rospy.get_param("hcm/motor_off_time")
         self.current_joint_state = None
@@ -94,14 +96,14 @@ class HcmBlackboard():
 
         # walking
         self.last_walking_goal_time = rospy.Time()
-        self.walk_pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
+        self.walk_pub = self.create_publisher(Twist, "cmd_vel", 1)
 
         self.record_active = False
 
         # falling
         self.fall_checker = FallChecker()
-        self.is_stand_up_active = rospy.get_param("hcm/stand_up_active", True)
-        self.falling_detection_active = rospy.get_param("hcm/falling_active", True)
+        self.is_stand_up_active = self.get_parameter('"hcm/stand_up_active"').get_parameter_value().double_value
+        self.falling_detection_active = self.get_parameter('"hcm/falling_active"').get_parameter_value().double_value
 
         # kicking
         self.last_kick_feedback = None  # type: rospy.Time
@@ -112,14 +114,14 @@ class HcmBlackboard():
         rospack = rospkg.RosPack()
         rospack.list()
         path = rospack.get_path('bitbots_hcm')
-        smooth_threshold = rospy.get_param("hcm/smooth_threshold", 10)
+        smooth_threshold = self.get_parameter('"hcm/smooth_threshold"').get_parameter_value().double_value
         self.classifier = FallClassifier(path + "/src/bitbots_hcm/classifier/", smooth_threshold=smooth_threshold)
         self.imu_msg = None
         self.cop_l_msg = None
         self.cop_r_msg = None
 
         def last_kick_feedback_callback(msg):
-            self.last_kick_feedback = rospy.Time.now()
+            self.last_kick_feedback = self.get_clock().now()
 
         rospy.Subscriber('dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=True,
                          queue_size=1)
@@ -139,7 +141,7 @@ class HcmBlackboard():
 
         rospy.Subscriber("/diagnostics_agg", DiagnosticArray, diag_cb, tcp_nodelay=True, queue_size=1)
 
-        self.move_base_cancel_pub = rospy.Publisher("move_base/cancel", GoalID, queue_size=1)
+        self.move_base_cancel_pub = self.create_publisher(GoalID, "move_base/cancel", 1)
 
     def cancel_move_base_goal(self):
         self.move_base_cancel_pub.publish(GoalID())

@@ -1,28 +1,28 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="sim" default="false" doc="Disables some checks for hardware, since we are in simulation."/>
-    <arg name="viz" default="false" doc="Disables all checks for hardware, since we are in visualization."/>
+    <arg name="sim" default="false" description="Disables some checks for hardware, since we are in simulation."/>
+    <arg name="viz" default="false" description="Disables all checks for hardware, since we are in visualization."/>
     <arg name="wolfgang" default="true"/>
     <arg name="use_game_settings" default="false"/>
 
-    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 2"/>
-    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+    <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 2"/>
+    <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-    <param name="/simulation_active" value="$(arg sim)" />
-    <param name="/visualization_active" value="$(arg viz)" />
+    <param name="/simulation_active" value="$(var sim)" />
+    <param name="/visualization_active" value="$(var viz)" />
     
-    <group if="$(arg wolfgang)">
-        <rosparam file="$(find bitbots_hcm)/config/hcm_wolfgang.yaml" command="load"/>
-            <group if="$(arg use_game_settings)">
-                <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+    <group if="$(var wolfgang)">
+        <param from="$(find-pkg-share bitbots_hcm)/config/hcm_wolfgang.yaml" command="load"/>
+            <group if="$(var use_game_settings)">
+                <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
             </group>
-        <node name="hcm" pkg="bitbots_hcm" type="humanoid_control_module.py" args="" output="screen" launch-prefix="$(arg taskset)">
+        <node name="hcm" pkg="bitbots_hcm" exec="humanoid_control_module.py" args="" output="screen" launch-prefix="$(var taskset)">
         </node>
     </group>
 
-    <node name="pause" pkg="bitbots_hcm" type="pause.py" />
+    <node name="pause" pkg="bitbots_hcm" exec="pause.py" />
 
-    <node name="hcm_led" pkg="bitbots_hcm" type="hcm_led.py" />
+    <node name="hcm_led" pkg="bitbots_hcm" exec="hcm_led.py" />
 
 </launch>

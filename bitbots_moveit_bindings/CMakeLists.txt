@@ -19,8 +19,7 @@ find_package(ros2_python_extension)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
-#include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
-#enable_bitbots_docs()
+enable_bitbots_docs()
 
 pybind11_add_module(libbitbots_moveit_bindings SHARED
   src/bitbots_moveit_bindings.cpp

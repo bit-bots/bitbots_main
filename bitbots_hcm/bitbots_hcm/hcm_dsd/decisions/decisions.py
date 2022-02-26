@@ -1,9 +1,11 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 import math
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_speaker.speaker import speak
 from humanoid_league_msgs.msg import Audio
+from rclpy.time import Time
 
 
 class StartHCM(AbstractDecisionElement):
@@ -90,8 +92,8 @@ class CheckMotors(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(CheckMotors, self).__init__(blackboard, dsd, parameters)
-        self.last_different_msg_time = rospy.Time.from_sec(0)
+        super().__init__(blackboard, dsd, parameters)
+        self.last_different_msg_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
         self.had_problem = False
 
     def perform(self, reevaluate=False):
@@ -104,14 +106,14 @@ class CheckMotors(AbstractDecisionElement):
         # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
         # have a small break, since this can happen often due to loose cabling
         if self.blackboard.previous_joint_state is not None and self.blackboard.current_joint_state is not None \
-                and (self.blackboard.previous_joint_state.effort != self.blackboard.current_joint_state.effort \
+                and (self.blackboard.previous_joint_state.effort != self.blackboard.current_joint_state.effort
                 or self.blackboard.previous_joint_state.position != self.blackboard.current_joint_state.position) \
                 and not self.blackboard.servo_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
 
         if self.blackboard.simulation_active:
             # Some simulators will give exact same joint messages which look like errors, so ignore this case
-            if self.blackboard.last_motor_update_time != rospy.Time.from_sec(0):
+            if self.blackboard.last_motor_update_time != Time(seconds=int(0), nanoseconds=0 % 1 * 1e9):
                 return "OKAY"
             else:
                 return "MOTORS_NOT_STARTED"
@@ -120,7 +122,7 @@ class CheckMotors(AbstractDecisionElement):
         if self.blackboard.last_motor_goal_time is not None \
                 and self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() \
                 > self.blackboard.motor_off_time:
-            rospy.logwarn_throttle(5, "Didn't recieve goals for " + str(
+            self.blackboard.node.logwarn_throttle(5, "Didn't recieve goals for " + str(
                 self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
             self.publish_debug_data("Time since last motor goals",
                                     self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
@@ -147,7 +149,7 @@ class CheckMotors(AbstractDecisionElement):
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
-            rospy.loginfo("Motors are now connected. Will resume.")
+            self.get_logger().info("Motors are now connected. Will resume.")
             self.had_problem = False
 
         # motors are on and we can continue
@@ -164,9 +166,9 @@ class CheckIMU(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(CheckIMU, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.last_msg = None
-        self.last_different_msg_time = rospy.Time.from_sec(0)
+        self.last_different_msg_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
         self.had_problem = False
 
     def perform(self, reevaluate=False):
@@ -200,7 +202,7 @@ class CheckIMU(AbstractDecisionElement):
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
-            rospy.loginfo("IMU is now connected. Will resume.")
+            self.get_logger().info("IMU is now connected. Will resume.")
             self.had_problem = False
 
         return "OKAY"
@@ -215,9 +217,9 @@ class CheckPressureSensor(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(CheckPressureSensor, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.last_pressure_values = None
-        self.last_different_msg_time = rospy.Time.from_sec(0)
+        self.last_different_msg_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
         self.had_problem = False
 
     def perform(self, reevaluate=False):
@@ -243,7 +245,7 @@ class CheckPressureSensor(AbstractDecisionElement):
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
-            rospy.loginfo("Pressure sensors are now connected. Will resume.")
+            self.get_logger().info("Pressure sensors are now connected. Will resume.")
             self.had_problem = False
 
         return "OKAY"
@@ -437,7 +439,7 @@ class Kicking(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.last_kick_feedback is not None and \
-                (rospy.Time.now() - self.blackboard.last_kick_feedback) < rospy.Duration.from_sec(1):
+                (self.get_clock().now() - self.blackboard.last_kick_feedback) < rospy.Duration.from_sec(1):
             self.blackboard.current_state = RobotControlState.KICKING
             return 'KICKING'
         else:

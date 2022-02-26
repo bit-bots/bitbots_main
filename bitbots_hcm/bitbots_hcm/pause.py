@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-import rospy
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import Audio
 from std_msgs.msg import Bool
 
@@ -16,18 +17,21 @@ class Pause(object):
     """
 
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("/debug_active", False) else rospy.INFO
-        rospy.init_node('bitbots_pause', log_level=log_level, anonymous=False)
+        rclpy.init(args=None)
+        self.node = Node("Pause")
 
         self.penalty_manual = False
         self.game_controller_penalty = False
         self.pause = False
 
-        self.manual_penalize_service = rospy.Service("manual_penalize", ManualPenalize, self.manual_update)
-        self.pause_publisher = rospy.Publisher("pause", Bool, queue_size=10, latch=True)
-        self.speak_publisher = rospy.Publisher("speak", Audio, queue_size=10)
+        self.manual_penalize_service = self.node.create_service(ManualPenalize, "manual_penalize", self.manual_update)
+        self.pause_publisher = self.node.create_publisher(Bool, "pause", 10)  # todo latch
+        self.speak_publisher = self.node.create_publisher(Audio, "speak", 10)
 
-        self.talking = rospy.get_param("/pause/talking", True)
+        self.talking = self.node.get_parameter('talking').get_parameter_value().double_value
+
+        while rclpy.ok():
+            rclpy.spin_once(self.node)
 
     def manual_update(self, req):
         if req.penalize == 0:
@@ -40,7 +44,7 @@ class Pause(object):
             # switch
             self.penalty_manual = not self.penalty_manual
         else:
-            rospy.logerr("Manual penalize call with unspecified request")
+            self.node.get_logger().error("Manual penalize call with unspecified request")
         self.set_pause(self.penalty_manual)
         return True
 
@@ -50,11 +54,10 @@ class Pause(object):
             text = "Pause!"
         else:
             text = "Unpause!"
-        rospy.logwarn(text)
+        self.node.get_logger().warn(text)
         speak(text, self.speak_publisher, speaking_active=self.talking, priority=90)
-        self.pause_publisher.publish(Bool(state))
+        self.pause_publisher.publish(Bool(data=state))
 
 
 if __name__ == "__main__":
     pause = Pause()
-    rospy.spin()

@@ -7,7 +7,8 @@ Wait
 
 Just waits for something (i.e. that preconditions will be fullfilled)
 """
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -21,19 +22,19 @@ class Wait(AbstractActionElement):
         """
         :param parameters['time']: Time to wait in seconds
         """
-        super(Wait, self).__init__(blackboard, dsd)
-        self.time = rospy.get_time() + float(parameters['time'])
+        super().__init__(blackboard, dsd)
+        self.time = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) + float(parameters['time'])
 
     def perform(self, reevaluate=False):
         """
         Only pop when the wait-time has elapsed
         """
 
-        if self.time < rospy.get_time():
+        if self.time < float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9):
             self.pop()
 
 class WaitNoReevaluate(Wait):
     def perform(self, reevaluate=False):
         self._dsd.set_do_not_reevaluate()
-        if self.time < rospy.get_time():
+        if self.time < float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9):
             self.pop()

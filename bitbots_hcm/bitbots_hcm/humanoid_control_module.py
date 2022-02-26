@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-import math
-import sys
-
 import numpy
+import rclpy
+from rclpy.duration import Duration
+from rclpy.node import Node
+from rclpy.action import ActionClient
 
-import rospy
-import actionlib
-
-from dynamic_reconfigure.server import Server
 from geometry_msgs.msg import PointStamped
 
 from std_msgs.msg import Bool, String
@@ -18,7 +15,6 @@ from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_hcm.cfg import hcm_paramsConfig
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
 import os
@@ -26,23 +22,21 @@ import os
 
 class HardwareControlManager:
     def __init__(self):
-
+        self.node = Node("HCM")
         # necessary for on shutdown hook, in case of direct shutdown before finished initialization
         self.blackboard = None
 
         # --- Initialize Node ---
-        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
-        rospy.init_node('bitbots_hcm', log_level=log_level, anonymous=False)
-        rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
-        rospy.loginfo("Starting hcm")
-        if not rospy.get_param("simulation_active"):
-            rospy.on_shutdown(self.on_shutdown_hook)
+        rclpy.init(args=None)
+        self.node.get_clock().sleep_for(
+            Duration(seconds=0.1))  # Otherwise messages will get lost, bc the init is not finished
+        self.node.get_logger().info("Starting hcm")
 
         # stack machine
         self.blackboard = HcmBlackboard()
-        self.blackboard.animation_action_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
-        self.blackboard.dynup_action_client = actionlib.SimpleActionClient('dynup', DynUpAction)
-        self.blackboard.dynamic_kick_client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
+        self.blackboard.animation_action_client = ActionClient(self, PlayAnimationAction, 'animation')
+        self.blackboard.dynup_action_client = ActionClient(self, DynUpAction, 'dynup')
+        self.blackboard.dynamic_kick_client = ActionClient(self, KickAction, 'dynamic_kick')
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm")
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
@@ -51,33 +45,31 @@ class HardwareControlManager:
         self.hcm_deactivated = False
 
         # Publisher / subscriber
-        self.joint_goal_publisher = rospy.Publisher('DynamixelController/command', JointCommand, queue_size=1)
-        self.hcm_state_publisher = rospy.Publisher('robot_state', RobotControlState, queue_size=1, latch=True)
-        self.blackboard.speak_publisher = rospy.Publisher('speak', Audio, queue_size=1)
+        self.joint_goal_publisher = self.node.create_publisher(JointCommand, 'DynamixelController/command', 1)
+        self.hcm_state_publisher = self.node.create_publisher(RobotControlState, 'robot_state', 1)  # todo latch
+        self.blackboard.speak_publisher = self.node.create_publisher(Audio, 'speak', 1)
 
-        rospy.sleep(0.1)  # important to make sure the connection to the speaker is established, for next line
+        self.node.get_clock().sleep_for(
+            Duration(seconds=0.1))  # important to make sure the connection to the speaker is established, for next line
         speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
 
-        rospy.Subscriber("imu/data", Imu, self.update_imu, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("foot_pressure_left/filtered", FootPressure, self.update_pressure_left, queue_size=1,
-                         tcp_nodelay=True)
-        rospy.Subscriber("foot_pressure_right/filtered", FootPressure, self.update_pressure_right, queue_size=1,
-                         tcp_nodelay=True)
-        rospy.Subscriber("walking_motor_goals", JointCommand, self.walking_goal_callback, queue_size=1,
-                         tcp_nodelay=True)
-        rospy.Subscriber("animation", AnimationMsg, self.animation_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("dynup_motor_goals", JointCommand, self.dynup_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("head_motor_goals", JointCommand, self.head_goal_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("record_motor_goals", JointCommand, self.record_goal_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("kick_motor_goals", JointCommand, self.kick_goal_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("pause", Bool, self.pause, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("joint_states", JointState, self.joint_state_callback, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("cop_l", PointStamped, self.cop_l_cb, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("cop_r", PointStamped, self.cop_r_cb, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("core/power_switch_status", Bool, self.power_cb, queue_size=1, tcp_nodelay=True)
-        rospy.Subscriber("hcm_deactivate", Bool, self.deactivate_cb, queue_size=1, tcp_nodelay=True)
+        self.node.create_subscription(Imu, "imu/data", self.update_imu, 1)
+        self.node.create_subscription(FootPressure, "foot_pressure_left/filtered", self.update_pressure_left, 1)
+        self.node.create_subscription(FootPressure, "foot_pressure_right/filtered", self.update_pressure_right, 1)
+        self.node.create_subscription(JointCommand, "walking_motor_goals", self.walking_goal_callback, 1)
+        self.node.create_subscription(AnimationMsg, "animation", self.animation_callback, 1)
+        self.node.create_subscription(JointCommand, "dynup_motor_goals", self.dynup_callback, 1)
+        self.node.create_subscription(JointCommand, "head_motor_goals", self.head_goal_callback, 1)
+        self.node.create_subscription(JointCommand, "record_motor_goals", self.record_goal_callback, 1)
+        self.node.create_subscription(JointCommand, "kick_motor_goals", self.kick_goal_callback, 1)
+        self.node.create_subscription(Bool, "pause", self.pause, 1)
+        self.node.create_subscription(JointState, "joint_states", self.joint_state_callback, 1)
+        self.node.create_subscription(PointStamped, "cop_l", self.cop_l_cb, 1)
+        self.node.create_subscription(PointStamped, "cop_r", self.cop_r_cb, 1)
+        self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
+        self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
 
-        self.dyn_reconf = Server(hcm_paramsConfig, self.reconfigure)
+        self.node.add_on_set_parameters_callback(self.on_set_parameters)
 
         self.main_loop()
 
@@ -124,7 +116,7 @@ class HardwareControlManager:
         self.blackboard.pressures[6] = msg.right_front
         self.blackboard.pressures[7] = msg.right_back
 
-    def reconfigure(self, config, level):
+    def on_set_parameters(self, config, level):
         """ Dynamic reconfigure of the fall checker values."""
         # just pass on to the StandupHandler, as all the variables are located there
         self.blackboard.fall_checker.update_reconfigurable_values(config, level)
@@ -132,7 +124,7 @@ class HardwareControlManager:
         return config
 
     def walking_goal_callback(self, msg):
-        self.blackboard.last_walking_goal_time = rospy.Time.now()
+        self.blackboard.last_walking_goal_time = self.node.get_clock().now()
         if self.blackboard.current_state in [RobotControlState.CONTROLLABLE, RobotControlState.WALKING]:
             self.joint_goal_publisher.publish(msg)
 
@@ -166,7 +158,7 @@ class HardwareControlManager:
         self.blackboard.last_animation_goal_time = msg.header.stamp.to_sec()
 
         if msg.request:
-            rospy.loginfo("Got Animation request. HCM will try to get controllable now.")
+            self.node.get_logger().info("Got Animation request. HCM will try to get controllable now.")
             # animation has to wait
             # state machine should try to become controllable
             self.blackboard.animation_requested = True
@@ -181,7 +173,7 @@ class HardwareControlManager:
                 # coming from outside
                 # check if we can run an animation now
                 if self.blackboard.current_state != RobotControlState.CONTROLLABLE:
-                    rospy.logwarn("HCM is not controllable, animation refused.")
+                    self.node.get_logger().warn("HCM is not controllable, animation refused.")
                     return
                 else:
                     # we're already controllable, go to animation running
@@ -238,14 +230,14 @@ class HardwareControlManager:
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        rate = rospy.Rate(500)
+        rate = self.node.create_rate(500, clock=self.node.get_clock())
 
-        while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
+        while rclpy.ok() and not self.blackboard.shut_down_request:
             if self.hcm_deactivated:
                 self.blackboard.current_state = RobotControlState.CONTROLLABLE
                 self.hcm_state_publisher.publish(self.blackboard.current_state)
             else:
-                self.blackboard.current_time = rospy.Time.now()
+                self.blackboard.current_time = self.node.get_clock().now()
                 try:
                     self.dsd.update()
                     self.hcm_state_publisher.publish(self.blackboard.current_state)
@@ -256,28 +248,27 @@ class HardwareControlManager:
             try:
                 # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()
-            except rospy.exceptions.ROSTimeMovedBackwardsException:
-                rospy.logwarn(
+            except:
+                self.node.get_logger().warn(
                     "We moved backwards in time. I hope you just reset the simulation. If not there is something "
                     "wrong")
-            except rospy.exceptions.ROSInterruptException:
-                exit()
-
+        if not self.node.get_parameter("simulation_active"):
+            self.on_shutdown_hook()
 
     def on_shutdown_hook(self):
         if not self.blackboard:
             return
         # we got external shutdown, tell it to the DSD, it will handle it
         self.blackboard.shut_down_request = True
-        rospy.logwarn("You're stopping the HCM. The robot will sit down and power off its motors.")
+        self.node.get_logger().warn("You're stopping the HCM. The robot will sit down and power off its motors.")
         speak("Stopping HCM", self.blackboard.speak_publisher, priority=50)
         # now wait for it finishing the shutdown procedure
         while not self.blackboard.current_state == RobotControlState.HCM_OFF:
             # we still have to update everything
-            self.blackboard.current_time = rospy.Time.now()
+            self.blackboard.current_time = self.node.get_clock().now()
             self.dsd.update()
             self.hcm_state_publisher.publish(self.blackboard.current_state)
-            rospy.sleep(0.01)
+            self.node.get_clock().sleep_for(Duration(seconds=0.01))
 
 
 if __name__ == "__main__":
