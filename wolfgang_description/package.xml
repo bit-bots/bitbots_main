@@ -3,7 +3,7 @@
   <name>wolfgang_description</name>
   <version>2.1.2</version>
   <description>URDF description of the wolfgang robot.</description>
-  
+
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
@@ -11,7 +11,7 @@
   <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  
+
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -20,13 +20,14 @@
   <depend>urdf</depend>
   <depend>xacro</depend>
   <depend>bitbots_docs</depend>
+  <depend>bitbots_bringup</depend>
 
 
   <export>
-      <bitbots_documentation>
-        <status>stable</status>
-        <language>xacro</language>
-      </bitbots_documentation>
+    <bitbots_documentation>
+      <status>stable</status>
+      <language>xacro</language>
+    </bitbots_documentation>
     <build_type>ament_cmake</build_type>
   </export>
 </package>

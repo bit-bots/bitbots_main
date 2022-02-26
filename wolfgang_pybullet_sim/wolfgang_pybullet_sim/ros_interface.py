@@ -12,7 +12,7 @@ from tf_transformations import euler_from_quaternion
 
 
 class ROSInterface():
-    def __init__(self, node:Node, simulation, namespace=''):
+    def __init__(self, node:Node, simulation, namespace='', declare_parameters=True):
         self.node = node
         self.namespace = namespace
         self.simulation = simulation
@@ -38,16 +38,19 @@ class ROSInterface():
         # we just use the first robot
         self.robot_index = self.simulation.robot_indexes[0]
 
-        self.node.declare_parameter("contact_stiffness", 0.0)
-        self.node.declare_parameter("joint_damping", 0.0)
-        self.node.declare_parameter("spinning_friction", 0.0)
-        self.node.declare_parameter("contact_damping", 0.0)
-        self.node.declare_parameter("lateral_friction", 0.0)
-        self.node.declare_parameter("rolling_friction", 0.0)
-        self.node.declare_parameter("cutoff", 0)
-        self.node.declare_parameter("order", 0)
+        # necessary to use this as part of a different node
+        if declare_parameters:
+            self.node.declare_parameter("contact_stiffness", 0.0)
+            self.node.declare_parameter("joint_damping", 0.0)
+            self.node.declare_parameter("spinning_friction", 0.0)
+            self.node.declare_parameter("contact_damping", 0.0)
+            self.node.declare_parameter("lateral_friction", 0.0)
+            self.node.declare_parameter("rolling_friction", 0.0)
+            self.node.declare_parameter("cutoff", 0)
+            self.node.declare_parameter("order", 0)
 
         self.node.add_on_set_parameters_callback(self.parameters_callback)
+
 
         self.simulation.set_foot_dynamics(self.node.get_parameter("contact_damping").get_parameter_value().double_value,
                                           self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
