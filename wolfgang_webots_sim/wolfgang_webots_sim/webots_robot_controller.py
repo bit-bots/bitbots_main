@@ -188,24 +188,6 @@ class RobotController(RclpyNode):
             self.cop_r_pub_ = self.create_publisher(PointStamped, base_ns + "cop_r", 1)
             self.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
 
-            # publish camera info once, it will be latched
-            self.cam_info = CameraInfo()
-            self.cam_info.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
-            self.cam_info.header.frame_id = self.camera_optical_frame
-            self.cam_info.height = self.camera.getHeight()
-            self.cam_info.width = self.camera.getWidth()
-            f_y = self.mat_from_fov_and_resolution(
-                self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
-                self.cam_info.height)
-            f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-            self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2,
-                               0.0, f_y, self.cam_info.height / 2,
-                               0.0, 0.0, 1.0]
-            self.cam_info.p = [f_x, 0.0, self.cam_info.width / 2, 0.0,
-                               0.0, f_y, self.cam_info.height / 2, 0.0,
-                               0.0, 0.0, 1.0, 0.0]
-            self.pub_cam_info.publish(self.cam_info)
-
         if robot == "op3":
             # start pose
             command = JointCommand()
@@ -380,6 +362,22 @@ class RobotController(RclpyNode):
         img = self.camera.getImage()
         img_msg.data = img
         self.pub_cam.publish(img_msg)
+
+        self.cam_info = CameraInfo()
+        self.cam_info.header = img_msg.header
+        self.cam_info.height = self.camera.getHeight()
+        self.cam_info.width = self.camera.getWidth()
+        f_y = self.mat_from_fov_and_resolution(
+            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
+            self.cam_info.height)
+        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
+        self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2,
+                            0.0, f_y, self.cam_info.height / 2,
+                            0.0, 0.0, 1.0]
+        self.cam_info.p = [f_x, 0.0, self.cam_info.width / 2, 0.0,
+                            0.0, f_y, self.cam_info.height / 2, 0.0,
+                            0.0, 0.0, 1.0, 0.0]
+        self.pub_cam_info.publish(self.cam_info)
 
     def save_recognition(self):
         if self.time - self.last_img_saved < 1.0:
