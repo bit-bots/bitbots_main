@@ -1,7 +1,7 @@
 system_monitor:
   ros__parameters:
     # How many times per second should the system be queried for stats
-    update_frequency: 10
+    update_frequency: 10.0
 
     # These settings are quick_switches to completely disable certain parts of statistic collection
     do_cpu: true
@@ -9,7 +9,7 @@ system_monitor:
     do_network: true
 
     # these are the threshold values at which we start going into a warn state
-    cpu_load_percentage: 80
-    memoroy_load_percentage: 80
-    network_rate_received_errors: 10
-    network_rate_send_errors: 10
+    cpu_load_percentage: 80.0
+    memoroy_load_percentage: 80.0
+    network_rate_received_errors: 10.0
+    network_rate_send_errors: 10.0

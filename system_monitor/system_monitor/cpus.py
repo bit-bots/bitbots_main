@@ -64,4 +64,4 @@ def _calculate_usage(cpu_num, total, busy):
     if diff_total == 0:
         return 0
     else:
-        return int(diff_busy / diff_total * 100)
+        return float(int(diff_busy / diff_total * 100))
