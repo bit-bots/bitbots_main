@@ -1,3 +1,0 @@
-[submodule "humanoid_league_team_communication/src/humanoid_league_team_communication/RobocupProtocol"]
-	path = humanoid_league_team_communication/src/humanoid_league_team_communication/RobocupProtocol
-	url = https://github.com/bit-bots/RobocupProtocol.git
