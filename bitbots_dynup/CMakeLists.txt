@@ -1,70 +1,128 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_dynup)
-set(CMAKE_CXX_STANDARD 17)
-add_compile_options(-Wall -Werror -Wno-unused)
 
-## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-    bio_ik
-    bitbots_msgs
-    bitbots_splines
-    dynamic_reconfigure
-    actionlib
-    tf2
-    tf2_ros
-    tf2_geometry_msgs
-    std_msgs
-    visualization_msgs
-    control_toolbox
-    bitbots_docs
-    rotconv
-)
+# Add support for C++17
+if (NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif ()
 
-enable_bitbots_docs()
+#find_package(bitbots_test REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(bitbots_msgs REQUIRED)
+find_package(bitbots_splines REQUIRED)
+find_package(control_msgs REQUIRED)
+find_package(control_toolbox REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(moveit_ros REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(rotconv REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(Eigen3 REQUIRED)
 
-generate_dynamic_reconfigure_options(
-    cfg/bitbots_dynup_params.cfg
-)
+find_package(ros2_python_extension REQUIRED)
+find_package(pybind11 REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
-add_message_files(
-        FILES
-        DynupEngineDebug.msg
-)
-
-generate_messages(
+rosidl_generate_interfaces(${PROJECT_NAME}
+        "msg/DynupEngineDebug.msg"
+        "msg/DynupPoses.msg"
         DEPENDENCIES
         std_msgs
-        geometry_msgs
-)
+        geometry_msgs)
 
-catkin_package(
-    INCLUDE_DIRS include
-    CATKIN_DEPENDS rotconv
-)
+include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-include_directories(
-    include
-    ${catkin_INCLUDE_DIRS}
-)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
-set(SOURCES
-    src/dynup_node.cpp
-    src/dynup_engine.cpp
-    src/dynup_stabilizer.cpp
-    src/dynup_ik.cpp
-    src/visualizer.cpp
-)
+set(SOURCES src/dynup_engine.cpp
+        src/dynup_ik.cpp
+        src/dynup_node.cpp
+        src/dynup_pywrapper.cpp
+        src/dynup_stabilizer.cpp)
 
 
+set(CODE_LIBRARIES urdfdom_world urdfdom_model)
 
 add_executable(DynupNode ${SOURCES})
 
-add_dependencies(DynupNode ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages)
+ament_target_dependencies(DynupNode
+        ament_cmake
+        bitbots_msgs
+        bitbots_splines
+        control_msgs
+        control_toolbox
+        geometry_msgs
+        moveit_ros
+        moveit_ros_planning_interface
+        rclcpp
+        rotconv
+        sensor_msgs
+        std_msgs
+        tf2
+        tf2_eigen
+        tf2_geometry_msgs
+        tf2_ros
+        Eigen3)
 
-target_link_libraries(DynupNode ${catkin_LIBRARIES})
+rosidl_get_typesupport_target(cpp_typesupport_target
+        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-if (CATKIN_ENABLE_TESTING)
-    find_package(catkin REQUIRED COMPONENTS bitbots_test)
-    enable_bitbots_tests()
-endif()
+target_link_libraries(DynupNode ${CODE_LIBRARIES} "${cpp_typesupport_target}")
+
+
+# create the lib
+pybind11_add_module(libpy_dynup SHARED
+        src/dynup_pywrapper.cpp ${SOURCES})
+ament_target_dependencies(libpy_dynup PUBLIC
+        ament_cmake
+        bitbots_msgs
+        bitbots_splines
+        control_msgs
+        control_toolbox
+        geometry_msgs
+        moveit_ros
+        moveit_ros_planning_interface
+        rclcpp
+        ros2_python_extension
+        rotconv
+        sensor_msgs
+        std_msgs
+        tf2
+        tf2_eigen
+        tf2_geometry_msgs
+        tf2_ros)
+
+target_link_libraries(libpy_dynup PRIVATE "${cpp_typesupport_target}")
+
+ament_python_install_package(bitbots_dynup_py)
+
+install(TARGETS libpy_dynup
+        DESTINATION "${PYTHON_INSTALL_DIR}/bitbots_dynup_py"
+        )
+
+#if(BUILD_TESTING)
+#  enable_bitbots_tests()
+#endif()
+
+include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
+enable_bitbots_docs()
+
+install(TARGETS DynupNode
+        DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY config
+        DESTINATION share/${PROJECT_NAME})
+
+
+ament_package()

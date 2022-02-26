@@ -4,30 +4,28 @@
 #include <cmath>
 #include <string>
 #include <optional>
-#include <ros/ros.h>
-#include <ros/console.h>
+#include <rclcpp/rclcpp.hpp>
+
 #include <unistd.h>
 
-#include <dynamic_reconfigure/server.h>
-#include <bitbots_dynup/DynUpConfig.h>
-#include <actionlib/server/simple_action_server.h>
-
-#include <std_msgs/Char.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/JointState.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <bitbots_msgs/DynUpAction.h>
-#include <bitbots_msgs/JointCommand.h>
+#include "rclcpp_action/rclcpp_action.hpp"
+#include <std_msgs/msg/char.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_dynup/msg/dynup_poses.hpp>
 
 #include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/kinematics_base/kinematics_base.h>
@@ -40,10 +38,8 @@
 
 namespace bitbots_dynup {
 
-typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
-
 /**
- * DynUpNode is that part of bitbots_dynamic_DynUp which takes care of interacting with ROS and utilizes a DynUpEngine
+ * DynupNode is that part of bitbots_dynamic_DynUp which takes care of interacting with ROS and utilizes a DynUpEngine
  * to calculate actual DynUp behavior.
  *
  * It provides an ActionServer for the bitbots_msgs::DynUpAction.
@@ -51,44 +47,73 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::DynUpAction> ActionServer;
  *
  * Additionally it publishes the DynUpEngines motor-goals back into ROS
  */
-class DynUpNode {
+class DynupNode : public rclcpp::Node {
  public:
-  DynUpNode();
-
-  /** Callback for dynamic reconfigure */
-  void reconfigureCallback(bitbots_dynup::DynUpConfig &config, uint32_t level);
+  explicit DynupNode(const std::string &ns = std::string(), const rclcpp::NodeOptions &options = rclcpp::NodeOptions) : Node("dynup_node", options);
 
   /**
    * Callback that gets executed whenever #m_server receives a new goal.
    * @param goal New goal to process
    */
-  void executeCb(const bitbots_msgs::DynUpGoalConstPtr &goal);
+  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID & uuid, const bitbots_msgs::DynUpGoalSharedPtr &goal);
+  rclcpp_action::CancelResponse cancelCb(const bitbots_msgs::DynUpGoalSharedPtr &goal);
+  rclcpp_action::AcceptedResponse acceptedCb(const bitbots_msgs::DynUpGoalSharedPtr &goal);
 
-  void imuCallback(const sensor_msgs::Imu &msg);
 
-  void jointStateCallback(const sensor_msgs::JointState &jointstates);
+  this->action_server_ = rclcpp_action::create_server<DynupNode>(
+      this,
+      "dynup_node",
+      std::bind(&DynupNode::goalCb, this, _1, _2),
+      std::bind(&DynupNode::cancelCb, this, _1),
+      std::bind(&DynupNode::acceptedCb, this, _1));
+
+  rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+
+  void imuCallback(const sensor_msgs::msg::Imu &msg);
+
+  void jointStateCallback(const sensor_msgs::msg::JointState &jointstates);
+
+  DynupEngine *getEngine();
+  DynupIK *getIK();
+
+  /**
+  * Retrieve current positions of left foot and trunk relative to right foot
+  *
+  * @return The pair of (right foot, left foot) poses if transformation was successfull
+  */
+  bitbots_dynup::msg::DynupPoses getCurrentPoses();
+
+  bitbots_msgs::msg::JointCommand step(double dt);
+  bitbots_msgs::msg::JointCommand step(double dt,
+                                  const sensor_msgs::msg::Imu &imu_msg,
+                                  const sensor_msgs::msg::JointState &jointstate_msg);
+  geometry_msgs::msg::PoseArray step_open_loop(double dt);
+
+  void reset(int time=0);
 
  private:
-  ros::Publisher debug_publisher_;
-  ros::NodeHandle node_handle_;
-  ros::Publisher joint_goal_publisher_;
-  ros::Publisher support_foot_publisher_;
-  ros::Subscriber cop_subscriber_;
-  ros::Subscriber joint_state_subscriber_;
+  rclcpp::Publisher debug_publisher_;
+  
+  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
+  rclcpp::Subscription<DynupNode::imuCallback> cop_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+
+  std::vector<std::string> param_names_
 
   ActionServer server_;
   DynupEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
-  DynUpConfig params_;
+  std::vector<rclcpp::Parameter> params_;
   int stable_duration_;
   int engine_rate_;
+  int failed_tick_counter_;
   double last_ros_update_time_;
   double start_time_;
   bool debug_;
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener listener_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  tf2_ros::msg::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
 
   std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
@@ -97,17 +122,7 @@ class DynUpNode {
    * Do main loop in which DynUpEngine::tick() gets called repeatedly.
    * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
    */
-  void loopEngine(ros::Rate loop_rate);
-
-  /**
-   * Retrieve current positions of left foot and trunk relative to right foot
-   *
-   * @return The pair of (right foot, left foot) poses if transformation was successfull
-   */
-  std::optional<std::tuple<geometry_msgs::Pose,
-                           geometry_msgs::Pose,
-                           geometry_msgs::Pose,
-                           geometry_msgs::Pose>> getCurrentPoses();
+  void loopEngine(rclcpp::Rate loop_rate);
 
   /**
    * Publish the current support_foot so that a correct base_footprint can be calculated
@@ -116,14 +131,17 @@ class DynUpNode {
   void publishSupportFoot(bool is_left_dyn_up);
 
   /**
-   * Publish goals to ROS
+   * Creates the Goal Msg
    */
-  void publishGoals(const bitbots_splines::JointGoals &goals);
+  bitbots_msgs::msg::JointCommand createGoalMsg(const bitbots_splines::JointGoals &goals);
 
   /**
    * Helper method to achieve correctly sampled rate
    */
   double getTimeDelta();
+
+
+
 
 };
 

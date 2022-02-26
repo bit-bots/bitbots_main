@@ -3,8 +3,9 @@
 from __future__ import print_function
 import sys
 
-import rospy
-import actionlib
+import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionClient
 
 from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
@@ -54,13 +55,13 @@ if __name__ == "__main__":
 
     def play_animation(anim):
         first_try = anim_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value
         if not first_try:
-            rospy.logerr(
+            self.get_logger().error(
                 "Animation Action Server not running! Motion can not work without animation action server. "
                 "Will now wait until server is accessible!")
             anim_client.wait_for_server()
-            rospy.logwarn("Animation server now running, hcm will go on.")
+            self.get_logger().warn("Animation server now running, hcm will go on.")
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
         goal.hcm = False
@@ -97,7 +98,7 @@ if __name__ == "__main__":
         client.done_cb = done_cb
         client.feedback_cb = feedback_cb
         client.active_cb = active_cb
-        client.send_goal(goal)
+        client.send_goal_async(goal)
         print("Sent new goal. Waiting for result")
         client.wait_for_result()
 
@@ -108,22 +109,22 @@ if __name__ == "__main__":
     def imu_cb(msg: Imu):
         global last_move_time
         if msg.angular_velocity.x > 0.15 or msg.angular_velocity.y > 0.15:
-            last_move_time = rospy.Time.now().to_sec()
+            last_move_time = self.get_clock().now().to_sec()
 
 
-    rospy.init_node('dynup_dummy_client', anonymous=True)
+    rclpy.init(args=None)
     print('[..] Connecting to action server \'dynup\'', end='')
     sys.stdout.flush()
-    client = actionlib.SimpleActionClient('dynup', DynUpAction)
+    client = ActionClient(self, DynUpAction, 'dynup')
     if not client.wait_for_server():
         exit(1)
     print('\r[OK] Connecting to action server \'dynup\'')
 
-    anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
+    anim_client = ActionClient(self, humanoid_league_msgs.msg.PlayAnimationAction, 'animation')
 
-    imu_sub = rospy.Subscriber("/imu/data", Imu, imu_cb, queue_size=1, tcp_nodelay=True)
+    imu_sub = self.create_subscription(Imu, "/imu/data", imu_cb, 1)
 
-    while not rospy.is_shutdown():
+    while rclpy.ok():
         direction = None
         anim = None
         inp = input("Which direction [f|b]")
@@ -145,19 +146,19 @@ if __name__ == "__main__":
         inp = input("Please put robot on the ground. Then choose dynup or keyframe [d|k]")
         if inp == "d":
             last_move_time = None
-            start_time = rospy.Time.now().to_sec()
+            start_time = self.get_clock().now().to_sec()
             play_dynup(direction)
         elif inp == "k":
             last_move_time = None
-            start_time = rospy.Time.now().to_sec()
+            start_time = self.get_clock().now().to_sec()
             play_animation(key_anim)
         else:
             print("invalid input")
             continue
 
         # wait till robot is standing at least 3 seconds not moving
-        while last_move_time is None or rospy.Time.now().to_sec() - last_move_time < 3:
-            rospy.sleep(0.0001)
+        while last_move_time is None or self.get_clock().now().to_sec() - last_move_time < 3:
+            self.get_clock().sleep_for(Duration(seconds=0.0001)
         # compute duration
         duration = last_move_time - start_time
 

@@ -1,10 +1,13 @@
 #include "bitbots_dynup/dynup_engine.h"
-#include <ros/ros.h>
-#include <ros/console.h>
+#include <rclcpp/rclcpp.hpp>
+
 
 namespace bitbots_dynup {
 
-DynupEngine::DynupEngine() : listener_(tf_buffer_) {}
+DynupEngine::DynupEngine() {
+  pub_engine_debug_ = this->create_publisher<bitbots_dynup::msg::DynupEngineDebug>("dynup_engine_debug", 1);
+  pub_debug_marker_ = this->create_publisher<visualization_msgs::Marker>("dynup_engine_marker", 1);
+}
 
 void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
   //this are just the offsets to the shoulder, we need to apply some additional offset to prevent collisions
@@ -12,15 +15,21 @@ void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
   arm_offset_z_ = arm_offset_z;
   setParams(params_);
 
-  ros::NodeHandle nh;
-  pub_engine_debug_ = nh.advertise<bitbots_dynup::DynupEngineDebug>("dynup_engine_debug", 1);
-  pub_debug_marker_ = nh.advertise<visualization_msgs::Marker>("dynup_engine_marker", 1);
   marker_id_ = 1;
 
 }
 
 void DynupEngine::reset() {
-  time_ = 0;
+    time_ = 0;
+    duration_ = 0;
+    r_foot_spline_ = bitbots_splines::PoseSpline();
+    l_hand_spline_ = bitbots_splines::PoseSpline();
+    r_hand_spline_ = bitbots_splines::PoseSpline();
+    l_foot_spline_ = bitbots_splines::PoseSpline();
+}
+
+void DynupEngine::reset(double time) {
+  time_ = time;
   duration_ = 0;
   r_foot_spline_ = bitbots_splines::PoseSpline();
   l_hand_spline_ = bitbots_splines::PoseSpline();
@@ -29,12 +38,12 @@ void DynupEngine::reset() {
 }
 
 void DynupEngine::publishDebug() {
-  if (pub_engine_debug_.getNumSubscribers() == 0 && pub_debug_marker_.getNumSubscribers() == 0) {
+  if (pub_engine_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
     return;
   }
 
   bitbots_dynup::DynupEngineDebug msg;
-  msg.header.stamp = ros::Time::now();
+  msg.header.stamp = this->get_clock()->now()();
 
   msg.time = time_;
   msg.stabilization_active = isStabilizingNeeded();
@@ -88,33 +97,33 @@ void DynupEngine::publishDebug() {
     msg.state_number = -1;
   }
 
-  geometry_msgs::Pose l_arm_pose;
+  geometry_msgs::msg::Pose l_arm_pose;
   tf2::toMsg(goals_.l_hand_goal_pose, l_arm_pose);
   msg.l_arm_pose = l_arm_pose;
   publishArrowMarker("l_arm", "base_link", l_arm_pose, 1, 0, 0, 1);
 
-  geometry_msgs::Pose l_arm_from_shoulder;
+  geometry_msgs::msg::Pose l_arm_from_shoulder;
   tf2::toMsg(l_hand_spline_.getTfTransform(time_), l_arm_from_shoulder);
   msg.l_arm_pose_from_shoulder = l_arm_from_shoulder;
 
-  geometry_msgs::Pose r_arm_pose;
+  geometry_msgs::msg::Pose r_arm_pose;
   tf2::toMsg(goals_.r_hand_goal_pose, r_arm_pose);
   msg.r_arm_pose = r_arm_pose;
   publishArrowMarker("r_arm", "base_link", r_arm_pose, 0, 1, 0, 1);
 
-  geometry_msgs::Pose r_arm_from_shoulder;
+  geometry_msgs::msg::Pose r_arm_from_shoulder;
   tf2::toMsg(r_hand_spline_.getTfTransform(time_), r_arm_from_shoulder);
   msg.r_arm_pose_from_shoulder = r_arm_from_shoulder;
 
-  geometry_msgs::Pose l_leg_pose;
+  geometry_msgs::msg::Pose l_leg_pose;
   tf2::toMsg(goals_.l_foot_goal_pose, l_leg_pose);
   msg.l_leg_pose = l_leg_pose;
 
-  geometry_msgs::Pose l_leg_pose_in_base_link;
+  geometry_msgs::msg::Pose l_leg_pose_in_base_link;
   tf2::toMsg(goals_.r_foot_goal_pose * goals_.l_foot_goal_pose, l_leg_pose_in_base_link);
   publishArrowMarker("l_leg_pose", "base_link", l_leg_pose_in_base_link, 0, 0, 1, 1);
 
-  geometry_msgs::Pose r_leg_pose;
+  geometry_msgs::msg::Pose r_leg_pose;
   tf2::toMsg(goals_.r_foot_goal_pose, r_leg_pose);
   msg.r_leg_pose = r_leg_pose;
   publishArrowMarker("r_leg_pose", "base_link", r_leg_pose, 0, 1, 1, 1);
@@ -127,14 +136,14 @@ void DynupEngine::publishDebug() {
   msg.foot_pitch = p;
   msg.foot_yaw = y;
 
-  pub_engine_debug_.publish(msg);
+  pub_engine_debug_->publish(msg);
 }
 
 void DynupEngine::publishArrowMarker(std::string name_space,
                                      std::string frame,
-                                     geometry_msgs::Pose pose, float r, float g, float b, float a) {
-  visualization_msgs::Marker marker_msg;
-  marker_msg.header.stamp = ros::Time::now();
+                                     geometry_msgs::msg::Pose pose, float r, float g, float b, float a) {
+  visualization_msgs::msg::Marker marker_msg;
+  marker_msg.header.stamp = this->get_clock()->now()();
   marker_msg.header.frame_id = frame;
 
   marker_msg.type = marker_msg.ARROW;
@@ -149,7 +158,7 @@ void DynupEngine::publishArrowMarker(std::string name_space,
   color.a = a;
   marker_msg.color = color;
 
-  geometry_msgs::Vector3 scale;
+  geometry_msgs::msg::Vector3 scale;
   scale.x = 0.01;
   scale.y = 0.003;
   scale.z = 0.003;
@@ -158,7 +167,7 @@ void DynupEngine::publishArrowMarker(std::string name_space,
   marker_msg.id = marker_id_;
   marker_id_++;
 
-  pub_debug_marker_.publish(marker_msg);
+  pub_debug_marker_->publish(marker_msg);
 }
 
 DynupResponse DynupEngine::update(double dt) {
@@ -185,7 +194,7 @@ DynupResponse DynupEngine::update(double dt) {
   return goals_;
 }
 
-bitbots_splines::PoseSpline DynupEngine::initializeSpline(geometry_msgs::Pose pose,
+bitbots_splines::PoseSpline DynupEngine::initializeSpline(geometry_msgs::msg::Pose pose,
                                                           bitbots_splines::PoseSpline spline) {
   double r, p, y;
   tf2::Quaternion q;
@@ -631,8 +640,8 @@ double DynupEngine::calcDescendSplines(double time) {
 
 void DynupEngine::setGoals(const DynupRequest &goals) {
   // we use hand splines from shoulder frame instead of base_link
-  geometry_msgs::Pose l_hand = goals.l_hand_pose;
-  geometry_msgs::Pose r_hand = goals.r_hand_pose;
+  geometry_msgs::msg::Pose l_hand = goals.l_hand_pose;
+  geometry_msgs::msg::Pose r_hand = goals.r_hand_pose;
   l_hand.position.y -= shoulder_offset_y_;
   l_hand.position.z -= arm_offset_z_;
   r_hand.position.y += shoulder_offset_y_;
@@ -674,12 +683,12 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     duration_ = calcRiseSplines(params_.time_walkready);
     direction_ = 6;
   } else {
-    ROS_ERROR("Provided direction not known");
+    RCLCPP_ERROR(this->get_logger(),"Provided direction not known");
   }
 }
 
 int DynupEngine::getPercentDone() const {
-  return int(time_ / duration_ * 100);
+    return int(time_ / duration_ * 100);
 }
 
 double DynupEngine::getDuration() const{
@@ -743,6 +752,10 @@ void DynupEngine::setParams(DynUpConfig params) {
   arm_offset_y_ = shoulder_offset_y_;
   offset_left_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, arm_offset_y_, arm_offset_z_});
   offset_right_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, -arm_offset_y_, arm_offset_z_});
+}
+
+int DynupEngine::getDirection() {
+    return direction_;
 }
 
 }

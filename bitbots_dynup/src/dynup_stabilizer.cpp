@@ -4,14 +4,14 @@ namespace bitbots_dynup {
 
 void Stabilizer::init(moveit::core::RobotModelPtr kinematic_model) {
   kinematic_model_ = std::move(kinematic_model);
-  ros::NodeHandle nhp = ros::NodeHandle("dynup/pid_trunk_pitch");
-  ros::NodeHandle nhr = ros::NodeHandle("dynup/pid_trunk_roll");
+  
+  
 
   pid_trunk_pitch_.init(nhp, false);
   pid_trunk_roll_.init(nhr, false);
 
   /* Reset kinematic goal to default */
-  goal_state_.reset(new robot_state::RobotState(kinematic_model_));
+  goal_state_.reset(new moveit::core::msg::RobotState(kinematic_model_));
   goal_state_->setToDefaultValues();
 }
 
@@ -21,12 +21,12 @@ void Stabilizer::reset() {
 
 }
 
-DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Duration &dt) {
+DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp::Duration &dt) {
   tf2::Transform right_foot_goal;
   tf2::Quaternion quat;
   tf2::convert(imu_.orientation, quat);
 
-  Eigen::Quaterniond imu_orientation_eigen;
+  Eigen::msg::Quaterniond imu_orientation_eigen;
   tf2::convert(quat, imu_orientation_eigen);
   rot_conv::FusedAngles current_orientation = rot_conv::FusedFromQuat(imu_orientation_eigen);
 
@@ -36,7 +36,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
     tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * r_sole_to_trunk_tf;
 
     // compute orientation with fused angles for PID control
-    Eigen::Quaterniond goal_orientation_eigen;
+    Eigen::msg::Quaterniond goal_orientation_eigen;
     tf2::convert(trunk_goal.getRotation(), goal_orientation_eigen);
     rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
@@ -49,7 +49,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const ros::Du
         (abs(goal_fused.fusedRoll - current_orientation.fusedRoll) < stable_threshold_);
 
     tf2::Quaternion corrected_orientation;
-    Eigen::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
+    Eigen::msg::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
     tf2::convert(goal_orientation_eigen_corrected, corrected_orientation);
     trunk_goal.setRotation(corrected_orientation);
 
@@ -87,11 +87,16 @@ void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
   kinematic_model_ = std::move(model);
 }
 
-void Stabilizer::setImu(sensor_msgs::Imu imu) {
+void Stabilizer::setImu(sensor_msgs::msg::Imu imu) {
   imu_ = imu;
 }
 
-void Stabilizer::setRSoleToTrunk(geometry_msgs::TransformStamped r_sole_to_trunk) {
+void Stabilizer::setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk) {
+  r_sole_to_trunk_ = r_sole_to_trunk;
+}
+
+}
+metry_msgs::TransformStamped r_sole_to_trunk) {
   r_sole_to_trunk_ = r_sole_to_trunk;
 }
 
