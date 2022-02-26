@@ -4,7 +4,7 @@
 
     <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller.yaml" command="load"/>
 
-    <node name="team_communication" pkg="humanoid_league_team_communication" exec="humanoid_league_team_communication.py"  output="screen">
+    <node pkg="humanoid_league_team_communication" exec="team_comm"  output="screen">
         <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml" command="load"/>
         <param name="map_frame" value="$(var tf_prefix)map" />
     </node>

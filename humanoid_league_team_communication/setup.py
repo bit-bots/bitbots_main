@@ -1,10 +1,25 @@
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+import glob
 
-d = generate_distutils_setup(
-    packages=['humanoid_league_team_communication'],
-    #scripts=['bin/myscript'],
-    package_dir={'': 'src'}
+from setuptools import setup, find_packages
+
+package_name = 'humanoid_league_team_communication'
+
+setup(
+    name=package_name,
+    packages=find_packages(),
+    data_files=[
+        ('share/' + package_name + "/config",
+        glob.glob('config/*.yaml')),
+        ('share/' + package_name + '/launch',
+         glob.glob('launch/*.launch')),
+    ],
+    install_requires=[
+        'setuptools',
+    ],
+    scripts=['scripts/send_text.py'],
+    entry_points={
+        'console_scripts': [
+            'team_comm = humanoid_league_team_communication.team_comm.:main',
+        ],
+    }
 )
-
-setup(**d)
