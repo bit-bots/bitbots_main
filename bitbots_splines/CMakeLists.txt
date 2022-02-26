@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_splines)
 
-# Add support for C++11
+# Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -12,52 +12,51 @@ find_package(bio_ik REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(moveit_core REQUIRED)
+find_package(moveit_ros_planning REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(PkgConfig REQUIRED)
 
 set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})
 
-set(LIBRARY_DIRS ${ament_cmake_LIBRARY_DIRS} ${bitbots_docs_LIBRARY_DIRS} ${bio_ik_LIBRARY_DIRS}
-  ${rclcpp_LIBRARY_DIRS} ${std_msgs_LIBRARY_DIRS})
-
-link_directories(${LIBRARY_DIRS})
-
-set(LIBS ${ament_cmake_LIBRARIES} ${bitbots_docs_LIBRARIES} ${bio_ik_LIBRARIES}
-  ${rclcpp_LIBRARIES} ${std_msgs_LIBRARIES})
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-add_compile_options(-Wall -Werror -Wno-unused -fPIC)
-
-find_package(Eigen3 REQUIRED)
-find_package(PkgConfig REQUIRED)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(SOURCES src/Spline/polynom.cpp
+  src/Spline/smooth_spline.cpp
+  src/Spline/spline.cpp
+  src/Spline/pose_spline.cpp
+  src/Spline/position_spline.cpp
+  src/Utils/newton_binomial.cpp
+  src/Utils/combination.cpp)
 
-set(SOURCES src/Spline/polynom.cpp src/Spline/smooth_spline.cpp
-  src/Spline/spline.cpp src/Spline/pose_spline.cpp src/Spline/position_spline.cpp
-  src/Utils/newton_binomial.cpp src/Utils/combination.cpp
-  include/bitbots_splines/abstract_engine.h
-  include/bitbots_splines/abstract_stabilizer.h
-  include/bitbots_splines/abstract_ik.h
-  include/bitbots_splines/abstract_visualizer.h
-  include/bitbots_splines/reference_goals.h
-  include/bitbots_splines/dynamic_balancing_goal.h)
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-set(CODE_LIBRARIES)
+ament_target_dependencies(${PROJECT_NAME}
+    ament_cmake
+    bitbots_docs
+    bio_ik
+    rclcpp
+    std_msgs
+    geometry_msgs
+    tf2_geometry_msgs
+    moveit_core
+    moveit_ros_planning
+    Eigen3
+    PkgConfig
+)
 
-add_library(${PROJECT_NAME} ${SOURCES})
-
-target_link_libraries(${PROJECT_NAME} ${LIBS})
-
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME})
+install(DIRECTORY include/
+    DESTINATION include)
 
 install(TARGETS ${PROJECT_NAME}
-  LIBRARY
-  DESTINATION lib)
+  EXPORT ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  INCLUDES DESTINATION include)
 
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(bitbots_docs)
