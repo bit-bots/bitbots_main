@@ -1,4 +1,5 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 import humanoid_league_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 import bitbots_hcm.hcm_dsd.hcm_blackboard
@@ -10,7 +11,7 @@ class WaitForIMUStartup(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WaitForIMUStartup, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         pass
@@ -22,10 +23,10 @@ class WaitForIMU(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WaitForIMU, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        rospy.logwarn_throttle(10, "HCM gets no IMU data. Waiting for IMU to connect.")
+        self.get_logger().warn("HCM gets no IMU data. Waiting for IMU to connect.", throttle_duration_sec=10
 
 
 class WaitForPressureStartup(AbstractActionElement):
@@ -34,10 +35,11 @@ class WaitForPressureStartup(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WaitForPressureStartup, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         pass
+
 
 class WaitForPressure(AbstractActionElement):
     """
@@ -45,15 +47,16 @@ class WaitForPressure(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WaitForPressure, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        rospy.logwarn_throttle(30, "HCM gets no correct pressure data. Waiting for pressure sensors to connect.\n"
-                                   "Use rqt_monitor to check hardware status. "
-                                   "Please check if the pressure sensors are correctly zeroed. If you "
-                                   "have no pressure sensors installed, you may want to set the HCM config "
-                                   "accordingly. If you just running a visualization on your computer you may want to "
-                                   "set the visualization_active parameter to True.")
+        self.blackboard.node.logwarn_throttle(30,
+                                         "HCM gets no correct pressure data. Waiting for pressure sensors to connect.\n"
+                                         "Use rqt_monitor to check hardware status. "
+                                         "Please check if the pressure sensors are correctly zeroed. If you "
+                                         "have no pressure sensors installed, you may want to set the HCM config "
+                                         "accordingly. If you just running a visualization on your computer you may want to "
+                                         "set the visualization_active parameter to True.")
 
 
 class WaitForMotorStartup(AbstractActionElement):
@@ -62,7 +65,7 @@ class WaitForMotorStartup(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WaitForMotorStartup, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         pass
@@ -74,9 +77,9 @@ class WaitForMotors(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WaitForMotors, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        rospy.logwarn_throttle(10,
-                               "HCM gets no data from the motors (/joint_states). Waiting for the motors to "
-                               "connect.")
+        self.blackboard.node.logwarn_throttle(10,
+                                         "HCM gets no data from the motors (/joint_states). Waiting for the motors to "
+                                         "connect.")

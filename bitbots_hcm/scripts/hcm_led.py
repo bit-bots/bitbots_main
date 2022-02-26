@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from std_msgs.msg import ColorRGBA
 from humanoid_league_msgs.msg import RobotControlState
 
 BLINK_DURATION = 0.2
 ERROR_TIMEOUT = 1
 
-rospy.init_node("hcm_led")
+rclpy.init(args=None)
 
-pub = rospy.Publisher("/led1", ColorRGBA, queue_size=1)
+pub = self.create_publisher(ColorRGBA, "/led1", 1)
 
 last_state = -1
 
@@ -83,5 +84,5 @@ def hcm_state_cb(msg: RobotControlState):
     pub.publish(led)
 
 
-sub = rospy.Subscriber("robot_state", RobotControlState, hcm_state_cb, queue_size=1, tcp_nodelay=True)
-rospy.spin()
+sub = self.create_subscription(RobotControlState, "robot_state", hcm_state_cb, 1)
+rclpy.spin(self)

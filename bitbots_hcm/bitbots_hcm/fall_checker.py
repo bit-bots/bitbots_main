@@ -3,8 +3,10 @@ import math
 import numpy
 from functools import reduce
 
+from rclpy.duration import Duration
 from sensor_msgs.msg import Imu
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from sklearn.base import BaseEstimator
 from sklearn.metrics import accuracy_score
@@ -12,21 +14,22 @@ from sklearn.metrics import accuracy_score
 
 class FallChecker(BaseEstimator):
 
-    def __init__(self, thresh_gyro_pitch=None,
+    def __init__(self, node, thresh_gyro_pitch=None,
                  thresh_gyro_roll=None,
                  thresh_orient_pitch=None,
                  thresh_orient_roll=None,
                  smoothing=None):
-        self.thresh_gyro_pitch = rospy.get_param("hcm/falling_thresh_gyro_pitch") \
+        self.node = node
+        self.thresh_gyro_pitch = self.node.get_parameter("falling_thresh_gyro_pitch") \
             if thresh_gyro_pitch is None else thresh_gyro_pitch
-        self.thresh_gyro_roll = rospy.get_param("hcm/falling_thresh_gyro_roll") \
+        self.thresh_gyro_roll = self.node.get_parameter("falling_thresh_gyro_roll") \
             if thresh_gyro_roll is None else thresh_gyro_roll
-        self.thresh_orient_pitch = math.radians(rospy.get_param("hcm/falling_thresh_orient_pitch")) \
+        self.thresh_orient_pitch = math.radians(self.node.get_parameter("falling_thresh_orient_pitch")) \
             if thresh_orient_pitch is None else thresh_orient_pitch
-        self.thresh_orient_roll = math.radians(rospy.get_param("hcm/falling_thresh_orient_roll")) \
+        self.thresh_orient_roll = math.radians(self.node.get_parameter("falling_thresh_orient_roll")) \
             if thresh_orient_roll is None else thresh_orient_roll
 
-        self.smoothing = rospy.get_param("hcm/smooth_threshold") if smoothing is None else smoothing
+        self.smoothing = self.node.get_parameter("smooth_threshold") if smoothing is None else smoothing
         self.smoothing_list = []
         self.counter = 0
         self.last_result = 0
@@ -84,11 +87,11 @@ class FallChecker(BaseEstimator):
 
         # Prune old elements from smoothing history
         self.smoothing_list = list(filter(
-            lambda x: x[0] > rospy.Time.now() - rospy.Duration(self.smoothing),
+            lambda x: x[0] > self.get_clock().now() - Duration(seconds=self.smoothing),
             self.smoothing_list))
 
         # Add the current element
-        self.smoothing_list.append((rospy.Time.now(), result))
+        self.smoothing_list.append((self.get_clock().now(), result))
 
         # List only including the results not the whole tuples
         results_list = list(zip(*self.smoothing_list))[1]
@@ -120,7 +123,7 @@ class FallChecker(BaseEstimator):
 
     def fit(self, x, y):
         # we have to do nothing, as we are not actually fitting any model
-        rospy.logwarn_once("You can not train this type of classifier")
+        self.get_logger().warn("You can not train this type of classifier", once=True)
         pass
 
     def score(self, X, y, sample_weight=None):
@@ -142,19 +145,19 @@ class FallChecker(BaseEstimator):
 
         # Decides which side is facing downwards.
         if fused_pitch > math.radians(45):
-            rospy.loginfo("FALLEN TO THE FRONT")
+            self.get_logger().info("FALLEN TO THE FRONT")
             return self.FRONT
 
         if fused_pitch < math.radians(-45):
-            rospy.loginfo("FALLEN TO THE BACK")
+            self.get_logger().info("FALLEN TO THE BACK")
             return self.BACK
 
         if fused_roll > math.radians(45):
-            rospy.loginfo("FALLEN TO THE RIGHT")
+            self.get_logger().info("FALLEN TO THE RIGHT")
             return self.RIGHT
 
         if fused_roll < math.radians(-45):
-            rospy.loginfo("FALLEN TO THE LEFT")
+            self.get_logger().info("FALLEN TO THE LEFT")
             return self.LEFT
 
         # If no side is facing downwards, the robot is not fallen yet.

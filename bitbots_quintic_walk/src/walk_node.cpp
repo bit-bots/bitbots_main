@@ -239,7 +239,9 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   current_stabilized_response_ = stabilizer_.stabilize(current_response_, rclcpp::Duration::from_nanoseconds(1e9 * dt));
 
   // compute motor goals from IK
+  RCLCPP_FATAL(this->get_logger(), "cal in");
   motor_goals_ = ik_.calculate(current_stabilized_response_);
+  RCLCPP_FATAL(this->get_logger(), "cal out");
 
   // change to joint command message type
   bitbots_msgs::msg::JointCommand command;

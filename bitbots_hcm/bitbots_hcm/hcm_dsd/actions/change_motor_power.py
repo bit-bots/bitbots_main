@@ -1,4 +1,3 @@
-import rospy
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from std_srvs.srv import SetBool
 
@@ -9,16 +8,16 @@ class AbstractChangeMotorPower(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AbstractChangeMotorPower, self).__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters=None)
 
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             # In visualization and simulation, we cannot disable motors
             try:
-                rospy.wait_for_service('/core/switch_power', timeout=10)
+                blackboard.node.wait_for_service('/core/switch_power', timeout=10)
             except:
-                rospy.logwarn("HCM waiting for switch power service")
-            rospy.wait_for_service('/core/switch_power')
-            self.switch_power = rospy.ServiceProxy('/core/switch_power', SetBool)
+                self.get_logger().warn("HCM waiting for switch power service")
+            blackboard.node.wait_for_service('/core/switch_power')
+            self.switch_power = self.create_client(SetBool, '/core/switch_power')
 
     def perform(self, reevaluate=False):
         raise NotImplementedError

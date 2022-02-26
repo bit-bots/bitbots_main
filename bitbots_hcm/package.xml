@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_hcm</name>
   <version>2.4.0</version>
@@ -14,8 +14,7 @@
 
   <license>MIT</license>
 
-
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rospy</depend>
 
@@ -37,5 +36,6 @@
       <language>python3</language>
       <status>tested_integration</status>
     </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

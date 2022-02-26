@@ -1,5 +1,7 @@
-import rospy
-import actionlib
+import rclpy
+from rclpy.duration import Duration
+from rclpy.node import Node
+from rclpy.action import ActionClient
 import humanoid_league_msgs.msg
 import bitbots_msgs.msg
 from actionlib_msgs.msg import GoalStatus
@@ -15,8 +17,7 @@ class AbstractPlayAnimation(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AbstractPlayAnimation, self).__init__(blackboard, dsd, parameters=None)
-
+        super().__init__(blackboard, dsd, parameters=None)
         self.first_perform = True
 
     def perform(self, reevaluate=False):
@@ -32,7 +33,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             sucess = self.start_animation(anim)
             # if we fail, we need to abort this action
             if not sucess:
-                rospy.logerr("Could not start animation. Will abort play animation action!")
+                self.get_logger().error("Could not start animation. Will abort play animation action!")
                 return self.pop()
 
             self.first_perform = False
@@ -55,28 +56,28 @@ class AbstractPlayAnimation(AbstractActionElement):
         :return:
         """
 
-        rospy.loginfo("Playing animation " + anim)
+        self.get_logger().info("Playing animation " + anim)
         if anim is None or anim == "":
-            rospy.logwarn("Tried to play an animation with an empty name!")
+            self.get_logger().warn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))
+            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value)
         if not first_try:
             server_running = False
-            while not server_running and not self.blackboard.shut_down_request and not rospy.is_shutdown():
-                rospy.logerr_throttle(5.0,
+            while not server_running and not self.blackboard.shut_down_request and rclpy.ok():
+                self.blackboard.node.logerr_throttle(5.0,
                                       "Animation Action Server not running! Motion can not work without animation action server. "
                                       "Will now wait until server is accessible!")
-                server_running = self.blackboard.animation_action_client.wait_for_server(rospy.Duration(1))
+                server_running = self.blackboard.animation_action_client.wait_for_server(Duration(seconds=1))
             if server_running:
-                rospy.logwarn("Animation server now running, hcm will go on.")
+                self.get_logger().warn("Animation server now running, hcm will go on.")
             else:
-                rospy.logwarn("Animation server did not start.")
+                self.get_logger().warn("Animation server did not start.")
                 return False
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        self.blackboard.animation_action_client.send_goal(goal)
+        self.blackboard.animation_action_client.send_goal_async(goal)
         return True
 
     def animation_finished(self):
@@ -87,52 +88,52 @@ class AbstractPlayAnimation(AbstractActionElement):
 class PlayAnimationStandUpFront(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.current_state = RobotControlState.GETTING_UP
-        rospy.loginfo("PLAYING STAND UP FRONT ANIMATION")
+        self.get_logger().info("PLAYING STAND UP FRONT ANIMATION")
         return self.blackboard.stand_up_front_animation
 
 
 class PlayAnimationStandUpBack(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.current_state = RobotControlState.GETTING_UP
-        rospy.loginfo("PLAYING STAND UP BACK ANIMATION")
+        self.get_logger().info("PLAYING STAND UP BACK ANIMATION")
         return self.blackboard.stand_up_back_animation
 
 
 class PlayAnimationStandUpLeft(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.current_state = RobotControlState.GETTING_UP
-        rospy.loginfo("PLAYING STAND UP LEFT ANIMATION")
+        self.get_logger().info("PLAYING STAND UP LEFT ANIMATION")
         return self.blackboard.stand_up_left_animation
 
 
 class PlayAnimationStandUpRight(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.current_state = RobotControlState.GETTING_UP
-        rospy.loginfo("PLAYING STAND UP RIGHT ANIMATION")
+        self.get_logger().info("PLAYING STAND UP RIGHT ANIMATION")
         return self.blackboard.stand_up_right_animation
 
 
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING FALLING LEFT ANIMATION")
+        self.get_logger().info("PLAYING FALLING LEFT ANIMATION")
         return self.blackboard.falling_animation_left
 
 
 class PlayAnimationFallingRight(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING FALLING RIGHT ANIMATION")
+        self.get_logger().info("PLAYING FALLING RIGHT ANIMATION")
         return self.blackboard.falling_animation_right
 
 
 class PlayAnimationFallingFront(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING FALLING FRONT ANIMATION")
+        self.get_logger().info("PLAYING FALLING FRONT ANIMATION")
         return self.blackboard.falling_animation_front
 
 
 class PlayAnimationFallingBack(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING FALLING BACK ANIMATION")
+        self.get_logger().info("PLAYING FALLING BACK ANIMATION")
         return self.blackboard.falling_animation_back
 
 
@@ -158,7 +159,7 @@ class PlayAnimationMotorOff(AbstractPlayAnimation):
 
 class PlayAnimationDynup(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(PlayAnimationDynup, self).__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters=None)
         self.direction = parameters.get('direction')
         self.first_perform = True
 
@@ -179,7 +180,7 @@ class PlayAnimationDynup(AbstractActionElement):
             success = self.start_animation()
             # if we fail, we need to abort this action
             if not success:
-                rospy.logerr("Could not start animation. Will abort play animation action!")
+                self.get_logger().error("Could not start animation. Will abort play animation action!")
                 return self.pop()
 
             self.first_perform = False
@@ -198,22 +199,22 @@ class PlayAnimationDynup(AbstractActionElement):
         """
 
         first_try = self.blackboard.dynup_action_client.wait_for_server(
-            rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 1)))
+            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value
         if not first_try:
             server_running = False
-            while not server_running and not self.blackboard.shut_down_request and not rospy.is_shutdown():
-                rospy.logerr_throttle(5.0,
+            while not server_running and not self.blackboard.shut_down_request and rclpy.ok():
+                self.blackboard.node.logerr_throttle(5.0,
                                       "Dynup Action Server not running! Dynup cannot work without dynup server!"
                                       "Will now wait until server is accessible!")
-                server_running = self.blackboard.dynup_action_client.wait_for_server(rospy.Duration(1))
+                server_running = self.blackboard.dynup_action_client.wait_for_server(Duration(seconds=1))
             if server_running:
-                rospy.logwarn("Dynup server now running, hcm will go on.")
+                self.get_logger().warn("Dynup server now running, hcm will go on.")
             else:
-                rospy.logwarn("Dynup server did not start.")
+                self.get_logger().warn("Dynup server did not start.")
                 return False
         goal = bitbots_msgs.msg.DynUpGoal()
         goal.direction = self.direction
-        self.blackboard.dynup_action_client.send_goal(goal)
+        self.blackboard.dynup_action_client.send_goal_async(goal)
         return True
 
     def animation_finished(self):

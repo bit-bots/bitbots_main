@@ -1,19 +1,19 @@
 <launch>
-    <arg name="sim" default="false" doc="Disables some checks for hardware, since we are in simulation."/>
-    <arg name="viz" default="false" doc="Disables all checks for hardware, since we are in visualization."/>
+    <arg name="sim" default="false" description="Disables some checks for hardware, since we are in simulation."/>
+    <arg name="viz" default="false" description="Disables all checks for hardware, since we are in visualization."/>
 
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
-        <arg name="sim" value="$(arg sim)"/>
+    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch">
+        <arg name="sim" value="$(var sim)"/>
     </include>
 
-    <node if="$(arg viz)" name="motor_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" />
+    <node if="$(var viz)" name="motor_helper" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py" />
 
-    <include file="$(find bitbots_animation_server)/launch/animation.launch">
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
     </include>
 
-    <include file="$(find bitbots_hcm)/launch/hcm.launch">
-        <arg name="sim" value="$(arg sim)"/>
-        <arg name="viz" value="$(arg viz)"/>
+    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
     </include>
 
 </launch>
