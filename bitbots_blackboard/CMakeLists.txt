@@ -59,6 +59,6 @@ ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(bitbots_docs)
 ament_export_include_directories(${INCLUDE_DIRS})
 
-
+ament_python_install_package(${PROJECT_NAME})
 
 ament_package()
