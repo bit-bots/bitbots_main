@@ -2,36 +2,36 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <group unless="$(arg sim)">
-        <group unless="$(arg viz)">
-            <include file="$(find bitbots_ros_control)/launch/ros_control.launch" />
+    <group unless="$(var sim)">
+        <group unless="$(var viz)">
+            <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
         </group>
     </group>
 
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" />
+    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" />
 
-    <group if="$(arg viz)">
+    <group if="$(var viz)">
         <param name="visualization_active" value="true" />
         <!-- translate joint goals to joint states -->
-        <node name="motor_goals_viz_helper" pkg="bitbots_bringup" type="motor_goals_viz_helper.py"/>
+        <node name="motor_goals_viz_helper" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py"/>
         <!-- add some visualization tools -->
-        <include file="$(find humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
+        <include file="$(find-pkg-share humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
         <!-- create fake tf from map to robot -->
-        <node name="map_odom" pkg="bitbots_move_base" type="tf_map_odom.py" output="screen" />
+        <node name="map_odom" pkg="bitbots_move_base" exec="tf_map_odom.py" output="screen" />
     </group>
 
-    <group unless="$(arg viz)">
-        <include file="$(find bitbots_vision)/launch/vision_startup.launch" />
-        <include file="$(find humanoid_league_transform)/launch/transformer.launch" />
+    <group unless="$(var viz)">
+        <include file="$(find-pkg-share bitbots_vision)/launch/vision_startup.launch" />
+        <include file="$(find-pkg-share humanoid_league_transform)/launch/transformer.launch" />
     </group>
 
 
     <arg name="depends_only" default="false" />
-    <rosparam command="load" file="$(find bitbots_head_behavior)/config/head_config.yaml"/>
+    <rosparam command="load" file="$(find-pkg-share bitbots_head_behavior)/config/head_config.yaml"/>
 
-    <node name="bio_ik_service" pkg="bio_ik_service" type="bio_ik_service"  output="screen"/>
+    <node name="bio_ik_service" pkg="bio_ik_service" exec="bio_ik_service"  output="screen"/>
 
-    <node unless="$(arg depends_only)" name="head_behavior" pkg="bitbots_head_behavior" type="head_node.py"  output="screen">
+    <node unless="$(var depends_only)" name="head_behavior" pkg="bitbots_head_behavior" exec="head_node.py"  output="screen">
             <remap from="/head_motor_goals" to="/DynamixelController/command"/>
     </node>
 

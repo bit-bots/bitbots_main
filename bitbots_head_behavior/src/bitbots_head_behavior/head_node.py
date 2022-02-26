@@ -5,7 +5,8 @@ and subscribes to head_behavior specific ROS-Topics.
 """
 import os
 
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from bitbots_blackboard.blackboard import HeadBlackboard
 from dynamic_stack_decider.dsd import DSD
@@ -24,8 +25,9 @@ def run(dsd):
 
     :returns: Never
     """
-    rate = rospy.Rate(60)
-    while not rospy.is_shutdown():
+    node = Node("head_node")
+    rate = node.create_rate(60)
+    while rclpy.ok():
         dsd.update()
         rate.sleep()
     # Also stop cpp node
@@ -37,17 +39,18 @@ def init():
     Initialize new components needed for head_behavior:
     blackboard, dsd, rostopic subscriber
     """
-    rospy.init_node('head_behavior')
+    rclpy.init(args=None)
+    node = Node("head_node2")
     # This is a general purpose initialization function provided by moved
     # It is used to correctly initialize roscpp which is used in the collision checker module
     roscpp_init('collision_checker', [])
     blackboard = HeadBlackboard()
 
-    rospy.Subscriber('head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
-    rospy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, blackboard.world_model.ball_filtered_callback)
-    rospy.Subscriber('joint_states', JointState, blackboard.head_capsule.joint_state_callback)
-    blackboard.head_capsule.position_publisher = rospy.Publisher("head_motor_goals", JointCommand, queue_size=10)
-    blackboard.head_capsule.visual_compass_record_trigger = rospy.Publisher(blackboard.config['visual_compass_trigger_topic'], Header, queue_size=5)
+    rclpy.Subscriber('head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
+    rclpy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, blackboard.world_model.ball_filtered_callback)
+    rclpy.Subscriber('joint_states', JointState, blackboard.head_capsule.joint_state_callback)
+    blackboard.head_capsule.position_publisher = self.create_publisher(JointCommand, "head_motor_goals", 10)
+    blackboard.head_capsule.visual_compass_record_trigger = self.create_publisher(Header, blackboard.config['visual_compass_trigger_topic'], 5)
 
     dirname = os.path.dirname(os.path.realpath(__file__))
 
@@ -56,7 +59,7 @@ def init():
     dsd.register_decisions(os.path.join(dirname, 'decisions'))
     dsd.load_behavior(os.path.join(dirname, 'head_behavior.dsd'))
 
-    rospy.logdebug("Head Behavior completely loaded")
+    node.get_logger().debug("Head Behavior completely loaded")
     return dsd
 
 

@@ -1,4 +1,6 @@
-import rospy
+import rclpy
+from rclpy.duration import Duration
+from rclpy.node import Node
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
@@ -11,7 +13,7 @@ class PostSeen(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(PostSeen, self).__init__(blackboard, dsd, parameters)
-        self.post_lost_time = rospy.Duration.from_sec(self.blackboard.config['post_lost_time'])
+        self.post_lost_time = rclpy.Duration.from_sec(self.blackboard.config['post_lost_time'])
 
     def perform(self, reevaluate=False):
         """
@@ -21,7 +23,7 @@ class PostSeen(AbstractDecisionElement):
         :param reevaluate: Has no effect
         """
 
-        if rospy.Time.now() - self.blackboard.world_model.goal_last_seen() < self.post_lost_time:
+        if self.get_clock().now() - self.blackboard.world_model.goal_last_seen() < self.post_lost_time:
             return 'YES'
         return 'NO'
 

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_head_behavior</name>
   <version>1.1.0</version>
@@ -11,7 +11,7 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>rospy</exec_depend>
 
@@ -22,10 +22,11 @@
   <exec_depend>bio_ik_service</exec_depend>
 
   <export>
-    <rosdoc config="rosdoc.yaml"/>
+    <rosdoc config="rosdoc.yaml" />
     <bitbots_documentation>
       <status>tested_integration</status>
       <language>python2</language>
     </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

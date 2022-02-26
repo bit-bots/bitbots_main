@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import print_function
-import rospy
+import rclpy
+from rcply.duration import Duration
+from rclpy.node import Node
 import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from bio_ik_msgs.srv import GetIK
@@ -10,14 +12,14 @@ from time import sleep
 from tf2_geometry_msgs import PointStamped
 
 if __name__ == "__main__":
-    rospy.init_node('test_look_at')
-
-    base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
-    camera_frame = rospy.get_param('~camera_frame', 'camera')
-    base_link_frame = rospy.get_param('~base_link_frame', 'base_link')
+    rclpy.init(args=None)
+    node = Node("test_look_at")
+    base_footprint_frame = node.get_parameter('~base_footprint_frame').get_parameter_value().double_value
+    camera_frame = node.get_parameter('~camera_frame').get_parameter_value().double_value
+    base_link_frame = node.get_parameter('~base_link_frame').get_parameter_value().double_value
 
     head_tf_frame = base_link_frame
-    tf_buffer = tf2.Buffer(rospy.Duration(5))
+    tf_buffer = tf2.Buffer(Duration(seconds=5))
     tf_listener = tf2.TransformListener(tf_buffer)
 
     request = IKRequest()
@@ -36,23 +38,23 @@ if __name__ == "__main__":
     pos_msg.accelerations = [-1, -1]
     pos_msg.max_currents = [-1, -1]
 
-    rospy.wait_for_service("bio_ik/get_bio_ik")
-    bio_ik = rospy.ServiceProxy('bio_ik/get_bio_ik', GetIK)
+    rclpy.wait_for_service("bio_ik/get_bio_ik")
+    bio_ik = node.create_client(GetIK, 'bio_ik/get_bio_ik')
 
-    publish_motor_goals = rospy.Publisher('head_motor_goals', JointCommand, queue_size=10)
+    publish_motor_goals = node.create_publisher(JointCommand, 'head_motor_goals', 10)
 
-    while not rospy.is_shutdown():
+    while rclpy.ok():
         x = float(input('x: '))
         y = float(input('y: '))
         point = PointStamped()
-        point.header.stamp = rospy.Time.now()
+        point.header.stamp = node.get_clock().now()
         point.header.frame_id = base_footprint_frame
         point.point.x = x
         point.point.y = y
         point.point.z = 0
 
         ###### Movement ######
-        point = tf_buffer.transform(point, head_tf_frame, timeout=rospy.Duration(0.3)).point
+        point = tf_buffer.transform(point, head_tf_frame, timeout=Duration(seconds=0.3)).point
         target = Point(point.x, point.y, point.z)
         request.look_at_goals[0].target = target
         response = bio_ik(request).ik_response
@@ -62,7 +64,7 @@ if __name__ == "__main__":
 
         print("Motor positions {}, {}".format(head_pan, head_tilt))
         pos_msg.positions = [head_pan, head_tilt]
-        pos_msg.header.stamp = rospy.Time.now()
+        pos_msg.header.stamp = node.get_clock().now()
         publish_motor_goals.publish(pos_msg)
 
         # Sleep 1 to wait for head being at its position
@@ -72,15 +74,15 @@ if __name__ == "__main__":
         # Reverse read position where the robot is looking at
         # Get line of camera
         camera_origin = PointStamped()
-        camera_origin.header.stamp = rospy.Time.now()
+        camera_origin.header.stamp = node.get_clock().now()
         camera_origin.header.frame_id = camera_frame
         camera_origin.point = Point(0, 0, 0)
         camera_one = PointStamped()
-        camera_one.header.stamp = rospy.Time.now()
+        camera_one.header.stamp = node.get_clock().now()
         camera_one.header.frame_id = camera_frame
         camera_one.point = Point(1, 0, 0)
-        camera_origin_bf = tf_buffer.transform(camera_origin, base_footprint_frame, timeout=rospy.Duration(0.3)).point
-        camera_one_bf = tf_buffer.transform(camera_one, base_footprint_frame, timeout=rospy.Duration(0.3)).point
+        camera_origin_bf = tf_buffer.transform(camera_origin, base_footprint_frame, timeout=Duration(seconds=0.3)).point
+        camera_one_bf = tf_buffer.transform(camera_one, base_footprint_frame, timeout=Duration(seconds=0.3)).point
         line_vector = Point(camera_one_bf.x - camera_origin_bf.x,
                             camera_one_bf.y - camera_origin_bf.y,
                             camera_one_bf.z - camera_origin_bf.z)

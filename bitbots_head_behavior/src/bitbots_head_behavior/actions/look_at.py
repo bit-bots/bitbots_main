@@ -1,6 +1,8 @@
 import math
 
-import rospy
+import rclpy
+from rclpy.node import Node
+from rclpy.duration import Duration
 import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
 from geometry_msgs.msg import PointStamped, Point
@@ -13,8 +15,8 @@ class AbstractLookAt(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
-        self.head_tf_frame = rospy.get_param('~base_link_frame', 'base_link')  # base_link is required by bio_ik
-        self.camera_frame = rospy.get_param('~camera_frame', 'camera')
+        self.head_tf_frame = self.blackboard.node.get_parameter('~base_link_frame').get_parameter_value().string_value  # base_link is required by bio_ik
+        self.camera_frame = self.blackboard.node.get_parameter('~camera_frame').get_parameter_value().string_value
         self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
@@ -54,15 +56,15 @@ class AbstractLookAt(AbstractActionElement):
         """
         # transform the points reference frame to be the head
         try:
-            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
+            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
         except tf2.LookupException as e:
-            rospy.logwarn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
+            self.get_logger().warn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return
         except tf2.ConnectivityException as e:
-            rospy.logwarn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
+            self.get_logger().warn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
             return
         except tf2.ExtrapolationException as e:
-            rospy.logwarn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
+            self.get_logger().warn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)

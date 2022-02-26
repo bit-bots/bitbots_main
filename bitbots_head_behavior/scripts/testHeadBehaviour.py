@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import BallInImage, BallInImageArray
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
 def run():
-    pub_ball = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
-    pub_hmg = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=1)
+    node = Node("testHeadBehaviour")
+    pub_ball = node.create_publisher(BallInImage, "ball_in_image", 1)
+    pub_hmg = node.create_publisher(JointTrajectory, "head_motor_goals", 1)
 
     hmg = JointTrajectory()
     goal = JointTrajectoryPoint()
@@ -20,13 +22,13 @@ def run():
     counter = 320
     direction = 1
 
-    rospy.loginfo("Create Test")
-    rospy.init_node("bitbots_testHeadBehaviour")
+    node.get_logger().info("Create Test")
+    rclpy.init(args=None)
     pub_hmg.publish(hmg)
 
-    rate = rospy.Rate(4)
-    rospy.logdebug("Laeuft...")
-    while not rospy.is_shutdown():
+    rate = node.create_rate(4)
+    node.get_logger().debug("Laeuft...")
+    while rclpy.ok():
         # Ball in Image
         ball = BallInImage()
         ball.center.x = counter
@@ -42,7 +44,7 @@ def run():
         balls.candidates.append(ball)
 
         pub_ball.publish(balls)
-        rospy.loginfo("Published ball: %s" % counter)
+        node.get_logger().info("Published ball: %s" % counter)
         rate.sleep()
 
 if __name__ == "__main__":

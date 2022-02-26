@@ -1,5 +1,7 @@
 import math
-import rospy
+import rclpy
+from rclpy.node import Node
+from rclpy.duration import Duration
 import tf2_ros as tf2
 from geometry_msgs.msg import PointStamped
 
@@ -19,7 +21,7 @@ class SearchRecentBall(AbstractLookAt):
         self._pan_speed = self._config['pan_speed']
         self._tilt_speed = self._config['tilt_speed']
 
-        self._ball_time_out = rospy.Duration.from_sec(self._config['ball_search_time'])
+        self._ball_time_out = rclpy.Duration.from_sec(self._config['ball_search_time'])
 
         self._offset_pattern = self._config['offset_pattern']
 
@@ -47,15 +49,15 @@ class SearchRecentBall(AbstractLookAt):
 
         # Transform the points reference frame to be the head
         try:
-            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=rospy.Duration(0.9))
+            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
         except tf2.LookupException as e:
-            rospy.logwarn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
+            self.get_logger().warn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return
         except tf2.ConnectivityException as e:
-            rospy.logwarn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
+            self.get_logger().warn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
             return
         except tf2.ExtrapolationException as e:
-            rospy.logwarn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
+            self.get_logger().warn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
             return
 
         motor_goals = self.get_motor_goals_from_point(point.point)
@@ -74,12 +76,12 @@ class SearchRecentBall(AbstractLookAt):
 
         # Check if a ball exists
         if self._recent_ball_motor_goals is None:
-            rospy.loginfo("No ball seen. So we are not able to search for it.", logger_name="search_recent_ball")
+            self.get_logger().info("No ball seen. So we are not able to search for it.", logger_name="search_recent_ball")
             return self.pop()
 
         # Check if the ball is too old
-        if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() > self._ball_time_out and self.first_perform:
-            rospy.loginfo("Ball is too old to search for it. Let's forget it.", logger_name="search_recent_ball")
+        if self.get_clock().now() - self.blackboard.world_model.ball_last_seen() > self._ball_time_out and self.first_perform:
+            self.get_logger().info("Ball is too old to search for it. Let's forget it.", logger_name="search_recent_ball")
             return self.pop()
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()

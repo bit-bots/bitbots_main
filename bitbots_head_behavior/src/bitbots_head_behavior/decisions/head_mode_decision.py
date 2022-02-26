@@ -1,4 +1,5 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import HeadMode
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
@@ -61,7 +62,7 @@ class HeadModeDecision(AbstractDecisionElement):
         elif head_mode == HeadMode.LOOK_FRONT:
             return 'LOOK_FRONT'
         else:
-            rospy.logerr('the set head_mode ({}) is not known'.format(head_mode))
+            self.get_logger().error('the set head_mode ({}) is not known'.format(head_mode))
 
     def get_reevaluate(self):
         """
