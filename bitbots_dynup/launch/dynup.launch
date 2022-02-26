@@ -1,22 +1,22 @@
 <launch>
-    <arg name="tf_prefix" value="$(eval optenv('ROS_NAMESPACE') + '/' if optenv('ROS_NAMESPACE') !=  '' else '')"/>
+    <arg name="tf_prefix" value="$(eval env('ROS_NAMESPACE') + '/' if env('ROS_NAMESPACE') !=  '' else '')"/>
     <arg name="sim" default="false"/>
 
-      <group unless="$(arg sim)">
-            <rosparam file="$(find bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
+      <group unless="$(var sim)">
+            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
       </group>
-      <group if="$(arg sim)">
-            <rosparam file="$(find bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
+      <group if="$(var sim)">
+            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
       </group>
 
-    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
-    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+    <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+    <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-  <node pkg="bitbots_dynup" name="dynup" type="DynupNode" output="screen" launch-prefix="$(arg taskset)">
-    <param name="base_link_frame" value="$(arg tf_prefix)base_link"/>
-    <param name="r_sole_frame" value="$(arg tf_prefix)r_sole"/>
-    <param name="l_sole_frame" value="$(arg tf_prefix)l_sole"/>
-    <param name="r_wrist_frame" value="$(arg tf_prefix)r_wrist"/>
-    <param name="l_wrist_frame" value="$(arg tf_prefix)l_wrist"/>
+  <node pkg="bitbots_dynup" name="dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+    <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+    <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+    <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+    <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+    <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
   </node>
 </launch>

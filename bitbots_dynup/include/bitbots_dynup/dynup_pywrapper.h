@@ -1,15 +1,18 @@
-#ifndef BITBOTS_META_DYNUP_PYWRAPPER_H
-#define BITBOTS_META_DYNUP_PYWRAPPER_H
+#ifndef BITBOTS_DYNUP_BITBOTS_DYNUP_SRC_DYNUP_PYWRAPPER_H
+#define BITBOTS_DYNUP_BITBOTS_DYNUP_SRC_DYNUP_PYWRAPPER_H
 
-#include <Python.h>
 #include "bitbots_dynup/dynup_node.h"
-#include <boost/python.hpp>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <map>
 #include <iostream>
-#include <moveit/py_bindings_tools/serialize_msg.h>
-#include <bitbots_dynup/DynUpConfig.h>
 #include "bitbots_dynup/dynup_utils.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <ros2_python_extension/init.hpp>
+#include <ros2_python_extension/serialization.hpp>
+
+namespace py = pybind11;
+using namespace ros2_python_extension;
 
 class PyDynupWrapper {
 public:
@@ -29,5 +32,5 @@ private:
     std::shared_ptr<bitbots_dynup::DynupNode> dynup_node_;
 };
 
-#endif //BITBOTS_META_DYNUP_PYWRAPPER_H
+#endif //BITBOTS_DYNUP_BITBOTS_DYNUP_SRC_DYNUP_PYWRAPPER_H
 

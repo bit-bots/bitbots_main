@@ -35,25 +35,25 @@ PyDynupWrapper::PyDynupWrapper(const std::string ns) : dynup_node_(std::make_sha
 void init_ros(std::string ns) {
     // remap clock
     std::map<std::string, std::string> remap = {{"/clock", "/" + ns + "clock"}};
-    ros::init(remap, "dynup", ros::init_options::AnonymousName);
+    rclcpp::init(remap, "dynup", rclcpp::init_options::AnonymousName);
 }
 
 void spin_once() {
-    ros::spinOnce();
+    rclcpp::spin_some(this->get_node_base_interface());
 }
 
 moveit::py_bindings_tools::ByteString PyDynupWrapper::step(double dt,
                                                           const std::string &imu_msg,
                                                           const std::string &jointstate_msg) {
     std::string result =
-            to_python<bitbots_msgs::JointCommand>(dynup_node_->step(dt,
-                                                          from_python<sensor_msgs::Imu>(imu_msg),
-                                                          from_python<sensor_msgs::JointState>(jointstate_msg)));
+            to_python<bitbots_msgs::msg::JointCommand>(dynup_node_->step(dt,
+                                                          from_python<sensor_msgs::msg::Imu>(imu_msg),
+                                                          from_python<sensor_msgs::msg::JointState>(jointstate_msg)));
     return moveit::py_bindings_tools::serializeMsg(result);
 }
 
 moveit::py_bindings_tools::ByteString PyDynupWrapper::step_open_loop(double dt) {
-    std::string result = to_python<geometry_msgs::PoseArray>(dynup_node_->step_open_loop(dt));
+    std::string result = to_python<geometry_msgs::msg::PoseArray>(dynup_node_->step_open_loop(dt));
     return moveit::py_bindings_tools::serializeMsg(result);
 }
 

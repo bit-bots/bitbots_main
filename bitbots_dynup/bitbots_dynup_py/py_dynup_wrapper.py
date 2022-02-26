@@ -1,6 +1,7 @@
 from io import BytesIO
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from std_msgs.msg import Int64
 
 from bitbots_dynup.py_dynup import PyDynupWrapper, init_ros, spin_once
@@ -76,7 +77,7 @@ class PyDynup(object):
         return result
 
     def set_node_dyn_reconf(self, param_dict):
-        rospy.logerr("python params", param_dict)
+        self.get_logger().error("python params", param_dict)
         self.py_dynup_wrapper.set_node_dyn_reconf(param_dict)
 
     def get_direction(self):

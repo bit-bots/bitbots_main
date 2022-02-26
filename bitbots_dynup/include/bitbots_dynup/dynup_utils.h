@@ -15,10 +15,10 @@ struct DynupResponse {
 struct DynupRequest {
   /* Whether the robot should stand up from the front, back or from squad */
   std::string direction;
-  geometry_msgs::Pose l_foot_pose; //relative to r_foot_pose
-  geometry_msgs::Pose r_foot_pose;
-  geometry_msgs::Pose l_hand_pose;
-  geometry_msgs::Pose r_hand_pose;
+  geometry_msgs::msg::Pose l_foot_pose; //relative to r_foot_pose
+  geometry_msgs::msg::Pose r_foot_pose;
+  geometry_msgs::msg::Pose l_hand_pose;
+  geometry_msgs::msg::Pose r_hand_pose;
 };
 
 #endif //BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_UTILS_H_

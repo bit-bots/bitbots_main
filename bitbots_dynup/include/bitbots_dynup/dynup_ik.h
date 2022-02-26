@@ -3,7 +3,7 @@
 
 #include <bitbots_splines/abstract_ik.h>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "dynup_utils.h"
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/robot_state.h>
@@ -15,17 +15,17 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   bitbots_splines::JointGoals calculate(const DynupResponse &ik_goals) override;
   void reset() override;
   void useStabilizing(bool use);
-  void setCurrentJointStates(sensor_msgs::JointState jointStates);
+  void setCurrentJointStates(sensor_msgs::msg::JointState jointStates);
   void setDirection(std::string direction);
 
  private:
-  sensor_msgs::JointState current_joint_states_;
+  sensor_msgs::msg::JointState current_joint_states_;
   moveit::core::JointModelGroup *all_joints_group_;
   moveit::core::JointModelGroup *l_arm_joints_group_;
   moveit::core::JointModelGroup *l_leg_joints_group_;
   moveit::core::JointModelGroup *r_arm_joints_group_;
   moveit::core::JointModelGroup *r_leg_joints_group_;
-  robot_state::RobotStatePtr goal_state_;
+  moveit::core::RobotStatePtr goal_state_;
   bool use_stabilizing_;
   bool use_minimal_displacement_;
   std::string direction_;

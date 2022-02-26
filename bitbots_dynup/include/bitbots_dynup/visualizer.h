@@ -2,11 +2,11 @@
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 
 #include <string>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <rclcpp/rclcpp.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <tf2/LinearMath/Vector3.h>
 #include <bitbots_splines/abstract_visualizer.h>
 
@@ -23,11 +23,11 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void setParams(VisualizationParams params);
 
-  void displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame);
+  void displaySplines(bitbots_splines::msg::PoseSpline splines, const std::string &frame);
 
  private:
-  ros::NodeHandle node_handle_;
-  ros::Publisher spline_publisher_;
+  
+  rclcpp::Publisher spline_publisher_;
   std::string base_topic_;
   const std::string marker_ns_ = "bitbots_dynup";
   VisualizationParams params_;
@@ -35,3 +35,4 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 }
 
 #endif //BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
+ER_H_
