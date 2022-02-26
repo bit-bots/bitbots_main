@@ -14,6 +14,7 @@ if(BUILD_TESTING)
 endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Buttons.msg"
   "msg/ColorLookupTable.msg"
   "msg/Config.msg"
   "msg/Cpu.msg"
