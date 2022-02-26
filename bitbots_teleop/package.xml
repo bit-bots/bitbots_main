@@ -24,7 +24,7 @@
       <language>python2</language>
       <status>tested_robot</status>
     </bitbots_documentation>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
