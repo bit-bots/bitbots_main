@@ -10,6 +10,8 @@ find_package(bitbots_docs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+
 
 find_package(Protobuf REQUIRED)
 
@@ -23,8 +25,6 @@ add_custom_command(TARGET humanoid_league_team_communication
 
 enable_bitbots_docs()
 
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 ament_python_install_package(${PROJECT_NAME})
 
