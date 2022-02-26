@@ -1,6 +1,5 @@
-buttons:
-  manual_penalty: True
-  in_game: True
-  speak_active: True
-  short_time: 2 #[s]
-  debounce_time: 0.1 #[s]
+manual_penalty: True
+in_game: True
+speak_active: True
+short_time: 2 #[s]
+debounce_time: 0.1 #[s]
