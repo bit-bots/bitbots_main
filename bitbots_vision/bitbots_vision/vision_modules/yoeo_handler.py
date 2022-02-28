@@ -3,7 +3,7 @@ from .candidate import CandidateFinder, Candidate
 from abc import ABC, abstractmethod
 from collections import defaultdict
 import cv2
-from numpy import where, moveaxis
+from numpy import where, moveaxis, array, ubyte
 from os.path import join
 from rclpy import logging
 from typing import List, Union, Dict, Any
@@ -140,7 +140,7 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
     def _set_segmentations(self, segmentation: Any) -> None:
         for i, class_name in enumerate(self._seg_class_names):
-            seg = where(segmentation == i, 1, 0)
+            seg = where(segmentation == i, array(1, dtype=ubyte), array(0, dtype=ubyte))
             self._seg_candidates[class_name] = moveaxis(seg, 0, -1)
 
 
