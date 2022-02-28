@@ -1,4 +1,4 @@
-from candidate import CandidateFinder, Candidate
+from .candidate import CandidateFinder, Candidate
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -19,19 +19,26 @@ except ImportError:
 
 class YOEOHandlerTemplate(ABC):
     def __init__(self, config: Dict, model_path: str):
-        self._use_caching = config['caching']
+        self._use_caching: Union[None, bool] = None
 
         self._image = None  # : Union[None, numpy.ndarray]
-        self._iou_non_max_suppression_thresh: float = config['yoeo_nms_threshold']
+        self._iou_non_max_suppression_thresh: Union[None, float] = None
 
         self._det_candidates: Dict = defaultdict(list)
         self._det_class_names: Union[None, List[str]] = None
-        self._det_confidence_thresh: float = config['yoeo_conf_threshold']
+        self._det_confidence_thresh: Union[None, float] = None
+
+        self.set_config(config)
 
         self._seg_candidates: Dict = dict()
         self._seg_class_names: Union[None, List[str]] = None
 
         self._load_candidate_class_names(model_path)
+
+    def set_config(self, config: Dict) -> None:
+        self._use_caching = config['caching']
+        self._iou_non_max_suppression_thresh = config['yoeo_nms_threshold']
+        self._det_confidence_thresh = config['yoeo_conf_threshold']
 
     def _load_candidate_class_names(self, model_path: str) -> None:
         path = join(model_path, "yoeo_names.yaml")
@@ -216,6 +223,13 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate):
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
         return self._yoeo_handler.get_segmentation_for("field")
+
+    def get_mask_image(self):
+        """
+        Used by FieldBoundaryDetector Class
+        :rtype: numpy.ndarray(shape=(height, width, 1))
+        """
+        return self.get_mask()
 
 
 class YOEOLineSegmentation(YOEOSegmentationTemplate):
