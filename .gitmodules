@@ -97,3 +97,6 @@
 [submodule "lib/orocos_kinematics_dynamics"]
 	path = lib/orocos_kinematics_dynamics
 	url = ../../mjbogusz/orocos_kinematics_dynamics.git
+[submodule "lib/imu_tools"]
+	path = lib/imu_tools
+	url = https://github.com/ccny-ros-pkg/imu_tools.git
