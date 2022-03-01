@@ -17,6 +17,9 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(fmt REQUIRED)
+find_package(fp REQUIRED)
+find_package(range-v3 REQUIRED)
 
 set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})
@@ -47,6 +50,9 @@ ament_target_dependencies(${PROJECT_NAME}
     moveit_ros_planning
     Eigen3
     PkgConfig
+    fmt
+    fp
+    range-v3
 )
 
 install(DIRECTORY include/
