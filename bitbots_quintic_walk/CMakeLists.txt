@@ -27,6 +27,9 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(fmt REQUIRED)
+find_package(fp REQUIRED)
+find_package(range-v3 REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
@@ -37,7 +40,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/WalkEngineDebug.msg"
         DEPENDENCIES
         std_msgs
-        geometry_msgs)
+        geometry_msgs
+        Python3)
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
@@ -70,7 +74,10 @@ ament_target_dependencies(WalkNode
         tf2_eigen
         tf2_geometry_msgs
         tf2_ros
-        Eigen3)
+        Eigen3
+        fmt
+        fp
+        range-v3)
 
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -100,7 +107,10 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         tf2
         tf2_eigen
         tf2_geometry_msgs
-        tf2_ros)
+        tf2_ros
+        fmt
+        fp
+        range-v3)
 
 target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 
