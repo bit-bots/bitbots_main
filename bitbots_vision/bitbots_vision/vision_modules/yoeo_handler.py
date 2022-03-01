@@ -71,7 +71,7 @@ class YOEOHandlerTemplate(ABC):
             self._compute_new_prediction()
 
     def _prediction_has_to_be_updated(self) -> bool:
-        return not (self._det_candidates and self._seg_candidates and self._use_caching)
+        return not self._use_caching or not (self._seg_candidates or self._det_candidates)
 
     def get_classes(self) -> List[str]:
         """
