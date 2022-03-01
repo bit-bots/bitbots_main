@@ -36,6 +36,7 @@ class YOEOHandlerTemplate(ABC):
         self._load_candidate_class_names(model_path)
 
     def set_config(self, config: Dict) -> None:
+        logger.info(f"Caching {config['caching']}")
         self._use_caching = config['caching']
         self._iou_non_max_suppression_thresh = config['yoeo_nms_threshold']
         self._det_confidence_thresh = config['yoeo_conf_threshold']
@@ -52,11 +53,11 @@ class YOEOHandlerTemplate(ABC):
         self._det_class_names = class_names['detection']
         self._seg_class_names = class_names['segmentation']
 
-    def get_candidates(self, class_name: str) -> List[Candidate]:
-        """
-        To comply with YoloHandler interface
-        """
-        return self.get_detection_candidates_for(class_name)
+    # def get_candidates(self, class_name: str) -> List[Candidate]:
+    #     """
+    #     To comply with YoloHandler interface
+    #     """
+    #     return self.get_detection_candidates_for(class_name)
 
     def get_detection_candidates_for(self, class_name: str) -> List[Candidate]:
         assert class_name in self._det_class_names, \
@@ -64,20 +65,22 @@ class YOEOHandlerTemplate(ABC):
 
         self.predict()
 
-        return self._det_candidates[class_name]
+        return self._det_candidates[class_name]  # what happens on empty, i.e. class name not in det_candidates?
 
     def predict(self) -> None:
+        logger.info("Predict called")
         if self._prediction_has_to_be_updated():
+            logger.info("Prediction has to be updated")
             self._compute_new_prediction()
 
     def _prediction_has_to_be_updated(self) -> bool:
         return not self._use_caching or not (self._seg_candidates or self._det_candidates)
 
-    def get_classes(self) -> List[str]:
-        """
-        To comply with YoloHandler interface
-        """
-        return self.get_detection_candidate_class_names()
+    # def get_classes(self) -> List[str]:
+    #     """
+    #     To comply with YoloHandler interface
+    #     """
+    #     return self.get_detection_candidate_class_names()
 
     def get_detection_candidate_class_names(self) -> List[str]:
         return self._det_class_names
@@ -92,7 +95,7 @@ class YOEOHandlerTemplate(ABC):
         assert class_name in self._seg_class_names, \
             f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
 
-        self.predict()
+        self.predict()  # trigger
 
         return self._seg_candidates[class_name]
 
@@ -119,19 +122,45 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
     def __init__(self, config, model_path):
         super().__init__(config, model_path)
-
         weights_path = join(model_path, "yoeo.pth")
         config_path = join(model_path, "yoeo.cfg")
 
         self._model = torch_models.load_model(config_path, weights_path)
 
     def _compute_new_prediction(self) -> None:
+        preprocessed_imge = self._preprocess_image()
+        logger.info(str(self._image.shape))
         detections, segmentation = torch_detect.detect_image(self._model,
-                                                             cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB),
+                                                             cv2.cvtColor(preprocessed_imge, cv2.COLOR_BGR2RGB),
+                                                             img_size=preprocessed_imge.shape[0],
                                                              conf_thres=self._det_confidence_thresh,
                                                              nms_thres=self._iou_non_max_suppression_thresh)
         self._set_detection_candidates(detections)
         self._set_segmentations(segmentation)
+
+    def _preprocess_image(self):
+        self._determine_max_image_dimension()
+        self._calculate_horizontal_padding()
+        self._calculate_vertical_padding()
+        return self._pad_image()
+
+    def _determine_max_image_dimension(self) -> None:
+        self._max_image_dimension = max(*self._image.shape[0:2])
+
+    def _calculate_horizontal_padding(self) -> None:
+        self._horizontal_padding = (self._max_image_dimension - self._image.shape[1]) // 2
+
+    def _calculate_vertical_padding(self) -> None:
+        self._vertical_padding = (self._max_image_dimension - self._image.shape[0]) // 2
+
+    def _pad_image(self):
+        return cv2.copyMakeBorder(self._image,
+                                  self._vertical_padding,
+                                  self._vertical_padding,
+                                  self._horizontal_padding,
+                                  self._horizontal_padding,
+                                  cv2.BORDER_CONSTANT,
+                                  value=0)
 
     def _set_detection_candidates(self, detections: Any) -> None:
         for detection in detections:
@@ -139,9 +168,17 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
             self._det_candidates[self._det_class_names[int(detection[5])]].append(c)
 
     def _set_segmentations(self, segmentation: Any) -> None:
+        segmentation = self._postprocess_segmentations(segmentation)
         for i, class_name in enumerate(self._seg_class_names):
             seg = where(segmentation == i, array(1, dtype=ubyte), array(0, dtype=ubyte))
-            self._seg_candidates[class_name] = moveaxis(seg, 0, -1)
+            self._seg_candidates[class_name] = seg
+
+    def _postprocess_segmentations(self, segmentation: Any):
+        segmentation = moveaxis(segmentation, 0, -1)
+        segmentation = segmentation[self._vertical_padding:(self._max_image_dimension - self._vertical_padding),
+                                    self._horizontal_padding:(self._max_image_dimension - self._horizontal_padding),
+                                    ...]
+        return segmentation
 
 
 class YOEODetectorTemplate(CandidateFinder):
@@ -188,7 +225,7 @@ class YOEORobotDetector(YOEODetectorTemplate):
 class YOEOSegmentationTemplate(ABC):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         self._yoeo_handler = yoeo_handler
-        
+
     def set_image(self, image) -> None:
         self._yoeo_handler.set_image(image)
 
