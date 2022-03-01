@@ -200,16 +200,16 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
 
   char current_support_state = bitbots_msgs::msg::SupportState::DOUBLE;
 
+  // this is a hack due to an error in message filter library https://github.com/ros2/message_filters/issues/32
+  rclcpp::Time hack_time = rclcpp::Time(fused_time_.seconds(), fused_time_.nanoseconds());
   bitbots_msgs::msg::SupportState::ConstSharedPtr
-      current_support_state_msg = support_state_cache_.getElemBeforeTime(fused_time_);
+      current_support_state_msg = support_state_cache_.getElemBeforeTime(hack_time);
 
   if (current_support_state_msg) {
     current_support_state = current_support_state_msg->state;
   }
-
   // Wait for the forward kinematics of both legs (simplified by transforming from one to the other) to be avalible for the current fusing operation
   tf_buffer_->canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
-
   // otherwise point of rotation is current support foot sole or center point of the soles if double support
   if (current_support_state == bitbots_msgs::msg::SupportState::RIGHT
       || current_support_state == bitbots_msgs::msg::SupportState::LEFT) {
