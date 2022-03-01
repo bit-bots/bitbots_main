@@ -167,7 +167,6 @@ class TeleopKeyboard(Node):
 
         # Head Part
         self.create_subscription(JointState, "joint_states", self.joint_state_cb, 1)
-        self.declare_parameter("use_sim_time", False)
         if self.get_parameter("use_sim_time").get_parameter_value().bool_value:
             self.head_pub = self.create_publisher(JointCommand, "head_motor_goals", 1)
         else:
