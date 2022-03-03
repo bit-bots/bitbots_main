@@ -24,13 +24,13 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : Node("convenience
   this->get_parameter("general_post_frame", general_post_frame_);
 
   got_support_foot_ = false;
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walking_support_foot_subscriber =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
+  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walking_support_foot_subscriber =
+      this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
                                                                  1,
                                                                  std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
                                                                            this, _1));
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr dynamic_kick_support_foot_subscriber =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
+  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr dynamic_kick_support_foot_subscriber =
+      this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
                                                                            this, _1));
@@ -173,9 +173,9 @@ void ConvenienceFramesBroadcaster::loop() {
   }
 }
 
-void ConvenienceFramesBroadcaster::supportFootCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg) {
+void ConvenienceFramesBroadcaster::supportFootCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
   got_support_foot_ = true;
-  is_left_support = (msg->state == bitbots_msgs::msg::SupportState::LEFT);
+  is_left_support = (msg->phase == biped_interfaces::msg::Phase::LEFT_STANCE);
 }
 
 void ConvenienceFramesBroadcaster::ballsCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg) {

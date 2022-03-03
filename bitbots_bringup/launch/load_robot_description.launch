@@ -21,9 +21,10 @@
     </group>
 
     <group>
-        <include file="$(find-pkg-share humanoid_base_footprint)/launch/base_footprint.launch">
-          <arg name="sim" value="$(var sim)"/>
-        </include>
+        <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
+          <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+          <param name="use_sim_time" value="$(var sim)"/>
+        </node>
         <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch">
           <arg name="sim" value="$(var sim)"/>
         </include>

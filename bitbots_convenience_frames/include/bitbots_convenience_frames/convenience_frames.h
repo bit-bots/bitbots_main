@@ -7,7 +7,7 @@
 #include <tf2/utils.h>
 #include <humanoid_league_msgs/msg/pose_with_certainty.hpp>
 #include <humanoid_league_msgs/msg/pose_with_certainty_array.hpp>
-#include <bitbots_msgs/msg/support_state.hpp>
+#include <biped_interfaces/msg/phase.hpp>
 
 #include <utility>
 using std::placeholders::_1;
@@ -28,7 +28,7 @@ class ConvenienceFramesBroadcaster : public rclcpp::Node {
   bool is_left_support{false};
   bool got_support_foot_{false};
   void publishTransform(std::string header_frame_id, std::string child_frame_id, double x, double y, double z);
-  void supportFootCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg);
+  void supportFootCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void ballsCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg);
   void goalCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg);
   void goalPostsCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg);
