@@ -23,7 +23,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/JointCommand.msg"
   "msg/JointTorque.msg"
   "msg/NetworkInterface.msg"
-  "msg/SupportState.msg"
   "msg/Workload.msg"
   "srv/AccelerometerCalibration.srv"
   "srv/ComplementaryFilterParams.srv"
