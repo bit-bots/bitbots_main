@@ -53,19 +53,13 @@ class YOEOHandlerTemplate(ABC):
         self._det_class_names = class_names['detection']
         self._seg_class_names = class_names['segmentation']
 
-    # def get_candidates(self, class_name: str) -> List[Candidate]:
-    #     """
-    #     To comply with YoloHandler interface
-    #     """
-    #     return self.get_detection_candidates_for(class_name)
-
     def get_detection_candidates_for(self, class_name: str) -> List[Candidate]:
         assert class_name in self._det_class_names, \
             f"Class '{class_name}' is not available for the current YOEO model (detection)"
 
         self.predict()
 
-        return self._det_candidates[class_name]  # what happens on empty, i.e. class name not in det_candidates?
+        return self._det_candidates[class_name]
 
     def predict(self) -> None:
         logger.info("Predict called")
@@ -75,12 +69,6 @@ class YOEOHandlerTemplate(ABC):
 
     def _prediction_has_to_be_updated(self) -> bool:
         return not self._use_caching or not (self._seg_candidates or self._det_candidates)
-
-    # def get_classes(self) -> List[str]:
-    #     """
-    #     To comply with YoloHandler interface
-    #     """
-    #     return self.get_detection_candidate_class_names()
 
     def get_detection_candidate_class_names(self) -> List[str]:
         return self._det_class_names
@@ -95,7 +83,7 @@ class YOEOHandlerTemplate(ABC):
         assert class_name in self._seg_class_names, \
             f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
 
-        self.predict()  # trigger
+        self.predict()
 
         return self._seg_candidates[class_name]
 
@@ -266,7 +254,7 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate):
         Used by FieldBoundaryDetector Class
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
-        return self.get_mask()
+        return self.get_mask() * 255
 
 
 class YOEOLineSegmentation(YOEOSegmentationTemplate):
