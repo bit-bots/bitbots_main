@@ -23,12 +23,12 @@ MotionOdometry::MotionOdometry()
   current_support_state_ = -1;
   previous_support_state_ = -1;
   walk_support_state_sub_ =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
                                                                  1,
                                                                  std::bind(&MotionOdometry::supportCallback,
                                                                            this, _1));
   kick_support_state_sub_ =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&MotionOdometry::supportCallback,
                                                                            this, _1));
@@ -72,12 +72,12 @@ void MotionOdometry::loop() {
       // it takes some time till the joints actually reach this position, this can create some offset
       // but since we skip the double support phase, we basically take the timepoint when the double support phase is
       // finished. This means both feet did not move and this should create no offset.
-      if ((current_support_state_ == bitbots_msgs::msg::SupportState::LEFT
-          && previous_support_state_ == bitbots_msgs::msg::SupportState::RIGHT) ||
-          (current_support_state_ == bitbots_msgs::msg::SupportState::RIGHT
-              && previous_support_state_ == bitbots_msgs::msg::SupportState::LEFT)) {
+      if ((current_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE
+          && previous_support_state_ == biped_interfaces::msg::Phase::RIGHT_STANCE) ||
+          (current_support_state_ == biped_interfaces::msg::Phase::RIGHT_STANCE
+              && previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE)) {
         foot_change_time = current_support_state_time_;
-        if (previous_support_state_ == bitbots_msgs::msg::SupportState::LEFT) {
+        if (previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE) {
           previous_support_link = l_sole_frame_;
           current_support_link = r_sole_frame_;
         } else {
@@ -120,7 +120,7 @@ void MotionOdometry::loop() {
         previous_support_link = current_support_link;
 
         // remember the support state change but skip the double support phase
-        if (current_support_state_ != bitbots_msgs::msg::SupportState::DOUBLE) {
+        if (current_support_state_ != biped_interfaces::msg::Phase::DOUBLE_STANCE) {
           previous_support_state_ = current_support_state_;
         }
       }
@@ -166,18 +166,18 @@ void MotionOdometry::loop() {
   }
 }
 
-void MotionOdometry::supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg) {
-  current_support_state_ = msg->state;
+void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
+  current_support_state_ = msg->phase;
   current_support_state_time_ = msg->header.stamp;
 
   // remember if we received first support state, only remember left or right
-  if (previous_support_state_ == -1 && current_support_state_ != bitbots_msgs::msg::SupportState::DOUBLE) {
+  if (previous_support_state_ == -1 && current_support_state_ != biped_interfaces::msg::Phase::DOUBLE_STANCE) {
     std::string current_support_link;
-    if (current_support_state_ == bitbots_msgs::msg::SupportState::LEFT) {
-      previous_support_state_ = bitbots_msgs::msg::SupportState::RIGHT;
+    if (current_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE) {
+      previous_support_state_ = biped_interfaces::msg::Phase::RIGHT_STANCE;
       current_support_link = l_sole_frame_;
     } else {
-      previous_support_state_ = bitbots_msgs::msg::SupportState::LEFT;
+      previous_support_state_ = biped_interfaces::msg::Phase::LEFT_STANCE;
       current_support_link = r_sole_frame_;
     }
     // on receiving first support state we should also set the location in the world correctly

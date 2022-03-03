@@ -20,7 +20,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
-#include <bitbots_msgs/msg/support_state.hpp>
+#include <biped_interfaces/msg/phase.hpp>
 #include <unistd.h>
 using std::placeholders::_1;
 
@@ -38,12 +38,12 @@ class OdometryFuser : public rclcpp::Node {
   rclcpp::Time fused_time_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_;
 
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walk_support_state_sub_;
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr kick_support_state_sub_;
+  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
+  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
 
-  message_filters::Cache<bitbots_msgs::msg::SupportState> support_state_cache_;
+  message_filters::Cache<biped_interfaces::msg::Phase> support_state_cache_;
 
-  void supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg);
+  void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr &img_msg, const nav_msgs::msg::Odometry::SharedPtr &motion_odom_msg);
   tf2::Quaternion getCurrentMotionOdomYaw(tf2::Quaternion motion_odom_rotation);
   tf2::Quaternion getCurrentImuRotationWithoutYaw(tf2::Quaternion imu_rotation);

@@ -11,7 +11,7 @@ find_package(tf2 REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(bitbots_msgs REQUIRED)
+find_package(biped_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(rotconv REQUIRED)
@@ -35,7 +35,7 @@ ament_target_dependencies(motion_odometry
         nav_msgs
         message_filters
         tf2_geometry_msgs
-        bitbots_msgs
+        biped_interfaces
         geometry_msgs
         bitbots_docs
         rotconv
@@ -50,7 +50,7 @@ ament_target_dependencies(odometry_fuser
         nav_msgs
         message_filters
         tf2_geometry_msgs
-        bitbots_msgs
+        biped_interfaces
         geometry_msgs
         bitbots_docs
         rotconv

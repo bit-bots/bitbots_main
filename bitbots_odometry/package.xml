@@ -20,8 +20,8 @@
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>rotconv</depend>
-  <depend>bitbots_msgs</depend>
   <depend>bitbots_docs</depend>
+  <depend>biped_interfaces</depend>
 
   <export>
     <bitbots_documentation>

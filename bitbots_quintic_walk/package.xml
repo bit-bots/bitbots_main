@@ -34,6 +34,7 @@
   <depend>rotconv</depend>
   <depend>control_toolbox</depend>
   <depend>ros2_python_extension</depend>
+  <depend>biped_interfaces</depend>
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>

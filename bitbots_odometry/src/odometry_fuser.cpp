@@ -28,11 +28,11 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   this->get_parameter("imu_frame", imu_frame_);
 
   walk_support_state_sub_ =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
   kick_support_state_sub_ =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
 }
@@ -142,7 +142,7 @@ void OdometryFuser::loop() {
   }
 }
 
-void OdometryFuser::supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg) {
+void OdometryFuser::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
   support_state_cache_.add(msg);
 }
 
@@ -198,24 +198,24 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
   geometry_msgs::msg::TransformStamped rotation_point;
   tf2::Transform rotation_point_tf;
 
-  char current_support_state = bitbots_msgs::msg::SupportState::DOUBLE;
+  char current_support_state = biped_interfaces::msg::Phase::DOUBLE_STANCE;
 
   // this is a hack due to an error in message filter library https://github.com/ros2/message_filters/issues/32
   rclcpp::Time hack_time = rclcpp::Time(fused_time_.seconds(), fused_time_.nanoseconds());
-  bitbots_msgs::msg::SupportState::ConstSharedPtr
+  biped_interfaces::msg::Phase::ConstSharedPtr
       current_support_state_msg = support_state_cache_.getElemBeforeTime(hack_time);
 
   if (current_support_state_msg) {
-    current_support_state = current_support_state_msg->state;
+    current_support_state = current_support_state_msg->phase;
   }
   // Wait for the forward kinematics of both legs (simplified by transforming from one to the other) to be avalible for the current fusing operation
   tf_buffer_->canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
   // otherwise point of rotation is current support foot sole or center point of the soles if double support
-  if (current_support_state == bitbots_msgs::msg::SupportState::RIGHT
-      || current_support_state == bitbots_msgs::msg::SupportState::LEFT) {
+  if (current_support_state == biped_interfaces::msg::Phase::RIGHT_STANCE
+      || current_support_state == biped_interfaces::msg::Phase::LEFT_STANCE) {
     try {
       std::string support_frame;
-      if (current_support_state == bitbots_msgs::msg::SupportState::RIGHT)
+      if (current_support_state == biped_interfaces::msg::Phase::RIGHT_STANCE)
         support_frame = r_sole_frame_;
       else
         support_frame = l_sole_frame_;
@@ -225,7 +225,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
     } catch (tf2::TransformException &ex) {
       RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
     }
-  } else if (current_support_state == bitbots_msgs::msg::SupportState::DOUBLE) {
+  } else if (current_support_state == biped_interfaces::msg::Phase::DOUBLE_STANCE) {
     try {
       // use point between soles if double support or unknown support
       geometry_msgs::msg::TransformStamped base_to_l_sole;

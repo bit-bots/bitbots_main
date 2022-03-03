@@ -13,6 +13,7 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
     Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     walk_engine_(SharedPtr(this)),
     stabilizer_(),
+    ik_(SharedPtr(this)),
     visualizer_(SharedPtr(this)) {
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
@@ -89,7 +90,7 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   /* init publisher and subscriber */
   pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("walk_engine_odometry", 1);
-  pub_support_ = this->create_publisher<bitbots_msgs::msg::SupportState>("walk_support_state", 1);
+  pub_support_ = this->create_publisher<biped_interfaces::msg::Phase>("walk_support_state", 1);
   step_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("step", 1, std::bind(&WalkNode::stepCb, this, _1));
   cmd_vel_sub_ =
       this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1, std::bind(&WalkNode::cmdVelCb, this, _1));
@@ -140,8 +141,8 @@ void WalkNode::run() {
   walk_engine_.reset();
   WalkResponse response;
   // publish the starting support state once, especially for odometry. we always start with the same foot
-  bitbots_msgs::msg::SupportState sup_state;
-  sup_state.state = bitbots_msgs::msg::SupportState::LEFT;
+  biped_interfaces::msg::Phase sup_state;
+  sup_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
   sup_state.header.stamp = this->get_clock()->now();
   pub_support_->publish(sup_state);
 
@@ -185,19 +186,19 @@ void WalkNode::run() {
           pub_controller_command_->publish(joint_goals);
 
           // publish current support state
-          bitbots_msgs::msg::SupportState support_state;
+          biped_interfaces::msg::Phase support_state;
           if (walk_engine_.isDoubleSupport()) {
-            support_state.state = bitbots_msgs::msg::SupportState::DOUBLE;
+            support_state.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
           } else if (walk_engine_.isLeftSupport()) {
-            support_state.state = bitbots_msgs::msg::SupportState::LEFT;
+            support_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
           } else {
-            support_state.state = bitbots_msgs::msg::SupportState::RIGHT;
+            support_state.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
           }
           // publish if foot changed
-          if (current_support_foot_ != support_state.state) {
+          if (current_support_foot_ != support_state.phase) {
             support_state.header.stamp = this->get_clock()->now();
             pub_support_->publish(support_state);
-            current_support_foot_ = support_state.state;
+            current_support_foot_ = support_state.phase;
           }
 
           // publish debug information

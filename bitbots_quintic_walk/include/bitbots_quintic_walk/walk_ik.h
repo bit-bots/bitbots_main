@@ -8,7 +8,7 @@ namespace bitbots_quintic_walk {
 
 class WalkIK : public bitbots_splines::AbstractIK<WalkResponse> {
  public:
-  WalkIK();
+  WalkIK(rclcpp::Node::SharedPtr node);
 
   bitbots_splines::JointGoals calculate(const WalkResponse &ik_goals);
   void init(moveit::core::RobotModelPtr kinematic_model) override;
@@ -21,6 +21,7 @@ class WalkIK : public bitbots_splines::AbstractIK<WalkResponse> {
   moveit::core::RobotStatePtr get_goal_state();
 
  private:
+  rclcpp::Node::SharedPtr node_;
   moveit::core::RobotStatePtr goal_state_;
   const moveit::core::JointModelGroup *legs_joints_group_;
   const moveit::core::JointModelGroup *left_leg_joints_group_;
