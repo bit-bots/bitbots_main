@@ -11,19 +11,19 @@
     <param name="visualization_active" value="true" />
 
     <!-- load the robot description -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" />
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
 
     <!-- publish dummy imu -->
-    <node name="dummy_imu" pkg="bitbots_bringup" exec="dummy_imu.py" />
+    <node name="dummy_imu" pkg="bitbots_utils" exec="dummy_imu.py" />
 
     <!-- launch motion nodes -->
-    <include if="$(var motion)" file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
+    <include if="$(var motion)" file="$(find-pkg-share bitbots_utils)/launch/motion.launch">
         <arg name="viz" value="true" />
         <arg name="use_game_settings" value="$(var use_game_settings)" />
     </include>
 
     <!-- launch highlevel nodes, except vision and transformer (we have fake vision instead) -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/highlevel.launch">
         <arg name="behavior" value="$(var behavior)" />
         <arg name="localization" value="$(var localization)" />
         <arg name="game_controller" value="$(var game_controller)" />
@@ -33,7 +33,7 @@
     </include>
 
     <!-- translate joint goals to joint states -->
-    <node name="motor_goals_viz_helper" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py"/>
+    <node name="motor_goals_viz_helper" pkg="bitbots_utils" exec="motor_goals_viz_helper.py"/>
 
     <!-- add some visualization tools -->
     <include file="$(find-pkg-share humanoid_league_interactive_marker)/launch/interactive_marker.launch" />

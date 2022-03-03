@@ -8,7 +8,7 @@
 
     <!-- load the general game settings -->
     <group if="$(var use_game_settings)">
-        <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+        <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
     </group>
 
     <!-- if not in simulation or visualization, launch ros_control -->
@@ -18,7 +18,7 @@
                 <arg name="use_game_settings" value="$(var use_game_settings)"/>
                 <arg name="torqueless_mode" value="$(var torqueless_mode)" />
             </include>
-            <node name="set_volume" pkg="bitbots_bringup" exec="set_volume.sh" args="100%" />
+            <node name="set_volume" pkg="bitbots_utils" exec="set_volume.sh" args="100%" />
         </group>
     </group>
 

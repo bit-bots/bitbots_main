@@ -15,7 +15,7 @@
     </node>
 
     <group>
-        <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description_python.py">
+        <include file="$(find-pkg-share bitbots_utils)/launch/move_group.py">
           <arg name="sim" value="$(var sim)"/>
         </include>
     </group>

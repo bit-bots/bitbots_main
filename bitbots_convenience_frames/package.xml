@@ -1,32 +1,32 @@
 <?xml version='1.0' encoding='utf-8'?>
-<package format="2">
-  <name>bitbots_convenience_frames</name>
-  <version>2.1.0</version>
-  <description>Publishes convenience frames for the Hamburg-BitBots code base.</description>
+<package format="3">
+    <name>bitbots_convenience_frames</name>
+    <version>2.1.0</version>
+    <description>Publishes convenience frames for the Hamburg-BitBots code base.</description>
 
-  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+    <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+    <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
 
-  <license>MIT</license>
+    <license>MIT</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>bitbots_docs</depend>
-  <depend>biped_interfaces</depend>
-  <depend>std_msgs</depend>
-  <depend>tf2</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
-  <depend>geometry_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
+    <depend>bitbots_docs</depend>
+    <depend>biped_interfaces</depend>
+    <depend>std_msgs</depend>
+    <depend>tf2</depend>
+    <depend>tf2_geometry_msgs</depend>
+    <depend>tf2_ros</depend>
+    <depend>geometry_msgs</depend>
+    <depend>humanoid_league_msgs</depend>
 
-  <export>
-    <bitbots_documentation>
-      <language>c++</language>
-      <status>tested_robot</status>
-    </bitbots_documentation>
-    <rosdoc config="rosdoc.yaml" />
-    <build_type>ament_cmake</build_type>
-  </export>
+    <export>
+        <bitbots_documentation>
+            <language>c++</language>
+            <status>tested_robot</status>
+        </bitbots_documentation>
+        <rosdoc config="rosdoc.yaml"/>
+        <build_type>ament_cmake</build_type>
+    </export>
 </package>

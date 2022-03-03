@@ -10,12 +10,12 @@
     <arg name="vision_debug" default="false" description="activates the debug output of the vision pipeline"/>
 
     <!-- load the general simulator and motion -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/simulator.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/simulator.launch">
         <arg name="fake_walk" default="$(var fake_walk)"/>
     </include>
 
     <!-- load highlevel stuff -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/highlevel.launch">
         <arg name="behavior" default="$(var behavior)" />
         <arg name="game_controller" default="$(var game_controller)"/>
         <arg name="localization" default="$(var localization)" />

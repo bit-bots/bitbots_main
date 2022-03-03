@@ -3,11 +3,11 @@
     <arg name="sim" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
 
-    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
 
-    <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/motion.launch">
         <arg name="sim" value="$(var sim)"/>
         <arg name="torqueless_mode" value="$(var torqueless_mode)" />
     </include>

@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-    <node name="game_settings" pkg="bitbots_bringup" exec="game_settings.py" output="screen"/>
+    <node name="game_settings" pkg="bitbots_utils" exec="game_settings.py" output="screen"/>
 </launch>

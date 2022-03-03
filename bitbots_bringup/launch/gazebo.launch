@@ -13,7 +13,7 @@
     <remap from="camera/camera_info" to="camera_info"/>
     <remap from="imu" to="imu/data"/>
 
-    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="true"/>
         <arg name="sim_ns" default="$(var sim_ns)" />
         <arg name="use_fake_walk" default="$(var use_fake_walk)"/>
@@ -27,7 +27,7 @@
             <arg name="paused" value="false"/>
         </include>
         <rosparam file="$(find-pkg-share wolfgang_description)/config/wolfgang_control_simple_physics.yaml" command="load" ns="$(var sim_ns)"/>
-        <node name="keep_stable" pkg="bitbots_bringup" exec="keep_stable_in_sim.py" output="screen" />
+        <node name="keep_stable" pkg="bitbots_utils" exec="keep_stable_in_sim.py" output="screen" />
     </group>
     <group unless="$(var use_fake_walk)">
         <include file="$(find-pkg-share gazebo_ros)/launch/empty_world.launch">
@@ -42,5 +42,5 @@
     <node name="controller_spawner" pkg="controller_manager" exec="spawner" respawn="false" output="screen" ns="$(var sim_ns)" args="joint_state_controller JointGroupController" />
 
     <!-- map motion goals for simulator -->
-    <node name="motor_viz_helper" pkg="bitbots_bringup" exec="motor_goals_viz_helper.py" output="screen" args="--gazebo" />
+    <node name="motor_viz_helper" pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--gazebo" />
 </launch>
