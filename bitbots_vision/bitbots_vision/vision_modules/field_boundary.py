@@ -1,37 +1,43 @@
+from abc import ABC, abstractmethod
+from typing import Dict
+
 import numpy as np
 import cv2
-import rclpy
-import abc
-import math
+
 from operator import itemgetter
 from rclpy import logging
-from .color import ColorDetector
 
 
 logger = logging.get_logger('vision_field_boundary')
+
+
+class IFieldDetector(ABC):
+    @abstractmethod
+    def get_mask_image(self):
+        ...
+
 
 class FieldBoundaryDetector(object):
     """
     The abstract class :class:`.FieldBoundaryDetector` is used for detecting the field boundary in various ways.
     The task of such a detector is the localisation of the edges of the field in the image.
 
-    It returns a list of points that form this so called field boundary.
-    It requires the ColorDetector to find the green pixels that are used to identify the field in the picture.
-    The pixels of the field boundary are found by traversing the picture column wise in steps of a given length.
-    Because obstacles can obscure the edges of the field, sometimes the first green pixel from the top of the picture is found at the bottom of the respective obstacle.
-    Therefore not all of the points are located in a straight line and the field boundary contains multiple dents.
-    Additionally white field markings and green pixels in the field that are false negatives can create small dents too.
-    Besides the normal field boundary, the :class:`.FieldBoundaryDetector` can also create a convex field boundary
-    that forms a convex hull over the dents of the detected field boundary
-    and is therefore completely straight (with the exception of the corners of the field).
+    It returns a list of points that form this so-called field boundary. It requires the IFieldDetector to find the
+    pixels that are used to identify the field in the picture. The pixels of the field boundary are found by
+    traversing the picture column wise in steps of a given length. Because obstacles can obscure the edges of the
+    field, sometimes the first pixel from the top of the picture is found at the bottom of the respective obstacle.
+    Therefore not all the points are located in a straight line and the field boundary contains multiple dents.
+    Additionally white field markings and green pixels in the field that are false negatives can create small dents
+    too. Besides, the normal field boundary, the :class:`.FieldBoundaryDetector` can also create a convex field
+    boundary that forms a convex hull over the dents of the detected field boundary and is therefore completely
+    straight (with the exception of the corners of the field).
     """
-    def __init__(self, config, field_color_detector):
-        # type: (dict, ColorDetector) -> None
+    def __init__(self, config: Dict, field_detector: IFieldDetector):
         """
         Initialization of :class:`.FieldBoundaryDetector`.
 
-        :param config: the configuration contained in visionparams.yaml
-        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: vision configuration, such as in visionparams.yaml
+        :param field_detector: an instance of IFieldDetector
         """
         # set variables:
         self._image = None
@@ -41,7 +47,7 @@ class FieldBoundaryDetector(object):
         self._convex_field_boundary_full = None
         self._mask = None
         self._algorithm = None
-        self._field_color_detector = field_color_detector
+        self._field_detector = field_detector
         # init config:
         self._x_steps = config['field_boundary_detector_horizontal_steps']
         self._y_steps = config['field_boundary_detector_vertical_steps']
@@ -58,8 +64,6 @@ class FieldBoundaryDetector(object):
         # type: (String) -> FieldBoundaryDetector
         """
         Returns the matching field boundary detector for an String.
-
-        :param image: the current frame of the video feed
         """
         detectors = {
             'binary': BinaryFieldBoundaryDetector,
@@ -93,7 +97,8 @@ class FieldBoundaryDetector(object):
         self._compute_mask()
         return self._shift_field_boundary_mask(self._mask, offset)
 
-    def _shift_field_boundary_mask(self, mask, offset):
+    @staticmethod
+    def _shift_field_boundary_mask(mask, offset):
         shape = mask.shape
 
         if offset == 0:
@@ -153,7 +158,7 @@ class FieldBoundaryDetector(object):
         """
         self._field_boundary_points = self._algorithm._calculate_field_boundary(
             self._image,
-            self._field_color_detector,
+            self._field_detector,
             self._x_steps,
             self._y_steps,
             self._roi_height,
@@ -394,16 +399,17 @@ class FieldBoundaryDetector(object):
 
 class IterationFieldBoundaryDetector(FieldBoundaryDetector):
     """
-    The :class:`.IterationFieldBoundaryDetector` uses the iteration detection method and finds the field boundary via scan lines running down from top to bottom.
+    The :class:`.IterationFieldBoundaryDetector` uses the iteration detection method and finds the field boundary via
+    scan lines running down from top to bottom.
     """
-    def __init__(self, config, field_color_detector):
+    def __init__(self, config: Dict, field_detector: IFieldDetector):
         """
         Initialization of :class:`.IterationFieldBoundaryDetector`.
 
-        :param config: the configuration contained in visionparams.yaml
-        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: vision configuration, such as in visionparams.yaml
+        :param field_detector: an instance of IFieldDetector
         """
-        super(IterationFieldBoundaryDetector, self).__init__(config, field_color_detector)
+        super(IterationFieldBoundaryDetector, self).__init__(config, field_detector)
         self._algorithm = IterationFieldBoundaryAlgorithm
 
 
@@ -411,14 +417,14 @@ class BinaryFieldBoundaryDetector(FieldBoundaryDetector):
     """
     The :class:`.BinaryFieldBoundaryDetector` uses the binary detection method and finds the field boundary via binary search.
     """
-    def __init__(self, config, field_color_detector):
+    def __init__(self, config: Dict, field_detector: IFieldDetector):
         """
         Initialization of :class:`.BinaryFieldBoundaryDetector`.
 
-        :param config: the configuration contained in visionparams.yaml
-        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: vision configuration, such as in visionparams.yaml
+        :param field_detector: an instance of IFieldDetector
         """
-        super(BinaryFieldBoundaryDetector, self).__init__(config, field_color_detector)
+        super(BinaryFieldBoundaryDetector, self).__init__(config, field_detector)
         self._algorithm = BinaryFieldBoundaryAlgorithm
 
 
@@ -426,14 +432,14 @@ class ReversedFieldBoundaryDetector(FieldBoundaryDetector):
     """
     The :class:`.ReversedFieldBoundaryDetector` uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
     """
-    def __init__(self, config, field_color_detector):
+    def __init__(self, config: Dict, field_detector: IFieldDetector):
         """
         Initialization of :class:`.ReversedFieldBoundaryDetector::.
 
-        :param config: the configuration contained in visionparams.yaml
-        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: vision configuration, such as in visionparams.yaml
+        :param field_detector: an instance of IFieldDetector
         """
-        super(ReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
+        super(ReversedFieldBoundaryDetector, self).__init__(config, field_detector)
         self._algorithm = ReversedFieldBoundaryAlgorithm
 
 
@@ -442,30 +448,30 @@ class DownsamplingReversedFieldBoundaryDetector(FieldBoundaryDetector):
     The :class:`.DownsamplingReversedFieldBoundaryDetector` samples the resolution down
     and uses the reversed detection method and finds the field boundary via scan lines running up from bottom to top.
     """
-    def __init__(self, config, field_color_detector):
+    def __init__(self, config: Dict, field_detector: IFieldDetector):
         """
         Initialization of the DownsamplingReversedFieldBoundaryDetector.
 
-        :param config: the configuration contained in visionparams.yaml
-        :param field_color_detector: checks whether a color is part of the field colors
+        :param config: vision configuration, such as in visionparams.yaml
+        :param field_detector: an instance of IFieldDetector
         """
-        super(DownsamplingReversedFieldBoundaryDetector, self).__init__(config, field_color_detector)
+        super(DownsamplingReversedFieldBoundaryDetector, self).__init__(config, field_detector)
         self._algorithm = DownsamplingReversedFieldBoundaryAlgorithm
 
 
-class FieldBoundaryAlgorithm():
+class FieldBoundaryAlgorithm:
     """
     The abstract :class:`.FieldBoundaryAlgorithm` defines the interface for a field boundary algorithm,
     which finds the points of the field boundary visible in the image.
     """
-    @abc.abstractmethod
-    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    @abstractmethod
+    def _calculate_field_boundary(_image, _field_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         """
         Finds the points of the field boundary in the image.
 
         :param np.ndarray _image: Image to calculate the field boundary on
-        :param _field_color_detector: ColorDetector to detect field
-        :type _field_color_detector: :class:`bitbots_vision.vision_module.color.ColorDetector`
+        :param _field_detector: Instance of IFieldDetector
+       # TODO :type _field_detector: :class:`bitbots_vision.vision_module.color.ColorDetector`
         :param int _x_steps: Number of horizontal steps
         :param int _y_steps: Number of vertical steps
         :param int _roi_height: Height of Region Of Interest in which we are looking for green
@@ -483,9 +489,9 @@ class IterationFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     Uses the standard method, iterating from top to bottom until it finds enough green points.
     """
     @staticmethod
-    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        field_mask = _field_color_detector.get_mask_image()
+        field_mask = _field_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,
@@ -522,9 +528,9 @@ class ReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     Useful for when two fields are adjacent to each other.
     """
     @staticmethod
-    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        field_mask = _field_color_detector.get_mask_image()
+        field_mask = _field_detector.get_mask_image()
         # noise reduction on the field_mask:
 
         # the stepsize is the number of pixels traversed in the image by going one step
@@ -588,9 +594,9 @@ class DownsamplingReversedFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     Useful for when two fields are adjacent to each other.
     """
     @staticmethod
-    def _calculate_field_boundary(image, field_color_detector, x_steps, y_steps, roi_height, roi_width, roi_increase, green_threshold):
+    def _calculate_field_boundary(image, field_detector, x_steps, y_steps, roi_height, roi_width, roi_increase, green_threshold):
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        field_mask = field_color_detector.get_mask_image()
+        field_mask = field_detector.get_mask_image()
 
         # Scale the image down
         subsampled_mask = cv2.resize(field_mask,(x_steps,y_steps), interpolation=cv2.INTER_AREA)
@@ -628,9 +634,9 @@ class BinaryFieldBoundaryAlgorithm(FieldBoundaryAlgorithm):
     Uses a faster binary search method, that unfortunately finds some points below field lines.
     """
     @staticmethod
-    def _calculate_field_boundary(_image, _field_color_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
+    def _calculate_field_boundary(_image, _field_detector, _x_steps, _y_steps, _roi_height, _roi_width, _roi_increase, _green_threshold):
         # calculate the field_mask which contains 0 for non-green pixels and 255 for green pixels in the image
-        field_mask = _field_color_detector.get_mask_image()
+        field_mask = _field_detector.get_mask_image()
         # noise reduction on the field_mask:
         field_mask = cv2.morphologyEx(
             field_mask,

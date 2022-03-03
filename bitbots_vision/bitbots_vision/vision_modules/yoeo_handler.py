@@ -1,4 +1,5 @@
 from .candidate import CandidateFinder, Candidate
+from .field_boundary import IFieldDetector
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -236,7 +237,7 @@ class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
         return self._yoeo_handler.get_segmentation_for("background")
 
 
-class YOEOFieldSegmentation(YOEOSegmentationTemplate):
+class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__(yoeo_handler)
 
