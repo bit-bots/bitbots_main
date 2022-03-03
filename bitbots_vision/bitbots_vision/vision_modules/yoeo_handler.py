@@ -36,7 +36,6 @@ class YOEOHandlerTemplate(ABC):
         self._load_candidate_class_names(model_path)
 
     def set_config(self, config: Dict) -> None:
-        logger.info(f"Caching {config['caching']}")
         self._use_caching = config['caching']
         self._iou_non_max_suppression_thresh = config['yoeo_nms_threshold']
         self._det_confidence_thresh = config['yoeo_conf_threshold']
@@ -62,9 +61,7 @@ class YOEOHandlerTemplate(ABC):
         return self._det_candidates[class_name]
 
     def predict(self) -> None:
-        logger.info("Predict called")
         if self._prediction_has_to_be_updated():
-            logger.info("Prediction has to be updated")
             self._compute_new_prediction()
 
     def _prediction_has_to_be_updated(self) -> bool:
@@ -117,7 +114,7 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
     def _compute_new_prediction(self) -> None:
         preprocessed_imge = self._preprocess_image()
-        logger.info(str(self._image.shape))
+
         detections, segmentation = torch_detect.detect_image(self._model,
                                                              cv2.cvtColor(preprocessed_imge, cv2.COLOR_BGR2RGB),
                                                              img_size=preprocessed_imge.shape[0],
