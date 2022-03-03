@@ -249,7 +249,6 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
 
     def get_mask_image(self):
         """
-        Used by FieldBoundaryDetector Class
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
         return self.get_mask() * 255
