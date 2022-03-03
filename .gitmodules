@@ -100,3 +100,6 @@
 [submodule "lib/imu_tools"]
 	path = lib/imu_tools
 	url = https://github.com/ccny-ros-pkg/imu_tools.git
+[submodule "biped_interfaces"]
+	path = biped_interfaces
+	url = https://github.com/ros-sports/biped_interfaces
