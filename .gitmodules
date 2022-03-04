@@ -97,3 +97,6 @@
 [submodule "biped_interfaces"]
 	path = biped_interfaces
 	url = https://github.com/ros-sports/biped_interfaces
+[submodule "lib/bio_ik"]
+	path = lib/bio_ik
+	url = git@github.com:SammyRamone/bio_ik.git
