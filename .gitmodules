@@ -16,9 +16,6 @@
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = ../../bit-bots/dynamic_stack_decider.git
-[submodule "center_of_mass"]
-	path = center_of_mass
-	url = ../../bit-bots/center_of_mass.git
 [submodule "humanoid_base_footprint"]
 	path = humanoid_base_footprint
 	url = ../../bit-bots/humanoid_base_footprint.git
