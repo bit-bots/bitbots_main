@@ -98,3 +98,6 @@ class PyWalk:
         odom = self.py_walk_wrapper.get_odom()
         result = deserialize_message(odom, Odometry)
         return result
+
+    def publish_debug(self):
+        self.py_walk_wrapper.publish_debug()

@@ -203,9 +203,7 @@ void WalkNode::run() {
 
           // publish debug information
           if (debug_active_) {
-            visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
-            visualizer_.publishWalkMarkers(current_stabilized_response_);
-            visualizer_.publishEngineDebug(current_response_);
+            publish_debug();
           }
         }
       }
@@ -220,6 +218,12 @@ void WalkNode::run() {
       usleep(1);
     }
   }
+}
+
+void WalkNode::publish_debug(){
+  visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
+  visualizer_.publishWalkMarkers(current_stabilized_response_);
+  visualizer_.publishEngineDebug(current_response_);
 }
 
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
