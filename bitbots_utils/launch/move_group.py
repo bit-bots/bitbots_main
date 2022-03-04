@@ -32,11 +32,12 @@ def load_yaml(package_name, file_path):
 
 
 def generate_launch_description():
+    sim = LaunchConfiguration("sim")
     fake_walk = LaunchConfiguration("fake_walk")
     sim_ns = LaunchConfiguration("sim_ns")
 
+    sim_arg = DeclareLaunchArgument('sim', default_value='False')
     fake_walk_arg = DeclareLaunchArgument('fake_walk', default_value='False')
-
     sim_ns_arg = DeclareLaunchArgument('sim_ns', default_value='/')
 
     robot_description = ParameterValue(Command(['xacro ',
@@ -91,7 +92,8 @@ def generate_launch_description():
                     #output='screen',
                     parameters=[{
                         'robot_description': robot_description,
-                        'publish_frequency': 1000.0
+                        'publish_frequency': 1000.0,
+                        'use_sim_time': sim
                     }],
                     arguments=['--ros-args', '--log-level', 'WARN']
                     )
@@ -105,6 +107,7 @@ def generate_launch_description():
                                'robot_description_semantic': robot_description_semantic_config,
                                'robot_description_kinematics': kinematics_yaml,
                                'publish_robot_description_semantic': True,
+                               'use_sim_time': sim
                            },
                                ompl_planning_pipeline_config,
                                trajectory_execution,
@@ -113,4 +116,4 @@ def generate_launch_description():
                            arguments=['--ros-args', '--log-level', 'WARN']
                            ) #todo joint limits
 
-    return LaunchDescription([fake_walk_arg, sim_ns_arg, move_group_node, rsp_node])
+    return LaunchDescription([sim_arg, fake_walk_arg, sim_ns_arg, move_group_node, rsp_node])
