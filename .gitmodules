@@ -1,6 +1,3 @@
-[submodule "lib/bio_ik"]
-	path = lib/bio_ik
-	url = ../../tylerjw/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = ../../bit-bots/DynamixelSDK.git
