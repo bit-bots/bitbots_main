@@ -226,7 +226,7 @@ class Simulation:
         """
         p.applyExternalForce(robot_index, link_id, force, position, flags=p.WORLD_FRAME)
 
-    def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
+    def set_dynamics(self, contact_damping=-1.0, contact_stiffness=-1.0, lateral_friction=1,
                           spinning_friction=1, rolling_friction=1, restitution=0, robot_index=1):
         # set dynamic values for all links and ground
         for link_name in self.links[robot_index].keys():
@@ -234,17 +234,21 @@ class Simulation:
                              "rrb"] or link_name in self.foot_link_names:
                 # print(p.getLinkState(self.robot_type_index, self.links[link_name]))
                 p.changeDynamics(robot_index, self.links[robot_index][link_name],
-                                 lateralFriction=1,
-                                 spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+                                 lateralFriction=lateral_friction,
+                                 spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
         if self.plane_index:
-            p.changeDynamics(self.plane_index, -1, lateralFriction=1,
-                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+            p.changeDynamics(self.plane_index, -1, lateralFriction=lateral_friction,
+                             spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
         if self.field_index:
-            p.changeDynamics(self.field_index, -1, lateralFriction=1,
-                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+            p.changeDynamics(self.field_index, -1, lateralFriction=lateral_friction,
+                             spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
         if self.terrain_index:
-            p.changeDynamics(self.terrain_index, -1, lateralFriction=1,
-                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+            p.changeDynamics(self.terrain_index, -1, lateralFriction=lateral_friction,
+                             spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
 
     def randomize_links(self, mass_bounds, inertia_bounds, robot_index=1):
         i = 0

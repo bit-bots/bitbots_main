@@ -12,7 +12,7 @@ from tf_transformations import euler_from_quaternion
 
 
 class ROSInterface():
-    def __init__(self, node:Node, simulation, namespace='', declare_parameters=True):
+    def __init__(self, node: Node, simulation, namespace='', declare_parameters=True):
         self.node = node
         self.namespace = namespace
         self.simulation = simulation
@@ -41,37 +41,37 @@ class ROSInterface():
         # necessary to use this as part of a different node
         if declare_parameters:
             self.node.declare_parameter("contact_stiffness", 0.0)
-            self.node.declare_parameter("joint_damping", 0.0)
             self.node.declare_parameter("spinning_friction", 0.0)
             self.node.declare_parameter("contact_damping", 0.0)
             self.node.declare_parameter("lateral_friction", 0.0)
             self.node.declare_parameter("rolling_friction", 0.0)
+            self.node.declare_parameter("restitution", 0.0)
             self.node.declare_parameter("cutoff", 0)
             self.node.declare_parameter("order", 0)
 
         self.node.add_on_set_parameters_callback(self.parameters_callback)
 
-
-        self.simulation.set_foot_dynamics(self.node.get_parameter("contact_damping").get_parameter_value().double_value,
-                                          self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
-                                          self.node.get_parameter("joint_damping").get_parameter_value().double_value,
-                                          self.node.get_parameter("lateral_friction").get_parameter_value().double_value,
-                                          self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
-                                          self.node.get_parameter("rolling_friction").get_parameter_value().double_value)
+        self.simulation.set_dynamics(
+            contact_damping=self.node.get_parameter("contact_damping").get_parameter_value().double_value,
+            contact_stiffness=self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
+            lateral_friction=self.node.get_parameter("lateral_friction").get_parameter_value().double_value,
+            spinning_friction=self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
+            rolling_friction=self.node.get_parameter("rolling_friction").get_parameter_value().double_value,
+            restitution=self.node.get_parameter("restitution").get_parameter_value().double_value)
         self.simulation.set_filter_params(self.node.get_parameter("cutoff").get_parameter_value().integer_value,
                                           self.node.get_parameter("order").get_parameter_value().integer_value)
 
         # publisher
         self.left_foot_pressure_publisher = self.node.create_publisher(FootPressure,
-                                                                  self.namespace + "foot_pressure_left/raw", 1)
+                                                                       self.namespace + "foot_pressure_left/raw", 1)
         self.right_foot_pressure_publisher = self.node.create_publisher(FootPressure,
-                                                                   self.namespace + "foot_pressure_right/raw", 1)
+                                                                        self.namespace + "foot_pressure_right/raw", 1)
         self.left_foot_pressure_publisher_filtered = self.node.create_publisher(FootPressure,
-                                                                           self.namespace + "foot_pressure_left/filtered",
-                                                                           1)
+                                                                                self.namespace + "foot_pressure_left/filtered",
+                                                                                1)
         self.right_foot_pressure_publisher_filtered = self.node.create_publisher(FootPressure,
-                                                                            self.namespace + "foot_pressure_right/filtered",
-                                                                            1)
+                                                                                 self.namespace + "foot_pressure_right/filtered",
+                                                                                 1)
         self.joint_publisher = self.node.create_publisher(JointState, self.namespace + "joint_states", 1)
         self.imu_publisher = self.node.create_publisher(Imu, self.namespace + "imu/data_raw", 1)
         self.clock_publisher = self.node.create_publisher(Clock, self.namespace + "clock", 1)
@@ -82,11 +82,11 @@ class ROSInterface():
 
         # subscriber
         self.joint_goal_subscriber = self.node.create_subscription(JointCommand,
-                                                              self.namespace + "DynamixelController/command",
-                                                              self.joint_goal_cb, 1)
+                                                                   self.namespace + "DynamixelController/command",
+                                                                   self.joint_goal_cb, 1)
 
         self.reset_subscriber = self.node.create_subscription(Bool, self.namespace + "reset",
-                                                         self.reset_cb, 1)
+                                                              self.reset_cb, 1)
 
     def step(self):
         self.simulation.step()
@@ -94,7 +94,8 @@ class ROSInterface():
         self.publish_imu()
         self.publish_foot_pressure()
         self.publish_true_odom()
-        self.clock_msg.clock = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
+        self.clock_msg.clock = Time(seconds=int(self.simulation.time),
+                                    nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         self.clock_publisher.publish(self.clock_msg)
         self.compute_real_time_factor()
 
@@ -153,7 +154,8 @@ class ROSInterface():
         self.imu_msg.linear_acceleration.x = linear_acc[0]
         self.imu_msg.linear_acceleration.y = linear_acc[1]
         self.imu_msg.linear_acceleration.z = linear_acc[2]
-        self.imu_msg.header.stamp = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
+        self.imu_msg.header.stamp = Time(seconds=int(self.simulation.time),
+                                         nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         return self.imu_msg
 
     def publish_imu(self):
@@ -234,7 +236,8 @@ class ROSInterface():
 
         cop_l = PointStamped()
         cop_l.header.frame_id = "l_sole"
-        cop_l.header.stamp = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
+        cop_l.header.stamp = Time(seconds=int(self.simulation.time),
+                                  nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         sum_of_forces = f_llb[1] + f_llf[1] + f_lrf[1] + f_lrb[1]
         if sum_of_forces > threshold:
             cop_l.point.x = (f_llf[1] + f_lrf[1] - f_llb[1] - f_lrb[1]) * pos_x / sum_of_forces
@@ -248,7 +251,8 @@ class ROSInterface():
 
         cop_r = PointStamped()
         cop_r.header.frame_id = "r_sole"
-        cop_r.header.stamp = Time(seconds=int(self.simulation.time), nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
+        cop_r.header.stamp = Time(seconds=int(self.simulation.time),
+                                  nanoseconds=self.simulation.time % 1 * 1e9).to_msg()
         sum_of_forces = f_rlb[1] + f_rlf[1] + f_rrf[1] + f_rrb[1]
         if sum_of_forces > threshold:
             cop_r.point.x = (f_rlf[1] + f_rrf[1] - f_rlb[1] - f_rrb[1]) * pos_x / sum_of_forces
@@ -283,11 +287,13 @@ class ROSInterface():
 
     def parameters_callback(self, params):
         # we just get all parameters again, since it is easier
-        self.simulation.set_foot_dynamics(self.node.get_parameter("contact_damping").get_parameter_value().double_value,
-                                          self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
-                                          self.node.get_parameter("joint_damping").get_parameter_value().double_value,
-                                          self.node.get_parameter("lateral_friction").get_parameter_value().double_value,
-                                          self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
-                                          self.node.get_parameter("rolling_friction").get_parameter_value().double_value)
+        #todo maybe just set the new ones
+        self.simulation.set_dynamics(
+            contact_damping=self.node.get_parameter("contact_damping").get_parameter_value().double_value,
+            contact_stiffness=self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
+            lateral_friction=self.node.get_parameter("lateral_friction").get_parameter_value().double_value,
+            spinning_friction=self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
+            rolling_friction=self.node.get_parameter("rolling_friction").get_parameter_value().double_value,
+            restitution=self.node.get_parameter("restitution").get_parameter_value().double_value)
         self.simulation.set_filter_params(self.node.get_parameter("cutoff").get_parameter_value().int_value,
                                           self.node.get_parameter("order").get_parameter_value().int_value)
