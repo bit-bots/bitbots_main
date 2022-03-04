@@ -6,7 +6,7 @@
     <rosparam command="load" file="$(find-pkg-share bitbots_head_behavior)/config/head_config.yaml"/>
 
     <group if="$(var use_game_settings)">
-        <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+        <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
     </group>
 
     <node name="bio_ik_service" pkg="bio_ik_service" exec="bio_ik_service"  output="screen"/>

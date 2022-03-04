@@ -2,7 +2,7 @@
 <launch>
     <arg name="depends_only" default="false" />
     
-    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" />
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
     <rosparam command="load" file="$(find-pkg-share bitbots_body_behavior)/config/body_behavior.yaml"/>
     <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch">
         <arg name="depends_only" value="$(var depends_only)"/>
