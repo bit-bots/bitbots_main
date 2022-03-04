@@ -1,58 +1,62 @@
 <?xml version='1.0' encoding='utf-8'?>
 <package format="3">
-  <name>bitbots_quintic_walk</name>
-  <version>1.6.4</version>
-  <description>This is a simple open-loop walking engine which uses quintic splines to define the trajectories of both feet in cartesian space. An inverse kinematic is used to translate these into joint space. The parameters of the walking can be adjusted using dynamic_reconfigure.</description>
+    <name>bitbots_quintic_walk</name>
+    <version>1.6.4</version>
+    <description>This is a simple open-loop walking engine which uses quintic splines to define the trajectories of both
+        feet in cartesian space. An inverse kinematic is used to translate these into joint space. The parameters of the
+        walking can be adjusted using dynamic_reconfigure.
+    </description>
 
-  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
-  <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
-  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+    <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+    <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
-  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
-  <author>Rhoban FC (original version of engine)</author>
+    <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+    <author>Rhoban FC (original version of engine)</author>
 
-  <license>MIT</license>
+    <license>MIT</license>
 
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>tf2</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_eigen</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>bio_ik</depend>
-  <depend>moveit_core</depend>
-  <depend>moveit_ros_move_group</depend>
-  <depend>bitbots_splines</depend>
-  <depend>geometry_msgs</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>moveit_ros_robot_interaction</depend>
-  <depend>moveit_ros_planning_interface</depend>
-  <depend>bitbots_docs</depend>
-  <depend>rotconv</depend>
-  <depend>control_toolbox</depend>
-  <depend>ros2_python_extension</depend>
-  <depend>biped_interfaces</depend>
+    <depend>biped_interfaces</depend>
+    <depend>builtin_interfaces</depend>
 
-  <test_depend>plotjuggler</test_depend>
-  <test_depend>bitbots_odometry</test_depend>
+    <depend>bio_ik</depend>
+    <depend>bitbots_docs</depend>
+    <depend>bitbots_msgs</depend>
+    <depend>bitbots_splines</depend>
+    <depend>bitbots_utils</depend>
+    <depend>control_toolbox</depend>
+    <depend>geometry_msgs</depend>
+    <depend>humanoid_league_msgs</depend>
+    <depend>moveit_core</depend>
+    <depend>moveit_ros_move_group</depend>
+    <depend>moveit_ros_robot_interaction</depend>
+    <depend>moveit_ros_planning_interface</depend>
+    <depend>rclcpp</depend>
+    <depend>ros2_python_extension</depend>
+    <depend>rotconv</depend>
+    <depend>std_msgs</depend>
+    <depend>tf2</depend>
+    <depend>tf2_eigen</depend>
+    <depend>tf2_geometry_msgs</depend>
+    <depend>tf2_ros</depend>
 
-  <exec_depend>ros2launch</exec_depend>
+    <exec_depend>bitbots_teleop</exec_depend>
+    <exec_depend>plotjuggler</exec_depend>
+    <exec_depend>bitbots_odometry</exec_depend>
+    <exec_depend>ros2launch</exec_depend>
+    <exec_depend>rosidl_default_runtime</exec_depend>
 
-  <export>
-    <bitbots_documentation>
-      <status>tested_integration</status>
-      <language>c++</language>
-    </bitbots_documentation>
-    <build_type>ament_cmake</build_type>
-  </export>
+    <member_of_group>rosidl_interface_packages</member_of_group>
 
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-  <depend>builtin_interfaces</depend>
-  <member_of_group>rosidl_interface_packages</member_of_group>
-  <depend>rclcpp</depend>
-
-  </package>
+    <export>
+        <bitbots_documentation>
+            <status>tested_integration</status>
+            <language>c++</language>
+        </bitbots_documentation>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

@@ -20,7 +20,7 @@
 
   <depend>std_msgs</depend>
   <depend>humanoid_league_msgs</depend>
-  <depend>bitbots_bringup</depend>
+  <depend>bitbots_utils</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>bitbots_msgs</depend>
   <depend>wolfgang_description</depend>

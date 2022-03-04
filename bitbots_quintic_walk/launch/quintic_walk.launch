@@ -11,13 +11,13 @@
   <group if="$(var sim)">
     <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" command="load"/>
         <group if="$(var use_game_settings)">
-            <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+            <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
         </group>
   </group>
   <group unless="$(var sim)">
     <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" command="load"/>
         <group if="$(var use_game_settings)">
-            <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+            <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
         </group>
   </group>   
   <group unless="$(var no_node)">
