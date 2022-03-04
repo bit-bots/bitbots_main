@@ -63,13 +63,6 @@ bitbots_local_planner:
   debian: *bitbots_local_planner
   fedora: *bitbots_local_planner
 
-center_of_mass:
-  ubuntu: &center_of_mass
-    source:
-      uri: https://github.com/bit-bots/center_of_mass/blob/master/.rdmanifest
-  debian: *center_of_mass
-  fedora: *center_of_mass
-
 dynamic_stack_decider:
   ubuntu: &dynamic_stack_decider
     source:
