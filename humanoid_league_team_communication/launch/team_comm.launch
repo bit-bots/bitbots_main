@@ -14,7 +14,7 @@
             <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller_settings.yaml"/>
             <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml"/>
             <param name="map_frame" value="$(var tf_prefix)map" />
-            <param from="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+            <param from="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
         </node>
     </group>
 </launch>

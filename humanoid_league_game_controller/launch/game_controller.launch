@@ -13,7 +13,7 @@
         <node pkg="humanoid_league_game_controller" exec="game_controller" name="humanoid_league_game_controller" output="screen">
             <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller.yaml" />
             <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller_settings.yaml" />
-            <param from="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+            <param from="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
         </node>
     </group>
 </launch>
