@@ -16,8 +16,8 @@ import numpy as np
 G = 9.81
 
 
-class SupervisorController(RclpyNode):
-    def __init__(self, ros_active=False, mode='normal', base_ns='', model_states_active=True):
+class SupervisorController:
+    def __init__(self, ros_node: Node = None, ros_active=False, mode='normal', base_ns='', model_states_active=True):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
@@ -26,7 +26,9 @@ class SupervisorController(RclpyNode):
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
         :param base_ns: The namespace of this node, can normally be left empty
         """
-        super().__init__('supervisor_controller')
+        self.ros_node = ros_node
+        if self.ros_node is None:
+            self.ros_node = Node('supervisor_controller')
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
         self.model_states_active = model_states_active
@@ -79,15 +81,15 @@ class SupervisorController(RclpyNode):
             else:
                 clock_topic = base_ns + "clock"
                 model_topic = base_ns + "model_states"
-            self.clock_publisher = self.create_publisher(Clock, clock_topic, 1)
-            self.model_state_publisher = self.create_publisher(ModelStates, model_topic, 1)
-            self.reset_service = self.create_service(Empty, base_ns + "reset", self.reset)
-            self.reset_pose_service = self.create_service(Empty, base_ns + "reset_pose", self.set_initial_poses)
-            self.set_robot_pose_service = self.create_service(SetObjectPose, base_ns + "set_robot_pose",
-                                                              self.robot_pose_callback)
-            self.reset_ball_service = self.create_service(Empty, base_ns + "reset_ball", self.reset_ball)
-            self.set_ball_position_service = self.create_service(SetObjectPosition, base_ns + "set_ball_position",
-                                                                 self.ball_pos_callback)
+            self.clock_publisher = self.ros_node.create_publisher(Clock, clock_topic, 1)
+            self.model_state_publisher = self.ros_node.create_publisher(ModelStates, model_topic, 1)
+            self.reset_service = self.ros_node.create_service(Empty, base_ns + "reset", self.reset)
+            self.reset_pose_service = self.ros_node.create_service(Empty, base_ns + "reset_pose", self.set_initial_poses)
+            self.set_robot_pose_service = self.ros_node.create_service(SetObjectPose, base_ns + "set_robot_pose",
+                                                                   self.robot_pose_callback)
+            self.reset_ball_service = self.ros_node.create_service(Empty, base_ns + "reset_ball", self.reset_ball)
+            self.set_ball_position_service = self.ros_node.create_service(SetObjectPosition, base_ns + "set_ball_position",
+                                                                      self.ball_pos_callback)
 
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
@@ -297,7 +299,8 @@ class SupervisorController(RclpyNode):
                 position, orientation = self.get_robot_pose_quat(name=robot_name)
                 robot_pose = Pose()
                 robot_pose.position = Point(x=position[0], y=position[1], z=position[2])
-                robot_pose.orientation = Quaternion(x=orientation[0], y=orientation[1], z=orientation[2], w=orientation[3])
+                robot_pose.orientation = Quaternion(x=orientation[0], y=orientation[1], z=orientation[2],
+                                                    w=orientation[3])
                 msg.name.append(robot_name)
                 msg.pose.append(robot_pose)
                 lin_vel, ang_vel = self.get_robot_velocity(robot_name)

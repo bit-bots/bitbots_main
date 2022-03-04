@@ -11,5 +11,7 @@
             <param from="$(find-pkg-share wolfgang_pybullet_sim)/config/config.yaml"/>
         </node>
     </group>
-    <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
+    <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch">
+        <arg name="sim" value="true"/>
+    </include>
 </launch>

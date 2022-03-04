@@ -20,7 +20,6 @@
   <depend>urdf</depend>
   <depend>xacro</depend>
   <depend>bitbots_docs</depend>
-  <depend>bitbots_bringup</depend>
 
 
   <export>

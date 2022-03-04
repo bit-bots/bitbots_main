@@ -1,4 +1,5 @@
 <launch>
+  <arg name="sim" default="false"/>
   <arg name="do_bias_estimation" default="false"/>
   <arg name="bias_alpha" default="0.05"/>
   <arg name="do_adaptive_gain" default="false"/>
@@ -6,6 +7,7 @@
 
   <node pkg="imu_complementary_filter" exec="complementary_filter_node"
         name="complementary_filter_gain_node" output="screen">
+    <param name="use_sim_time" value="$(var sim)"/>
     <param name="do_bias_estimation" value="$(var do_bias_estimation)"/>
     <param name="bias_alpha" value="$(var bias_alpha)"/>
     <param name="do_adaptive_gain" value="$(var do_adaptive_gain)"/>

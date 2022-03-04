@@ -15,8 +15,8 @@ from bitbots_msgs.msg import JointCommand, FootPressure
 CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
-class RobotController(RclpyNode):
-    def __init__(self, ros_active=False, robot='wolfgang', robot_node=None, base_ns='', recognize=False,
+class RobotController:
+    def __init__(self, ros_node: Node = None, ros_active=False, robot='wolfgang', robot_node=None, base_ns='', recognize=False,
                  camera_active=True, foot_sensors_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
@@ -28,7 +28,9 @@ class RobotController(RclpyNode):
         :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
         :param base_ns: The namespace of this node, can normally be left empty
         """
-        super().__init__('robot_controller')
+        self.ros_node = ros_node
+        if self.ros_node is None:
+            self.ros_node = Node('robot_controller')
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
@@ -164,29 +166,29 @@ class RobotController(RclpyNode):
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
 
-        self.declare_parameter("imu_frame", "imu_frame")
-        self.imu_frame = self.get_parameter("imu_frame").get_parameter_value().string_value
+        self.ros_node.declare_parameter("imu_frame", "imu_frame")
+        self.imu_frame = self.ros_node.get_parameter("imu_frame").get_parameter_value().string_value
         if self.ros_active:
-            self.declare_parameter("l_sole_frame", "l_sole")
-            self.declare_parameter("r_sole_frame", "r_sole")
-            self.declare_parameter("camera_optical_frame", "camera_optical_frame")
-            self.declare_parameter("head_imu_frame", "head_imu_frame")
-            self.l_sole_frame = self.get_parameter("l_sole_frame").get_parameter_value().string_value
-            self.r_sole_frame = self.get_parameter("r_sole_frame").get_parameter_value().string_value
-            self.camera_optical_frame = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
-            self.head_imu_frame = self.get_parameter("head_imu_frame").get_parameter_value().string_value
-            self.pub_js = self.create_publisher(JointState, base_ns + "joint_states", 1)
-            self.pub_imu = self.create_publisher(Imu, base_ns + "imu/data_raw", 1)
+            self.ros_node.declare_parameter("l_sole_frame", "l_sole")
+            self.ros_node.declare_parameter("r_sole_frame", "r_sole")
+            self.ros_node.declare_parameter("camera_optical_frame", "camera_optical_frame")
+            self.ros_node.declare_parameter("head_imu_frame", "head_imu_frame")
+            self.l_sole_frame = self.ros_node.get_parameter("l_sole_frame").get_parameter_value().string_value
+            self.r_sole_frame = self.ros_node.get_parameter("r_sole_frame").get_parameter_value().string_value
+            self.camera_optical_frame = self.ros_node.get_parameter("camera_optical_frame").get_parameter_value().string_value
+            self.head_imu_frame = self.ros_node.get_parameter("head_imu_frame").get_parameter_value().string_value
+            self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states", 1)
+            self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
-            self.pub_imu_head = self.create_publisher(Imu, base_ns + "imu_head/data", 1)
-            self.pub_cam = self.create_publisher(Image, base_ns + "camera/image_proc", 1)
-            self.pub_cam_info = self.create_publisher(CameraInfo, base_ns + "camera/camera_info", 1)
+            self.pub_imu_head = self.ros_node.create_publisher(Imu, base_ns + "imu_head/data", 1)
+            self.pub_cam = self.ros_node.create_publisher(Image, base_ns + "camera/image_proc", 1)
+            self.pub_cam_info = self.ros_node.create_publisher(CameraInfo, base_ns + "camera/camera_info", 1)
 
-            self.pub_pres_left = self.create_publisher(FootPressure, base_ns + "foot_pressure_left/raw", 1)
-            self.pub_pres_right = self.create_publisher(FootPressure, base_ns + "foot_pressure_right/raw", 1)
-            self.cop_l_pub_ = self.create_publisher(PointStamped, base_ns + "cop_l", 1)
-            self.cop_r_pub_ = self.create_publisher(PointStamped, base_ns + "cop_r", 1)
-            self.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
+            self.pub_pres_left = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_left/raw", 1)
+            self.pub_pres_right = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_right/raw", 1)
+            self.cop_l_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_l", 1)
+            self.cop_r_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_r", 1)
+            self.ros_node.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
 
         if robot == "op3":
             # start pose
