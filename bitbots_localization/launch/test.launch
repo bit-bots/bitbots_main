@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <include file="$(find-pkg-share bitbots_bringup)/launch/simulator_teamplayer.launch">
+  <include file="$(find-pkg-share bitbots_utils)/launch/simulator_teamplayer.launch">
     <arg name="behavior" value="false" />
     <arg name="game_controller" value="false" />
     <arg name="localization" value="true" />
