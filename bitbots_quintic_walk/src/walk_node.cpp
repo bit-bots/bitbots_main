@@ -10,9 +10,9 @@ using namespace std::chrono_literals;
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
-    Node("walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
+    Node(ns + "walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     walk_engine_(SharedPtr(this)),
-    stabilizer_(),
+    stabilizer_(ns),
     ik_(SharedPtr(this)),
     visualizer_(SharedPtr(this)) {
   // get all kinematics parameters from the move_group node if they are not set manually via constructor

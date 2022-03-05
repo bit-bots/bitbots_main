@@ -13,9 +13,6 @@ from rcl_interfaces.msg import Parameter
 
 class PyWalk:
     def __init__(self, namespace="", parameters: [Parameter]=[]):
-        # make namespace end with a /
-        if namespace != "" and namespace[-1] != '/':
-            namespace = namespace + "/"
         serialized_parameters = []
         for parameter in parameters:
             serialized_parameters.append(serialize_message(parameter))
