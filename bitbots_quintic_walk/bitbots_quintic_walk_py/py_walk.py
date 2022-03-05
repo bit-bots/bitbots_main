@@ -1,6 +1,7 @@
 from ros2param.api import parse_parameter_dict
 from std_msgs.msg import Int64
 
+from bitbots_moveit_bindings import libbitbots_moveit_bindings
 from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper, initRos
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose, PoseArray

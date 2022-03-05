@@ -16,10 +16,9 @@ walking:
       engine_freq: 1000.0
 
       # parameters for bioIK
-      ik_timeout: 0.001
+      ik_timeout: 0.01
 
       debug_active: False
-
 
       max_step_x: 1000.0
       max_step_y: 1000.0

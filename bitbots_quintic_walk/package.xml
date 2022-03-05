@@ -44,6 +44,7 @@
     <depend>tf2_geometry_msgs</depend>
     <depend>tf2_ros</depend>
 
+    <exec_depend>bitbots_moveit_bindings</exec_depend>
     <exec_depend>bitbots_teleop</exec_depend>
     <exec_depend>plotjuggler</exec_depend>
     <exec_depend>bitbots_odometry</exec_depend>
