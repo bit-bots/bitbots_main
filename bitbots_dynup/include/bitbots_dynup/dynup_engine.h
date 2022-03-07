@@ -12,6 +12,7 @@
 #include <bitbots_dynup/msg/dynup_engine_debug.hpp>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 #include "dynup_stabilizer.h"
 
 namespace bitbots_dynup {

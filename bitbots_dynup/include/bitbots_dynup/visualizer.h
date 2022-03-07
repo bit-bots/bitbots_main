@@ -35,4 +35,3 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 }
 
 #endif //BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
-ER_H_

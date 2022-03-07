@@ -6,7 +6,8 @@ if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif ()
 
-set(Python_ADDITIONAL_VERSIONS 3.8)
+set(PYBIND11_PYTHON_VERSION 3)
+set(PYBIND11_FINDPYTHON ON)
 
 #find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)

@@ -3,11 +3,10 @@
 namespace bitbots_dynup {
 
 DynupNode::DynupNode(const std::string &ns) :
-    Node("dynup_node", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
+    Node(ns + "dynup"),
     engine_(SharedPtr(this)),
-    visualizer_("debug/dynup"),
-    listener_(tf_buffer_),
-    robot_model_loader_(ns + "robot_description", false) {
+    stabilizer_(ns),
+    visualizer_("debug/dynup") {
 
 this->declare_parameter<std::string>("base_link_frame",  "base_link");
 this->get_parameter("base_link_frame",  base_link_frame_);
@@ -110,7 +109,6 @@ this->get_parameter("l_wrist_frame",  l_wrist_frame_);
   engine_.init(shoulder_origin.position.y, shoulder_origin.position.z);
   stabilizer_.setRobotModel(kinematic_model);
   ik_.init(kinematic_model);
-  stabilizer_.init(kinematic_model);
 
   callback_handle_ = this->add_on_set_parameters_callback(std::bind(&WalkNode::onSetParameters, this, _1));
 
@@ -174,7 +172,7 @@ void DynupNode::imuCallback(const sensor_msgs::msg::Imu &msg) {
   stabilizer_.setImu(msg);
 }
 
-rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
+rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
   params = this->get_parameters(param_names_);
   for (auto& param : params) {
     params_[param.get_name()] = param;
@@ -241,7 +239,7 @@ void DynupNode::execute(const bitbots_msgs::DynUpGoalSharedPtr &goal) {
 
 rclcpp_action::GoalResponse GoalCb(
     const rclcpp_action::GoalUUID & uuid,
-    const bitbots_msgs::DynUpGoalSharedPtr &goal)
+    std::shared_ptr<const DynupGoal> goal)
 {
   RCLCPP_INFO(this->get_logger(), "Received goal request with order %d", goal->order);
   (void)uuid;
@@ -249,16 +247,16 @@ rclcpp_action::GoalResponse GoalCb(
 }
 
 rclcpp_action::CancelResponse CancelCb(
-    const bitbots_msgs::DynUpGoalSharedPtr &goal) {
+    const std::shared_ptr<DynupGoalHandle> goal) {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
-  (void)&goal;
+  (void)goal;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void AcceptedCb(const bitbots_msgs::DynUpGoalSharedPtr &goal)
+void AcceptedCb(const std::shared_ptr<DynupGoalHandle> goal)
 {
   // this needs to return quickly to avoid blocking the executor, so spin up a new thread
-  std::thread{std::bind(&DynupNode::execute, this, _1), &goal}.detach();
+  std::thread{std::bind(&DynupNode::execute, this, _1), goal}.detach();
 }
 
 double DynupNode::getTimeDelta() {

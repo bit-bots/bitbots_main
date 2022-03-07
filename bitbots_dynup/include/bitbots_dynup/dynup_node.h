@@ -16,6 +16,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
+#include "bitbots_msgs/action/dynup.hpp"
 #include <bitbots_dynup/msg/dynup_poses.hpp>
 
 #include <tf2_ros/transform_listener.h>
@@ -37,6 +38,8 @@
 #include "bitbots_dynup/dynup_stabilizer.h"
 
 namespace bitbots_dynup {
+    using DynupGoal = bitbots_msgs::action::Dynup;
+    using DynupGoalHandle = rclcpp_action::ServerGoalHandle<DynupGoal>;
 
 /**
  * DynupNode is that part of bitbots_dynamic_DynUp which takes care of interacting with ROS and utilizes a DynUpEngine
@@ -49,26 +52,24 @@ namespace bitbots_dynup {
  */
 class DynupNode : public rclcpp::Node {
  public:
-  explicit DynupNode(const std::string &ns = std::string(), const rclcpp::NodeOptions &options = rclcpp::NodeOptions) : Node("dynup_node", options);
+  explicit DynupNode(std::string &ns, std::vector<rclcpp::Parameter> parameters = {}) {
+      this->server_ = rclcpp_action::create_server<DynupNode>(
+          this,
+          "dynup_node",
+          std::bind(&DynupNode::goalCb, this, _1, _2),
+          std::bind(&DynupNode::cancelCb, this, _1),
+          std::bind(&DynupNode::acceptedCb, this, _1));
+  };
 
   /**
    * Callback that gets executed whenever #m_server receives a new goal.
    * @param goal New goal to process
    */
-  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID & uuid, const bitbots_msgs::DynUpGoalSharedPtr &goal);
-  rclcpp_action::CancelResponse cancelCb(const bitbots_msgs::DynUpGoalSharedPtr &goal);
-  rclcpp_action::AcceptedResponse acceptedCb(const bitbots_msgs::DynUpGoalSharedPtr &goal);
+  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID & uuid, const DynupGoal goal);
+  rclcpp_action::CancelResponse cancelCb(const DynupGoalHandle goal);
+  void acceptedCb(const DynupGoalHandle goal);
 
-
-
-  this->server_ = rclcpp_action::create_server<DynupNode>(
-      this,
-      "dynup_node",
-      std::bind(&DynupNode::goalCb, this, _1, _2),
-      std::bind(&DynupNode::cancelCb, this, _1),
-      std::bind(&DynupNode::acceptedCb, this, _1));
-
-  rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
   void imuCallback(const sensor_msgs::msg::Imu &msg);
 
@@ -93,14 +94,13 @@ class DynupNode : public rclcpp::Node {
   void reset(int time=0);
 
  private:
-  rclcpp::Publisher debug_publisher_;
-
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
-  rclcpp::Subscription<DynupNode::imuCallback> cop_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr cop_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
 
-  std::vector<std::string> param_names_
-  rclcpp_action::Server<DynupNode>::SharedPtr action_server_;
+  std::vector<std::string> param_names_;
+  rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
   DynupEngine engine_;
   Stabilizer stabilizer_;
@@ -114,7 +114,7 @@ class DynupNode : public rclcpp::Node {
   double start_time_;
   bool debug_;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  tf2_ros::msg::TransformListener listener_;
+  tf2_ros::TransformListener listener_;
   robot_model_loader::RobotModelLoader robot_model_loader_;
 
   std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
