@@ -73,9 +73,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
   return response;
 }
 
-void Stabilizer::setParams(DynUpConfig params) {
-  use_stabilizing_ = params.stabilizing;
-  stable_threshold_ = params.stable_threshold;
+void Stabilizer::setParams(std::map<std::string, rclcpp::Parameter> params) {
+  use_stabilizing_ = params["stabilizing"].get_value<bool>();
+  stable_threshold_ = params["stable_threshold"].get_value<double>();
 
 }
 
@@ -92,11 +92,6 @@ void Stabilizer::setImu(sensor_msgs::msg::Imu imu) {
 }
 
 void Stabilizer::setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk) {
-  r_sole_to_trunk_ = r_sole_to_trunk;
-}
-
-}
-metry_msgs::TransformStamped r_sole_to_trunk) {
   r_sole_to_trunk_ = r_sole_to_trunk;
 }
 

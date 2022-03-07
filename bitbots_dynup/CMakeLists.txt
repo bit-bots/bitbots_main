@@ -6,6 +6,8 @@ if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif ()
 
+set(Python_ADDITIONAL_VERSIONS 3.8)
+
 #find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(bitbots_msgs REQUIRED)
@@ -63,6 +65,7 @@ ament_target_dependencies(DynupNode
         moveit_ros
         moveit_ros_planning_interface
         rclcpp
+        ros2_python_extension
         rotconv
         sensor_msgs
         std_msgs

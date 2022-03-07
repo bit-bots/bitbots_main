@@ -3,7 +3,8 @@
 namespace bitbots_dynup {
 
 DynupNode::DynupNode(const std::string &ns) :
-    server_(node_handle_, "dynup", boost::bind(&DynupNode::goalCb, this, _1), false),
+    Node("dynup_node", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
+    engine_(SharedPtr(this)),
     visualizer_("debug/dynup"),
     listener_(tf_buffer_),
     robot_model_loader_(ns + "robot_description", false) {
@@ -174,16 +175,19 @@ void DynupNode::imuCallback(const sensor_msgs::msg::Imu &msg) {
 }
 
 rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  params_ = this->get_parameters(param_names_);
-  engine_rate_ = params_.engine_rate;
-  debug_ = params_.display_debug;
+  params = this->get_parameters(param_names_);
+  for (auto& param : params) {
+    params_[param.get_name()] = param;
+  }
+  engine_rate_ = params_["engine_rate"].get_value<int>();
+  debug_ = params_["display_debug"].get_value<bool>();
 
   engine_.setParams(params_);
   stabilizer_.setParams(params_);
-  ik_.useStabilizing(params_.stabilizing)
+  ik_.useStabilizing(params_["stabilizing"].get_value<bool>())
 
   VisualizationParams viz_params = VisualizationParams();
-  viz_params.spline_smoothness = params_.spline_smoothness;
+  viz_params.spline_smoothness = params_["spline_smoothness"].get_value<int>();
   visualizer_.setParams(viz_params);
 
   rcl_interfaces::msg::SetParametersResult result;

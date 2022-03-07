@@ -23,7 +23,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void init(moveit::core::RobotModelPtr kinematic_model);
   DynupResponse stabilize(const DynupResponse &response, const rclcpp::Duration &dt) override;
   void setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk);
-  void setParams(std::vector<rclcpp::Parameter> params);
+  void setParams(std::map<std::string, rclcpp::Parameter> params);
   void setRobotModel(moveit::core::RobotModelPtr model);
   void reset() override;
   void setImu(sensor_msgs::msg::Imu imu);

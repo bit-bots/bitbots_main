@@ -60,14 +60,15 @@ class DynupNode : public rclcpp::Node {
   rclcpp_action::AcceptedResponse acceptedCb(const bitbots_msgs::DynUpGoalSharedPtr &goal);
 
 
-  this->action_server_ = rclcpp_action::create_server<DynupNode>(
+
+  this->server_ = rclcpp_action::create_server<DynupNode>(
       this,
       "dynup_node",
       std::bind(&DynupNode::goalCb, this, _1, _2),
       std::bind(&DynupNode::cancelCb, this, _1),
       std::bind(&DynupNode::acceptedCb, this, _1));
 
-  rcl_interfaces::msg::SetParametersResult WalkNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+  rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
   void imuCallback(const sensor_msgs::msg::Imu &msg);
 
@@ -99,13 +100,13 @@ class DynupNode : public rclcpp::Node {
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
 
   std::vector<std::string> param_names_
+  rclcpp_action::Server<DynupNode>::SharedPtr action_server_;
 
-  ActionServer server_;
   DynupEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
-  std::vector<rclcpp::Parameter> params_;
+  std::map<std::string, rclcpp::Parameter> params_;
   int stable_duration_;
   int engine_rate_;
   int failed_tick_counter_;

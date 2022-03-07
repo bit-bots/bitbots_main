@@ -23,11 +23,11 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
 
   void setParams(VisualizationParams params);
 
-  void displaySplines(bitbots_splines::msg::PoseSpline splines, const std::string &frame);
+  void displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame);
 
  private:
   
-  rclcpp::Publisher spline_publisher_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr spline_publisher_;
   std::string base_topic_;
   const std::string marker_ns_ = "bitbots_dynup";
   VisualizationParams params_;
