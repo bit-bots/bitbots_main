@@ -114,39 +114,12 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         self._model = torch_models.load_model(config_path, weights_path)
 
     def _compute_new_prediction(self) -> None:
-        preprocessed_imge = self._preprocess_image()
-
         detections, segmentation = torch_detect.detect_image(self._model,
-                                                             cv2.cvtColor(preprocessed_imge, cv2.COLOR_BGR2RGB),
-                                                             img_size=preprocessed_imge.shape[0],
+                                                             cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB),
                                                              conf_thres=self._det_confidence_thresh,
                                                              nms_thres=self._iou_non_max_suppression_thresh)
         self._set_detection_candidates(detections)
         self._set_segmentations(segmentation)
-
-    def _preprocess_image(self):
-        self._determine_max_image_dimension()
-        self._calculate_horizontal_padding()
-        self._calculate_vertical_padding()
-        return self._pad_image()
-
-    def _determine_max_image_dimension(self) -> None:
-        self._max_image_dimension = max(*self._image.shape[0:2])
-
-    def _calculate_horizontal_padding(self) -> None:
-        self._horizontal_padding = (self._max_image_dimension - self._image.shape[1]) // 2
-
-    def _calculate_vertical_padding(self) -> None:
-        self._vertical_padding = (self._max_image_dimension - self._image.shape[0]) // 2
-
-    def _pad_image(self):
-        return cv2.copyMakeBorder(self._image,
-                                  self._vertical_padding,
-                                  self._vertical_padding,
-                                  self._horizontal_padding,
-                                  self._horizontal_padding,
-                                  cv2.BORDER_CONSTANT,
-                                  value=0)
 
     def _set_detection_candidates(self, detections: Any) -> None:
         for detection in detections:
@@ -154,17 +127,10 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
             self._det_candidates[self._det_class_names[int(detection[5])]].append(c)
 
     def _set_segmentations(self, segmentation: Any) -> None:
-        segmentation = self._postprocess_segmentations(segmentation)
+        segmentation = moveaxis(segmentation, 0, -1)
         for i, class_name in enumerate(self._seg_class_names):
             seg = where(segmentation == i, array(1, dtype=ubyte), array(0, dtype=ubyte))
             self._seg_candidates[class_name] = seg
-
-    def _postprocess_segmentations(self, segmentation: Any):
-        segmentation = moveaxis(segmentation, 0, -1)
-        segmentation = segmentation[self._vertical_padding:(self._max_image_dimension - self._vertical_padding),
-                                    self._horizontal_padding:(self._max_image_dimension - self._horizontal_padding),
-                                    ...]
-        return segmentation
 
 
 class YOEODetectorTemplate(CandidateFinder):
