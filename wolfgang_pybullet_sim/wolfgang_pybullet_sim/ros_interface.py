@@ -287,7 +287,8 @@ class ROSInterface():
 
     def parameters_callback(self, params):
         # we just get all parameters again, since it is easier
-        #todo maybe just set the new ones
+        #todo I think this does not really work like this?? needs testing
+        self.node.get_logger().warn("Not sure if this parameter callback works.")
         self.simulation.set_dynamics(
             contact_damping=self.node.get_parameter("contact_damping").get_parameter_value().double_value,
             contact_stiffness=self.node.get_parameter("contact_stiffness").get_parameter_value().double_value,
@@ -295,5 +296,5 @@ class ROSInterface():
             spinning_friction=self.node.get_parameter("spinning_friction").get_parameter_value().double_value,
             rolling_friction=self.node.get_parameter("rolling_friction").get_parameter_value().double_value,
             restitution=self.node.get_parameter("restitution").get_parameter_value().double_value)
-        self.simulation.set_filter_params(self.node.get_parameter("cutoff").get_parameter_value().int_value,
-                                          self.node.get_parameter("order").get_parameter_value().int_value)
+        self.simulation.set_filter_params(self.node.get_parameter("cutoff").get_parameter_value().integer_value,
+                                          self.node.get_parameter("order").get_parameter_value().integer_value)
