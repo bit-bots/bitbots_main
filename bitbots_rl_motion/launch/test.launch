@@ -6,7 +6,7 @@
   <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
   <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-  <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" >
+  <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
       <arg name="sim" value="$(var sim)"/>
   </include>
 

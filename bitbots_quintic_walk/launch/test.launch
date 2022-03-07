@@ -7,7 +7,7 @@
   <let name="taskset" value=""/><!--todo hack-->
 
   <group>
-      <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch" >
+      <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
           <arg name="sim" value="$(var sim)"/>
       </include>
   </group>

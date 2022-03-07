@@ -1,6 +1,7 @@
 from ros2param.api import parse_parameter_dict
 from std_msgs.msg import Int64
 
+from bitbots_moveit_bindings import libbitbots_moveit_bindings
 from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper, initRos
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose, PoseArray
@@ -12,9 +13,6 @@ from rcl_interfaces.msg import Parameter
 
 class PyWalk:
     def __init__(self, namespace="", parameters: [Parameter]=[]):
-        # make namespace end with a /
-        if namespace != "" and namespace[-1] != '/':
-            namespace = namespace + "/"
         serialized_parameters = []
         for parameter in parameters:
             serialized_parameters.append(serialize_message(parameter))
@@ -98,3 +96,6 @@ class PyWalk:
         odom = self.py_walk_wrapper.get_odom()
         result = deserialize_message(odom, Odometry)
         return result
+
+    def publish_debug(self):
+        self.py_walk_wrapper.publish_debug()

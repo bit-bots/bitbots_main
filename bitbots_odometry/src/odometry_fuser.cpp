@@ -28,11 +28,11 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   this->get_parameter("imu_frame", imu_frame_);
 
   walk_support_state_sub_ =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("walk_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
   kick_support_state_sub_ =
-      this->create_subscription<bitbots_msgs::msg::SupportState>("dynamic_kick_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
 }
@@ -65,90 +65,84 @@ void OdometryFuser::loop() {
   }
 
   auto node_pointer = this->shared_from_this();
-  rclcpp::Rate r(500.0);
   rclcpp::Time last_time_stamp(0, 0, RCL_ROS_TIME);
   fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   while (rclcpp::ok()) {
+    rclcpp::Time startTime = this->get_clock()->now();
+
     rclcpp::spin_some(node_pointer);
-    if (r.sleep()) {
-      // in simulation, the time does not always advance between loop iteration
-      // in that case, we do not want to republish the transform
-      if (fused_time_ == last_time_stamp) {
-        r.sleep();
-        continue;
-      }
 
-      // get roll an pitch from imu
-      tf2::Quaternion imu_orientation;
-      tf2::fromMsg(imu_data_.orientation, imu_orientation);
+    // get roll an pitch from imu
+    tf2::Quaternion imu_orientation;
+    tf2::fromMsg(imu_data_.orientation, imu_orientation);
 
-      // get motion_odom transform
-      tf2::Transform motion_odometry;
-      tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
+    // get motion_odom transform
+    tf2::Transform motion_odometry;
+    tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
 
-      // combine orientations to new quaternion if IMU is active, use purely odom otherwise
-      tf2::Transform fused_odometry;
+    // combine orientations to new quaternion if IMU is active, use purely odom otherwise
+    tf2::Transform fused_odometry;
 
-      // compute the point of rotation (in base_link frame)
-      tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
-      // publish rotation point as debug
-      geometry_msgs::msg::TransformStamped rotation_point_msg;
-      rotation_point_msg.header.stamp = fused_time_;
-      rotation_point_msg.header.frame_id = base_link_frame_;
-      rotation_point_msg.child_frame_id = rotation_frame_;
-      geometry_msgs::msg::Transform rotation_point_transform_msg;
-      rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
-      rotation_point_msg.transform = rotation_point_transform_msg;
-      br->sendTransform(rotation_point_msg);
-      // get base_link in rotation point frame
-      tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
+    // compute the point of rotation (in base_link frame)
+    tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
+    // publish rotation point as debug
+    geometry_msgs::msg::TransformStamped rotation_point_msg;
+    rotation_point_msg.header.stamp = fused_time_;
+    rotation_point_msg.header.frame_id = base_link_frame_;
+    rotation_point_msg.child_frame_id = rotation_frame_;
+    geometry_msgs::msg::Transform rotation_point_transform_msg;
+    rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
+    rotation_point_msg.transform = rotation_point_transform_msg;
+    br->sendTransform(rotation_point_msg);
+    // get base_link in rotation point frame
+    tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
 
-      // get only translation and yaw from motion odometry
-      tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(
-          motion_odometry.getRotation());
-      tf2::Transform motion_odometry_yaw;
-      motion_odometry_yaw.setRotation(odom_orientation_yaw);
-      motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
+    // get only translation and yaw from motion odometry
+    tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(
+        motion_odometry.getRotation());
+    tf2::Transform motion_odometry_yaw;
+    motion_odometry_yaw.setRotation(odom_orientation_yaw);
+    motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
-      // Get the rotation offset between the IMU and the baselink
-      tf2::Transform imu_mounting_offset;
-      try {
-        geometry_msgs::msg::TransformStamped imu_mounting_transform = tf_buffer_->lookupTransform(
-            base_link_frame_, imu_frame_, fused_time_);
-        fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
-      } catch (tf2::TransformException &ex) {
-        RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU%s", ex.what());
-      }
-
-      // get imu transform without yaw
-      tf2::Quaternion imu_orientation_without_yaw_component = getCurrentImuRotationWithoutYaw(
-          imu_orientation * imu_mounting_offset.getRotation());
-      tf2::Transform imu_without_yaw_component;
-      imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
-      imu_without_yaw_component.setOrigin({0, 0, 0});
-
-      // transformation chain to get correctly rotated odom frame
-      // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-      fused_odometry =
-          motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point;
-
-      // combine it all into a tf
-      tf.header.stamp = fused_time_;
-      tf.header.frame_id = odom_frame_;
-      tf.child_frame_id = base_link_frame_;
-      geometry_msgs::msg::Transform fused_odom_msg;
-      fused_odom_msg = toMsg(fused_odometry);
-      tf.transform = fused_odom_msg;
-      br->sendTransform(tf);
-
-      last_time_stamp = fused_time_;
-    } else {
-      usleep(1);
+    // Get the rotation offset between the IMU and the baselink
+    tf2::Transform imu_mounting_offset;
+    try {
+      geometry_msgs::msg::TransformStamped imu_mounting_transform = tf_buffer_->lookupTransform(
+          base_link_frame_, imu_frame_, fused_time_);
+      fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
+    } catch (tf2::TransformException &ex) {
+      RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU%s", ex.what());
     }
+
+    // get imu transform without yaw
+    tf2::Quaternion imu_orientation_without_yaw_component = getCurrentImuRotationWithoutYaw(
+        imu_orientation * imu_mounting_offset.getRotation());
+    tf2::Transform imu_without_yaw_component;
+    imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
+    imu_without_yaw_component.setOrigin({0, 0, 0});
+
+    // transformation chain to get correctly rotated odom frame
+    // go to the rotation point in the odom frame. rotate the transform to the base link at this point
+    fused_odometry =
+        motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point;
+
+    // combine it all into a tf
+    tf.header.stamp = fused_time_;
+    tf.header.frame_id = odom_frame_;
+    tf.child_frame_id = base_link_frame_;
+    geometry_msgs::msg::Transform fused_odom_msg;
+    fused_odom_msg = toMsg(fused_odometry);
+    tf.transform = fused_odom_msg;
+    br->sendTransform(tf);
+
+    last_time_stamp = fused_time_;
+
+    this->get_clock()->sleep_until(
+      startTime + rclcpp::Duration::from_nanoseconds(1e9 / 500));
   }
 }
 
-void OdometryFuser::supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg) {
+void OdometryFuser::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
   support_state_cache_.add(msg);
 }
 
@@ -204,24 +198,24 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
   geometry_msgs::msg::TransformStamped rotation_point;
   tf2::Transform rotation_point_tf;
 
-  char current_support_state = bitbots_msgs::msg::SupportState::DOUBLE;
+  char current_support_state = biped_interfaces::msg::Phase::DOUBLE_STANCE;
 
-  bitbots_msgs::msg::SupportState::ConstSharedPtr
-      current_support_state_msg = support_state_cache_.getElemBeforeTime(fused_time_);
+  // this is a hack due to an error in message filter library https://github.com/ros2/message_filters/issues/32
+  rclcpp::Time hack_time = rclcpp::Time(fused_time_.seconds(), fused_time_.nanoseconds());
+  biped_interfaces::msg::Phase::ConstSharedPtr
+      current_support_state_msg = support_state_cache_.getElemBeforeTime(hack_time);
 
   if (current_support_state_msg) {
-    current_support_state = current_support_state_msg->state;
+    current_support_state = current_support_state_msg->phase;
   }
-
   // Wait for the forward kinematics of both legs (simplified by transforming from one to the other) to be avalible for the current fusing operation
   tf_buffer_->canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
-
   // otherwise point of rotation is current support foot sole or center point of the soles if double support
-  if (current_support_state == bitbots_msgs::msg::SupportState::RIGHT
-      || current_support_state == bitbots_msgs::msg::SupportState::LEFT) {
+  if (current_support_state == biped_interfaces::msg::Phase::RIGHT_STANCE
+      || current_support_state == biped_interfaces::msg::Phase::LEFT_STANCE) {
     try {
       std::string support_frame;
-      if (current_support_state == bitbots_msgs::msg::SupportState::RIGHT)
+      if (current_support_state == biped_interfaces::msg::Phase::RIGHT_STANCE)
         support_frame = r_sole_frame_;
       else
         support_frame = l_sole_frame_;
@@ -231,7 +225,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
     } catch (tf2::TransformException &ex) {
       RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
     }
-  } else if (current_support_state == bitbots_msgs::msg::SupportState::DOUBLE) {
+  } else if (current_support_state == biped_interfaces::msg::Phase::DOUBLE_STANCE) {
     try {
       // use point between soles if double support or unknown support
       geometry_msgs::msg::TransformStamped base_to_l_sole;

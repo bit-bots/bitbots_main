@@ -47,6 +47,9 @@ ament_target_dependencies(${PROJECT_NAME}
     moveit_ros_planning
     Eigen3
     PkgConfig
+    fmt
+    fp
+    range-v3
 )
 
 install(DIRECTORY include/

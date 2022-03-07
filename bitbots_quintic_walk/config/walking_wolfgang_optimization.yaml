@@ -1,4 +1,4 @@
-walking:
+/**:
   ros__parameters:
     engine:
       foot_apex_phase: 0.5
@@ -10,16 +10,14 @@ walking:
       kick_vel: 0.2
       kick_phase: 0.75
 
-
     node:
       # update frequency of the engine
       engine_freq: 1000.0
 
       # parameters for bioIK
-      ik_timeout: 0.001
+      ik_timeout: 0.01
 
       debug_active: False
-
 
       max_step_x: 1000.0
       max_step_y: 1000.0
@@ -43,23 +41,3 @@ walking:
       phase_reset_phase: 0.25
       joint_min_effort: 35.0
       effort_phase_reset_active: False
-
-pid_trunk_fused_pitch:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: False
-
-pid_trunk_fused_roll:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: False

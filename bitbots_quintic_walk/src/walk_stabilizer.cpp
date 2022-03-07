@@ -2,9 +2,9 @@
 
 namespace bitbots_quintic_walk {
 
-WalkStabilizer::WalkStabilizer(){
-  pitch_node_ = rclcpp::Node::make_shared("pid_trunk_fused_pitch");
-  roll_node_ = rclcpp::Node::make_shared("pid_trunk_fused_roll");
+WalkStabilizer::WalkStabilizer(std::string ns){
+  pitch_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_pitch");
+  roll_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_roll");
 
   pitch_node_->declare_parameter<double>("p", 0.0);
   pitch_node_->declare_parameter<double>("i", 0.0);

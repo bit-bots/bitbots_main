@@ -15,7 +15,7 @@
     <group if="$(var wolfgang)">
         <param from="$(find-pkg-share bitbots_hcm)/config/hcm_wolfgang.yaml" command="load"/>
             <group if="$(var use_game_settings)">
-                <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+                <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
             </group>
         <node name="hcm" pkg="bitbots_hcm" exec="humanoid_control_module.py" args="" output="screen" launch-prefix="$(var taskset)">
         </node>

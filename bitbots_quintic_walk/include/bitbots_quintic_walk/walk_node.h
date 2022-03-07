@@ -30,7 +30,7 @@ https://github.com/Rhoban/model/
 #include "humanoid_league_msgs/msg/robot_control_state.hpp"
 #include "bitbots_msgs/msg/joint_command.hpp"
 #include "bitbots_msgs/msg/foot_pressure.hpp"
-#include "bitbots_msgs/msg/support_state.hpp"
+#include "biped_interfaces/msg/phase.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/LinearMath/Vector3.h>
@@ -107,6 +107,8 @@ class WalkNode : public rclcpp::Node {
   nav_msgs::msg::Odometry getOdometry();
 
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+
+  void publish_debug();
 
  private:
   std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
@@ -190,7 +192,7 @@ class WalkNode : public rclcpp::Node {
 
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
-  rclcpp::Publisher<bitbots_msgs::msg::SupportState>::SharedPtr pub_support_;
+  rclcpp::Publisher<biped_interfaces::msg::Phase>::SharedPtr pub_support_;
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr step_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;

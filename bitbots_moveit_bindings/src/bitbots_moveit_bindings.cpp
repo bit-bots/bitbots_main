@@ -57,7 +57,7 @@ class BitbotsMoveitBindings {
     robot_model_ = loader_->getModel();
     if (!robot_model_) {
       RCLCPP_ERROR(node_->get_logger(),
-                   "failed to load robot model %s. Did you start the blackboard (bitbots_bringup load_robot_description.launch)?",
+                   "failed to load robot model %s. Did you start the blackboard (bitbots_bringup base.launch)?",
                    robot_description.c_str());
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));

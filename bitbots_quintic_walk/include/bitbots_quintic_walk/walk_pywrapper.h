@@ -44,6 +44,7 @@ class PyWalkWrapper {
   double get_phase();
   double get_freq();
   void spin_some();
+  void publish_debug();
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;

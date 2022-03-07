@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
+        - /TF1
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz_common/Selection
@@ -34,7 +35,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz_default_plugins/Grid
       Color: 160; 160; 164
-      Enabled: true
+      Enabled: false
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
@@ -47,7 +48,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
@@ -295,9 +296,195 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base_footprint:
+          Value: true
+        base_link:
+          Value: true
+        camera:
+          Value: true
+        camera_optical_frame:
+          Value: true
+        head:
+          Value: true
+        imu_frame:
+          Value: true
+        imu_frame_2:
+          Value: true
+        l_ankle:
+          Value: true
+        l_cleat_l_back:
+          Value: true
+        l_cleat_l_front:
+          Value: true
+        l_cleat_r_back:
+          Value: true
+        l_cleat_r_front:
+          Value: true
+        l_foot:
+          Value: true
+        l_hip_1:
+          Value: true
+        l_hip_2:
+          Value: true
+        l_lower_arm:
+          Value: true
+        l_lower_leg:
+          Value: true
+        l_shoulder:
+          Value: true
+        l_sole:
+          Value: true
+        l_toe:
+          Value: true
+        l_upper_arm:
+          Value: true
+        l_upper_leg:
+          Value: true
+        l_wrist:
+          Value: true
+        llb:
+          Value: true
+        llf:
+          Value: true
+        lrb:
+          Value: true
+        lrf:
+          Value: true
+        neck:
+          Value: true
+        odom:
+          Value: true
+        r_ankle:
+          Value: true
+        r_cleat_l_back:
+          Value: true
+        r_cleat_l_front:
+          Value: true
+        r_cleat_r_back:
+          Value: true
+        r_cleat_r_front:
+          Value: true
+        r_foot:
+          Value: true
+        r_hip_1:
+          Value: true
+        r_hip_2:
+          Value: true
+        r_lower_arm:
+          Value: true
+        r_lower_leg:
+          Value: true
+        r_shoulder:
+          Value: true
+        r_sole:
+          Value: true
+        r_toe:
+          Value: true
+        r_upper_arm:
+          Value: true
+        r_upper_leg:
+          Value: true
+        r_wrist:
+          Value: true
+        rlb:
+          Value: true
+        rlf:
+          Value: true
+        rotation:
+          Value: true
+        rrb:
+          Value: true
+        rrf:
+          Value: true
+        torso:
+          Value: true
+      Marker Scale: 0.20000000298023224
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        odom:
+          base_link:
+            base_footprint:
+              {}
+            rotation:
+              {}
+            torso:
+              imu_frame:
+                {}
+              l_hip_1:
+                l_hip_2:
+                  l_upper_leg:
+                    l_lower_leg:
+                      l_ankle:
+                        l_foot:
+                          l_sole:
+                            {}
+                          l_toe:
+                            {}
+                          llb:
+                            l_cleat_l_back:
+                              {}
+                          llf:
+                            l_cleat_l_front:
+                              {}
+                          lrb:
+                            l_cleat_r_back:
+                              {}
+                          lrf:
+                            l_cleat_r_front:
+                              {}
+              l_shoulder:
+                l_upper_arm:
+                  l_lower_arm:
+                    l_wrist:
+                      {}
+              neck:
+                head:
+                  camera:
+                    {}
+                  camera_optical_frame:
+                    {}
+                  imu_frame_2:
+                    {}
+              r_hip_1:
+                r_hip_2:
+                  r_upper_leg:
+                    r_lower_leg:
+                      r_ankle:
+                        r_foot:
+                          r_sole:
+                            {}
+                          r_toe:
+                            {}
+                          rlb:
+                            r_cleat_l_back:
+                              {}
+                          rlf:
+                            r_cleat_l_front:
+                              {}
+                          rrb:
+                            r_cleat_r_back:
+                              {}
+                          rrf:
+                            r_cleat_r_front:
+                              {}
+              r_shoulder:
+                r_upper_arm:
+                  r_lower_arm:
+                    r_wrist:
+                      {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 166; 255; 176
     Fixed Frame: base_link
     Frame Rate: 30
   Name: root
@@ -341,25 +528,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.7073681354522705
+      Distance: 1.5293351411819458
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.14304202795028687
-        Y: 0.0031085051596164703
-        Z: 0.0324888676404953
+        X: 0.19741742312908173
+        Y: 0.18146607279777527
+        Z: -0.09782134741544724
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2603982985019684
+      Pitch: 0.30999955534935
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.673576354980469
+      Yaw: 5.638584136962891
     Saved: ~
 Window Geometry:
   Displays:

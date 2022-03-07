@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch" >
+    <include file="$(find bitbots_bringup)/launch/base.launch" >
         <arg name="sim" value="true"/>
     </include>
 

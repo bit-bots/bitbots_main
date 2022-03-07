@@ -2,7 +2,7 @@
 
 namespace bitbots_quintic_walk {
 
-WalkIK::WalkIK() : ik_timeout_(0.01) {}
+WalkIK::WalkIK(rclcpp::Node::SharedPtr node) : node_(node), ik_timeout_(0.01) {}
 
 void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");

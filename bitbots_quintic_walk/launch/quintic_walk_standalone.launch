@@ -3,7 +3,7 @@
     <arg name="sim" default="false"/>
 
     <arg name="no_node" default="false"/>
-    <include file="$(find-pkg-share bitbots_bringup)/launch/load_robot_description.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
 

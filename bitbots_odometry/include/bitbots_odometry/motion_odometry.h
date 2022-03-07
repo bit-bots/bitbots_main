@@ -6,7 +6,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2/utils.h>
 #include <nav_msgs/msg/odometry.hpp>
-#include <bitbots_msgs/msg/support_state.hpp>
+#include <biped_interfaces/msg/phase.hpp>
 #include <unistd.h>
 #include <tf2_ros/buffer.h>
 using std::placeholders::_1;
@@ -26,8 +26,8 @@ class MotionOdometry : public rclcpp::Node {
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr walk_support_state_sub_;
-  rclcpp::Subscription<bitbots_msgs::msg::SupportState>::SharedPtr kick_support_state_sub_;
+  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
+  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
 
@@ -37,7 +37,7 @@ class MotionOdometry : public rclcpp::Node {
   double yaw_scaling_;
   bool publish_walk_odom_tf_;
 
-  void supportCallback(const bitbots_msgs::msg::SupportState::SharedPtr msg);
+  void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
 
