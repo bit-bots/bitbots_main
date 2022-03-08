@@ -26,14 +26,14 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : Node("convenience
   got_support_foot_ = false;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walking_support_foot_subscriber =
       this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
-                                                                 1,
-                                                                 std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
-                                                                           this, _1));
+                                                              1,
+                                                              std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
+                                                                        this, _1));
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr dynamic_kick_support_foot_subscriber =
       this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
-                                                                 1,
-                                                                 std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
-                                                                           this, _1));
+                                                              1,
+                                                              std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
+                                                                        this, _1));
   rclcpp::Subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>::SharedPtr ball_relative_subscriber =
       this->create_subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>("balls_relative",
                                                                                    1,
@@ -65,111 +65,125 @@ void ConvenienceFramesBroadcaster::loop() {
         front_foot; // foot that is currently in front of the other, in baselink frame
 
     try {
-      tf_right = tfBuffer_->lookupTransform(base_link_frame_,
-                                            r_sole_frame_,
-                                            this->now(),
-                                            rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
-      tf_left = tfBuffer_->lookupTransform(base_link_frame_,
-                                           l_sole_frame_,
-                                           this->now(),
-                                           rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
-      tf_right_toe = tfBuffer_->lookupTransform(base_link_frame_,
-                                                r_toe_frame_,
-                                                this->now(),
-                                                rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
-      tf_left_toe = tfBuffer_->lookupTransform(base_link_frame_,
-                                               l_toe_frame_,
-                                               this->now(),
-                                               rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
+      // first check if transforms are possible to prevent error spam
+      if (tfBuffer_->_frameExists(r_sole_frame_) && tfBuffer_->_frameExists(l_sole_frame_) &&
+          tfBuffer_->_frameExists(r_toe_frame_) && tfBuffer_->_frameExists(l_toe_frame_) &&
+          tfBuffer_->canTransform(base_link_frame_, r_sole_frame_, this->now()) &&
+          tfBuffer_->canTransform(base_link_frame_, l_sole_frame_, this->now()) &&
+          tfBuffer_->canTransform(base_link_frame_, r_toe_frame_, this->now()) &&
+          tfBuffer_->canTransform(base_link_frame_, l_toe_frame_, this->now())) {
 
-      // compute support foot
-      if (got_support_foot_) {
-        if (is_left_support) {
-          support_foot = tf_left;
-          non_support_foot = tf_right;
+        tf_right = tfBuffer_->lookupTransform(base_link_frame_,
+                                              r_sole_frame_,
+                                              this->now(),
+                                              rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
+        tf_left = tfBuffer_->lookupTransform(base_link_frame_,
+                                             l_sole_frame_,
+                                             this->now(),
+                                             rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
+        tf_right_toe = tfBuffer_->lookupTransform(base_link_frame_,
+                                                  r_toe_frame_,
+                                                  this->now(),
+                                                  rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
+        tf_left_toe = tfBuffer_->lookupTransform(base_link_frame_,
+                                                 l_toe_frame_,
+                                                 this->now(),
+                                                 rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
+
+        // compute support foot
+        if (got_support_foot_) {
+          if (is_left_support) {
+            support_foot = tf_left;
+            non_support_foot = tf_right;
+          } else {
+            support_foot = tf_right;
+            non_support_foot = tf_left;
+          }
         } else {
-          support_foot = tf_right;
-          non_support_foot = tf_left;
+          // check which foot is support foot (which foot is on the ground)
+          if (tf_right.transform.translation.z < tf_left.transform.translation.z) {
+            support_foot = tf_right;
+            non_support_foot = tf_left;
+          } else {
+            support_foot = tf_left;
+            non_support_foot = tf_right;
+          }
         }
-      } else {
-        // check which foot is support foot (which foot is on the ground)
-        if (tf_right.transform.translation.z < tf_left.transform.translation.z) {
-          support_foot = tf_right;
-          non_support_foot = tf_left;
+
+        // check with foot is in front
+        if (tf_right.transform.translation.x < tf_left.transform.translation.x) {
+          front_foot = tf_left_toe;
         } else {
-          support_foot = tf_left;
-          non_support_foot = tf_right;
+          front_foot = tf_right_toe;
         }
-      }
 
-      // check with foot is in front
-      if (tf_right.transform.translation.x < tf_left.transform.translation.x) {
-        front_foot = tf_left_toe;
-      } else {
-        front_foot = tf_right_toe;
-      }
+        // get the position of the non support foot in the support frame, used for computing the barycenter
+        non_support_foot_in_support_foot_frame = tfBuffer_->lookupTransform(support_foot.child_frame_id,
+                                                                            non_support_foot.child_frame_id,
+                                                                            support_foot.header.stamp,
+                                                                            rclcpp::Duration::from_nanoseconds(
+                                                                                1e9 * 0.1));
 
-      // get the position of the non support foot in the support frame, used for computing the barycenter
-      non_support_foot_in_support_foot_frame = tfBuffer_->lookupTransform(support_foot.child_frame_id,
-                                                                          non_support_foot.child_frame_id,
-                                                                          support_foot.header.stamp,
-                                                                          rclcpp::Duration::from_nanoseconds(
-                                                                              1e9 * 0.1));
+        geometry_msgs::msg::TransformStamped
+            support_to_base_link = tfBuffer_->lookupTransform(support_foot.header.frame_id,
+                                                              support_foot.child_frame_id,
+                                                              support_foot.header.stamp);
 
-      geometry_msgs::msg::TransformStamped
-          support_to_base_link = tfBuffer_->lookupTransform(support_foot.header.frame_id,
-                                                            support_foot.child_frame_id,
-                                                            support_foot.header.stamp);
+        geometry_msgs::msg::PoseStamped approach_frame;
+        // x at front foot toes
+        approach_frame.pose.position.x = front_foot.transform.translation.x;
+        // y between feet
+        tf2::Transform center_between_foot;
+        double y = non_support_foot_in_support_foot_frame.transform.translation.y / 2;
+        center_between_foot.setOrigin({0.0, y, 0.0});
+        center_between_foot.setRotation({0, 0, 0, 1});
+        tf2::Transform support_foot_tf;
+        tf2::fromMsg(support_foot.transform, support_foot_tf);
+        center_between_foot = support_foot_tf * center_between_foot;
+        approach_frame.pose.position.y = center_between_foot.getOrigin().y();
+        // z at ground leven (support foot height)
+        approach_frame.pose.position.z = support_foot.transform.translation.z;
 
-      geometry_msgs::msg::PoseStamped approach_frame;
-      // x at front foot toes
-      approach_frame.pose.position.x = front_foot.transform.translation.x;
-      // y between feet
-      tf2::Transform center_between_foot;
-      double y = non_support_foot_in_support_foot_frame.transform.translation.y / 2;
-      center_between_foot.setOrigin({0.0, y, 0.0});
-      center_between_foot.setRotation({0, 0, 0, 1});
-      tf2::Transform support_foot_tf;
-      tf2::fromMsg(support_foot.transform, support_foot_tf);
-      center_between_foot = support_foot_tf * center_between_foot;
-      approach_frame.pose.position.y = center_between_foot.getOrigin().y();
-      // z at ground leven (support foot height)
-      approach_frame.pose.position.z = support_foot.transform.translation.z;
+        // roll and pitch of support foot
+        double roll, pitch, yaw;
+        tf2::Quaternion quat;
+        fromMsg(support_foot.transform.rotation, quat);
+        tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+        // yaw of front foot
+        yaw = tf2::getYaw(front_foot.transform.rotation);
 
-      // roll and pitch of support foot
-      double roll, pitch, yaw;
-      tf2::Quaternion quat;
-      fromMsg(support_foot.transform.rotation, quat);
-      tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-      // yaw of front foot
-      yaw = tf2::getYaw(front_foot.transform.rotation);
+        // pitch and roll from support foot, yaw from base link
+        tf2::Quaternion rotation;
+        rotation.setRPY(roll, pitch, yaw);
+        approach_frame.pose.orientation = tf2::toMsg(rotation);
 
-      // pitch and roll from support foot, yaw from base link
-      tf2::Quaternion rotation;
-      rotation.setRPY(roll, pitch, yaw);
-      approach_frame.pose.orientation = tf2::toMsg(rotation);
+        // in simulation, the time does not always advance between loop iteration
+        // in that case, we do not want to republish the transform
+        rclcpp::Time now = this->now();
+        if (now != last_published_time) {
+          last_published_time = now;
 
-      // in simulation, the time does not always advance between loop iteration
-      // in that case, we do not want to republish the transform
-      rclcpp::Time now = this->now();
-      if (now != last_published_time) {
-        last_published_time = now;
-
-        // set the broadcasted transform to the position and orientation of the base footprint
-        tf_.header.stamp = now;
-        tf_.header.frame_id = base_link_frame_;
-        tf_.child_frame_id = approach_frame_;
-        tf_.transform.translation.x = approach_frame.pose.position.x;
-        tf_.transform.translation.y = approach_frame.pose.position.y;
-        tf_.transform.translation.z = approach_frame.pose.position.z;
-        tf_.transform.rotation = approach_frame.pose.orientation;
-        broadcaster_->sendTransform(tf_);
+          // set the broadcasted transform to the position and orientation of the base footprint
+          tf_.header.stamp = now;
+          tf_.header.frame_id = base_link_frame_;
+          tf_.child_frame_id = approach_frame_;
+          tf_.transform.translation.x = approach_frame.pose.position.x;
+          tf_.transform.translation.y = approach_frame.pose.position.y;
+          tf_.transform.translation.z = approach_frame.pose.position.z;
+          tf_.transform.rotation = approach_frame.pose.orientation;
+          broadcaster_->sendTransform(tf_);
+        } else {
+          RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                               "Missing frames for approach frame, not publishing transform");
+        }
       }
     } catch (...) {
+      // sleep for a bit to avoid spamming the console
+      rclcpp::sleep_for(std::chrono::milliseconds(1000));
       continue;
     }
     this->get_clock()->sleep_until(
-      startTime + rclcpp::Duration::from_nanoseconds(1e9 / 200));
+        startTime + rclcpp::Duration::from_nanoseconds(1e9 / 200));
   }
 }
 
