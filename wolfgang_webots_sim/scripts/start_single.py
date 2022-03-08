@@ -11,22 +11,22 @@ from wolfgang_webots_sim.webots_robot_controller import RobotController
 from controller import Robot
 
 
-class RobotNode(Node):
+class RobotNode:
     def __init__(self, pid_param_name, robot_name, void_controller, disable_camera, recognize, robot_type):
-        super().__init__('robot_node')
+        self.node = Node('robot_node')
         self.void_controller = void_controller
 
-        blackboard_client = self.create_client(GetParameters, '/parameter_blackboard/get_parameters')
+        blackboard_client = self.node.create_client(GetParameters, '/parameter_blackboard/get_parameters')
         while not blackboard_client.wait_for_service(timeout_sec=3.0):
-            self.get_logger().info('blackboard not available, waiting again...')
+            self.node.get_logger().info('blackboard not available, waiting again...')
         req = GetParameters.Request(names=[pid_param_name])
         while True:
             future = blackboard_client.call_async(req)
-            rclpy.spin_until_future_complete(self, future)
+            rclpy.spin_until_future_complete(self.node, future)
             if future.result() is not None:
                 break
             else:
-                self.get_logger().info("Waiting for parameter " + pid_param_name + " to be set..")
+                self.node.get_logger().info("Waiting for parameter " + pid_param_name + " to be set..")
                 time.sleep(2.0)
         webots_pid = future.result().values[0]
 
@@ -34,11 +34,11 @@ class RobotNode(Node):
         os.environ["WEBOTS_ROBOT_NAME"] = robot_name
 
         if void_controller:
-            self.get_logger().info("Starting void interface for " + robot_name)
+            self.node.get_logger().info("Starting void interface for " + robot_name)
             self.robot = Robot()
         else:
-            self.get_logger().info("Starting ros interface for " + robot_name)
-            self.robot = RobotController(robot=robot_type, ros_active=True, recognize=recognize, camera_active=(not disable_camera))
+            self.node.get_logger().info("Starting ros interface for " + robot_name)
+            self.robot = RobotController(ros_node=self.node, robot=robot_type, ros_active=True, recognize=recognize, camera_active=(not disable_camera))
 
     def run(self):
         while rclpy.ok():
@@ -63,10 +63,10 @@ if __name__ == "__main__":
     pid_param_name = "webots_pid" + args.sim_id
 
     rclpy.init()
-    node = RobotNode(pid_param_name, args.robot_name, args.void_controller, args.disable_camera, args.recognize, args.robot_type)
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+    robot = RobotNode(pid_param_name, args.robot_name, args.void_controller, args.disable_camera, args.recognize, args.robot_type)
+    thread = threading.Thread(target=rclpy.spin, args=(robot.node,), daemon=True)
     thread.start()
-    node.run()
+    robot.run()
 
-    node.destroy_node()
+    robot.node.destroy_node()
     rclpy.shutdown()

@@ -50,3 +50,8 @@ DEF amy Darwin-op {
   controller "<extern>"
   supervisor TRUE
 }
+
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
+}

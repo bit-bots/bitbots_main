@@ -9,6 +9,7 @@
     <arg name="sim_id" default="" description="Namespace if multiple simulations should be run at the same time"/>
     <arg name="camera" default="true" description="Turn on or off the camera (to speed up if only motion is required)"/>
     <arg name="recognition" default="false" description="Turn on or off automatic recognition for collection of training data"/>
+    <arg name="robot_type" default="wolfgang" description="What type of robot should be used"/>
 
     <let name="multi_robot_flag" value="$(eval '\'--multi-robot\' if \'$(var multi_robot)\'==\'true\' else \'\'')"/>
     <let name="gui_flag" value="$(eval '\'\' if \'$(var gui)\'==\'true\' else \'--nogui\'')"/>
@@ -16,13 +17,14 @@
 
     <!-- start simulation and supervisor either with or without gui -->
     <node pkg="wolfgang_webots_sim" exec="start_simulator.py" name="webots_sim"
-          output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag)"/>
+          output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag) --robot-type $(var robot_type)"/>
     <node pkg="wolfgang_webots_sim" exec="start_webots_ros_supervisor.py" name="webots_ros_supervisor" output="screen" />
 
     <group unless="$(var multi_robot)">
         <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
             <arg name="camera" value="$(var camera)"/>
             <arg name="recognition" value="$(var recognition)"/>
+            <arg name="robot_type" value="$(var robot_type)"/>
         </include>
         <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
     </group>

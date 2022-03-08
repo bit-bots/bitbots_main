@@ -17,7 +17,7 @@ G = 9.81
 
 
 class SupervisorController:
-    def __init__(self, ros_node: Node = None, ros_active=False, mode='normal', base_ns='', model_states_active=True):
+    def __init__(self, ros_node: Node = None, ros_active=False, mode='normal', base_ns='/', model_states_active=True):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
@@ -28,7 +28,7 @@ class SupervisorController:
         """
         self.ros_node = ros_node
         if self.ros_node is None:
-            self.ros_node = Node('supervisor_controller')
+            self.ros_node = RclpyNode('supervisor_controller')
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
         self.model_states_active = model_states_active
