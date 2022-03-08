@@ -16,7 +16,8 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
 class RobotController:
-    def __init__(self, ros_node: Node = None, ros_active=False, robot='wolfgang', robot_node=None, base_ns='', recognize=False,
+    def __init__(self, ros_node: Node = None, ros_active=False, robot='wolfgang', robot_node=None, base_ns='',
+                 recognize=False,
                  camera_active=True, foot_sensors_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
@@ -123,6 +124,25 @@ class RobotController:
             gyro_name = "Gyro"
             camera_name = "Camera"
             self.switch_coordinate_system = False
+        elif robot == 'rfc':
+            self.proto_motor_names = ["RightShoulderPitch [shoulder]", "LeftShoulderPitch [shoulder]",
+                                      "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow", "RightHipYaw",
+                                      "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]", "RightHipPitch",
+                                      "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
+                                      "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
+            self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
+                                         "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
+                                         "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
+                                         "LAnkleRoll", "HeadPan", "HeadTilt"]
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyroscope"
+            camera_name = "Camera"
+            self.switch_coordinate_system = False
+        else:
+            self.ros_node.get_logger().error("Robot type not supported: %s" % robot)
+            exit()
 
         self.motor_names_to_external_names = {}
         self.external_motor_names_to_motor_names = {}
@@ -178,7 +198,8 @@ class RobotController:
             self.ros_node.declare_parameter("head_imu_frame", "head_imu_frame")
             self.l_sole_frame = self.ros_node.get_parameter("l_sole_frame").get_parameter_value().string_value
             self.r_sole_frame = self.ros_node.get_parameter("r_sole_frame").get_parameter_value().string_value
-            self.camera_optical_frame = self.ros_node.get_parameter("camera_optical_frame").get_parameter_value().string_value
+            self.camera_optical_frame = self.ros_node.get_parameter(
+                "camera_optical_frame").get_parameter_value().string_value
             self.head_imu_frame = self.ros_node.get_parameter("head_imu_frame").get_parameter_value().string_value
             self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states", 1)
             self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
@@ -377,11 +398,11 @@ class RobotController:
             self.cam_info.height)
         f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
         self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2,
-                            0.0, f_y, self.cam_info.height / 2,
-                            0.0, 0.0, 1.0]
+                           0.0, f_y, self.cam_info.height / 2,
+                           0.0, 0.0, 1.0]
         self.cam_info.p = [f_x, 0.0, self.cam_info.width / 2, 0.0,
-                            0.0, f_y, self.cam_info.height / 2, 0.0,
-                            0.0, 0.0, 1.0, 0.0]
+                           0.0, f_y, self.cam_info.height / 2, 0.0,
+                           0.0, 0.0, 1.0, 0.0]
         self.pub_cam_info.publish(self.cam_info)
 
     def save_recognition(self):
