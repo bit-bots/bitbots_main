@@ -1,0 +1,62 @@
+#VRML_SIM R2021b utf8
+DEF world_info WorldInfo {
+  basicTimeStep 8
+  optimalThreadCount 1
+  physicsDisableTime 0.1
+  physicsDisableLinearThreshold 0.1
+  physicsDisableAngularThreshold 0.1
+  contactProperties [
+    ContactProperties {
+      material1 "grass"
+      coulombFriction [
+        0.5
+      ]
+      softCFM 0.03
+    }
+    ContactProperties {
+      material1 "grass"
+      material2 "robocup soccer ball"
+      coulombFriction [
+        0.5
+      ]
+      bounce 0.76
+      softCFM 0.05
+    }
+    ContactProperties {
+      material2 "robocup soccer ball"
+      bounce 0.76
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.2635181128215983 -0.36420919162686427 -0.8932580080522365 1.9916995318039916
+  position -9.204890354327318 3.450845837104254 7.847404655784381
+}
+TexturedBackground {
+  texture "stadium_dry"
+}
+TexturedBackgroundLight {
+  texture "stadium_dry"
+}
+DEF amy RobotisOp3 {
+  translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
+  name "amy"
+  controller "<extern>"
+  contactMaterial "default"
+  footContactMaterial "default"
+  handContactMaterial "default"
+  cameraWidth 800
+  cameraHeight 600
+}
+
+DEF ball RobocupSoccerBall {
+  translation 0 0 0.08
+}
+RobocupSoccerField {
+  size "kid"
+}
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
+}
