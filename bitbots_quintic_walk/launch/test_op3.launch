@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="sim" default="false"/>
+
+  <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
+  <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
+  <let name="taskset" value=""/><!--todo hack-->
+
+  <group>
+      <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
+          <arg name="sim" value="$(var sim)"/>
+          <arg name="robot_type" value="op3"/>
+      </include>
+  </group>
+
+  <group unless="$(var sim)">
+    <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+      <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_op3_robot.yaml"/>
+      <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+    </node>
+  </group>
+
+  <group if="$(var sim)">
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+      <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+      <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_op3_optimization.yaml"/>
+    </node>
+  </group>
+
+
+</launch>
