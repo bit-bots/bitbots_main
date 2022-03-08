@@ -65,7 +65,7 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
   buildStartMovementTrajectories();
 
   if (params_.foot_distance == 0) {
-    RCLCPP_WARN(node_->get_logger(), "Parameters are probably not loaded correctly");
+    RCLCPP_WARN(node_->get_logger(), "Parameters are probably not loaded correctly (unless you are running optimization)");
   }
 
 }

@@ -157,7 +157,7 @@ void MotionOdometry::loop() {
 
       } catch (tf2::TransformException &ex) {
         RCLCPP_WARN(this->get_logger(), "%s", ex.what());
-        rclcpp::sleep_for(std::chrono::milliseconds(100));
+        rclcpp::sleep_for(std::chrono::milliseconds(1000));
         continue;
       }
     }

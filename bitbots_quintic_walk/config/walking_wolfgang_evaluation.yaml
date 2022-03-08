@@ -39,6 +39,7 @@ walking:
 
       # parameters for bioIK
       ik_timeout: 0.001
+      ik_reset: True
 
       debug_active: False
 
