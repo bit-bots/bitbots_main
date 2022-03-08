@@ -34,7 +34,7 @@ class WebotsSim(Node):
             else:
                 world_name = "1_bot.wbt"
         else:
-            world_name = f"walk_optim_{robot_type}.wbt"
+            world_name = f"{robot_type}.wbt"
 
         if headless:
             cmd = [

@@ -29,8 +29,8 @@ DEF world_info WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.5822646357855299 -0.5251883903055194 -0.6206005547869271 1.9346482193122416
-  position -4.036544376977686 0.3816183435813319 0.8438038048983686
+  orientation 0.2635181128215983 -0.36420919162686427 -0.8932580080522365 1.9916995318039916
+  position -9.204890354327318 3.450845837104254 7.847404655784381
 }
 TexturedBackground {
   texture "stadium_dry"
@@ -38,15 +38,20 @@ TexturedBackground {
 TexturedBackgroundLight {
   texture "stadium_dry"
 }
-Floor {
-  rotation 1 0 0 1.57
-  contactMaterial "grass"
-  size 100 100
-  tileSize 2 2
-}
 DEF amy Darwin-op {
-  translation 0 0 0.31
+  translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
   name "amy"
   controller "<extern>"
-  supervisor TRUE
+}
+
+DEF ball RobocupSoccerBall {
+  translation 0 0 0.08
+}
+RobocupSoccerField {
+  size "kid"
+}
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
 }
