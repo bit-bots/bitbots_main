@@ -30,7 +30,7 @@ DEF world_info WorldInfo {
 }
 Viewpoint {
   orientation 0.5822646357855299 -0.5251883903055194 -0.6206005547869271 1.9346482193122416
-  position -4.202834140442779 2.0691769763877104 0.9004083608899398
+  position -4.036544376977686 0.3816183435813319 0.8438038048983686
 }
 TexturedBackground {
   texture "stadium_dry"
@@ -44,8 +44,8 @@ Floor {
   size 100 100
   tileSize 2 2
 }
-
 DEF amy Darwin-op {
+  translation 0 0 0.31
   name "amy"
   controller "<extern>"
   supervisor TRUE

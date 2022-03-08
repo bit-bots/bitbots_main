@@ -30,7 +30,7 @@ class RobotController:
         """
         self.ros_node = ros_node
         if self.ros_node is None:
-            self.ros_node = Node('robot_controller')
+            self.ros_node = RclpyNode('robot_controller')
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
@@ -81,7 +81,7 @@ class RobotController:
                 sensor.enable(self.timestep)
                 self.pressure_sensors.append(sensor)
 
-        elif robot == 'darwin':
+        elif robot in ['darwin', 'robotis_op2']:
             self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                       "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
                                       "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
@@ -89,6 +89,7 @@ class RobotController:
                                          "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
                                          "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
                                          "LAnkleRoll", "HeadPan", "HeadTilt"]
+            self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
@@ -101,6 +102,7 @@ class RobotController:
                                       "LAnkleRoll",
                                       "HeadYaw",
                                       "HeadPitch"]
+            self.pressure_sensors = None
             self.external_motor_names = self.proto_motor_names
             self.sensor_suffix = "S"
             accel_name = "accelerometer"
@@ -115,6 +117,7 @@ class RobotController:
                                          "r_el", "l_el", "r_hip_yaw", "l_hip_yaw", "r_hip_roll", "l_hip_roll",
                                          "r_hip_pitch", "l_hip_pitch", "r_knee", "l_knee", "r_ank_pitch",
                                          "l_ank_pitch", "r_ank_roll", "l_ank_roll", "head_pan", "head_tilt"]
+            self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
@@ -422,9 +425,8 @@ class RobotController:
         return self.camera.getImage()
 
     def get_pressure_message(self):
-
         current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
-        if not self.foot_sensors_active:
+        if not self.foot_sensors_active or self.pressure_sensors is None:
             cop_r = PointStamped()
             cop_r.header.frame_id = self.r_sole_frame
             cop_r.header.stamp = current_time
