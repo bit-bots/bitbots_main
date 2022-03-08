@@ -19,7 +19,7 @@ void Visualizer::setParams(VisualizationParams params) {
   params_ = params;
 }
 
-void Visualizer::displaySplines(bitbots_splines::msg::PoseSpline splines,
+void Visualizer::displaySplines(bitbots_splines::PoseSpline splines,
                                 const std::string &frame) {
   //if (spline_publisher_->get_subscription_count() == 0)
   //    return;

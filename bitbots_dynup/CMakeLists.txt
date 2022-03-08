@@ -8,6 +8,7 @@ endif ()
 
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
+
 #find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(bitbots_msgs REQUIRED)
@@ -65,6 +66,7 @@ ament_target_dependencies(DynupNode
         moveit_ros
         moveit_ros_planning_interface
         rclcpp
+        ros2_python_extension
         rotconv
         sensor_msgs
         std_msgs

@@ -2,6 +2,7 @@
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_UTILS_H_
 
 #include <tf2/LinearMath/Transform.h>
+#include <geometry_msgs/msg/pose.hpp>
 
 struct DynupResponse {
   tf2::Transform l_foot_goal_pose; //relative to r_foot_goal_pose
