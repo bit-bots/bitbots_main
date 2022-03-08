@@ -5,6 +5,7 @@
     <arg name="sim" default="false"/>
     <arg name="sim_ns" default="/" description="namespace for gazebo plugins" />
     <arg name="fake_walk" default="False" description="fake walk controller for simulation" />
+    <arg name="robot_type" default="wolfgang" description="what kind of robot should be started" />
 
     <!-- global parameters -->
     <node name="parameter_blackboard" pkg="demo_nodes_cpp" exec="parameter_blackboard">
@@ -17,6 +18,7 @@
     <group>
         <include file="$(find-pkg-share bitbots_utils)/launch/move_group.py">
           <arg name="sim" value="$(var sim)"/>
+          <arg name="robot_type" value="$(var robot_type)"/>
         </include>
     </group>
 

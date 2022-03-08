@@ -3,10 +3,12 @@ import os
 import yaml
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.utilities import normalize_to_list_of_substitutions
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import Command, TextSubstitution, LaunchConfiguration
+from launch.substitutions import TextSubstitution
 
 
 def load_file(package_name, file_path):
@@ -31,25 +33,23 @@ def load_yaml(package_name, file_path):
         return None
 
 
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
     sim = LaunchConfiguration("sim")
     fake_walk = LaunchConfiguration("fake_walk")
     sim_ns = LaunchConfiguration("sim_ns")
-
-    sim_arg = DeclareLaunchArgument('sim', default_value='False')
-    fake_walk_arg = DeclareLaunchArgument('fake_walk', default_value='False')
-    sim_ns_arg = DeclareLaunchArgument('sim_ns', default_value='/')
+    robot_type = LaunchConfiguration("robot_type")
 
     robot_description = ParameterValue(Command(['xacro ',
                                                 os.path.join(
-                                                    get_package_share_directory("wolfgang_description"),
+                                                    get_package_share_directory(f"{robot_type.perform(context)}_description"),
                                                     "urdf",
                                                     "robot.urdf",
                                                 ), " use_fake_walk:=", fake_walk, " sim_ns:=", sim_ns]),
                                        value_type=str)
 
-    robot_description_semantic_config = load_file("wolfgang_moveit_config", "config/wolfgang.srdf")
-    kinematics_yaml = load_yaml("wolfgang_moveit_config", "config/kinematics.yaml")
+    robot_description_semantic_config = load_file(f"{robot_type.perform(context)}_moveit_config",
+                                                  f"config/{robot_type.perform(context)}.srdf")
+    kinematics_yaml = load_yaml(f"{robot_type.perform(context)}_moveit_config", "config/kinematics.yaml")
 
     ompl_planning_pipeline_config = {
         "move_group": {
@@ -59,13 +59,12 @@ def generate_launch_description():
         }
     }
     ompl_planning_yaml = load_yaml(
-        "wolfgang_moveit_config", "config/ompl_planning.yaml"
+        f"{robot_type.perform(context)}_moveit_config", "config/ompl_planning.yaml"
     )
     ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
-
     # Trajectory Execution Functionality
     moveit_simple_controllers_yaml = load_yaml(
-        "wolfgang_moveit_config", "config/fake_controllers.yaml"
+        f"{robot_type.perform(context)}_moveit_config", "config/fake_controllers.yaml"
     )
     moveit_controllers = {
         "moveit_simple_controller_manager": moveit_simple_controllers_yaml,
@@ -89,7 +88,7 @@ def generate_launch_description():
     rsp_node = Node(package='robot_state_publisher',
                     executable='robot_state_publisher',
                     respawn=True,
-                    #output='screen',
+                    # output='screen',
                     parameters=[{
                         'robot_description': robot_description,
                         'publish_frequency': 1000.0,
@@ -100,7 +99,7 @@ def generate_launch_description():
 
     move_group_node = Node(package='moveit_ros_move_group',
                            executable='move_group',
-                           #output='screen',
+                           # output='screen',
                            # hacky merging dicts
                            parameters=[{
                                'robot_description': robot_description,
@@ -114,6 +113,15 @@ def generate_launch_description():
                                moveit_controllers,
                                planning_scene_monitor_parameters, ],
                            arguments=['--ros-args', '--log-level', 'WARN']
-                           ) #todo joint limits
+                           )  # todo joint limits
+    return [move_group_node, rsp_node]
 
-    return LaunchDescription([sim_arg, fake_walk_arg, sim_ns_arg, move_group_node, rsp_node])
+
+def generate_launch_description():
+    sim_arg = DeclareLaunchArgument('sim', default_value='False')
+    fake_walk_arg = DeclareLaunchArgument('fake_walk', default_value='False')
+    sim_ns_arg = DeclareLaunchArgument('sim_ns', default_value=TextSubstitution(text='/'))
+    robot_type_arg = DeclareLaunchArgument('robot_type', default_value=TextSubstitution(text='wolfgang'))
+
+    return LaunchDescription([sim_arg, fake_walk_arg, sim_ns_arg, robot_type_arg,
+                              OpaqueFunction(function=launch_setup)])
