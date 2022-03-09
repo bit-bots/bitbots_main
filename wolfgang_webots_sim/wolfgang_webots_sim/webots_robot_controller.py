@@ -40,6 +40,9 @@ class RobotController:
             self.robot_node = Robot()
         else:
             self.robot_node = robot_node
+        # get URDF
+        # with open("urdf_export.xml", "w+") as f:
+        #    f.writelines(self.robot_node.getUrdf())
         self.walkready = [0] * 20
         self.time = 0
 
@@ -130,10 +133,11 @@ class RobotController:
                                       "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]", "RightHipPitch",
                                       "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
                                       "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
-            self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
-                                         "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
-                                         "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
-                                         "LAnkleRoll", "HeadPan", "HeadTilt"]
+            self.external_motor_names = ["RightShoulderPitch [shoulder]", "LeftShoulderPitch [shoulder]",
+                                         "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow",
+                                         "RightHipYaw", "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]",
+                                         "RightHipPitch", "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch",
+                                         "LeftFootPitch", "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
