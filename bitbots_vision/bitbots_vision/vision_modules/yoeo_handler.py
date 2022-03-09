@@ -18,7 +18,37 @@ except ImportError:
     logger.error("Not able to import pytorchyolo. This might be fine if you use another method.")
 
 
-class YOEOHandlerTemplate(ABC):
+class IYOEOHandler(ABC):
+    @abstractmethod
+    def set_config(self, config: Dict) -> None:
+        ...
+
+    @abstractmethod
+    def get_detection_candidate_class_names(self) -> List[str]:
+        ...
+
+    @abstractmethod
+    def get_detection_candidates_for(self, class_name: str) -> List[Candidate]:
+        ...
+
+    @abstractmethod
+    def get_segmentation_candidate_class_names(self) -> List[str]:
+        ...
+
+    @abstractmethod
+    def get_segmentation_for(self, class_name: str):
+        ...
+
+    @abstractmethod
+    def predict(self) -> None:
+        ...
+
+    @abstractmethod
+    def set_image(self, img) -> None:
+        ...
+
+
+class YOEOHandlerTemplate(IYOEOHandler):
     def __init__(self, config: Dict, model_path: str):
         self._use_caching: Union[None, bool] = None
 
@@ -174,15 +204,32 @@ class YOEORobotDetector(YOEODetectorTemplate):
         return self._yoeo_handler.get_detection_candidates_for("robot")
 
 
-class YOEOSegmentationTemplate(ABC):
+class IYOEOSegmentation(ABC):
+    @abstractmethod
+    def compute(self) -> None:
+        ...
+
+    @abstractmethod
+    def get_mask(self):
+        """
+        :rtype: numpy.ndarray(shape=(height, width, 1))
+        """
+        ...
+
+    @abstractmethod
+    def set_image(self, image) -> None:
+        ...
+
+
+class YOEOSegmentationTemplate(IYOEOSegmentation):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         self._yoeo_handler = yoeo_handler
 
-    def set_image(self, image) -> None:
-        self._yoeo_handler.set_image(image)
-
     def compute(self) -> None:
         self._yoeo_handler.predict()
+
+    def set_image(self, image) -> None:
+        self._yoeo_handler.set_image(image)
 
     @abstractmethod
     def get_mask(self):
