@@ -1,7 +1,7 @@
 <launch>
 
   <group>
-    <include file="$(find-pkg-share wolfgang_description)/launch/wolfgang_rviz.launch"/>
+    <include file="$(find-pkg-share wolfgang_description)/launch/rviz.launch"/>
     <include file="$(find-pkg-share bitbots_utils)/launch/base.launch"/>
   </group>
 

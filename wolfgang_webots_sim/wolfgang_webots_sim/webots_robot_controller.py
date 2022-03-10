@@ -41,7 +41,7 @@ class RobotController:
         else:
             self.robot_node = robot_node
         # get URDF
-        # with open("urdf_export.xml", "w+") as f:
+        #with open("urdf_export.xml", "w+") as f:
         #    f.writelines(self.robot_node.getUrdf())
         self.walkready = [0] * 20
         self.time = 0
@@ -53,7 +53,6 @@ class RobotController:
         self.sensors_dict = {}
         self.timestep = int(self.robot_node.getBasicTimeStep())
 
-        self.switch_coordinate_system = True
         self.is_wolfgang = False
         self.pressure_sensors = None
         if robot == 'wolfgang':
@@ -112,7 +111,6 @@ class RobotController:
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
-            self.switch_coordinate_system = False
         elif robot == 'op3':
             self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                       "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
@@ -126,24 +124,45 @@ class RobotController:
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-            self.switch_coordinate_system = False
         elif robot == 'rfc':
             self.proto_motor_names = ["RightShoulderPitch [shoulder]", "LeftShoulderPitch [shoulder]",
                                       "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow", "RightHipYaw",
                                       "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]", "RightHipPitch",
                                       "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
                                       "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
-            self.external_motor_names = ["RightShoulderPitch [shoulder]", "LeftShoulderPitch [shoulder]",
-                                         "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow",
-                                         "RightHipYaw", "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]",
-                                         "RightHipPitch", "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch",
-                                         "LeftFootPitch", "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
+            self.external_motor_names = self.proto_motor_names
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
             gyro_name = "Gyroscope"
             camera_name = "Camera"
-            self.switch_coordinate_system = False
+        elif robot == 'gankenkun':
+            self.proto_motor_names = ["right_shoulder_pitch_joint [shoulder]", "left_shoulder_pitch_joint [shoulder]",
+                                      "right_shoulder_roll_joint", "left_shoulder_roll_joint",
+                                      "right_elbow_pitch_joint", "left_elbow_pitch_joint", "right_waist_yaw_joint",
+                                      "left_waist_yaw_joint", "right_waist_roll_joint [hip]",
+                                      "left_waist_roll_joint [hip]", "right_waist_pitch_joint",
+                                      "left_waist_pitch_joint", "right_knee_pitch_joint", "left_knee_pitch_joint",
+                                      "right_ankle_pitch_joint", "left_ankle_pitch_joint",
+                                      "right_ankle_roll_joint", "left_ankle_roll_joint", "head_yaw_joint"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "accelerometer"
+            gyro_name = "gyro"
+            camera_name = "camera_sensor"
+        elif robot == 'itandroids':
+            self.proto_motor_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
+                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw", "rightHipYaw",
+                                      "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]", "rightHipPitch",
+                                      "leftHipPitch", "rightKneePitch", "leftKneePitch", "rightAnklePitch", "leftAnklePitch",
+                                      "rightAnkleRoll", "leftAnkleRoll", "neckYaw", "neckPitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyro"
+            camera_name = "Camera"
         else:
             self.ros_node.get_logger().error("Robot type not supported: %s" % robot)
             exit()
@@ -157,6 +176,7 @@ class RobotController:
         self.current_positions = {}
         self.joint_limits = {}
         for motor_name in self.proto_motor_names:
+            print("motor_name: ", motor_name)
             motor = self.robot_node.getDevice(motor_name)
             motor.enableTorqueFeedback(self.timestep)
             self.motors.append(motor)
