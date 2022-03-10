@@ -19,7 +19,6 @@
 #include "bitbots_msgs/action/dynup.hpp"
 #include <bitbots_dynup/msg/dynup_poses.hpp>
 
-#include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -40,6 +39,7 @@
 namespace bitbots_dynup {
     using DynupGoal = bitbots_msgs::action::Dynup;
     using DynupGoalHandle = rclcpp_action::ServerGoalHandle<DynupGoal>;
+    using namespace std::placeholders;
 
 /**
  * DynupNode is that part of bitbots_dynamic_DynUp which takes care of interacting with ROS and utilizes a DynUpEngine
@@ -52,20 +52,13 @@ namespace bitbots_dynup {
  */
 class DynupNode : public rclcpp::Node {
  public:
-  explicit DynupNode(std::string &ns, std::vector<rclcpp::Parameter> parameters = {}) {
-      this->server_ = rclcpp_action::create_server<DynupNode>(
-          this,
-          "dynup_node",
-          std::bind(&DynupNode::goalCb, this, _1, _2),
-          std::bind(&DynupNode::cancelCb, this, _1),
-          std::bind(&DynupNode::acceptedCb, this, _1));
-  };
+  explicit DynupNode(std::string &ns);
 
   /**
    * Callback that gets executed whenever #m_server receives a new goal.
    * @param goal New goal to process
    */
-  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID & uuid, const DynupGoal goal);
+  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID & uuid, const DynupGoal::Goal goal);
   rclcpp_action::CancelResponse cancelCb(const DynupGoalHandle goal);
   void acceptedCb(const DynupGoalHandle goal);
 
@@ -114,10 +107,13 @@ class DynupNode : public rclcpp::Node {
   double start_time_;
   bool debug_;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  tf2_ros::TransformListener listener_;
-  robot_model_loader::RobotModelLoader robot_model_loader_;
+  std::shared_ptr<robot_model_loader::RobotModelLoader> robot_model_loader_;
+  moveit::core::RobotModelPtr kinematic_model_;
+
 
   std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
+
+  void execute(const std::shared_ptr<DynupGoalHandle> goal);
 
   /**
    * Do main loop in which DynUpEngine::tick() gets called repeatedly.

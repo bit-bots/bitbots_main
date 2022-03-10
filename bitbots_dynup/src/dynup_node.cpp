@@ -2,11 +2,18 @@
 
 namespace bitbots_dynup {
 
-DynupNode::DynupNode(const std::string &ns) :
-    Node(ns + "dynup"),
+DynupNode::DynupNode(std::string &ns) :
+    Node(ns + "dynup", rclcpp::NodeOptions()),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
     visualizer_("debug/dynup") {
+
+this->action_server_ = rclcpp_action::create_server<DynupGoal>(
+    this,
+    "dynup",
+    std::bind(&DynupNode::goalCb, this, _1, _2),
+    std::bind(&DynupNode::cancelCb, this, _1),
+    std::bind(&DynupNode::acceptedCb, this, _1));
 
 this->declare_parameter<std::string>("base_link_frame",  "base_link");
 this->get_parameter("base_link_frame",  base_link_frame_);
@@ -85,17 +92,18 @@ this->get_parameter("l_wrist_frame",  l_wrist_frame_);
     "pid_trunk_pitch.publish_state"};
 
   for(const auto &name : param_names_) {
-    this->declare_parameter(name);
+    this->declare_parameter(name, 0.0);
   }
 
-  robot_model_loader_.loadKinematicsSolvers(std::make_shared<kinematics_plugin_loader::KinematicsPluginLoader>());
-  robot_model::RobotModelPtr kinematic_model = robot_model_loader_.getModel();
-  if (!kinematic_model) {
-    RCLCPP_FATAL(this->get_logger(),"No robot model loaded, killing dynup.");
-    exit(1);
+  robot_model_loader_ =
+      std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
+  kinematic_model_ = robot_model_loader_->getModel();
+  if (!kinematic_model_) {
+      RCLCPP_FATAL(this->get_logger(), "No robot model loaded, killing dynup.");
+      exit(1);
   }
   moveit::core::RobotStatePtr init_state;
-  init_state.reset(new moveit::core::RobotState(kinematic_model));
+  init_state.reset(new moveit::core::RobotState(kinematic_model_));
   // set elbows to make arms straight, in a stupid way since moveit is annoying
   std::vector<std::string> names_vec = {"LElbow", "RElbow"};
   std::vector<double> pos_vec = {-M_PI / 2, M_PI / 2};
@@ -199,7 +207,7 @@ void DynupNode::reset(int time) {
     stabilizer_.reset();
 }
 
-void DynupNode::execute(const bitbots_msgs::DynUpGoalSharedPtr &goal) {
+void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal) {
   RCLCPP_INFO(this->get_logger(),"Dynup accepted new goal");
   reset();
   last_ros_update_time_ = 0;
@@ -239,7 +247,7 @@ void DynupNode::execute(const bitbots_msgs::DynUpGoalSharedPtr &goal) {
 
 rclcpp_action::GoalResponse GoalCb(
     const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const DynupGoal> goal)
+    std::shared_ptr<const DynupGoal::Goal> goal)
 {
   RCLCPP_INFO(this->get_logger(), "Received goal request with order %d", goal->order);
   (void)uuid;
