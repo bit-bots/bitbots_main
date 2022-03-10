@@ -4,6 +4,7 @@
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 4"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+    <let name="taskset" value=""/>
 
     <node name="motion_odometry" pkg="bitbots_odometry" exec="motion_odometry" launch-prefix="$(var taskset)">
         <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
