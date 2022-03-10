@@ -85,6 +85,23 @@ def launch_setup(context, *args, **kwargs):
         "publish_transforms_updates": True,
     }
 
+    # do some checks to provide better debug in case of errors in the configs
+    if robot_description is None:
+        print("### WARNING: robot_description is None")
+    if robot_description_semantic_config is None:
+        print("### WARNING: robot_description_semantic_config is None")
+    if kinematics_yaml is None:
+        print("### WARNING: kinematics_yaml is None")
+    if ompl_planning_pipeline_config is None:
+        print("### WARNING: ompl_planning_pipeline_config is None")
+    if moveit_controllers is None:
+        print("### WARNING: moveit_controllers is None")
+    if trajectory_execution is None:
+        print("### WARNING: trajectory_execution is None")
+    if planning_scene_monitor_parameters is None:
+        print("### WARNING: planning_scene_monitor_parameters is None")
+    
+
     rsp_node = Node(package='robot_state_publisher',
                     executable='robot_state_publisher',
                     respawn=True,
