@@ -175,38 +175,38 @@ class SupervisorController:
         if name in self.robot_nodes:
             self.robot_nodes[name].resetPhysics()
 
-    def reset(self, req=None):
+    def reset(self, request=None, response=Empty.Response()):
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
-        return Empty.Response()
+        return response
 
     def reset_robot_init(self, name="amy"):
         self.robot_nodes[name].loadState('__init__')
         self.robot_nodes[name].resetPhysics()
 
-    def set_initial_poses(self, req=None):
+    def set_initial_poses(self, request=None, response=Empty.Response()):
         self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
         self.reset_robot_pose_rpy([-1, -3, 0.42], [0, 0.24, 1.57], name="rory")
         self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
         self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
         self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
-        return Empty.Response()
+        return response
 
-    def robot_pose_callback(self, req=None):
-        self.reset_robot_pose([req.pose.position.x, req.pose.position.y, req.pose.position.z],
-                              [req.pose.orientation.x, req.pose.orientation.y, req.pose.orientation.z,
-                               req.pose.orientation.w], req.object_name)
-        return SetObjectPose.Response()
+    def robot_pose_callback(self, request=None, response=SetObjectPose.Response()):
+        self.reset_robot_pose([request.pose.position.x, request.pose.position.y, request.pose.position.z],
+                              [request.pose.orientation.x, request.pose.orientation.y, request.pose.orientation.z,
+                               request.pose.orientation.w], request.object_name)
+        return response
 
-    def reset_ball(self, req=None):
+    def reset_ball(self, request=None, response=Empty.Response()):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
         self.ball.getField("rotation").setSFRotation([0, 0, 1, 0])
         self.ball.resetPhysics()
-        return Empty.Response()
+        return response
 
-    def ball_pos_callback(self, req=None):
-        self.set_ball_pose([req.position.x, req.position.y, req.position.z])
-        return SetObjectPosition.Response()
+    def ball_pos_callback(self, request=None, response=SetObjectPosition.Response()):
+        self.set_ball_pose([request.position.x, request.position.y, request.position.z])
+        return response
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))
