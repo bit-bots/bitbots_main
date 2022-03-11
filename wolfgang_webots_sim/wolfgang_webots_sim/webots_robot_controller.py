@@ -41,7 +41,7 @@ class RobotController:
         else:
             self.robot_node = robot_node
         # get URDF
-        #with open("urdf_export.xml", "w+") as f:
+        # with open("urdf_export.xml", "w+") as f:
         #    f.writelines(self.robot_node.getUrdf())
         self.walkready = [0] * 20
         self.time = 0
@@ -188,6 +188,19 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyroscope"
+            camera_name = "left_camera"
+        elif robot == 'sahrv74':
+            self.proto_motor_names = ["right_shoulder_pitch [shoulder]", "right_shoulder_roll", "right_elbow",
+                                      "left_shoulder_pitch [shoulder]", "left_shoulder_roll", "left_elbow",
+                                      "right_hip_yaw", "right_hip_roll", "right_hip_pitch [hip]", "right_knee",
+                                      "right_ankle_pitch", "right_ankle_roll", "left_hip_yaw", "left_hip_roll",
+                                      "left_hip_pitch [hip]", "left_knee", "left_ankle_pitch", "left_ankle_roll",
+                                      "head_yaw", "head_pitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "accelerometer"
+            gyro_name = "gyro"
             camera_name = "left_camera"
         else:
             self.ros_node.get_logger().error("Robot type not supported: %s" % robot)
