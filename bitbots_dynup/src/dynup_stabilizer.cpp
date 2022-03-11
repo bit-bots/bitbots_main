@@ -41,8 +41,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
   tf2::Quaternion quat;
   tf2::convert(imu_.orientation, quat);
 
-  Eigen::Quaterniond imu_orientation_eigen;
-  tf2::convert(quat, imu_orientation_eigen);
+  Eigen::Quaterniond imu_orientation_eigen = Eigen::Quaterniond(quat.getW(), quat.getX(), quat.getY(), quat.getZ());
   rot_conv::FusedAngles current_orientation = rot_conv::FusedFromQuat(imu_orientation_eigen);
 
   if (use_stabilizing_ && ik_goals.is_stabilizing_needed) {
@@ -51,8 +50,8 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
     tf2::Transform trunk_goal = ik_goals.r_foot_goal_pose * r_sole_to_trunk_tf;
 
     // compute orientation with fused angles for PID control
-    Eigen::Quaterniond goal_orientation_eigen;
-    tf2::convert(trunk_goal.getRotation(), goal_orientation_eigen);
+    tf2::Quaternion quat_msg = trunk_goal.getRotation();
+    Eigen::Quaterniond goal_orientation_eigen = Eigen::Quaterniond(quat_msg.getW(), quat_msg.getX(), quat_msg.getY(), quat_msg.getZ());
     rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
     // adapt trunk based on PID controller
