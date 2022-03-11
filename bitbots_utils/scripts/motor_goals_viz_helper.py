@@ -12,14 +12,6 @@ from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
 
-# List of all joint names. Do not change the order as it is important for Gazebo
-JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
-               'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',
-               'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll']
-JOINT_GOALS = [float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
-               float(0.7), float(-1), float(-0.4), float(0), float(0), float(0), float(-0.7), float(1), float(0.4),
-               float(0)]
-
 
 class MotorVizHelper(Node):
     def __init__(self):
@@ -27,6 +19,7 @@ class MotorVizHelper(Node):
         # get rid of additional ROS args when used in launch file
 
         parser = argparse.ArgumentParser()
+        parser.add_argument("--robot-type", "-t", help="What type of robot to use", default="wolfgang")
         parser.add_argument("--walking", "-w", help="Directly get walking motor goals", action="store_true")
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
         parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
@@ -38,10 +31,34 @@ class MotorVizHelper(Node):
         parser.add_argument("-r", help="just to filter ros args", action="store_true")
         parser.add_argument("__node", help="just to filter ros args", action="store_true")
         argv = sys.argv[1:]
-        argv.remove("--ros-args")
-        argv.remove("-r")
-        argv.remove("__node:=joint_goal_viz")
+        try:
+            argv.remove("--ros-args")
+            argv.remove("-r")
+            argv.remove("__node:=joint_goal_viz")
+        except:
+            pass
         self.args = parser.parse_args(argv)
+
+        if self.args.robot_type == "wolfgang":
+            # List of all joint names. Do not change the order as it is important for Gazebo
+            self.joint_names = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
+                                'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',
+                                'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll']
+            self.joint_goals = [float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
+                                float(0), float(0), float(0.7), float(-1), float(-0.4), float(0), float(0), float(0),
+                                float(-0.7), float(1), float(0.4), float(0)]
+        elif self.args.robot_type == "itandroids":
+            self.joint_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
+                                "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw", "rightHipYaw",
+                                "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]", "rightHipPitch",
+                                "leftHipPitch", "rightKneePitch", "leftKneePitch", "rightAnklePitch", "leftAnklePitch",
+                                "rightAnkleRoll", "leftAnkleRoll", "neckYaw", "neckPitch"]
+            self.joint_goals = [float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
+                                float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
+                                float(0), float(0), float(0), float(0)]
+        else:
+            print(f"Unknown robot type {self.args.robot_type}")
+            exit()
 
         if self.args.gazebo:
             self.joint_publisher = self.create_publisher(Float64MultiArray, 'JointGroupController/command', 10)
@@ -62,15 +79,15 @@ class MotorVizHelper(Node):
 
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
-        self.joint_state_msg.name = JOINT_NAMES
-        self.joint_state_msg.position = JOINT_GOALS
+        self.joint_state_msg.name = self.joint_names
+        self.joint_state_msg.position = self.joint_goals
         if self.args.gazebo:
             self.joint_publisher.publish(self.get_float_array())
         else:
             self.joint_publisher.publish(self.joint_state_msg)
 
         self.joint_command_msg = JointCommand()
-        self.joint_command_msg.joint_names = JOINT_NAMES
+        self.joint_command_msg.joint_names = self.joint_names
         self.joint_command_msg.positions = [float(0)] * 20
         self.joint_command_msg.velocities = [float(-1)] * 20
 
@@ -97,23 +114,23 @@ class MotorVizHelper(Node):
                 # if msg.positions is 0, torque control is probably used.
                 # there, the visualization is not implemented yet.
                 name = msg.joint_names[i]
-                self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.positions[i]
-                self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = msg.velocities[i]
+                self.joint_command_msg.positions[self.joint_names.index(name)] = msg.positions[i]
+                self.joint_command_msg.velocities[self.joint_names.index(name)] = msg.velocities[i]
 
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = self.get_clock().now().to_msg()
         for i in range(len(msg.position.joint_names)):
             name = msg.position.joint_names[i]
-            self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.position.points[0].positions[i]
-            self.joint_command_msg.velocities[JOINT_NAMES.index(name)] = -1
+            self.joint_command_msg.positions[self.joint_names.index(name)] = msg.position.points[0].positions[i]
+            self.joint_command_msg.velocities[self.joint_names.index(name)] = -1
 
     def update_joint_states(self, msg):
         for i in range(len(msg.joint_names)):
             name = msg.joint_names[i]
             if msg.velocities[i] == -1:
-                self.joint_state_msg.position[JOINT_NAMES.index(name)] = msg.positions[i]
+                self.joint_state_msg.position[self.joint_names.index(name)] = msg.positions[i]
             else:
-                old_pos = self.joint_state_msg.position[JOINT_NAMES.index(name)]
+                old_pos = self.joint_state_msg.position[self.joint_names.index(name)]
                 time_delta = self.get_clock().now() - self.update_time
                 time_delta_secs = time_delta.nanoseconds / 1e9
                 max_rad = time_delta_secs * msg.velocities[i]
@@ -123,7 +140,7 @@ class MotorVizHelper(Node):
                     new_pos = old_pos - max_rad
                 else:
                     new_pos = msg.positions[i]
-                self.joint_state_msg.position[JOINT_NAMES.index(name)] = new_pos
+                self.joint_state_msg.position[self.joint_names.index(name)] = new_pos
         self.update_time = self.get_clock().now()
 
     def get_float_array(self):
