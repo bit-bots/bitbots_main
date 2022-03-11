@@ -2,13 +2,12 @@ import os
 import re
 import rclpy
 import yaml
-from  rclpy import logging
+from rclpy import logging
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point, Pose2D
 from vision_msgs.msg import BoundingBox2D
 from humanoid_league_msgs.msg import LineInformationInImage, LineSegmentInImage, Audio
 from soccer_vision_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray
-
 
 """
 This module provides some methods needed for the ros environment,
@@ -21,11 +20,12 @@ logger = logging.get_logger('bitbots_vision')
 
 general_parameters = []
 
+
 def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, queue_size=1):
     """
     Creates or updates a publisher
 
-    :param node: ROS node to which the publisher is binded
+    :param node: ROS node to which the publisher is bound
     :param old_config: Previous config dict
     :param new_config: Current config dict
     :param publisher_object: The python object, that represents the publisher
@@ -44,11 +44,13 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
         logger.debug("Registered new publisher to " + str(new_config[topic_key]))
     return publisher_object
 
-def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, queue_size=1):
+
+def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback,
+                                queue_size=1):
     """
     Creates or updates a subscriber
 
-    :param node: ROS node to which the publisher is binded
+    :param node: ROS node to which the publisher is bound
     :param old_config: Previous config dict
     :param new_config: Current config dict
     :param subscriber_object: The python object, that represents the subscriber
@@ -72,6 +74,7 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
+
 def build_bounding_box_2d(candidate):
     """
     Builds a BoundingBox2D message out of a vision Candidate
@@ -84,9 +87,10 @@ def build_bounding_box_2d(candidate):
         size_y=float(candidate.get_height()),
         center=Pose2D(
             x=float(candidate.get_center_x()),
-            y=float(candidate.get_center_y()) 
+            y=float(candidate.get_center_y())
         )
     )
+
 
 def build_goal_post_array_msg(header, goal_post_msgs):
     """
@@ -104,6 +108,7 @@ def build_goal_post_array_msg(header, goal_post_msgs):
     # Add detected goal posts to the message
     goal_posts_msg.posts = goal_post_msgs
     return goal_posts_msg
+
 
 def build_goal_post_msgs(goalposts):
     """
@@ -129,6 +134,7 @@ def build_goal_post_msgs(goalposts):
         message_list.append(post_msg)
     return message_list
 
+
 def build_balls_msg(header, balls):
     """
     Builds a BallArray message out of a list of ball messages
@@ -146,6 +152,7 @@ def build_balls_msg(header, balls):
     balls_msg.balls = balls
     return balls_msg
 
+
 def build_ball_msg(ball_candidate):
     """
     Builds a Ball message
@@ -159,6 +166,7 @@ def build_ball_msg(ball_candidate):
     ball_msg.center.y = float(ball_candidate.get_center_y())
     ball_msg.bb = build_bounding_box_2d(ball_candidate)
     return ball_msg
+
 
 def build_obstacle_array_msg(header, obstacles):
     """
@@ -176,6 +184,7 @@ def build_obstacle_array_msg(header, obstacles):
     # Add obstacles
     obstacles_msg.robots = obstacles
     return obstacles_msg
+
 
 def build_obstacle_msgs(obstacle_type, detections):
     """
@@ -195,6 +204,7 @@ def build_obstacle_msgs(obstacle_type, detections):
         message_list.append(obstacle_msg)
     return message_list
 
+
 def build_field_boundary_polygon_msg(header, field_boundary):
     """
     Builds a FieldBoundary ROS geometry message containing the field boundary.
@@ -206,7 +216,7 @@ def build_field_boundary_polygon_msg(header, field_boundary):
     # Create message
     field_boundary_msg = FieldBoundary()
     # Add header
-    #field_boundary_msg.header = header # TODO use header again
+    # field_boundary_msg.header = header # TODO use header again
     # Add field boundary points
     for point in field_boundary:
         p = Point()
@@ -215,6 +225,7 @@ def build_field_boundary_polygon_msg(header, field_boundary):
         field_boundary_msg.points.append(p)
 
     return field_boundary_msg
+
 
 def build_line_information_in_image_msg(header, line_segments):
     """
@@ -233,6 +244,7 @@ def build_line_information_in_image_msg(header, line_segments):
     line_msg.segments = line_segments
     return line_msg
 
+
 def build_image_msg(header, image, desired_encoding="passthrough"):
     """
     Builds a Image message
@@ -245,6 +257,7 @@ def build_image_msg(header, image, desired_encoding="passthrough"):
     image_msg = _cv_bridge.cv2_to_imgmsg(image, desired_encoding)
     image_msg.header = header
     return image_msg
+
 
 def convert_line_points_to_line_segment_msgs(line_points):
     """
@@ -263,6 +276,7 @@ def convert_line_points_to_line_segment_msgs(line_points):
         line_segments.append(line_segment)
     return line_segments
 
+
 def speak(string, speech_publisher):
     """
     Sends a speak message and let the robot say the given string.
@@ -274,6 +288,7 @@ def speak(string, speech_publisher):
     speak_message.text = string
     speech_publisher.publish(speak_message)
 
+
 def set_general_parameters(params):
     """
     Sets params, that should trigger every `config_param_change` call.
@@ -282,6 +297,7 @@ def set_general_parameters(params):
     """
     general_parameters.extend(params)
 
+
 def config_param_change(old_config, new_config, params_expressions, check_generals=True):
     # type: (dict, dict, [str]) -> bool
     """
@@ -289,7 +305,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
 
     :param dict old_config: old config dict
     :param dict new_config: new config dict
-    :param list of str or str params_expressions: regex discribing parameter name or list of parameter names
+    :param list of str or str params_expressions: regex describing parameter name or list of parameter names
     :param bool check_generals: Also check for general params (Default True)
     :return bool: True if parameter has changed
     """
@@ -324,6 +340,7 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
             logger.debug(f"Parameter '{param}' has changed to '{new_config[param]}'")
             return True
     return False
+
 
 def publish_vision_config(config, publisher):
     """
