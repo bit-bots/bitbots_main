@@ -37,6 +37,9 @@ class IYOEOHandler(ABC):
 
     @abstractmethod
     def get_segmentation_for(self, class_name: str):
+        """
+        :rtype: numpy.ndarray(shape=(height, width, 1))
+        """
         ...
 
     @abstractmethod
