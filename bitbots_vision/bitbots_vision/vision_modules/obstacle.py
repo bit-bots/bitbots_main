@@ -1,3 +1,5 @@
+from typing import List, Union
+
 import itertools
 import numpy as np
 import rclpy
@@ -256,7 +258,7 @@ class ObstacleDetector(CandidateFinder):
         """
         Creates a candidate.
 
-        :param obstacle_begin: X position of the obstacle begining
+        :param obstacle_begin: X position of the obstacle beginning
         :param i: X position of the obstacle ending
         :param full_field_boundary: Mapping a field boundary y value to every x value
         :param full_convex_field_boundary: Mapping a convex field boundary y value to every x value
@@ -289,7 +291,10 @@ class ColorObstacleDetector(CandidateFinder):
     """
     Wraps an obstacle detector to return only obstacles of a certain color.
     """
-    def __init__(self, obstacle_detector, color_detector=None, threshold=0, subtractors=[]):
+    def __init__(self, obstacle_detector,
+                 color_detector=None,
+                 threshold=0,
+                 subtractors: Union[None, List[ObstacleDetector]] = None):
         # type: (ObstacleDetector) -> None
         """
         Initialization of the color obstacle detector.
@@ -304,8 +309,11 @@ class ColorObstacleDetector(CandidateFinder):
         # Init obstacle list
         self._obstacles = None
 
-        # List of subtractors
-        self._subtractors = subtractors
+        # List of subtractors --> having a list as default argument is potentially dangerous
+        if subtractors is None:
+            self._subtractors = []
+        else:
+            self._subtractors = subtractors
 
         self._color_threshold = threshold
 
@@ -351,7 +359,7 @@ class ColorObstacleDetector(CandidateFinder):
             # Get the ignored obstacles. This way an obstacle can not be a red and blue obstacle, as this would be filtered.
             ignored_obstacles = itertools.chain.from_iterable(sub_det.get_candidates() for sub_det in self._subtractors)
             # Subtract them from our detections
-            self._obstacles =  list(set(obstacles) - set(ignored_obstacles))
+            self._obstacles = list(set(obstacles) - set(ignored_obstacles))
 
         return self._obstacles
 
