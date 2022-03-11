@@ -290,13 +290,13 @@ class TeleopKeyboard(Node):
                 elif key == 'r':
                     # reset robot in sim
                     try:
-                        self.reset_robot.call_async(Empty())
+                        self.reset_robot.call_async(Empty.Request())
                     except:
                         pass
                 elif key == 'R':
                     # reset ball in sim
                     try:
-                        self.reset_ball.call_async(Empty())
+                        self.reset_ball.call_async(Empty.Request())
                     except:
                         pass
                 elif key == 'f':
