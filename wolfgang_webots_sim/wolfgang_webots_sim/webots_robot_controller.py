@@ -41,7 +41,7 @@ class RobotController:
         else:
             self.robot_node = robot_node
         # get URDF
-        #with open("urdf_export.xml", "w+") as f:
+        # with open("urdf_export.xml", "w+") as f:
         #    f.writelines(self.robot_node.getUrdf())
         self.walkready = [0] * 20
         self.time = 0
@@ -153,13 +153,26 @@ class RobotController:
             camera_name = "camera_sensor"
         elif robot == 'itandroids':
             self.proto_motor_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
-                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw", "rightHipYaw",
-                                      "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]", "rightHipPitch",
-                                      "leftHipPitch", "rightKneePitch", "leftKneePitch", "rightAnklePitch", "leftAnklePitch",
-                                      "rightAnkleRoll", "leftAnkleRoll", "neckYaw", "neckPitch"]
+                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw",
+                                      "rightHipYaw", "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]",
+                                      "rightHipPitch", "leftHipPitch", "rightKneePitch", "leftKneePitch",
+                                      "rightAnklePitch", "leftAnklePitch", "rightAnkleRoll", "leftAnkleRoll", "neckYaw",
+                                      "neckPitch"]
             self.external_motor_names = self.proto_motor_names
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyro"
+            camera_name = "Camera"
+        elif robot == 'mrl_hsl':
+            self.proto_motor_names = ["Shoulder-R [shoulder]", "UpperArm-R", "LowerArm-R", "Shoulder-L [shoulder]",
+                                      "UpperArm-L", "LowerArm-L", "HipYaw-R", "HipRoll-R [hip]", "HipPitch-R",
+                                      "KneePitch-R", "AnklePitch-R", "AnkleRoll-R", "HipYaw-L", "HipRoll-L [hip]",
+                                      "HipPitch-L", "KneePitch-L", "AnklePitch-L", "AnkleRoll-L", "NeckYaw",
+                                      "HeadPitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
