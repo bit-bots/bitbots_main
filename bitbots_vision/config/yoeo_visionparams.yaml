@@ -1,0 +1,86 @@
+bitbots_vision:
+  ros__parameters:
+    # Defining the default vision parameters
+    test_param: true
+
+    vision_parallelize: false  # Run the neural net and the conventional part in parallel
+    vision_blind_threshold: 30  # Brightness threshold under which the vision thinks, that someone forgot the camera cap
+
+    ROS_audio_msg_topic: 'speak'  # ROS topic of the audio message
+    ROS_img_msg_topic: '/image_raw' #'camera/image_proc'  # ROS topic of the image message
+    ROS_img_msg_queue_size: 1  # ROS queue size for the image message
+    ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message
+    ROS_ball_msg_topic: 'balls_in_image'  # ROS topic of the ball message
+    ROS_goal_posts_msg_topic: 'goal_posts_in_image'  # ROS topic of the goal posts message
+    ROS_obstacle_msg_topic: 'obstacles_in_image'  # ROS topic of the obstacles message
+    ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
+    ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message
+    ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
+    ROS_white_HSV_mask_image_msg_topic: 'white_HSV_field_mask'  # ROS topic of the white HSV color detector mask debug image message
+    ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'  # ROS topic of the red HSV color detector mask debug image message
+    ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'  # ROS topic of the blue HSV color detector mask debug image message
+    ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
+
+    yoeo_model_path: '2021_12_06_flo_torso21_yoeo_7'
+    yolo_openvino_model_path: '2020_11_12_flo_yolo_openvino'  # Name of the yolo model
+    yoeo_nms_threshold: 0.4  # Non maximum suppression threshold
+    yoeo_conf_threshold: 0.5  # Yoeo confidence threshold
+
+    neural_network_type: 'yoeo_pytorch'  # The neural network type that should be used (yolo_opencv, yolo_darknet, yolo_ncs2, yolo_pytorch or dummy)
+    ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
+    ball_candidate_rating_threshold: 0.5  # A threshold for the minimum candidate rating
+    ball_candidate_max_count: 1  # The maximum number of balls that should be published
+
+    goal_post_field_boundary_y_offset: 10  # Maximum distance between field boundary and goal post
+
+    field_color_detector_path: 'basler_f031.pickle'  # Color lookup table for the field color detector
+    field_color_detector_use_hsv: false
+
+    red_color_detector_lower_values_h: 139  # Lower bound for the red color detector hue
+    red_color_detector_lower_values_s: 50  # Lower bound for the red color detector saturation
+    red_color_detector_lower_values_v: 0  # Lower bound for the red color detector value/brightness
+    red_color_detector_upper_values_h: 255  # Upper bound for the red color detector hue
+    red_color_detector_upper_values_s: 255  # Upper bound for the red color detector saturation
+    red_color_detector_upper_values_v: 255  # Upper bound for the red color detector value/brightness
+
+    blue_color_detector_lower_values_h: 90   # Lower bound for the blue color detector hue
+    blue_color_detector_lower_values_s: 197  # Lower bound for the blue color detector saturation
+    blue_color_detector_lower_values_v: 134  # Lower bound for the blue color detector value/brightness
+    blue_color_detector_upper_values_h: 116  # Upper bound for the blue color detector hue
+    blue_color_detector_upper_values_s: 255  # Upper bound for the blue color detector saturation
+    blue_color_detector_upper_values_v: 255  # Upper bound for the blue color detector value/brightness
+
+    field_boundary_detector_search_method: 'downsampling_reversed'  # Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary)
+    field_boundary_detector_vertical_steps: 30  # Number of steps on each scanline
+    field_boundary_detector_horizontal_steps: 30  # Number of scanlines
+    field_boundary_detector_roi_height: 2  # Region Of Interest height in which we are looking for green
+    field_boundary_detector_roi_width: 2  # Region Of Interest width in which we are looking for green
+    field_boundary_detector_roi_increase: 0.1  # Value that increases the region of interest if it is located lower in the image
+    field_boundary_detector_green_threshold: 30  # Threshold of green in the area covered by the kernel
+    field_boundary_detector_head_tilt_threshold: 20  # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
+
+    component_camera_cap_check_active: true
+    component_ball_detection_active: false
+    component_obstacle_detection_active: true
+    component_goalpost_detection_active: true
+    component_line_detection_active: true
+    component_field_boundary_detection_active: true
+    component_field_detection_active: false
+    component_debug_image_active: true
+
+    obstacle_own_team_color: blue  # current team color of our team (red or blue)
+    obstacle_active: false  # Enables the obstacle detection
+    obstacle_finder_method: 'convex'  # Method for the obstacle finder (distance, convex or step)
+    obstacle_color_threshold: 10  # An obstacle is defined as blue/red if it contains more blue or red than this threshold
+    obstacle_white_threshold: 12  # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach
+    obstacle_field_boundary_diff_threshold: 20  # Minimal distance between detected and convex field boundary to accept it as obstacle
+    obstacle_candidate_field_boundary_offset: 30  # Fixed height of obstacles above the field boundary
+    obstacle_candidate_min_width: 15  # Minimum width of an obstacle
+    obstacle_candidate_max_width: 150  # Maximum width of an obstacle
+    obstacle_finder_step_length: 5  # Length of an object detection step along the field boundary
+    obstacle_finder_value_increase: 2.0  # Factor of the impact of the height of the field boundary on the distance threshold
+
+    vision_publish_debug_image: true  # Publish debug image message
+#    vision_publish_HSV_mask_image: false  # Publish all three HSV color detector mask image messages for debug purposes
+    vision_publish_field_mask_image: true  # Publish field mask image message for debug purposes
+    caching: true  # Used to deactivate caching for profiling reasons

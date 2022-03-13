@@ -1,0 +1,36 @@
+<launch>
+    <!-- Get launch params-->
+    <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
+    <arg name="debug" default="false" description="true: activates publishing of several debug images" />
+
+    <!-- TODO add camera driver -->
+
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <!-- Start the vision normally-->
+    <group unless="$(var sim)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+            <!-- Set vision config -->
+            <param from="$(find-pkg-share bitbots_vision)/config/yoeo_visionparams.yaml" />
+
+            <!-- Set debug params-->
+            <param name="vision_publish_debug_image" value="$(var debug)" />
+            <param name="vision_publish_HSV_mask_image" value="$(var debug)" />
+            <param name="vision_publish_field_mask_image" value="$(var debug)" />
+        </node>
+    </group>
+    <!-- Start the vision in sim configuration-->
+    <group if="$(var sim)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+            <!-- Set vision config -->
+            <param from="$(find-pkg-share bitbots_vision)/config/yoeo_visionparams.yaml" />
+            <!-- Partially overwrite vision config with sim params-->
+            <param from="$(find-pkg-share bitbots_vision)/config/simparams.yaml"/>
+
+            <!-- Set debug params-->
+            <param name="vision_publish_debug_image" value="$(var debug)" />
+        </node>
+    </group>
+</launch>
