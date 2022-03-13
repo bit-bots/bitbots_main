@@ -325,6 +325,8 @@ class ColorObstacleDetector(CandidateFinder):
         :param image: image the current image vision
         """
         self._obstacle_detector.set_image(image)
+        if self._color_detector is not None:
+            self._color_detector.set_image(image)
 
         # Reset cache
         self._obstacles = None
