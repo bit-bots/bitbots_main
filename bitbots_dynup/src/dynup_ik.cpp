@@ -10,6 +10,7 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   /* Reset kinematic goal to default */
   goal_state_.reset(new moveit::core::RobotState(kinematic_model));
+  goal_state_->setToDefaultValues();
 }
 
 void DynupIK::reset() {
@@ -117,6 +118,10 @@ void DynupIK::useStabilizing(bool use) {
 
 void DynupIK::setCurrentJointStates(sensor_msgs::msg::JointState jointStates) {
   current_joint_states_ = jointStates;
+}
+
+moveit::core::RobotStatePtr DynupIK::get_goal_state() {
+    return goal_state_;
 }
 
 }

@@ -2,7 +2,7 @@
 
 namespace bitbots_dynup {
 
-DynupNode::DynupNode(std::string &ns) :
+DynupNode::DynupNode(const std::string ns) :
     Node(ns + "dynup", rclcpp::NodeOptions()),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
@@ -115,16 +115,14 @@ this->get_parameter("l_wrist_frame",  l_wrist_frame_);
   tf2::convert(init_state->getGlobalLinkTransform("l_upper_arm"), shoulder_origin);
   //arm max length, y offset, z offset from base link
   engine_.init(shoulder_origin.position.y, shoulder_origin.position.z);
-  stabilizer_.setRobotModel(kinematic_model);
-  ik_.init(kinematic_model);
+  ik_.init(kinematic_model_);
 
-  callback_handle_ = this->add_on_set_parameters_callback(std::bind(&WalkNode::onSetParameters, this, _1));
+  callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DynupNode::onSetParameters, this, _1));
 
-  joint_goal_publisher_ = node_handle_.advertise<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1);
-  debug_publisher_ = node_handle_.advertise<visualization_msgs::msg::Marker>("debug_markers", 1);
-  cop_subscriber_ = node_handle_.subscribe("imu/data", 1, &DynupNode::imuCallback, this);
-  joint_state_subscriber_ = node_handle_.subscribe("joint_states", 1, &DynupNode::jointStateCallback, this);
-  server_.start();
+  joint_goal_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1);
+  debug_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1);
+  cop_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&DynupNode::imuCallback, this, _1));
+  joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1));
 }
 
 bitbots_msgs::msg::JointCommand DynupNode::step(double dt,
@@ -143,12 +141,9 @@ bitbots_msgs::msg::JointCommand DynupNode::step(double dt) {
         dt = 0.001;
     }
     DynupResponse response = engine_.update(dt);
-    stabilizer_.setRSoleToTrunk(tf_buffer_->lookup_transform(r_sole_frame_, base_link_frame_, rclcpp::Time(0)));
+    stabilizer_.setRSoleToTrunk(tf_buffer_->lookupTransform(r_sole_frame_, base_link_frame_, rclcpp::Time(0)));
     DynupResponse stabilized_response = stabilizer_.stabilize(response, rclcpp::Duration::from_nanoseconds(1e9*dt));
     bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
-    bitbots_msgs::DynUpFeedback feedback;
-    feedback.percent_done = engine_.getPercentDone();
-    server_->publishFeedback(feedback);
     if (goals.first.empty()) {
         failed_tick_counter_++;
     }
@@ -157,17 +152,13 @@ bitbots_msgs::msg::JointCommand DynupNode::step(double dt) {
     } else {
         stable_duration_ = 0;
     }
-    if (feedback.percent_done >= 100 && (stable_duration_ >= params_.stable_duration || !(params_.stabilizing) ||
-                                         (this->get_clock()->now()().toSec() - start_time_ >= engine_.getDuration() + params_.stabilization_timeout))) {
-        ROS_DEBUG("Completed dynup with %d failed ticks.", failed_tick_counter_);
-    }
     return createGoalMsg(goals);
 }
 
 geometry_msgs::msg::PoseArray DynupNode::step_open_loop(double dt) {
     DynupNode::step(dt);
     geometry_msgs::msg::PoseArray pose_array;
-    bitbots_dynup::DynupPoses pose_msg = DynupNode::getCurrentPoses();
+    bitbots_dynup::msg::DynupPoses pose_msg = DynupNode::getCurrentPoses();
     pose_array.poses = {pose_msg.l_leg_pose, pose_msg.r_leg_pose, pose_msg.l_arm_pose, pose_msg.r_arm_pose};
     return pose_array;
 }
@@ -181,7 +172,7 @@ void DynupNode::imuCallback(const sensor_msgs::msg::Imu &msg) {
 }
 
 rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  params = this->get_parameters(param_names_);
+  auto params = this->get_parameters(param_names_);
   for (auto& param : params) {
     params_[param.get_name()] = param;
   }
@@ -190,7 +181,7 @@ rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::v
 
   engine_.setParams(params_);
   stabilizer_.setParams(params_);
-  ik_.useStabilizing(params_["stabilizing"].get_value<bool>())
+  ik_.useStabilizing(params_["stabilizing"].get_value<bool>());
 
   VisualizationParams viz_params = VisualizationParams();
   viz_params.spline_smoothness = params_["spline_smoothness"].get_value<int>();
@@ -207,12 +198,13 @@ void DynupNode::reset(int time) {
     stabilizer_.reset();
 }
 
-void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal) {
+void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   RCLCPP_INFO(this->get_logger(),"Dynup accepted new goal");
+  const auto goal = goal_handle->get_goal();
   reset();
   last_ros_update_time_ = 0;
-  start_time_ = this->get_clock()->now()().toSec();
-  bitbots_dynup::DynupPoses poses = getCurrentPoses();
+  start_time_ = this->get_clock()->now().seconds();
+  bitbots_dynup::msg::DynupPoses poses = getCurrentPoses();
   if (!poses.header.stamp.sec == 0) {
     DynupRequest request;
     request.direction = goal->direction;
@@ -231,21 +223,21 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal) {
         visualizer_.displaySplines(engine_.getRHandSplines(), base_link_frame_);
       }
     }
-    loopEngine(engine_rate_);
-    bitbots_msgs::DynUpResult r;
-    if (server_.isPreemptRequested()) {
-      &goal->canceled(result);
+    loopEngine(engine_rate_, goal_handle);
+    bitbots_msgs::action::Dynup_Result::SharedPtr r;
+    if (goal_handle->is_canceling()) {
+      goal_handle->canceled(r);
     } else {
-      &goal->succeed(result);
+      goal_handle->succeed(r);
     }
   } else {
     RCLCPP_ERROR(this->get_logger(),"Could not determine positions! Aborting standup.");
-    bitbots_msgs::DynUpResult r;
-    &goal->canceled(result);
+    bitbots_msgs::action::Dynup_Result::SharedPtr r;
+    goal_handle->canceled(r);
   }
 }
 
-rclcpp_action::GoalResponse GoalCb(
+rclcpp_action::GoalResponse DynupNode::GoalCb(
     const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const DynupGoal::Goal> goal)
 {
@@ -254,14 +246,14 @@ rclcpp_action::GoalResponse GoalCb(
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse CancelCb(
+rclcpp_action::CancelResponse DynupNode::CancelCb(
     const std::shared_ptr<DynupGoalHandle> goal) {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
   (void)goal;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void AcceptedCb(const std::shared_ptr<DynupGoalHandle> goal)
+void DynupNode::AcceptedCb(const std::shared_ptr<DynupGoalHandle> goal)
 {
   // this needs to return quickly to avoid blocking the executor, so spin up a new thread
   std::thread{std::bind(&DynupNode::execute, this, _1), goal}.detach();
@@ -270,7 +262,7 @@ void AcceptedCb(const std::shared_ptr<DynupGoalHandle> goal)
 double DynupNode::getTimeDelta() {
   // compute actual time delta that happened
   double dt;
-  double current_ros_time = this->get_clock()->now()().toSec();
+  double current_ros_time = this->get_clock()->now().seconds();
 
   // first call needs to be handled specially
   if (last_ros_update_time_ == 0) {
@@ -287,17 +279,24 @@ double DynupNode::getTimeDelta() {
   return dt;
 }
 
-void DynupNode::loopEngine(int loop_rate) {
+void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_handle) {
   double dt;
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
-  while (server_.isActive() && !server_.isPreemptRequested()) {
+  while (!goal_handle->is_canceling()) {
     rclcpp::Time startTime = this->get_clock()->now();
     rclcpp::spin_some(this->get_node_base_interface());
     this->get_clock()->sleep_until(
       startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
     dt = getTimeDelta();
     msg = step(dt);
+    bitbots_msgs::action::Dynup_Feedback::SharedPtr feedback;
+    feedback->percent_done = engine_.getPercentDone();
+    goal_handle->publish_feedback(feedback);
+    if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<double>() || !(params_["stabilizing"].get_value<bool>()) ||
+                                        (this->get_clock()->now().seconds() - start_time_ >= engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
+        RCLCPP_DEBUG_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+    }
     if (msg.joint_names.empty()) {
         break;
     }
@@ -305,8 +304,8 @@ void DynupNode::loopEngine(int loop_rate) {
   }
 }
 
-bitbots_dynup::DynupPoses DynupNode::getCurrentPoses() {
-  rclcpp::Time time = this->get_clock()->now()();
+bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
+  rclcpp::Time time = this->get_clock()->now();
 
   /* Construct zero-positions for all poses in their respective local frames */
   geometry_msgs::msg::PoseStamped l_foot_origin, r_foot_origin, l_hand_origin, r_hand_origin;
@@ -327,7 +326,7 @@ bitbots_dynup::DynupPoses DynupNode::getCurrentPoses() {
   r_hand_origin.header.stamp = time;
 
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
-  bitbots_dynup::DynupPoses msg;
+  bitbots_dynup::msg::DynupPoses msg;
   try {
     //0.2 second timeout for transformations
     geometry_msgs::msg::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
@@ -340,10 +339,10 @@ bitbots_dynup::DynupPoses DynupNode::getCurrentPoses() {
     msg.r_leg_pose = r_foot_transformed.pose;
     msg.l_arm_pose = l_hand_transformed.pose;
     msg.r_arm_pose = r_hand_transformed.pose;
-    msg.header.stamp = this->get_clock()->now()();
+    msg.header.stamp = this->get_clock()->now();
     return msg;
   } catch (tf2::TransformException &exc) {
-    ROS_ERROR_STREAM(exc.what());
+    RCLCPP_ERROR_STREAM(this->get_logger(), exc.what());
     return msg;
   }
 
@@ -352,7 +351,7 @@ bitbots_dynup::DynupPoses DynupNode::getCurrentPoses() {
 bitbots_msgs::msg::JointCommand DynupNode::createGoalMsg(const bitbots_splines::JointGoals &goals) {
   /* Construct JointCommand message */
   bitbots_msgs::msg::JointCommand command;
-  command.header.stamp = this->get_clock()->now()();
+  command.header.stamp = this->get_clock()->now();
 
   /*
    * Since our JointGoals type is a vector of strings
@@ -384,11 +383,10 @@ DynupIK *DynupNode::getIK() {
 
 }
 
-int main(int argc, char *argv[]) {
-  /* Setup ROS node */
-  rclcpp::init(argc, argv, "dynup");
-  bitbots_dynup::DynupNode node;
 
-  RCLCPP_INFO(this->get_logger(),"Initialized DynUp and waiting for actions");
-  ros::spin();
+int main(int argc, char **argv) {
+    rclcpp::init(argc, argv);
+    // init node
+    bitbots_dynup::DynupNode node("");
+    RCLCPP_INFO(node.get_logger(),"Initialized DynUp and waiting for actions");
 }

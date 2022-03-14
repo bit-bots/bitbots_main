@@ -17,8 +17,10 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void useStabilizing(bool use);
   void setCurrentJointStates(sensor_msgs::msg::JointState jointStates);
   void setDirection(std::string direction);
+  moveit::core::RobotStatePtr get_goal_state();
 
- private:
+
+private:
   sensor_msgs::msg::JointState current_joint_states_;
   moveit::core::JointModelGroup *all_joints_group_;
   moveit::core::JointModelGroup *l_arm_joints_group_;
