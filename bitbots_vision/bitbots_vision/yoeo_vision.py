@@ -448,7 +448,7 @@ class YOEOLineDetectionComponent(IVisionComponent):
                                                                'ROS_line_mask_msg_topic', Image)
 
     def run(self, image_msg) -> None:
-        line_mask = self._line_detector.get_mask()
+        line_mask = self._line_detector.get_mask_image()
         self._add_line_mask_to_debug_image(line_mask)
 
         line_mask_message = self._create_line_mask_msg(image_msg, line_mask)
@@ -502,7 +502,7 @@ class YOEOFieldDetectionComponent(IVisionComponent):
 
     def run(self, image_msg) -> None:
         if self._active:
-            field_mask = self._field_detector.get_mask()
+            field_mask = self._field_detector.get_mask_image()
             field_mask_msg = self._create_field_mask_msg(image_msg, field_mask)
             self._publish_field_mask_msg(field_mask_msg)
 
@@ -713,8 +713,8 @@ class YOEOVision(Node):
         self._transfer_image_msg = None
         self._transfer_image_msg_mutex = Lock()
 
-        self._yoeo = None
-        self._vision_components: List[IVisionComponent] = []
+        self._yoeo_handler: Union[None, yoeo_handler.IYOEOHandler] = None
+        self._vision_components: Union[None, List[IVisionComponent]] = None
 
         # Setup reconfiguration
         gen.declare_params(self)
@@ -763,14 +763,14 @@ class YOEOVision(Node):
                     #     # Load Darknet implementation (uses CUDA)
                     #     self._yoeo = yolo_handler.YoloHandlerDarknet(new_config, absolute_model_path)
                     if new_config['neural_network_type'] == 'yoeo_pytorch':
-                        self._yoeo = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
+                        self._yoeo_handler = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
                     logger.info(new_config['neural_network_type'] + " vision is running now")
                 else:
                     logger.error('The specified yoeo model file does not exist!')
 
             # For other changes only modify the config
             elif ros_utils.config_param_change(self._config, new_config, r'yoeo_'):
-                self._yoeo.set_config(new_config)
+                self._yoeo_handler.set_config(new_config)
 
         # TODO
         # # Check if  tpu version of yolo ball/goalpost detector is used
@@ -790,6 +790,8 @@ class YOEOVision(Node):
         #         self._yoeo.set_config(new_config)
         # until here
 
+        self._vision_components = []
+
         if new_config["component_camera_cap_check_active"]:
             self._vision_components.append(CameraCapCheckComponent(self))
         if new_config["component_ball_detection_active"]:
@@ -808,7 +810,7 @@ class YOEOVision(Node):
             self._vision_components.append(DebugImageComponent(self))
 
         for vision_component in self._vision_components:
-            vision_component.configure(new_config, self._yoeo)
+            vision_component.configure(new_config, self._yoeo_handler)
 
         self._register_subscribers(new_config)
         logger.debug("End Configure_vision")
@@ -866,10 +868,10 @@ class YOEOVision(Node):
             logger.debug("Image content is None :(")
             return
 
-        self._yoeo.set_image(image)
+        self._yoeo_handler.set_image(image)
         self._publish_image_to_components(image)
 
-        self._yoeo.predict()
+        self._yoeo_handler.predict()
         self._run_components(image_msg)
 
     def _convert_image_msg_to_cv2_image(self, image_msg):
