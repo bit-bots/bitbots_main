@@ -240,6 +240,13 @@ class YOEOSegmentationTemplate(IYOEOSegmentation):
     def compute(self) -> None:
         self._yoeo_handler.predict()
 
+    def get_mask_image(self):
+        """
+        Returns binary segmentation mask with values in {0, 255}
+        :rtype: numpy.ndarray(shape=(height, width, 1))
+        """
+        return self.get_mask() * 255
+
     def set_image(self, image) -> None:
         self._yoeo_handler.set_image(image)
 
@@ -247,14 +254,6 @@ class YOEOSegmentationTemplate(IYOEOSegmentation):
     def get_mask(self):
         """
         Returns binary segmentation mask with values in {0, 1}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        ...
-
-    @abstractmethod
-    def get_mask_image(self):
-        """
-        Returns binary segmentation mask with values in {0, 255}
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
         ...
@@ -271,13 +270,6 @@ class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
         """
         return self._yoeo_handler.get_segmentation_for("background")
 
-    def get_mask_image(self):
-        """
-        Returns binary segmentation mask with values in {0, 255}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self._yoeo_handler.get_segmentation_for("background") * 255
-
 
 class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
@@ -290,13 +282,6 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
         """
         return self._yoeo_handler.get_segmentation_for("field")
 
-    def get_mask_image(self):
-        """
-        Returns binary segmentation mask with values in {0, 255}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self._yoeo_handler.get_segmentation_for("field") * 255
-
 
 class YOEOLineSegmentation(YOEOSegmentationTemplate):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
@@ -308,11 +293,3 @@ class YOEOLineSegmentation(YOEOSegmentationTemplate):
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
         return self._yoeo_handler.get_segmentation_for("lines")
-
-
-    def get_mask_image(self):
-        """
-        Returns binary segmentation mask with values in {0, 255}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self._yoeo_handler.get_segmentation_for("lines") * 255
