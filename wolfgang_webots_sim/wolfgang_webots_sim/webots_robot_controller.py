@@ -108,7 +108,7 @@ class RobotController:
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
-        elif robot == 'op3':
+        elif robot == 'op3': #robotis
             self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                       "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
                                       "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
@@ -133,7 +133,7 @@ class RobotController:
             accel_name = "Accelerometer"
             gyro_name = "Gyroscope"
             camera_name = "Camera"
-        elif robot == 'gankenkun':
+        elif robot == 'gankenkun': #CITBrains
             self.proto_motor_names = ["right_shoulder_pitch_joint [shoulder]", "left_shoulder_pitch_joint [shoulder]",
                                       "right_shoulder_roll_joint", "left_shoulder_roll_joint",
                                       "right_elbow_pitch_joint", "left_elbow_pitch_joint", "right_waist_yaw_joint",
@@ -148,7 +148,7 @@ class RobotController:
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "camera_sensor"
-        elif robot == 'itandroids':
+        elif robot == 'chape': #itandroids
             self.proto_motor_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
                                       "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw",
                                       "rightHipYaw", "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]",
@@ -173,7 +173,7 @@ class RobotController:
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-        elif robot == 'nugus':
+        elif robot == 'nugus': #NUbots
             self.proto_motor_names = ["neck_yaw", "head_pitch", "left_hip_yaw", "left_hip_roll [hip]",
                                       "left_hip_pitch", "left_knee_pitch", "left_ankle_pitch", "left_ankle_roll",
                                       "right_hip_yaw", "right_hip_roll [hip]", "right_hip_pitch", "right_knee_pitch",
@@ -186,7 +186,7 @@ class RobotController:
             accel_name = "accelerometer"
             gyro_name = "gyroscope"
             camera_name = "left_camera"
-        elif robot == 'sahrv74':
+        elif robot == 'sahrv74': #Starkit
             self.proto_motor_names = ["right_shoulder_pitch [shoulder]", "right_shoulder_roll", "right_elbow",
                                       "left_shoulder_pitch [shoulder]", "left_shoulder_roll", "left_elbow",
                                       "right_hip_yaw", "right_hip_roll", "right_hip_pitch [hip]", "right_knee",
@@ -199,7 +199,7 @@ class RobotController:
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "left_camera"
-        elif robot == 'bez':
+        elif robot == 'bez': #UTRA
             self.proto_motor_names = ["head_motor_0", "head_motor_1", "right_leg_motor_0", "right_leg_motor_1 [hip]",
                                       "right_leg_motor_2", "right_leg_motor_3", "right_leg_motor_4",
                                       "right_leg_motor_5", "left_leg_motor_0", "left_leg_motor_1 [hip]",
