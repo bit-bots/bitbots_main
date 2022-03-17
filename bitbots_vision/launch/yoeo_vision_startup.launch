@@ -11,7 +11,7 @@
 
     <!-- Start the vision normally-->
     <group unless="$(var sim)">
-        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_vision" exec="yoeo_vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
             <!-- Set vision config -->
             <param from="$(find-pkg-share bitbots_vision)/config/yoeo_visionparams.yaml" />
 
@@ -23,7 +23,7 @@
     </group>
     <!-- Start the vision in sim configuration-->
     <group if="$(var sim)">
-        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_vision" exec="yoeo_vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
             <!-- Set vision config -->
             <param from="$(find-pkg-share bitbots_vision)/config/yoeo_visionparams.yaml" />
             <!-- Partially overwrite vision config with sim params-->
