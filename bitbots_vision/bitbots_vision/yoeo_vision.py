@@ -462,8 +462,11 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-# laueft!
 class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
+    """
+    Component carries out the field boundary detection using YOEO
+    """
+
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._debug_image: Union[None, debug.DebugImage] = None
@@ -489,26 +492,44 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
-        convex_field_boundary = self._field_boundary_detector.get_convex_field_boundary_points()
-        field_boundary_msg = self._create_field_boundary_msg(image_msg, convex_field_boundary)
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
+        convex_field_boundary_points = self._get_convex_field_boundary_points()
+        field_boundary_msg = self._create_field_boundary_msg(image_msg, convex_field_boundary_points)
         self._publish_field_boundary_msg(field_boundary_msg)
 
         self._add_field_boundary_to_debug_image()
-        self._add_convex_field_boundary_to_debug_image(convex_field_boundary)
+        self._add_convex_field_boundary_to_debug_image(convex_field_boundary_points)
+
+    def _get_convex_field_boundary_points(self) -> List[Tuple[int, int]]:
+        return self._field_boundary_detector.get_convex_field_boundary_points()
+
+    @staticmethod
+    def _create_field_boundary_msg(image_msg, field_boundary_points):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :param field_boundary_points: Points of field boundary
+        :type field_boundary_points: List[Tuple[int, int]]
+        :rtype: soccer_vision_msgs.msg._field_boundary.FieldBoundary
+        """
+        return ros_utils.build_field_boundary_polygon_msg(image_msg.header, field_boundary_points)
+
+    def _publish_field_boundary_msg(self, field_boundary_msg) -> None:
+        """
+        :param field_boundary_msg: Field boundary message
+        :type field_boundary_msg: soccer_vision_msgs.msg._field_boundary.FieldBoundary
+        """
+        self._publisher.publish(field_boundary_msg)
 
     def _add_field_boundary_to_debug_image(self) -> None:
         field_boundary = self._field_boundary_detector.get_field_boundary_points()
         self._debug_image.draw_field_boundary(field_boundary, DebugImageColors.field_boundary)
 
-    def _add_convex_field_boundary_to_debug_image(self, convex_field_boundary) -> None:
-        self._debug_image.draw_field_boundary(convex_field_boundary, DebugImageColors.field_boundary_convex)
-
-    @staticmethod
-    def _create_field_boundary_msg(image_msg, field_boundary):
-        return ros_utils.build_field_boundary_polygon_msg(image_msg.header, field_boundary)
-
-    def _publish_field_boundary_msg(self, field_boundary_msg) -> None:
-        self._publisher.publish(field_boundary_msg)
+    def _add_convex_field_boundary_to_debug_image(self, convex_field_boundary_points: List[Tuple[int, int]]) -> None:
+        self._debug_image.draw_field_boundary(convex_field_boundary_points, DebugImageColors.field_boundary_convex)
 
     def set_image(self, image) -> None:
         """
