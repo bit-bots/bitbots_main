@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 from typing import Dict, Union, List, Tuple, TYPE_CHECKING
 
-
 import os
 import cv2
 import rclpy
@@ -108,7 +107,7 @@ class YOEOObstacleDetectorFactory:
                config: Dict,
                yoeo: yoeo_handler.IYOEOHandler,
                color: Union[None, str] = None,
-               subtractors: Union[None, List[obstacle.ColorObstacleDetector]] = None)\
+               subtractors: Union[None, List[obstacle.ColorObstacleDetector]] = None) \
             -> obstacle.ColorObstacleDetector:
         if cls._new_robot_detector_has_to_be_created(yoeo):
             cls._create_new_robot_detector(yoeo)
@@ -190,6 +189,7 @@ class CameraCapCheckComponent(IVisionComponent):
     Component checks if the camera cap could still be attached to the camera.
     Component deactivates itself after the first image.
     """
+
     def __init__(self, node: Node):
         self._camera_cap_brightness_threshold: int = 0
         self._config: Dict = {}
@@ -264,6 +264,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
     """
     Component carries out the ball detection using YOEO
     """
+
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._ball_detector: Union[None, yoeo_handler.YOEODetectorTemplate] = None  # TODO IYOEODETECTOR
@@ -310,14 +311,14 @@ class YOEOBallDetectionComponent(IVisionComponent):
     def _get_best_ball_candidates(self) -> List[candidate.Candidate]:
         return self._ball_detector.get_top_candidates(count=self._config['ball_candidate_max_count'])
 
-    def _filter_for_best_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate])\
+    def _filter_for_best_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate]) \
             -> List[candidate.Candidate]:
         return self._field_boundary_detector.candidates_under_convex_field_boundary(
             candidates,
             self._config['ball_candidate_field_boundary_y_offset']
         )
 
-    def _filter_by_candidate_threshold(self, candidates: List[candidate.Candidate])\
+    def _filter_by_candidate_threshold(self, candidates: List[candidate.Candidate]) \
             -> List[candidate.Candidate]:
         return candidate.Candidate.rating_threshold(candidates, self._config['ball_candidate_rating_threshold'])
 
@@ -365,6 +366,10 @@ class YOEOBallDetectionComponent(IVisionComponent):
 
 
 class YOEOGoalpostDetectionComponent(IVisionComponent):
+    """
+    Component carries out the goalpost detection using YOEO
+    """
+
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._debug_image: Union[None, debug.DebugImage] = None
@@ -393,37 +398,61 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
-        goalposts = self._get_best_candidates_within_convex_field_boundary(
-            self._goalpost_detector.get_candidates(),
-            self._config['goal_post_field_boundary_y_offset']
-        )
-        goalpost_messages = self._create_goalpost_messages(goalposts)
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
+        candidates = self._get_candidates()
+        final_candidates = self._get_candidates_within_convex_field_boundary(candidates)
+
+        goalpost_messages = self._create_goalpost_messages(final_candidates)
         goalposts_message = self._create_goalposts_message(image_msg, goalpost_messages)
         self._publish_goalposts_message(goalposts_message)
 
-        self._draw_all_goalpost_candidates_to_debug_image(self._goalpost_detector.get_candidates())
-        self._draw_goalposts_within_convex_field_boundary_to_debug_image(goalposts)
+        self._add_candidates_to_debug_image(self._goalpost_detector.get_candidates())
+        self._add_final_candidates_to_debug_image(final_candidates)
 
-    def _get_best_candidates_within_convex_field_boundary(self, best_candidates, candidate_y_offset):
-        return self._field_boundary_detector.candidates_under_convex_field_boundary(best_candidates, candidate_y_offset)
+    def _get_candidates(self) -> List[candidate.Candidate]:
+        return self._goalpost_detector.get_candidates()
+
+    def _get_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate])\
+            -> List[candidate.Candidate]:
+        return self._field_boundary_detector.candidates_under_convex_field_boundary(
+            candidates,
+            self._config['goal_post_field_boundary_y_offset']
+        )
 
     @staticmethod
-    def _create_goalpost_messages(goalposts):
-        return ros_utils.build_goal_post_msgs(goalposts)
+    def _create_goalpost_messages(candidates: List[candidate.Candidate]):
+        """
+        :rtype: List[soccer_vision_msgs.msg._goalpost.Goalpost]
+        """
+        return ros_utils.build_goal_post_msgs(candidates)
 
     @staticmethod
     def _create_goalposts_message(image_msg, goalpost_messages):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :param goalpost_messages: List of goalpost messages
+        :type goalpost_messages: List[soccer_vision_msgs.msg._goalpost.Goalpost]
+        :rtype: soccer_vision_msgs.msg._goalpost_array.GoalpostArray
+        """
         return ros_utils.build_goal_post_array_msg(image_msg.header, goalpost_messages)
 
     def _publish_goalposts_message(self, goalposts_message) -> None:
+        """
+        :param goalposts_message: Goalposts message
+        :type goalposts_message: soccer_vision_msgs.msg._goalpost_array.GoalpostArray
+        """
         if goalposts_message:
             self._publisher.publish(goalposts_message)
 
-    def _draw_all_goalpost_candidates_to_debug_image(self, goalpost_candidates) -> None:
-        self._debug_image.draw_obstacle_candidates(goalpost_candidates, DebugImageColors.goalposts, thickness=1)
+    def _add_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
+        self._debug_image.draw_obstacle_candidates(candidates, DebugImageColors.goalposts, thickness=1)
 
-    def _draw_goalposts_within_convex_field_boundary_to_debug_image(self, goalpost_candidates) -> None:
-        self._debug_image.draw_obstacle_candidates(goalpost_candidates, DebugImageColors.goalposts, thickness=3)
+    def _add_final_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
+        self._debug_image.draw_obstacle_candidates(candidates, DebugImageColors.goalposts, thickness=3)
 
     def set_image(self, image) -> None:
         """
