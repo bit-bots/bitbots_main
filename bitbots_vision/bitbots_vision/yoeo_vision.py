@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Union, List, Tuple, TYPE_CHECKING
+
 
 import os
 import cv2
@@ -10,7 +11,7 @@ from ament_index_python.packages import get_package_share_directory
 from rcl_interfaces.msg import SetParametersResult
 from copy import deepcopy
 from cv_bridge import CvBridge
-from threading import Thread, Lock
+from threading import Lock
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import LineInformationInImage, Audio
 from soccer_vision_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
@@ -169,19 +170,31 @@ class IVisionComponent(ABC):
 
     @abstractmethod
     def run(self, image_msg) -> None:
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
         ...
 
     @abstractmethod
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         ...
 
 
 class CameraCapCheckComponent(IVisionComponent):
+    """
+    Component checks if the camera cap could still be attached to the camera.
+    Component deactivates itself after the first image.
+    """
     def __init__(self, node: Node):
         self._camera_cap_brightness_threshold: int = 0
         self._config: Dict = {}
-        self._image = None
-        self._first_image_callback: bool = True
+        self._image = None  # numpy nd.array (height, width, channels)
+        self._is_first_image: bool = True
         self._node: Node = node
         self._publisher: Union[None, rclpy.publisher.Publisher] = None
 
@@ -203,15 +216,19 @@ class CameraCapCheckComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
         if self._component_has_not_run_yet():
             self._set_component_has_run()
             self._run_component()
 
     def _component_has_not_run_yet(self) -> bool:
-        return self._first_image_callback
+        return self._is_first_image
 
     def _set_component_has_run(self) -> None:
-        self._first_image_callback = False
+        self._is_first_image = False
 
     def _run_component(self) -> None:
         if self._camera_cap_could_be_on():
@@ -233,18 +250,23 @@ class CameraCapCheckComponent(IVisionComponent):
         ros_utils.speak("Hey!   Remove my camera cap!", self._publisher)
 
     def set_image(self, image) -> None:
-        logger.info(f"Image type: {image.shape}")  # numpy nd.array
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         if self._component_has_not_run_yet():
             self._image = image
         else:
             self._image = None  # to allow for garbage collection of first image
 
 
-# laueft!
 class YOEOBallDetectionComponent(IVisionComponent):
+    """
+    Component carries out the ball detection using YOEO
+    """
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._ball_detector: Union[None, yoeo_handler.YOEODetectorTemplate] = None
+        self._ball_detector: Union[None, yoeo_handler.YOEODetectorTemplate] = None  # TODO IYOEODETECTOR
         self._debug_image: Union[None, debug.DebugImage] = None
         self._field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
         self._node: Node = node
@@ -269,56 +291,79 @@ class YOEOBallDetectionComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
-        best_candidates = self._get_best_ball_candidates()
-        balls_within_convex_field_boundary = self._get_best_candidates_within_convex_field_boundary(best_candidates)
-        final_candidates = self._apply_candidate_threshold_to(balls_within_convex_field_boundary)
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
+        candidates = self._get_best_ball_candidates()
+        candidates_within_convex_fb = self._filter_for_best_candidates_within_convex_field_boundary(candidates)
+        final_candidates = self._filter_by_candidate_threshold(candidates_within_convex_fb)
 
         ball_messages = self._create_ball_messages(final_candidates)
         balls_message = self._create_balls_message(image_msg, ball_messages)
         self._publish_balls_message(balls_message)
 
-        self._add_best_ball_candidates_to_debug_image(best_candidates)
-        self._add_best_ball_candidates_within_convex_field_boundary_to_debug_image(balls_within_convex_field_boundary)
-        self._add_top_ball_candidates_to_debug_image(final_candidates)
+        self._add_candidates_to_debug_image(candidates)
+        self._add_candidates_within_convex_fb_to_debug_image(candidates_within_convex_fb)
+        self._add_final_candidates_to_debug_image(final_candidates)
 
-    def _get_best_ball_candidates(self):
+    def _get_best_ball_candidates(self) -> List[candidate.Candidate]:
         return self._ball_detector.get_top_candidates(count=self._config['ball_candidate_max_count'])
 
-    def _get_best_candidates_within_convex_field_boundary(self, best_candidates):
+    def _filter_for_best_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate])\
+            -> List[candidate.Candidate]:
         return self._field_boundary_detector.candidates_under_convex_field_boundary(
-            best_candidates,
+            candidates,
             self._config['ball_candidate_field_boundary_y_offset']
         )
 
-    def _apply_candidate_threshold_to(self, best_candidates):
-        return candidate.Candidate.rating_threshold(best_candidates, self._config['ball_candidate_rating_threshold'])
+    def _filter_by_candidate_threshold(self, candidates: List[candidate.Candidate])\
+            -> List[candidate.Candidate]:
+        return candidate.Candidate.rating_threshold(candidates, self._config['ball_candidate_rating_threshold'])
 
     @staticmethod
-    def _create_ball_messages(ball_candidates):
-        return list(map(ros_utils.build_ball_msg, ball_candidates))
+    def _create_ball_messages(candidates: List[candidate.Candidate]):
+        """
+        :rtype: List[soccer_vision_msgs.msg._ball.Ball]
+        """
+        return list(map(ros_utils.build_ball_msg, candidates))
 
     @staticmethod
     def _create_balls_message(image_msg, ball_messages):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :param ball_messages: List of ball messages
+        :type ball_messages: List[soccer_vision_msgs.msg._ball.Ball]
+        :rtype: soccer_vision_msgs.msg._ball_array.BallArray
+        """
         return ros_utils.build_balls_msg(image_msg.header, ball_messages)
 
     def _publish_balls_message(self, balls_message) -> None:
+        """
+        :param balls_message: Balls message
+        :type balls_message: soccer_vision_msgs.msg._ball_array.BallArray
+        """
         if balls_message:
             self._publisher.publish(balls_message)
 
-    def _add_best_ball_candidates_to_debug_image(self, best_candidates) -> None:
-        self._debug_image.draw_ball_candidates(best_candidates, DebugImageColors.ball, thickness=1)
+    def _add_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
+        self._debug_image.draw_ball_candidates(candidates, DebugImageColors.ball, thickness=1)
 
-    def _add_best_ball_candidates_within_convex_field_boundary_to_debug_image(self, best_candidates) -> None:
-        self._debug_image.draw_ball_candidates(best_candidates, DebugImageColors.ball, thickness=2)
+    def _add_candidates_within_convex_fb_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
+        self._debug_image.draw_ball_candidates(candidates, DebugImageColors.ball, thickness=2)
 
-    def _add_top_ball_candidates_to_debug_image(self, top_candidates) -> None:
-        self._debug_image.draw_ball_candidates(top_candidates, DebugImageColors.ball, thickness=3)
+    def _add_final_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
+        self._debug_image.draw_ball_candidates(candidates, DebugImageColors.ball, thickness=3)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         self._field_boundary_detector.set_image(image)
 
 
-# laueft!
 class YOEOGoalpostDetectionComponent(IVisionComponent):
     def __init__(self, node: Node):
         self._config: Dict = {}
@@ -381,6 +426,10 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._debug_image.draw_obstacle_candidates(goalpost_candidates, DebugImageColors.goalposts, thickness=3)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         self._field_boundary_detector.set_image(image)
 
 
@@ -433,6 +482,10 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         self._publisher.publish(field_boundary_msg)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         self._field_boundary_detector.set_image(image)
 
 
@@ -480,6 +533,10 @@ class YOEOLineDetectionComponent(IVisionComponent):
         self._publisher.publish(line_mask_msg)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         pass  # Intentional
 
 
@@ -525,6 +582,10 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         self._publisher.publish(field_mask_msg)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         pass  # Intentional
 
 
@@ -646,6 +707,10 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
                                                    thickness=3)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         self._team_mates_detector.set_image(image)
         self._opponents_detector.set_image(image)
         self._misc_obstacles_detector.set_image(image)
@@ -690,6 +755,10 @@ class DebugImageComponent(IVisionComponent):
         self._publisher.publish(debug_image_msg)
 
     def set_image(self, image) -> None:
+        """
+        :param image: Image to run the component on
+        :type image:  numpy nd.array (height, width, channels)
+        """
         self._debug_image.set_image(image)
 
 
