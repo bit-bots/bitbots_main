@@ -612,8 +612,11 @@ class YOEOLineDetectionComponent(IVisionComponent):
         pass  # Intentional
 
 
-# does not crash!
 class YOEOFieldDetectionComponent(IVisionComponent):
+    """
+    Component carries out the field detection using YOEO
+    """
+
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._field_detector: Union[None, yoeo_handler.IYOEOSegmentation] = None
@@ -642,15 +645,36 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
-        field_mask = self._field_detector.get_mask_image()
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
+        field_mask = self._get_field_mask()
         field_mask_msg = self._create_field_mask_msg(image_msg, field_mask)
         self._publish_field_mask_msg(field_mask_msg)
 
+    def _get_field_mask(self):
+        """
+        :rtype: numpy ndarray (height, width, channels)
+        """
+        return self._field_detector.get_mask_image()
+
     @staticmethod
     def _create_field_mask_msg(image_msg, field_mask):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :param field_mask: Field mask
+        :type field_mask: numpy ndarray (height, width, channels)
+        :rtype: sensor_msgs.msg._image.Image
+        """
         return ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1')
 
     def _publish_field_mask_msg(self, field_mask_msg) -> None:
+        """
+        :param field_mask_msg: Field mask message
+        :type field_mask_msg: sensor_msgs.msg._image.Image
+        """
         self._publisher.publish(field_mask_msg)
 
     def set_image(self, image) -> None:
