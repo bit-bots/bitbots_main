@@ -539,8 +539,11 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-# laeuft!
 class YOEOLineDetectionComponent(IVisionComponent):
+    """
+    Component carries out the line detection using YOEO
+    """
+
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._debug_image: Union[None, debug.DebugImage] = None
@@ -566,21 +569,40 @@ class YOEOLineDetectionComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
         line_mask = self._line_detector.get_mask_image()
+        line_mask_msg = self._create_line_mask_msg(image_msg, line_mask)
+        self._publish_line_mask_msg(line_mask_msg)
+
         self._add_line_mask_to_debug_image(line_mask)
 
-        line_mask_message = self._create_line_mask_msg(image_msg, line_mask)
-        self._publish_line_mask_msg(line_mask_message)
-
-    def _add_line_mask_to_debug_image(self, line_mask) -> None:
-        self._debug_image.draw_mask(line_mask, color=DebugImageColors.lines)  # , opacity=0.8)
-
     @staticmethod
-    def _create_line_mask_msg(image_msg, line_mask):  # -> sensor_msgs.msg._image.Image:
+    def _create_line_mask_msg(image_msg, line_mask):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :param line_mask: Line mask
+        :type line_mask: numpy ndarray (height, width, channels)
+        :rtype: sensor_msgs.msg._image.Image
+        """
         return ros_utils.build_image_msg(image_msg.header, line_mask, '8UC1')
 
     def _publish_line_mask_msg(self, line_mask_msg) -> None:
+        """
+        :param line_mask_msg: Line mask message
+        :type line_mask_msg: sensor_msgs.msg._image.Image
+        """
         self._publisher.publish(line_mask_msg)
+
+    def _add_line_mask_to_debug_image(self, line_mask) -> None:
+        """
+        :param line_mask: Line mask
+        :type line_mask: numpy ndarray (height, width, channels)
+        """
+        self._debug_image.draw_mask(line_mask, color=DebugImageColors.lines)
 
     def set_image(self, image) -> None:
         """
