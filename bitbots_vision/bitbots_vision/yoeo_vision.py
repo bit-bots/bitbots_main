@@ -59,11 +59,11 @@ class DebugImageFactory:
     @classmethod
     def _new_debug_image_has_to_be_created(cls, config: Dict) -> bool:
         return cls._debug_image is None \
-               or ros_utils.config_param_change(cls._config, config, 'vision_publish_debug_image')
+               or ros_utils.config_param_change(cls._config, config, 'component_debug_image_active')
 
     @classmethod
     def _create_new_debug_image(cls, config: Dict) -> None:
-        cls._debug_image = debug.DebugImage(config['vision_publish_debug_image'])
+        cls._debug_image = debug.DebugImage(config['component_debug_image_active'])
         cls._config = config
 
 
@@ -190,13 +190,15 @@ class CameraCapCheckComponent(IVisionComponent):
         self._config = config
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_audio_msg_topic',
-                                                               Audio,
-                                                               queue_size=10)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_audio_msg_topic',
+            Audio,
+            queue_size=10
+        )
 
     def run(self, image_msg) -> None:
         if self._component_has_not_run_yet():
@@ -255,12 +257,14 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._config = config
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_ball_msg_topic',
-                                                               BallArray)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_ball_msg_topic',
+            BallArray
+        )
 
     def run(self, image_msg) -> None:
         best_candidates = self._get_best_ball_candidates()
@@ -279,9 +283,10 @@ class YOEOBallDetectionComponent(IVisionComponent):
         return self._ball_detector.get_top_candidates(count=self._config['ball_candidate_max_count'])
 
     def _get_best_candidates_within_convex_field_boundary(self, best_candidates):
-        return self._field_boundary_detector.candidates_under_convex_field_boundary(best_candidates,
-                                                                                    self._config[
-                                                                                        'ball_candidate_field_boundary_y_offset'])
+        return self._field_boundary_detector.candidates_under_convex_field_boundary(
+            best_candidates,
+            self._config['ball_candidate_field_boundary_y_offset']
+        )
 
     def _apply_candidate_threshold_to(self, best_candidates):
         return candidate.Candidate.rating_threshold(best_candidates, self._config['ball_candidate_rating_threshold'])
@@ -330,18 +335,21 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._config = config
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_goal_posts_msg_topic',
-                                                               GoalpostArray,
-                                                               queue_size=3)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_goal_posts_msg_topic',
+            GoalpostArray,
+            queue_size=3
+        )
 
     def run(self, image_msg) -> None:
-        goalposts = self._get_best_candidates_within_convex_field_boundary(self._goalpost_detector.get_candidates(),
-                                                                           self._config[
-                                                                               'goal_post_field_boundary_y_offset'])
+        goalposts = self._get_best_candidates_within_convex_field_boundary(
+            self._goalpost_detector.get_candidates(),
+            self._config['goal_post_field_boundary_y_offset']
+        )
         goalpost_messages = self._create_goalpost_messages(goalposts)
         goalposts_message = self._create_goalposts_message(image_msg, goalpost_messages)
         self._publish_goalposts_message(goalposts_message)
@@ -391,12 +399,14 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         self._config = config
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_field_boundary_msg_topic',
-                                                               FieldBoundary)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_field_boundary_msg_topic',
+            FieldBoundary
+        )
 
     def run(self, image_msg) -> None:
         convex_field_boundary = self._field_boundary_detector.get_convex_field_boundary_points()
@@ -441,11 +451,14 @@ class YOEOLineDetectionComponent(IVisionComponent):
         self._config = config
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_line_mask_msg_topic', Image)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_line_mask_msg_topic',
+            Image
+        )
 
     def run(self, image_msg) -> None:
         line_mask = self._line_detector.get_mask_image()
@@ -455,7 +468,7 @@ class YOEOLineDetectionComponent(IVisionComponent):
         self._publish_line_mask_msg(line_mask_message)
 
     def _add_line_mask_to_debug_image(self, line_mask) -> None:
-        self._debug_image.draw_mask(line_mask, color=DebugImageColors.lines) #, opacity=0.8)
+        self._debug_image.draw_mask(line_mask, color=DebugImageColors.lines)  # , opacity=0.8)
 
     @staticmethod
     def _create_line_mask_msg(image_msg, line_mask):  # -> sensor_msgs.msg._image.Image:
@@ -471,40 +484,36 @@ class YOEOLineDetectionComponent(IVisionComponent):
 # does not crash!
 class YOEOFieldDetectionComponent(IVisionComponent):
     def __init__(self, node: Node):
-        self._active: bool = False
         self._config: Dict = {}
         self._field_detector: Union[None, yoeo_handler.IYOEOSegmentation] = None
         self._node: Node = node
         self._publisher: Union[None, rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
-        self._active = config['vision_publish_field_mask_image']
-        self._log_status(config)
         self._field_detector = yoeo_handler.YOEOFieldSegmentation(yoeo)
+        self._log_status()
 
         self._register_publisher(config)
         self._config = config
 
-    def _log_status(self, config: Dict):
-        if ros_utils.config_param_change(self._config, config, 'vision_publish_field_mask_image'):
-            if self._active:
-                logger.info('Field mask WILL BE published')
-            else:
-                logger.info('Field mask WILL NOT BE published')
+    @staticmethod
+    def _log_status():
+        logger.info('Field mask WILL BE published')
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_field_mask_image_msg_topic',
-                                                               Image)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_field_mask_image_msg_topic',
+            Image
+        )
 
     def run(self, image_msg) -> None:
-        if self._active:
-            field_mask = self._field_detector.get_mask_image()
-            field_mask_msg = self._create_field_mask_msg(image_msg, field_mask)
-            self._publish_field_mask_msg(field_mask_msg)
+        field_mask = self._field_detector.get_mask_image()
+        field_mask_msg = self._create_field_mask_msg(image_msg, field_mask)
+        self._publish_field_mask_msg(field_mask_msg)
 
     @staticmethod
     def _create_field_mask_msg(image_msg, field_mask):
@@ -650,17 +659,14 @@ class DebugImageComponent(IVisionComponent):
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._debug_image = DebugImageFactory.create(config)
-        self._log_status(config)
+        self._log_status()
 
         self._register_publisher(config)
         self._config = config
 
-    def _log_status(self, config: Dict) -> None:
-        if ros_utils.config_param_change(self._config, config, 'vision_publish_debug_image'):
-            if config['vision_publish_debug_image']:
-                logger.info('Debug images are enabled')
-            else:
-                logger.info('Debug images are disabled')
+    @staticmethod
+    def _log_status() -> None:
+        logger.info('Debug images are ENABLED')
 
     def _register_publisher(self, config) -> None:
         self._publisher = ros_utils.create_or_update_publisher(
@@ -668,7 +674,8 @@ class DebugImageComponent(IVisionComponent):
             self._config, config,
             self._publisher,
             'ROS_debug_image_msg_topic',
-            Image)
+            Image
+        )
 
     def run(self, image_msg) -> None:
         debug_image_message = self._create_debug_image_message(image_msg)
