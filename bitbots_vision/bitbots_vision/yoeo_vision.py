@@ -415,7 +415,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
     def _get_candidates(self) -> List[candidate.Candidate]:
         return self._goalpost_detector.get_candidates()
 
-    def _get_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate])\
+    def _get_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate]) \
             -> List[candidate.Candidate]:
         return self._field_boundary_detector.candidates_under_convex_field_boundary(
             candidates,
@@ -685,37 +685,45 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         pass  # Intentional
 
 
-# laeuft!
 class YOEOObstacleDetectionComponent(IVisionComponent):
+    """
+    Component carries out the obstacle detection using YOEO
+    """
+
     def __init__(self, node: Node):
         self._config: Dict = {}
+        self._debug_image: Union[None, debug.DebugImage] = None
 
         self._misc_obstacles_detector: Union[None, obstacle.ColorObstacleDetector] = None
         self._opponents_detector: Union[None, obstacle.ColorObstacleDetector] = None
         self._team_mates_detector: Union[None, obstacle.ColorObstacleDetector] = None
 
-        self._debug_image: Union[None, debug.DebugImage] = None
-
         self._node: Node = node
         self._publisher: Union[None, rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:  # TODO IYOEODetector
-
+    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         own_color, opponent_color = self._determine_team_colors(config)
-        self._team_mates_detector = YOEOObstacleDetectorFactory.create(config=config,
-                                                                       yoeo=yoeo,
-                                                                       color=own_color,
-                                                                       subtractors=None)
-        self._opponents_detector = YOEOObstacleDetectorFactory.create(config=config,
-                                                                      yoeo=yoeo,
-                                                                      color=opponent_color,
-                                                                      subtractors=[self._team_mates_detector])
-        self._misc_obstacles_detector = YOEOObstacleDetectorFactory.create(config=config,
-                                                                           yoeo=yoeo,
-                                                                           color=None,
-                                                                           subtractors=[self._team_mates_detector,
-                                                                                        self._opponents_detector])
+        self._team_mates_detector = YOEOObstacleDetectorFactory.create(
+            config=config,
+            yoeo=yoeo,
+            color=own_color,
+            subtractors=None
+        )
+        self._opponents_detector = YOEOObstacleDetectorFactory.create(
+            config=config,
+            yoeo=yoeo,
+            color=opponent_color,
+            subtractors=[self._team_mates_detector]
+        )
+        self._misc_obstacles_detector = YOEOObstacleDetectorFactory.create(
+            config=config,
+            yoeo=yoeo,
+            color=None,
+            subtractors=[self._team_mates_detector,
+                         self._opponents_detector]
+        )
         self._debug_image = DebugImageFactory.create(config)
+
         self._register_publisher(config)
         self._config = config
 
@@ -730,16 +738,22 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         return own_color, opponent_color
 
     def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(self._node,
-                                                               self._config,
-                                                               new_config,
-                                                               self._publisher,
-                                                               'ROS_obstacle_msg_topic',
-                                                               RobotArray,
-                                                               queue_size=3)
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_obstacle_msg_topic',
+            RobotArray,
+            queue_size=3
+        )
 
     def run(self, image_msg) -> None:
-        list_of_obstacle_messages: List = []
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
+        list_of_obstacle_messages = []  # List[soccer_vision_msgs.msg._robot.Robot]
         self._add_team_mates_to(list_of_obstacle_messages)
         self._add_opponents_to(list_of_obstacle_messages)
         self._add_remaining_obstacles_to(list_of_obstacle_messages)
@@ -749,42 +763,68 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
 
         self._add_obstacles_to_debug_image()
 
-    def _add_team_mates_to(self, list_of_obstacle_messages: List) -> None:  # TODO return type
+    def _add_team_mates_to(self, list_of_obstacle_messages) -> None:
+        """
+        :param list_of_obstacle_messages: List of obstacle messages
+        :type list_of_obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        """
         team_mate_candidates = self._get_team_mate_candidates()
         team_mate_candidate_messages = self._create_obstacle_messages(Robot.TEAM_OWN, team_mate_candidates)
         list_of_obstacle_messages.extend(team_mate_candidate_messages)
 
-    def _get_team_mate_candidates(self):
+    def _get_team_mate_candidates(self) -> List[candidate.Candidate]:
         return self._team_mates_detector.get_candidates()
 
     @staticmethod
-    def _create_obstacle_messages(obstacle_type: Robot, candidates):
+    def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]):
+        """
+        :rtype: List[soccer_vision_msgs.msg._robot.Robot]
+        """
         return ros_utils.build_obstacle_msgs(obstacle_type, candidates)
 
-    def _add_opponents_to(self, list_of_obstacle_messages: List) -> None:
+    def _add_opponents_to(self, list_of_obstacle_messages) -> None:
+        """
+        :param list_of_obstacle_messages: List of obstacle messages
+        :type list_of_obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        """
         opponent_candidates = self._get_opponent_candidates()
         opponent_candidate_messages = self._create_obstacle_messages(Robot.TEAM_OPPONENT, opponent_candidates)
         list_of_obstacle_messages.extend(opponent_candidate_messages)
 
-    def _get_opponent_candidates(self):
+    def _get_opponent_candidates(self) -> List[candidate.Candidate]:
         return self._opponents_detector.get_candidates()
 
     def _add_remaining_obstacles_to(self, list_of_obstacle_messages: List) -> None:
+        """
+        :param list_of_obstacle_messages: List of obstacle messages
+        :type list_of_obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        """
         remaining_candidates = self._get_remaining_candidates()
         remaining_candidate_messages = self._create_obstacle_messages(Robot.TEAM_UNKNOWN, remaining_candidates)
         list_of_obstacle_messages.extend(remaining_candidate_messages)
 
-    def _get_remaining_candidates(self):
+    def _get_remaining_candidates(self) -> List[candidate.Candidate]:
         return self._misc_obstacles_detector.get_candidates()
 
     @staticmethod
     def _create_obstacles_message(image_msg, obstacle_messages):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :param obstacle_messages: Obstacle messages
+        :type obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        :rtype: soccer_vision_msgs.msg._robot_array.RobotArray
+        """
         return ros_utils.build_obstacle_array_msg(image_msg.header, obstacle_messages)
 
     def _publish_obstacles_message(self, obstacles_message) -> None:
+        """
+        :param obstacles_message: Obstacles message
+        :type obstacles_message: soccer_vision_msgs.msg._robot_array.RobotArray
+        """
         self._publisher.publish(obstacles_message)
 
-    def _add_obstacles_to_debug_image(self):
+    def _add_obstacles_to_debug_image(self) -> None:
         self._add_team_mates_to_debug_image()
         self._add_opponents_to_debug_image()
         self._add_remaining_objects_to_debug_image()
@@ -799,8 +839,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
 
     def _add_remaining_objects_to_debug_image(self) -> None:
         remaining_candidates = self._get_remaining_candidates()
-        self._debug_image.draw_obstacle_candidates(remaining_candidates, DebugImageColors.misc_obstacles,
-                                                   thickness=3)
+        self._debug_image.draw_obstacle_candidates(remaining_candidates, DebugImageColors.misc_obstacles, thickness=3)
 
     def set_image(self, image) -> None:
         """
