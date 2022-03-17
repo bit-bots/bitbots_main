@@ -851,8 +851,11 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         self._misc_obstacles_detector.set_image(image)
 
 
-# laeuft!
 class DebugImageComponent(IVisionComponent):
+    """
+    Component published the debug image
+    """
+
     def __init__(self, node):
         self._config: Dict = {}
         self._node: Node = node
@@ -868,9 +871,9 @@ class DebugImageComponent(IVisionComponent):
 
     @staticmethod
     def _log_status() -> None:
-        logger.info('Debug images are ENABLED')
+        logger.info('Debug images are published')
 
-    def _register_publisher(self, config) -> None:
+    def _register_publisher(self, config: Dict) -> None:
         self._publisher = ros_utils.create_or_update_publisher(
             self._node,
             self._config, config,
@@ -880,13 +883,26 @@ class DebugImageComponent(IVisionComponent):
         )
 
     def run(self, image_msg) -> None:
-        debug_image_message = self._create_debug_image_message(image_msg)
-        self._publish_debug_image_msg(debug_image_message)
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        """
+        debug_image_msg = self._create_debug_image_msg(image_msg)
+        self._publish_debug_image_msg(debug_image_msg)
 
-    def _create_debug_image_message(self, image_msg):
+    def _create_debug_image_msg(self, image_msg):
+        """
+        :param image_msg: Image message
+        :type image_msg:  sensor_msgs.msg._image.Image
+        :rtype: sensor_msgs.msg._image.Image
+        """
         return ros_utils.build_image_msg(image_msg.header, self._debug_image.get_image(), 'bgr8')
 
     def _publish_debug_image_msg(self, debug_image_msg) -> None:
+        """
+        :param debug_image_msg: Debug image message
+        :type debug_image_msg: sensor_msgs.msg._image.Image
+        """
         self._publisher.publish(debug_image_msg)
 
     def set_image(self, image) -> None:
