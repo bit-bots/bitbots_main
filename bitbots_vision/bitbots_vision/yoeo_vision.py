@@ -45,13 +45,12 @@ class DebugImageColors:
     lines = (255, 0, 0)  # blue
 
 
-# laueft!
 class DebugImageFactory:
-    _debug_image: Union[None, debug.DebugImage] = None
     _config: Dict = {}
+    _debug_image: Union[None, debug.DebugImage] = None
 
     @classmethod
-    def create(cls, config: Dict):
+    def create(cls, config: Dict) -> debug.DebugImage:
         if cls._new_debug_image_has_to_be_created(config):
             cls._create_new_debug_image(config)
         return cls._debug_image
@@ -67,14 +66,13 @@ class DebugImageFactory:
         cls._config = config
 
 
-# laeuft!
 class YOEOFieldBoundaryDetectorFactory:
     _field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
     _field_boundary_detector_search_method: Union[None, str] = None
     _yoeo_id: Union[None, int] = None
 
     @classmethod
-    def create(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler):
+    def create(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> field_boundary.FieldBoundaryDetector:
         if cls._new_field_boundary_detector_has_to_be_created(config, yoeo):
             cls._create_new_field_boundary_detector(config, yoeo)
         return cls._field_boundary_detector
@@ -86,10 +84,10 @@ class YOEOFieldBoundaryDetectorFactory:
                or cls._yoeo_id != id(yoeo)
 
     @classmethod
-    def _create_new_field_boundary_detector(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) \
-            -> field_boundary.FieldBoundaryDetector:
+    def _create_new_field_boundary_detector(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
-            config['field_boundary_detector_search_method'])
+            config['field_boundary_detector_search_method']
+        )
         field_detector = yoeo_handler.YOEOFieldSegmentation(yoeo)
 
         cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
@@ -97,16 +95,20 @@ class YOEOFieldBoundaryDetectorFactory:
         cls._yoeo_id = id(yoeo)
 
 
-# laueft!
 class YOEOObstacleDetectorFactory:
     _config: Dict = {}
+    _blue_color_detector: Union[None, color.HsvSpaceColorDetector] = None
+    _red_color_detector: Union[None, color.HsvSpaceColorDetector] = None
     _robot_detector = None
     _yoeo_id: Union[None, int] = None
-    _red_color_detector: Union[None, color.HsvSpaceColorDetector] = None
-    _blue_color_detector: Union[None, color.HsvSpaceColorDetector] = None
 
     @classmethod
-    def create(cls, config, yoeo, color: Union[None, str] = None, subtractors=None) -> obstacle.ColorObstacleDetector:
+    def create(cls,
+               config: Dict,
+               yoeo: yoeo_handler.IYOEOHandler,
+               color: Union[None, str] = None,
+               subtractors: Union[None, List[obstacle.ColorObstacleDetector]] = None)\
+            -> obstacle.ColorObstacleDetector:
         if cls._new_robot_detector_has_to_be_created(yoeo):
             cls._create_new_robot_detector(yoeo)
 
@@ -125,11 +127,11 @@ class YOEOObstacleDetectorFactory:
             subtractors=subtractors)
 
     @classmethod
-    def _new_robot_detector_has_to_be_created(cls, yoeo) -> bool:
-        return cls._robot_detector is None or id(yoeo) != cls._yoeo_id
+    def _new_robot_detector_has_to_be_created(cls, yoeo: yoeo_handler.IYOEOHandler) -> bool:
+        return cls._robot_detector is None or cls._yoeo_id != id(yoeo)
 
     @classmethod
-    def _create_new_robot_detector(cls, yoeo) -> None:
+    def _create_new_robot_detector(cls, yoeo: yoeo_handler.IYOEOHandler) -> None:
         cls._robot_detector = yoeo_handler.YOEORobotDetector(yoeo)
         cls._yoeo_id = id(yoeo)
 
@@ -138,7 +140,7 @@ class YOEOObstacleDetectorFactory:
         return ros_utils.config_param_change(cls._config, config, r'^red_color_detector_')
 
     @classmethod
-    def _create_new_red_color_detector(cls, config):
+    def _create_new_red_color_detector(cls, config) -> None:
         cls._red_color_detector = color.HsvSpaceColorDetector(config, "red")
 
     @classmethod
@@ -146,7 +148,7 @@ class YOEOObstacleDetectorFactory:
         return ros_utils.config_param_change(cls._config, config, r'^blue_color_detector_')
 
     @classmethod
-    def _create_new_blue_color_detector(cls, config):
+    def _create_new_blue_color_detector(cls, config) -> None:
         cls._blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
     @classmethod
