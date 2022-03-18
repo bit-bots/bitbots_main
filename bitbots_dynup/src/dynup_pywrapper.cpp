@@ -77,7 +77,7 @@ PYBIND11_MODULE(libpy_dynup, m)
         m.def("initRos", &ros2_python_extension::initRos);
 
         py::class_<PyDynupWrapper, std::shared_ptr<PyDynupWrapper>>(m, "PyDynupWrapper")
-        .def(py::init<std::string, std::vector<py::bytes>>())
+        .def(py::init<std::string>())
         .def("step", &PyDynupWrapper::step)
         .def("step_open_loop", &PyDynupWrapper::step_open_loop)
         .def("reset", &PyDynupWrapper::reset)
