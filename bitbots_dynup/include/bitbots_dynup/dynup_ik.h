@@ -15,13 +15,13 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   bitbots_splines::JointGoals calculate(const DynupResponse &ik_goals) override;
   void reset() override;
   void useStabilizing(bool use);
-  void setCurrentJointStates(sensor_msgs::msg::JointState jointStates);
+  void setCurrentJointStates(sensor_msgs::msg::JointState::SharedPtr jointStates);
   void setDirection(std::string direction);
   moveit::core::RobotStatePtr get_goal_state();
 
 
 private:
-  sensor_msgs::msg::JointState current_joint_states_;
+  sensor_msgs::msg::JointState::SharedPtr current_joint_states_;
   moveit::core::JointModelGroup *all_joints_group_;
   moveit::core::JointModelGroup *l_arm_joints_group_;
   moveit::core::JointModelGroup *l_leg_joints_group_;

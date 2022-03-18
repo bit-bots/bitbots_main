@@ -14,8 +14,8 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 void DynupIK::reset() {
-  for (size_t i = 0; i < current_joint_states_.name.size(); i++) {
-    goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
+  for (size_t i = 0; i < current_joint_states_->name.size(); i++) {
+    goal_state_->setJointPositions(current_joint_states_->name[i], &current_joint_states_->position[i]);
   }
 }
 
@@ -116,7 +116,7 @@ void DynupIK::useStabilizing(bool use) {
   use_stabilizing_ = use;
 }
 
-void DynupIK::setCurrentJointStates(sensor_msgs::msg::JointState jointStates) {
+void DynupIK::setCurrentJointStates(sensor_msgs::msg::JointState::SharedPtr jointStates) {
   current_joint_states_ = jointStates;
 }
 

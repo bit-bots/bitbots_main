@@ -18,11 +18,12 @@ class PyDynupWrapper {
 public:
     PyDynupWrapper(std::string ns);
     py::bytes step(double dt,
-                                               const std::string &imu_msg,
-                                               const std::string &jointstate_msg);
+                   py::bytes &imu_msg,
+                   py::bytes &jointstate_msg);
     py::bytes step_open_loop(double dt);
     py::bytes get_poses();
     void reset();
+    void spin_some();
     void special_reset(double time);
     void set_engine_goal(std::string direction);
     int get_direction();

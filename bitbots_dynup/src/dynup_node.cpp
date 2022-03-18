@@ -126,8 +126,8 @@ this->get_parameter("l_wrist_frame",  l_wrist_frame_);
 }
 
 bitbots_msgs::msg::JointCommand DynupNode::step(double dt,
-                                          const sensor_msgs::msg::Imu &imu_msg,
-                                          const sensor_msgs::msg::JointState &jointstate_msg) {
+                                          const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                          const sensor_msgs::msg::JointState::SharedPtr jointstate_msg) {
     // method for python interface. take all messages as parameters instead of using ROS
     imuCallback(imu_msg);
     jointStateCallback(jointstate_msg);
@@ -163,11 +163,11 @@ geometry_msgs::msg::PoseArray DynupNode::step_open_loop(double dt) {
     return pose_array;
 }
 
-void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState &jointstates) {
+void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr jointstates) {
   ik_.setCurrentJointStates(jointstates);
 }
 
-void DynupNode::imuCallback(const sensor_msgs::msg::Imu &msg) {
+void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) {
   stabilizer_.setImu(msg);
 }
 
@@ -330,10 +330,10 @@ bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
   try {
     //0.2 second timeout for transformations
     geometry_msgs::msg::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
-    tf_buffer_.transform(l_foot_origin, l_foot_transformed, r_sole_frame_, rclcpp::Duration::from_nanoseconds(1e9*0.2));
-    tf_buffer_.transform(r_foot_origin, r_foot_transformed, base_link_frame_, rclcpp::Duration::from_nanoseconds(1e9*0.2));
-    tf_buffer_.transform(l_hand_origin, l_hand_transformed, base_link_frame_, rclcpp::Duration::from_nanoseconds(1e9*0.2));
-    tf_buffer_.transform(r_hand_origin, r_hand_transformed, base_link_frame_, rclcpp::Duration::from_nanoseconds(1e9*0.2));
+    tf_buffer_->transform(l_foot_origin, l_foot_transformed, r_sole_frame_, tf2::durationFromSec(0.2));
+    tf_buffer_->transform(r_foot_origin, r_foot_transformed, base_link_frame_, tf2::durationFromSec(0.2));
+    tf_buffer_->transform(l_hand_origin, l_hand_transformed, base_link_frame_, tf2::durationFromSec(0.2));
+    tf_buffer_->transform(r_hand_origin, r_hand_transformed, base_link_frame_, tf2::durationFromSec(0.2));
 
     msg.l_leg_pose = l_foot_transformed.pose;
     msg.r_leg_pose = r_foot_transformed.pose;

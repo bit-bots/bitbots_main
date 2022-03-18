@@ -56,9 +56,9 @@ namespace bitbots_dynup {
 
         rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector <rclcpp::Parameter> &parameters);
 
-        void imuCallback(const sensor_msgs::msg::Imu &msg);
+        void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
-        void jointStateCallback(const sensor_msgs::msg::JointState &jointstates);
+        void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr jointstates);
 
         DynupEngine *getEngine();
 
@@ -74,8 +74,8 @@ namespace bitbots_dynup {
         bitbots_msgs::msg::JointCommand step(double dt);
 
         bitbots_msgs::msg::JointCommand step(double dt,
-                                             const sensor_msgs::msg::Imu &imu_msg,
-                                             const sensor_msgs::msg::JointState &jointstate_msg);
+                                             const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                             const sensor_msgs::msg::JointState::SharedPtr jointstate_msg);
 
         geometry_msgs::msg::PoseArray step_open_loop(double dt);
 

@@ -3,28 +3,22 @@
 PyDynupWrapper::PyDynupWrapper(const std::string ns) : dynup_node_(std::make_shared<bitbots_dynup::DynupNode>(ns)){
 }
 
-void init_ros(std::string ns) {
-    // remap clock
-    std::map<std::string, std::string> remap = {{"/clock", "/" + ns + "clock"}};
-    rclcpp::init(remap, "dynup", rclcpp::init_options::AnonymousName);
-}
-
-void spin_once() {
-    rclcpp::spin_some(this->get_node_base_interface());
+void PyDynupWrapper::spin_some() {
+    rclcpp::spin_some(dynup_node_);
 }
 
 py::bytes PyDynupWrapper::step(double dt,
-                                                          const std::string &imu_msg,
-                                                          const std::string &jointstate_msg) {
-    std::string result =
-            toPython<bitbots_msgs::msg::JointCommand>(dynup_node_->step(dt,
-                                                          fromPython<sensor_msgs::msg::Imu>(imu_msg),
-                                                          fromPython<sensor_msgs::msg::JointState>(jointstate_msg)));
+                               py::bytes &imu_msg,
+                               py::bytes &jointstate_msg) {
+    bitbots_msgs::msg::JointCommand result =
+        dynup_node_->step(dt,
+             std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)),
+             std::make_shared<sensor_msgs::msg::JointState>(fromPython<sensor_msgs::msg::JointState>(jointstate_msg)));
     return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
 py::bytes PyDynupWrapper::step_open_loop(double dt) {
-    std::string result = toPython<geometry_msgs::msg::PoseArray>(dynup_node_->step_open_loop(dt));
+    geometry_msgs::msg::PoseArray result = dynup_node_->step_open_loop(dt);
     return toPython<geometry_msgs::msg::PoseArray>(result);
 }
 
@@ -80,6 +74,8 @@ PYBIND11_MODULE(libpy_dynup, m)
     {
         using namespace bitbots_dynup;
 
+        m.def("initRos", &ros2_python_extension::initRos);
+
         py::class_<PyDynupWrapper, std::shared_ptr<PyDynupWrapper>>(m, "PyDynupWrapper")
         .def(py::init<std::string, std::vector<py::bytes>>())
         .def("step", &PyDynupWrapper::step)
@@ -89,7 +85,6 @@ PYBIND11_MODULE(libpy_dynup, m)
         .def("set_parameter", &PyDynupWrapper::set_parameter)
         .def("get_poses", &PyDynupWrapper::get_poses)
         .def("get_direction", &PyDynupWrapper::get_direction)
-        .def("set_engine_goal", &PyDynupWrapper::set_engine_goal);
-        .def("init_ros", &init_ros);
-        .def("spin_once", &spin_once);
+        .def("set_engine_goal", &PyDynupWrapper::set_engine_goal)
+        .def("spin_some", &PyDynupWrapper::spin_some);
     }
