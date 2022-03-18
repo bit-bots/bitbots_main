@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from typing import Dict, Union, List, Tuple, TYPE_CHECKING
+from typing import Dict, Union, List, Tuple
 
 import os
 import cv2
@@ -267,7 +267,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._ball_detector: Union[None, yoeo_handler.YOEODetectorTemplate] = None  # TODO IYOEODETECTOR
+        self._ball_detector: Union[None, yoeo_handler.YOEOBallDetector] = None
         self._debug_image: Union[None, debug.DebugImage] = None
         self._field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
         self._node: Node = node
@@ -374,7 +374,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._config: Dict = {}
         self._debug_image: Union[None, debug.DebugImage] = None
         self._field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
-        self._goalpost_detector: Union[None, yoeo_handler.IYOEOSegmentation] = None
+        self._goalpost_detector: Union[None, yoeo_handler.YOEOGoalpostDetector] = None
         self._node: Node = node
         self._publisher: Union[None, rclpy.publisher.Publisher] = None
 
@@ -1106,7 +1106,7 @@ class YOEOVision(Node):
     def _convert_image_msg_to_cv2_image(self, image_msg):
         return self._cv_bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
-    def _publish_image_to_components(self, image):
+    def _publish_image_to_components(self, image) -> None:
         for vision_component in self._vision_components:
             vision_component.set_image(image)
 
