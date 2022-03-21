@@ -442,7 +442,10 @@ class RobotController:
             gyro_vels = self.gyro.getValues()
             msg.angular_velocity.x = gyro_vels[0]
             msg.angular_velocity.y = gyro_vels[1]
-            msg.angular_velocity.z = gyro_vels[2]
+            if not math.isnan(gyro_vels[2]): # nao robot reports nan for yaw
+                msg.angular_velocity.z = gyro_vels[2]
+            else:
+                msg.angular_velocity.z = 0.0
         return msg
 
     def publish_imu(self):
