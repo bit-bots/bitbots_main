@@ -20,11 +20,11 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   void setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk);
   void setParams(std::map<std::string, rclcpp::Parameter> params);
   void reset() override;
-  void setImu(sensor_msgs::msg::Imu imu);
+  void setImu(sensor_msgs::msg::Imu::SharedPtr imu);
   bool isStable();
 
  private:
-  sensor_msgs::msg::Imu imu_;
+  sensor_msgs::msg::Imu::SharedPtr imu_;
   std::shared_ptr<control_toolbox::PidROS> pid_trunk_pitch_;
   std::shared_ptr<control_toolbox::PidROS> pid_trunk_roll_;
   std::shared_ptr<rclcpp::Node> pitch_node_;

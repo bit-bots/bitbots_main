@@ -17,16 +17,17 @@ using namespace ros2_python_extension;
 class PyDynupWrapper {
 public:
     PyDynupWrapper(std::string ns);
-    moveit::py_bindings_tools::ByteString step(double dt,
-                                               const std::string &imu_msg,
-                                               const std::string &jointstate_msg);
-    moveit::py_bindings_tools::ByteString step_open_loop(double dt);
-    moveit::py_bindings_tools::ByteString get_poses();
+    py::bytes step(double dt,
+                   py::bytes &imu_msg,
+                   py::bytes &jointstate_msg);
+    py::bytes step_open_loop(double dt);
+    py::bytes get_poses();
     void reset();
+    void spin_some();
     void special_reset(double time);
     void set_engine_goal(std::string direction);
     int get_direction();
-    void set_node_dyn_reconf(const boost::python::object params);
+    void set_parameter(const py::bytes params);
 
 private:
     std::shared_ptr<bitbots_dynup::DynupNode> dynup_node_;

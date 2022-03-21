@@ -50,97 +50,103 @@ namespace bitbots_dynup {
  *
  * Additionally it publishes the DynUpEngines motor-goals back into ROS
  */
-class DynupNode : public rclcpp::Node {
- public:
-  explicit DynupNode(std::string &ns);
+    class DynupNode : public rclcpp::Node {
+    public:
+        explicit DynupNode(const std::string ns);
 
-  /**
-   * Callback that gets executed whenever #m_server receives a new goal.
-   * @param goal New goal to process
-   */
-  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID & uuid, const DynupGoal::Goal goal);
-  rclcpp_action::CancelResponse cancelCb(const DynupGoalHandle goal);
-  void acceptedCb(const DynupGoalHandle goal);
+        rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector <rclcpp::Parameter> &parameters);
 
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+        void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
-  void imuCallback(const sensor_msgs::msg::Imu &msg);
+        void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr jointstates);
 
-  void jointStateCallback(const sensor_msgs::msg::JointState &jointstates);
+        DynupEngine *getEngine();
 
-  DynupEngine *getEngine();
-  DynupIK *getIK();
+        DynupIK *getIK();
 
-  /**
-  * Retrieve current positions of left foot and trunk relative to right foot
-  *
-  * @return The pair of (right foot, left foot) poses if transformation was successfull
-  */
-  bitbots_dynup::msg::DynupPoses getCurrentPoses();
+        /**
+        * Retrieve current positions of left foot and trunk relative to right foot
+        *
+        * @return The pair of (right foot, left foot) poses if transformation was successfull
+        */
+        bitbots_dynup::msg::DynupPoses getCurrentPoses();
 
-  bitbots_msgs::msg::JointCommand step(double dt);
-  bitbots_msgs::msg::JointCommand step(double dt,
-                                  const sensor_msgs::msg::Imu &imu_msg,
-                                  const sensor_msgs::msg::JointState &jointstate_msg);
-  geometry_msgs::msg::PoseArray step_open_loop(double dt);
+        bitbots_msgs::msg::JointCommand step(double dt);
 
-  void reset(int time=0);
+        bitbots_msgs::msg::JointCommand step(double dt,
+                                             const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                             const sensor_msgs::msg::JointState::SharedPtr jointstate_msg);
 
- private:
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
-  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr cop_subscriber_;
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+        geometry_msgs::msg::PoseArray step_open_loop(double dt);
 
-  std::vector<std::string> param_names_;
-  rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
+        void reset(int time = 0);
 
-  DynupEngine engine_;
-  Stabilizer stabilizer_;
-  Visualizer visualizer_;
-  DynupIK ik_;
-  std::map<std::string, rclcpp::Parameter> params_;
-  int stable_duration_;
-  int engine_rate_;
-  int failed_tick_counter_;
-  double last_ros_update_time_;
-  double start_time_;
-  bool debug_;
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<robot_model_loader::RobotModelLoader> robot_model_loader_;
-  moveit::core::RobotModelPtr kinematic_model_;
+    private:
 
+        /**
+        * Callback that gets executed whenever #m_server receives a new goal.
+        * @param goal New goal to process
+        */
+        rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const DynupGoal::Goal> goal);
 
-  std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
+        rclcpp_action::CancelResponse cancelCb(std::shared_ptr<DynupGoalHandle> goal);
 
-  void execute(const std::shared_ptr<DynupGoalHandle> goal);
+        void acceptedCb(const std::shared_ptr<DynupGoalHandle> goal);
 
-  /**
-   * Do main loop in which DynUpEngine::tick() gets called repeatedly.
-   * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
-   */
-  void loopEngine(int);
+        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
+        rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
+        rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr cop_subscriber_;
+        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
 
-  /**
-   * Publish the current support_foot so that a correct base_footprint can be calculated
-   * @param is_left_dyn_up Whether the left foot is the current DynUping foot, meaning it is in the air
-   */
-  void publishSupportFoot(bool is_left_dyn_up);
+        std::vector <std::string> param_names_;
+        rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
-  /**
-   * Creates the Goal Msg
-   */
-  bitbots_msgs::msg::JointCommand createGoalMsg(const bitbots_splines::JointGoals &goals);
+        OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
-  /**
-   * Helper method to achieve correctly sampled rate
-   */
-  double getTimeDelta();
+        DynupEngine engine_;
+        Stabilizer stabilizer_;
+        Visualizer visualizer_;
+        DynupIK ik_;
+        std::map <std::string, rclcpp::Parameter> params_;
+        int stable_duration_;
+        int engine_rate_;
+        int failed_tick_counter_;
+        double last_ros_update_time_;
+        double start_time_;
+        bool debug_;
+        std::unique_ptr <tf2_ros::Buffer> tf_buffer_;
+        std::shared_ptr <robot_model_loader::RobotModelLoader> robot_model_loader_;
+        moveit::core::RobotModelPtr kinematic_model_;
 
 
+        std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
+
+        void execute(const std::shared_ptr <DynupGoalHandle> goal);
+
+        /**
+         * Do main loop in which DynUpEngine::tick() gets called repeatedly.
+         * The ActionServer's state is taken into account meaning that a cancelled goal no longer gets processed.
+         */
+        void loopEngine(int, std::shared_ptr<DynupGoalHandle> goal_handle);
+
+        /**
+         * Publish the current support_foot so that a correct base_footprint can be calculated
+         * @param is_left_dyn_up Whether the left foot is the current DynUping foot, meaning it is in the air
+         */
+        void publishSupportFoot(bool is_left_dyn_up);
+
+        /**
+         * Creates the Goal Msg
+         */
+        bitbots_msgs::msg::JointCommand createGoalMsg(const bitbots_splines::JointGoals &goals);
+
+        /**
+         * Helper method to achieve correctly sampled rate
+         */
+        double getTimeDelta();
 
 
-};
+    };
 
 }
 

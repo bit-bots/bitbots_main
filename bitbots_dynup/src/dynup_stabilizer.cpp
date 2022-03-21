@@ -39,7 +39,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
 
   tf2::Transform right_foot_goal;
   tf2::Quaternion quat;
-  tf2::convert(imu_.orientation, quat);
+  tf2::convert(imu_->orientation, quat);
 
   Eigen::Quaterniond imu_orientation_eigen = Eigen::Quaterniond(quat.getW(), quat.getX(), quat.getY(), quat.getZ());
   rot_conv::FusedAngles current_orientation = rot_conv::FusedFromQuat(imu_orientation_eigen);
@@ -97,7 +97,7 @@ bool Stabilizer::isStable() {
   return is_stable_;
 }
 
-void Stabilizer::setImu(sensor_msgs::msg::Imu imu) {
+void Stabilizer::setImu(sensor_msgs::msg::Imu::SharedPtr imu) {
   imu_ = imu;
 }
 
