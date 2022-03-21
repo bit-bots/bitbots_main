@@ -34,7 +34,7 @@ class WebotsSim(Node):
             else:
                 world_name = "1_bot.wbt"
         else:
-            world_name = f"robocup.wbt"
+            world_name = f"robocup_{robot_type}.wbt"
 
         if headless:
             cmd = [
