@@ -61,13 +61,13 @@ class PredefinedCommands:
             -0.0112,  # LHipYaw
             0.0615,  # LHipRoll
             0.4732,  # LHipPitch
-            -1.0058,  # LKnee
+            1.0058,  # LKnee
             -0.4512,  # LAnklePitch
             0.0625,  # LAnkleRoll
             0.0112,  # RHipYaw
             -0.0615,  # RHipRoll
             -0.4732,  # RHipPitch
-            1.0059,  # RKnee
+            -1.0059,  # RKnee
             0.4512,  # RAnklePitch
             -0.0625,  # RAnkleRoll
         ])
