@@ -48,7 +48,7 @@ class AbstractVisualizer {
   visualization_msgs::msg::MarkerArray getPath(bitbots_splines::PoseSpline &spline,
                                      const std::string &frame,
                                      const double smoothness,
-                                     rclcpp::Node* node) {
+                                     rclcpp::Node::SharedPtr node) {
 
     visualization_msgs::msg::MarkerArray marker_array;
     visualization_msgs::msg::Marker base_marker;

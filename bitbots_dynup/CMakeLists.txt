@@ -49,7 +49,8 @@ set(SOURCES src/dynup_engine.cpp
         src/dynup_ik.cpp
         src/dynup_node.cpp
         src/dynup_pywrapper.cpp
-        src/dynup_stabilizer.cpp)
+        src/dynup_stabilizer.cpp
+        src/visualizer.cpp)
 
 
 set(CODE_LIBRARIES urdfdom_world urdfdom_model)

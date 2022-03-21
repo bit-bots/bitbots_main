@@ -19,7 +19,7 @@ struct VisualizationParams {
 class Visualizer : bitbots_splines::AbstractVisualizer {
  public:
 
-  Visualizer(const std::string &base_topic);
+  Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node);
 
   void setParams(VisualizationParams params);
 
@@ -29,6 +29,7 @@ class Visualizer : bitbots_splines::AbstractVisualizer {
   
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr spline_publisher_;
   std::string base_topic_;
+  rclcpp::Node::SharedPtr node_;
   const std::string marker_ns_ = "bitbots_dynup";
   VisualizationParams params_;
 };

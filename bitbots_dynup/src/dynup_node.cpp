@@ -6,7 +6,7 @@ DynupNode::DynupNode(const std::string ns) :
     Node(ns + "dynup", rclcpp::NodeOptions()),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
-    visualizer_("debug/dynup") {
+    visualizer_("debug/dynup", SharedPtr(this)) {
 
 this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     this,
@@ -237,23 +237,23 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   }
 }
 
-rclcpp_action::GoalResponse DynupNode::GoalCb(
+rclcpp_action::GoalResponse DynupNode::goalCb(
     const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const DynupGoal::Goal> goal)
 {
-  RCLCPP_INFO(this->get_logger(), "Received goal request with order %d", goal->order);
+  RCLCPP_INFO(this->get_logger(), "Received goal request");
   (void)uuid;
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse DynupNode::CancelCb(
+rclcpp_action::CancelResponse DynupNode::cancelCb(
     const std::shared_ptr<DynupGoalHandle> goal) {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
   (void)goal;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void DynupNode::AcceptedCb(const std::shared_ptr<DynupGoalHandle> goal)
+void DynupNode::acceptedCb(const std::shared_ptr<DynupGoalHandle> goal)
 {
   // this needs to return quickly to avoid blocking the executor, so spin up a new thread
   std::thread{std::bind(&DynupNode::execute, this, _1), goal}.detach();
