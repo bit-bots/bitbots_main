@@ -2,8 +2,8 @@
 
 namespace bitbots_dynup {
 
-DynupNode::DynupNode(const std::string ns) :
-    Node(ns + "dynup", rclcpp::NodeOptions()),
+DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
+    Node(ns + "dynup", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
     visualizer_("debug/dynup", SharedPtr(this)) {
@@ -14,17 +14,6 @@ this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     std::bind(&DynupNode::goalCb, this, _1, _2),
     std::bind(&DynupNode::cancelCb, this, _1),
     std::bind(&DynupNode::acceptedCb, this, _1));
-
-this->declare_parameter<std::string>("base_link_frame",  "base_link");
-this->get_parameter("base_link_frame",  base_link_frame_);
-this->declare_parameter<std::string>("r_sole_frame",  "r_sole");
-this->get_parameter("r_sole_frame",  r_sole_frame_);
-this->declare_parameter<std::string>("l_sole_frame",  "l_sole");
-this->get_parameter("l_sole_frame",  l_sole_frame_);
-this->declare_parameter<std::string>("r_wrist_frame",  "r_wrist");
-this->get_parameter("r_wrist_frame",  r_wrist_frame_);
-this->declare_parameter<std::string>("l_wrist_frame",  "l_wrist");
-this->get_parameter("l_wrist_frame",  l_wrist_frame_);
 
   param_names_ = {
     "engine_rate",
@@ -91,9 +80,9 @@ this->get_parameter("l_wrist_frame",  l_wrist_frame_);
     "pid_trunk_pitch.antiwindup",
     "pid_trunk_pitch.publish_state"};
 
-  for(const auto &name : param_names_) {
-    this->declare_parameter(name, 0.0);
-  }
+  // load params once
+  const std::vector<rclcpp::Parameter> params;
+  onSetParameters(params);
 
   robot_model_loader_ =
       std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
