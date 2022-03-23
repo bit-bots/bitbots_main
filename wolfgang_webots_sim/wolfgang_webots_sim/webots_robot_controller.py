@@ -225,7 +225,6 @@ class RobotController:
         self.current_positions = {}
         self.joint_limits = {}
         for motor_name in self.proto_motor_names:
-            print("motor_name: ", motor_name)
             motor = self.robot_node.getDevice(motor_name)
             motor.enableTorqueFeedback(self.timestep)
             self.motors.append(motor)
