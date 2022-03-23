@@ -1,22 +1,35 @@
 <launch>
-    <arg name="tf_prefix" value="$(eval env('ROS_NAMESPACE') + '/' if env('ROS_NAMESPACE') !=  '' else '')"/>
+    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
     <arg name="sim" default="false"/>
-
-      <group unless="$(var sim)">
-            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" command="load"/>
-      </group>
-      <group if="$(var sim)">
-            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml" command="load"/>
-      </group>
-
+    <arg name="robot_type" default="wolfgang"/>
     <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
     <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-  <node pkg="bitbots_dynup" name="dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
-    <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
-    <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
-    <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
-    <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
-    <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
-  </node>
+    <group>
+        <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
+            <arg name="sim" value="$(var sim)"/>
+            <arg name="robot_type" value="$(var robot_type)"/>
+        </include>
+    </group>
+
+    <group unless="$(var sim)">
+        <node pkg="bitbots_dynup" name="dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+            <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+            <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+            <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+            <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+            <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" />
+        </node>
+    </group>
+    <group if="$(var sim)">
+        <node pkg="bitbots_dynup" name="dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+            <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+            <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+            <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+            <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+            <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml"/>
+        </node>
+    </group>
 </launch>
