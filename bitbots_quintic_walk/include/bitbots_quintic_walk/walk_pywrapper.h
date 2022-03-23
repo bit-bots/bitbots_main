@@ -12,6 +12,7 @@
 #include <humanoid_league_msgs/msg/robot_control_state.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/complex.h>
 #include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
 
@@ -45,6 +46,12 @@ class PyWalkWrapper {
   double get_freq();
   void spin_some();
   void publish_debug();
+  void test_memory_leak_from(py::bytes cmdvel_msg_serialized);
+  void test_memory_leak_to();
+
+  template<typename T>
+  void test_memory_leak_methods(geometry_msgs::msg::Twist &msg);
+
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;

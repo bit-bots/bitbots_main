@@ -99,3 +99,12 @@ class PyWalk:
 
     def publish_debug(self):
         self.py_walk_wrapper.publish_debug()
+
+    def test_memory_leak_from(self, twist_msg):
+        self.py_walk_wrapper.test_memory_leak_from(serialize_message(twist_msg))
+
+    def test_memory_leak_to(self):
+        self.py_walk_wrapper.test_memory_leak_to()
+
+    def test_memory_leak_methods(self, msg):
+        self.py_walk_wrapper.test_memory_leak_methods(msg)
