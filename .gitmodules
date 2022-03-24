@@ -90,13 +90,17 @@
 	url = ../../ros-sports/soccer_interfaces.git
 [submodule "lib/orocos_kinematics_dynamics"]
 	path = lib/orocos_kinematics_dynamics
+	branch = ros2-pykdl
 	url = ../../mjbogusz/orocos_kinematics_dynamics.git
 [submodule "lib/imu_tools"]
 	path = lib/imu_tools
+	branch = eloquent
 	url = https://github.com/ccny-ros-pkg/imu_tools.git
 [submodule "biped_interfaces"]
 	path = biped_interfaces
+	branch = rolling
 	url = https://github.com/ros-sports/biped_interfaces
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
+	branch = ros2
 	url = git@github.com:SammyRamone/bio_ik.git
