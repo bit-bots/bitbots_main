@@ -49,10 +49,6 @@ class PyWalkWrapper {
   void test_memory_leak_from(py::bytes cmdvel_msg_serialized);
   void test_memory_leak_to();
 
-  template<typename T>
-  void test_memory_leak_methods(geometry_msgs::msg::Twist &msg);
-
-
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
 };

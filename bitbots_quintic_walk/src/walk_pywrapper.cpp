@@ -154,22 +154,6 @@ void PyWalkWrapper::test_memory_leak_to(){
     toPython<geometry_msgs::msg::Twist>(cmdvel_msg);
 }
 
-template<typename T>
-void PyWalkWrapper::test_memory_leak_methods(T &msg){
-    // initialize serialized message struct
-    rmw_serialized_message_t serialized_message = rmw_get_zero_initialized_serialized_message();
-    auto type_support = rosidl_typesupport_cpp::get_message_type_support_handle<T>();
-    auto allocator = rcl_get_default_allocator();
-    rmw_serialized_message_init(&serialized_message, 0u, &allocator);
-
-    // do the serialization
-    rmw_ret_t result = rmw_serialize(&msg, type_support, &serialized_message);
-    if (result != RMW_RET_OK) {
-      printf("Failed to serialize message!\n");
-    }
-
-}
-
 PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
 
@@ -192,6 +176,5 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
       .def("spin_some", &PyWalkWrapper::spin_some)
       .def("publish_debug", &PyWalkWrapper::publish_debug)
       .def("test_memory_leak_from", &PyWalkWrapper::test_memory_leak_from)
-      .def("test_memory_leak_to", &PyWalkWrapper::test_memory_leak_to)
-      .def("test_memory_leak_methods", &PyWalkWrapper::test_memory_leak_methods);
+      .def("test_memory_leak_to", &PyWalkWrapper::test_memory_leak_to);
 }
