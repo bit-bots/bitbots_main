@@ -46,8 +46,6 @@ class PyWalkWrapper {
   double get_freq();
   void spin_some();
   void publish_debug();
-  void test_memory_leak_from(py::bytes cmdvel_msg_serialized);
-  void test_memory_leak_to();
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;

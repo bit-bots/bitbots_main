@@ -144,16 +144,6 @@ void PyWalkWrapper::publish_debug(){
   walk_node_->publish_debug();
 }
 
-void PyWalkWrapper::test_memory_leak_from(py::bytes cmdvel_msg_serialized){
-    geometry_msgs::msg::Twist cmdvel_msg;
-    fromPython<geometry_msgs::msg::Twist>(cmdvel_msg_serialized);
-}
-
-void PyWalkWrapper::test_memory_leak_to(){
-    geometry_msgs::msg::Twist cmdvel_msg;
-    toPython<geometry_msgs::msg::Twist>(cmdvel_msg);
-}
-
 PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
 
@@ -174,7 +164,5 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
       .def("get_freq", &PyWalkWrapper::get_freq)
       .def("get_odom", &PyWalkWrapper::get_odom)
       .def("spin_some", &PyWalkWrapper::spin_some)
-      .def("publish_debug", &PyWalkWrapper::publish_debug)
-      .def("test_memory_leak_from", &PyWalkWrapper::test_memory_leak_from)
-      .def("test_memory_leak_to", &PyWalkWrapper::test_memory_leak_to);
+      .def("publish_debug", &PyWalkWrapper::publish_debug);
 }
