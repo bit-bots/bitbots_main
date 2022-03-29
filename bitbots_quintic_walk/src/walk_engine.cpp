@@ -1,5 +1,5 @@
 /*
-node_ code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
+This code is partly based on the original code by Quentin "Leph" Rouxel and Team Rhoban.
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
@@ -100,7 +100,7 @@ WalkResponse WalkEngine::update(double dt) {
       return createResponse();
     }
   } else if (engine_state_ == WalkState::WALKING) {
-    // check if the step would finish with node_ update of the phase
+    // check if the step would finish with this update of the phase
     bool step_will_finish = (phase_ < 0.5 && phase_ + dt * params_.freq > 0.5) || phase_ + dt * params_.freq > 1.0;
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
@@ -130,7 +130,7 @@ WalkResponse WalkEngine::update(double dt) {
   // update the current phase
   updatePhase(dt);
 
-  // check if we will finish a half step with node_ update
+  // check if we will finish a half step with this update
   bool half_step_finished = (last_phase_ < 0.5 && phase_ >= 0.5) || (last_phase_ > 0.5 && phase_ < 0.5);
 
   // small state machine
@@ -139,7 +139,7 @@ WalkResponse WalkEngine::update(double dt) {
     buildStartMovementTrajectories();
     engine_state_ = WalkState::START_MOVEMENT;
   } else if (engine_state_ == WalkState::START_MOVEMENT) {
-    // in node_ state we do a single "step" where we only move the trunk
+    // in this state we do a single "step" where we only move the trunk
     if (half_step_finished) {
       if (request_.stop_walk && !request_.single_step) {
         engine_state_ = WalkState::STOP_MOVEMENT;
@@ -199,21 +199,21 @@ WalkResponse WalkEngine::update(double dt) {
       }
     }
   } else if (engine_state_ == WalkState::KICK) {
-    // in node_ state we do a kick while doing a step
+    // in this state we do a kick while doing a step
     if (half_step_finished) {
       //kick step is finished, go on walking
       engine_state_ = WalkState::WALKING;
       buildNormalTrajectories();
     }
   } else if (engine_state_ == WalkState::STOP_STEP) {
-    // in node_ state we do a step back to get feet into idle pose
+    // in this state we do a step back to get feet into idle pose
     if (half_step_finished) {
       //stop step is finished, go to stop movement state
       engine_state_ = WalkState::STOP_MOVEMENT;
       buildStopMovementTrajectories();
     }
   } else if (engine_state_ == WalkState::STOP_MOVEMENT) {
-    // in node_ state we do a "step" where we move the trunk back to idle position
+    // in this state we do a "step" where we move the trunk back to idle position
     if (half_step_finished) {
       //stop movement is finished, go to idle state
       engine_state_ = WalkState::IDLE;
@@ -356,7 +356,7 @@ void WalkEngine::reset(WalkState state,
     }
     phase_ = phase;
 
-    // build trajectories for node_ state once to get correct start point for new trajectory
+    // build trajectories for this state once to get correct start point for new trajectory
     if (state == WalkState::WALKING) {
       buildNormalTrajectories();
     } else if (state == WalkState::START_MOVEMENT) {
@@ -725,7 +725,7 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   }
 
   // When walking downwards, the correct trunk height is the one relative to the flying
-  // foot goal position, node_ results in lowering the trunk correctly during the step
+  // foot goal position, this results in lowering the trunk correctly during the step
   double
       trunk_height_including_foot_z_movement = params_.trunk_height + std::min(0.0, support_to_next_.getOrigin().z());
   // Periodic z movement of trunk is at lowest point at double support center, highest at single support center
@@ -1062,7 +1062,7 @@ void WalkEngine::stepFromOrders(const std::vector<double> &linear_orders, double
   tmp_diff.setIdentity();
   //No change in forward step and upward step
   tmp_diff.getOrigin()[0] = linear_orders[0];
-  tmp_diff.getOrigin()[2] = linear_orders[1];
+  tmp_diff.getOrigin()[2] = linear_orders[2];
   //Add lateral foot offset
   if (is_left_support_foot_) {
     tmp_diff.getOrigin()[1] = params_.foot_distance;

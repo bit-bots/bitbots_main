@@ -1,5 +1,6 @@
 /**:
   ros__parameters:
+    use_sim_time: True
     engine:
       foot_apex_phase: 0.5
       foot_z_pause: 0.0
@@ -11,10 +12,8 @@
       kick_phase: 0.75
 
     node:
-      # update frequency of the engine
-      engine_freq: 1000.0
+      engine_freq: 200.0
 
-      # parameters for bioIK
       ik_timeout: 0.01
       ik_reset: True
 
@@ -31,14 +30,34 @@
       yaw_speed_multiplier: 1.0
 
       imu_active: False
-      imu_pitch_threshold: 0.19
-      imu_roll_threshold: 0.4
-      imu_pitch_vel_threshold: 1.3
-      imu_roll_vel_threshold: 5.7
-      pause_duration: 3.0
+      imu_pitch_threshold: 3.14
+      imu_roll_threshold: 3.14
+      imu_pitch_vel_threshold: 0.0
+      imu_roll_vel_threshold: 0.0
+      pause_duration: 0.0
 
       pressure_phase_reset_active: False
-      ground_min_pressure: 1.5
-      phase_reset_phase: 0.25
-      joint_min_effort: 35.0
+      ground_min_pressure: 0.0
+      phase_reset_phase: 0.0
+      joint_min_effort: 0.0
       effort_phase_reset_active: False
+
+pid_trunk_fused_pitch:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: 0.0
+    i_clamp_max: 0.0
+    antiwindup: False
+
+pid_trunk_fused_roll:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: 0.0
+    i_clamp_max: 0.0
+    antiwindup: False
