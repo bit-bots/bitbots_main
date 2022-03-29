@@ -53,8 +53,6 @@ set(SOURCES src/dynup_engine.cpp
         src/visualizer.cpp)
 
 
-set(CODE_LIBRARIES urdfdom_world urdfdom_model)
-
 add_executable(DynupNode ${SOURCES})
 
 ament_target_dependencies(DynupNode
@@ -80,7 +78,7 @@ ament_target_dependencies(DynupNode
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-target_link_libraries(DynupNode ${CODE_LIBRARIES} "${cpp_typesupport_target}")
+target_link_libraries(DynupNode "${cpp_typesupport_target}")
 
 
 # create the lib
