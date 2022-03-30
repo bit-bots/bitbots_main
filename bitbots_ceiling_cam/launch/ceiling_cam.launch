@@ -20,11 +20,13 @@
             <remap from="camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
             <remap from="image_rect" to="/ceiling_cam/ceiling_cam_publisher/image_color_rect"/>
         </composable_node>
+        <!--
         <composable_node pkg="apriltag_ros" plugin="AprilTagNode" name="apriltag">
             <remap from="/apriltag/image" to="/ceiling_cam/ceiling_cam_publisher/image_color_rect"/>
             <remap from="/apriltag/camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
-            <param load="$(find-pkg-share bitbots_ceiling_cam)/config/april_tags.yaml"/>
+            <param from="$(find-pkg-share bitbots_ceiling_cam)/config/april_tags.yaml"/>
         </composable_node>
+        -->
     </node_container>
 
 
