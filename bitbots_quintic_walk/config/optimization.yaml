@@ -15,7 +15,7 @@
       engine_freq: 200.0
 
       ik_timeout: 0.01
-      ik_reset: True
+      ik_reset: False
 
       debug_active: False
 
