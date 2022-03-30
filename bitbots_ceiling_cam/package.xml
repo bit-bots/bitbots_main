@@ -9,6 +9,11 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
 
+  <depend>bitbots_docs</depend>
+  <depend>pylon_ros2_camera_wrapper</depend>
+  <depend>image_proc</depend>
+  <depend>tf2_ros</depend>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <export>

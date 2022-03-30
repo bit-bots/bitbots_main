@@ -1,30 +1,31 @@
-<?xml version="1.0"?>
 <launch>
     <!-- Transform from camera to field -->
-    <node pkg="tf" exec="static_transform_publisher" name="field_mount" args="-0.051 -0.113 3.370 0.997 -0.012 0.070 0.026 ceiling_cam field 100" />
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="field_mount" args="--x -0.051 --y -0.113 --z 3.370 --qx -0.997 --qy -0.012 --qz 0.070 --qw 0.026 --frame-id ceiling_cam --child-frame-id field" />
     
     <!-- camera driver -->
-    <node name="ceiling_cam" pkg="pylon_camera" exec="pylon_camera_node" output="screen">
-        <rosparam command="load" file="$(find-pkg-share bitbots_ceiling_cam)/config/camera_settings_ceiling_cam.yaml" />
-        <!-- the driver is publishing an uncessary rect image -->
-        <remap from="/ceiling_cam/image_rect" to="/ceiling_cam/bad_image_rect"/>
-    </node>
+    <include file="$(find-pkg-share pylon_ros2_camera_wrapper)/launch/pylon_ros2_camera.launch.py">
+        <arg name="node_name" value="ceiling_cam_publisher"/>
+        <arg name="camera_id" value="ceiling_cam"/>
+        <arg name="config_file" value="$(find-pkg-share bitbots_ceiling_cam)/config/camera_settings_ceiling_cam.yaml" />
+    </include>
 
-    <group ns="/ceiling_cam">
-        <node pkg="nodelet" exec="nodelet" args="standalone image_proc/debayer" name="debayer">
-        </node>
+    <node_container pkg="rclcpp_components" exec="component_container" name="ceiling_cam_image_proc_container" namespace="">
+        <composable_node pkg="image_proc" plugin="image_proc::DebayerNode" name="debayer">
+            <remap from="image_raw" to="/ceiling_cam/ceiling_cam_publisher/image_raw"/>
+            <remap from="camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
+            <remap from="image_color" to="/ceiling_cam/ceiling_cam_publisher/image_color_debayered"/>
+        </composable_node>
+        <composable_node pkg="image_proc" plugin="image_proc::RectifyNode" name="rectify">
+            <remap from="image" to="/ceiling_cam/ceiling_cam_publisher/image_color_debayered"/>
+            <remap from="camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
+            <remap from="image_rect" to="/ceiling_cam/ceiling_cam_publisher/image_color_rect"/>
+        </composable_node>
+        <composable_node pkg="apriltag_ros" plugin="AprilTagNode" name="apriltag">
+            <remap from="/apriltag/image" to="/ceiling_cam/ceiling_cam_publisher/image_color_rect"/>
+            <remap from="/apriltag/camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
+            <param load="$(find-pkg-share bitbots_ceiling_cam)/config/april_tags.yaml"/>
+        </composable_node>
+    </node_container>
 
-        <node pkg="nodelet" exec="nodelet" args="standalone image_proc/rectify" name="rectify">
-        </node>
-
-        <rosparam command="load" file="$(find-pkg-share bitbots_ceiling_cam)/config/april_tag_settings.yaml" ns="april_tag_detection"/>
-        <rosparam command="load" file="$(find-pkg-share bitbots_ceiling_cam)/config/april_tags.yaml" ns="april_tag_detection"/>
-
-
-        <node pkg="apriltag_ros" exec="apriltag_ros_continuous_node" name="april_tag_detection" clear_params="true" output="screen">
-            <param name="camera_frame" exec="str" value="ceiling_cam" />
-            <param name="publish_tag_detections_image" exec="bool" value="true" />
-        </node>
-    </group>
 
 </launch>
