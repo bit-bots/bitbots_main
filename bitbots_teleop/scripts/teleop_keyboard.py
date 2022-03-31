@@ -20,60 +20,93 @@ from geometry_msgs.msg import Vector3, Quaternion
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 from tf_transformations import quaternion_from_euler
+import argparse
 
-__ids__ = [
-    "HeadPan",
-    "HeadTilt",
-    "LShoulderPitch",
-    "LShoulderRoll",
-    "LElbow",
-    "RShoulderPitch",
-    "RShoulderRoll",
-    "RElbow",
-    "LHipYaw",
-    "LHipRoll",
-    "LHipPitch",
-    "LKnee",
-    "LAnklePitch",
-    "LAnkleRoll",
-    "RHipYaw",
-    "RHipRoll",
-    "RHipPitch",
-    "RKnee",
-    "RAnklePitch",
-    "RAnkleRoll"
-]
+# the following encodes walkready poses for various robots. could be done more nicely via some config
+
+__walkready_joints__ = {
+    "wolfgang":
+        [("HeadPan", 0.0),
+         ("HeadTilt", 0.0),
+         ("LShoulderPitch", math.radians(75.27)),
+         ("LShoulderRoll", 0.0),
+         ("LElbow", math.radians(35.86)),
+         ("RShoulderPitch", math.radians(-75.58)),
+         ("RShoulderRoll", 0.0),
+         ("RElbow", math.radians(-36.10)),
+         ("LHipYaw", -0.0112),
+         ("LHipRoll", 0.0615),
+         ("LHipPitch", 0.4732),
+         ("LKnee", 1.0058),
+         ("LAnklePitch", -0.4512),
+         ("LAnkleRoll", 0.0625),
+         ("RHipYaw", 0.0112),
+         ("RHipRoll", -0.0615),
+         ("RHipPitch", -0.4732),
+         ("RKnee", -1.0059),
+         ("RAnklePitch", 0.4512),
+         ("RAnkleRoll", -0.0625)],
+    "robotis_op2":
+        [("LElbow", math.radians(-60)),
+         ("RElbow", math.radians(60)),
+         ("LShoulderPitch", math.radians(120.0)),
+         ("RShoulderPitch", math.radians(-120.0))],
+    "op3":
+        [("l_el", math.radians(-140)),
+         ("r_el", math.radians(140)),
+         ("l_sho_pitch", math.radians(-135)),
+         ("r_sho_pitch", math.radians(135)),
+         ("l_sho_roll", math.radians(-90)),
+         ("r_sho_roll", math.radians(90))],
+    "nao":
+        [("LShoulderPitch", 1.57),
+         ("RShoulderPitch", 1.57),
+         ('LShoulderRoll', 0.3),
+         ('RShoulderRoll', -0.3)],
+    "rfc":
+        [("LeftElbow", math.radians(-90.0)),
+         ("RightElbow", math.radians(90.0)),
+         ("LeftShoulderPitch [shoulder]", math.radians(45.0),),
+         ("RightShoulderPitch [shoulder]", math.radians(-45.0))],
+    "chape":
+        [("leftElbowYaw", math.radians(-160)),
+         ("rightElbowYaw", math.radians(160)),
+         ("leftShoulderPitch[shoulder]", math.radians(75.27)),
+         ("rightShoulderPitch[shoulder]", math.radians(75.58)),
+         ("leftShoulderYaw", math.radians(-75.58)),
+         ("rightShoulderYaw", math.radians(75.58))],
+    "mrl_hsl":
+        [("Shoulder-L [shoulder]", math.radians(60.0)),
+         ("Shoulder-R [shoulder]", math.radians(-60.0)),
+         ("UpperArm-L", math.radians(10.0)),
+         ("UpperArm-R", math.radians(-10.0)),
+         ("LowerArm-L", math.radians(-135.0)),
+         ("LowerArm-R", math.radians(135.0))],
+    "nugus":
+        [("left_elbow_pitch", math.radians(-120)),
+         ("right_elbow_pitch", math.radians(-120)),
+         ("left_shoulder_pitch [shoulder]", math.radians(120)),
+         ("right_shoulder_pitch [shoulder]", math.radians(120)),
+         ("left_shoulder_roll", math.radians(20)),
+         ("right_shoulder_roll", math.radians(-20))],
+    "sahrv74":
+        [("left_shoulder_pitch [shoulder]", math.radians(60.0)),
+         ("right_shoulder_pitch [shoulder]", math.radians(60.0)),
+         ("left_shoulder_roll", math.radians(10.0)),
+         ("right_shoulder_roll", math.radians(10.0)),
+         ("left_elbow", math.radians(-135.0)),
+         ("right_elbow", math.radians(-135.0))],
+    "bez":
+        [("left_arm_motor_0 [shoulder]", math.radians(0)),
+         ("right_arm_motor_0 [shoulder]", math.radians(0)),
+         ("left_arm_motor_1", math.radians(170)),
+         ("right_arm_motor_1", math.radians(170))]
+}
+
 __velocity__ = 5.0
 __accelerations__ = -1.0
 __max_currents__ = -1.0
 
-walkready = JointCommand(
-    joint_names=__ids__,
-    velocities=[__velocity__] * len(__ids__),
-    accelerations=[__accelerations__] * len(__ids__),
-    max_currents=[__max_currents__] * len(__ids__),
-    positions=[
-        0.0,  # HeadPan
-        0.0,  # HeadTilt
-        math.radians(75.27),  # LShoulderPitch
-        0.0,  # LShoulderRoll
-        math.radians(35.86),  # LElbow
-        math.radians(-75.58),  # RShoulderPitch
-        0.0,  # RShoulderRoll
-        math.radians(-36.10),  # RElbow
-        -0.0112,  # LHipYaw
-        0.0615,  # LHipRoll
-        0.4732,  # LHipPitch
-        1.0058,  # LKnee
-        -0.4512,  # LAnklePitch
-        0.0625,  # LAnkleRoll
-        0.0112,  # RHipYaw
-        -0.0615,  # RHipRoll
-        -0.4732,  # RHipPitch
-        -1.0059,  # RKnee
-        0.4512,  # RAnklePitch
-        -0.0625,  # RAnkleRoll
-    ])
 msg = """
 BitBots Teleop
 --------------
@@ -146,8 +179,34 @@ headBindings = {
 class TeleopKeyboard(Node):
 
     def __init__(self):
+        # create node
         super().__init__("TeleopKeyboard")
+
         self.settings = termios.tcgetattr(sys.stdin)
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--robot-type',
+                            help="Which robot type is used {wolfgang, op2, op3, nao, rfc, chape, mrl_hsl}",
+                            default="wolfgang")
+        args, unknown = parser.parse_known_args()
+        robot_type = args.robot_type
+        if robot_type not in ["wolfgang", "op2", "op3", "nao", "rfc", "chape", "mrl_hsl"]:
+            self.get_logger().fatal(
+                f"Robot type {robot_type} not known. Should be one of [wolfgang, op2, op3, nao, rfc, chape, mrl_hsl]")
+            exit()
+
+        # generate walkready command
+        joint_names = []
+        joint_positions = []
+        for joint_tuple in __walkready_joints__[robot_type]:
+            joint_names.append(joint_tuple[0])
+            joint_positions.append(joint_tuple[1])
+        self.walkready = JointCommand(
+            joint_names=joint_names,
+            velocities=[__velocity__] * len(joint_names),
+            accelerations=[__accelerations__] * len(joint_names),
+            max_currents=[__max_currents__] * len(joint_names),
+            positions=joint_positions)
 
         # Walking Part
         self.pub = self.create_publisher(Twist, 'cmd_vel', 1)
@@ -285,8 +344,8 @@ class TeleopKeyboard(Node):
                     self.walk_kick_pub.publish(True)
                 elif key == 'F':
                     # play walkready animation
-                    walkready.header.stamp = self.get_clock().now().to_msg()
-                    self.joint_pub.publish(walkready)
+                    self.walkready.header.stamp = self.get_clock().now().to_msg()
+                    self.joint_pub.publish(self.walkready)
                 elif key == 'r':
                     # reset robot in sim
                     try:
