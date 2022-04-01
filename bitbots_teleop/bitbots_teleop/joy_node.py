@@ -28,7 +28,7 @@ class JoyNode(Node):
         super().__init__('joy_node')
         rclpy.init(args=None)
 
-        self.config = self..get_param("~" + self.get_param("~type"))
+        self.config = self.get_param("~" + self.get_param("~type"))
 
         # --- Initialize Topics ---
         self.create_subscription(Joy,"joy", self.joy_cb, 1)
