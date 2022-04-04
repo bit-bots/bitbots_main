@@ -31,10 +31,10 @@ walking:
       foot_put_down_phase: 1.0
       # Foot X/Y overshoot in ratio of step length
       # (ratio, >= 0)
-      foot_overshoot_ratio: 0.1
+      foot_overshoot_ratio: 0.0
       # Foot X/Y overshoot phase
       # (single support cycle phase, [foot_apex_phase:1]
-      foot_overshoot_phase: 0.85
+      foot_overshoot_phase: 1.0
       # Height of the trunk from ground
       # (in m, > 0)
       trunk_height: 0.45
@@ -113,8 +113,8 @@ walking:
 
 pid_trunk_fused_pitch:
   ros__parameters:
-    p: 0.111
-    i: 0.01
+    p: 0.0
+    i: 0.0
     d: 0.0
     i_clamp: 0.0
     i_clamp_min: -0.25
@@ -123,8 +123,8 @@ pid_trunk_fused_pitch:
 
 pid_trunk_fused_roll:
   ros__parameters:
-    p: 0.111
-    i: 0.01
+    p: 0.0
+    i: 0.0
     d: 0.0
     i_clamp: 0.0
     i_clamp_min: -0.25

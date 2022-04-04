@@ -11,7 +11,7 @@ walking:
       freq: 1.72973182436504
       trunk_height: 0.183555759791475
       trunk_phase: -0.0012469948672716
-      trunk_pitch: 0.0
+      trunk_pitch: -0.08
       trunk_swing: 0.6
       trunk_x_offset: 0.0
       trunk_y_offset: -0.000632849143066137
