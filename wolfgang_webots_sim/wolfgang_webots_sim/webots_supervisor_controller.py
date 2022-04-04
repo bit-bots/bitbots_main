@@ -17,7 +17,7 @@ G = 9.81
 
 
 class SupervisorController:
-    def __init__(self, ros_node: Node = None, ros_active=False, mode='normal', base_ns='/', model_states_active=True):
+    def __init__(self, ros_node: Node = None, ros_active=False, mode='normal', base_ns='/', model_states_active=True, robot="wolfgang"):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
@@ -55,6 +55,16 @@ class SupervisorController:
         self.rotation_fields = {}
         self.joint_nodes = {}
         self.link_nodes = {}
+
+        # set reset height based on the robot, so that we can reset different robots easily
+        self.robot_type = robot
+        reset_heights = {"wolfgang": 0.42, "robotis_op2": 0.35, "op3": 0.35, "rfc": 0.40, "chape": 0.30,
+                         "mrl_hsl": 0.40, "nugus": 0.5, "bez": 0.30}
+        if not self.robot_type in reset_heights.keys():
+            self.ros_node.get_logger().warn(f"Robot type {self.robot_type} has no reset height defined. Will use 1m")
+            self.reset_height = 1
+        else:
+            self.reset_height = reset_heights[self.robot_type]
 
         root = self.supervisor.getRoot()
         children_field = root.getField('children')
@@ -185,11 +195,11 @@ class SupervisorController:
         self.robot_nodes[name].resetPhysics()
 
     def set_initial_poses(self, request=None, response=Empty.Response()):
-        self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
-        self.reset_robot_pose_rpy([-1, -3, 0.42], [0, 0.24, 1.57], name="rory")
-        self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
-        self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
-        self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
+        self.reset_robot_pose_rpy([-1, 3, self.reset_height], [0, 0.24, -1.57], name="amy")
+        self.reset_robot_pose_rpy([-1, -3, self.reset_height], [0, 0.24, 1.57], name="rory")
+        self.reset_robot_pose_rpy([-3, 3, self.reset_height], [0, 0.24, -1.57], name="jack")
+        self.reset_robot_pose_rpy([-3, -3, self.reset_height], [0, 0.24, 1.57], name="donna")
+        self.reset_robot_pose_rpy([0, 6, self.reset_height], [0, 0.24, -1.57], name="melody")
         return response
 
     def robot_pose_callback(self, request=None, response=SetObjectPose.Response()):

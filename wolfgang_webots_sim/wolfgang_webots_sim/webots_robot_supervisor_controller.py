@@ -14,7 +14,7 @@ class RobotSupervisorController(SupervisorController, RobotController):
 
         For the parameter documentation, see the parent class constructors.
         """
-        super().__init__(ros_node=ros_node, ros_active=ros_active, mode=mode, base_ns=base_ns, model_states_active=model_states_active)
+        super().__init__(ros_node=ros_node, ros_active=ros_active, robot=robot, mode=mode, base_ns=base_ns, model_states_active=model_states_active)
         # This is used so that SupervisorController and RobotController can use the same underlying controller
         self.robot_node = self.supervisor
         RobotController.__init__(self, ros_node=ros_node, ros_active=ros_active, robot=robot, robot_node=self.robot_node, base_ns=base_ns, camera_active=camera_active, foot_sensors_active=foot_sensors_active)
