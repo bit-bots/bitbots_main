@@ -3,7 +3,7 @@
 
 #include <thread>
 
-#include <hardware_interface/robot_hw.h>
+#include <hardware_interface/system_interface.hpp>
 
 #include <bitbots_ros_control/utils.h>
 #include <bitbots_ros_control/core_hardware_interface.h>
@@ -18,22 +18,22 @@ namespace bitbots_ros_control {
 
 class WolfgangHardwareInterface : public hardware_interface::RobotHW {
  public:
-  explicit WolfgangHardwareInterface(ros::NodeHandle &nh);
-  ~WolfgangHardwareInterface();
+  WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh);
 
-  bool init(ros::NodeHandle &nh);
+  bool init();
 
-  void read(const ros::Time &t, const ros::Duration &dt);
+  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
-  void write(const ros::Time &t, const ros::Duration &dt);
+  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
  private:
-  bool create_interfaces(ros::NodeHandle &nh, std::vector<std::pair<std::string, int>> dxl_devices);
+  bool create_interfaces(std::vector<std::pair<std::string, int>> dxl_devices);
+  rclcpp::Node::SharedPtr nh_;
 
   // two dimensional list of all hardware interfaces, sorted by port
   std::vector<std::vector<hardware_interface::RobotHW *>> interfaces_;
   DynamixelServoHardwareInterface servo_interface_;
-  ros::Publisher speak_pub_;
+  rclcpp::Publisher speak_pub_;
 
   // prevent unnecessary error when power is turned on
   bool first_ping_error_;

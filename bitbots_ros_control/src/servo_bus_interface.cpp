@@ -3,26 +3,29 @@
 
 namespace bitbots_ros_control {
 
-ServoBusInterface::ServoBusInterface(std::shared_ptr<DynamixelDriver> &driver,
+ServoBusInterface::ServoBusInterface(rclcpp::Node::SharedPtr nh,
+                                     std::shared_ptr<DynamixelDriver> &driver,
                                      std::vector<std::tuple<int, std::string, float, float>> servos)
     : first_cycle_(true), read_position_(true), read_velocity_(false), read_effort_(true) {
+  nh_ = nh;
   driver_ = driver;
   servos_ = std::move(servos);
 }
 
-bool ServoBusInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
-  diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  speak_pub_ = nh.advertise<humanoid_league_msgs::Audio>("/speak", 1, true);
+bool ServoBusInterface::init() {
+  diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+  speak_pub_ = nh_->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
 
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;
   switch_individual_torque_ = false;
 
-  torqueless_mode_ = nh.param("torqueless_mode", false);
+  nh_->declare_parameter<bool>("torqueless_mode", false);
+  torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
 
   // Load dynamixel config from parameter server
-  if (!loadDynamixels(nh)) {
-    ROS_ERROR_STREAM("Failed to ping all motors.");
+  if (!loadDynamixels()) {
+    RCLCPP_ERROR_STREAM(nh_->get_logger(), "Failed to ping all motors.");
     speakError(speak_pub_, "Failed to ping all motors.");
     return false;
   }
@@ -75,16 +78,18 @@ bool ServoBusInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
 
 
   // write ROM and RAM values if wanted
-  if (nh.param("servos/set_ROM_RAM", false)) {
-    if (!writeROMRAM(nh)) {
-      ROS_WARN("Couldn't write ROM and RAM values to all servos.");
+  nh_->declare_parameter<bool>("servos/set_ROM_RAM", false);
+  if (nh_->get_parameter("servos/set_ROM_RAM").as_bool()) {
+    if (!writeROMRAM()) {
+      RCLCPP_WARN(nh_->get_logger(), "Couldn't write ROM and RAM values to all servos.");
     }
   }
-  writeTorque(nh.param("servos/auto_torque", false));
+  nh_->declare_parameter<bool>("servos/auto_torque", false);
+  writeTorque(nh_->get_parameter("servos/auto_torque").as_bool());
   return true;
 }
 
-ServoBusInterface::~ServoBusInterface(){
+ServoBusInterface::~ServoBusInterface() {
   delete data_sync_read_positions_;
   delete data_sync_read_velocities_;
   delete data_sync_read_efforts_;
@@ -98,7 +103,7 @@ ServoBusInterface::~ServoBusInterface(){
   delete sync_write_goal_pwm_;
 }
 
-bool ServoBusInterface::loadDynamixels(ros::NodeHandle &nh) {
+bool ServoBusInterface::loadDynamixels() {
   /**
    * Load config and try to ping servos to test if everything is correct.
    * Adds all dynamixel to the driver if they are pingable.
@@ -106,27 +111,31 @@ bool ServoBusInterface::loadDynamixels(ros::NodeHandle &nh) {
   bool success = true;
 
   // prepare diagnostic msg
-  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
-  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
-  array_msg.header.stamp = ros::Time::now();
+  diagnostic_msgs::msg::DiagnosticArray array_msg = diagnostic_msgs::msg::DiagnosticArray();
+  std::vector<diagnostic_msgs::msg::DiagnosticStatus> array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
+  array_msg.header.stamp = nh_->get_clock()->now();
 
   // get control mode
   std::string control_mode;
-  nh.getParam("servos/control_mode", control_mode);
-  ROS_DEBUG("Control mode: %s", control_mode.c_str());
-  if (!stringToControlMode(control_mode, control_mode_)) {
+  control_mode = nh_->get_parameter("servos/control_mode").as_string();
+  RCLCPP_DEBUG(nh_->get_logger(), "Control mode: %s", control_mode.c_str());
+  if (!stringToControlMode(nh_, control_mode, control_mode_)) {
     return false;
   }
 
   // get values to read
-  nh.param("servos/read_position", read_position_, true);
-  nh.param("servos/read_velocity", read_velocity_, false);
-  nh.param("servos/read_effort", read_effort_, false);
-  nh.param("servos/read_pwm", read_pwm_, false);
+  nh_->declare_parameter<bool>("servos/read_position", true);
+  read_position_ = nh_->get_parameter("servos/read_position").as_bool();
+  nh_->declare_parameter<bool>("servos/read_velocity", false);
+  read_velocity_ = nh_->get_parameter("servos/read_velocity").as_bool();
+  nh_->declare_parameter<bool>("servos/read_effort", false);
+  read_effort_ = nh_->get_parameter("servos/read_effort").as_bool();
+  nh_->declare_parameter<bool>("servos/read_pwm", false);
+  read_pwm_ = nh_->get_parameter("servos/read_pwm").as_bool();
 
   // iterate over all servos and save the information
   // the wolfgang hardware interface already loaded them into the driver by pinging
-  for (std::tuple<int, std::string, float, float> &servo : servos_) {
+  for (std::tuple<int, std::string, float, float> &servo: servos_) {
     int motor_id = std::get<0>(servo);
     joint_ids_.push_back(uint8_t(motor_id));
     std::string joint_name = std::get<1>(servo);
@@ -139,26 +148,26 @@ bool ServoBusInterface::loadDynamixels(ros::NodeHandle &nh) {
 
   // generate a diagnostic message
   array_msg.status = array;
-  diagnostic_pub_.publish(array_msg);
+  diagnostic_pub_->publish(array_msg);
 
   return success;
 }
 
-bool ServoBusInterface::writeROMRAM(ros::NodeHandle &nh) {
+bool ServoBusInterface::writeROMRAM() {
   /**
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
-  ROS_DEBUG("Writing ROM and RAM values");
+  RCLCPP_DEBUG(nh_->get_logger(), "Writing ROM and RAM values");
   XmlRpc::XmlRpcValue dxls;
-  nh.getParam("servos/ROM_RAM", dxls);
+  nh_->getParam("servos/ROM_RAM", dxls);
   ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
   bool sucess = true;
   int i = 0;
   for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it) {
-    std::string register_name = (std::string)(it->first);
+    std::string register_name = (std::string) (it->first);
     int register_value;
-    nh.getParam(("servos/ROM_RAM/" + register_name).c_str(), register_value);
-    ROS_DEBUG("Setting %s on all servos to %d", register_name.c_str(), register_value);
+    nh_->getParam(("servos/ROM_RAM/" + register_name).c_str(), register_value);
+    RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on all servos to %d", register_name.c_str(), register_value);
 
     int *values = (int *) malloc(joint_names_.size() * sizeof(int));
     for (size_t num = 0; num < joint_names_.size(); num++) {
@@ -171,7 +180,7 @@ bool ServoBusInterface::writeROMRAM(ros::NodeHandle &nh) {
   return sucess;
 }
 
-void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
+void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   /**
    * This is part of the main loop and handles reading of all connected devices
    */
@@ -183,7 +192,7 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
         current_position_[num] += joint_mounting_offsets_[num] + joint_offsets_[num];
       }
     } else {
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read all current joint values!");
+      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read all current joint values!");
       read_successful = false;
     }
   } else {
@@ -193,21 +202,21 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
           current_position_[num] += joint_mounting_offsets_[num] + joint_offsets_[num];
         }
       } else {
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint position!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current joint position!");
         driver_->reinitSyncReadHandler("Present_Position");
         read_successful = false;
       }
     }
     if (read_velocity_) {
       if (!syncReadVelocities()) {
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint velocity!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current joint velocity!");
         driver_->reinitSyncReadHandler("Present_Velocity");
         read_successful = false;
       }
     }
     if (read_effort_) {
       if (!syncReadEfforts()) {
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current joint effort!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current joint effort!");
         driver_->reinitSyncReadHandler("Present_Current");
         read_successful = false;
       }
@@ -217,7 +226,7 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
   if (read_pwm_) {
     if (!syncReadPWMs()) {
       driver_->reinitSyncReadHandler("Present_PWM");
-      ROS_ERROR_THROTTLE(1.0, "Couldn't read current PWM!");
+      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current PWM!");
       read_successful = false;
     }
   }
@@ -226,11 +235,14 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
     if (read_vt_counter_ + 1 == vt_update_rate_) {
       bool success = true;
       if (!syncReadVoltageAndTemp()) {
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current input volatage and temperature!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(),
+                              *nh_->get_clock(),
+                              1.0,
+                              "Couldn't read current input volatage and temperature!");
         success = false;
       }
       if (!syncReadError()) {
-        ROS_ERROR_THROTTLE(1.0, "Couldn't read current error bytes!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current error bytes!");
         success = false;
         driver_->reinitSyncReadHandler("Hardware_Error_Status");
       }
@@ -270,7 +282,7 @@ void ServoBusInterface::read(const ros::Time &t, const ros::Duration &dt) {
   }
 }
 
-void ServoBusInterface::write(const ros::Time &t, const ros::Duration &dt) {
+void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   /**
    * This is part of the mainloop and handles all the writing to the connected devices
    */
@@ -285,7 +297,7 @@ void ServoBusInterface::write(const ros::Time &t, const ros::Duration &dt) {
 
   // reset torques if we lost connection to them
   if (lost_servo_connection_) {
-    ROS_INFO_THROTTLE(5, "resetting torque after lost connection");
+    RCLCPP_INFO_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 5, "resetting torque after lost connection");
     writeTorqueForServos(goal_torque_individual_);
     lost_servo_connection_ = false;
   }
@@ -348,7 +360,7 @@ void ServoBusInterface::switchDynamixelControlMode() {
   bool torque_before_switch = current_torque_;
   writeTorque(false);
   // magic sleep to make sure that dynamixel have internally processed the request
-  ros::Duration(0.1).sleep();
+  nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
 
   int32_t value = 3;
   if (control_mode_ == POSITION_CONTROL) {
@@ -360,36 +372,36 @@ void ServoBusInterface::switchDynamixelControlMode() {
   } else if (control_mode_ == CURRENT_BASED_POSITION_CONTROL) {
     value = 5;
   } else {
-    ROS_WARN("control_mode is wrong, will use position control");
+    RCLCPP_WARN(nh_->get_logger(), "control_mode is wrong, will use position control");
   }
 
   std::vector<int32_t> operating_mode(joint_names_.size(), value);
   int32_t *o = &operating_mode[0];
   driver_->syncWrite("Operating_Mode", o);
 
-  ros::Duration(0.5).sleep();
+  nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9 * 0.5));
   //reenable torque if it was previously enabled
   writeTorque(torque_before_switch);
 }
 
-diagnostic_msgs::DiagnosticStatus ServoBusInterface::createServoDiagMsg(int id,
-                                                                        char level,
-                                                                        std::string message,
-                                                                        std::map<std::string, std::string> map,
-                                                                        std::string name) {
+diagnostic_msgs::msg::DiagnosticStatus ServoBusInterface::createServoDiagMsg(int id,
+                                                                             char level,
+                                                                             std::string message,
+                                                                             std::map<std::string, std::string> map,
+                                                                             std::string name) {
   /**
    * Create a single Diagnostic message for one servo. This is used to build the array message which is then published.
    */
-  diagnostic_msgs::DiagnosticStatus servo_status = diagnostic_msgs::DiagnosticStatus();
+  diagnostic_msgs::msg::DiagnosticStatus servo_status = diagnostic_msgs::msg::DiagnosticStatus();
   servo_status.level = level;
   // add prefix DS for dynamixel servo to sort in diagnostic analyser
   servo_status.name = "DS" + name;
   servo_status.message = message;
   servo_status.hardware_id = std::to_string(id);
-  std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
+  std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
   // itarate through map and save it into values
-  for (auto const &ent1 : map) {
-    diagnostic_msgs::KeyValue key_value = diagnostic_msgs::KeyValue();
+  for (auto const &ent1: map) {
+    diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
     key_value.key = ent1.first;
     key_value.value = ent1.second;
     keyValues.push_back(key_value);
@@ -404,35 +416,35 @@ void ServoBusInterface::processVte(bool success) {
    */
 
   // prepare diagnostic msg
-  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
-  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
-  array_msg.header.stamp = ros::Time::now();
+  diagnostic_msgs::msg::DiagnosticArray array_msg = diagnostic_msgs::msg::DiagnosticArray();
+  std::vector<diagnostic_msgs::msg::DiagnosticStatus> array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
+  array_msg.header.stamp = nh_->get_clock()->now();
 
   for (size_t i = 0; i < joint_names_.size(); i++) {
-    char level = diagnostic_msgs::DiagnosticStatus::OK;
+    char level = diagnostic_msgs::msg::DiagnosticStatus::OK;
     std::string message = "OK";
     std::map<std::string, std::string> map;
     if (!success) {
       // the read of VT or error failed, we will publish this and not the values
       message = "No response";
-      level = diagnostic_msgs::DiagnosticStatus::STALE;
+      level = diagnostic_msgs::msg::DiagnosticStatus::STALE;
       array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map, joint_names_[i]));
       continue;
     }
     map.insert(std::make_pair("Input Voltage", std::to_string(current_input_voltage_[i])));
     if (current_input_voltage_[i] < warn_volt_) {
       message = "Power getting low";
-      level = diagnostic_msgs::DiagnosticStatus::WARN;
+      level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
     }
     map.insert(std::make_pair("Temperature", std::to_string(current_temperature_[i])));
     if (current_temperature_[i] > warn_temp_) {
       message = "Getting hot";
-      level = diagnostic_msgs::DiagnosticStatus::WARN;
+      level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
     }
     map.insert(std::make_pair("Error Byte", std::to_string(current_error_[i])));
     if (current_error_[i] != 0) {
       // some error is detected
-      level = diagnostic_msgs::DiagnosticStatus::ERROR;
+      level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
       message = "Error(s): ";
       // check which one. Values taken from dynamixel documentation
       char voltage_error = 0x1;
@@ -457,7 +469,9 @@ void ServoBusInterface::processVte(bool success) {
         // turn off torque on all motors
         // todo should also turn off power, but is not possible yet
         goal_torque_ = false;
-        ROS_ERROR("OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!! In Motor %s", joint_names_[i].c_str());
+        RCLCPP_ERROR(nh_->get_logger(),
+                     "OVERLOAD ERROR!!! OVERLOAD ERROR!!! OVERLOAD ERROR!!! In Motor %s",
+                     joint_names_[i].c_str());
         speakError(speak_pub_, "Overload Error!");
       }
     }
@@ -465,7 +479,7 @@ void ServoBusInterface::processVte(bool success) {
     array.push_back(createServoDiagMsg(joint_ids_[i], level, message, map, joint_names_[i]));
   }
   array_msg.status = array;
-  diagnostic_pub_.publish(array_msg);
+  diagnostic_pub_->publish(array_msg);
 }
 
 void ServoBusInterface::writeTorque(bool enabled) {
@@ -662,7 +676,8 @@ void ServoBusInterface::syncWriteProfileVelocity() {
       sync_write_profile_velocity_[num] = 0;
     } else {
       // use max to prevent accidentially setting 0
-      sync_write_profile_velocity_[num] = std::max(driver_->convertVelocity2Value(joint_ids_[num], goal_velocity_[num]), 1);
+      sync_write_profile_velocity_[num] =
+          std::max(driver_->convertVelocity2Value(joint_ids_[num], goal_velocity_[num]), 1);
     }
   }
   driver_->syncWrite("Profile_Velocity", sync_write_profile_velocity_);
@@ -678,7 +693,8 @@ void ServoBusInterface::syncWriteProfileAcceleration() {
       sync_write_profile_acceleration_[num] = 0;
     } else {
       //572.9577952 for change of units, 214.577 rev/min^2 per LSB
-      sync_write_profile_acceleration_[num] = std::max(static_cast<int>(goal_acceleration_[num] * 572.9577952 / 214.577), 1);
+      sync_write_profile_acceleration_[num] =
+          std::max(static_cast<int>(goal_acceleration_[num] * 572.9577952 / 214.577), 1);
     }
   }
   driver_->syncWrite("Profile_Acceleration", sync_write_profile_acceleration_);
@@ -696,7 +712,7 @@ void ServoBusInterface::syncWriteCurrent() {
       } else if (driver_->getModelNum(joint_ids_[num]) == 321) {
         sync_write_goal_current_[num] = 2047;
       } else {
-        ROS_WARN("Maximal current for this dynamixel model is not defined");
+        RCLCPP_WARN(nh_->get_logger(), "Maximal current for this dynamixel model is not defined");
       }
     } else {
       sync_write_goal_current_[num] = driver_->convertTorque2Value(joint_ids_[num], goal_effort_[num]);
@@ -716,4 +732,5 @@ void ServoBusInterface::syncWritePWM() {
   }
   driver_->syncWrite("Goal_PWM", sync_write_goal_pwm_);
 }
+
 }

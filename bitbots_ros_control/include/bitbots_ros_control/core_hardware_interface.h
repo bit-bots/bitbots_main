@@ -1,37 +1,36 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_CORE_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_CORE_HARDWARE_INTERFACE_H_
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include <diagnostic_msgs/DiagnosticStatus.h>
-#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
 
-#include <hardware_interface/robot_hw.h>
 #include <bitbots_ros_control/utils.h>
 
-#include <dynamixel_workbench/dynamixel_driver.h>
-#include <std_msgs/Bool.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <std_srvs/SetBool.h>
+#include <dynamixel_driver.h>
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 
 namespace bitbots_ros_control {
 
-class CoreHardwareInterface : public hardware_interface::RobotHW {
+class CoreHardwareInterface {
  public:
-  explicit CoreHardwareInterface(std::shared_ptr<DynamixelDriver> &driver, int id, int read_rate);
+  explicit CoreHardwareInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver, int id, int read_rate);
 
-  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
+  bool init();
 
-  void read(const ros::Time &t, const ros::Duration &dt);
+  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
-  void write(const ros::Time &t, const ros::Duration &dt);
+  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
  private:
-  bool switch_power(std_srvs::SetBoolRequest &req, std_srvs::SetBoolResponse &resp);
+  rclcpp::Node::SharedPtr nh_;
+  bool switch_power(std_srvs::srv::SetBool::Request &req, std_srvs::srv::SetBool::Response &resp);
 
-  ros::NodeHandle nh_;
 
   std::shared_ptr<DynamixelDriver> driver_;
 
@@ -44,24 +43,24 @@ class CoreHardwareInterface : public hardware_interface::RobotHW {
   uint8_t *data_;
 
   bool requested_power_switch_status_;
-  std_msgs::Bool power_switch_status_;
-  std_msgs::Float64 VCC_;
-  std_msgs::Float64 VBAT_;
-  std_msgs::Float64MultiArray VBAT_individual_;
-  std_msgs::Float64 VEXT_;
-  std_msgs::Float64 VDXL_;
-  std_msgs::Float64 current_;
+  std_msgs::msg::Bool power_switch_status_;
+  std_msgs::msg::Float64 VCC_;
+  std_msgs::msg::Float64 VBAT_;
+  std_msgs::msg::Float64MultiArray VBAT_individual_;
+  std_msgs::msg::Float64 VEXT_;
+  std_msgs::msg::Float64 VDXL_;
+  std_msgs::msg::Float64 current_;
 
-  ros::Publisher diagnostic_pub_;
-  ros::Publisher power_pub_;
-  ros::Publisher vcc_pub_;
-  ros::Publisher vbat_pub_;
-  ros::Publisher vbat_individual_pub_;
-  ros::Publisher vext_pub_;
-  ros::Publisher vdxl_pub_;
-  ros::Publisher current_pub_;
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr power_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr vcc_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr vbat_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr vbat_individual_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr vext_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr vdxl_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr current_pub_;
 
-  ros::ServiceServer power_switch_service_;
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr power_switch_service_;
 };
 }
 #endif

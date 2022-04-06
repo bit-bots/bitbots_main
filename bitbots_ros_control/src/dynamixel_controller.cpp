@@ -1,39 +1,39 @@
 #include <bitbots_ros_control/dynamixel_controller.hpp>
-#include <pluginlib/class_list_macros.hpp>
-#include <bitbots_msgs/JointCommand.h>
 
 namespace dynamixel_controller {
-bool DynamixelController::init(hardware_interface::PosVelAccCurJointInterface *hw, ros::NodeHandle &n) {
+DynamixelController::DynamixelController(rclcpp::Node::SharedPtr nh) {
+  nh_ = nh;
+}
+
+bool DynamixelController::init() {
   // Get list of controlled joints from paramserver
   std::string param_name = "joints";
-  if (!n.getParam(param_name, joint_names)) {
-    ROS_ERROR_STREAM("Failed to getParam '" << param_name << "' (namespace: " << n.getNamespace() << ").");
+  if (!nh_->get_parameter(param_name, joint_names)) {
+    RCLCPP_ERROR(nh_->get_logger(), "Failed to getParam '%s' (namespace: %s).", (param_name, nh_->get_namespace()));
     return false;
   }
   n_joints = joint_names.size();
 
   if (n_joints == 0) {
-    ROS_ERROR_STREAM("List of joint names is empty.");
+    RCLCPP_ERROR(nh_->get_logger(), "List of joint names is empty.");
     return false;
   }
   // get handles for joints
   for (unsigned int i = 0; i < n_joints; i++) {
-    try {
-      joints.push_back(hw->getHandle(joint_names[i]));
-      joint_map_[joint_names[i]] = i;
-    }
-    catch (const hardware_interface::HardwareInterfaceException &e) {
-      ROS_ERROR_STREAM("Exception thrown: " << e.what());
-      return false;
-    }
+    joints.push_back(hw->getHandle(joint_names[i]));
+    joint_map_[joint_names[i]] = i;
   }
 
-  sub_command_ = n.subscribe("command", 1, &DynamixelController::commandCb, this, ros::TransportHints().tcpNoDelay());
+  sub_command_ = nh_->create_subscription<bitbots_msgs::msg::JointCommand>("command",
+                                                                           1,
+                                                                           std::bind(&DynamixelController::commandCb,
+                                                                                     this,
+                                                                                     std::placeholders::_1));
   return true;
 }
 
-void DynamixelController::starting(const ros::Time &time) {}
-void DynamixelController::update(const ros::Time & /*time*/, const ros::Duration & /*period*/) {
+void DynamixelController::starting(const rclcpp::Time &time) {}
+void DynamixelController::update(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
   std::vector<JointCommandData> &buf_data = *commands_buffer.readFromRT();
 
   // set command for all registered joints
@@ -42,5 +42,3 @@ void DynamixelController::update(const ros::Time & /*time*/, const ros::Duration
   }
 }
 }
-PLUGINLIB_EXPORT_CLASS(dynamixel_controller::DynamixelController, controller_interface::ControllerBase
-)

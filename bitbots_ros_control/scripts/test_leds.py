@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_msgs.srv import LedsRequest, Leds
 from std_msgs.msg import ColorRGBA
 
-rospy.init_node("leds_tester")
-prox = rospy.ServiceProxy("/set_leds", Leds)
+rclpy.init(args=None)
+prox = self.create_client(Leds, "/set_leds")
 
 request = LedsRequest()
 for i in range(3):

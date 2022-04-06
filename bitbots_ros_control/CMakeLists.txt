@@ -1,61 +1,108 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_ros_control)
+
+# Add support for C++17
+if (NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+endif ()
+
+find_package(ament_cmake REQUIRED)
+find_package(bitbots_buttons REQUIRED)
+find_package(bitbots_docs REQUIRED)
+find_package(bitbots_msgs REQUIRED)
+find_package(controller_interface REQUIRED)
+find_package(controller_manager REQUIRED)
+find_package(dynamixel_workbench_toolbox REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(realtime_tools REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(transmission_interface REQUIRED)
+find_package(yaml-cpp REQUIRED)
+
+set(INCLUDE_DIRS include)
+include_directories(${INCLUDE_DIRS})
+
 set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Werror -Wno-unused)
 
-find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        std_msgs
-        dynamixel_workbench_toolbox
-        hardware_interface
-        controller_manager
-        dynamic_reconfigure
-        humanoid_league_msgs
-        pluginlib
-        controller_interface
-        bitbots_buttons
-        transmission_interface
-        realtime_tools
-        bitbots_msgs
-        tf2_ros
-        bitbots_docs
-        )
-find_package(yaml-cpp REQUIRED)
 
 set(SOURCES
-        src/core_hardware_interface.cpp
-        src/dynamixel_servo_hardware_interface.cpp
-        src/imu_hardware_interface.cpp
         src/bitfoot_hardware_interface.cpp
         src/button_hardware_interface.cpp
+        src/core_hardware_interface.cpp
         src/dynamixel_controller.cpp
-        src/wolfgang_hardware_interface.cpp
-        src/servo_bus_interface.cpp
-        src/node.cpp
-        src/utils.cpp
+        src/dynamixel_servo_hardware_interface.cpp
+        src/imu_hardware_interface.cpp
         src/leds_hardware_interface.cpp
-        )
-
-
-generate_dynamic_reconfigure_options(
-        cfg/dynamixel_servo_hardware_interface_params.cfg
-)
-
-catkin_package(
-        INCLUDE_DIRS include
-        CATKIN_DEPENDS roscpp std_msgs dynamixel_workbench_toolbox hardware_interface controller_manager controller_interface
-)
+        src/node.cpp
+        src/servo_bus_interface.cpp
+        src/utils.cpp
+        src/wolfgang_hardware_interface.cpp)
 
 enable_bitbots_docs()
 
-include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
-)
-
 add_executable(node ${SOURCES})
-add_dependencies(node ${PROJECT_NAME}_gencfg)
-target_link_libraries(node ${catkin_LIBRARIES})
+ament_target_dependencies(node
+        ament_cmake
+        bitbots_buttons
+        bitbots_docs
+        bitbots_msgs
+        controller_interface
+        controller_manager
+        dynamixel_workbench_toolbox
+        hardware_interface
+        humanoid_league_msgs
+        pluginlib
+        rclcpp
+        realtime_tools
+        std_msgs
+        tf2_ros
+        transmission_interface
+        yaml-cpp)
 
 add_executable(pressure_converter src/pressure_converter.cpp)
-target_link_libraries(pressure_converter ${catkin_LIBRARIES} yaml-cpp)
+ament_target_dependencies(pressure_converter
+        ament_cmake
+        bitbots_buttons
+        bitbots_docs
+        bitbots_msgs
+        controller_interface
+        controller_manager
+        dynamixel_workbench_toolbox
+        hardware_interface
+        humanoid_league_msgs
+        pluginlib
+        rclcpp
+        realtime_tools
+        std_msgs
+        tf2_ros
+        transmission_interface
+        yaml-cpp)
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(bitbots_buttons)
+ament_export_dependencies(bitbots_docs)
+ament_export_dependencies(bitbots_msgs)
+ament_export_dependencies(controller_interface)
+ament_export_dependencies(controller_manager)
+ament_export_dependencies(dynamixel_workbench_toolbox)
+ament_export_dependencies(hardware_interface)
+ament_export_dependencies(humanoid_league_msgs)
+ament_export_dependencies(pluginlib)
+ament_export_dependencies(realtime_tools)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(tf2_ros)
+ament_export_dependencies(transmission_interface)
+
+install(TARGETS node
+        DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY config
+        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
+
+ament_package()

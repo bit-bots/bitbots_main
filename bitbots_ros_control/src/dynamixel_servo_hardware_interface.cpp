@@ -4,35 +4,33 @@
 #include <utility>
 
 namespace bitbots_ros_control {
+using std::placeholders::_1;
 
-DynamixelServoHardwareInterface::DynamixelServoHardwareInterface() {}
-
+DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(rclcpp::Node::SharedPtr nh) {
+  nh_ = nh;
+}
 
 void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
   bus_interfaces_.push_back(bus);
 }
 
-bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
+bool DynamixelServoHardwareInterface::init() {
   /*
   * This initializes the hardware interface based on the values set in the config.
   * The servos are pinged to verify that a connection is present and to know which type of servo it is.
   */
-  nh_ = nh;
 
   // Init subscriber / publisher
-  set_torque_sub_ = nh.subscribe<std_msgs::BoolConstPtr>("set_torque",
-                                                         1,
-                                                         &DynamixelServoHardwareInterface::setTorqueCb,
-                                                         this,
-                                                         ros::TransportHints().tcpNoDelay());
-  set_torque_indiv_sub_ = nh.subscribe<bitbots_msgs::JointTorque>("set_torque_individual",
-                                                                  1,
-                                                                  &DynamixelServoHardwareInterface::individualTorqueCb,
-                                                                  this,
-                                                                  ros::TransportHints().tcpNoDelay());
-  pwm_pub_ = nh.advertise<sensor_msgs::JointState>("/servo_PWM", 10, true);
+  set_torque_sub_ = nh_->create_subscription<std_msgs::msg::Bool>(
+      "set_torque", 1, std::bind(&DynamixelServoHardwareInterface::setTorqueCb, this, _1));
+  set_torque_indiv_sub_ = nh_->create_subscription<bitbots_msgs::msg::JointTorque>(
+      "set_torque_individual", 1, std::bind(
+          &DynamixelServoHardwareInterface::individualTorqueCb, this, _1));
+  pwm_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/servo_PWM", 10);
 
-  torqueless_mode_ = nh.param("torqueless_mode", false);
+  nh_->declare_parameter<bool>("torqueless_mode", false);
+  torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
+
   // init merged vectors for controller
   joint_count_ = 0;
   for (ServoBusInterface *bus: bus_interfaces_) {
@@ -54,64 +52,23 @@ bool DynamixelServoHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle 
   goal_effort_.resize(joint_count_, 0);
   goal_torque_individual_.resize(joint_count_, 1);
 
-  // register ros_control interfaces
-  for (unsigned int i = 0; i < joint_names_.size(); i++) {
-    hardware_interface::JointStateHandle
-        state_handle(joint_names_[i], &current_position_[i], &current_velocity_[i], &current_effort_[i]);
-    jnt_state_interface_.registerHandle(state_handle);
-
-    hardware_interface::JointHandle pos_handle(state_handle, &goal_position_[i]);
-    jnt_pos_interface_.registerHandle(pos_handle);
-
-    hardware_interface::JointHandle vel_handle(state_handle, &goal_velocity_[i]);
-    jnt_vel_interface_.registerHandle(vel_handle);
-
-    hardware_interface::JointHandle eff_handle(state_handle, &goal_effort_[i]);
-    jnt_eff_interface_.registerHandle(eff_handle);
-
-    hardware_interface::PosVelAccCurJointHandle posvelacccur_handle
-        (state_handle, &goal_position_[i], &goal_velocity_[i], &goal_acceleration_[i], &goal_effort_[i]);
-    jnt_posvelacccur_interface_.registerHandle(posvelacccur_handle);
-
-  }
-  parent_->registerInterface(&jnt_state_interface_);
-
   std::string control_mode;
-  nh.getParam("servos/control_mode", control_mode);
-  ROS_INFO("Control mode: %s", control_mode.c_str());
-  if (!stringToControlMode(control_mode, control_mode_)) {
-    ROS_ERROR_STREAM("Unknown control mode'" << control_mode << "'.");
+  nh_->declare_parameter<std::string>("servos/control_mode", "position");
+  control_mode = nh_->get_parameter("servos/control_mode").as_string();
+  RCLCPP_INFO(nh_->get_logger(), "Control mode: %s", control_mode.c_str());
+  if (!stringToControlMode(nh_, control_mode, control_mode_)) {
+    RCLCPP_ERROR_STREAM(nh_->get_logger(), "Unknown control mode'" << control_mode << "'.");
     return false;
   }
-  if (control_mode_ == POSITION_CONTROL) {
-    // we use the posvelacccur interface to be compatible to the rest of our software
-    // normally this should be a position interface
-    parent_->registerInterface(&jnt_posvelacccur_interface_);
-  } else if (control_mode_ == VELOCITY_CONTROL) {
-    parent_->registerInterface(&jnt_vel_interface_);
-  } else if (control_mode_ == EFFORT_CONTROL) {
-    parent_->registerInterface(&jnt_eff_interface_);
-  } else if (control_mode_ == CURRENT_BASED_POSITION_CONTROL) {
-    parent_->registerInterface(&jnt_posvelacccur_interface_);
-  }
 
-
-  // init dynamic reconfigure
-  dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>(ros::NodeHandle(
-          "~/servos"));
-  dynamic_reconfigure::Server<bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_ros_control::DynamixelServoHardwareInterface::reconfCallback, this, _1, _2);
-  dyn_reconf_server_->setCallback(f);
-
-  pwm_msg_ = sensor_msgs::JointState();
+  pwm_msg_ = sensor_msgs::msg::JointState();
   pwm_msg_.name = joint_names_;
 
-  ROS_INFO("Hardware interface init finished.");
+  RCLCPP_INFO(nh_->get_logger(), "Hardware interface init finished.");
   return true;
 }
 
-void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorque msg) {
+void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::JointTorque msg) {
   /**
    * Handles incomming JointTroque messages and remembers the requested torque configuration of the servos.
    * It will not directly written since this has to happen in the main write loop
@@ -129,12 +86,12 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorq
           goal_torque_individual_[j] = msg.on[i];
           success = true;
         } else {
-          ROS_WARN("Somethings wrong with your message to set torques.");
+          RCLCPP_WARN(nh_->get_logger(), "Somethings wrong with your message to set torques.");
         }
       }
     }
     if (!success) {
-      ROS_WARN("Couldn't set torque for servo %s ", msg.joint_names[i].c_str());
+      RCLCPP_WARN(nh_->get_logger(), "Couldn't set torque for servo %s ", msg.joint_names[i].c_str());
     }
   }
   for (ServoBusInterface *bus: bus_interfaces_) {
@@ -142,7 +99,7 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::JointTorq
   }
 }
 
-void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::BoolConstPtr enabled) {
+void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::msg::Bool::SharedPtr enabled) {
   /**
    * This saves the given required value, so that it can be written to the servos in the write method
    */
@@ -154,29 +111,7 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::BoolConstPtr enabled
   }
 }
 
-void DynamixelServoHardwareInterface::setParent(hardware_interface::RobotHW *parent) {
-  /**
-   * We need the parent to be able to register the controller interface.
-   */
-  parent_ = parent;
-}
-
-void DynamixelServoHardwareInterface::reconfCallback(bitbots_ros_control::dynamixel_servo_hardware_interface_paramsConfig &config,
-                                                     uint32_t level) {
-  // set values on every bus
-  for (ServoBusInterface *bus: bus_interfaces_) {
-    bus->read_position_ = config.read_position;
-    bus->read_velocity_ = config.read_velocity;
-    bus->read_effort_ = config.read_effort;
-    bus->read_pwm_ = config.read_pwm;
-    bus->read_volt_temp_ = config.read_volt_temp;
-    bus->vt_update_rate_ = config.VT_update_rate;
-    bus->warn_temp_ = config.warn_temp;
-    bus->warn_volt_ = config.warn_volt;
-  }
-}
-
-void DynamixelServoHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
+void DynamixelServoHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   // retrieve values from the buses and set controller vector accordingly
   //todo improve performance
   int i = 0;
@@ -190,12 +125,12 @@ void DynamixelServoHardwareInterface::read(const ros::Time &t, const ros::Durati
     }
   }
   // PWM values are not part of joint state controller and have to be published independently
-  pwm_msg_.header.stamp = ros::Time::now();
+  pwm_msg_.header.stamp = nh_->get_clock()->now();
   pwm_msg_.effort = current_pwm_;
-  pwm_pub_.publish(pwm_msg_);
+  pwm_pub_->publish(pwm_msg_);
 }
 
-void DynamixelServoHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
+void DynamixelServoHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   // set all values from controller to the buses
   //todo improve performance
   int i = 0;

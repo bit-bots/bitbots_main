@@ -1,13 +1,12 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_CONTROLLER_HPP_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_CONTROLLER_HPP_
 
-#include <ros/node_handle.h>
-#include <hardware_interface/joint_command_interface.h>
-#include <controller_interface/controller.h>
-#include <std_msgs/Float64.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <realtime_tools/realtime_buffer.h>
-#include <bitbots_msgs/JointCommand.h>
-#include <bitbots_ros_control/posvelacccur_command_interface.h>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <pluginlib/class_list_macros.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
 
 namespace dynamixel_controller {
 
@@ -18,14 +17,14 @@ struct JointCommandData {
   double acc;
   double cur;
 };
-class DynamixelController : public controller_interface::Controller<hardware_interface::PosVelAccCurJointInterface> {
- public:
-  DynamixelController() = default;
-  ~DynamixelController() override { sub_command_.shutdown(); }
 
-  void starting(const ros::Time &time) override;
-  void update(const ros::Time & /*time*/, const ros::Duration & /*period*/) override;
-  bool init(hardware_interface::PosVelAccCurJointInterface *hw, ros::NodeHandle &n) override;
+class DynamixelController {
+ public:
+  DynamixelController(rclcpp::Node::SharedPtr nh);
+
+  void starting(const rclcpp::Time &time);
+  void update(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/);
+  bool init();
 
   std::vector<std::string> joint_names;
   std::vector<hardware_interface::PosVelAccCurJointHandle> joints;
@@ -33,14 +32,15 @@ class DynamixelController : public controller_interface::Controller<hardware_int
   unsigned int n_joints;
 
  private:
-  ros::Subscriber sub_command_;
+  rclcpp::Node::SharedPtr nh_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr sub_command_;
   std::map<std::string, int> joint_map_;
-  void commandCb(const bitbots_msgs::JointCommand &command_msg) {
+  void commandCb(const bitbots_msgs::msg::JointCommand &command_msg) {
     if (!(command_msg.joint_names.size() == command_msg.positions.size() &&
         command_msg.joint_names.size() == command_msg.velocities.size() &&
         command_msg.joint_names.size() == command_msg.accelerations.size() &&
         command_msg.joint_names.size() == command_msg.max_currents.size())) {
-      ROS_ERROR("Dynamixel Controller got command with inconsistent array lengths.");
+      RCLCPP_ERROR(nh_->get_logger(), "Dynamixel Controller got command with inconsistent array lengths.");
       return;
     }
     std::vector<JointCommandData> buf_data;

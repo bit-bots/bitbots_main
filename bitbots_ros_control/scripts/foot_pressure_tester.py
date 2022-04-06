@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_msgs.msg import FootPressure
 import argparse
 import random
@@ -93,11 +94,11 @@ def zero():
 b = tkinter.Button(master, command=zero, text="Zero")
 b.pack()
 
-rospy.init_node("foot_pressure_tester")
-pub_r = rospy.Publisher("/foot_pressure_right/raw", FootPressure, queue_size=1, tcp_nodelay=True)
-pub_l = rospy.Publisher("/foot_pressure_left/raw", FootPressure, queue_size=1, tcp_nodelay=True)
+rclpy.init(args=None)
+pub_r = self.create_publisher(FootPressure, "/foot_pressure_right/raw", 1, tcp_nodelay=True)
+pub_l = self.create_publisher(FootPressure, "/foot_pressure_left/raw", 1, tcp_nodelay=True)
 
-rate = rospy.Rate(args.rate)
+rate = self.create_rate(args.rate)
 msg_l = FootPressure()
 msg_r = FootPressure()
 
@@ -117,6 +118,6 @@ def publish(timer):
     pub_r.publish(msg_r)
 
 
-rospy.Timer(rospy.Duration(1) / args.rate, publish)
+rospy.Timer(Duration(seconds=1) / args.rate, publish)
 tkinter.mainloop()
 rospy.signal_shutdown("gui closed")

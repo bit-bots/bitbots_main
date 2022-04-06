@@ -2,7 +2,8 @@
 
 import argparse
 
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from bitbots_msgs.msg import JointCommand
 
@@ -88,24 +89,24 @@ def main():
     args = parse_args()
     joint_command = PredefinedCommands.__dict__[args.command]
 
-    rospy.init_node("send_joint_command")
-    pub = rospy.Publisher(DYNAMIXEL_CMD_TOPIC, JointCommand, queue_size=1)
+    rclpy.init(args=None)
+    pub = self.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
-    while pub.get_num_connections() < 1:
+    while pub.get_subscription_count() < 1:
         pub.unregister()
-        pub = rospy.Publisher(DYNAMIXEL_CMD_TOPIC, JointCommand, queue_size=10)
-        rospy.loginfo_once("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC))
-        rospy.sleep(0.5)
+        pub = self.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 10)
+        self.get_logger().info("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC), once=True)
+        self.get_clock().sleep_for(Duration(seconds=0.5)
     # just to make sure
-    rospy.sleep(1)
+    self.get_clock().sleep_for(Duration(seconds=1)
 
-    rospy.loginfo("Sending controller commands of type {} now.".format(args.command))
+    self.get_logger().info("Sending controller commands of type {} now.".format(args.command))
     print(joint_command)
 
-    while not rospy.is_shutdown():
-        joint_command.header.stamp = rospy.Time.now()
+    while rclpy.ok():
+        joint_command.header.stamp = self.get_clock().now()
         pub.publish(joint_command)
-        rospy.sleep(0.5)
+        self.get_clock().sleep_for(Duration(seconds=0.5)
 
         if args.once:
             return

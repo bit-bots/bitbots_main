@@ -5,11 +5,13 @@
 
 namespace bitbots_ros_control {
 
-ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver> &driver,
+ImuHardwareInterface::ImuHardwareInterface(rclcpp::Node::SharedPtr nh,
+                                           std::shared_ptr<DynamixelDriver> &driver,
                                            int id,
                                            std::string topic,
                                            std::string frame,
                                            std::string name) {
+  nh_ = nh;
   driver_ = driver;
   id_ = id;
   topic_ = topic;
@@ -18,8 +20,7 @@ ImuHardwareInterface::ImuHardwareInterface(std::shared_ptr<DynamixelDriver> &dri
   diag_counter_ = 0;
 }
 
-bool ImuHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
-  nh_ = nh;
+bool ImuHardwareInterface::init() {
   status_imu_.name = name_;
   status_imu_.hardware_id = std::to_string(id_);
 
@@ -41,40 +42,29 @@ bool ImuHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
   data_ = (uint8_t *) malloc(40 * sizeof(uint8_t));
   accel_calib_data_ = (uint8_t *) malloc(28 * sizeof(uint8_t));
 
-  // init IMU
-  hardware_interface::ImuSensorHandle imu_handle(topic_,
-                                                 frame_,
-                                                 orientation_,
-                                                 orientation_covariance_,
-                                                 angular_velocity_,
-                                                 angular_velocity_covariance_,
-                                                 linear_acceleration_,
-                                                 linear_acceleration_covariance_);
-  imu_interface_.registerHandle(imu_handle);
-  parent_->registerInterface(&imu_interface_);
-
   // make services
-  imu_ranges_service_ = nh_.advertiseService("/imu/set_imu_ranges", &ImuHardwareInterface::setIMURanges, this);
-  calibrate_gyro_service_ = nh_.advertiseService("/imu/calibrate_gyro", &ImuHardwareInterface::calibrateGyro, this);
-  reset_gyro_calibration_service_ =
-      nh_.advertiseService("/imu/reset_gyro_calibration", &ImuHardwareInterface::resetGyroCalibration, this);
-  complementary_filter_params_service_ = nh_.advertiseService("/imu/set_complementary_filter_params",
-                                                              &ImuHardwareInterface::setComplementaryFilterParams,
-                                                              this);
-  calibrate_accel_service_ = nh_.advertiseService("/imu/calibrate_accel", &ImuHardwareInterface::calibrateAccel, this);
-  read_accel_calibration_service_ =
-      nh_.advertiseService("/imu/read_accel_calibration", &ImuHardwareInterface::readAccelCalibration, this);
-  reset_accel_calibration_service_ =
-      nh_.advertiseService("/imu/reset_accel_calibration", &ImuHardwareInterface::resetAccelCalibraton, this);
-  set_accel_calib_threshold_service_ = nh_.advertiseService("/imu/set_accel_calibration_threshold",
-                                                            &ImuHardwareInterface::setAccelCalibrationThreshold,
-                                                            this);
+  imu_ranges_service_ = nh_->create_service<bitbots_msgs::srv::IMURanges>(
+      "/imu/set_imu_ranges", &ImuHardwareInterface::setIMURanges);
+  calibrate_gyro_service_ = nh_->create_service<std_srvs::srv::Empty>(
+      "/imu/calibrate_gyro", &ImuHardwareInterface::calibrateGyro);
+  reset_gyro_calibration_service_ = nh_->create_service<std_srvs::srv::Empty>(
+      "/imu/reset_gyro_calibration", &ImuHardwareInterface::resetGyroCalibration);
+  complementary_filter_params_service_ = nh_->create_service<bitbots_msgs::srv::ComplementaryFilterParams>(
+      "/imu/set_complementary_filter_params", &ImuHardwareInterface::setComplementaryFilterParams);
+  calibrate_accel_service_ = nh_->create_service<std_srvs::srv::Empty>(
+      "/imu/calibrate_accel", &ImuHardwareInterface::calibrateAccel);
+  read_accel_calibration_service_ = nh_->create_service<bitbots_msgs::srv::AccelerometerCalibration>(
+      "/imu/read_accel_calibration", &ImuHardwareInterface::readAccelCalibration);
+  reset_accel_calibration_service_ = nh_->create_service<std_srvs::srv::Empty>(
+      "/imu/reset_accel_calibration", &ImuHardwareInterface::resetAccelCalibraton);
+  set_accel_calib_threshold_service_ = nh_->create_service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>(
+      "/imu/set_accel_calibration_threshold", &ImuHardwareInterface::setAccelCalibrationThreshold);
 
-  diagnostic_pub_ = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
+  diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
 
   // read the current values in the IMU module so that they can later be displayed in diagnostic message
-  bitbots_msgs::AccelerometerCalibrationRequest req = bitbots_msgs::AccelerometerCalibrationRequest();
-  bitbots_msgs::AccelerometerCalibrationResponse resp = bitbots_msgs::AccelerometerCalibrationResponse();
+  bitbots_msgs::srv::AccelerometerCalibration::Request req = bitbots_msgs::srv::AccelerometerCalibration::Request();
+  bitbots_msgs::srv::AccelerometerCalibration::Response resp = bitbots_msgs::srv::AccelerometerCalibration::Response();
   readAccelCalibration(req, resp);
   if (driver_->readMultipleRegisters(id_, 102, 16, data_)) {
     gyro_range_ = data_[0];
@@ -86,21 +76,26 @@ bool ImuHardwareInterface::init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) {
     accel_gain_ = dxlMakeFloat(data_ + 8);
     bias_alpha_ = dxlMakeFloat(data_ + 12);
   } else {
-    ROS_WARN("Could not read IMU %s config values in init", name_.c_str());
+    RCLCPP_WARN(nh_->get_logger(), "Could not read IMU %s config values in init", name_.c_str());
   }
 
-  //set filter values differently if specified in the confi and write them
-  do_adaptive_gain_ = nh.param("imu/do_adaptive_gain", do_adaptive_gain_);
-  do_bias_estimation_ = nh.param("imu/do_bias_estimation", do_bias_estimation_);
-  accel_gain_ = nh.param("imu/accel_gain", accel_gain_);
-  bias_alpha_ = nh.param("imu/accel_gain", bias_alpha_);
+  //set filter values differently if specified in the config and write them
+  nh_->declare_parameter<bool>("imu/do_adaptive_gain", do_adaptive_gain_);
+  do_adaptive_gain_ = nh_->get_parameter("imu/do_adaptive_gain").as_bool();
+  nh_->declare_parameter<bool>("imu/do_bias_estimation", do_bias_estimation_);
+  do_bias_estimation_ = nh_->get_parameter("imu/do_bias_estimation").as_bool();
+  nh_->declare_parameter<double>("imu/accel_gain", accel_gain_);
+  accel_gain_ = nh_->get_parameter("imu/accel_gain").as_double();
+  nh_->declare_parameter<double>("imu/bias_alpha", bias_alpha_);
+  bias_alpha_ = nh_->get_parameter("imu/bias_alpha").as_double();
+
   write_complementary_filter_params_ = true;
-  write(ros::Time(0), ros::Duration(0));
+  write(rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9 * 0));
 
   return true;
 }
 
-void ImuHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
+void ImuHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   /**
    * Reads the IMU
    */
@@ -124,17 +119,17 @@ void ImuHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
       orientation_[3] = dxlMakeFloat(data_ + 36);
     }
   } else {
-    ROS_ERROR_THROTTLE(1.0, "Couldn't read IMU");
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read IMU");
     read_successful = false;
   }
 
   // publish diagnostic messages each 100 frames
   if (diag_counter_ % 100 == 0) {
     // diagnostics. check if values are changing, otherwise there is a connection error on the board
-    diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
-    std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
-    array_msg.header.stamp = ros::Time::now();
-    diagnostic_msgs::DiagnosticStatus status = diagnostic_msgs::DiagnosticStatus();
+    diagnostic_msgs::msg::DiagnosticArray array_msg = diagnostic_msgs::msg::DiagnosticArray();
+    std::vector<diagnostic_msgs::msg::DiagnosticStatus> array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
+    array_msg.header.stamp = nh_->get_clock()->now();
+    diagnostic_msgs::msg::DiagnosticStatus status = diagnostic_msgs::msg::DiagnosticStatus();
     // add prefix CORE to sort in diagnostic analyser
     status.name = "IMU" + name_;
     status.hardware_id = std::to_string(id_);
@@ -156,16 +151,16 @@ void ImuHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
     map.insert(std::make_pair("Accel Calib Scale 2", std::to_string(accel_calib_scale_[2])));
 
     if (read_successful) {
-      status.level = diagnostic_msgs::DiagnosticStatus::OK;
+      status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
       status.message = "OK";
     } else {
-      status.level = diagnostic_msgs::DiagnosticStatus::STALE;
+      status.level = diagnostic_msgs::msg::DiagnosticStatus::STALE;
       status.message = "No response";
     }
-    std::vector<diagnostic_msgs::KeyValue> keyValues = std::vector<diagnostic_msgs::KeyValue>();
+    std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
     // itarate through map and save it into values
-    for (auto const &ent1 : map) {
-      diagnostic_msgs::KeyValue key_value = diagnostic_msgs::KeyValue();
+    for (auto const &ent1: map) {
+      diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
       key_value.key = ent1.first;
       key_value.value = ent1.second;
       keyValues.push_back(key_value);
@@ -173,30 +168,32 @@ void ImuHardwareInterface::read(const ros::Time &t, const ros::Duration &dt) {
     status.values = keyValues;
     array.push_back(status);
     array_msg.status = array;
-    diagnostic_pub_.publish(array_msg);
+    diagnostic_pub_->publish(array_msg);
   }
   diag_counter_++;
 }
 
-bool ImuHardwareInterface::setIMURanges(bitbots_msgs::IMURangesRequest &req, bitbots_msgs::IMURangesResponse &resp) {
+bool ImuHardwareInterface::setIMURanges(bitbots_msgs::srv::IMURanges::Request &req,
+                                        bitbots_msgs::srv::IMURanges::Response &resp) {
   accel_range_ = req.accel_range;
   gyro_range_ = req.gyro_range;
   write_ranges_ = true;
   return true;
 }
 
-bool ImuHardwareInterface::calibrateGyro(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &resp) {
+bool ImuHardwareInterface::calibrateGyro(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp) {
   calibrate_gyro_ = true;
   return true;
 }
 
-bool ImuHardwareInterface::resetGyroCalibration(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &resp) {
+bool ImuHardwareInterface::resetGyroCalibration(std_srvs::srv::Empty::Request &req,
+                                                std_srvs::srv::Empty::Response &resp) {
   reset_gyro_calibration_ = true;
   return true;
 }
 
-bool ImuHardwareInterface::setComplementaryFilterParams(bitbots_msgs::ComplementaryFilterParamsRequest &req,
-                                                        bitbots_msgs::ComplementaryFilterParamsResponse &resp) {
+bool ImuHardwareInterface::setComplementaryFilterParams(bitbots_msgs::srv::ComplementaryFilterParams::Request &req,
+                                                        bitbots_msgs::srv::ComplementaryFilterParams::Response &resp) {
 
   do_adaptive_gain_ = req.do_adaptive_gain;
   do_bias_estimation_ = req.do_bias_estimation;
@@ -206,18 +203,19 @@ bool ImuHardwareInterface::setComplementaryFilterParams(bitbots_msgs::Complement
   return true;
 }
 
-bool ImuHardwareInterface::calibrateAccel(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &resp) {
+bool ImuHardwareInterface::calibrateAccel(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp) {
   calibrate_accel_ = true;
   return true;
 }
 
-bool ImuHardwareInterface::resetAccelCalibraton(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &resp) {
+bool ImuHardwareInterface::resetAccelCalibraton(std_srvs::srv::Empty::Request &req,
+                                                std_srvs::srv::Empty::Response &resp) {
   reset_accel_calibration_ = true;
   return true;
 }
 
-bool ImuHardwareInterface::readAccelCalibration(bitbots_msgs::AccelerometerCalibrationRequest &req,
-                                                bitbots_msgs::AccelerometerCalibrationResponse &resp) {
+bool ImuHardwareInterface::readAccelCalibration(bitbots_msgs::srv::AccelerometerCalibration::Request &req,
+                                                bitbots_msgs::srv::AccelerometerCalibration::Response &resp) {
   resp.biases.resize(3);
   resp.scales.resize(3);
   if (driver_->readMultipleRegisters(id_, 118, 28, accel_calib_data_)) {
@@ -243,34 +241,34 @@ bool ImuHardwareInterface::readAccelCalibration(bitbots_msgs::AccelerometerCalib
   }
 }
 
-bool ImuHardwareInterface::setAccelCalibrationThreshold(bitbots_msgs::SetAccelerometerCalibrationThresholdRequest &req,
-                                                        bitbots_msgs::SetAccelerometerCalibrationThresholdResponse &resp) {
+bool ImuHardwareInterface::setAccelCalibrationThreshold(bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request &req,
+                                                        bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response &resp) {
   accel_calib_threshold_read_ = req.threshold;
   accel_calib_threshold_ = accel_calib_threshold_read_;
   set_accel_calib_threshold_ = true;
   return true;
 }
 
-void ImuHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
+void ImuHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   if (write_ranges_) {
-    ROS_INFO_STREAM("Setting Gyroscope range to " << gyroRangeToString(gyro_range_));
-    ROS_INFO_STREAM("Setting Accelerometer range to " << accelRangeToString(accel_range_));
+    RCLCPP_INFO_STREAM(nh_->get_logger(), "Setting Gyroscope range to " << gyroRangeToString(gyro_range_));
+    RCLCPP_INFO_STREAM(nh_->get_logger(), "Setting Accelerometer range to " << accelRangeToString(accel_range_));
     driver_->writeRegister(id_, "Gyro_Range", gyro_range_);
     driver_->writeRegister(id_, "Accel_Range", accel_range_);
     write_ranges_ = false;
   }
   if (calibrate_gyro_) {
-    ROS_INFO("Calibrating gyroscope");
+    RCLCPP_INFO(nh_->get_logger(), "Calibrating gyroscope");
     driver_->writeRegister(id_, "Calibrate_Gyro", 1);
     calibrate_gyro_ = false;
   }
   if (reset_gyro_calibration_) {
-    ROS_INFO("Resetting gyroscope Calibration");
+    RCLCPP_INFO(nh_->get_logger(), "Resetting gyroscope Calibration");
     driver_->writeRegister(id_, "Reset_Gyro_Calibration", 1);
     reset_gyro_calibration_ = false;
   }
   if (write_complementary_filter_params_) {
-    ROS_INFO("Writing Complementary Filter parameters.");
+    RCLCPP_INFO(nh_->get_logger(), "Writing Complementary Filter parameters.");
     driver_->writeRegister(id_, "Do_Adaptive_Gain", do_adaptive_gain_);
     driver_->writeRegister(id_, "Do_Bias_Estimation", do_bias_estimation_);
 
@@ -285,12 +283,12 @@ void ImuHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
     write_complementary_filter_params_ = false;
   }
   if (calibrate_accel_) {
-    ROS_ERROR("Disabled for normal users for safety reasons, uncomment code to use");
+    RCLCPP_ERROR(nh_->get_logger(), "Disabled for normal users for safety reasons, uncomment code to use");
     //driver_->writeRegister(id_, "Calibrate_Accel", 1);
     calibrate_accel_ = false;
   }
   if (reset_accel_calibration_) {
-    ROS_ERROR("Disabled for normal users for safety reasons, uncomment code to use");
+    RCLCPP_ERROR(nh_->get_logger(), "Disabled for normal users for safety reasons, uncomment code to use");
     //driver_->writeRegister(id_, "Reset_Accel_Calibration", 1);
     reset_accel_calibration_ = false;
   }
@@ -301,11 +299,6 @@ void ImuHardwareInterface::write(const ros::Time &t, const ros::Duration &dt) {
     set_accel_calib_threshold_ = false;
   }
 }
-
-void ImuHardwareInterface::setParent(hardware_interface::RobotHW *parent) {
-  parent_ = parent;
-}
-
 }
 
 

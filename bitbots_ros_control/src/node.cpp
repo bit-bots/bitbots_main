@@ -1,8 +1,9 @@
-#include <ros/callback_queue.h>
-#include <controller_manager/controller_manager.h>
+#include <controller_manager/controller_manager.hpp>
 #include <bitbots_ros_control/wolfgang_hardware_interface.h>
 #include <signal.h>
 #include <thread>
+#include <rclcpp/rclcpp.hpp>
+
 sig_atomic_t volatile request_shutdown = 0;
 
 void sigintHandler(int sig) {
@@ -11,108 +12,90 @@ void sigintHandler(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-  ros::init(argc, argv, "ros_control", ros::init_options::NoSigintHandler);
+  // register signal handler for ctrl-c that we use to request shutdown but give extra time for other nodes to finish
   signal(SIGINT, sigintHandler);
-  ros::NodeHandle pnh("~");
+
+  // initialize ros
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("wolfgang_hardware_interface");
 
   // create hardware interfaces
-  bitbots_ros_control::WolfgangHardwareInterface hw(pnh);
-
-  if (!hw.init(pnh)) {
-    ROS_ERROR_STREAM("Failed to initialize hardware interface.");
+  bitbots_ros_control::WolfgangHardwareInterface hw(nh);
+  if (!hw.init()) {
+    RCLCPP_ERROR(nh->get_logger(), "Failed to initialize hardware interface.");
     return 1;
   }
 
-  // Create separate queue, because otherwise controller manager will freeze
-  ros::NodeHandle nh;
-  ros::AsyncSpinner spinner(5);
-  spinner.start();
-  controller_manager::ControllerManager *cm = new controller_manager::ControllerManager(&hw, nh);
-  // load controller directly here so that we have control when we shut down
-  // sometimes we want to only load some of the controllers
-  bool only_imu, only_pressure;
-  nh.param<bool>("/ros_control/only_imu", only_imu, false);
-  nh.param<bool>("/ros_control/only_pressure", only_pressure, false);
-  std::vector<std::string> names;
-
-  if (only_imu){
-    cm->loadController("imu_sensor_controller");
-    names = {"imu_sensor_controller"};
-  }else if(only_pressure){
-    names = {};
-  }else {
-    cm->loadController("joint_state_controller");
-    cm->loadController("imu_sensor_controller");
-    cm->loadController("DynamixelController");
-    names = {"joint_state_controller", "imu_sensor_controller", "DynamixelController"};
-  }
-  const std::vector<std::string> empty = {};
-
-  // we have to start controller in own thread, otherwise it does not work, since the control manager needs to get its
-  // first update before the controllers are started
-  std::thread
-      thread = std::thread(&controller_manager::ControllerManager::switchController, cm, names, empty, 2, true, 3);
-
   // diagnostics
   int diag_counter = 0;
-  ros::Publisher diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 10, true);
-  diagnostic_msgs::DiagnosticArray array_msg = diagnostic_msgs::DiagnosticArray();
-  std::vector<diagnostic_msgs::DiagnosticStatus> array = std::vector<diagnostic_msgs::DiagnosticStatus>();
-  diagnostic_msgs::DiagnosticStatus status = diagnostic_msgs::DiagnosticStatus();
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub = nh->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+  diagnostic_msgs::msg::DiagnosticArray array_msg = diagnostic_msgs::msg::DiagnosticArray();
+  std::vector<diagnostic_msgs::msg::DiagnosticStatus> array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
+  diagnostic_msgs::msg::DiagnosticStatus status = diagnostic_msgs::msg::DiagnosticStatus();
   // add prefix PS for pressure sensor to sort in diagnostic analyser
   status.name = "BUSBus";
   status.hardware_id = "Bus";
 
   // Start control loop
-  ros::Time current_time = ros::Time::now();
-  ros::Duration period = ros::Time::now() - current_time;
+  rclcpp::Time current_time = nh->get_clock()->now();
+  rclcpp::Duration period = nh->get_clock()->now() - current_time;
   bool first_update = true;
-  float control_loop_hz = pnh.param("control_loop_hz", 1000);
-  ros::Rate rate(control_loop_hz);
-  ros::Time stop_time;
+  float control_loop_hz;
+  nh->declare_parameter<float>("control_loop_hz", 1000);
+  nh->get_parameter("control_loop_hz", control_loop_hz);
+  rclcpp::Rate rate(control_loop_hz);
+  rclcpp::Time stop_time;
   bool shut_down_started = false;
 
-  while (!request_shutdown || ros::Time::now().toSec() - stop_time.toSec() < 5) {
+  while (!request_shutdown || nh->get_clock()->now().seconds() - stop_time.seconds() < 5) {
+    //
+    // read
+    //
     hw.read(current_time, period);
-    period = ros::Time::now() - current_time;
-    current_time = ros::Time::now();
+    period = nh->get_clock()->now() - current_time;
+    current_time = nh->get_clock()->now();
 
     // period only makes sense after the first update
     // therefore, the controller manager is only updated starting with the second iteration
     if (first_update) {
       first_update = false;
     } else {
-      cm->update(current_time, period);
+      //todo replaced controller part, if necessary
     }
+
+    //
+    // Write
+    //
     hw.write(current_time, period);
-    ros::spinOnce();
+    rclcpp::spin_some(nh->get_node_base_interface());
     rate.sleep();
 
+    //
+    // Diagnostics
+    //
     // publish diagnostic messages each 100 frames
     if (diag_counter % 100 == 0) {
-        // check if we are staying the correct cycle time. warning if we only get half
-        array_msg.header.stamp = ros::Time::now();
-        if(rate.cycleTime() < ros::Duration(1/control_loop_hz)*2){
-          status.level = diagnostic_msgs::DiagnosticStatus::OK;
-          status.message = "";
-        }else{
-          status.level = diagnostic_msgs::DiagnosticStatus::WARN;
-          status.message = "Bus runs not at specified frequency";
-        }
-        array = std::vector<diagnostic_msgs::DiagnosticStatus>();
-        array.push_back(status);
-        array_msg.status = array;
-        diagnostic_pub.publish(array_msg);
+      // check if we are staying the correct cycle time. warning if we only get half
+      array_msg.header.stamp = nh->get_clock()->now();
+      if (rate.period() < std::chrono::nanoseconds (int(1e9 * (1 / control_loop_hz) * 2))) {
+        status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+        status.message = "";
+      } else {
+        status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+        status.message = "Bus runs not at specified frequency";
+      }
+      array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
+      array.push_back(status);
+      array_msg.status = array;
+      diagnostic_pub->publish(array_msg);
     }
     diag_counter++;
 
     if (request_shutdown && !shut_down_started) {
-      stop_time = ros::Time::now();
+      stop_time = nh->get_clock()->now();
       shut_down_started = true;
+      RCLCPP_INFO(nh->get_logger(), "Shutting down in 5 seconds");
     }
   }
-  thread.join();
-  delete cm;
-  ros::shutdown();
   return 0;
 }

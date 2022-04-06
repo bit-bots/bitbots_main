@@ -2,7 +2,7 @@
 
 namespace bitbots_ros_control {
 
-bool stringToControlMode(std::string _control_modestr, ControlMode &control_mode) {
+bool stringToControlMode(rclcpp::Node::SharedPtr nh, std::string _control_modestr, ControlMode &control_mode) {
   /**
    * Helper method to parse strings to corresponding control modes
    */
@@ -19,19 +19,19 @@ bool stringToControlMode(std::string _control_modestr, ControlMode &control_mode
     control_mode = CURRENT_BASED_POSITION_CONTROL;
     return true;
   } else {
-    ROS_WARN("Trying to set unknown control mode");
+    RCLCPP_WARN(nh->get_logger(), "Trying to set unknown control mode");
     return false;
   }
 }
 
-void speakError(const ros::Publisher &speak_pub, std::string text) {
+void speakError(const rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub, std::string text) {
   /**
     *  Helper method to send a message for text-to-speech output
     */
-  humanoid_league_msgs::Audio msg = humanoid_league_msgs::Audio();
+  humanoid_league_msgs::msg::Audio msg = humanoid_league_msgs::msg::Audio();
   msg.text = text;
   msg.priority = 100;
-  speak_pub.publish(msg);
+  speak_pub->publish(msg);
 }
 
 uint16_t dxlMakeword(uint64_t a, uint64_t b) {
@@ -68,4 +68,5 @@ std::string accelRangeToString(uint8_t range) {
     default:return "invalid range, defaulting to 16G";
   }
 }
+
 }

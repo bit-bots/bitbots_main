@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from bitbots_msgs.srv import Leds, LedsRequest, LedsResponse
 from std_msgs.msg import ColorRGBA
@@ -8,7 +9,7 @@ from std_msgs.msg import ColorRGBA
 BLINK_DURATION = 0.2
 ERROR_TIMEOUT = 1
 
-rospy.init_node("error_blink")
+rclpy.init(args=None)
 
 last_hardware_error_time = None
 # true means warning, false error
@@ -18,7 +19,7 @@ leds_red = False
 led_set_time = None
 
 # set up service and prepare requests
-led_serv = rospy.ServiceProxy("/set_leds", Leds)
+led_serv = self.create_client(Leds, "/set_leds")
 red_request = LedsRequest()
 red_leds_array = []
 for i in range(3):
@@ -46,7 +47,7 @@ def cb(msg: DiagnosticStatus):
     # we check if any status in the received array is not ok
     if msg.level != DiagnosticStatus.OK:
         warn_not_error = msg.level == DiagnosticStatus.WARN
-        last_hardware_error_time = rospy.Time.now().to_sec()
+        last_hardware_error_time = self.get_clock().now().to_sec()
 
 
 def set_red():
@@ -68,14 +69,14 @@ def reset_leds():
 
 # wait a moment on startup, otherwise we will think there is a problem while ros control is still booting
 rospy.wait_for_service('/set_leds')
-rospy.sleep(1)
+self.get_clock().sleep_for(Duration(seconds=1)
 
-rospy.Subscriber("/diagnostics_toplevel_state", DiagnosticStatus, cb, queue_size=1, tcp_nodelay=True)
+self.create_subscription(DiagnosticStatus, "/diagnostics_toplevel_state", cb, 1)
 
-rate = rospy.Rate(100)
-while not rospy.is_shutdown():
+rate = self.create_rate(100)
+while rclpy.ok():
     if last_hardware_error_time is not None:
-        current_time = rospy.Time.now().to_sec()
+        current_time = self.get_clock().now().to_sec()
         if currently_blinking:
             # we are currently blinking, check if the last hardware error is to long ago
             if current_time - last_hardware_error_time > ERROR_TIMEOUT:

@@ -1,50 +1,40 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include <std_msgs/Bool.h>
-#include <humanoid_league_msgs/Audio.h>
-#include <sensor_msgs/JointState.h>
-#include <diagnostic_msgs/DiagnosticStatus.h>
-#include <diagnostic_msgs/DiagnosticArray.h>
-#include <std_msgs/Bool.h>
-#include <std_msgs/Int32MultiArray.h>
-#include <bitbots_msgs/JointTorque.h>
+#include <std_msgs/msg/bool.hpp>
+#include <humanoid_league_msgs/msg/audio.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/int32_multi_array.hpp>
+#include <bitbots_msgs/msg/joint_torque.hpp>
 
-#include <hardware_interface/joint_command_interface.h>
-#include <bitbots_ros_control/posvelacccur_command_interface.h>
-#include <hardware_interface/joint_state_interface.h>
-#include <hardware_interface/robot_hw.h>
-#include <transmission_interface/simple_transmission.h>
-#include <transmission_interface/transmission_interface.h>
-#include <dynamic_reconfigure/server.h>
 #include <bitbots_ros_control/utils.h>
-
-#include <bitbots_ros_control/dynamixel_servo_hardware_interface_paramsConfig.h>
-
-#include <dynamixel_workbench/dynamixel_driver.h>
+#include <dynamixel_driver.h>
 #include <bitset>
 
 namespace bitbots_ros_control {
 
-class ServoBusInterface : public hardware_interface::RobotHW {
+class ServoBusInterface {
  public:
-  explicit ServoBusInterface(std::shared_ptr<DynamixelDriver> &driver,
+  explicit ServoBusInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver,
                              std::vector<std::tuple<int, std::string, float, float>> servos);
   ~ServoBusInterface();
-  bool init(ros::NodeHandle &nh, ros::NodeHandle &hw_nh) override;
-  void read(const ros::Time &t, const ros::Duration &dt);
-  void write(const ros::Time &t, const ros::Duration &dt);
+  bool init();
+  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
-  bool loadDynamixels(ros::NodeHandle &nh);
-  bool writeROMRAM(ros::NodeHandle &nh);
+  bool loadDynamixels();
+  bool writeROMRAM();
 
   void syncWritePWM();
 
   void switchDynamixelControlMode();
-  diagnostic_msgs::DiagnosticStatus createServoDiagMsg(int id,
+  diagnostic_msgs::msg::DiagnosticStatus createServoDiagMsg(int id,
                                                        char level,
                                                        std::string message,
                                                        std::map<std::string, std::string> map,
@@ -70,6 +60,7 @@ class ServoBusInterface : public hardware_interface::RobotHW {
   void syncWriteCurrent();
   void syncWriteProfileAcceleration();
 
+  rclcpp::Node::SharedPtr nh_;
   int32_t *data_sync_read_positions_;
   int32_t *data_sync_read_velocities_;
   int32_t *data_sync_read_efforts_;
@@ -132,8 +123,8 @@ class ServoBusInterface : public hardware_interface::RobotHW {
 
   int reading_errors_;
   int reading_successes_;
-  ros::Publisher diagnostic_pub_;
-  ros::Publisher speak_pub_;
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
+  rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub_;
 
 };
 }
