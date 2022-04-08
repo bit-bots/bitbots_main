@@ -14,10 +14,11 @@
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <std_srvs/srv/set_bool.hpp>
+#include <bitbots_ros_control/hardware_interface.h>
 
 namespace bitbots_ros_control {
 
-class CoreHardwareInterface {
+class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   explicit CoreHardwareInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver, int id, int read_rate);
 
@@ -29,8 +30,7 @@ class CoreHardwareInterface {
 
  private:
   rclcpp::Node::SharedPtr nh_;
-  bool switch_power(std_srvs::srv::SetBool::Request &req, std_srvs::srv::SetBool::Response &resp);
-
+  bool switch_power(std::shared_ptr<std_srvs::srv::SetBool::Request> req, std::shared_ptr<std_srvs::srv::SetBool::Response> resp);
 
   std::shared_ptr<DynamixelDriver> driver_;
 

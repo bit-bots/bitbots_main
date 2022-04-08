@@ -26,7 +26,12 @@ bool DynamixelServoHardwareInterface::init() {
   set_torque_indiv_sub_ = nh_->create_subscription<bitbots_msgs::msg::JointTorque>(
       "set_torque_individual", 1, std::bind(
           &DynamixelServoHardwareInterface::individualTorqueCb, this, _1));
+  // todo we could change the command topic to something better
+  sub_command_ = nh_->create_subscription<bitbots_msgs::msg::JointCommand>(
+      "/DynamixelController/command", 1, std::bind(&DynamixelServoHardwareInterface::commandCb,
+                                                   this, std::placeholders::_1));
   pwm_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/servo_PWM", 10);
+  joint_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/joint_state", 10);
 
   nh_->declare_parameter<bool>("torqueless_mode", false);
   torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
@@ -52,6 +57,11 @@ bool DynamixelServoHardwareInterface::init() {
   goal_effort_.resize(joint_count_, 0);
   goal_torque_individual_.resize(joint_count_, 1);
 
+  // create mapping for faster computation later
+  for (unsigned int i = 0; i < joint_count_; i++) {
+    joint_map_[joint_names_[i]] = i;
+  }
+
   std::string control_mode;
   nh_->declare_parameter<std::string>("servos/control_mode", "position");
   control_mode = nh_->get_parameter("servos/control_mode").as_string();
@@ -61,11 +71,31 @@ bool DynamixelServoHardwareInterface::init() {
     return false;
   }
 
+  joint_state_msg_ = sensor_msgs::msg::JointState();
+  joint_state_msg_.name = joint_names_;
   pwm_msg_ = sensor_msgs::msg::JointState();
   pwm_msg_.name = joint_names_;
 
   RCLCPP_INFO(nh_->get_logger(), "Hardware interface init finished.");
   return true;
+}
+
+void DynamixelServoHardwareInterface::commandCb(const bitbots_msgs::msg::JointCommand &command_msg) {
+  if (!(command_msg.joint_names.size()==command_msg.positions.size() &&
+      command_msg.joint_names.size()==command_msg.velocities.size() &&
+      command_msg.joint_names.size()==command_msg.accelerations.size() &&
+      command_msg.joint_names.size()==command_msg.max_currents.size())) {
+    RCLCPP_ERROR(nh_->get_logger(), "Dynamixel Controller got command with inconsistent array lengths.");
+    return;
+  }
+  // todo improve performance
+  for (unsigned int i = 0; i < command_msg.joint_names.size(); i++) {
+    int joint_id = joint_map_[command_msg.joint_names[i]];
+    goal_position_[joint_id] = command_msg.positions[i];
+    goal_velocity_[joint_id] = command_msg.velocities[i];
+    goal_acceleration_[joint_id] = command_msg.accelerations[i];
+    goal_effort_[joint_id] = command_msg.max_currents[i];
+  }
 }
 
 void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::JointTorque msg) {
@@ -81,7 +111,7 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::Join
   for (size_t i = 0; i < msg.joint_names.size(); i++) {
     bool success = false;
     for (size_t j = 0; j < joint_names_.size(); j++) {
-      if (msg.joint_names[i] == joint_names_[j]) {
+      if (msg.joint_names[i]==joint_names_[j]) {
         if (i < msg.joint_names.size()) {
           goal_torque_individual_[j] = msg.on[i];
           success = true;
@@ -124,6 +154,14 @@ void DynamixelServoHardwareInterface::read(const rclcpp::Time &t, const rclcpp::
       i++;
     }
   }
+
+  // publish joint states
+  joint_state_msg_.header.stamp = nh_->get_clock()->now();
+  joint_state_msg_.position = current_position_;
+  joint_state_msg_.velocity = current_velocity_;
+  joint_state_msg_.effort = current_effort_;
+  joint_pub_->publish(joint_state_msg_);
+
   // PWM values are not part of joint state controller and have to be published independently
   pwm_msg_.header.stamp = nh_->get_clock()->now();
   pwm_msg_.effort = current_pwm_;

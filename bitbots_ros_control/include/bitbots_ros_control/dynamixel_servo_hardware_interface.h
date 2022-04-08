@@ -12,8 +12,10 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32_multi_array.hpp>
 #include <bitbots_msgs/msg/joint_torque.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
 
 #include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/hardware_interface.h>
 
 #include <bitbots_ros_control/servo_bus_interface.h>
 #include <dynamixel_driver.h>
@@ -47,7 +49,7 @@ struct Joint {
   State goal;
 };
 
-class DynamixelServoHardwareInterface{
+class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   explicit DynamixelServoHardwareInterface(rclcpp::Node::SharedPtr nh);
 
@@ -62,12 +64,13 @@ class DynamixelServoHardwareInterface{
 
   void setTorqueCb(std_msgs::msg::Bool::SharedPtr enabled);
   void individualTorqueCb(bitbots_msgs::msg::JointTorque msg);
+  void commandCb(const bitbots_msgs::msg::JointCommand &command_msg);
 
   std::vector<int32_t> goal_torque_individual_;
 
   ControlMode control_mode_;
 
-  int joint_count_;
+  unsigned int joint_count_;
 
   std::vector<std::string> joint_names_;
 
@@ -84,13 +87,18 @@ class DynamixelServoHardwareInterface{
   std::vector<double> current_temperature_;
   std::vector<uint8_t> current_error_;
 
+  std::map<std::string, int> joint_map_;
+
   bool torqueless_mode_;
 
   // subscriber / publisher
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr set_torque_sub_;
-  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pwm_pub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointTorque>::SharedPtr set_torque_indiv_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr sub_command_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pwm_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;
 
+  sensor_msgs::msg::JointState joint_state_msg_;
   sensor_msgs::msg::JointState pwm_msg_;
 };
 }

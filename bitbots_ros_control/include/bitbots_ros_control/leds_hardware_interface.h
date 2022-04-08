@@ -4,12 +4,13 @@
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <dynamixel_driver.h>
+#include <bitbots_ros_control/hardware_interface.h>
 
 #include <bitbots_msgs/srv/leds.hpp>
 
 namespace bitbots_ros_control {
 
-class LedsHardwareInterface {
+class LedsHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   LedsHardwareInterface(rclcpp::Node::SharedPtr nh,
                         std::shared_ptr<DynamixelDriver> &driver,
@@ -31,8 +32,7 @@ class LedsHardwareInterface {
   std::vector<std_msgs::msg::ColorRGBA> leds_;
 
   rclcpp::Service<bitbots_msgs::srv::Leds>::SharedPtr leds_service_;
-  bool setLeds(bitbots_msgs::srv::Leds::Request &req, bitbots_msgs::srv::Leds::Response &resp);
-
+  void setLeds(const std::shared_ptr<bitbots_msgs::srv::Leds::Request> req, std::shared_ptr<bitbots_msgs::srv::Leds::Response> resp);
   void ledCb0(std_msgs::msg::ColorRGBA msg);
   void ledCb1(std_msgs::msg::ColorRGBA msg);
   void ledCb2(std_msgs::msg::ColorRGBA msg);

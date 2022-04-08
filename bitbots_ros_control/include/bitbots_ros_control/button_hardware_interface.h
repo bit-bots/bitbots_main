@@ -14,10 +14,11 @@
 #include <dynamixel_driver.h>
 
 #include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/hardware_interface.h>
 
 namespace bitbots_ros_control {
 
-class ButtonHardwareInterface {
+class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   explicit ButtonHardwareInterface(rclcpp::Node::SharedPtr nh,
                                    std::shared_ptr<DynamixelDriver> &driver,

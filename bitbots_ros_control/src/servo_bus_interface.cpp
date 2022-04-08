@@ -158,18 +158,17 @@ bool ServoBusInterface::writeROMRAM() {
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
   RCLCPP_DEBUG(nh_->get_logger(), "Writing ROM and RAM values");
-  XmlRpc::XmlRpcValue dxls;
-  nh_->getParam("servos/ROM_RAM", dxls);
-  ROS_ASSERT(dxls.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+  // get a list of all parameters in this section
+  rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list = nh_->list_parameters({"servos/ROM_RAM"}, 0);
   bool sucess = true;
   int i = 0;
-  for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = dxls.begin(); it != dxls.end(); ++it) {
-    std::string register_name = (std::string) (it->first);
+  // iterate over the parameters and set each one
+  for (const std::string &register_name: rom_ram_parameter_list.names) {
     int register_value;
-    nh_->getParam(("servos/ROM_RAM/" + register_name).c_str(), register_value);
+    nh_->get_parameter("servos/ROM_RAM/" + register_name, register_value);
     RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on all servos to %d", register_name.c_str(), register_value);
 
-    int *values = (int *) malloc(joint_names_.size() * sizeof(int));
+    int *values = (int *) malloc(joint_names_.size()*sizeof(int));
     for (size_t num = 0; num < joint_names_.size(); num++) {
       values[num] = register_value;
     }
@@ -232,7 +231,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
   }
 
   if (read_volt_temp_) {
-    if (read_vt_counter_ + 1 == vt_update_rate_) {
+    if (read_vt_counter_ + 1==vt_update_rate_) {
       bool success = true;
       if (!syncReadVoltageAndTemp()) {
         RCLCPP_ERROR_THROTTLE(nh_->get_logger(),
@@ -248,7 +247,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
       }
       processVte(success);
     }
-    read_vt_counter_ = (read_vt_counter_ + 1) % vt_update_rate_;
+    read_vt_counter_ = (read_vt_counter_ + 1)%vt_update_rate_;
   }
 
   if (first_cycle_) {
@@ -270,7 +269,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
   }
 
   if (reading_errors_ + reading_successes_ > 200 &&
-      (float) reading_errors_ / (float) (reading_successes_ + reading_errors_) > 0.05f) {
+      (float) reading_errors_/(float) (reading_successes_ + reading_errors_) > 0.05f) {
     speakError(speak_pub_, "Multiple servo reading errors!");
     reading_errors_ = 0;
     reading_successes_ = 0;
@@ -287,7 +286,7 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
    * This is part of the mainloop and handles all the writing to the connected devices
    */
   //check if we have to switch the torque
-  if (current_torque_ != goal_torque_) {
+  if (current_torque_!=goal_torque_) {
     writeTorque(goal_torque_);
   }
   if (switch_individual_torque_) {
@@ -301,48 +300,48 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
     writeTorqueForServos(goal_torque_individual_);
     lost_servo_connection_ = false;
   }
-  if (control_mode_ == POSITION_CONTROL) {
-    if (goal_effort_ != last_goal_effort_) {
+  if (control_mode_==POSITION_CONTROL) {
+    if (goal_effort_!=last_goal_effort_) {
       syncWritePWM();
       last_goal_effort_ = goal_effort_;
     }
 
-    if (goal_velocity_ != last_goal_velocity_) {
+    if (goal_velocity_!=last_goal_velocity_) {
       syncWriteProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
 
-    if (goal_acceleration_ != last_goal_acceleration_) {
+    if (goal_acceleration_!=last_goal_acceleration_) {
       syncWriteProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
     }
 
-    if (goal_position_ != last_goal_position_) {
+    if (goal_position_!=last_goal_position_) {
       syncWritePosition();
       last_goal_position_ = goal_position_;
     }
-  } else if (control_mode_ == VELOCITY_CONTROL) {
+  } else if (control_mode_==VELOCITY_CONTROL) {
     syncWriteVelocity();
-  } else if (control_mode_ == EFFORT_CONTROL) {
+  } else if (control_mode_==EFFORT_CONTROL) {
     syncWriteCurrent();
-  } else if (control_mode_ == CURRENT_BASED_POSITION_CONTROL) {
+  } else if (control_mode_==CURRENT_BASED_POSITION_CONTROL) {
     // only write things if it is necessary
-    if (goal_effort_ != last_goal_effort_) {
+    if (goal_effort_!=last_goal_effort_) {
       syncWriteCurrent();
       last_goal_effort_ = goal_effort_;
     }
 
-    if (goal_velocity_ != last_goal_velocity_) {
+    if (goal_velocity_!=last_goal_velocity_) {
       syncWriteProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
 
-    if (goal_acceleration_ != last_goal_acceleration_) {
+    if (goal_acceleration_!=last_goal_acceleration_) {
       syncWriteProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
     }
 
-    if (goal_position_ != last_goal_position_) {
+    if (goal_position_!=last_goal_position_) {
       syncWritePosition();
       last_goal_position_ = goal_position_;
     }
@@ -360,16 +359,16 @@ void ServoBusInterface::switchDynamixelControlMode() {
   bool torque_before_switch = current_torque_;
   writeTorque(false);
   // magic sleep to make sure that dynamixel have internally processed the request
-  nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9 * 0.1));
+  nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9*0.1));
 
   int32_t value = 3;
-  if (control_mode_ == POSITION_CONTROL) {
+  if (control_mode_==POSITION_CONTROL) {
     value = 3;
-  } else if (control_mode_ == VELOCITY_CONTROL) {
+  } else if (control_mode_==VELOCITY_CONTROL) {
     value = 1;
-  } else if (control_mode_ == EFFORT_CONTROL) {
+  } else if (control_mode_==EFFORT_CONTROL) {
     value = 0;
-  } else if (control_mode_ == CURRENT_BASED_POSITION_CONTROL) {
+  } else if (control_mode_==CURRENT_BASED_POSITION_CONTROL) {
     value = 5;
   } else {
     RCLCPP_WARN(nh_->get_logger(), "control_mode is wrong, will use position control");
@@ -379,7 +378,7 @@ void ServoBusInterface::switchDynamixelControlMode() {
   int32_t *o = &operating_mode[0];
   driver_->syncWrite("Operating_Mode", o);
 
-  nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9 * 0.5));
+  nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9*0.5));
   //reenable torque if it was previously enabled
   writeTorque(torque_before_switch);
 }
@@ -442,7 +441,7 @@ void ServoBusInterface::processVte(bool success) {
       level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
     }
     map.insert(std::make_pair("Error Byte", std::to_string(current_error_[i])));
-    if (current_error_[i] != 0) {
+    if (current_error_[i]!=0) {
       // some error is detected
       level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
       message = "Error(s): ";
@@ -452,19 +451,19 @@ void ServoBusInterface::processVte(bool success) {
       char encoder_error = 0x8;
       char shock_error = 0x10;
       char overload_error = 0x20;
-      if ((current_error_[i] & voltage_error) != 0) {
+      if ((current_error_[i] & voltage_error)!=0) {
         message = message + "Voltage ";
       }
-      if ((current_error_[i] & overheat_error) != 0) {
+      if ((current_error_[i] & overheat_error)!=0) {
         message = message + "Overheat ";
       }
-      if ((current_error_[i] & encoder_error) != 0) {
+      if ((current_error_[i] & encoder_error)!=0) {
         message = message + "Encoder ";
       }
-      if ((current_error_[i] & shock_error) != 0) {
+      if ((current_error_[i] & shock_error)!=0) {
         message = message + "Shock ";
       }
-      if ((current_error_[i] & overload_error) != 0) {
+      if ((current_error_[i] & overload_error)!=0) {
         message = message + "Overload";
         // turn off torque on all motors
         // todo should also turn off power, but is not possible yet
@@ -519,7 +518,7 @@ bool ServoBusInterface::syncReadPositions() {
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       // TODO test if this is required
-      if (data_sync_read_positions_[i] == 0) {
+      if (data_sync_read_positions_[i]==0) {
         // a value of 0 is often a reading error, therefore we discard it
         // this should not cause issues when a motor is actually close to 0
         // since 1 bit only corresponds to + or - 0.1 deg
@@ -574,7 +573,7 @@ bool ServoBusInterface::syncReadPWMs() {
       // the data is in int16
       // 100% is a value of 885
       // convert to range -1 to 1
-      current_pwm_[i] = ((int16_t) data_sync_read_pwms_[i]) / 885.0;
+      current_pwm_[i] = ((int16_t) data_sync_read_pwms_[i])/885.0;
     }
   }
   return success;
@@ -603,10 +602,10 @@ bool ServoBusInterface::syncReadVoltageAndTemp() {
     uint16_t volt;
     uint8_t temp;
     for (int i = 0; i < joint_count_; i++) {
-      volt = dxlMakeword(data[i * 3], data[i * 3 + 1]);
-      temp = data[i * 3 + 2];
+      volt = dxlMakeword(data[i*3], data[i*3 + 1]);
+      temp = data[i*3 + 2];
       // convert value to voltage
-      current_input_voltage_[i] = volt * 0.1;
+      current_input_voltage_[i] = volt*0.1;
       // is already in °C
       current_temperature_[i] = temp;
     }
@@ -625,11 +624,11 @@ bool ServoBusInterface::syncReadAll() {
     uint32_t vel;
     uint32_t pos;
     for (int i = 0; i < joint_count_; i++) {
-      eff = dxlMakeword(sync_read_all_data_[i * 10], sync_read_all_data_[i * 10 + 1]);
-      vel = dxlMakedword(dxlMakeword(sync_read_all_data_[i * 10 + 2], sync_read_all_data_[i * 10 + 3]),
-                         dxlMakeword(sync_read_all_data_[i * 10 + 4], sync_read_all_data_[i * 10 + 5]));
-      pos = dxlMakedword(dxlMakeword(sync_read_all_data_[i * 10 + 6], sync_read_all_data_[i * 10 + 7]),
-                         dxlMakeword(sync_read_all_data_[i * 10 + 8], sync_read_all_data_[i * 10 + 9]));
+      eff = dxlMakeword(sync_read_all_data_[i*10], sync_read_all_data_[i*10 + 1]);
+      vel = dxlMakedword(dxlMakeword(sync_read_all_data_[i*10 + 2], sync_read_all_data_[i*10 + 3]),
+                         dxlMakeword(sync_read_all_data_[i*10 + 4], sync_read_all_data_[i*10 + 5]));
+      pos = dxlMakedword(dxlMakeword(sync_read_all_data_[i*10 + 6], sync_read_all_data_[i*10 + 7]),
+                         dxlMakeword(sync_read_all_data_[i*10 + 8], sync_read_all_data_[i*10 + 9]));
       current_effort_[i] = driver_->convertValue2Torque(joint_ids_[i], eff);
       current_velocity_[i] = driver_->convertValue2Velocity(joint_ids_[i], vel);
       double current_pos = driver_->convertValue2Radian(joint_ids_[i], pos);
@@ -694,7 +693,7 @@ void ServoBusInterface::syncWriteProfileAcceleration() {
     } else {
       //572.9577952 for change of units, 214.577 rev/min^2 per LSB
       sync_write_profile_acceleration_[num] =
-          std::max(static_cast<int>(goal_acceleration_[num] * 572.9577952 / 214.577), 1);
+          std::max(static_cast<int>(goal_acceleration_[num]*572.9577952/214.577), 1);
     }
   }
   driver_->syncWrite("Profile_Acceleration", sync_write_profile_acceleration_);
@@ -707,9 +706,9 @@ void ServoBusInterface::syncWriteCurrent() {
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if (goal_effort_[num] < 0) {
       // we want to set to maximum, which is different for MX-64 and MX-106
-      if (driver_->getModelNum(joint_ids_[num]) == 311) {
+      if (driver_->getModelNum(joint_ids_[num])==311) {
         sync_write_goal_current_[num] = 1941;
-      } else if (driver_->getModelNum(joint_ids_[num]) == 321) {
+      } else if (driver_->getModelNum(joint_ids_[num])==321) {
         sync_write_goal_current_[num] = 2047;
       } else {
         RCLCPP_WARN(nh_->get_logger(), "Maximal current for this dynamixel model is not defined");
@@ -727,7 +726,7 @@ void ServoBusInterface::syncWritePWM() {
       // we want to set to maximum
       sync_write_goal_pwm_[num] = 855;
     } else {
-      sync_write_goal_pwm_[num] = goal_effort_[num] / 100.0 * 855.0;
+      sync_write_goal_pwm_[num] = goal_effort_[num]/100.0*855.0;
     }
   }
   driver_->syncWrite("Goal_PWM", sync_write_goal_pwm_);

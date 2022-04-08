@@ -34,14 +34,13 @@ set(SOURCES
         src/bitfoot_hardware_interface.cpp
         src/button_hardware_interface.cpp
         src/core_hardware_interface.cpp
-        src/dynamixel_controller.cpp
         src/dynamixel_servo_hardware_interface.cpp
         src/imu_hardware_interface.cpp
         src/leds_hardware_interface.cpp
         src/node.cpp
         src/servo_bus_interface.cpp
         src/utils.cpp
-        src/wolfgang_hardware_interface.cpp)
+        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/hardware_interface.h)
 
 enable_bitbots_docs()
 

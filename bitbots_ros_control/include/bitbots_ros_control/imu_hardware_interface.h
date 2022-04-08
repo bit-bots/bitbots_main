@@ -14,10 +14,11 @@
 #include <bitbots_msgs/srv/accelerometer_calibration.hpp>
 #include <bitbots_msgs/srv/set_accelerometer_calibration_threshold.hpp>
 #include <std_srvs/srv/empty.hpp>
+#include <bitbots_ros_control/hardware_interface.h>
 
 namespace bitbots_ros_control {
 
-class ImuHardwareInterface {
+class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   explicit ImuHardwareInterface(rclcpp::Node::SharedPtr nh,
                                 std::shared_ptr<DynamixelDriver> &driver,
@@ -80,17 +81,17 @@ class ImuHardwareInterface {
   rclcpp::Service<bitbots_msgs::srv::AccelerometerCalibration>::SharedPtr read_accel_calibration_service_;
   rclcpp::Service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>::SharedPtr set_accel_calib_threshold_service_;
 
-  bool setIMURanges(bitbots_msgs::srv::IMURanges::Request &req, bitbots_msgs::srv::IMURanges::Response &resp);
-  bool calibrateGyro(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp);
-  bool resetGyroCalibration(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp);
-  bool setComplementaryFilterParams(bitbots_msgs::srv::ComplementaryFilterParams::Request &req,
-                                    bitbots_msgs::srv::ComplementaryFilterParams::Response &resp);
-  bool calibrateAccel(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp);
-  bool resetAccelCalibraton(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp);
-  bool readAccelCalibration(bitbots_msgs::srv::AccelerometerCalibration::Request &req,
-                            bitbots_msgs::srv::AccelerometerCalibration::Response &resp);
-  bool setAccelCalibrationThreshold(bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request &req,
-                                    bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response &resp);
+  void setIMURanges(const std::shared_ptr<bitbots_msgs::srv::IMURanges::Request> req, std::shared_ptr<bitbots_msgs::srv::IMURanges::Response> resp);
+  void calibrateGyro(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void resetGyroCalibration(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void setComplementaryFilterParams(const std::shared_ptr<bitbots_msgs::srv::ComplementaryFilterParams::Request> req,
+                                    std::shared_ptr<bitbots_msgs::srv::ComplementaryFilterParams::Response> resp);
+  void calibrateAccel(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void resetAccelCalibraton(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void readAccelCalibration(const std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Request> req,
+                            std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Response> resp);
+  void setAccelCalibrationThreshold(const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
+                                    std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
   int diag_counter_;
 };

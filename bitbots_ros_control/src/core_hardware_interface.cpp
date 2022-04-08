@@ -20,10 +20,10 @@ CoreHardwareInterface::CoreHardwareInterface(rclcpp::Node::SharedPtr nh, std::sh
   current_ = std_msgs::msg::Float64();
 }
 
-bool CoreHardwareInterface::switch_power(std_srvs::srv::SetBool::Request &req, std_srvs::srv::SetBool::Response &resp) {
-  requested_power_switch_status_ = req.data;
+bool CoreHardwareInterface::switch_power(std::shared_ptr<std_srvs::srv::SetBool::Request> req, std::shared_ptr<std_srvs::srv::SetBool::Response> resp) {
+  requested_power_switch_status_ = req->data;
   // wait for main loop to set value
-  resp.success = true;
+  resp->success = true;
   return true;
 }
 

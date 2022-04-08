@@ -12,14 +12,17 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32_multi_array.hpp>
 #include <bitbots_msgs/msg/joint_torque.hpp>
+#include <rcl_interfaces/msg/list_parameters_result.hpp>
+#include <bitbots_ros_control/hardware_interface.h>
 
 #include <bitbots_ros_control/utils.h>
 #include <dynamixel_driver.h>
 #include <bitset>
 
-namespace bitbots_ros_control {
 
-class ServoBusInterface {
+namespace bitbots_ros_control  {
+
+class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
  public:
   explicit ServoBusInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver,
                              std::vector<std::tuple<int, std::string, float, float>> servos);

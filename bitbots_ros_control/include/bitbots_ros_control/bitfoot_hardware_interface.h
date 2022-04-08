@@ -8,12 +8,13 @@
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_ros_control/hardware_interface.h>
 
 #include <dynamixel_driver.h>
 
 namespace bitbots_ros_control {
 
-class BitFootHardwareInterface {
+class BitFootHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   explicit BitFootHardwareInterface(rclcpp::Node::SharedPtr nh,
                                     std::shared_ptr<DynamixelDriver> &driver,
