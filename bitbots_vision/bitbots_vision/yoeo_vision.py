@@ -4,7 +4,6 @@ from typing import Dict, Union, List, Tuple
 import os
 import cv2
 import rclpy
-from rclpy import logging, time
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
 from rcl_interfaces.msg import SetParametersResult
@@ -23,7 +22,7 @@ from abc import ABC, abstractmethod
 
 from .yoeo_params import gen
 
-logger = logging.get_logger('bitbots_vision')
+logger = rclpy.logging.get_logger('bitbots_vision')
 
 try:
     from profilehooks import profile, \
@@ -976,49 +975,66 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
+        logger.debug("Start Configure_vision".upper())
 
-        # TODO
-        # Check if the yoeo ball/goalpost detector is activated and if the non tpu version is used
-        if new_config['neural_network_type'] in ['yoeo_pytorch']:
-            if ros_utils.config_param_change(self._config, new_config,
-                                             ['yolo_darknet_model_path', 'neural_network_type']):
-                model_path = self._get_model_path(new_config)
-                if self._model_file_exists(model_path):
-                    # Decide which yolo implementation should be used
-                    # if new_config['neural_network_type'] == 'yolo_opencv':
-                    #     # Load OpenCV implementation (uses OpenCL)
-                    #     self._yoeo = yolo_handler.YoloHandlerOpenCV(new_config, absolute_model_path)
-                    # elif new_config['neural_network_type'] == 'yolo_darknet':
-                    #     # Load Darknet implementation (uses CUDA)
-                    #     self._yoeo = yolo_handler.YoloHandlerDarknet(new_config, absolute_model_path)
-                    if new_config['neural_network_type'] == 'yoeo_pytorch':
-                        self._yoeo_handler = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
-                    logger.info(new_config['neural_network_type'] + " vision is running now")
-                else:
-                    logger.error('The specified yoeo model file does not exist!')
+        neural_network_type = new_config["neural_network_type"]
+        model_path = self._get_model_path(new_config)
 
-            # For other changes only modify the config
-            elif ros_utils.config_param_change(self._config, new_config, r'yoeo_'):
-                self._yoeo_handler.set_config(new_config)
+        self._verify_neural_network_type(neural_network_type)
+        self._verify_neural_network_files_exists(neural_network_type, model_path)
 
-        # TODO
-        # # Check if  tpu version of yolo ball/goalpost detector is used
-        # if new_config['neural_network_type'] in ['yolo_ncs2']:
-        #     if ros_utils.config_param_change(self._config, new_config, ['neural_network_type', 'yolo_openvino_model_path']):
-        #         # Build absolute model path
-        #         yolo_openvino_model_path = os.path.join(self._package_path, 'models', new_config['yolo_openvino_model_path'])
-        #         # Check if it exists
-        #         if not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.bin")) \
-        #                 or not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.xml")):
-        #             logger.error('The specified yolo openvino model file doesn\'t exist!')
-        #         else:
-        #             self._yoeo = yolo_handler.YoloHandlerNCS2(new_config, yolo_openvino_model_path)
-        #             logger.info(new_config['neural_network_type'] + " vision is running now")
-        #     # For other changes only modify the config
-        #     elif ros_utils.config_param_change(self._config, new_config, r'yolo_'):
-        #         self._yoeo.set_config(new_config)
-        # until here
+        self._set_up_yoeo_handler(new_config)
+        self._set_up_vision_components(new_config)
 
+        self._register_subscribers(new_config)
+
+        logger.debug("End Configure_vision".upper())
+
+    def _get_model_path(self, config: Dict) -> str:
+        return os.path.join(self._package_path, 'models', config['yoeo_model_path'])
+
+    @staticmethod
+    def _verify_neural_network_type(neural_network_type: str) -> None:
+        if neural_network_type not in ['pytorch', 'openvino']:
+            logger.error(f"Unknown neural network type '{neural_network_type}'")
+
+    def _verify_neural_network_files_exists(self, neural_network_type: str, model_path: str) -> None:
+        if not self._model_file_exists(neural_network_type, model_path):
+            logger.error("No matching model file(s) found!")
+
+    @staticmethod
+    def _model_file_exists(neural_network_type: str, model_path: str) -> bool:
+        exists: bool = False
+        if neural_network_type == "pytorch":
+            exists = os.path.exists(os.path.join(model_path, "yoeo.pth"))
+        elif neural_network_type == "openvino":
+            exists = os.path.exists(os.path.join(model_path, "yoeo.xml")) and \
+                   os.path.exists(os.path.join(model_path, "yoeo.bin"))
+        return exists
+
+    def _set_up_yoeo_handler(self, new_config: Dict) -> None:
+        if self._new_yoeo_handler_is_needed(new_config):
+            self._instantiate_new_yoeo_handler(new_config)
+        elif self._yoeo_parameters_have_changed(new_config):
+            self._yoeo_handler.set_config(new_config)
+
+    def _new_yoeo_handler_is_needed(self, new_config: Dict) -> bool:
+        return self._yoeo_handler is None or \
+               ros_utils.config_param_change(self._config, new_config, ['neural_network_type'])
+
+    def _instantiate_new_yoeo_handler(self, new_config: Dict) -> None:
+        neural_network_type = new_config["neural_network_type"]
+        model_path = self._get_model_path(new_config)
+        if neural_network_type == 'pytorch':
+            self._yoeo_handler = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
+        elif neural_network_type == "openvino":
+            self._yoeo_handler = yoeo_handler.YOEOHandlerOpenVino(new_config, model_path)
+        logger.info(f"Using {self._yoeo_handler.__class__.__name__}")
+
+    def _yoeo_parameters_have_changed(self, new_config: Dict) -> bool:
+        return ros_utils.config_param_change(self._config, new_config, r'yoeo_')
+
+    def _set_up_vision_components(self, new_config: Dict) -> None:
         self._vision_components = []
 
         if new_config["component_camera_cap_check_active"]:
@@ -1040,16 +1056,6 @@ class YOEOVision(Node):
 
         for vision_component in self._vision_components:
             vision_component.configure(new_config, self._yoeo_handler)
-
-        self._register_subscribers(new_config)
-        logger.debug("End Configure_vision")
-
-    @staticmethod
-    def _model_file_exists(model_path: str) -> bool:
-        return os.path.exists(os.path.join(model_path, "yoeo.pth"))
-
-    def _get_model_path(self, config: Dict) -> str:
-        return os.path.join(self._package_path, 'models', config['yoeo_model_path'])
 
     def _register_subscribers(self, config: Dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image,
@@ -1074,7 +1080,7 @@ class YOEOVision(Node):
             self._handle_image(image_msg)
 
     def _image_is_too_old(self, image_msg) -> bool:
-        image_age = self.get_clock().now() - time.Time.from_msg(image_msg.header.stamp)
+        image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
                 f"Vision: Dropping incoming Image-Message because it is too old! ({image_age.to_sec()} sec)")
@@ -1117,7 +1123,7 @@ class YOEOVision(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    logging.set_logger_level("bitbots_vision", logging.LoggingSeverity.DEBUG)
+    rclpy.logging.set_logger_level("bitbots_vision", rclpy.logging.LoggingSeverity.DEBUG)
     node = YOEOVision()
     try:
         rclpy.spin(node)
