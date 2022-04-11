@@ -1,5 +1,6 @@
 #include <bitbots_ros_control/pressure_converter.h>
 using std::placeholders::_1;
+using std::placeholders::_2;
 
 PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side){
   nh_ = nh;
@@ -76,8 +77,8 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side){
     single_wrench_frame << side << "_" << "cleat_" << wrench_topics[i];
     wrench_frames_.push_back(single_wrench_frame.str());
   }
-  scale_service_ = nh_->create_service<bitbots_msgs::srv::FootScale>(topic + "/set_foot_scale", &PressureConverter::scaleCallback);
-  zero_service_ = nh_->create_service<std_srvs::srv::Empty>(topic + "/set_foot_zero", &PressureConverter::zeroCallback);
+  scale_service_ = nh_->create_service<bitbots_msgs::srv::FootScale>(topic + "/set_foot_scale", std::bind(&PressureConverter::scaleCallback, this, _1, _2));
+  zero_service_ = nh_->create_service<std_srvs::srv::Empty>(topic + "/set_foot_zero", std::bind(&PressureConverter::zeroCallback, this, _1, _2));
 
   sub_ = nh_->create_subscription<bitbots_msgs::msg::FootPressure::SharedPtr>(topic + "/raw",
                         1,
@@ -210,23 +211,23 @@ void PressureConverter::saveYAML() {
   yaml_file.close();
 }
 
-bool PressureConverter::scaleCallback(bitbots_msgs::srv::FootScale::Request &req, bitbots_msgs::srv::FootScale::Response &resp) {
+bool PressureConverter::scaleCallback(const std::shared_ptr<bitbots_msgs::srv::FootScale::Request> req, std::shared_ptr<bitbots_msgs::srv::FootScale::Response> resp) {
   collectMessages();
   double average =
-      std::accumulate(zero_and_scale_values_[req.sensor].begin(), zero_and_scale_values_[req.sensor].end(), 0.0)
-          / zero_and_scale_values_[req.sensor].size();
+      std::accumulate(zero_and_scale_values_[req->sensor].begin(), zero_and_scale_values_[req->sensor].end(), 0.0)
+          / zero_and_scale_values_[req->sensor].size();
   RCLCPP_WARN_STREAM(nh_->get_logger(), "avg: " << average);
-  average -= zero_[req.sensor];
+  average -= zero_[req->sensor];
   RCLCPP_WARN_STREAM(nh_->get_logger(), "avg_after: " << average);
 
-  scale_[req.sensor] = req.weight / average;
+  scale_[req->sensor] = req->weight / average;
   resetZeroAndScaleValues();
   nh_->set_parameter(rclcpp::Parameter(scale_lr_, rclcpp::ParameterValue(scale_)));
   saveYAML();
   return true;
 }
 
-bool PressureConverter::zeroCallback(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp) {
+bool PressureConverter::zeroCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp) {
   collectMessages();
   for (int i = 0; i < 4; i++) {
     zero_[i] = std::accumulate(zero_and_scale_values_[i].begin(), zero_and_scale_values_[i].end(), 0.0)

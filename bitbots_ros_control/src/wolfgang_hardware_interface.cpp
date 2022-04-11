@@ -202,10 +202,9 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
   }
 }
 
-void threaded_init(std::vector<ServoBusInterface *> &port_interfaces, rclcpp::Node::SharedPtr &nh, int &success) {
+void threaded_init(std::vector<HardwareInterface *> &port_interfaces, rclcpp::Node::SharedPtr &nh, int &success) {
   success = true;
-  for (ServoBusInterface *interface: port_interfaces) {
-    // giving 2 times same node handle to keep interface of base class, dirty
+  for (HardwareInterface *interface: port_interfaces) {
     success &= interface->init();
   }
 }
@@ -237,10 +236,10 @@ bool WolfgangHardwareInterface::init() {
   return success;
 }
 
-void threaded_read(std::vector<ServoBusInterface *> &port_interfaces,
+void threaded_read(std::vector<HardwareInterface *> &port_interfaces,
                    const rclcpp::Time &t,
                    const rclcpp::Duration &dt) {
-  for (ServoBusInterface *interface: port_interfaces) {
+  for (HardwareInterface *interface: port_interfaces) {
     interface->read(t, dt);
   }
 }
@@ -259,10 +258,10 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
   servo_interface_.read(t, dt);
 }
 
-void threaded_write(std::vector<ServoBusInterface *> &port_interfaces,
+void threaded_write(std::vector<HardwareInterface *> &port_interfaces,
                     const rclcpp::Time &t,
                     const rclcpp::Duration &dt) {
-  for (ServoBusInterface *interface: port_interfaces) {
+  for (HardwareInterface *interface: port_interfaces) {
     interface->write(t, dt);
   }
 }

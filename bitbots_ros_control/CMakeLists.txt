@@ -12,13 +12,16 @@ find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(controller_interface REQUIRED)
 find_package(controller_manager REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(dynamixel_workbench_toolbox REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(realtime_tools REQUIRED)
+find_package(rosidl_typesupport_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(transmission_interface REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -52,13 +55,16 @@ ament_target_dependencies(node
         bitbots_msgs
         controller_interface
         controller_manager
+        diagnostic_msgs
         dynamixel_workbench_toolbox
         hardware_interface
         humanoid_league_msgs
         pluginlib
         rclcpp
         realtime_tools
+        rosidl_typesupport_cpp
         std_msgs
+        std_srvs
         tf2_ros
         transmission_interface
         yaml-cpp)
@@ -71,16 +77,20 @@ ament_target_dependencies(pressure_converter
         bitbots_msgs
         controller_interface
         controller_manager
+        diagnostic_msgs
         dynamixel_workbench_toolbox
         hardware_interface
         humanoid_league_msgs
         pluginlib
         rclcpp
         realtime_tools
+        rosidl_typesupport_cpp
         std_msgs
+        std_srvs
         tf2_ros
         transmission_interface
         yaml-cpp)
+target_link_libraries(pressure_converter yaml-cpp)
 
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(bitbots_buttons)

@@ -37,12 +37,10 @@ class PressureConverter {
   rclcpp::Service<bitbots_msgs::srv::FootScale>::SharedPtr scale_service_;
   void pressureCallback(const bitbots_msgs::msg::FootPressure::SharedPtr &pressure_raw);
   void resetZeroAndScaleValues();
-  bool zeroCallback(std_srvs::srv::Empty::Request &req, std_srvs::srv::Empty::Response &resp);
-  bool scaleCallback(bitbots_msgs::srv::FootScale::Request &req, bitbots_msgs::srv::FootScale::Response &resp);
+  bool zeroCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  bool scaleCallback(const std::shared_ptr<bitbots_msgs::srv::FootScale::Request> req, std::shared_ptr<bitbots_msgs::srv::FootScale::Response> resp);
   void collectMessages();
   void saveYAML();
- public:
-  PressureConverter(
 };
 
 
