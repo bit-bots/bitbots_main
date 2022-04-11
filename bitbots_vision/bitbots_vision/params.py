@@ -89,6 +89,7 @@ gen.add("ROS_white_HSV_mask_image_msg_topic", str, description="ROS topic of the
 gen.add("ROS_red_HSV_mask_image_msg_topic", str, description="ROS topic of the red HSV color detector mask debug image message")
 gen.add("ROS_blue_HSV_mask_image_msg_topic", str, description="ROS topic of the blue HSV color detector mask debug image message")
 gen.add("ROS_field_mask_image_msg_topic", str, description="ROS topic of the field mask debug image message")
+gen.add("ROS_gamestate_topic", str, description="ROS topic of the GameState message")
 
 gen.add("neural_network_type", str, description="The neural network type that should be used (yolo_opencv, yolo_darknet, yolo_ncs2, yolo_pytorch or dummy)")
 

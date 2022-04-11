@@ -4,10 +4,9 @@ import rclpy
 import yaml
 from  rclpy import logging
 from cv_bridge import CvBridge
-from geometry_msgs.msg import Point, Pose2D
-from vision_msgs.msg import BoundingBox2D
-from humanoid_league_msgs.msg import LineInformationInImage, LineSegmentInImage, Audio
-from soccer_vision_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray
+from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
+from humanoid_league_msgs.msg import Audio, GameState
+from soccer_vision_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
 
 
 """
@@ -16,6 +15,7 @@ e.g. methods to convert candidates to ROS messages or methods to modify the dyna
 """
 
 _cv_bridge = CvBridge()
+_game_state = None
 
 logger = logging.get_logger('bitbots_vision')
 
@@ -105,29 +105,19 @@ def build_goal_post_array_msg(header, goal_post_msgs):
     goal_posts_msg.posts = goal_post_msgs
     return goal_posts_msg
 
-def build_goal_post_msgs(goalposts):
+def build_goal_post_msg(goalpost):
     """
-    Builds a list of Goalpost messages
+    Builds a Goalpost message
 
-    :param goalposts: goalpost candidates
-    :return: List of Goalpost messages
+    :param goalpost: goalpost candidate
+    :return: Goalpost message
     """
-    # Create an empty list of goalposts
-    message_list = []
-    # Iterate over all goalpost candidates
-    for goalpost in goalposts:
-        # Create a empty post message
-        post_msg = Goalpost()
-        post_msg.width = float(goalpost.get_width())
-        post_msg.bottom.x = float(goalpost.get_center_x())
-        post_msg.bottom.y = float(goalpost.get_lower_right_y())
-        post_msg.top.x = float(goalpost.get_center_x())
-        post_msg.top.y = float(goalpost.get_upper_left_y())
-        if goalpost.get_rating() is not None:
-            post_msg.confidence = float(goalpost.get_rating())
-        post_msg.bb = build_bounding_box_2d(goalpost)
-        message_list.append(post_msg)
-    return message_list
+    # Create a empty post message
+    post_msg = Goalpost()
+    post_msg.bb = build_bounding_box_2d(goalpost)
+    if goalpost.get_rating() is not None:
+        post_msg.confidence = float(goalpost.get_rating())
+    return post_msg
 
 def build_balls_msg(header, balls):
     """
@@ -158,6 +148,8 @@ def build_ball_msg(ball_candidate):
     ball_msg.center.x = float(ball_candidate.get_center_x())
     ball_msg.center.y = float(ball_candidate.get_center_y())
     ball_msg.bb = build_bounding_box_2d(ball_candidate)
+    if ball_candidate.get_rating() is not None:
+            ball_msg.confidence = float(ball_candidate.get_rating())
     return ball_msg
 
 def build_obstacle_array_msg(header, obstacles):
@@ -177,27 +169,27 @@ def build_obstacle_array_msg(header, obstacles):
     obstacles_msg.robots = obstacles
     return obstacles_msg
 
-def build_obstacle_msgs(obstacle_type, detections):
+def build_obstacle_msg(obstacle, obstacle_color=None):
     """
-    Builds a list of obstacles for a certain color
+    Builds a Robot msg of a detected obstacle of a certain color
 
-    :param obstacle_type: type of the obstacles
-    :param detections: obstacle candidates
-    :return: list of Robot msgs
+    :param Candidate obstacle: Obstacle candidate
+    :param GameState.team_color obstacle_color: Color of the obstacle, defaults to None
+    :return: Robot msg
     """
-    message_list = []
-    for detected_obstacle in detections:
-        obstacle_msg = Robot()
-        obstacle_msg.team = obstacle_type
-        obstacle_msg.bb = build_bounding_box_2d(detected_obstacle)
-        if detected_obstacle.get_rating() is not None:
-            obstacle_msg.confidence = float(detected_obstacle.get_rating())
-        message_list.append(obstacle_msg)
-    return message_list
+    obstacle_msg = Robot()
+    obstacle_msg.bb = build_bounding_box_2d(obstacle)
+    obstacle_msg.player_number = Robot.TEAM_UNKNOWN 
+    obstacle_msg.team = get_team_from_robot_color(obstacle_color)
+    obstacle_msg.state = Robot.STATE_UNKNOWN
+    obstacle_msg.facing = Robot.FACING_UNKNOWN
+    if obstacle.get_rating() is not None:
+        obstacle_msg.confidence = float(obstacle.get_rating())
+    return obstacle_msg
 
-def build_field_boundary_polygon_msg(header, field_boundary):
+def build_field_boundary_msg(header, field_boundary):
     """
-    Builds a FieldBoundary ROS geometry message containing the field boundary.
+    Builds a FieldBoundary message containing the field boundary.
 
     :param header: ros header of the new message. Mostly the header of the image
     :param field_boundary: List of tuples containing the field boundary points.
@@ -206,32 +198,31 @@ def build_field_boundary_polygon_msg(header, field_boundary):
     # Create message
     field_boundary_msg = FieldBoundary()
     # Add header
-    #field_boundary_msg.header = header # TODO use header again
+    field_boundary_msg.header = header
     # Add field boundary points
     for point in field_boundary:
-        p = Point()
+        p = Point2D()
         p.x = float(point[0])
         p.y = float(point[1])
         field_boundary_msg.points.append(p)
-
     return field_boundary_msg
 
-def build_line_information_in_image_msg(header, line_segments):
+def build_marking_array_msg(header, marking_segments):
     """
-    Builds a LineInformationInImage that consists of line segments
+    Builds a MarkingArray message that consists of marking segments.
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param line_segments: A list of LineSegmentInImage messages
-    :return: Final LineInformationInImage message
+    :param marking_segments: A list of MarkingSegment messages
+    :return: Final MarkingArray message
     """
     # Create message
-    line_msg = LineInformationInImage()
+    marking_array_msg = MarkingArray()
     # Set header values
-    line_msg.header.frame_id = header.frame_id
-    line_msg.header.stamp = header.stamp
+    marking_array_msg.header.frame_id = header.frame_id
+    marking_array_msg.header.stamp = header.stamp
     # Set line segments
-    line_msg.segments = line_segments
-    return line_msg
+    marking_array_msg.segments = marking_segments
+    return marking_array_msg
 
 def build_image_msg(header, image, desired_encoding="passthrough"):
     """
@@ -246,22 +237,22 @@ def build_image_msg(header, image, desired_encoding="passthrough"):
     image_msg.header = header
     return image_msg
 
-def convert_line_points_to_line_segment_msgs(line_points):
+def convert_line_points_to_marking_segment_msgs(line_points):
     """
-    Converts a list of linepoints in the form [(x,y), ...] into a list of LineSegmentInImage messages
+    Converts a list of linepoints in the form [(x,y), ...] into a list of MarkingSegmentInImage messages.
 
     :param line_points: A list of linepoints in the form [(x,y), ...]
-    :return: A list of LineSegmentInImage messages
+    :return: A list of MarkingSegment messages
     """
-    line_segments = []
+    marking_segments = []
     for line_point in line_points:
-        # Create LineSegmentInImage message
-        line_segment = LineSegmentInImage()
-        line_segment.start.x = float(line_point[0])
-        line_segment.start.y = float(line_point[1])
-        line_segment.end = line_segment.start
-        line_segments.append(line_segment)
-    return line_segments
+        # Create MarkingSegment message
+        marking_segment = MarkingSegment()
+        marking_segment.start.x = float(line_point[0])
+        marking_segment.start.y = float(line_point[1])
+        marking_segment.end = marking_segment.start
+        marking_segments.append(marking_segment)
+    return marking_segments
 
 def speak(string, speech_publisher):
     """
@@ -345,3 +336,31 @@ def publish_vision_config(config, publisher):
     msg.data = yaml.dump(config_cleaned)
     # Publish config
     publisher.publish(msg)
+
+def gamestate_callback(gamestate_msg):
+    """
+    This method is called by the GameState msg subscriber.
+    """
+    _game_state = gamestate_msg
+
+def get_team_from_robot_color(color):
+    """
+    Maps the detected robot color to the current team.
+    If the color is the same as the current team, returns own team, else returns opponent team.
+
+    :param GameState.team_color color: Robot color
+    :return Robot.team: Robot's team
+    """
+    if color not in [GameState.BLUE, GameState.RED]:  # If color is not known, we can just return unknown
+        return Robot.TEAM_UNKNOWN
+
+    # Color is known and we have to first figure out the own color
+    # Get own team color
+    own_color = None
+    if _game_state is not None:
+        own_color = _game_state.team_color
+
+    if color == own_color:  # Robot is in own team, if same color
+        return Robot.TEAM_OWN
+    else:  # Robot is not same color, therefore it is from the opponent's team
+        return Robot.TEAM_OPPONENT
