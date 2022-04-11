@@ -109,9 +109,13 @@ ament_export_dependencies(transmission_interface)
 
 install(TARGETS node
         DESTINATION lib/${PROJECT_NAME})
+install(TARGETS pressure_converter
+        DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY config
         DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch
         DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY scripts/
+        DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

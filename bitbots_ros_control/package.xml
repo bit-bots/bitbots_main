@@ -24,11 +24,13 @@
   <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>humanoid_league_speaker</depend>
   <depend>pluginlib</depend>
   <depend>realtime_tools</depend>
   <depend>ros_control</depend>
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
+  <depend>system_monitor</depend>
   <depend>transmission_interface</depend>
   <depend>yaml-cpp</depend>
 
