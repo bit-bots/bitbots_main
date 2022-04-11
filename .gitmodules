@@ -104,3 +104,6 @@
 	path = lib/bio_ik
 	branch = ros2
 	url = git@github.com:SammyRamone/bio_ik.git
+[submodule "lib/vision_msgs"]
+	path = lib/vision_msgs
+	url = git@github.com:ros-perception/vision_msgs.git
