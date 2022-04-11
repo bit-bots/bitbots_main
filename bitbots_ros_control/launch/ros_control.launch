@@ -9,11 +9,11 @@
     <!--<arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 0"/>
     <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>-->
 
-    <node pkg="bitbots_ros_control" exec="node" name="ros_control" output="screen"> <!-- launch-prefix="$(var taskset)">-->
+    <node pkg="bitbots_ros_control" exec="node" output="screen"> <!-- launch-prefix="$(var taskset)">-->
         <param from="$(find-pkg-share bitbots_ros_control)/config/wolfgang.yaml" />
-        <param name="/ros_control/torqueless_mode" value="$(var torqueless_mode)"/>
-        <param name="/ros_control/only_imu" value="$(var only_imu)"/>
-        <param name="/ros_control/only_pressure" value="$(var only_pressure)"/>
+        <param name="torqueless_mode" value="$(var torqueless_mode)"/>
+        <param name="only_imu" value="$(var only_imu)"/>
+        <param name="only_pressure" value="$(var only_pressure)"/>
     </node>
 
     <!--<group if="$(var use_game_settings)">

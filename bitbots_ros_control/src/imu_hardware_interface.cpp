@@ -85,14 +85,10 @@ bool ImuHardwareInterface::init() {
   }
 
   //set filter values differently if specified in the config and write them
-  nh_->declare_parameter<bool>("imu/do_adaptive_gain", do_adaptive_gain_);
-  do_adaptive_gain_ = nh_->get_parameter("imu/do_adaptive_gain").as_bool();
-  nh_->declare_parameter<bool>("imu/do_bias_estimation", do_bias_estimation_);
-  do_bias_estimation_ = nh_->get_parameter("imu/do_bias_estimation").as_bool();
-  nh_->declare_parameter<double>("imu/accel_gain", accel_gain_);
-  accel_gain_ = nh_->get_parameter("imu/accel_gain").as_double();
-  nh_->declare_parameter<double>("imu/bias_alpha", bias_alpha_);
-  bias_alpha_ = nh_->get_parameter("imu/bias_alpha").as_double();
+  do_adaptive_gain_ = nh_->get_parameter("imu.do_adaptive_gain").as_bool();
+  do_bias_estimation_ = nh_->get_parameter("imu.do_bias_estimation").as_bool();
+  accel_gain_ = nh_->get_parameter("imu.accel_gain").as_double();
+  bias_alpha_ = nh_->get_parameter("imu.bias_alpha").as_double();
 
   write_complementary_filter_params_ = true;
   write(rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9 * 0));
@@ -124,7 +120,7 @@ void ImuHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &d
       orientation_[3] = dxlMakeFloat(data_ + 36);
     }
   } else {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read IMU");
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read IMU");
     read_successful = false;
   }
 

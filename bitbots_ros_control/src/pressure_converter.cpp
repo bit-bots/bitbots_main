@@ -64,6 +64,8 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side){
   save_zero_and_scale_values_ = false;
   resetZeroAndScaleValues();
 
+  RCLCPP_INFO_STREAM(nh_->get_logger(), "reached init publisher");
+
   filtered_pub_ = nh_->create_publisher<bitbots_msgs::msg::FootPressure>(topic + "/filtered", 1);
   cop_pub_ = nh_->create_publisher<geometry_msgs::msg::PointStamped>("/" + cop_lr_, 1);
   std::string wrench_topics[] = {"l_front", "l_back", "r_front", "r_back", "cop"};

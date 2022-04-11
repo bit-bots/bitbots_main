@@ -35,7 +35,7 @@ void ButtonHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration
     msg.button3 = data_[2];
     button_pub_->publish(msg);
   } else {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read Buttons");
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read Buttons");
     read_successful = false;
   }
 

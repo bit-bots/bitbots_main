@@ -31,9 +31,8 @@ bool DynamixelServoHardwareInterface::init() {
       "/DynamixelController/command", 1, std::bind(&DynamixelServoHardwareInterface::commandCb,
                                                    this, std::placeholders::_1));
   pwm_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/servo_PWM", 10);
-  joint_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/joint_state", 10);
+  joint_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
 
-  nh_->declare_parameter<bool>("torqueless_mode", false);
   torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
 
   // init merged vectors for controller
@@ -63,8 +62,7 @@ bool DynamixelServoHardwareInterface::init() {
   }
 
   std::string control_mode;
-  nh_->declare_parameter<std::string>("servos/control_mode", "position");
-  control_mode = nh_->get_parameter("servos/control_mode").as_string();
+  control_mode = nh_->get_parameter("servos.control_mode").as_string();
   RCLCPP_INFO(nh_->get_logger(), "Control mode: %s", control_mode.c_str());
   if (!stringToControlMode(nh_, control_mode, control_mode_)) {
     RCLCPP_ERROR_STREAM(nh_->get_logger(), "Unknown control mode'" << control_mode << "'.");

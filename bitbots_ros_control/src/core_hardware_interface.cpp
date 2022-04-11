@@ -91,7 +91,7 @@ void CoreHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &
       vdxl_pub_->publish(VDXL_);
       current_pub_->publish(current_);
     } else {
-      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 3.0, "Could not read CORE sensor");
+      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 3000, "Could not read CORE sensor");
       read_successful = false;
     }
 

@@ -39,7 +39,7 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
       current_pressure_[i].push_back((double) pres_d);
     }
   } else {
-    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 3.0, "Could not read %s", name_.c_str());
+    RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 3000, "Could not read %s", name_.c_str());
     read_successful = false;
   }
 

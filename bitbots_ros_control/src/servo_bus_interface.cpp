@@ -20,8 +20,8 @@ bool ServoBusInterface::init() {
   read_vt_counter_ = 0;
   switch_individual_torque_ = false;
 
-  nh_->declare_parameter<bool>("torqueless_mode", false);
   torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
+
 
   // Load dynamixel config from parameter server
   if (!loadDynamixels()) {
@@ -78,14 +78,12 @@ bool ServoBusInterface::init() {
 
 
   // write ROM and RAM values if wanted
-  nh_->declare_parameter<bool>("servos/set_ROM_RAM", false);
-  if (nh_->get_parameter("servos/set_ROM_RAM").as_bool()) {
+  if (nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
     if (!writeROMRAM()) {
       RCLCPP_WARN(nh_->get_logger(), "Couldn't write ROM and RAM values to all servos.");
     }
   }
-  nh_->declare_parameter<bool>("servos/auto_torque", false);
-  writeTorque(nh_->get_parameter("servos/auto_torque").as_bool());
+  writeTorque(nh_->get_parameter("servos.auto_torque").as_bool());
   return true;
 }
 
@@ -117,21 +115,17 @@ bool ServoBusInterface::loadDynamixels() {
 
   // get control mode
   std::string control_mode;
-  control_mode = nh_->get_parameter("servos/control_mode").as_string();
+  control_mode = nh_->get_parameter("servos.control_mode").as_string();
   RCLCPP_DEBUG(nh_->get_logger(), "Control mode: %s", control_mode.c_str());
   if (!stringToControlMode(nh_, control_mode, control_mode_)) {
     return false;
   }
 
   // get values to read
-  nh_->declare_parameter<bool>("servos/read_position", true);
-  read_position_ = nh_->get_parameter("servos/read_position").as_bool();
-  nh_->declare_parameter<bool>("servos/read_velocity", false);
-  read_velocity_ = nh_->get_parameter("servos/read_velocity").as_bool();
-  nh_->declare_parameter<bool>("servos/read_effort", false);
-  read_effort_ = nh_->get_parameter("servos/read_effort").as_bool();
-  nh_->declare_parameter<bool>("servos/read_pwm", false);
-  read_pwm_ = nh_->get_parameter("servos/read_pwm").as_bool();
+  read_position_ = nh_->get_parameter("servos.read_position").as_bool();
+  read_velocity_ = nh_->get_parameter("servos.read_velocity").as_bool();
+  read_effort_ = nh_->get_parameter("servos.read_effort").as_bool();
+  read_pwm_ = nh_->get_parameter("servos.read_pwm").as_bool();
 
   // iterate over all servos and save the information
   // the wolfgang hardware interface already loaded them into the driver by pinging
@@ -165,7 +159,7 @@ bool ServoBusInterface::writeROMRAM() {
   // iterate over the parameters and set each one
   for (const std::string &register_name: rom_ram_parameter_list.names) {
     int register_value;
-    nh_->get_parameter("servos/ROM_RAM/" + register_name, register_value);
+    nh_->get_parameter("servos.ROM_RAM." + register_name, register_value);
     RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on all servos to %d", register_name.c_str(), register_value);
 
     int *values = (int *) malloc(joint_names_.size()*sizeof(int));
@@ -191,7 +185,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
         current_position_[num] += joint_mounting_offsets_[num] + joint_offsets_[num];
       }
     } else {
-      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read all current joint values!");
+      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read all current joint values!");
       read_successful = false;
     }
   } else {
@@ -201,21 +195,21 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
           current_position_[num] += joint_mounting_offsets_[num] + joint_offsets_[num];
         }
       } else {
-        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current joint position!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read current joint position!");
         driver_->reinitSyncReadHandler("Present_Position");
         read_successful = false;
       }
     }
     if (read_velocity_) {
       if (!syncReadVelocities()) {
-        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current joint velocity!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read current joint velocity!");
         driver_->reinitSyncReadHandler("Present_Velocity");
         read_successful = false;
       }
     }
     if (read_effort_) {
       if (!syncReadEfforts()) {
-        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current joint effort!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read current joint effort!");
         driver_->reinitSyncReadHandler("Present_Current");
         read_successful = false;
       }
@@ -225,7 +219,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
   if (read_pwm_) {
     if (!syncReadPWMs()) {
       driver_->reinitSyncReadHandler("Present_PWM");
-      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current PWM!");
+      RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read current PWM!");
       read_successful = false;
     }
   }
@@ -236,12 +230,12 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
       if (!syncReadVoltageAndTemp()) {
         RCLCPP_ERROR_THROTTLE(nh_->get_logger(),
                               *nh_->get_clock(),
-                              1.0,
+                              1000,
                               "Couldn't read current input volatage and temperature!");
         success = false;
       }
       if (!syncReadError()) {
-        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read current error bytes!");
+        RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read current error bytes!");
         success = false;
         driver_->reinitSyncReadHandler("Hardware_Error_Status");
       }

@@ -64,6 +64,7 @@ void LedsHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &
 
 void LedsHardwareInterface::setLeds(const std::shared_ptr<bitbots_msgs::srv::Leds::Request> req,
                                     std::shared_ptr<bitbots_msgs::srv::Leds::Response> resp) {
+  RCLCPP_WARN_STREAM(nh_->get_logger(), "service");
   if (req->leds.size()!=leds_.size()) {
     RCLCPP_WARN_STREAM(nh_->get_logger(), "You are trying to set " << req->leds.size() << " leds while the board has "
                                                                    << leds_.size() << " leds.");

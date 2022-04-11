@@ -17,7 +17,8 @@ int main(int argc, char *argv[]) {
 
   // initialize ros
   rclcpp::init(argc, argv);
-  rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("wolfgang_hardware_interface");
+  rclcpp::NodeOptions options = rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true).allow_undeclared_parameters(true);
+  rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("wolfgang_hardware_interface", options);
 
   // create hardware interfaces
   bitbots_ros_control::WolfgangHardwareInterface hw(nh);
@@ -41,7 +42,6 @@ int main(int argc, char *argv[]) {
   rclcpp::Duration period = nh->get_clock()->now() - current_time;
   bool first_update = true;
   float control_loop_hz;
-  nh->declare_parameter<float>("control_loop_hz", 1000);
   nh->get_parameter("control_loop_hz", control_loop_hz);
   rclcpp::Rate rate(control_loop_hz);
   rclcpp::Time stop_time;

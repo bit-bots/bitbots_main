@@ -61,13 +61,13 @@ def set_red():
         red_request.leds = orange_leds_array
     else:
         red_request.leds = red_leds_array
-    previous_req.leds = led_serv(red_request).previous_leds
+    previous_req.leds = led_serv.call(red_request).previous_leds
 
 
 def reset_leds():
     global leds_red, previous_req
     leds_red = False
-    led_serv(previous_req)
+    led_serv.call(previous_req)
 
 
 # wait a moment on startup, otherwise we will think there is a problem while ros control is still booting

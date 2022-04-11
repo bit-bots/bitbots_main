@@ -1,4 +1,4 @@
-ros_control:
+wolfgang_hardware_interface:
   ros__parameters:
     control_loop_hz: 500.0
 
@@ -77,3 +77,71 @@ ros_control:
         model_number: 0xABBA
         read_rate: 100
         interface_type: CORE
+      LEDs_core:
+        id: 42
+        model_number: 0xABBA
+        interface_type: LED
+        number_of_LEDs: 3
+        start_number: 0
+      IMU_torso:
+        id: 241
+        topic: imu/data
+        frame: imu_frame
+        model_number: 0xBAFF
+        interface_type: IMU
+      Buttons:
+        id: 241
+        model_number: 0xBAFF
+        interface_type: Button
+        topic: /buttons
+        read_rate: 50
+      LEDs:
+        id: 241
+        model_number: 0xBAFF
+        interface_type: LED
+        number_of_LEDs: 3
+        start_number: 3
+      RShoulderPitch:
+        id: 1
+        model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
+      LShoulderPitch:
+        id: 2
+        model_number: 311
+      RShoulderRoll:
+        id: 3
+        model_number: 311
+      LShoulderRoll:
+        id: 4
+        model_number: 311
+      RElbow:
+        id: 5
+        model_number: 311
+      LElbow:
+        id: 6
+        model_number: 311
+      RHipYaw:
+        id: 7
+        model_number: 321
+      LHipYaw:
+        id: 8
+        model_number: 321
+      RHipRoll:
+        id: 9
+        model_number: 321
+      LHipRoll:
+        id: 10
+        model_number: 321
+      RHipPitch:
+        id: 11
+        model_number: 321
+      LHipPitch:
+        id: 12
+        model_number: 321
+      HeadPan:
+        id: 19
+        model_number: 311
+      HeadTilt:
+        id: 20
+        model_number: 311
