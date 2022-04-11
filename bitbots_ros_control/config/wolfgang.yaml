@@ -106,6 +106,14 @@ wolfgang_hardware_interface:
         model_number: 311
         mounting_offset: 0.0
         joint_offset: 0.0
+      LeftFoot:
+        id: 102
+        topic: /foot_pressure_left/raw
+        model_number: 0
+      RightFoot:
+        id: 101
+        topic: /foot_pressure_right/raw
+        model_number: 0
       LShoulderPitch:
         id: 2
         model_number: 311
@@ -138,6 +146,24 @@ wolfgang_hardware_interface:
         model_number: 321
       LHipPitch:
         id: 12
+        model_number: 321
+      RKnee:
+        id: 13
+        model_number: 1100
+      LKnee:
+        id: 14
+        model_number: 1100
+      RAnklePitch:
+        id: 15
+        model_number: 321
+      LAnklePitch:
+        id: 16
+        model_number: 321
+      RAnkleRoll:
+        id: 17
+        model_number: 321
+      LAnkleRoll:
+        id: 18
         model_number: 321
       HeadPan:
         id: 19
