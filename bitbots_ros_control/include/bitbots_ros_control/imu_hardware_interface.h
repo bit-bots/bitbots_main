@@ -6,6 +6,7 @@
 
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 
 #include <dynamixel_driver.h>
 
@@ -92,7 +93,9 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface{
                             std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Response> resp);
   void setAccelCalibrationThreshold(const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
                                     std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
+  sensor_msgs::msg::Imu imu_msg_;
   int diag_counter_;
 };
 }

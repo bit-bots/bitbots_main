@@ -20,6 +20,8 @@ ImuHardwareInterface::ImuHardwareInterface(rclcpp::Node::SharedPtr nh,
   frame_ = frame;
   name_ = name;
   diag_counter_ = 0;
+  imu_msg_ = sensor_msgs::msg::Imu();
+  imu_msg_.header.frame_id = "imu_frame";
 }
 
 bool ImuHardwareInterface::init() {
@@ -62,6 +64,7 @@ bool ImuHardwareInterface::init() {
   set_accel_calib_threshold_service_ = nh_->create_service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>(
       "/imu/set_accel_calibration_threshold", std::bind(&ImuHardwareInterface::setAccelCalibrationThreshold, this, _1, _2));
 
+  imu_pub_ = nh_->create_publisher<sensor_msgs::msg::Imu>("/imu/data", 10);
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
 
   // read the current values in the IMU module so that they can later be displayed in diagnostic message
@@ -124,6 +127,19 @@ void ImuHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &d
     RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "Couldn't read IMU");
     read_successful = false;
   }
+
+  imu_msg_.header.stamp = nh_->get_clock()->now();
+  imu_msg_.angular_velocity.x = angular_velocity_[0];
+  imu_msg_.angular_velocity.y = angular_velocity_[1];
+  imu_msg_.angular_velocity.z = angular_velocity_[2];
+  imu_msg_.linear_acceleration.x = linear_acceleration_[0];
+  imu_msg_.linear_acceleration.y = linear_acceleration_[1];
+  imu_msg_.linear_acceleration.z = linear_acceleration_[2];
+  imu_msg_.orientation.x = orientation_[0];
+  imu_msg_.orientation.y = orientation_[1];
+  imu_msg_.orientation.z = orientation_[2];
+  imu_msg_.orientation.w = orientation_[3];
+  imu_pub_->publish(imu_msg_);
 
   // publish diagnostic messages each 100 frames
   if (diag_counter_ % 100 == 0) {
