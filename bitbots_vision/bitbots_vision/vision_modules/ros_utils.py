@@ -21,7 +21,7 @@ logger = logging.get_logger('bitbots_vision')
 
 general_parameters = []
 
-def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, queue_size=1):
+def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, qos_profile=1, callback_group=None):
     """
     Creates or updates a publisher
 
@@ -31,7 +31,14 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
     :param publisher_object: The python object, that represents the publisher
     :param topic_key: The name of the topic variable in the config dict
     :param data_class: Data type class for ROS messages of the topic we want to subscribe
-    :param queue_size: The ROS message queue size
+    :param qos_profile: A QoSProfile or a history depth to apply to the publisher.
+        In the case that a history depth is provided, the QoS history is set to
+        KEEP_LAST, the QoS history depth is set to the value
+        of the parameter, and all other QoS settings are set to their default values.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1258
+    :param callback_group: The callback group for the publisher's event handlers.
+        If ``None``, then the node's default callback group is used.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1262
     :return: adjusted publisher object
     """
     # Check if topic parameter has changed
@@ -40,11 +47,12 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
         publisher_object = node.create_publisher(
             data_class,
             new_config[topic_key],
-            queue_size)
+            qos_profile,
+            callback_group=callback_group)
         logger.debug("Registered new publisher to " + str(new_config[topic_key]))
     return publisher_object
 
-def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, queue_size=1):
+def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, qos_profile=1, callback_group=None):
     """
     Creates or updates a subscriber
 
@@ -55,10 +63,14 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
     :param topic_key: The name of the topic variable in the config dict
     :param data_class: Data type class for ROS messages of the topic we want to subscribe
     :param callback: The subscriber callback function
-    :param callback_args: Additional arguments for the callback method
-    :param queue_size: The ROS message queue size
-    :param buff_size: The ROS message buffer size
-    :param tcp_nodelay: If True, requests tcp_nodelay from publisher
+    :param qos_profile: A QoSProfile or a history depth to apply to the subscription.
+        In the case that a history depth is provided, the QoS history is set to
+        KEEP_LAST, the QoS history depth is set to the value
+        of the parameter, and all other QoS settings are set to their default values.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1335
+    :param callback_group: The callback group for the subscription. If ``None``, then the
+        nodes default callback group is used.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1339
     :return: adjusted subscriber object
     """
     # Check if topic parameter has changed
@@ -68,7 +80,8 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
             data_class,
             new_config[topic_key],
             callback,
-            queue_size)
+            qos_profile,
+            callback_group=callback_group)
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 

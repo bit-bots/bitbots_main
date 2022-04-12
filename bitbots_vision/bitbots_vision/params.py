@@ -77,7 +77,6 @@ gen.add("vision_blind_threshold", int, description="Brightness threshold under w
 
 gen.add("ROS_audio_msg_topic", str, description="ROS topic of the audio message")
 gen.add("ROS_img_msg_topic", str, description="ROS topic of the image message")
-gen.add("ROS_img_msg_queue_size", int, description="ROS queue size for the image message", min=1, max=20)
 gen.add("ROS_field_boundary_msg_topic", str, description="ROS topic of the field boundary message")
 gen.add("ROS_ball_msg_topic", str, description="ROS topic of the ball message")
 gen.add("ROS_goal_posts_msg_topic", str, description="ROS topic of the goal posts message")
