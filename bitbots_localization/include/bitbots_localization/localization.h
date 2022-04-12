@@ -9,22 +9,22 @@
 #include <memory>
 #include <iterator>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <std_srvs/Trigger.h>
-#include <dynamic_reconfigure/server.h>
+
 #include <Eigen/Core>
 
-#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/MarkerArray.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/Point32.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/CameraInfo.h>
 
@@ -35,7 +35,7 @@
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/message_filter.h>
 #include <message_filters/subscriber.h>
@@ -46,7 +46,7 @@
 
 #include <humanoid_league_msgs/LineInformationRelative.h>
 #include <humanoid_league_msgs/LineSegmentRelative.h>
-#include <humanoid_league_msgs/PoseWithCertaintyArray.h>
+#include <humanoid_league_msgs/msg/pose_with_certainty_array.hpp>
 
 #include <bitbots_localization/map.h>
 #include <bitbots_localization/LocalizationConfig.h>
@@ -54,7 +54,7 @@
 #include <bitbots_localization/MotionModel.h>
 #include <bitbots_localization/StateDistribution.h>
 #include <bitbots_localization/Resampling.h>
-#include <bitbots_localization/RobotState.h>
+#include <bitbots_localization/msg/robot_state.hpp>
 
 #include <bitbots_localization/ResetFilter.h>
 #include <bitbots_localization/SetPaused.h>
@@ -114,13 +114,13 @@ class Localization {
    * Callback for the line point cloud messurements
    * @param msg Message containing the line point cloud.
    */
-  void LinePointcloudCallback(const sm::PointCloud2 &msg);
+  void LinePointcloudCallback(const sm::msg::PointCloud2 &msg);
 
   /**
    * Callback for goal posts messurements
    * @param msg Message containing the goal posts.
    */
-  void GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg); //TODO
+  void GoalPostsCallback(const hlm::msg::PoseWithCertaintyArray &msg); //TODO
 
   /**
    * Callback for the relative field boundary messurements
@@ -157,36 +157,36 @@ class Localization {
    */
   void reset_filter(int distribution, double x, double y, double angle);
 
-  ros::NodeHandle nh_;
-  ros::NodeHandle pnh_;
+  
+  
 
  private:
-  ros::Subscriber line_subscriber_;
-  ros::Subscriber line_point_cloud_subscriber_;
-  ros::Subscriber goal_subscriber_;
-  ros::Subscriber fieldboundary_subscriber_;
-  ros::Subscriber corners_subscriber_;
-  ros::Subscriber t_crossings_subscriber_;
-  ros::Subscriber crosses_subscriber_;
-  ros::Subscriber fieldboundary_in_image_subscriber_;
+  rclcpp::Subscription line_subscriber_;
+  rclcpp::Subscription line_point_cloud_subscriber_;
+  rclcpp::Subscription goal_subscriber_;
+  rclcpp::Subscription fieldboundary_subscriber_;
+  rclcpp::Subscription corners_subscriber_;
+  rclcpp::Subscription t_crossings_subscriber_;
+  rclcpp::Subscription crosses_subscriber_;
+  rclcpp::Subscription fieldboundary_in_image_subscriber_;
 
-  ros::Publisher pose_publisher_;
-  ros::Publisher pose_with_covariance_publisher_;
-  ros::Publisher pose_particles_publisher_;
-  ros::Publisher lines_publisher_;
-  ros::Publisher line_ratings_publisher_;
-  ros::Publisher goal_ratings_publisher_;
-  ros::Publisher fieldboundary_ratings_publisher_;
-  ros::Publisher corner_ratings_publisher_;
-  ros::Publisher t_crossings_ratings_publisher_;
-  ros::Publisher crosses_ratings_publisher_;
+  rclcpp::Publisher pose_publisher_;
+  rclcpp::Publisher pose_with_covariance_publisher_;
+  rclcpp::Publisher pose_particles_publisher_;
+  rclcpp::Publisher lines_publisher_;
+  rclcpp::Publisher line_ratings_publisher_;
+  rclcpp::Publisher goal_ratings_publisher_;
+  rclcpp::Publisher fieldboundary_ratings_publisher_;
+  rclcpp::Publisher corner_ratings_publisher_;
+  rclcpp::Publisher t_crossings_ratings_publisher_;
+  rclcpp::Publisher crosses_ratings_publisher_;
 
   ros::ServiceServer reset_service_;
   ros::ServiceServer pause_service_;
-  ros::Timer publishing_timer_;
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener;
-  tf2_ros::TransformBroadcaster br;
+  rclcpp::Timer publishing_timer_;
+  std::unique_ptr<tf2_ros::Buffer> tfBuffer;
+  tf2_ros::msg::TransformListener tfListener;
+  tf2_ros::msg::TransformBroadcaster br;
 
   std::shared_ptr<pf::ImportanceResampling<RobotState>> resampling_;
   std::shared_ptr<RobotPoseObservationModel> robot_pose_observation_model_;
@@ -205,28 +205,28 @@ class Localization {
   bool resampled_ = false;
 
   hlm::LineInformationRelative line_information_relative_;
-  sm::PointCloud2 line_pointcloud_relative_;
-  hlm::PoseWithCertaintyArray goal_posts_relative_;
+  sm::msg::PointCloud2 line_pointcloud_relative_;
+  hlm::msg::PoseWithCertaintyArray goal_posts_relative_;
   gm::PolygonStamped fieldboundary_relative_;
   sm::CameraInfo cam_info_;
   std::vector<gm::PolygonStamped> fieldboundary_in_image_;
 
-  ros::Time last_stamp_lines = ros::Time(0);
-  ros::Time last_stamp_lines_pc = ros::Time(0);
-  ros::Time last_stamp_goals = ros::Time(0);
-  ros::Time last_stamp_fb_points = ros::Time(0);
-  ros::Time localization_tf_last_published_time_ = ros::Time(0);
-  ros::Time map_odom_tf_last_published_time_ = ros::Time(0);
+  rclcpp::Time last_stamp_lines = rclcpp::Time(0);
+  rclcpp::Time last_stamp_lines_pc = rclcpp::Time(0);
+  rclcpp::Time last_stamp_goals = rclcpp::Time(0);
+  rclcpp::Time last_stamp_fb_points = rclcpp::Time(0);
+  rclcpp::Time localization_tf_last_published_time_ = rclcpp::Time(0);
+  rclcpp::Time map_odom_tf_last_published_time_ = rclcpp::Time(0);
 
   std::string odom_frame_, base_footprint_frame_, map_frame_, publishing_frame_;
 
-  std::vector<gm::Point32> interpolateFieldboundaryPoints(gm::Point32 point1, gm::Point32 point2);
+  std::vector<gm::msg::Point32> interpolateFieldboundaryPoints(gm::msg::Point32 point1, gm::msg::Point32 point2);
 
   /**
    * Runs the filter for one step
    * @param e ROS Timer event
    */
-  void run_filter_one_step(const ros::TimerEvent &e);
+  void run_filter_one_step(const rclcpp::TimerEvent &e);
 
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
@@ -236,7 +236,7 @@ class Localization {
   std::shared_ptr<Map> crosses_map_;
 
   gmms::GaussianMixtureModel pose_gmm_;
-  std::vector<gm::Point32> line_points_;
+  std::vector<gm::msg::Point32> line_points_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
   bl::LocalizationConfig config_;
   std_msgs::ColorRGBA marker_color;
@@ -273,14 +273,14 @@ class Localization {
    * @param scale scale of the markers
    * @param name name of the class
    * @param map map for this class
-   * @param publisher ros publisher for the type visualization_msgs::Marker
+   * @param publisher ros publisher for the type visualization_msgs::msg::Marker
    */
   void publish_debug_rating(
     std::vector<std::pair<double, double>>    measurements,
     double scale,
     const char name[24],
     std::shared_ptr<Map> map,
-    ros::Publisher &publisher);
+    rclcpp::Publisher &publisher);
 
   /**
    * Updates the messurements for all classes
@@ -292,12 +292,12 @@ class Localization {
    */
   void getMotion();
 
-  geometry_msgs::TransformStamped transformOdomBaseLink;
+  geometry_msgs::msg::TransformStamped transformOdomBaseLink;
   bool initialization = true;
 
-  geometry_msgs::Vector3 linear_movement_;
-  geometry_msgs::Vector3 rotational_movement_;
-  geometry_msgs::TransformStamped previousOdomTransform_;
+  geometry_msgs::msg::Vector3 linear_movement_;
+  geometry_msgs::msg::Vector3 rotational_movement_;
+  geometry_msgs::msg::TransformStamped previousOdomTransform_;
   bool new_linepoints_ = false;
   bool robot_moved = false;
   int timer_callback_count_ = 0;

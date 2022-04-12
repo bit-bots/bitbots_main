@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_test.test_case import WebotsTestCase
 from bitbots_test.mocks import MockSubscriber
 from geometry_msgs.msg import PoseWithCovarianceStamped

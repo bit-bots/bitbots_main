@@ -1,4 +1,5 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 import numpy
 import tf2_ros as tf2
 from std_msgs.msg import Header
@@ -15,10 +16,10 @@ class LocalizationBlackboard:
         self.initialized = False
 
         # tf stuff
-        self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(10))
+        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10))
         self.tf_listener = tf2.TransformListener(self.tf_buffer)
-        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
-        self.base_footprint_frame = rospy.get_param('~base_footprint_frame', 'base_footprint')
+        self.odom_frame = self.get_parameter(''~odom_frame'').get_parameter_value().double_value
+        self.base_footprint_frame = self.get_parameter(''~base_footprint_frame'').get_parameter_value().double_value
 
         # Pose
         self.pose_timeout_duration = rospy.Time(10)

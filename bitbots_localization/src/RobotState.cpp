@@ -4,7 +4,7 @@
 
 #include "../include/bitbots_localization/RobotState.h"
 
-RobotState::RobotState() :
+RobotState::msg::RobotState() :
     is_explorer_(false),
     m_XPos(0.0),
     m_YPos(0.0),
@@ -13,7 +13,7 @@ RobotState::RobotState() :
 
 }
 
-RobotState::RobotState(double x, double y, double T) :
+RobotState::msg::RobotState(double x, double y, double T) :
     is_explorer_(false),
     m_XPos(x),
     m_YPos(y),
@@ -126,15 +126,15 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
   }
 }
 
-visualization_msgs::Marker RobotState::renderMarker(std::string n_space,
+visualization_msgs::msg::Marker RobotState::renderMarker(std::string n_space,
                                                     std::string frame,
-                                                    ros::Duration lifetime,
+                                                    rclcpp::Duration lifetime,
                                                     std_msgs::ColorRGBA color) const {
-  visualization_msgs::Marker msg;
-  msg.header.stamp = ros::Time::now();
+  visualization_msgs::msg::Marker msg;
+  msg.header.stamp = this->get_clock()->now()();
   msg.header.frame_id = frame;
-  msg.action = visualization_msgs::Marker::ADD;
-  msg.type = visualization_msgs::Marker::ARROW;
+  msg.action = visualization_msgs::msg::Marker::ADD;
+  msg.type = visualization_msgs::msg::Marker::ARROW;
   tf2::Quaternion q;
   q.setEuler(0, 0, getTheta());
   q.normalize();

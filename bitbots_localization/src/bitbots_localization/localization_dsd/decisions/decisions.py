@@ -1,4 +1,5 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 import numpy as np
 import tf2_ros as tf2
 from std_msgs.msg import Header
@@ -286,7 +287,7 @@ class WalkedSinceLastInit(AbstractDecisionElement):
                 self.blackboard.base_footprint_frame,
                 rospy.Time(0))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-            rospy.logerr(f"Reset localization to last init state, because we got up and have no tf: {e}")
+            self.get_logger().error(f"Reset localization to last init state, because we got up and have no tf: {e}")
             # We assume that we didn't walk if the tf lookup fails
             return "YES"
 

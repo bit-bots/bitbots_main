@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from humanoid_league_msgs.msg import GameState, RobotControlState
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -13,15 +14,15 @@ class LocalizationHandler(object):
     def __init__(self):
 
         # --- Initialize Node ---
-        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
-        rospy.init_node('localization_handler', log_level=log_level, anonymous=False)
-        rospy.sleep(0.1)  # Otherwise messages will get lost, bc the init is not finished
-        rospy.loginfo("Starting localization handler")
+        log_level = rospy.DEBUG if self.get_parameter('"debug_active"').get_parameter_value().double_value else rospy.INFO
+        rclpy.init(args=None)
+        self.get_clock().sleep_for(Duration(seconds=0.1)  # Otherwise messages will get lost, bc the init is not finished
+        self.get_logger().info("Starting localization handler")
 
         # stack machine
         self.blackboard = LocalizationBlackboard()
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/localization_dsd"
-        rospy.loginfo(dirname)
+        self.get_logger().info(dirname)
         self.dsd = DSD(self.blackboard, "debug/dsd/localization")
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
@@ -33,7 +34,7 @@ class LocalizationHandler(object):
 
         self.main_loop()
 
-        rospy.spin()
+        rclpy.spin(self)
 
     def _callback_pose(self, msg):
         self.blackboard.last_pose_update_time = msg.header.stamp
@@ -47,16 +48,16 @@ class LocalizationHandler(object):
 
     def main_loop(self):
         """  """
-        rate = rospy.Rate(25)
+        rate = self.create_rate(25)
 
-        while not rospy.is_shutdown() and not self.blackboard.shut_down_request:
-            self.blackboard.current_time = rospy.Time.now()
+        while rclpy.ok() and not self.blackboard.shut_down_request:
+            self.blackboard.current_time = self.get_clock().now()
             self.dsd.update()
             try:
                 # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException:
-                rospy.logwarn(
+                self.get_logger().warn(
                     "We moved backwards in time. I hope you just resetted the simulation. If not there is something wrong")
             except rospy.exceptions.ROSInterruptException:
                 exit()

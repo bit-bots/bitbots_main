@@ -6,7 +6,7 @@
 
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "bitbots_localization");
+  rclcpp::init(argc, argv, "bitbots_localization");
   Localization localization;
 
   // dynamic reconfigure
@@ -24,13 +24,17 @@ Localization::Localization() : tfListener(tfBuffer), line_points_() {
   pnh_ = ros::NodeHandle("~");
   nh_ = ros::NodeHandle();
 
-  pnh_.param<std::string>("odom_frame", odom_frame_, "odom");
-  pnh_.param<std::string>("base_footprint_frame", base_footprint_frame_, "base_footprint");
-  pnh_.param<std::string>("map_frame", map_frame_, "map");
-  pnh_.param<std::string>("publishing_frame", publishing_frame_, "localization_raw");
+this->declare_parameter<std::string>("odom_frame",  "odom");
+this->get_parameter("odom_frame",  odom_frame_);
+this->declare_parameter<std::string>("base_footprint_frame",  "base_footprint");
+this->get_parameter("base_footprint_frame",  base_footprint_frame_);
+this->declare_parameter<std::string>("map_frame",  "map");
+this->get_parameter("map_frame",  map_frame_);
+this->declare_parameter<std::string>("publishing_frame",  "localization_raw");
+this->get_parameter("publishing_frame",  publishing_frame_);
 
   // Get current odometry transform as init
-  previousOdomTransform_ = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0), ros::Duration(20.0));
+  previousOdomTransform_ = tfBuffer->lookup_transform(odom_frame_, base_footprint_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9*20.0));
 }
 
 void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, uint32_t config_level) {
@@ -42,16 +46,16 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
   fieldboundary_in_image_subscriber_ = nh_.subscribe(config.fieldboundary_in_image_topic, 1,
                                                      &Localization::FieldBoundaryInImageCallback, this);
 
-  pose_particles_publisher_ = pnh_.advertise<visualization_msgs::MarkerArray>(config.particle_publishing_topic.c_str(),
+  pose_particles_publisher_ = pnh_.advertise<visualization_msgs::msg::MarkerArray>(config.particle_publishing_topic.c_str(),
                                                                              1);
-  pose_with_covariance_publisher_ = nh_.advertise<gm::PoseWithCovarianceStamped>("pose_with_covariance", 1);
-  lines_publisher_ = pnh_.advertise<visualization_msgs::Marker>("lines", 1);
-  line_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("line_ratings", 1);
-  goal_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("goal_ratings", 1);
-  fieldboundary_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("field_boundary_ratings", 1);
-  corner_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("corner_ratings", 1);
-  t_crossings_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("t_crossings_ratings", 1);
-  crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::Marker>("crosses_ratings", 1);
+  pose_with_covariance_publisher_ = nh_.advertise<gm::msg::PoseWithCovarianceStamped>("pose_with_covariance", 1);
+  lines_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("lines", 1);
+  line_ratings_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("line_ratings", 1);
+  goal_ratings_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("goal_ratings", 1);
+  fieldboundary_ratings_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("field_boundary_ratings", 1);
+  corner_ratings_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("corner_ratings", 1);
+  t_crossings_ratings_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("t_crossings_ratings", 1);
+  crosses_ratings_publisher_ = pnh_.advertise<visualization_msgs::msg::Marker>("crosses_ratings", 1);
 
   // Get field name
   std::string field;
@@ -77,10 +81,10 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
     crosses_map_.reset(new Map(field, "crosses.png", config));
   }
 
-  line_information_relative_.header.stamp = ros::Time(0);
-  line_pointcloud_relative_.header.stamp = ros::Time(0);
-  goal_posts_relative_.header.stamp = ros::Time(0);
-  fieldboundary_relative_.header.stamp = ros::Time(0);
+  line_information_relative_.header.stamp = rclcpp::Time(0);
+  line_pointcloud_relative_.header.stamp = rclcpp::Time(0);
+  goal_posts_relative_.header.stamp = rclcpp::Time(0);
+  fieldboundary_relative_.header.stamp = rclcpp::Time(0);
 
   robot_pose_observation_model_.reset(
       new RobotPoseObservationModel(
@@ -96,10 +100,10 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
     config.drift_distance_to_rotation,  config.drift_rotation_to_rotation;
 
   // Scale drift form drift per second to drift per filter iteration
-  drift_cov /= config.publishing_frequency;
+  drift_cov /= config->publishing_frequency;
 
-  drift_cov.col(0) *= (1 / (config.max_translation / config.publishing_frequency));
-  drift_cov.col(1) *= (1 / (config.max_rotation / config.publishing_frequency));
+  drift_cov.col(0) *= (1 / (config.max_translation / config->publishing_frequency));
+  drift_cov.col(1) *= (1 / (config.max_rotation / config->publishing_frequency));
 
   robot_motion_model_.reset(
       new RobotMotionModel(random_number_generator_,
@@ -154,7 +158,7 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
 
   config_ = config;
 
-  ROS_INFO("Trying to initialize particle filter...");
+  RCLCPP_INFO(this->get_logger(),"Trying to initialize particle filter...");
   reset_filter(config.init_mode);
 
   if (first_configuration_) {
@@ -163,12 +167,12 @@ void Localization::dynamic_reconfigure_callback(bl::LocalizationConfig &config, 
     pause_service_ = nh_.advertiseService("pause_localization", &Localization::set_paused_callback, this);
   }
 
-  publishing_timer_ = pnh_.createTimer(static_cast<double>(config.publishing_frequency),
+  publishing_timer_ = pnh_.createTimer(static_cast<double>(config->publishing_frequency),
                                       &Localization::run_filter_one_step, this);
 
 }
 
-void Localization::run_filter_one_step(const ros::TimerEvent &e) {
+void Localization::run_filter_one_step(const rclcpp::TimerEvent &e) {
   timer_callback_count_++;
   resampled_ = false;
 
@@ -213,11 +217,11 @@ void Localization::LineCallback(const hlm::LineInformationRelative &msg) {
   line_information_relative_ = msg;
 }
 
-void Localization::LinePointcloudCallback(const sm::PointCloud2 &msg) {
+void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) {
   line_pointcloud_relative_ = msg;
 }
 
-void Localization::GoalPostsCallback(const hlm::PoseWithCertaintyArray &msg) {
+void Localization::GoalPostsCallback(const hlm::msg::PoseWithCertaintyArray &msg) {
   goal_posts_relative_ = msg;
 }
 
@@ -229,9 +233,9 @@ void Localization::FieldboundaryCallback(const gm::PolygonStamped &msg) {
       for (size_t i = 1; i < msg.polygon.points.size() - 2; i++) { //ignore most left and right point
         if (fBinImage.polygon.points[i].y > 0 && fBinImage.polygon.points[i + 1].y
             > 0) { //ignore points that form a line on uppermost row in image
-          std::vector<gm::Point32> vector = interpolateFieldboundaryPoints(msg.polygon.points[i],
+          std::vector<gm::msg::Point32> vector = interpolateFieldboundaryPoints(msg.polygon.points[i],
                                                                          msg.polygon.points[i + 1]);
-          for (gm::Point32 point : vector) {
+          for (gm::msg::Point32 point : vector) {
             fieldboundary_relative_.polygon.points.push_back(point);
           }
         }
@@ -250,9 +254,9 @@ void Localization::FieldBoundaryInImageCallback(const gm::PolygonStamped &msg){
   fieldboundary_in_image_.push_back(msg);
 }
 
-std::vector<gm::Point32> Localization::interpolateFieldboundaryPoints(gm::Point32 point1, gm::Point32 point2) {
+std::vector<gm::msg::Point32> Localization::interpolateFieldboundaryPoints(gm::msg::Point32 point1, gm::msg::Point32 point2) {
 
-  std::vector<gm::Point32> pointsInterpolated;
+  std::vector<gm::msg::Point32> pointsInterpolated;
   double dx = abs(point2.x - point1.x);
   double dy = abs(point2.y - point1.y);
 
@@ -262,7 +266,7 @@ std::vector<gm::Point32> Localization::interpolateFieldboundaryPoints(gm::Point3
   double stepsizex = dx / steps;
 
   for (int i = 0; i < steps; i++) {
-    gm::Point32 point;
+    gm::msg::Point32 point;
     point.y = point1.y + (i * stepsizey);
     point.x = point1.x + (i * stepsizex);
     pointsInterpolated.push_back(point);
@@ -296,7 +300,7 @@ bool Localization::reset_filter_callback(bl::ResetFilter::Request &req,
 }
 
 void Localization::reset_filter(int distribution) {
-  ROS_INFO("reset filter");
+  RCLCPP_INFO(this->get_logger(),"reset filter");
 
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
       config_.particle_number, robot_pose_observation_model_, robot_motion_model_));
@@ -385,12 +389,12 @@ void Localization::updateMeasurements() {
 
 void Localization::getMotion() {
   robot_moved = false;
-  geometry_msgs::TransformStamped transformStampedNow;
+  geometry_msgs::msg::TransformStamped transformStampedNow;
 
   try {
 
     // Get current odometry transform
-    transformStampedNow = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0));
+    transformStampedNow = tfBuffer->lookup_transform(odom_frame_, base_footprint_frame_, rclcpp::Time(0));
 
     // Get linear movement from odometry transform and the transform of the previous filter step
     double global_diff_x, global_diff_y;
@@ -421,7 +425,7 @@ void Localization::getMotion() {
     previousOdomTransform_ = transformStampedNow;
   }
   catch (const tf2::TransformException &ex) {
-    ROS_WARN("Could not aquire motion for odom transforms: %s", ex.what());
+    RCLCPP_WARN(this->get_logger(),"Could not aquire motion for odom transforms: %s", ex.what());
   }
 }
 
@@ -441,10 +445,10 @@ void Localization::publish_transforms() {
   //////////////////////
 
   try{
-    geometry_msgs::TransformStamped odom_transform = tfBuffer.lookupTransform(odom_frame_, base_footprint_frame_, ros::Time(0));
+    geometry_msgs::msg::TransformStamped odom_transform = tfBuffer->lookup_transform(odom_frame_, base_footprint_frame_, rclcpp::Time(0));
 
     //publish localization tf, not the odom offset
-    geometry_msgs::TransformStamped localization_transform;
+    geometry_msgs::msg::TransformStamped localization_transform;
     localization_transform.header.stamp = odom_transform.header.stamp;
     localization_transform.header.frame_id = map_frame_;
     localization_transform.child_frame_id = publishing_frame_;
@@ -459,13 +463,13 @@ void Localization::publish_transforms() {
     if (localization_tf_last_published_time_ != localization_transform.header.stamp) {
       // do not resend a transform for the same timestamp
       localization_tf_last_published_time_ = localization_transform.header.stamp;
-      br.sendTransform(localization_transform);
+      br->send_transform(localization_transform);
     }
 
     //publish odom localisation offset
-    geometry_msgs::TransformStamped map_odom_transform;
+    geometry_msgs::msg::TransformStamped map_odom_transform;
 
-    map_odom_transform.header.stamp = ros::Time::now();
+    map_odom_transform.header.stamp = this->get_clock()->now()();
     map_odom_transform.header.frame_id = map_frame_;
     map_odom_transform.child_frame_id = odom_frame_;
 
@@ -480,11 +484,11 @@ void Localization::publish_transforms() {
     if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
       // do not resend a transform for the same timestamp
       map_odom_tf_last_published_time_ = map_odom_transform.header.stamp;
-      br.sendTransform(map_odom_transform);
+      br->send_transform(map_odom_transform);
     }
   }
   catch (const tf2::TransformException &ex) {
-    ROS_WARN("Odom not available, therefore odom offset can not be published: %s", ex.what());
+    RCLCPP_WARN(this->get_logger(),"Odom not available, therefore odom offset can not be published: %s", ex.what());
   }
 }
 
@@ -494,8 +498,8 @@ void Localization::publish_pose_with_covariance() {
   q.setRPY(0, 0, estimate_.getTheta());
   q.normalize();
 
-  gm::PoseWithCovarianceStamped estimateMsg;
-  estimateMsg.header.stamp = ros::Time::now();
+  gm::msg::PoseWithCovarianceStamped estimateMsg;
+  estimateMsg.header.stamp = this->get_clock()->now()();
   estimateMsg.pose.pose.orientation.w = q.w();
   estimateMsg.pose.pose.orientation.x = q.x();
   estimateMsg.pose.pose.orientation.y = q.y();
@@ -511,7 +515,7 @@ void Localization::publish_pose_with_covariance() {
 
   estimateMsg.header.frame_id = publishing_frame_;
 
-  pose_with_covariance_publisher_.publish(estimateMsg);
+  pose_with_covariance_publisher_->publish(estimateMsg);
 }
 
 void Localization::publish_debug() {
@@ -528,8 +532,8 @@ void Localization::publish_particle_markers() {
   red.g = 0;
   red.b = 0;
   red.a = 1;
-  pose_particles_publisher_.publish(robot_pf_->renderMarkerArray("pose_marker", map_frame_,
-                                                                  ros::Duration(1),
+  pose_particles_publisher_->publish(robot_pf_->renderMarkerArray("pose_marker", map_frame_,
+                                                                  rclcpp::Duration::from_nanoseconds(1e9*1),
                                                                   red));
 }
 
@@ -565,18 +569,18 @@ void Localization::publish_debug_rating(
     double scale,
     const char name[],
     std::shared_ptr<Map> map,
-    ros::Publisher &publisher) {
+    rclcpp::Publisher &publisher) {
 
   RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.percentage_best_particles);
   double rating = 0;
 
-  visualization_msgs::Marker marker;
+  visualization_msgs::msg::Marker marker;
   marker.header.frame_id = map_frame_;
-  marker.header.stamp = ros::Time::now();
+  marker.header.stamp = this->get_clock()->now()();
   marker.ns = name;
-  marker.action = visualization_msgs::Marker::ADD;
+  marker.action = visualization_msgs::msg::Marker::ADD;
   marker.pose.orientation.w = 1.0;
-  marker.type = visualization_msgs::Marker::POINTS;
+  marker.type = visualization_msgs::msg::Marker::POINTS;
   marker.scale.x = scale;
   marker.scale.y = scale;
 
@@ -588,7 +592,7 @@ void Localization::publish_debug_rating(
       measurement, best_estimate.getXPos(), best_estimate.getYPos(), best_estimate.getTheta());
     double occupancy = map->get_occupancy(observationRelative.first, observationRelative.second);
 
-    geometry_msgs::Point point;
+    geometry_msgs::msg::Point point;
     point.x = observationRelative.first;
     point.y = observationRelative.second;
     point.z = 0;
@@ -604,5 +608,5 @@ void Localization::publish_debug_rating(
     marker.points.push_back(point);
     marker.colors.push_back(color);
   }
-  publisher.publish(marker);
+  publisher->publish(marker);
 }
