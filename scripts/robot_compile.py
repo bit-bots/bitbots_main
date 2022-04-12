@@ -53,12 +53,12 @@ def print_debug(msg):
 
 
 try:
-    from bitbots_bringup import game_settings
+    from bitbots_utils import game_settings
 except ImportError:
-    bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "src")
-    print_info("Manually adding {} to PATH to import bitbots_bringup. If this fails please source ros".format(bringup_dir))
+    bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_utils")
+    print_info("Manually adding {} to PATH to import bitbots_utils. If this fails please source ros".format(bringup_dir))
     sys.path.append(bringup_dir)
-    from bitbots_bringup import game_settings
+    from bitbots_utils import game_settings
 
 
 def print_bit_bot():
@@ -376,7 +376,7 @@ def build(target, package='', pre_clean=False):
 
     if package and pre_clean:
         print_err("Cleaning a specific package is not supported! Not cleaning.")
-    else if pre_clean:
+    elif pre_clean:
         cmd_clean = 'rm -rf build instal'
     else:
         cmd_clean = ''
@@ -385,7 +385,7 @@ def build(target, package='', pre_clean=False):
                "cd {workspace};"
                "source devel/setup.zsh;"
                "{cmd_clean}"
-               "colcon build {package} --continue-on-error {quied_option} || exit 1;"
+               "colcon build {package} --continue-on-error {quiet_option} || exit 1;"
                "sync;"
                ).format(**{
         "workspace": target.workspace,
