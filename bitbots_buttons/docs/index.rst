@@ -9,7 +9,6 @@ Description
 .. toctree::
    :maxdepth: 2
 
-   cppapi/library_root
    pyapi/modules
 
 

@@ -6,41 +6,35 @@
     <arg name="only_imu" default="false"/>
     <arg name="only_pressure" default="false"/>
 
-    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 0"/>
-    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+    <!--<arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 0"/>
+    <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>-->
 
-    <rosparam file="$(find bitbots_ros_control)/config/wolfgang.yaml" command="load" />
-    <rosparam file="$(find bitbots_ros_control)/config/controller.yaml" command="load" />
-
-
-    <param name="/ros_control/torqueless_mode" value="$(arg torqueless_mode)"/>
-    <param name="/ros_control/only_imu" value="$(arg only_imu)"/>
-    <param name="/ros_control/only_pressure" value="$(arg only_pressure)"/>
-
-    <node pkg="bitbots_ros_control" type="node" name="ros_control" output="screen" launch-prefix="$(arg taskset)"/>
-
-    <group if="$(arg use_game_settings)">
-        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
-    </group>
-
-
-    <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator" >
-        <rosparam command="load" file="$(find bitbots_ros_control)/config/analyzers.yaml" />
+    <node pkg="bitbots_ros_control" exec="node" output="screen"> <!-- launch-prefix="$(var taskset)">-->
+        <param from="$(find-pkg-share bitbots_ros_control)/config/wolfgang.yaml" />
+        <param name="torqueless_mode" value="$(var torqueless_mode)"/>
+        <param name="only_imu" value="$(var only_imu)"/>
+        <param name="only_pressure" value="$(var only_pressure)"/>
     </node>
 
-    <node pkg="bitbots_ros_control" type="led_error_blink.py" name="error_blink"/>
+    <!--<group if="$(var use_game_settings)">
+        <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+    </group>-->
 
-    <include file="$(find system_monitor)/launch/system_monitor.launch"/>
+    <node pkg="diagnostic_aggregator" exec="aggregator_node" >
+        <param from="$(find-pkg-share bitbots_ros_control)/config/analyzers.yaml" />
+    </node>
+    <node pkg="bitbots_ros_control" exec="led_error_blink.py" name="error_blink"/>
 
-    <include file="$(find bitbots_buttons)/launch/buttons.launch"/>
+    <node pkg="bitbots_ros_control" name="button_zero" exec="zero_on_button.py"/>
 
-    <include file="$(find humanoid_league_speaker)/launch/speaker.launch"/>
+    <node pkg="bitbots_ros_control" name="battery_led" exec="battery_led.py"/>
 
-    <include file="$(find bitbots_ros_control)/launch/pressure_converter.launch"/>
-
-    <node pkg="bitbots_ros_control" name="button_zero" type="zero_on_button.py"/>
-
-    <node pkg="bitbots_ros_control" name="battery_led" type="battery_led.py"/>
+    <group>
+        <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch"/>
+        <include file="$(find-pkg-share bitbots_buttons)/launch/buttons.launch"/>
+        <include file="$(find-pkg-share humanoid_league_speaker)/launch/speaker.launch"/>
+        <include file="$(find-pkg-share bitbots_ros_control)/launch/pressure_converter.launch"/>
+    </group>
 
 </launch>
 

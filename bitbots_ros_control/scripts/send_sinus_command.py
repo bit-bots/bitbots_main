@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import math
 
 from bitbots_msgs.msg import JointCommand
@@ -21,12 +22,12 @@ if __name__ == "__main__":
         accelerations=[-1],
         max_currents=[-1])
 
-    rospy.init_node("send_sinus_command")
-    pub = rospy.Publisher(DYNAMIXEL_CMD_TOPIC, JointCommand, queue_size=1)
+    rclpy.init(args=None)
+    pub = self.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
-    rate = rospy.Rate(PUBLISH_RATE)
-    while not rospy.is_shutdown():
-        time = rospy.Time.now()
+    rate = self.create_rate(PUBLISH_RATE)
+    while rclpy.ok():
+        time = self.get_clock().now()
         position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.to_sec())
 
         msg.header.stamp = time

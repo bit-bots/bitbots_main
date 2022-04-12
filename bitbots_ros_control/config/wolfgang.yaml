@@ -1,173 +1,173 @@
-ros_control:
+wolfgang_hardware_interface:
+  ros__parameters:
+    control_loop_hz: 500.0
 
-  control_loop_hz: 500
+    port_info:
+      port0:
+        device_file: /dev/ttyUSB0
+        baudrate: 4000000
+        protocol_version: 2
+      port1:
+        device_file: /dev/ttyUSB1
+        baudrate: 4000000
+        protocol_version: 2
+      port2:
+        device_file: /dev/ttyUSB2
+        baudrate: 4000000
+        protocol_version: 2
+      port3:
+        device_file: /dev/ttyUSB3
+        baudrate: 4000000
+        protocol_version: 2
 
-  port_info:
-    port0:
-      device_file: /dev/ttyUSB0
-      baudrate: 4000000
-      protocol_version: 2
-    port1:
-      device_file: /dev/ttyUSB1
-      baudrate: 4000000
-      protocol_version: 2
-    port2:
-      device_file: /dev/ttyUSB2
-      baudrate: 4000000
-      protocol_version: 2
-    port3:
-      device_file: /dev/ttyUSB3
-      baudrate: 4000000
-      protocol_version: 2
+    # specification of the connected dynamixel servos
+    servos:
+      # specifies which information should be read
+      read_position: true
+      read_velocity: true
+      read_effort: true
+      read_pwm: false
+      read_volt_temp: true # this also corresponds for the error byte
 
-  # specification of the connected dynamixel servos
-  servos:
-    # specifies which information should be read
-    read_position: true
-    read_velocity: true
-    read_effort: true
-    read_pwm: false
-    read_volt_temp: true # this also corresponds for the error byte
+      VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
+      warn_temp: 55.0
+      warn_volt: 14.0
 
-    VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
-    warn_temp: 55
-    warn_volt: 14
+      control_mode: position
+      auto_torque: true
 
-    control_mode: position
-    auto_torque: true
+      set_ROM_RAM: true # set the following values on startup to all motors
+      ROM_RAM:
+        # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
+        # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
+        # ROM
+        Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
+        Temperature_Limit: 60 # [about 1 deg C]
+        Max_Voltage_Limit: 160 #[About 0.1V]
+        Min_Voltage_Limit: 95 #[About 0.1V]
+        PWM_Limit: 885 # 885 = 100%
+        #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
+        #todo acceleration limit does not exist as register?
+        Acceleration_Limit: 32767 # [214.577 Rev/min2]
+        Velocity_Limit: 1023 # [0.229rpm]
+        Max_Position_Limit: 4095 # [0.088 deg]
+        Min_Position_Limit : 0 # [0.088 deg]
+        # RAM
+        Status_Return_Level: 2 # 0 status for all instructions(not sync or bulk), 1 ping and read, 2 only ping
+        Velocity_I_Gain: 1920 # [/ 65,536]
+        Velocity_P_Gain: 100 # [/128]
+        Position_D_Gain: 0 #2800 # [/16] 0~16,383
+        Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
+        #If robot starts to tremble, reduce Position_P_Gain
+        Position_P_Gain: 700 #1100 # [/ 128] 0~16,383
+        Feedforward_2nd_Gain: 0 # [/4]
+        Feedforward_1st_Gain: 0 # [/4]
+        Profile_Acceleration: 0 # 0 for infinite
+        Profile_Velocity: 0 # 0 for infinite
 
-    set_ROM_RAM: true # set the following values on startup to all motors
-    ROM_RAM:
-      # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
-      # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
-      # ROM
-      Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-      Temperature_Limit: 60 # [about 1 deg C]
-      Max_Voltage_Limit: 160 #[About 0.1V]
-      Min_Voltage_Limit: 95 #[About 0.1V]
-      PWM_Limit: 885 # 885 = 100%
-      #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
-      #todo acceleration limit does not exist as register?
-      Acceleration_Limit: 32767 # [214.577 Rev/min2]
-      Velocity_Limit: 1023 # [0.229rpm]
-      Max_Position_Limit: 4095 # [0.088 deg]
-      Min_Position_Limit : 0 # [0.088 deg]
-      # RAM
-      Status_Return_Level: 2 # 0 status for all instructions(not sync or bulk), 1 ping and read, 2 only ping
-      Velocity_I_Gain: 1920 # [/ 65,536]
-      Velocity_P_Gain: 100 # [/128]
-      Position_D_Gain: 0 #2800 # [/16] 0~16,383
-      Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
-      #If robot starts to tremble, reduce Position_P_Gain
-      Position_P_Gain: 700 #1100 # [/ 128] 0~16,383
-      Feedforward_2nd_Gain: 0 # [/4]
-      Feedforward_1st_Gain: 0 # [/4]
-      Profile_Acceleration: 0 # 0 for infinite
-      Profile_Velocity: 0 # 0 for infinite
+    imu:
+      do_adaptive_gain: False
+      do_bias_estimation: False
+      bias_alpha: 0.01
+      accel_gain: 0.001
 
-  imu:
-    do_adaptive_gain: False
-    do_bias_estimation: False
-    bias_alpha: 0.01
-    accel_gain: 0.001
-
-  device_info:
-    Core:
-      id: 42
-      model_number: 0xABBA
-      read_rate: 100
-      interface_type: CORE
-    LEDs_core:
-      id: 42
-      model_number: 0xABBA
-      interface_type: LED
-      number_of_LEDs: 3
-      start_number: 0
-    IMU_torso:
-      id: 241
-      topic: imu/data
-      frame: imu_frame
-      model_number: 0xBAFF
-      interface_type: IMU
-    Buttons:
-      id: 241
-      model_number: 0xBAFF
-      interface_type: Button
-      topic: /buttons
-      read_rate: 50
-    LEDs:
-      id: 241
-      model_number: 0xBAFF
-      interface_type: LED
-      number_of_LEDs: 3
-      start_number: 3
-    LeftFoot:
-      id: 102
-      topic: /foot_pressure_left/raw
-      model_number: 0
-    RightFoot:
-      id: 101
-      topic: /foot_pressure_right/raw
-      model_number: 0
-    RShoulderPitch:
-      id: 1
-      model_number: 311
-      mounting_offset: 0.0
-      joint_offset: 0.0
-    LShoulderPitch:
-      id: 2
-      model_number: 311
-    RShoulderRoll:
-      id: 3
-      model_number: 311
-    LShoulderRoll:
-      id: 4
-      model_number: 311
-    RElbow:
-      id: 5
-      model_number: 311
-    LElbow:
-      id: 6
-      model_number: 311
-    RHipYaw:
-      id: 7
-      model_number: 321
-    LHipYaw:
-      id: 8
-      model_number: 321
-    RHipRoll:
-      id: 9
-      model_number: 321
-    LHipRoll:
-      id: 10
-      model_number: 321
-    RHipPitch:
-      id: 11
-      model_number: 321
-    LHipPitch:
-      id: 12
-      model_number: 321
-    RKnee:
-      id: 13
-      model_number: 1100
-    LKnee:
-      id: 14
-      model_number: 1100
-    RAnklePitch:
-      id: 15
-      model_number: 321
-    LAnklePitch:
-      id: 16
-      model_number: 321
-    RAnkleRoll:
-      id: 17
-      model_number: 321
-    LAnkleRoll:
-      id: 18
-      model_number: 321
-    HeadPan:
-      id: 19
-      model_number: 311
-    HeadTilt:
-      id: 20
-      model_number: 311
+    device_info:
+      Core:
+        id: 42
+        model_number: 0xABBA
+        read_rate: 100
+        interface_type: CORE
+      LEDs_core:
+        id: 42
+        model_number: 0xABBA
+        interface_type: LED
+        number_of_LEDs: 3
+        start_number: 0
+      IMU_torso:
+        id: 241
+        topic: imu/data
+        frame: imu_frame
+        model_number: 0xBAFF
+        interface_type: IMU
+      Buttons:
+        id: 241
+        model_number: 0xBAFF
+        interface_type: Button
+        topic: /buttons
+        read_rate: 50
+      LEDs:
+        id: 241
+        model_number: 0xBAFF
+        interface_type: LED
+        number_of_LEDs: 3
+        start_number: 3
+      RShoulderPitch:
+        id: 1
+        model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
+      LeftFoot:
+        id: 102
+        topic: /foot_pressure_left/raw
+        model_number: 0
+      RightFoot:
+        id: 101
+        topic: /foot_pressure_right/raw
+        model_number: 0
+      LShoulderPitch:
+        id: 2
+        model_number: 311
+      RShoulderRoll:
+        id: 3
+        model_number: 311
+      LShoulderRoll:
+        id: 4
+        model_number: 311
+      RElbow:
+        id: 5
+        model_number: 311
+      LElbow:
+        id: 6
+        model_number: 311
+      RHipYaw:
+        id: 7
+        model_number: 321
+      LHipYaw:
+        id: 8
+        model_number: 321
+      RHipRoll:
+        id: 9
+        model_number: 321
+      LHipRoll:
+        id: 10
+        model_number: 321
+      RHipPitch:
+        id: 11
+        model_number: 321
+      LHipPitch:
+        id: 12
+        model_number: 321
+      RKnee:
+        id: 13
+        model_number: 1100
+      LKnee:
+        id: 14
+        model_number: 1100
+      RAnklePitch:
+        id: 15
+        model_number: 321
+      LAnklePitch:
+        id: 16
+        model_number: 321
+      RAnkleRoll:
+        id: 17
+        model_number: 321
+      LAnkleRoll:
+        id: 18
+        model_number: 321
+      HeadPan:
+        id: 19
+        model_number: 311
+      HeadTilt:
+        id: 20
+        model_number: 311

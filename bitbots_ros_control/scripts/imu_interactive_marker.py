@@ -2,7 +2,8 @@
 
 import traceback
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import copy
 import math
 
@@ -11,7 +12,7 @@ from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, 
 from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
 from sensor_msgs.msg import Imu
 
-rospy.init_node("imu_interactive_marker")
+rclpy.init(args=None)
 
 
 def normalize_quaternion(quaternion_msg):
@@ -27,7 +28,7 @@ class IMUMarker:
 
     def __init__(self, server):
         self.marker_name = "IMU"
-        self.imu_publisher = rospy.Publisher("/imu/data", Imu, queue_size=1)
+        self.imu_publisher = self.create_publisher(Imu, "/imu/data", 1)
         self.server = server
         self.pose = Pose()
         self.pose.orientation.w = 1
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     server.applyChanges()
 
     # create a timer to update the published imu transform
-    rospy.Timer(rospy.Duration(0.05), imu.publish_marker)
+    rospy.Timer(Duration(seconds=0.05), imu.publish_marker)
 
     # run and block until finished
-    rospy.spin()
+    rclpy.spin(self)

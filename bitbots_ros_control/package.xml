@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>bitbots_ros_control</name>
   <version>2.2.4</version>
@@ -14,37 +14,38 @@
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_buttons</depend>
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>dynamixel_workbench_toolbox</depend>
+  <depend>controller_interface</depend>
+  <depend>controller_manager</depend>
+  <depend>hardware_interface</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>humanoid_league_speaker</depend>
+  <depend>pluginlib</depend>
+  <depend>realtime_tools</depend>
+  <depend>ros_control</depend>
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
-  <depend>dynamixel_workbench_toolbox</depend>
-  <depend>hardware_interface</depend>
-  <depend>controller_manager</depend>
-  <depend>dynamic_reconfigure</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>pluginlib</depend>
-  <depend>controller_interface</depend>
-  <depend>bitbots_buttons</depend>
+  <depend>system_monitor</depend>
   <depend>transmission_interface</depend>
-  <depend>realtime_tools</depend>
   <depend>yaml-cpp</depend>
-  <depend>ros_control</depend>
-  <depend>bitbots_docs</depend>
+
+  <exec_depend>effort_controllers</exec_depend>
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>imu_sensor_controller</exec_depend>
   <exec_depend>joint_state_controller</exec_depend>
-  <exec_depend>effort_controllers</exec_depend>
 
-  <test_depend>rviz</test_depend>
-  <test_depend>rviz_imu_plugin</test_depend>
 
   <export>
-    <controller_interface plugin="${prefix}/dynamixel_controllers_plugin.xml"/>
+    <controller_interface plugin="${prefix}/dynamixel_controllers_plugin.xml" />
     <bitbots_documentation>
       <status>tested_integration</status>
       <language>c++</language>
     </bitbots_documentation>
-</export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
