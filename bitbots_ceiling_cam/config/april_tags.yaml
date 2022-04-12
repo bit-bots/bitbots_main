@@ -19,8 +19,8 @@
 #   ]
 standalone_tags:
   [
-        {id: 42, size: 0.1, name: rory},
-        {id: 63, size: 0.13, name: davros}
+        {id: 42, size: 0.145, name: amy},
+        {id: 63, size: 0.13, name: melody}
   ]
 # ## Tag bundle definitions
 # ### Remarks
