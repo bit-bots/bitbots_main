@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import sys
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from humanoid_league_msgs.msg import TeamData, Strategy
 from transforms3d.euler import quat2euler
 
@@ -35,8 +36,8 @@ Robot 1
 class TeamCommPrinter:
 
     def __init__(self):
-        rospy.init_node('team_comm_printer')
-        self.subscriber = rospy.Subscriber("team_data", TeamData, self.data_cb, queue_size=1, tcp_nodelay=True)
+        rclpy.init(args=None)
+        self.subscriber = self.create_subscription(TeamData, "team_data", self.data_cb, 1)
         self.team_data = {}
         for i in range(1, 5):
             self.team_data[i] = TeamData()
@@ -70,7 +71,7 @@ class TeamCommPrinter:
     def generate_string(self, data: TeamData):
         lines = []
         lines.append(f"Robot {data.robot_id}")
-        time = min(100, round((rospy.Time.now() - data.header.stamp).to_sec()))
+        time = min(100, round((self.get_clock().now() - data.header.stamp).to_sec()))
         lines.append(f"Time since message: {time:<3}")
         lines.append(f"State: {self.states[data.state]:<11}")
         lines.append(f"Position")
@@ -95,9 +96,9 @@ class TeamCommPrinter:
         return lines
 
     def run(self):
-        rate = rospy.Rate(1)
+        rate = self.create_rate(1)
         first = True
-        while not rospy.is_shutdown():
+        while rclpy.ok():
             prints = []
             # generate text to display for each robot
             for data in self.team_data.values():
@@ -121,3 +122,4 @@ class TeamCommPrinter:
 if __name__ == '__main__':
     printer = TeamCommPrinter()
     printer.run()
+er.run()

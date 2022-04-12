@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-import rosparam
-import rospy
+import rclpy
+from rcl_interfaces.msg import Parameter, SetParametersResult, ParameterDescriptor
+from rclpy.node import Node
 import subprocess
 import os
 import traceback
-
-from dynamic_reconfigure.server import Server
-# todo find the problem with this import
-
-from humanoid_league_speaker.cfg import speaker_paramsConfig
 
 from humanoid_league_msgs.msg import Audio
 
@@ -23,20 +19,16 @@ def speak(text, publisher, priority=20, speaking_active=True):
         publisher.publish(msg)
 
 
-class Speaker(object):
+class Speaker:
     """ Uses espeak to say messages from the speak topic.
     """
 
     # todo make also a service for demo proposes, which is blocking while talking
 
-    # todo this can get way more feautres when inclduing these
-    # https: // github.com / relsi / python - espeak
-    # https://github.com/muhrix/espeak_ros/blob/master/src/espeak_ros_node.cpp
-
     def __init__(self):
-        log_level = rospy.DEBUG if rospy.get_param("debug_active", False) else rospy.INFO
-        rospy.init_node('humanoid_league_speaker', log_level=log_level, anonymous=False)
-        rospy.loginfo("Starting speaker")
+        rclpy.init(args=None)
+        self.node = rclpy.create_node("speaker")
+        self.node.get_logger().info("Starting speaker")
 
         # --- Class Variables ---
         self.low_prio_queue = []
@@ -47,24 +39,42 @@ class Speaker(object):
         self.print_say = None
         self.message_level = None
         self.amplitude = None
+        self.node.declare_parameter("print", True)
+        self.node.declare_parameter("talk", True)
+        self.node.declare_parameter("msg_level", 0)
+        self.node.declare_parameter("amplitude", 7)
+        self.print_say = self.node.get_parameter("print").get_parameter_value().bool_value
+        self.speak_enabled = self.node.get_parameter("talk").get_parameter_value().bool_value
+        self.message_level = self.node.get_parameter("msg_level").get_parameter_value().integer_value
+        self.amplitude = self.node.get_parameter("amplitude").get_parameter_value().integer_value
+        self.node.add_on_set_parameters_callback(self.on_set_parameters)
 
         self.female_robots = ["donna", "amy"]
 
-        # --- Dynamic Reconfigure ---
-        # dyn reconfigure to turn speaking on/off, set volume and to set priority level
-        # will use values from config/speaker_params as start
-        self.server = Server(speaker_paramsConfig, self.reconfigure)
-
         # --- Initialize Topics ---
-        rospy.Subscriber("speak", Audio, self.speak_cb)
+        self.node.create_subscription(Audio, "speak", self.speak_cb, 10)
 
         # --- Start loop ---
         self.run_speaker()
 
+    def on_set_parameters(self, parameters: [Parameter]):
+        for parameter in parameters:
+            if parameter.name == "print":
+                self.print_say = parameter.value.bool_value
+            elif parameter.name == "talk":
+                self.speak_enabled = parameter.value.bool_value
+            elif parameter.name == "msg_level":
+                self.message_level = parameter.value.int_value
+            elif parameter.name == "amplitude":
+                self.amplitude = parameter.value.int_value
+            else:
+                self.node.get_logger().info("Unknown parameter: " + parameter.name)
+        return SetParametersResult(successful=True)
+
     def run_speaker(self):
         """ Runs continuously to wait for messages and speaks them."""
-        rate = rospy.Rate(20)
-        while not rospy.is_shutdown():
+        rate = self.node.create_rate(20)
+        while rclpy.ok():
             # test if espeak is already running and speak is enabled
             if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
                 # take the highest priority message first
@@ -78,20 +88,21 @@ class Speaker(object):
                     text, is_file = self.low_prio_queue.pop(0)
                     self.say(text)
             # wait a bit to eat not all the performance
-            rate.sleep()
+            rclpy.spin_once(self.node)
+            #rate.sleep()
 
     def say(self, text, file=False):
         """ Speak this specific text"""
         # todo make volume adjustable, some how like this
         #        command = ("espeak", "-a", self.amplitude, text)
+        arguments = []
         if os.getenv('ROBOT_NAME') in self.female_robots:
-            command = ("espeak", "-p 99", text)
-        else:
-            command = ("espeak", text)
+            arguments.append("-p 99")
+        arguments.append(f"-a {self.amplitude}")
+        command = ("espeak", *arguments, text)
         try:
             # we start a new process for espeak, so this node can recieve more text while speaking
-            process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
                 process.communicate()
             finally:
@@ -104,7 +115,6 @@ class Speaker(object):
 
     def speak_cb(self, msg):
         """ Handles incoming msg on speak topic."""
-
         # first decide if it's a file or a text
         is_file = False
         text = msg.text
@@ -113,14 +123,14 @@ class Speaker(object):
             is_file = True
             if text is None:
                 # message has no content at all
-                rospy.logwarn("Speaker got message without content.")
+                self.node.get_logger().warn("Speaker got message without content.")
                 return
         prio = msg.priority
         new = True
 
         # if printing is enabled and it's a text, print it
         if self.print_say and not is_file:
-            rospy.loginfo("Said: " + text)
+            self.node.get_logger().info("Said: " + text)
 
         if not self.speak_enabled:
             # don't accept new messages
@@ -148,27 +158,6 @@ class Speaker(object):
             if new:
                 self.high_prio_queue.append((text, is_file))
 
-    def reconfigure(self, config, level):
-        # Fill in local variables with values received from dynamic reconfigure clients (typically the GUI).
-        self.print_say = config["print"]
-        self.speak_enabled = config["talk"]
-        if not self.speak_enabled:
-            self.low_prio_queue = []
-            self.mid_prio_queue = []
-            self.high_prio_queue = []
-        message_level = config["msg_level"]
-        if self.message_level != message_level:
-            # delete old lower prio msgs
-            if message_level == 2:
-                self.mid_prio_queue = []
-                self.low_prio_queue = []
-            elif message_level == 1:
-                self.low_prio_queue = []
-            self.message_level = config["msg_level"]
-        self.amplitude = config["amplitude"]
-        # Return the new variables.
-        return config
-
 
 # todo integrate reading of files
 
@@ -181,9 +170,12 @@ class Speaker(object):
         ""
         cal = (("espeak", "-m", "-f", filename), callback, random.random())
         self._to_saylog(cal, blocking)
-
-
 """
 
-if __name__ == "__main__":
+
+def main():
     Speaker()
+
+
+if __name__ == "__main__":
+    main()

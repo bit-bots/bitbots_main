@@ -2,7 +2,8 @@
 
 import traceback
 
-import rospy
+import rclpy
+from rclpy.node import Node
 import copy
 import math
 
@@ -14,7 +15,7 @@ from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, 
 from humanoid_league_msgs.msg import ObstacleRelative, ObstacleRelativeArray, TeamData
 from geometry_msgs.msg import Pose, Point, Quaternion, Vector3, PoseWithCovariance
 from tf2_geometry_msgs import PointStamped
-from tf.transformations import euler_from_quaternion
+from tf_transformations import euler_from_quaternion
 import tf2_ros
 import numpy as np
 
@@ -26,7 +27,7 @@ OBSTACLE_NUMBER = 4
 OBSTACLE_HEIGT = 0.8
 OBSTACLE_DIAMETER = 0.2
 
-rospy.init_node("team_comm_test_marker")
+rclpy.init(args=None)
 
 
 class TeamCommMarker(object):
@@ -166,12 +167,12 @@ class BallMarker(TeamCommMarker):
 class TeamMessage:
     def __init__(self, robot):
         self.robot = robot
-        self.pub = rospy.Publisher("team_data", TeamData, queue_size=1)
+        self.pub = self.create_publisher(TeamData, "team_data", 1)
 
     def publish(self, dt):
         if self.robot.active:
             msg = TeamData()
-            msg.header.stamp = rospy.Time.now()
+            msg.header.stamp = self.get_clock().now()
             msg.header.frame_id = "map"
             msg.robot_id = self.robot.robot_id
             msg.robot_position.pose = self.robot.pose
@@ -217,10 +218,10 @@ class TeamMessage:
                         ball_relative.pose.position.x ** 2 + ball_relative.pose.position.y ** 2)
                     msg.time_to_position_at_ball = cartesian_distance / ROBOT_SPEED
                 except tf2_ros.LookupException as ex:
-                    rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
+                    self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0
                     return None
                 except tf2_ros.ExtrapolationException as ex:
-                    rospy.logwarn_throttle(10.0, rospy.get_name() + ": " + str(ex))
+                    self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0
                     return None
                 self.pub.publish(msg)
             else:
@@ -239,6 +240,6 @@ if __name__ == "__main__":
 
     team_message = TeamMessage(robot)
     # create a timer to update the published ball transform
-    rospy.Timer(rospy.Duration(0.05), team_message.publish)
+    rospy.Timer(Duration(seconds=0.05), team_message.publish)
     # run and block until finished
-    rospy.spin()
+    rclpy.spin(self)

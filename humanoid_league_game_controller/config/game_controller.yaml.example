@@ -1,4 +1,6 @@
 # Example file for the game controller node,
 # this config file will be replaced by the robot_compile script
-team_id: 22
-bot_id: 4
+humanoid_league_game_controller:
+  ros__parameters:
+    team_id: 22
+    bot_id: 4
