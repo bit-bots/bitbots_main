@@ -1,7 +1,0 @@
-HOW TO USE:
-
-1. Copy this folder into your robots workspace, build and source
-2. Start roslaunch bitbots_live_tool udp bitbots_live_tool_udp.launch ip:=YOUR_IP port:YOUR_PORT. 
-3. Start test_node.py, if you want to send test data.
-4. Start roscore and rqt on your computer.
-5. Select Live Tool from the Plugins tab.

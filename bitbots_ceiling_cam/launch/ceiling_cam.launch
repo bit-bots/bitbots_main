@@ -1,7 +1,6 @@
-<?xml version="1.0"?>
 <launch>
     <!-- Transform from camera to field -->
-    <node pkg="tf" type="static_transform_publisher" name="field_mount" args="-0.051 -0.113 3.370 0.997 -0.012 0.070 0.026 ceiling_cam field 100" />
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="field_mount" args="--x -0.051 --y -0.113 --z 3.370 --qx -0.997 --qy -0.012 --qz 0.070 --qw 0.026 --frame-id ceiling_cam --child-frame-id field" />
     
     <!-- camera driver -->
     <node name="ceiling_cam" pkg="pylon_camera" type="pylon_camera_node" output="screen">
@@ -11,9 +10,25 @@
         <remap from="/ceiling_cam/image_rect" to="/ceiling_cam/bad_image_rect"/>
     </node>
 
-    <group ns="/ceiling_cam">
-        <node pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" name="debayer">
-        </node>
+    <node_container pkg="rclcpp_components" exec="component_container" name="ceiling_cam_image_proc_container" namespace="">
+        <composable_node pkg="image_proc" plugin="image_proc::DebayerNode" name="debayer">
+            <remap from="image_raw" to="/ceiling_cam/ceiling_cam_publisher/image_raw"/>
+            <remap from="camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
+            <remap from="image_color" to="/ceiling_cam/ceiling_cam_publisher/image_color_debayered"/>
+        </composable_node>
+        <composable_node pkg="image_proc" plugin="image_proc::RectifyNode" name="rectify">
+            <remap from="image" to="/ceiling_cam/ceiling_cam_publisher/image_color_debayered"/>
+            <remap from="camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
+            <remap from="image_rect" to="/ceiling_cam/ceiling_cam_publisher/image_color_rect"/>
+        </composable_node>
+        <!--
+        <composable_node pkg="apriltag_ros" plugin="AprilTagNode" name="apriltag">
+            <remap from="/apriltag/image" to="/ceiling_cam/ceiling_cam_publisher/image_color_rect"/>
+            <remap from="/apriltag/camera_info" to="/ceiling_cam/ceiling_cam_publisher/camera_info"/>
+            <param from="$(find-pkg-share bitbots_ceiling_cam)/config/april_tags.yaml"/>
+        </composable_node>
+        -->
+    </node_container>
 
         <node pkg="nodelet" type="nodelet" args="standalone image_proc/rectify" name="rectify">
         </node>

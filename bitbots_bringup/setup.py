@@ -1,10 +1,20 @@
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+import glob
+import os
 
-d = generate_distutils_setup(
-    packages=['bitbots_bringup'],
-    #scripts=['bin/myscript'],
-    package_dir={'': 'src'}
+from setuptools import find_packages
+from setuptools import setup
+
+package_name = 'bitbots_bringup'
+
+
+setup(
+    name=package_name,
+    packages=[],
+    data_files=[],
+    install_requires=[
+        'setuptools',
+    ],
+    zip_safe=True,
+    keywords=['ROS'],
+    license='MIT',
 )
-
-setup(**d)

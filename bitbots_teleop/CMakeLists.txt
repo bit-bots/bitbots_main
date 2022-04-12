@@ -1,15 +1,13 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_teleop)
 
-find_package(catkin REQUIRED COMPONENTS
- message_generation
- humanoid_league_msgs
- rospy
- bitbots_docs
-)
-
-catkin_python_setup()
-
-catkin_package()
+find_package(bitbots_docs REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
 
 enable_bitbots_docs()
+
+ament_python_install_package(${PROJECT_NAME})
+
+ament_package()

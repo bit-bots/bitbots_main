@@ -1,10 +1,15 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_ceiling_cam)
 
-find_package(catkin REQUIRED )
+find_package(bitbots_docs REQUIRED)
+find_package(ament_cmake REQUIRED)
 
-catkin_python_setup()
+enable_bitbots_docs()
 
-catkin_package()
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME})
 
-include_directories()
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
+ament_package()

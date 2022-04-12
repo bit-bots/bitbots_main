@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<package format="2">
+<?xml version='1.0' encoding='utf-8'?>
+<package format="3">
   <name>system_monitor</name>
   <version>1.0.0</version>
   <description>
@@ -12,17 +12,14 @@
 
   <license>MIT</license>
 
-  <!-- <url type="website">http://wiki.ros.org/udp_bridge</url> -->
-
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>roslib</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>std_msgs</depend>
   <depend>python3-psutil</depend>
   <depend>bitbots_docs</depend>
+  <depend>rclpy</depend>
+    <depend>bitbots_msgs</depend>
 
-  <export></export>
-</package>
+  <export><build_type>ament_python</build_type>
+  </export>
+
+  </package>
