@@ -5,8 +5,13 @@
     <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
     <group if="$(var use_game_settings)">
-            <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+        <node pkg="bitbots_animation_server" exec="animation_node"  output="screen"><!-- launch-prefix="$(var taskset)">-->
+            <param from="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
+        </node>
     </group>
 
-    <node pkg="bitbots_animation_server" exec="animation_node.py"  output="screen" launch-prefix="$(var taskset)"/>
+    <group unless="$(var use_game_settings)">
+        <node pkg="bitbots_animation_server" exec="animation_node"  output="screen"><!-- launch-prefix="$(var taskset)">-->
+        </node>
+    </group>
 </launch>

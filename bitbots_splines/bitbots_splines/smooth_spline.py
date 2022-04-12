@@ -1,4 +1,3 @@
-import rospy
 from bitbots_splines.polynom import Polynom, pos, vel, acc, jerk
 
 
@@ -58,7 +57,7 @@ class SmoothSpline:
         pos, vel and acc initial and final conditions
         """
         if t <= 0.00001:
-            rospy.logerr("SmoothSpline invalid spline interval")
+            print("SmoothSpline invalid spline interval")
             exit
 
         t2 = t * t

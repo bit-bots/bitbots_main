@@ -22,10 +22,11 @@ from rclpy.node import Node
 
 class ResourceManager(object):
 
-    def __init__(self):
-        if not rospy.has_param("robot_type_name"):
-            self.get_logger().warn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
-        anim_package = self.get_parameter('"robot_type_name"').get_parameter_value().double_value + "_animations"
+    def __init__(self, node:Node):
+        if not node.has_parameter("robot_type_name"):
+            node.get_logger().warn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
+        node.declare_parameter("robot_type", "wolfgang")
+        anim_package = node.get_parameter('robot_type').get_parameter_value().string_value + "_animations"
 
         rospack = rospkg.RosPack()
         path = rospack.get_path(anim_package)
@@ -196,8 +197,8 @@ class ResourceManager(object):
 
 _RM = None  # type: ResourceManager
 # Shortcut to search for animations
-def find_all_animations_by_name(*args, **kwargs):
+def find_all_animations_by_name(node, *args, **kwargs):
     global _RM
     if not _RM:
-        _RM = ResourceManager()
+        _RM = ResourceManager(node)
     return _RM.find_all_animations_by_name(*args, **kwargs)

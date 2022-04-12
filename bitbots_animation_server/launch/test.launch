@@ -7,7 +7,9 @@
     <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
   </group>
 
-    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch" />
-    <node name="animation" pkg="bitbots_animation_server" exec="animation_node.py"  output="screen" launch-prefix="$(var taskset)"/>
+  <group>
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
+  </group>
+    <node pkg="bitbots_animation_server" exec="animation_node" output="screen"><!-- launch-prefix="$(var taskset)"/> -->
     <node name="animation_hcm_bridge" pkg="bitbots_animation_server" exec="animation_hcm_bridge.py"  output="screen" launch-prefix="$(var taskset)"/>
 </launch>
