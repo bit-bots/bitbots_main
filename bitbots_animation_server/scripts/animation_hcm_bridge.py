@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_msgs.msg import JointCommand
 
 # List of all joint names. Do not change the order as it is important for Gazebo
@@ -12,7 +13,7 @@ JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow
 
 class AnimationHcmBridge:
     def __init__(self):
-        rospy.init_node("animation_hcm_bridge", anonymous=False)
+        rclpy.init(args=None)
         self.joint_publisher = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=10,
                                                tcp_nodelay=True)
         self.joint_command_msg = JointCommand()
@@ -22,13 +23,13 @@ class AnimationHcmBridge:
         self.joint_command_msg.accelerations = [-1] * len(JOINT_NAMES)
         self.joint_command_msg.max_currents = [-1] * len(JOINT_NAMES)
 
-        rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=10, tcp_nodelay=True)
+        self.create_subscription(Animation, "animation", self.animation_cb, 10)
 
-        while not rospy.is_shutdown():
-            rospy.sleep(1)
+        while rclpy.ok():
+            self.get_clock().sleep_for(Duration(seconds=1)
 
     def animation_cb(self, msg: Animation):
-        self.joint_command_msg.header.stamp = rospy.Time.now()
+        self.joint_command_msg.header.stamp = self.get_clock().now()
         for i in range(len(msg.position.joint_names)):
             name = msg.position.joint_names[i]
             self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.position.points[0].positions[i]
@@ -38,4 +39,4 @@ class AnimationHcmBridge:
 
 
 if __name__ == '__main__':
-    bridge = AnimationHcmBridge()
+    bridge = AnimationHcmBridge()e()

@@ -1,14 +1,15 @@
 import math
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from bitbots_splines.smooth_spline import SmoothSpline
 
 
 class SplineAnimator:
 
-    def __init__(self, animation, current_joint_states):
+    def __init__(self, animation, current_joint_states, logger, clock):
         self.anim = animation
-        self.start_time = rospy.get_time()
+        self.start_time = float(clock.now().seconds_nanoseconds()[0] + clock.now().seconds_nanoseconds()[1]/1e9)
         self.animation_duration = 0
         self.current_point_time = 0
         self.spline_dict = {}
@@ -23,7 +24,7 @@ class SplineAnimator:
                 self.spline_dict[joint].add_point(0, math.degrees(current_joint_states.position[i]))
                 i += 1
         else:
-            rospy.logwarn("No current joint positions. Will play animation starting from first keyframe.")
+            logger.warn("No current joint positions. Will play animation starting from first keyframe.")
             for joint in self.anim.keyframes[0].goals:
                 if joint not in self.spline_dict:
                     self.spline_dict[joint] = SmoothSpline()

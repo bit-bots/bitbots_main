@@ -16,15 +16,16 @@ import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
 import rospkg as rospkg
-import rospy
+import rclpy
+from rclpy.node import Node
 
 
 class ResourceManager(object):
 
     def __init__(self):
         if not rospy.has_param("robot_type_name"):
-            rospy.logwarn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
-        anim_package = rospy.get_param("robot_type_name", "wolfgang").lower() + "_animations"
+            self.get_logger().warn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
+        anim_package = self.get_parameter('"robot_type_name"').get_parameter_value().double_value + "_animations"
 
         rospack = rospkg.RosPack()
         path = rospack.get_path(anim_package)

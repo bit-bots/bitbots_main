@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
-import actionlib
+from rclpy.action import ActionClient
 from actionlib_msgs.msg import GoalStatus
-import rospy
+import rclpy
+from rclpy.node import Node
 import sys
 
 import humanoid_league_msgs.msg
 
 
 def anim_run(anim=None, hcm=False):
-    anim_client = actionlib.SimpleActionClient('animation', humanoid_league_msgs.msg.PlayAnimationAction)
-    rospy.init_node('anim_sender', anonymous=True)
+    anim_client = ActionClient(self, humanoid_league_msgs.msg.PlayAnimationAction, 'animation')
+    rclpy.init(args=None)
     if anim is None or anim == "":
-        rospy.logwarn("Tried to play an animation with an empty name!")
+        self.get_logger().warn("Tried to play an animation with an empty name!")
         return False
     first_try = anim_client.wait_for_server(
-        rospy.Duration(rospy.get_param("hcm/anim_server_wait_time", 10)))
+        Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value
     if not first_try:
-        rospy.logerr(
+        self.get_logger().error(
             "Animation Action Server not running! Motion can not work without animation action server. "
             "Will now wait until server is accessible!")
         anim_client.wait_for_server()
-        rospy.logwarn("Animation server now running, hcm will go on.")
+        self.get_logger().warn("Animation server now running, hcm will go on.")
     goal = humanoid_league_msgs.msg.PlayAnimationGoal()
     goal.animation = anim
     goal.hcm = hcm
