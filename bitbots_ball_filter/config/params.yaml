@@ -1,31 +1,33 @@
-# Topics
-ball_subscribe_topic: 'balls_relative'
-ball_position_publish_topic: 'ball_position_relative_filtered'
-ball_movement_publish_topic: 'ball_relative_movement'
-ball_publish_topic: 'ball_relative_filtered'
+bitbots_ball_filter:
+  ros__parameters:    
+    # Topics
+    ball_subscribe_topic: 'balls_relative'
+    ball_position_publish_topic: 'ball_position_relative_filtered'
+    ball_movement_publish_topic: 'ball_relative_movement'
+    ball_publish_topic: 'ball_relative_filtered'
 
-ball_filter_reset_service_name: 'ball_filter_reset'
+    ball_filter_reset_service_name: 'ball_filter_reset'
 
-filter_frame: 'odom'
-#filter_frame: 'map'
+    filter_frame: 'odom'
+    #filter_frame: 'map'
 
-# Filtering rate in Hz
-filter_rate: 62  # we get an image every 16 ms -> 62.5 hz
+    # Filtering rate in Hz
+    filter_rate: 62  # we get an image every 16 ms -> 62.5 hz
 
-# Balls with lower confidence will be dropped
-min_ball_confidence: 0.6
+    # Balls with lower confidence will be dropped
+    min_ball_confidence: 0.6
 
-# Velocity reduction (per axis) factor of the ball per second
-velocity_reduction: 0.6
+    # Velocity reduction (per axis) factor of the ball per second
+    velocity_reduction: 0.6
 
-# Noise which is added to the estimated position without new measurements
-process_noise_variance: 0.001
+    # Noise which is added to the estimated position without new measurements
+    process_noise_variance: 0.001
 
-# Ball measurement certainty in filter
-measurement_certainty: 0.1
+    # Ball measurement certainty in filter
+    measurement_certainty: 0.1
 
-# Max ball not seen time in Seconds
-filter_reset_time: 20
+    # Max ball not seen time in Seconds
+    filter_reset_time: 20
 
-# Distance to the current estimation causing a filter reset
-filter_reset_distance: 2
+    # Distance to the current estimation causing a filter reset
+    filter_reset_distance: 2

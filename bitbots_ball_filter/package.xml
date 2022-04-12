@@ -12,20 +12,22 @@
   <license>MIT</license>
 
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <depend>rospy</depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>humanoid_league_msgs</depend>
-  <depend>dynamic_reconfigure</depend>
-
+	
 
   <export>
     <bitbots_documentation>
       <language>python3</language>
       <status>unknown</status>
     </bitbots_documentation>
+    <build_type>ament_python</build_type>
   </export>
+  
 </package>
