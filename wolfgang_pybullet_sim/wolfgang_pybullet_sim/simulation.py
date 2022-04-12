@@ -13,8 +13,9 @@ import tf2_py
 from scipy import signal
 import pybullet_data
 import rospkg
-from transforms3d.quaternions import quat2mat
 from ament_index_python import get_package_share_directory
+from transforms3d.euler import quat2euler, euler2quat
+from transforms3d.quaternions import quat2mat, rotate_vector, qinverse
 
 from wolfgang_pybullet_sim.terrain import Terrain
 import numpy as np
@@ -454,6 +455,23 @@ class Simulation:
         (x, y, z), (qx, qy, qz, qw) = p.getBasePositionAndOrientation(robot_index)
         return (x, y, z), (qx, qy, qz, qw)
 
+    def get_imu_quaternion(self):
+        # imu orientation has roll and pitch relative to gravity vector. yaw in world frame
+        _, robot_quat_in_world = self.get_robot_pose()
+        # change order to transform3d standard
+        robot_quat_in_world = (robot_quat_in_world[3], robot_quat_in_world[0], robot_quat_in_world[1], robot_quat_in_world[2])
+        # get global yaw
+        yrp_world_frame = quat2euler(robot_quat_in_world, axes='szxy')
+        # remove global yaw rotation from roll and pitch
+        yaw_quat = euler2quat(yrp_world_frame[0], 0, 0, axes='szxy')
+        rp = rotate_vector((yrp_world_frame[1], yrp_world_frame[2], 0), qinverse(yaw_quat))
+        # save in correct order
+        rpy = [rp[0], rp[1], 0]
+        # convert to quaternion
+        quat_wxyz = euler2quat(*rpy)
+        # change order to ros standard
+        return quat_wxyz[1], quat_wxyz[2], quat_wxyz[3], quat_wxyz[0]
+
     def get_robot_pose_rpy(self, robot_index=1):
         (x, y, z), (qx, qy, qz, qw) = p.getBasePositionAndOrientation(robot_index)
         (roll, pitch, yaw) = p.getEulerFromQuaternion((qx, qy, qz, qw))
@@ -493,7 +511,7 @@ class Simulation:
             pos, vel, tor = joint.update()
             if scaled:
                 joint_positions.append(joint.get_scaled_position())
-                joint_positions.append(joint.get_scaled_velocity())
+                joint_velocities.append(joint.get_scaled_velocity())
             else:
                 joint_positions.append(pos)
                 joint_velocities.append(vel)

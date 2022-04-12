@@ -79,7 +79,8 @@ RUN rosdep install -iry --from-paths src && \
 # Delete some tests (has to happen before catkin build)
 RUN cd src/bitbots_meta && \
     rm bitbots_tools/bitbots_test/test/rostests/test_webots_simulator.launch \
-       bitbots_navigation/bitbots_localization/test/rostests/test_inital_localization_side.launch
+       bitbots_navigation/bitbots_localization/test/rostests/test_inital_localization_side.launch \
+       bitbots_motion/bitbots_quintic_walk/test/rostests/test_walk.launch
 
 RUN catkin build
 
