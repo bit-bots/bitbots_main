@@ -9,12 +9,13 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   all_joints_group_ = kinematic_model->getJointModelGroup("All");
 
   /* Reset kinematic goal to default */
-  goal_state_.reset(new robot_state::RobotState(kinematic_model));
+  goal_state_.reset(new moveit::core::RobotState(kinematic_model));
+  goal_state_->setToDefaultValues();
 }
 
 void DynupIK::reset() {
-  for (size_t i = 0; i < current_joint_states_.name.size(); i++) {
-    goal_state_->setJointPositions(current_joint_states_.name[i], &current_joint_states_.position[i]);
+  for (size_t i = 0; i < current_joint_states_->name.size(); i++) {
+    goal_state_->setJointPositions(current_joint_states_->name[i], &current_joint_states_->position[i]);
   }
 }
 
@@ -28,7 +29,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   auto ik_options = kinematics::KinematicsQueryOptions();
   ik_options.return_approximate_solution = true;
 
-  geometry_msgs::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
+  geometry_msgs::msg::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
 
   tf2::toMsg(ik_goals.r_foot_goal_pose, right_foot_goal_msg);
   tf2::toMsg(ik_goals.l_foot_goal_pose, left_foot_goal_msg);
@@ -115,8 +116,12 @@ void DynupIK::useStabilizing(bool use) {
   use_stabilizing_ = use;
 }
 
-void DynupIK::setCurrentJointStates(sensor_msgs::JointState jointStates) {
+void DynupIK::setCurrentJointStates(sensor_msgs::msg::JointState::SharedPtr jointStates) {
   current_joint_states_ = jointStates;
+}
+
+moveit::core::RobotStatePtr DynupIK::get_goal_state() {
+    return goal_state_;
 }
 
 }

@@ -1,10 +1,17 @@
 <launch>
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch"/>
+    <arg name="robot_type" default="wolfgang"/>
+    <group>
+        <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
+            <arg name="robot_type" value="$(var robot_type)"/>
+        </include>
+    </group>
 
-    <rosparam file="$(find bitbots_quintic_walk)/config/walking_wolfgang_viz.yaml" command="load"/>
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen">
+        <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_$(var robot_type)_viz.yaml"/>
+    </node>
 
-    <node name="walking" pkg="bitbots_quintic_walk" type="WalkNode" output="screen"/>
-    <node name="joint_goal_viz" pkg="bitbots_bringup" type="motor_goals_viz_helper.py" output="screen" args="--walking"/>
-    <node pkg="rviz" type="rviz" args="-d $(find bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
+    <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--walking --robot-type $(var robot_type)"/>
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
+    <node pkg="bitbots_utils" exec="dummy_imu.py"/>
 
 </launch>

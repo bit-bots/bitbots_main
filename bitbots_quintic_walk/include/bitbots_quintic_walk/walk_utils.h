@@ -4,12 +4,12 @@
 #define M_TAU M_PI * 2
 
 #include <cmath>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Quaternion.h>
-#include <geometry_msgs/Vector3.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace bitbots_quintic_walk {
 
@@ -25,7 +25,7 @@ enum WalkState {
 };
 
 struct WalkRequest {
-  tf2::Vector3 linear_orders = {0, 0, 0};
+  std::vector<double> linear_orders = {0, 0, 0};
   double angular_z = 0;
   bool stop_walk = false;
   bool walkable_state = false;
@@ -106,6 +106,17 @@ inline double angleDistance(double angle_src, double angle_dst) {
     }
   }
 }
+
+inline void tf_pose_to_msg(tf2::Transform &tf_pose, geometry_msgs::msg::Pose &msg_pose){
+  msg_pose.position.x = tf_pose.getOrigin().getX();
+  msg_pose.position.y = tf_pose.getOrigin().getY();
+  msg_pose.position.z = tf_pose.getOrigin().getZ();
+  msg_pose.orientation.x = tf_pose.getRotation().getX();
+  msg_pose.orientation.y = tf_pose.getRotation().getY();
+  msg_pose.orientation.z = tf_pose.getRotation().getZ();
+  msg_pose.orientation.w = tf_pose.getRotation().getW();
+}
+
 } // namespace bitbots_quintic_walk
 
 #endif //BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_UTILS_H_

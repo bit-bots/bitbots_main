@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import sys
 
-import actionlib
-import rospy
+from rclpy.action import ActionClient
+import rclpy
+from rclpy.node import Node
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Twist
 from bitbots_msgs.msg import JointCommand, DynUpAction, DynUpGoal
@@ -50,14 +51,14 @@ def done_cb(state, result):
     print(str(result))
 
 
-rospy.init_node("walkready_script")
-rospy.logwarn("Make sure that the Dynup is running together with simulator or this script will not work.")
+rclpy.init(args=None)
+self.get_logger().warn("Make sure that the Dynup is running together with simulator or this script will not work.")
 
 rospy.Subscriber("/DynamixelController/command", JointCommand, callback)
 
 print('[..] Connecting to action server \'dynup\'', end='')
 sys.stdout.flush()
-client = actionlib.SimpleActionClient('dynup', DynUpAction)
+client = ActionClient(self, DynUpAction, 'dynup')
 if not client.wait_for_server():
     exit(1)
 print('\r[OK] Connecting to action server \'dynup\'')
@@ -66,9 +67,9 @@ print()
 goal = DynUpGoal()
 goal.direction = "rise"
 
-client.send_goal(goal)
+client.send_goal_async(goal)
 client.done_cb = done_cb
 print("Sent new goal. Waiting for result")
 client.wait_for_result()
 
-rospy.loginfo("Your walkready animation has been saved to the current directory.")
+self.get_logger().info("Your walkready animation has been saved to the current directory.")

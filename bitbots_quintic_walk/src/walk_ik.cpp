@@ -2,17 +2,20 @@
 
 namespace bitbots_quintic_walk {
 
-WalkIK::WalkIK() : ik_timeout_(0.01) {}
+WalkIK::WalkIK(rclcpp::Node::SharedPtr node) : node_(node), ik_timeout_(0.01) {}
 
 void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
   left_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
   right_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
 
-  goal_state_.reset(new robot_state::RobotState(kinematic_model));
+  goal_state_.reset(new moveit::core::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
-  reset();
-
+  bool ik_reset;
+  node_->get_parameter("node.ik_reset", ik_reset);
+  if (ik_reset){
+    reset();
+  }
 }
 
 bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
@@ -21,8 +24,8 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
 
   // make pose msg for calling IK
-  geometry_msgs::Pose left_foot_goal_msg;
-  geometry_msgs::Pose right_foot_goal_msg;
+  geometry_msgs::msg::Pose left_foot_goal_msg;
+  geometry_msgs::msg::Pose right_foot_goal_msg;
 
   // decide which foot is which
   if (ik_goals.is_left_support_foot) {
@@ -84,7 +87,7 @@ const std::vector<std::string> &WalkIK::getRightLegJointNames() {
   return right_leg_joints_group_->getJointModelNames();
 }
 
-robot_state::RobotStatePtr WalkIK::get_goal_state() {
+moveit::core::RobotStatePtr WalkIK::get_goal_state() {
   return goal_state_;
 }
 

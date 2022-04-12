@@ -2,8 +2,8 @@
 
 namespace bitbots_splines {
 
-geometry_msgs::Point PositionSpline::getGeometryMsgPosition(double time) {
-  geometry_msgs::Point msg;
+geometry_msgs::msg::Point PositionSpline::getGeometryMsgPosition(double time) {
+  geometry_msgs::msg::Point msg;
   tf2::Vector3 tf_vec = getPos(time);
   msg.x = tf_vec.x();
   msg.y = tf_vec.y();

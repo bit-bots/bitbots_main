@@ -4,21 +4,22 @@
 #include <string>
 #include <optional>
 #include <cmath>
+#include <rclcpp/rclcpp.hpp>
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/abstract_engine.h>
-#include <bitbots_dynup/DynUpConfig.h>
-#include <bitbots_dynup/DynupEngineDebug.h>
+#include <bitbots_dynup/msg/dynup_engine_debug.hpp>
 #include <tf2/convert.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 #include "dynup_stabilizer.h"
 
 namespace bitbots_dynup {
 
 class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupResponse> {
  public:
-  DynupEngine();
+   explicit DynupEngine(rclcpp::Node::SharedPtr node);
 
   void init(double arm_offset_y, double arm_offset_z);
 
@@ -41,9 +42,9 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   int getDirection();
 
-  bool isStabilizingNeeded() const;
+  bool isStabilizingNeeded();
 
-  bool isHeadZero() const;
+  bool isHeadZero();
 
   bitbots_splines::PoseSpline getRFootSplines() const;
 
@@ -53,20 +54,21 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   bitbots_splines::PoseSpline getLFootSplines() const;
 
-  void setParams(DynUpConfig params);
+  void setParams(std::map<std::string, rclcpp::Parameter> params);
 
   void reset() override;
   void reset(double time);
 
   void publishArrowMarker(std::string name_space,
                           std::string frame,
-                          geometry_msgs::Pose pose,
+                          geometry_msgs::msg::Pose pose,
                           float r,
                           float g,
                           float b,
                           float a);
 
  private:
+  rclcpp::Node::SharedPtr node_;
   int marker_id_;
   double time_;
   double duration_;
@@ -81,15 +83,14 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline l_hand_spline_;
   bitbots_splines::PoseSpline r_foot_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;
-  DynUpConfig params_;
+  std::map<std::string, rclcpp::Parameter> params_;
 
   DynupResponse goals_;
 
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener listener_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
-  ros::Publisher pub_engine_debug_;
-  ros::Publisher pub_debug_marker_;
+  rclcpp::Publisher<bitbots_dynup::msg::DynupEngineDebug>::SharedPtr pub_engine_debug_;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_debug_marker_;
 
   /*
    * Helper method to extract the current pose of the left foot or the torso from the spline
@@ -97,12 +98,12 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    * @param foot true to get the left foot position, false to get the torso position
    * @returns the requested pose relative to the right foot
    */
-  geometry_msgs::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline, std::string frame_id);
+  geometry_msgs::msg::PoseStamped getCurrentPose(bitbots_splines::PoseSpline spline, std::string frame_id);
 
   /*
    * Creates starting positions for the splines.
    */
-  bitbots_splines::PoseSpline initializeSpline(geometry_msgs::Pose pose, bitbots_splines::PoseSpline spline);
+  bitbots_splines::PoseSpline initializeSpline(geometry_msgs::msg::Pose pose, bitbots_splines::PoseSpline spline);
 
   /* Calculate the splines to get from lying on the front to squatting:
    * - move arms to front and pull legs

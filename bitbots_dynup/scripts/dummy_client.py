@@ -3,8 +3,9 @@
 from __future__ import print_function
 import sys
 
-import rospy
-import actionlib
+import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionClient
 
 from actionlib_msgs.msg import GoalStatus
 from bitbots_msgs.msg import DynUpGoal, DynUpAction, DynUpFeedback
@@ -19,7 +20,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print("[..] Initializing node", end='')
-    rospy.init_node('dynup_dummy_client', anonymous=True)
+    rclpy.init(args=None)
     print("\r[OK] Initializing node")
 
 
@@ -63,7 +64,7 @@ if __name__ == "__main__":
 
     print('[..] Connecting to action server \'dynup\'', end='')
     sys.stdout.flush()
-    client = actionlib.SimpleActionClient('dynup', DynUpAction)
+    client = ActionClient(self, DynUpAction, 'dynup')
     if not client.wait_for_server():
         exit(1)
     print('\r[OK] Connecting to action server \'dynup\'')
@@ -72,7 +73,7 @@ if __name__ == "__main__":
     goal = DynUpGoal()
     goal.direction = sys.argv[1]
 
-    client.send_goal(goal)
+    client.send_goal_async(goal)
     client.done_cb = done_cb
     client.feedback_cb = feedback_cb
     client.active_cb = active_cb

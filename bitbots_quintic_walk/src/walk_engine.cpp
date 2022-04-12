@@ -7,7 +7,9 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-WalkEngine::WalkEngine(const std::string ns) :
+WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
+    params_(),
+    node_(node),
     engine_state_(WalkState::IDLE),
     phase_(0.0),
     last_phase_(0.0),
@@ -27,19 +29,45 @@ WalkEngine::WalkEngine(const std::string ns) :
   right_in_world_.setIdentity();
   reset();
 
-  // init dynamic reconfigure
-  dyn_reconf_server_ =
-      new dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>(ros::NodeHandle(
-          ns + "walking/engine"));
-  dynamic_reconfigure::Server<bitbots_quintic_walk::bitbots_quintic_walk_engine_paramsConfig>::CallbackType f;
-  f = boost::bind(&bitbots_quintic_walk::WalkEngine::reconfCallback, this, _1, _2);
-  dyn_reconf_server_->setCallback(f);
+  node_->get_parameter("engine.freq", params_.freq);
+  node_->get_parameter("engine.double_support_ratio", params_.double_support_ratio);
+  node_->get_parameter("engine.foot_distance", params_.foot_distance);
+  node_->get_parameter("engine.foot_rise", params_.foot_rise);
+  node_->get_parameter("engine.trunk_swing", params_.trunk_swing);
+  node_->get_parameter("engine.trunk_height", params_.trunk_height);
+  node_->get_parameter("engine.trunk_pitch", params_.trunk_pitch);
+  node_->get_parameter("engine.trunk_pitch_p_coef_forward", params_.trunk_pitch_p_coef_forward);
+  node_->get_parameter("engine.trunk_phase", params_.trunk_phase);
+  node_->get_parameter("engine.foot_z_pause", params_.foot_z_pause);
+  node_->get_parameter("engine.foot_put_down_z_offset", params_.foot_put_down_z_offset);
+  node_->get_parameter("engine.foot_put_down_phase", params_.foot_put_down_phase);
+  node_->get_parameter("engine.foot_apex_phase", params_.foot_apex_phase);
+  node_->get_parameter("engine.foot_overshoot_ratio", params_.foot_overshoot_ratio);
+  node_->get_parameter("engine.foot_overshoot_phase", params_.foot_overshoot_phase);
+  node_->get_parameter("engine.trunk_x_offset", params_.trunk_x_offset);
+  node_->get_parameter("engine.trunk_y_offset", params_.trunk_y_offset);
+  node_->get_parameter("engine.trunk_pause", params_.trunk_pause);
+  node_->get_parameter("engine.trunk_x_offset_p_coef_forward", params_.trunk_x_offset_p_coef_forward);
+  node_->get_parameter("engine.trunk_x_offset_p_coef_turn", params_.trunk_x_offset_p_coef_turn);
+  node_->get_parameter("engine.trunk_pitch_p_coef_turn", params_.trunk_pitch_p_coef_turn);
+  node_->get_parameter("engine.kick_length", params_.kick_length);
+  node_->get_parameter("engine.kick_vel", params_.kick_vel);
+  node_->get_parameter("engine.kick_phase", params_.kick_phase);
+  node_->get_parameter("engine.foot_put_down_roll_offset", params_.foot_put_down_roll_offset);
+  node_->get_parameter("engine.first_step_swing_factor", params_.first_step_swing_factor);
+  node_->get_parameter("engine.first_step_trunk_phase", params_.first_step_trunk_phase);
+  node_->get_parameter("engine.trunk_z_movement", params_.trunk_z_movement);
 
   // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
   right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
   // create splines one time to have no empty splines during first idle phase
   buildStartMovementTrajectories();
+
+  if (params_.foot_distance == 0) {
+    RCLCPP_WARN(node_->get_logger(), "Parameters are probably not loaded correctly (unless you are running optimization)");
+  }
+
 }
 
 void WalkEngine::setGoals(const WalkRequest &goals) {
@@ -77,20 +105,25 @@ WalkResponse WalkEngine::update(double dt) {
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
-      ROS_WARN_THROTTLE(1, "PHASE REST");
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1, "PHASE REST");
       return createResponse();
     }
   }
 
-  if (engine_state_ == WalkState::IDLE && request_.single_step){
+  if (engine_state_ == WalkState::IDLE && request_.single_step) {
     float start_phase;
-    if(request_.linear_orders[1] < 0) {
-         start_phase = 0.5;
-    }else{
-        start_phase = 0.0;
+    if (request_.linear_orders[1] < 0) {
+      start_phase = 0.5;
+    } else {
+      start_phase = 0.0;
     }
     // when we want to perform a single step to the right, we need to force using the correct leg
-    reset(WalkState::IDLE, start_phase, {request_.linear_orders[0], request_.linear_orders[1], request_.linear_orders[2], request_.angular_z}, false, true, false);
+    reset(WalkState::IDLE,
+          start_phase,
+          {request_.linear_orders[0], request_.linear_orders[1], request_.linear_orders[2], request_.angular_z},
+          false,
+          true,
+          false);
     request_.stop_walk = true;
   }
 
@@ -119,11 +152,11 @@ WalkResponse WalkEngine::update(double dt) {
     }
   } else if (engine_state_ == WalkState::START_STEP) {
     if (half_step_finished) {
-      if (request_.single_step){
+      if (request_.single_step) {
         request_.single_step = false;
         engine_state_ = WalkState::STOP_STEP;
         buildStopStepTrajectories();
-      }else if (request_.stop_walk) {
+      } else if (request_.stop_walk) {
         // we have zero command vel -> we should stop
         engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
@@ -151,11 +184,11 @@ WalkResponse WalkEngine::update(double dt) {
       right_kick_requested_ = false;
     } else if (half_step_finished) {
       // current step is finished, lets see if we have to change state
-      if (request_.single_step){
+      if (request_.single_step) {
         request_.single_step = false;
         engine_state_ = WalkState::STOP_STEP;
         buildStopStepTrajectories();
-      }else if (request_.stop_walk) {
+      } else if (request_.stop_walk) {
         // we have zero command vel -> we should stop
         engine_state_ = WalkState::STOP_STEP;
         //phase_ = 0.0;
@@ -187,17 +220,17 @@ WalkResponse WalkEngine::update(double dt) {
       return createResponse();
     }
   } else {
-    ROS_ERROR("Something is wrong with the walking engine state");
+    RCLCPP_ERROR(node_->get_logger(), "Something is wrong with the walking engine state");
   }
 
   //Sanity check support foot state
   if ((phase_ < 0.5 && !is_left_support_foot_) ||
       (phase_ >= 0.5 && is_left_support_foot_)) {
-    ROS_ERROR_THROTTLE(1,
-                       "WalkEngine exception invalid state phase= %f support= %d dt= %f",
-                       phase_,
-                       is_left_support_foot_,
-                       dt);
+    RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 1,
+                          "WalkEngine exception invalid state phase= %f support= %d dt= %f",
+                          phase_,
+                          is_left_support_foot_,
+                          dt);
     return createResponse();
   }
   last_phase_ = phase_;
@@ -211,13 +244,23 @@ void WalkEngine::updatePhase(double dt) {
     if (dt == 0.0) { //sometimes happens due to rounding
       dt = 0.0001;
     } else {
-      ROS_ERROR_THROTTLE(1, "WalkEngine exception negative dt phase= %f dt= %f", phase_, dt);
+      RCLCPP_ERROR_THROTTLE(node_->get_logger(),
+                            *node_->get_clock(),
+                            1,
+                            "WalkEngine exception negative dt phase= %f dt= %f",
+                            phase_,
+                            dt);
       return;
     }
   }
   //Check for too long dt
   if (dt > 0.5001 / params_.freq) {
-    ROS_ERROR_THROTTLE(1, "WalkEngine error too long dt phase= %f dt= %f", phase_, dt);
+    RCLCPP_ERROR_THROTTLE(node_->get_logger(),
+                          *node_->get_clock(),
+                          1,
+                          "WalkEngine error too long dt phase= %f dt= %f",
+                          phase_,
+                          dt);
     return;
   }
 
@@ -248,7 +291,12 @@ void WalkEngine::reset() {
   reset(WalkState::IDLE, 0.0, {0, 0, 0, 0}, true, false, false);
 }
 
-void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, bool stop_walk, bool walkable_state, bool reset_odometry) {
+void WalkEngine::reset(WalkState state,
+                       double phase,
+                       std::vector<double> step,
+                       bool stop_walk,
+                       bool walkable_state,
+                       bool reset_odometry) {
   request_.linear_orders[0] = step[0];
   request_.linear_orders[1] = step[1];
   request_.linear_orders[2] = step[2];
@@ -322,7 +370,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
     } else {
-      ROS_ERROR("walk reset state not known");
+      RCLCPP_ERROR(node_->get_logger(), "walk reset state not known");
     }
 
     // now switch them again
@@ -334,13 +382,13 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
       last_phase_ = 0.49999;
     }
 
-   if (reset_odometry) {
-     // move left and right in world by foot distance for correct initialization
-     left_in_world_.setIdentity();
-     right_in_world_.setIdentity();
-     left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
-     right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
-   }
+    if (reset_odometry) {
+      // move left and right in world by foot distance for correct initialization
+      left_in_world_.setIdentity();
+      right_in_world_.setIdentity();
+      left_in_world_.setOrigin(tf2::Vector3{0, params_.foot_distance / 2, 0});
+      right_in_world_.setOrigin(tf2::Vector3{0, -1 * params_.foot_distance / 2, 0});
+    }
 
     // build trajectories one more time with end state of previously build trajectories as a start
     if (state == WalkState::WALKING) {
@@ -356,7 +404,7 @@ void WalkEngine::reset(WalkState state, double phase, std::vector<double> step, 
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
     } else {
-      ROS_ERROR("walk reset state not known");
+      RCLCPP_ERROR(node_->get_logger(), "walk reset state not known");
     }
   }
   last_phase_ = phase_;
@@ -450,9 +498,9 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
   // save the current trunk state to use it later and compute the next step position
   if (!start_movement) {
     saveCurrentRobotState();
-    if(!stop_step){
+    if (!stop_step) {
       stepFromOrders(request_.linear_orders, request_.angular_z);
-    }else{
+    } else {
       stepFromOrders({0, 0, 0}, 0);
     }
   } else {
@@ -845,7 +893,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   } else {
     //dont move the foot in last single step before stop since we only move the trunk back to the center
     foot_spline_.z()->addPoint(0.0,
-                             foot_pos_at_foot_change_.z());
+                               foot_pos_at_foot_change_.z());
     foot_spline_.z()->addPoint(half_period, 0.0);
   }
   //Flying foot orientation
@@ -855,8 +903,8 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
   foot_spline_.roll()->addPoint(half_period, 0.0);
 
   foot_spline_.pitch()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.y(),
-                                foot_orientation_vel_at_last_foot_change_.y(),
-                                foot_orientation_acc_at_foot_change_.y());
+                                 foot_orientation_vel_at_last_foot_change_.y(),
+                                 foot_orientation_acc_at_foot_change_.y());
   foot_spline_.pitch()->addPoint(half_period, 0.0);
 
   foot_spline_.yaw()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.z(),
@@ -882,7 +930,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
                               trunk_pos_acc_at_foot_change_.y());
   // move trunk in the center
   trunk_spline_.y()->addPoint(half_period,
-                                -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
+                              -support_sign * 0.5 * params_.foot_distance + params_.trunk_y_offset);
 
   trunk_spline_.z()->addPoint(0.0,
                               trunk_pos_at_foot_change_.z(),
@@ -951,7 +999,7 @@ double WalkEngine::getTrajsTime() const {
   return t;
 }
 
-bool WalkEngine::isLeftSupport() {
+bool WalkEngine::isLeftSupport() const {
   return is_left_support_foot_;
 }
 
@@ -959,10 +1007,6 @@ bool WalkEngine::isDoubleSupport() {
   // returns true if the value of the "is_double_support" spline is currently higher than 0.5
   // the spline should only have values of 0 or 1
   return is_double_support_spline_.pos(getTrajsTime()) >= 0.5;
-}
-
-void WalkEngine::reconfCallback(bitbots_quintic_walk_engine_paramsConfig &params, uint32_t level) {
-  params_ = params;
 }
 
 void WalkEngine::requestKick(bool left) {
@@ -989,7 +1033,7 @@ void WalkEngine::setPauseDuration(double duration) {
   pause_duration_ = duration;
 }
 
-double WalkEngine::getFreq() {
+double WalkEngine::getFreq() const {
   return params_.freq;
 }
 
@@ -1012,13 +1056,13 @@ void WalkEngine::stepFromSupport(const tf2::Transform &diff) {
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
-void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angular_z) {
+void WalkEngine::stepFromOrders(const std::vector<double> &linear_orders, double angular_z) {
   //Compute step diff in next support foot frame
   tf2::Transform tmp_diff = tf2::Transform();
   tmp_diff.setIdentity();
   //No change in forward step and upward step
-  tmp_diff.getOrigin()[0] = linear_orders.x();
-  tmp_diff.getOrigin()[2] = linear_orders.z();
+  tmp_diff.getOrigin()[0] = linear_orders[0];
+  tmp_diff.getOrigin()[2] = linear_orders[2];
   //Add lateral foot offset
   if (is_left_support_foot_) {
     tmp_diff.getOrigin()[1] = params_.foot_distance;
@@ -1028,10 +1072,10 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
   //Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if (
-      (is_left_support_foot_ && linear_orders.y() > 0.0) ||
-          (!is_left_support_foot_ && linear_orders.y() < 0.0)
+      (is_left_support_foot_ && linear_orders[1] > 0.0) ||
+          (!is_left_support_foot_ && linear_orders[1] < 0.0)
       ) {
-    tmp_diff.getOrigin()[1] += linear_orders.y();
+    tmp_diff.getOrigin()[1] += linear_orders[1];
   }
   //No change in turn (in order to rotate around trunk center)
   tf2::Quaternion quat;
@@ -1045,13 +1089,13 @@ void WalkEngine::stepFromOrders(const tf2::Vector3 &linear_orders, double angula
 tf2::Vector3 WalkEngine::getNextEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_next_.getRotation()).getRPY(roll, pitch, yaw);
-  return tf2::Vector3(roll, pitch, yaw);
+  return {roll, pitch, yaw};
 }
 
 tf2::Vector3 WalkEngine::getLastEuler() {
   double roll, pitch, yaw;
   tf2::Matrix3x3(support_to_last_.getRotation()).getRPY(roll, pitch, yaw);
-  return tf2::Vector3(roll, pitch, yaw);
+  return {roll, pitch, yaw};
 }
 
 tf2::Transform WalkEngine::getLeft() {
@@ -1062,5 +1106,67 @@ tf2::Transform WalkEngine::getRight() {
   return right_in_world_;
 }
 
-} // namespace bitbots_quintic_walk
+bool WalkEngine::onSetParameters(const rclcpp::Parameter &parameter) {
+  if (parameter.get_name() == "engine.freq") {
+    params_.freq = parameter.as_double();
+  } else if (parameter.get_name() == "engine.double_support_ratio") {
+    params_.double_support_ratio = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_distance") {
+    params_.foot_distance = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_rise") {
+    params_.foot_rise = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_swing") {
+    params_.trunk_swing = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_height") {
+    params_.trunk_height = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pitch") {
+    params_.trunk_pitch = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pitch_p_coef_forward") {
+    params_.trunk_pitch_p_coef_forward = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_phase") {
+    params_.trunk_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_z_pause") {
+    params_.foot_z_pause = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_put_down_z_offset") {
+    params_.foot_put_down_z_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_put_down_phase") {
+    params_.foot_put_down_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_apex_phase") {
+    params_.foot_apex_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_overshoot_ratio") {
+    params_.foot_overshoot_ratio = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_overshoot_phase") {
+    params_.foot_overshoot_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_x_offset") {
+    params_.trunk_x_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_y_offset") {
+    params_.trunk_y_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pause") {
+    params_.trunk_pause = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_x_offset_p_coef_forward") {
+    params_.trunk_x_offset_p_coef_forward = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_x_offset_p_coef_turn") {
+    params_.trunk_x_offset_p_coef_turn = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_pitch_p_coef_turn") {
+    params_.trunk_pitch_p_coef_turn = parameter.as_double();
+  } else if (parameter.get_name() == "engine.kick_length") {
+    params_.kick_length = parameter.as_double();
+  } else if (parameter.get_name() == "engine.kick_vel") {
+    params_.kick_vel = parameter.as_double();
+  } else if (parameter.get_name() == "engine.kick_phase") {
+    params_.kick_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.foot_put_down_roll_offset") {
+    params_.foot_put_down_roll_offset = parameter.as_double();
+  } else if (parameter.get_name() == "engine.first_step_swing_factor") {
+    params_.first_step_swing_factor = parameter.as_double();
+  } else if (parameter.get_name() == "engine.first_step_trunk_phase") {
+    params_.first_step_trunk_phase = parameter.as_double();
+  } else if (parameter.get_name() == "engine.trunk_z_movement") {
+    params_.trunk_z_movement = parameter.as_double();
+  } else {
+    return false;
+  }
+  return true;
+}
 
+} // namespace bitbots_quintic_walk

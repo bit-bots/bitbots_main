@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 #  -*- coding: utf8 -*-
-import rospy
+import rclpy
+from rclpy.node import Node
 import time
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 if __name__ == "__main__":
-    rospy.init_node('sender')
-    joint_goal_publisher = rospy.Publisher('/minibot/joint_trajectory_action_controller/command', JointTrajectory, queue_size=10)
+    rclpy.init(args=None)
+    joint_goal_publisher = self.create_publisher(JointTrajectory, '/minibot/joint_trajectory_action_controller/command', 10)
 
     msg = JointTrajectoryPoint()
     msg.positions = [90]
@@ -15,14 +16,14 @@ if __name__ == "__main__":
     traj_msg.joint_names = ['HeadTilt']
     traj_msg.points = []
     traj_msg.points.append(msg)
-    traj_msg.header.stamp = rospy.Time.now()
+    traj_msg.header.stamp = self.get_clock().now()
 
     joint_goal_publisher.publish(traj_msg)
-    rospy.logwarn(traj_msg)
+    self.get_logger().warn(traj_msg)
     joint_goal_publisher.publish(traj_msg)
     joint_goal_publisher.publish(traj_msg)
     joint_goal_publisher.publish(traj_msg)
 
 
 
-    rospy.sleep(1)
+    self.get_clock().sleep_for(Duration(seconds=1)

@@ -1,21 +1,28 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_hcm)
 
-find_package(catkin REQUIRED COMPONENTS std_msgs humanoid_league_msgs rospy dynamic_reconfigure bitbots_docs)
+# Add support for C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
-catkin_python_setup()
+find_package(rclpy REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
+find_package(bitbots_docs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(ament_cmake REQUIRED)
 
+include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
-## Generate dynamic reconfigure parameters in the 'cfg' folder
- generate_dynamic_reconfigure_options(
-   cfg/hcm_params.cfg
-)
+ament_export_dependencies(rclpy)
+ament_export_dependencies(humanoid_league_msgs)
+ament_export_dependencies(bitbots_docs)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(ament_cmake)
 
-catkin_package(
- CATKIN_DEPENDS
-)
+install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
+ament_python_install_package(${PROJECT_NAME})
+ament_package()

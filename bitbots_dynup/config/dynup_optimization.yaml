@@ -1,23 +1,24 @@
 dynup:
-  # necessary to provide
-  engine_rate: 240
-  stabilization_timeout: 10
+  ros__parameters:
+    # necessary to provide
+    engine_rate: 240
+    stabilization_timeout: 10
 
-  pid_trunk_roll:
-    p: 0.0
-    i: 0.0
-    d: 0.00
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: True
-    publish_state: False
-  pid_trunk_pitch:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: True
-    publish_state: False
+    pid_trunk_roll:
+      p: 0.0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0
+      i_clamp_min: 0
+      i_clamp_max: 0
+      antiwindup: True
+      publish_state: False
+    pid_trunk_pitch:
+      p: 0.0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0
+      i_clamp_min: 0
+      i_clamp_max: 0
+      antiwindup: True
+      publish_state: False

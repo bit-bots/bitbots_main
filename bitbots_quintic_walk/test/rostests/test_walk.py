@@ -3,7 +3,8 @@ import math
 import time
 
 import rospy
-from bitbots_msgs.msg import JointCommand, SupportState
+from biped_interfaces.msg import Phase
+from bitbots_msgs.msg import JointCommand
 from geometry_msgs.msg import Twist, Point, Pose, Quaternion
 
 from bitbots_test.mocks import MockSubscriber
@@ -89,7 +90,7 @@ class TestWalk(WebotsTestCase):
         sub = MockSubscriber("DynamixelController/command", JointCommand, tcp_nodelay=True)
         sub.wait_until_connected()
         # wait for support state to make sure the walking is started
-        sub_support_state = MockSubscriber("walk_support_state", SupportState, tcp_nodelay=True)
+        sub_support_state = MockSubscriber("walk_support_state", Phase, tcp_nodelay=True)
         sub_support_state.wait_until_connected()
         time.sleep(10)
 
