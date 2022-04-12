@@ -64,8 +64,6 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side){
   save_zero_and_scale_values_ = false;
   resetZeroAndScaleValues();
 
-  RCLCPP_INFO_STREAM(nh_->get_logger(), "reached init publisher");
-
   filtered_pub_ = nh_->create_publisher<bitbots_msgs::msg::FootPressure>(topic + "/filtered", 1);
   cop_pub_ = nh_->create_publisher<geometry_msgs::msg::PointStamped>("/" + cop_lr_, 1);
   std::string wrench_topics[] = {"l_front", "l_back", "r_front", "r_back", "cop"};
@@ -81,21 +79,20 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side){
   }
   scale_service_ = nh_->create_service<bitbots_msgs::srv::FootScale>(topic + "/set_foot_scale", std::bind(&PressureConverter::scaleCallback, this, _1, _2));
   zero_service_ = nh_->create_service<std_srvs::srv::Empty>(topic + "/set_foot_zero", std::bind(&PressureConverter::zeroCallback, this, _1, _2));
+  sub_ = nh_->create_subscription<bitbots_msgs::msg::FootPressure>(topic + "/raw",
+                        1, std::bind(&PressureConverter::pressureCallback, this, _1));
 
-  sub_ = nh_->create_subscription<bitbots_msgs::msg::FootPressure::SharedPtr>(topic + "/raw",
-                        1,
-                        std::bind(&PressureConverter::pressureCallback, this, _1));
 }
 
-void PressureConverter::pressureCallback(const bitbots_msgs::msg::FootPressure::SharedPtr &pressure_raw) {
+void PressureConverter::pressureCallback(bitbots_msgs::msg::FootPressure pressure_raw) {
   bitbots_msgs::msg::FootPressure filtered_msg;
 
-  filtered_msg.header = pressure_raw->header;
+  filtered_msg.header = pressure_raw.header;
 
-  previous_values_[0][current_index_] = ((pressure_raw->left_front) - zero_[0]) * scale_[0];
-  previous_values_[1][current_index_] = ((pressure_raw->left_back) - zero_[1]) * scale_[1],
-  previous_values_[2][current_index_] = ((pressure_raw->right_front) - zero_[2]) * scale_[2],
-  previous_values_[3][current_index_] = ((pressure_raw->right_back) - zero_[3]) * scale_[3];
+  previous_values_[0][current_index_] = ((pressure_raw.left_front) - zero_[0]) * scale_[0];
+  previous_values_[1][current_index_] = ((pressure_raw.left_back) - zero_[1]) * scale_[1],
+  previous_values_[2][current_index_] = ((pressure_raw.right_front) - zero_[2]) * scale_[2],
+  previous_values_[3][current_index_] = ((pressure_raw.right_back) - zero_[3]) * scale_[3];
 
   filtered_msg.left_front = std::accumulate(previous_values_[0].begin(), previous_values_[0].end(), 0.0) / average_;
   filtered_msg.left_back = std::accumulate(previous_values_[1].begin(), previous_values_[1].end(), 0.0) / average_;
@@ -113,23 +110,23 @@ void PressureConverter::pressureCallback(const bitbots_msgs::msg::FootPressure::
   for (int i = 0; i < 4; i++) {
     geometry_msgs::msg::WrenchStamped w;
     w.header.frame_id = wrench_frames_[i];
-    w.header.stamp = pressure_raw->header.stamp;
+    w.header.stamp = pressure_raw.header.stamp;
     w.wrench.force.z = forces_list[i];
     wrench_pubs_[i]->publish(w);
   }
   filtered_pub_->publish(filtered_msg);
   if (save_zero_and_scale_values_) {
-    zero_and_scale_values_[0].push_back(pressure_raw->left_front);
-    zero_and_scale_values_[1].push_back(pressure_raw->left_back);
-    zero_and_scale_values_[2].push_back(pressure_raw->right_front);
-    zero_and_scale_values_[3].push_back(pressure_raw->right_back);
+    zero_and_scale_values_[0].push_back(pressure_raw.left_front);
+    zero_and_scale_values_[1].push_back(pressure_raw.left_back);
+    zero_and_scale_values_[2].push_back(pressure_raw.right_front);
+    zero_and_scale_values_[3].push_back(pressure_raw.right_back);
   }
 
   // publish center of pressure
   double pos_x = 0.085, pos_y = 0.045;
   geometry_msgs::msg::PointStamped cop;
   cop.header.frame_id = sole_lr_;
-  cop.header.stamp = pressure_raw->header.stamp;
+  cop.header.stamp = pressure_raw.header.stamp;
   double sum_of_forces =
       filtered_msg.left_front + filtered_msg.left_back + filtered_msg.right_back + filtered_msg.right_front;
   if (sum_of_forces > cop_threshold_) {
@@ -158,7 +155,7 @@ void PressureConverter::pressureCallback(const bitbots_msgs::msg::FootPressure::
 
   geometry_msgs::msg::WrenchStamped w_cop;
   w_cop.header.frame_id = cop_lr_;
-  w_cop.header.stamp = pressure_raw->header.stamp;
+  w_cop.header.stamp = pressure_raw.header.stamp;
   w_cop.wrench.force.z = sum_of_forces;
   wrench_pubs_[4]->publish(w_cop);
 }
