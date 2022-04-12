@@ -4,7 +4,8 @@ import argparse
 import cv2
 import os
 import sys
-import rospy
+import rclpy
+from bitbots_ros_patches.rate import Rate
 # Check if progressbar is installed
 try:
     import progressbar

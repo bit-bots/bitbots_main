@@ -1,53 +1,41 @@
 <launch>
     <!-- Get launch params-->
-    <arg name="sim" default="false" doc="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
-    <arg name="camera" default="true" doc="true: launches an image provider to get images from a camera (unless sim:=true)" />
-    <arg name="basler" default="true" doc="true: launches the basler camera driver instead of the wolves image provider" />
-    <arg name="dummyball" default="false" doc="true: does not start the ball detection to save resources" />
-    <arg name="debug" default="false" doc="true: activates publishing of several debug images" />
-    <arg name="use_game_settings" default="false" doc="true: loads additional game settings" />
+    <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
+    <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
-    <arg if="$(optenv IS_ROBOT false)" name="taskset" default="taskset -c 6,7"/>
-    <arg unless="$(optenv IS_ROBOT false)" name="taskset" default=""/>
+    <!-- TODO add camera driver -->
 
-    <!-- Start the vision-->
-    <node pkg="bitbots_vision" type="vision.py" name="bitbots_vision" output="screen" launch-prefix="$(arg taskset)">
-        <!-- Set vision config-->
-        <rosparam command="load" file="$(find bitbots_vision)/config/visionparams.yaml" />
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-        <!-- Set debug params-->
-        <param name="vision_publish_debug_image" value="$(arg debug)" />
-        <param name="vision_publish_HSV_mask_image" value="$(arg debug)" />
-        <param name="vision_publish_field_mask_image" value="$(arg debug)" />
+    <!-- Start the vision normally-->
+    <group unless="$(var sim)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+            <!-- Set vision config -->
+            <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
 
-        <!-- Start vision without ball detection-->
-        <param name="neural_network_type" value="dummy" if="$(arg dummyball)"/>
-
-        <!-- load special sim parameters-->
-        <rosparam command="load" file="$(find bitbots_vision)/config/simparams.yaml" if="$(arg sim)"/>
-
-    </node>
-
-    <!-- Load game settings -->
-    <group if="$(arg use_game_settings)">
-        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
+            <!-- Set debug params-->
+            <param name="vision_publish_debug_image" value="$(var debug)" />
+            <param name="vision_publish_HSV_mask_image" value="$(var debug)" />
+            <param name="vision_publish_field_mask_image" value="$(var debug)" />
+        </node>
     </group>
+    <!-- Start the vision in sim configuration-->
+    <group if="$(var sim)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+            <!-- Set vision config -->
+            <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
+            <!-- Partially overwrite vision config with sim params-->
+            <param from="$(find-pkg-share bitbots_vision)/config/simparams.yaml"/>
 
-    <!-- Start dynamic-color-lookup-table node -->
-    <node pkg="bitbots_vision" type="dynamic_color_lookup_table.py" name="bitbots_dynamic_color_lookup_table" output="screen"  launch-prefix="$(arg taskset)">
-    </node>
+            <!-- Set debug params-->
+            <param name="vision_publish_debug_image" value="$(var debug)" />
+            <param name="vision_publish_HSV_mask_image" value="$(var debug)" />
+            <param name="vision_publish_field_mask_image" value="$(var debug)" />
 
-    <!-- Start the camera only when necessary -->
-    <group if="$(arg camera)">
-        <group unless="$(arg sim)">
-            <include unless="$(arg basler)" file="$(find wolves_image_provider)/launch/image_provider.launch" />
-            <include if="$(arg basler)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
-        </group>
+            <!-- Use sim time-->
+            <param name="use_sim_time" value="true"/>
+        </node>
     </group>
-
-    <!-- Set use simulation time -->
-    <group if="$(arg sim)">
-        <param name="use_sim_time" value="true" />
-    </group>
-
 </launch>

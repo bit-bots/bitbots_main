@@ -5,7 +5,7 @@ import numpy as np
 import time
 import pickle
 import os
-import rospy
+import rclpy
 import rospkg
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image

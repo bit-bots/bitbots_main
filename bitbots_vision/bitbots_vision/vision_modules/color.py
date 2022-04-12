@@ -3,13 +3,15 @@ import abc
 import cv2
 import yaml
 import pickle
-import rospy
+import rclpy
 import numpy as np
+from rclpy import logging
 from copy import deepcopy
 from threading import Lock
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
 
+logger = logging.get_logger('bitbots_vision')
 
 class ColorDetector(object):
     """
@@ -46,7 +48,7 @@ class ColorDetector(object):
         :param dict config: dictionary of the vision node configuration parameters
         :return: None
         """
-        rospy.logdebug("(RE-)Configuring of ColorDetector", logger_name="vision_color_detector")
+        logger.debug("(RE-)Configuring of ColorDetector")
         self._config = config
 
     @abc.abstractmethod
@@ -225,7 +227,7 @@ class HsvSpaceColorDetector(ColorDetector):
                         config[self._detector_name + '_upper_values_v']
                 ])
         except KeyError:
-            rospy.logerr(f"Undefined hsv color values for '{self._detector_name}'. Check config values.", logger_name="vision_hsv_color_detector")
+            logger.error(f"Undefined hsv color values for '{self._detector_name}'. Check config values.")
             raise
 
     def match_pixel(self, pixel):
@@ -309,7 +311,7 @@ class PixelListColorDetector(ColorDetector):
                 try:
                     color_values = yaml.safe_load(stream)
                 except yaml.YAMLError as exc:
-                    rospy.logerr(exc, logger_name="vision_pixellist_color_detector")
+                    logger.error(exc)
 
         # pickle-file is stored as '.pickle'
         elif color_path.endswith('.pickle'):
@@ -317,7 +319,7 @@ class PixelListColorDetector(ColorDetector):
                 with open(color_path, 'rb') as f:
                     color_values = pickle.load(f)
             except pickle.PickleError as exc:
-                rospy.logerr(exc, logger_name="vision_pixellist_color_detector")
+                logger.error(exc)
 
         # compatibility with colorpicker
         if 'color_values' in color_values.keys():
@@ -363,115 +365,3 @@ class PixelListColorDetector(ColorDetector):
                 image.shape[0],
                 image.shape[1])
         return mask
-
-class DynamicPixelListColorDetector(PixelListColorDetector):
-    """
-    The :class:`.DynamicPixelListColorDetector`'s color lookup table is initially loaded from color-lookup-table-file defined in config
-    and optionally adjustable to changing color conditions (dynamic color lookup table).
-    """
-    def __init__(self, config, package_path):
-        # type:(dict, str) -> None
-        """
-        Initialization of DynamicPixelListColorDetector.
-        :param dict config: dictionary of the vision node configuration parameters
-        :param str package_path: path of package
-        :return: None
-        """
-        self._static_mask = None
-
-        # Initialization of parent PixelListColorDetector.
-        super(DynamicPixelListColorDetector, self).__init__(config, package_path)
-
-        # The global is needed due to threading issues
-        global _dyn_color_lookup_table
-        _dyn_color_lookup_table = np.copy(self._color_lookup_table)
-
-        # The global is needed due to threading issues
-        global _base_color_lookup_table
-        _base_color_lookup_table = np.copy(self._color_lookup_table)
-
-        # The global is needed to transfer the new message data to the main thread
-        global _transfer_color_lookup_table_data_mutex
-        _transfer_color_lookup_table_data_mutex = Lock()
-
-    def set_image(self, image):
-        # type: (np.array) -> None
-        """
-        Refreshes class variables after receiving an image
-        :param image: the current frame of the video feed
-        :return: None
-        """
-        self._static_mask = None
-
-        super(DynamicPixelListColorDetector, self).set_image(image)
-
-    def get_static_mask_image(self, optional_image=None):
-        # type: (np.array) -> np.array
-        """
-        Returns the color mask of the cached (or optional given) image based on the static color lookup table
-        (0 for not in color range and 255 for in color range)
-        :param np.array optional_image: Optional input image
-        :return np.array: masked image
-        """
-        global _base_color_lookup_table
-
-        if optional_image is not None:
-            # Mask of optional image
-            mask = self._mask_image(optional_image, _base_color_lookup_table)
-        else:
-            # Mask of default cached image
-            mask = self._static_mask
-            if mask is None:  # Check for cached static mask
-                mask = self._static_mask = self._mask_image(self._image, _base_color_lookup_table)
-        return mask
-
-    def _mask_image(self, image, color_lookup_table=None):
-        # type: (np.array, np.array) -> np.array
-        """
-        Returns the color mask of the image based on the dynamic color lookup table unless other is specified
-        (0 for not in color range and 255 for in color range)
-        :param np.array image: input image
-        :param np.array color_lookup_table: Optional color lookup table. Mainly used for dynamic color lookup table.
-        :return np.array: masked image
-        """
-        if color_lookup_table is None:
-            global _dyn_color_lookup_table
-            color_lookup_table = _dyn_color_lookup_table
-
-        return super(DynamicPixelListColorDetector, self)._mask_image(image, color_lookup_table)
-
-    def color_lookup_table_callback(self, msg):
-        # type: (ColorLookupTable) -> None
-        """
-        This callback gets called inside the vision node, after subscriber received ColorLookupTableMessage from DynamicColorLookupTable-Node.
-        :param ColorLookupTableMessage msg: ColorLookupTableMessage
-        :return: None
-        """
-        global _transfer_color_lookup_table_data_mutex
-        if _transfer_color_lookup_table_data_mutex.locked():
-            return
-
-        with _transfer_color_lookup_table_data_mutex:
-            self._decode_color_lookup_table(msg)  # Decode color lookup table message
-
-    def _decode_color_lookup_table(self, msg):
-        # type: (ColorLookupTableMessage) -> None
-        """
-        Imports new color lookup table from ros msg. This is used to communicate with the DynamicColorLookupTable-Node.
-        :param ColorLookupTableMessage msg: ColorLookupTableMessage
-        :return: None
-        """
-        # Create temporary color lookup table
-        # Use the base color lookup table as basis
-        global _base_color_lookup_table
-        new_color_lookup_table = np.copy(_base_color_lookup_table)
-
-        # Adds new colors to that color lookup table
-        new_color_lookup_table[
-            msg.blue,
-            msg.green,
-            msg.red] = 255
-
-        # Switches the reference to the new color lookup table
-        global _dyn_color_lookup_table
-        _dyn_color_lookup_table = new_color_lookup_table
