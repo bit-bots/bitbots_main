@@ -107,3 +107,4 @@
 [submodule "lib/vision_msgs"]
 	path = lib/vision_msgs
 	url = git@github.com:ros-perception/vision_msgs.git
+	branch = ros2
