@@ -16,7 +16,7 @@
     <include file="$(find wolfgang_robocup_api)/launch/wolfgang_robocup_api_bridge.launch" />
 
     <!-- load the robot description -->
-    <include file="$(find bitbots_bringup)/launch/load_robot_description.launch">
+    <include file="$(find bitbots_bringup)/launch/base.launch">
         <arg name="sim" value="true" />
     </include>
 

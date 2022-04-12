@@ -4,8 +4,10 @@ import time
 
 from controller import Robot, Node, Field
 
-import rospy
+import rclpy
+from rclpy.node import Node as RclpyNode
 from geometry_msgs.msg import PointStamped
+from rclpy.time import Time
 from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
 
 from bitbots_msgs.msg import JointCommand, FootPressure
@@ -14,8 +16,9 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
 class RobotController:
-    def __init__(self, ros_active=False, robot='wolfgang', do_ros_init=True, robot_node=None, base_ns='',
-                 recognize=False, camera_active=True, foot_sensors_active=True):
+    def __init__(self, ros_node: Node = None, ros_active=False, robot='wolfgang', robot_node=None, base_ns='',
+                 recognize=False,
+                 camera_active=True, foot_sensors_active=True):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -23,10 +26,12 @@ class RobotController:
 
         :param ros_active: Whether ROS messages should be published
         :param robot: The name of the robot to use, currently one of wolfgang, darwin, nao, op3
-        :param do_ros_init: Whether to call rospy.init_node (only used when ros_active is True)
         :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
         :param base_ns: The namespace of this node, can normally be left empty
         """
+        self.ros_node = ros_node
+        if self.ros_node is None:
+            self.ros_node = RclpyNode('robot_controller')
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
@@ -45,7 +50,6 @@ class RobotController:
         self.sensors_dict = {}
         self.timestep = int(self.robot_node.getBasicTimeStep())
 
-        self.switch_coordinate_system = True
         self.is_wolfgang = False
         self.pressure_sensors = None
         if robot == 'wolfgang':
@@ -77,7 +81,7 @@ class RobotController:
                 sensor.enable(self.timestep)
                 self.pressure_sensors.append(sensor)
 
-        elif robot == 'darwin':
+        elif robot in ['darwin', 'robotis_op2']:
             self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                       "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
                                       "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
@@ -85,6 +89,7 @@ class RobotController:
                                          "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
                                          "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
                                          "LAnkleRoll", "HeadPan", "HeadTilt"]
+            self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
@@ -97,13 +102,13 @@ class RobotController:
                                       "LAnkleRoll",
                                       "HeadYaw",
                                       "HeadPitch"]
+            self.pressure_sensors = None
             self.external_motor_names = self.proto_motor_names
             self.sensor_suffix = "S"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
-            self.switch_coordinate_system = False
-        elif robot == 'op3':
+        elif robot == 'op3': #robotis
             self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
                                       "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
                                       "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
@@ -111,11 +116,105 @@ class RobotController:
                                          "r_el", "l_el", "r_hip_yaw", "l_hip_yaw", "r_hip_roll", "l_hip_roll",
                                          "r_hip_pitch", "l_hip_pitch", "r_knee", "l_knee", "r_ank_pitch",
                                          "l_ank_pitch", "r_ank_roll", "l_ank_roll", "head_pan", "head_tilt"]
+            self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-            self.switch_coordinate_system = False
+        elif robot == 'rfc':
+            self.proto_motor_names = ["RightShoulderPitch [shoulder]", "LeftShoulderPitch [shoulder]",
+                                      "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow", "RightHipYaw",
+                                      "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]", "RightHipPitch",
+                                      "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
+                                      "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyroscope"
+            camera_name = "Camera"
+        elif robot == 'gankenkun': #CITBrains
+            self.proto_motor_names = ["right_shoulder_pitch_joint [shoulder]", "left_shoulder_pitch_joint [shoulder]",
+                                      "right_shoulder_roll_joint", "left_shoulder_roll_joint",
+                                      "right_elbow_pitch_joint", "left_elbow_pitch_joint", "right_waist_yaw_joint",
+                                      "left_waist_yaw_joint", "right_waist_roll_joint [hip]",
+                                      "left_waist_roll_joint [hip]", "right_waist_pitch_joint",
+                                      "left_waist_pitch_joint", "right_knee_pitch_joint", "left_knee_pitch_joint",
+                                      "right_ankle_pitch_joint", "left_ankle_pitch_joint",
+                                      "right_ankle_roll_joint", "left_ankle_roll_joint", "head_yaw_joint"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "accelerometer"
+            gyro_name = "gyro"
+            camera_name = "camera_sensor"
+        elif robot == 'chape': #itandroids
+            self.proto_motor_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
+                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw",
+                                      "rightHipYaw", "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]",
+                                      "rightHipPitch", "leftHipPitch", "rightKneePitch", "leftKneePitch",
+                                      "rightAnklePitch", "leftAnklePitch", "rightAnkleRoll", "leftAnkleRoll", "neckYaw",
+                                      "neckPitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyro"
+            camera_name = "Camera"
+        elif robot == 'mrl_hsl':
+            self.proto_motor_names = ["Shoulder-R [shoulder]", "UpperArm-R", "LowerArm-R", "Shoulder-L [shoulder]",
+                                      "UpperArm-L", "LowerArm-L", "HipYaw-R", "HipRoll-R [hip]", "HipPitch-R",
+                                      "KneePitch-R", "AnklePitch-R", "AnkleRoll-R", "HipYaw-L", "HipRoll-L [hip]",
+                                      "HipPitch-L", "KneePitch-L", "AnklePitch-L", "AnkleRoll-L", "NeckYaw",
+                                      "HeadPitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "S"
+            accel_name = "Accelerometer"
+            gyro_name = "Gyro"
+            camera_name = "Camera"
+        elif robot == 'nugus': #NUbots
+            self.proto_motor_names = ["neck_yaw", "head_pitch", "left_hip_yaw", "left_hip_roll [hip]",
+                                      "left_hip_pitch", "left_knee_pitch", "left_ankle_pitch", "left_ankle_roll",
+                                      "right_hip_yaw", "right_hip_roll [hip]", "right_hip_pitch", "right_knee_pitch",
+                                      "right_ankle_pitch", "right_ankle_roll", "left_shoulder_pitch [shoulder]",
+                                      "left_shoulder_roll", "left_elbow_pitch", "right_shoulder_pitch [shoulder]",
+                                      "right_shoulder_roll", "right_elbow_pitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "accelerometer"
+            gyro_name = "gyroscope"
+            camera_name = "left_camera"
+        elif robot == 'sahrv74': #Starkit
+            self.proto_motor_names = ["right_shoulder_pitch [shoulder]", "right_shoulder_roll", "right_elbow",
+                                      "left_shoulder_pitch [shoulder]", "left_shoulder_roll", "left_elbow",
+                                      "right_hip_yaw", "right_hip_roll", "right_hip_pitch [hip]", "right_knee",
+                                      "right_ankle_pitch", "right_ankle_roll", "left_hip_yaw", "left_hip_roll",
+                                      "left_hip_pitch [hip]", "left_knee", "left_ankle_pitch", "left_ankle_roll",
+                                      "head_yaw", "head_pitch"]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "accelerometer"
+            gyro_name = "gyro"
+            camera_name = "left_camera"
+        elif robot == 'bez': #UTRA
+            self.proto_motor_names = ["head_motor_0", "head_motor_1", "right_leg_motor_0", "right_leg_motor_1 [hip]",
+                                      "right_leg_motor_2", "right_leg_motor_3", "right_leg_motor_4",
+                                      "right_leg_motor_5", "left_leg_motor_0", "left_leg_motor_1 [hip]",
+                                      "left_leg_motor_2", "left_leg_motor_3", "left_leg_motor_4", "left_leg_motor_5",
+                                      "right_arm_motor_0 [shoulder]", "right_arm_motor_1",
+                                      "left_arm_motor_0 [shoulder]", "left_arm_motor_1", ]
+            self.external_motor_names = self.proto_motor_names
+            self.pressure_sensors = None
+            self.sensor_suffix = "_sensor"
+            accel_name = "imu accelerometer"
+            gyro_name = "imu gyro"
+            camera_name = "camera"
+        else:
+            self.ros_node.get_logger().error("Robot type not supported: %s" % robot)
+            exit()
 
         self.motor_names_to_external_names = {}
         self.external_motor_names_to_motor_names = {}
@@ -162,48 +261,30 @@ class RobotController:
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
 
-        self.imu_frame = rospy.get_param("~imu_frame", "imu_frame")
+        self.ros_node.declare_parameter("imu_frame", "imu_frame")
+        self.imu_frame = self.ros_node.get_parameter("imu_frame").get_parameter_value().string_value
         if self.ros_active:
-            if base_ns == "":
-                clock_topic = "/clock"
-            else:
-                clock_topic = base_ns + "clock"
-            if do_ros_init:
-                rospy.init_node("webots_ros_interface", argv=['clock:=' + clock_topic])
-            self.l_sole_frame = rospy.get_param("~l_sole_frame", "l_sole")
-            self.r_sole_frame = rospy.get_param("~r_sole_frame", "r_sole")
-            self.camera_optical_frame = rospy.get_param("~camera_optical_frame", "camera_optical_frame")
-            self.head_imu_frame = rospy.get_param("~head_imu_frame", "imu_frame_2")
-            self.pub_js = rospy.Publisher(base_ns + "joint_states", JointState, queue_size=1)
-            self.pub_imu = rospy.Publisher(base_ns + "imu/data_raw", Imu, queue_size=1)
+            self.ros_node.declare_parameter("l_sole_frame", "l_sole")
+            self.ros_node.declare_parameter("r_sole_frame", "r_sole")
+            self.ros_node.declare_parameter("camera_optical_frame", "camera_optical_frame")
+            self.ros_node.declare_parameter("head_imu_frame", "head_imu_frame")
+            self.l_sole_frame = self.ros_node.get_parameter("l_sole_frame").get_parameter_value().string_value
+            self.r_sole_frame = self.ros_node.get_parameter("r_sole_frame").get_parameter_value().string_value
+            self.camera_optical_frame = self.ros_node.get_parameter(
+                "camera_optical_frame").get_parameter_value().string_value
+            self.head_imu_frame = self.ros_node.get_parameter("head_imu_frame").get_parameter_value().string_value
+            self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states", 1)
+            self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
-            self.pub_imu_head = rospy.Publisher(base_ns + "imu_head/data", Imu, queue_size=1)
-            self.pub_cam = rospy.Publisher(base_ns + "camera/image_proc", Image, queue_size=1)
-            self.pub_cam_info = rospy.Publisher(base_ns + "camera/camera_info", CameraInfo, queue_size=1, latch=True)
+            self.pub_imu_head = self.ros_node.create_publisher(Imu, base_ns + "imu_head/data", 1)
+            self.pub_cam = self.ros_node.create_publisher(Image, base_ns + "camera/image_proc", 1)
+            self.pub_cam_info = self.ros_node.create_publisher(CameraInfo, base_ns + "camera/camera_info", 1)
 
-            self.pub_pres_left = rospy.Publisher(base_ns + "foot_pressure_left/raw", FootPressure, queue_size=1)
-            self.pub_pres_right = rospy.Publisher(base_ns + "foot_pressure_right/raw", FootPressure, queue_size=1)
-            self.cop_l_pub_ = rospy.Publisher(base_ns + "cop_l", PointStamped, queue_size=1)
-            self.cop_r_pub_ = rospy.Publisher(base_ns + "cop_r", PointStamped, queue_size=1)
-            rospy.Subscriber(base_ns + "DynamixelController/command", JointCommand, self.command_cb)
-
-            # publish camera info once, it will be latched
-            self.cam_info = CameraInfo()
-            self.cam_info.header.stamp = rospy.Time.from_seconds(self.time)
-            self.cam_info.header.frame_id = self.camera_optical_frame
-            self.cam_info.height = self.camera.getHeight()
-            self.cam_info.width = self.camera.getWidth()
-            f_y = self.mat_from_fov_and_resolution(
-                self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
-                self.cam_info.height)
-            f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-            self.cam_info.K = [f_x, 0, self.cam_info.width / 2,
-                               0, f_y, self.cam_info.height / 2,
-                               0, 0, 1]
-            self.cam_info.P = [f_x, 0, self.cam_info.width / 2, 0,
-                               0, f_y, self.cam_info.height / 2, 0,
-                               0, 0, 1, 0]
-            self.pub_cam_info.publish(self.cam_info)
+            self.pub_pres_left = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_left/raw", 1)
+            self.pub_pres_right = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_right/raw", 1)
+            self.cop_l_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_l", 1)
+            self.cop_r_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_r", 1)
+            self.ros_node.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
 
         if robot == "op3":
             # start pose
@@ -311,7 +392,7 @@ class RobotController:
     def get_joint_state_msg(self):
         js = JointState()
         js.name = []
-        js.header.stamp = rospy.Time.from_seconds(self.time)
+        js.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         js.position = []
         js.effort = []
         for joint_name in self.external_motor_names:
@@ -328,7 +409,7 @@ class RobotController:
 
     def get_imu_msg(self, head=False):
         msg = Imu()
-        msg.header.stamp = rospy.Time.from_seconds(self.time)
+        msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         if head:
             msg.header.frame_id = self.head_imu_frame
         else:
@@ -360,7 +441,10 @@ class RobotController:
             gyro_vels = self.gyro.getValues()
             msg.angular_velocity.x = gyro_vels[0]
             msg.angular_velocity.y = gyro_vels[1]
-            msg.angular_velocity.z = gyro_vels[2]
+            if not math.isnan(gyro_vels[2]): # nao robot reports nan for yaw
+                msg.angular_velocity.z = gyro_vels[2]
+            else:
+                msg.angular_velocity.z = 0.0
         return msg
 
     def publish_imu(self):
@@ -370,7 +454,7 @@ class RobotController:
 
     def publish_camera(self):
         img_msg = Image()
-        img_msg.header.stamp = rospy.Time.from_seconds(self.time)
+        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         img_msg.header.frame_id = self.camera_optical_frame
         img_msg.height = self.camera.getHeight()
         img_msg.width = self.camera.getWidth()
@@ -379,6 +463,22 @@ class RobotController:
         img = self.camera.getImage()
         img_msg.data = img
         self.pub_cam.publish(img_msg)
+
+        self.cam_info = CameraInfo()
+        self.cam_info.header = img_msg.header
+        self.cam_info.height = self.camera.getHeight()
+        self.cam_info.width = self.camera.getWidth()
+        f_y = self.mat_from_fov_and_resolution(
+            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
+            self.cam_info.height)
+        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
+        self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2,
+                           0.0, f_y, self.cam_info.height / 2,
+                           0.0, 0.0, 1.0]
+        self.cam_info.p = [f_x, 0.0, self.cam_info.width / 2, 0.0,
+                           0.0, f_y, self.cam_info.height / 2, 0.0,
+                           0.0, 0.0, 1.0, 0.0]
+        self.pub_cam_info.publish(self.cam_info)
 
     def save_recognition(self):
         if self.time - self.last_img_saved < 1.0:
@@ -421,9 +521,8 @@ class RobotController:
         return self.camera.getImage()
 
     def get_pressure_message(self):
-
-        current_time = rospy.Time.from_sec(self.time)
-        if not self.foot_sensors_active:
+        current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+        if not self.foot_sensors_active or self.pressure_sensors is None:
             cop_r = PointStamped()
             cop_r.header.frame_id = self.r_sole_frame
             cop_r.header.stamp = current_time
@@ -464,8 +563,8 @@ class RobotController:
                              left_pressure.right_front - left_pressure.right_back) * pos_y / sum
             cop_l.point.y = max(min(cop_l.point.x, pos_y), -pos_y)
         else:
-            cop_l.point.x = 0
-            cop_l.point.y = 0
+            cop_l.point.x = 0.0
+            cop_l.point.y = 0.0
 
         cop_r = PointStamped()
         cop_r.header.frame_id = self.r_sole_frame
@@ -479,8 +578,8 @@ class RobotController:
                              right_pressure.right_front - right_pressure.right_back) * pos_y / sum
             cop_r.point.y = max(min(cop_r.point.x, pos_y), -pos_y)
         else:
-            cop_r.point.x = 0
-            cop_r.point.y = 0
+            cop_r.point.x = 0.0
+            cop_r.point.y = 0.0
 
         return left_pressure, right_pressure, cop_l, cop_r
 

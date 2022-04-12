@@ -1,12 +1,14 @@
 from controller import Supervisor, Keyboard, Node
 
-import rospy
+import rclpy
+from rclpy.node import Node as RclpyNode
 from geometry_msgs.msg import Quaternion, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
-from bitbots_msgs.srv import SetObjectPose, SetObjectPoseResponse, SetObjectPosition, SetObjectPositionResponse
+from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
+from rclpy.time import Time
 
 from rosgraph_msgs.msg import Clock
-from std_srvs.srv import Empty, EmptyResponse
+from std_srvs.srv import Empty
 
 import transforms3d
 import numpy as np
@@ -15,16 +17,18 @@ G = 9.81
 
 
 class SupervisorController:
-    def __init__(self, ros_active=False, mode='normal', do_ros_init=True, base_ns='', model_states_active=True):
+    def __init__(self, ros_node: Node = None, ros_active=False, mode='normal', base_ns='/', model_states_active=True, robot="wolfgang"):
         """
         The SupervisorController, a Webots controller that can control the world.
         Set the environment variable WEBOTS_ROBOT_NAME to "supervisor_robot" if used with 1_bot.wbt or 4_bots.wbt.
 
         :param ros_active: Whether to publish ROS messages
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
-        :param do_ros_init: Whether rospy.init_node should be called
         :param base_ns: The namespace of this node, can normally be left empty
         """
+        self.ros_node = ros_node
+        if self.ros_node is None:
+            self.ros_node = RclpyNode('supervisor_controller')
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
         self.model_states_active = model_states_active
@@ -52,6 +56,16 @@ class SupervisorController:
         self.joint_nodes = {}
         self.link_nodes = {}
 
+        # set reset height based on the robot, so that we can reset different robots easily
+        self.robot_type = robot
+        reset_heights = {"wolfgang": 0.42, "robotis_op2": 0.35, "op3": 0.35, "rfc": 0.40, "chape": 0.30,
+                         "mrl_hsl": 0.40, "nugus": 0.5, "bez": 0.30}
+        if not self.robot_type in reset_heights.keys():
+            self.ros_node.get_logger().warn(f"Robot type {self.robot_type} has no reset height defined. Will use 1m")
+            self.reset_height = 1
+        else:
+            self.reset_height = reset_heights[self.robot_type]
+
         root = self.supervisor.getRoot()
         children_field = root.getField('children')
         children_count = children_field.getCount()
@@ -77,17 +91,15 @@ class SupervisorController:
             else:
                 clock_topic = base_ns + "clock"
                 model_topic = base_ns + "model_states"
-            if do_ros_init:
-                rospy.init_node("webots_ros_supervisor", argv=['clock:=' + clock_topic])
-            self.clock_publisher = rospy.Publisher(clock_topic, Clock, queue_size=1)
-            self.model_state_publisher = rospy.Publisher(model_topic, ModelStates, queue_size=1)
-            self.reset_service = rospy.Service(base_ns + "reset", Empty, self.reset)
-            self.reset_pose_service = rospy.Service(base_ns + "reset_pose", Empty, self.set_initial_poses)
-            self.set_robot_pose_service = rospy.Service(base_ns + "set_robot_pose", SetObjectPose,
-                                                        self.robot_pose_callback)
-            self.reset_ball_service = rospy.Service(base_ns + "reset_ball", Empty, self.reset_ball)
-            self.set_ball_position_service = rospy.Service(base_ns + "set_ball_position", SetObjectPosition,
-                                                           self.ball_pos_callback)
+            self.clock_publisher = self.ros_node.create_publisher(Clock, clock_topic, 1)
+            self.model_state_publisher = self.ros_node.create_publisher(ModelStates, model_topic, 1)
+            self.reset_service = self.ros_node.create_service(Empty, base_ns + "reset", self.reset)
+            self.reset_pose_service = self.ros_node.create_service(Empty, base_ns + "reset_pose", self.set_initial_poses)
+            self.set_robot_pose_service = self.ros_node.create_service(SetObjectPose, base_ns + "set_robot_pose",
+                                                                   self.robot_pose_callback)
+            self.reset_ball_service = self.ros_node.create_service(Empty, base_ns + "reset_ball", self.reset_ball)
+            self.set_ball_position_service = self.ros_node.create_service(SetObjectPosition, base_ns + "set_ball_position",
+                                                                      self.ball_pos_callback)
 
         self.world_info = self.supervisor.getFromDef("world_info")
         self.ball = self.supervisor.getFromDef("ball")
@@ -151,7 +163,7 @@ class SupervisorController:
         return key
 
     def publish_clock(self):
-        self.clock_msg.clock = rospy.Time.from_seconds(self.time)
+        self.clock_msg.clock = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         self.clock_publisher.publish(self.clock_msg)
 
     def set_gravity(self, active):
@@ -173,38 +185,38 @@ class SupervisorController:
         if name in self.robot_nodes:
             self.robot_nodes[name].resetPhysics()
 
-    def reset(self, req=None):
+    def reset(self, request=None, response=Empty.Response()):
         self.supervisor.simulationReset()
         self.supervisor.simulationResetPhysics()
-        return EmptyResponse()
+        return response
 
     def reset_robot_init(self, name="amy"):
         self.robot_nodes[name].loadState('__init__')
         self.robot_nodes[name].resetPhysics()
 
-    def set_initial_poses(self, req=None):
-        self.reset_robot_pose_rpy([-1, 3, 0.42], [0, 0.24, -1.57], name="amy")
-        self.reset_robot_pose_rpy([-1, -3, 0.42], [0, 0.24, 1.57], name="rory")
-        self.reset_robot_pose_rpy([-3, 3, 0.42], [0, 0.24, -1.57], name="jack")
-        self.reset_robot_pose_rpy([-3, -3, 0.42], [0, 0.24, 1.57], name="donna")
-        self.reset_robot_pose_rpy([0, 6, 0.42], [0, 0.24, -1.57], name="melody")
-        return EmptyResponse()
+    def set_initial_poses(self, request=None, response=Empty.Response()):
+        self.reset_robot_pose_rpy([-1, 3, self.reset_height], [0, 0.24, -1.57], name="amy")
+        self.reset_robot_pose_rpy([-1, -3, self.reset_height], [0, 0.24, 1.57], name="rory")
+        self.reset_robot_pose_rpy([-3, 3, self.reset_height], [0, 0.24, -1.57], name="jack")
+        self.reset_robot_pose_rpy([-3, -3, self.reset_height], [0, 0.24, 1.57], name="donna")
+        self.reset_robot_pose_rpy([0, 6, self.reset_height], [0, 0.24, -1.57], name="melody")
+        return response
 
-    def robot_pose_callback(self, req=None):
-        self.reset_robot_pose([req.pose.position.x, req.pose.position.y, req.pose.position.z],
-                              [req.pose.orientation.x, req.pose.orientation.y, req.pose.orientation.z,
-                               req.pose.orientation.w], req.object_name)
-        return SetObjectPoseResponse()
+    def robot_pose_callback(self, request=None, response=SetObjectPose.Response()):
+        self.reset_robot_pose([request.pose.position.x, request.pose.position.y, request.pose.position.z],
+                              [request.pose.orientation.x, request.pose.orientation.y, request.pose.orientation.z,
+                               request.pose.orientation.w], request.object_name)
+        return response
 
-    def reset_ball(self, req=None):
+    def reset_ball(self, request=None, response=Empty.Response()):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
         self.ball.getField("rotation").setSFRotation([0, 0, 1, 0])
         self.ball.resetPhysics()
-        return EmptyResponse()
+        return response
 
-    def ball_pos_callback(self, req=None):
-        self.set_ball_pose([req.position.x, req.position.y, req.position.z])
-        return SetObjectPositionResponse()
+    def ball_pos_callback(self, request=None, response=SetObjectPosition.Response()):
+        self.set_ball_pose([request.position.x, request.position.y, request.position.z])
+        return response
 
     def set_ball_pose(self, pos):
         self.ball.getField("translation").setSFVec3f(list(pos))
@@ -291,13 +303,14 @@ class SupervisorController:
         return velocity[:3], velocity[3:]
 
     def publish_model_states(self):
-        if self.model_state_publisher.get_num_connections() != 0:
+        if self.model_state_publisher.get_subscription_count() != 0:
             msg = ModelStates()
             for robot_name, robot_node in self.robot_nodes.items():
                 position, orientation = self.get_robot_pose_quat(name=robot_name)
                 robot_pose = Pose()
-                robot_pose.position = Point(*position)
-                robot_pose.orientation = Quaternion(*orientation)
+                robot_pose.position = Point(x=position[0], y=position[1], z=position[2])
+                robot_pose.orientation = Quaternion(x=orientation[0], y=orientation[1], z=orientation[2],
+                                                    w=orientation[3])
                 msg.name.append(robot_name)
                 msg.pose.append(robot_pose)
                 lin_vel, ang_vel = self.get_robot_velocity(robot_name)
@@ -315,16 +328,16 @@ class SupervisorController:
                 head_orientation = head_node.getOrientation()
                 head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3, 3)))
                 head_pose = Pose()
-                head_pose.position = Point(*head_position)
-                head_pose.orientation = Quaternion(head_orientation_quat[1], head_orientation_quat[2],
-                                                   head_orientation_quat[3], head_orientation_quat[0])
+                head_pose.position = Point(x=head_position[0], y=head_position[1], z=head_position[2])
+                head_pose.orientation = Quaternion(x=head_orientation_quat[1], y=head_orientation_quat[2],
+                                                   z=head_orientation_quat[3], w=head_orientation_quat[0])
                 msg.name.append(robot_name + "_head")
                 msg.pose.append(head_pose)
 
             if self.ball is not None:
                 ball_position = self.ball.getField("translation").getSFVec3f()
                 ball_pose = Pose()
-                ball_pose.position = Point(*ball_position)
+                ball_pose.position = Point(x=ball_position[0], y=ball_position[1], z=ball_position[2])
                 ball_pose.orientation = Quaternion()
                 msg.name.append("ball")
                 msg.pose.append(ball_pose)

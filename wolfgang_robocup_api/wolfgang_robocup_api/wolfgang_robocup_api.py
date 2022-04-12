@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-
+import logging
 import os
-import sys
 import math
 import re
 import socket
 import time
 
-import rospy
-import rospkg
+import rclpy
+from rclpy import logging
+from rclpy.node import Node
+from ament_index_python.packages import get_package_share_directory
 import struct
-import copy
 from threading import Lock
 from urdf_parser_py.urdf import URDF
 
@@ -21,27 +21,27 @@ from bitbots_msgs.msg import FootPressure, JointCommand
 
 import messages_pb2
 
+logger = logging.get_logger('wolfgang_robocup_api')
 
-class WolfgangRobocupApi():
+
+class WolfgangRobocupApi(Node):
     def __init__(self):
-        rospack = rospkg.RosPack()
-        self._package_path = rospack.get_path("wolfgang_robocup_api")
+        super().__init__('wolfgang_robocup_api', automatically_declare_parameters_from_overrides=True)
 
-        rospy.init_node("wolfgang_robocup_api")
-        rospy.loginfo("Initializing wolfgang_robocup_api...", logger_name="rc_api")
+        logger.loginfo("Initializing wolfgang_robocup_api...", logger_name="rc_api")
 
-        self.MIN_FRAME_STEP = rospy.get_param('~min_frame_step')  # ms
-        self.MIN_CONTROL_STEP = rospy.get_param('~min_control_step')  # ms
-        self.camera_FOV = rospy.get_param('~camera_FOV')
+        self.MIN_FRAME_STEP = self.get_parameter('min_frame_step')  # ms
+        self.MIN_CONTROL_STEP = self.get_parameter('min_control_step')  # ms
+        self.camera_FOV = self.get_parameter('camera_FOV')
 
-        self.camera_optical_frame = rospy.get_param('~camera_optical_frame')
-        self.imu_frame = rospy.get_param('~imu_frame')
-        self.head_imu_frame = rospy.get_param('~head_imu_frame')
-        self.l_sole_frame = rospy.get_param('~l_sole_frame')
-        self.r_sole_frame = rospy.get_param('~r_sole_frame')
+        self.camera_optical_frame = self.get_parameter('camera_optical_frame')
+        self.imu_frame = self.get_parameter('imu_frame')
+        self.head_imu_frame = self.get_parameter('head_imu_frame')
+        self.l_sole_frame = self.get_parameter('l_sole_frame')
+        self.r_sole_frame = self.get_parameter('r_sole_frame')
 
         # Parse URDF
-        urdf_path = os.path.join(rospack.get_path('wolfgang_description'), 'urdf', 'robot.urdf')
+        urdf_path = os.path.join(get_package_share_directory('wolfgang_description'), 'urdf', 'robot.urdf')
         urdf = URDF.from_xml_file(urdf_path)
         joints = [joint for joint in urdf.joints if joint.type == 'revolute']
         self.velocity_limits = {joint.name: joint.limit.velocity for joint in joints}
@@ -78,16 +78,14 @@ class WolfgangRobocupApi():
         addr = os.environ.get('ROBOCUP_SIMULATOR_ADDR')
         # we will try multiple times till we manage to get a connection
         self.socket = None
-        while not rospy.is_shutdown() and self.socket is None:
+        while self.socket is None:
             self.socket = self.get_connection(addr)
-            time.sleep(1) #dont use ros time since it is maybe not available
+            time.sleep(1)  # don't use ros time since it is maybe not available
 
         self.first_run = True
         self.published_camera_info = False
 
         self.joint_command_mutex = Lock()
-
-        self.run()
 
     def receive_msg(self):
         msg_size = self.socket.recv(4)
@@ -102,34 +100,37 @@ class WolfgangRobocupApi():
         return data
 
     def run(self):
-        while not rospy.is_shutdown():
-            # Parse sensor
-            msg = self.receive_msg()
-            if msg:  # Not handle empty messages or None
-                self.handle_sensor_measurements_msg(msg)
+        while True:
+            try:
+                # Parse sensor
+                msg = self.receive_msg()
+                if msg:  # Not handle empty messages or None
+                    self.handle_sensor_measurements_msg(msg)
 
-            sensor_time_steps = None
-            if self.first_run:
-                sensor_time_steps = self.get_sensor_time_steps(active=True)
-            self.send_actuator_requests(sensor_time_steps)
-            self.first_run = False
+                sensor_time_steps = None
+                if self.first_run:
+                    sensor_time_steps = self.get_sensor_time_steps(active=True)
+                self.send_actuator_requests(sensor_time_steps)
+                self.first_run = False
+            except KeyboardInterrupt:
+                break
         self.close_connection()
 
     def create_publishers(self):
-        self.pub_clock = rospy.Publisher(rospy.get_param('~clock_topic'), Clock, queue_size=1)
-        self.pub_server_time_clock = rospy.Publisher(rospy.get_param('~server_time_clock_topic'), Clock, queue_size=1)
-        self.pub_camera = rospy.Publisher(rospy.get_param('~camera_topic'), Image, queue_size=1)
-        self.pub_camera_info = rospy.Publisher(rospy.get_param('~camera_info_topic'), CameraInfo, queue_size=1, latch=True)
-        self.pub_imu = rospy.Publisher(rospy.get_param('~imu_topic'), Imu, queue_size=1)
-        self.pub_head_imu = rospy.Publisher(rospy.get_param('~imu_head_topic'), Imu, queue_size=1)
-        self.pub_pressure_left = rospy.Publisher(rospy.get_param('~foot_pressure_left_topic'), FootPressure, queue_size=1)
-        self.pub_pressure_right = rospy.Publisher(rospy.get_param('~foot_pressure_right_topic'), FootPressure, queue_size=1)
-        self.pub_cop_l = rospy.Publisher(rospy.get_param('~cop_left_topic'), PointStamped, queue_size=1)
-        self.pub_cop_r_ = rospy.Publisher(rospy.get_param('~cop_right_topic'), PointStamped, queue_size=1)
-        self.pub_joint_states = rospy.Publisher(rospy.get_param('~joint_states_topic'), JointState, queue_size=1)
+        self.pub_clock = self.create_publisher(Clock, self.get_parameter('clock_topic'), queue_size=1)
+        self.pub_server_time_clock = self.create_publisher(Clock, self.get_parameter('server_time_clock_topic'), queue_size=1)
+        self.pub_camera = self.create_publisher(Image, self.get_parameter('camera_topic'), queue_size=1)
+        self.pub_camera_info = self.create_publisher(CameraInfo, self.get_parameter('camera_info_topic'), queue_size=1, latch=True)
+        self.pub_imu = self.create_publisher(Imu, self.get_parameter('imu_topic'), queue_size=1)
+        self.pub_head_imu = self.create_publisher(Imu, self.get_parameter('imu_head_topic'), queue_size=1)
+        self.pub_pressure_left = self.create_publisher(FootPressure, self.get_parameter('foot_pressure_left_topic'), queue_size=1)
+        self.pub_pressure_right = self.create_publisher(FootPressure, self.get_parameter('foot_pressure_right_topic'), queue_size=1)
+        self.pub_cop_l = self.create_publisher(PointStamped, self.get_parameter('cop_left_topic'), queue_size=1)
+        self.pub_cop_r_ = self.create_publisher(PointStamped, self.get_parameter('cop_right_topic'), queue_size=1)
+        self.pub_joint_states = self.create_publisher(JointState, self.get_parameter('joint_states_topic'), queue_size=1)
 
     def create_subscribers(self):
-        self.sub_joint_command = rospy.Subscriber(rospy.get_param('~joint_command_topic'), JointCommand, self.joint_command_cb, queue_size=1)
+        self.sub_joint_command = self.create_subscriber(JointCommand, self.get_parameter('joint_command_topic'), self.joint_command_cb, queue_size=1)
 
     def joint_command_cb(self, msg):
         with self.joint_command_mutex:
@@ -158,28 +159,28 @@ class WolfgangRobocupApi():
     def get_connection(self, addr):
         host, port = addr.split(':')
         port = int(port)
-        rospy.loginfo(f"Connecting to '{addr}'", logger_name="rc_api")
+        logger.loginfo(f"Connecting to '{addr}'", logger_name="rc_api")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             sock.connect((host, port))
             response = sock.recv(8).decode('utf8')
         except ConnectionRefusedError:
-            rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
+            logger.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
             return None
         if response == "Welcome\0":
-            rospy.loginfo(f"Successfully connected to '{addr}'", logger_name="rc_api")
+            logger.loginfo(f"Successfully connected to '{addr}'", logger_name="rc_api")
             return sock
         elif response == "Refused\0":
-            rospy.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
+            logger.logerr(f"Connection refused by '{addr}'", logger_name="rc_api")
             return None
         else:
-            rospy.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
+            logger.logerr(f"Could not connect to '{addr}'\nGot response '{response}'", logger_name="rc_api")
             return None
 
     def close_connection(self):
         if self.socket:
             self.socket.close()
-            rospy.loginfo("Connection closed.", logger_name="rc_api")
+            logger.loginfo("Connection closed.", logger_name="rc_api")
 
     def handle_sensor_measurements_msg(self, msg):
         s_m = messages_pb2.SensorMeasurements()
@@ -217,11 +218,11 @@ class WolfgangRobocupApi():
         for message in messages:
             text = message.text
             if message.message_type == messages_pb2.Message.ERROR_MESSAGE:
-                rospy.logerr(f"RECEIVED ERROR: '{text}'", logger_name="rc_api")
+                logger.logerr(f"RECEIVED ERROR: '{text}'", logger_name="rc_api")
             elif message.message_type == messages_pb2.Message.WARNING_MESSAGE:
-                rospy.logwarn(f"RECEIVED WARNING: '{text}'", logger_name="rc_api")
+                logger.logwarn(f"RECEIVED WARNING: '{text}'", logger_name="rc_api")
             else:
-                rospy.logwarn(f"RECEIVED UNKNOWN MESSAGE: '{text}'", logger_name="rc_api")
+                logger.logwarn(f"RECEIVED UNKNOWN MESSAGE: '{text}'", logger_name="rc_api")
 
     def handle_imu_data(self, accelerometers, gyros):
         # Body IMU
@@ -253,7 +254,7 @@ class WolfgangRobocupApi():
                 head_imu_msg.linear_acceleration.y = value.X
                 head_imu_msg.linear_acceleration.z = value.Y
             else:
-                rospy.logwarn(f"Unknown accelerometer: '{name}'", logger_name="rc_api")
+                logger.logwarn(f"Unknown accelerometer: '{name}'", logger_name="rc_api")
 
         for gyro in gyros:
             name = gyro.name
@@ -269,7 +270,7 @@ class WolfgangRobocupApi():
                 head_imu_msg.angular_velocity.y = value.X
                 head_imu_msg.angular_velocity.z = value.Y
             else:
-                rospy.logwarn(f"Unknown gyro: '{name}'", logger_name="rc_api")
+                logger.logwarn(f"Unknown gyro: '{name}'", logger_name="rc_api")
 
         if imu_accel and imu_gyro:
             # Make sure that acceleration is not completely zero or we will get error in filter.
@@ -287,7 +288,7 @@ class WolfgangRobocupApi():
 
     def handle_bumper_measurements(self, bumpers):
         for bumper in bumpers:
-            rospy.logwarn(f"Unknown bumper: '{bumper.name}'", logger_name="rc_api")
+            logger.logwarn(f"Unknown bumper: '{bumper.name}'", logger_name="rc_api")
 
     def handle_camera_measurements(self, cameras):
         for camera in cameras:
@@ -312,7 +313,7 @@ class WolfgangRobocupApi():
                 img_msg.data = image
                 self.pub_camera.publish(img_msg)
             else:
-                rospy.logwarn(f"Unknown camera: '{name}'", logger_name="rc_api")
+                logger.logwarn(f"Unknown camera: '{name}'", logger_name="rc_api")
 
     def publish_camera_info(self, height, width):
         camera_info_msg = CameraInfo()
@@ -348,7 +349,7 @@ class WolfgangRobocupApi():
             if name in self.force3d_sensors:
                 data[name] = force.value
             else:
-                rospy.logwarn(f"Unknown force measurement: '{name}'", logger_name="rc_api")
+                logger.logwarn(f"Unknown force measurement: '{name}'", logger_name="rc_api")
 
         left_pressure_msg = FootPressure()
         left_pressure_msg.header.stamp = self.stamp
@@ -409,11 +410,11 @@ class WolfgangRobocupApi():
 
     def handle_force3D_measurements(self, force3ds):
         for force3d in force3ds:
-            rospy.logwarn(f"Unknown force3d measurement: '{force3d.name}'", logger_name="rc_api")
+            logger.logwarn(f"Unknown force3d measurement: '{force3d.name}'", logger_name="rc_api")
 
     def handle_force6D_measurements(self, force6ds):
         for force6d in force6ds:
-            rospy.logwarn(f"Unknown force6d measurement: '{force6d.name}'", logger_name="rc_api")
+            logger.logwarn(f"Unknown force6d measurement: '{force6d.name}'", logger_name="rc_api")
 
     def handle_position_sensor_measurements(self, position_sensors):
         state_msg = JointState()
@@ -476,5 +477,17 @@ class WolfgangRobocupApi():
     def webots_to_joint(self, name):
         return re.sub(r'( \[\w+\])?_sensor', '', name)
 
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    node = WolfgangRobocupApi()
+    try:
+        node.run()
+    except KeyboardInterrupt:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
 if __name__ == '__main__':
-    WolfgangRobocupApi()
+    main()

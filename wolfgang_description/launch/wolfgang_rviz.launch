@@ -1,6 +1,0 @@
-<launch>
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" required="true"
-      args="-d $(find wolfgang_description)/config/wolfgang.rviz" >
-  </node>
-
-</launch>
