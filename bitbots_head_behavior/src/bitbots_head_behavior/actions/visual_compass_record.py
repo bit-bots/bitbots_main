@@ -1,5 +1,6 @@
 import math
-import rospy
+import rclpy
+from rclpy.node import Node
 from std_msgs.msg import Header
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -39,9 +40,9 @@ class VisualCompassRecord(AbstractActionElement):
 
     def _notify_visual_compass(self): 
         msg = Header()
-        msg.stamp = rospy.Time.now()
+        msg.stamp = self.get_clock().now()
         self.blackboard.head_capsule.visual_compass_record_trigger.publish(msg)
-        rospy.loginfo("Notify visual compass")
+        self.get_logger().info("Notify visual compass")
 
     def perform(self, reevaluate=False):
         """
@@ -54,7 +55,7 @@ class VisualCompassRecord(AbstractActionElement):
         # Convert to radians
         head_pan = math.radians(head_pan)
         head_tilt = math.radians(head_tilt)
-        rospy.logdebug("Searching at {}, {}".format(head_pan, head_tilt))
+        self.get_logger().debug("Searching at {}, {}".format(head_pan, head_tilt))
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()

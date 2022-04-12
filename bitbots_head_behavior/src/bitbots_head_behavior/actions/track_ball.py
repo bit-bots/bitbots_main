@@ -1,4 +1,5 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
 
 from bitbots_head_behavior.actions.look_at import AbstractLookAt

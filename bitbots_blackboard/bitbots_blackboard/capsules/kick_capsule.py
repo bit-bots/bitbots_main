@@ -1,5 +1,7 @@
-import rospy
-import actionlib
+import rclpy
+from rclpy.node import Node
+from rclpy.duration import Duration
+from rclpy.action import ActionClient
 from bitbots_msgs.msg import KickAction, KickFeedback, KickActionResult, KickGoal
 from actionlib_msgs.msg import GoalStatus
 
@@ -26,14 +28,14 @@ class KickCapsule():
 
     def connect(self):
         topic = self.__blackboard.config["dynamic_kick"]["topic"]
-        rospy.loginfo("Connecting {}.KickCapsule to bitbots_dynamic_kick ({})"
+        self.get_logger().info("Connecting {}.KickCapsule to bitbots_dynamic_kick ({})"
                       .format(str(self.__blackboard.__class__).split(".")[-1], topic))
-        self.__action_client = actionlib.SimpleActionClient(topic, KickAction)
+        self.__action_client = ActionClient(self, KickAction, topic)
         self.__connected = self.__action_client.wait_for_server(
-            rospy.Duration(self.__blackboard.config["dynamic_kick"]["wait_time"]))
+            Duration(seconds=self.__blackboard.config["dynamic_kick"]["wait_time"]))
 
         if not self.__connected:
-            rospy.logerr("No dynamic_kick server running on {}".format(topic))
+            self.get_logger().error("No dynamic_kick server running on {}".format(topic))
 
     def kick(self, goal):
         """
@@ -44,22 +46,22 @@ class KickCapsule():
         if not self.__connected:
             # try to connect again
             self.__connected = self.__action_client.wait_for_server(
-                rospy.Duration(self.__blackboard.config["dynamic_kick"]["wait_time"]))
+                Duration(seconds=self.__blackboard.config["dynamic_kick"]["wait_time"]))
             if not self.__connected:
                 raise RuntimeError("Not connected to any dynamic_kick server")
 
-        self.__action_client.send_goal(goal, self.__done_cb, self.__active_cb, self.__feedback_cb)
+        self.__action_client.send_goal_async(goal, self.__done_cb, self.__active_cb, self.__feedback_cb)
         self.last_goal = goal
-        self.last_goal_sent = rospy.Time.now()
+        self.last_goal_sent = self.get_clock().now()
 
     def __done_cb(self, state, result):
         self.last_result = KickActionResult(status=state, result=result)
-        self.last_result_received = rospy.Time.now()
+        self.last_result_received = self.get_clock().now()
         self.is_currently_kicking = False
 
     def __feedback_cb(self, feedback):
         self.last_feedback = feedback
-        self.last_feedback_received = rospy.Time.now()
+        self.last_feedback_received = self.get_clock().now()
 
     def __active_cb(self):
         self.is_currently_kicking = True

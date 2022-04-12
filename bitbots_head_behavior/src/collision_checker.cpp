@@ -18,9 +18,9 @@ CollisionChecker::CollisionChecker() {
   robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("robot_description", false));
   robot_model_ = robot_model_loader_->getModel();
   planning_scene_.reset(new planning_scene::PlanningScene(robot_model_));
-  robot_state_.reset(new robot_state::RobotState(robot_model_));
+  robot_state_.reset(new moveit::core::msg::RobotState(robot_model_));
   robot_state_->setToDefaultValues();
-  ROS_INFO("Collision checker setup finished");
+  RCLCPP_INFO(this->get_logger(),"Collision checker setup finished");
 }
 
 void CollisionChecker::set_head_motors(double pan, double tilt) {
@@ -29,7 +29,7 @@ void CollisionChecker::set_head_motors(double pan, double tilt) {
 }
 
 void CollisionChecker::set_joint_states(std::string msg) {
-  sensor_msgs::JointState joint_states = from_python<sensor_msgs::JointState>(msg);
+  sensor_msgs::msg::JointState joint_states = from_python<sensor_msgs::msg::JointState>(msg);
   for (size_t i = 0; i < joint_states.name.size(); ++i) {
     robot_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
   }

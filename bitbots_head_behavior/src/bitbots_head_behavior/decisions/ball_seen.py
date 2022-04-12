@@ -1,4 +1,7 @@
-import rospy
+import rclpy
+from rclpy.duration import Duration
+from rclpy.time import Time
+from rclpy.node import Node
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
@@ -11,7 +14,7 @@ class BallSeen(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallSeen, self).__init__(blackboard, dsd, parameters)
-        self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
+        self.ball_lost_time = rclpy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
 
     def perform(self, reevaluate=False):
         """
@@ -22,7 +25,7 @@ class BallSeen(AbstractDecisionElement):
         """
 
         ball_last_seen = self.blackboard.world_model.ball_last_seen()
-        if ball_last_seen != rospy.Time(0) and rospy.Time.now() - ball_last_seen < self.ball_lost_time:
+        if ball_last_seen != rclpy.Time(0) and self.get_clock().now() - ball_last_seen < self.ball_lost_time:
             return 'YES'
         return 'NO'
 

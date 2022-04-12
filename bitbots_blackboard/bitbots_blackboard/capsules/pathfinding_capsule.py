@@ -1,23 +1,25 @@
-import rospy
+import rclpy
+from rclpy.node import Node
 import math
-
+from rclpy.duration import Duration
 import tf2_ros
 import numpy as np
 from ros_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from nav_msgs.srv import GetPlanRequest
 
 
 class PathfindingCapsule:
-    def __init__(self, blackboard):
-        self.map_frame = rospy.get_param('~map_frame', 'map')
+    def __init__(self, blackboard, node: Node):
+        self.node = node
+        self.map_frame = self.node.get_parameter('~map_frame').get_parameter_value().string_value
         # Thresholds to determine whether the transmitted goal is a new one
-        self.tf_buffer = tf2_ros.Buffer(cache_time=rospy.Duration(2))
+        self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=2))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.position_threshold = rospy.get_param('behavior/body/pathfinding_position_threshold')
-        self.orientation_threshold = rospy.get_param('behavior/body/pathfinding_orientation_threshold')
+        self.position_threshold = self.node.get_parameter('behavior/body/pathfinding_position_threshold').get_parameter_value().double_value
+        self.orientation_threshold = self.node.get_parameter('behavior/body/pathfinding_orientation_threshold').get_parameter_value().double_value
         self.direct_cmd_vel_pub = None  # type: rospy.Publisher
         self.pathfinding_pub = None  # type: rospy.Publisher
         self.pathfinding_cancel_pub = None  # type: rospy.Publisher
@@ -31,7 +33,7 @@ class PathfindingCapsule:
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
         self._blackboard = blackboard  # type: BodyBlackboard
-        self.orient_to_ball_distance = rospy.get_param("move_base/BBPlanner/orient_to_goal_distance", 1)
+        self.orient_to_ball_distance = self.node.get_parameter("move_base/BBPlanner/orient_to_goal_distance").get_parameter_value().double_value
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -48,8 +50,8 @@ class PathfindingCapsule:
             return msg
         else:
             try:
-                msg.header.stamp = rospy.Time(0)
-                map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=rospy.Duration(0.5))
+                msg.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+                map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=Duration(seconds=0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))
                 q = quaternion_from_euler(0, 0, e[2])
@@ -60,7 +62,7 @@ class PathfindingCapsule:
                 map_goal.pose.position.z = 0
                 return map_goal
             except Exception as e:
-                rospy.logwarn(e)
+                self.get_logger().warn(e)
                 return
 
     def fix_rotation(self, msg):
@@ -189,11 +191,11 @@ class PathfindingCapsule:
             angle = math.atan2(ball_v, ball_u)
             ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
         else:
-            rospy.logerr("Target %s for go_to_ball action not specified.", target)
+            self.get_logger().error("Target %s for go_to_ball action not specified.", target)
             return
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.get_clock().now()
         pose_msg.header.frame_id = ball_point[3]
         pose_msg.pose.position = Point(ball_point[0], ball_point[1], 0)
         quaternion = quaternion_from_euler(0, 0, ball_point[2])
