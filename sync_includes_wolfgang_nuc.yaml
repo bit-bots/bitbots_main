@@ -60,7 +60,7 @@ include:
         - orocos_kinematics_dynamics
         - particle_filter
         - robot_controllers
-        - ros2_python_extensions
+        - ros2_python_extension
         - rot_conv_lib
         - spatio_temporal_voxel_layer
         - tf2_geometry_msgs
