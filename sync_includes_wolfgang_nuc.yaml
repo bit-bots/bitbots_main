@@ -59,6 +59,7 @@ include:
         - navigation2
         - orocos_kinematics_dynamics
         - particle_filter
+        - pylon-ros-camera
         - robot_controllers
         - ros2_python_extension
         - rot_conv_lib
