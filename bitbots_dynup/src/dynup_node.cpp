@@ -6,7 +6,8 @@ DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parame
     Node(ns + "dynup", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
-    visualizer_("debug/dynup", SharedPtr(this)) {
+    visualizer_("debug/dynup", SharedPtr(this)),
+    tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())){
 
 this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     this,
@@ -83,6 +84,8 @@ this->action_server_ = rclcpp_action::create_server<DynupGoal>(
   // load params once
   const std::vector<rclcpp::Parameter> params;
   onSetParameters(params);
+
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   robot_model_loader_ =
       std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
@@ -277,7 +280,6 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   /* Do the loop as long as nothing cancels it */
   while (!goal_handle->is_canceling()) {
     rclcpp::Time startTime = this->get_clock()->now();
-    rclcpp::spin_some(this->get_node_base_interface());
     this->get_clock()->sleep_until(
       startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
     dt = getTimeDelta();
@@ -298,39 +300,28 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
 
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
   rclcpp::Time time = this->get_clock()->now();
-
-  /* Construct zero-positions for all poses in their respective local frames */
-  geometry_msgs::msg::PoseStamped l_foot_origin, r_foot_origin, l_hand_origin, r_hand_origin;
-  l_foot_origin.header.frame_id = l_sole_frame_;
-  l_foot_origin.pose.orientation.w = 1;
-  l_foot_origin.header.stamp = time;
-
-  r_foot_origin.header.frame_id = r_sole_frame_;
-  r_foot_origin.pose.orientation.w = 1;
-  r_foot_origin.header.stamp = time;
-
-  l_hand_origin.header.frame_id = l_wrist_frame_;
-  l_hand_origin.pose.orientation.w = 1;
-  l_hand_origin.header.stamp = time;
-
-  r_hand_origin.header.frame_id = r_wrist_frame_;
-  r_hand_origin.pose.orientation.w = 1;
-  r_hand_origin.header.stamp = time;
-
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
   bitbots_dynup::msg::DynupPoses msg;
   try {
     //0.2 second timeout for transformations
-    geometry_msgs::msg::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
-    tf_buffer_->transform(l_foot_origin, l_foot_transformed, r_sole_frame_, tf2::durationFromSec(0.2));
-    tf_buffer_->transform(r_foot_origin, r_foot_transformed, base_link_frame_, tf2::durationFromSec(0.2));
-    tf_buffer_->transform(l_hand_origin, l_hand_transformed, base_link_frame_, tf2::durationFromSec(0.2));
-    tf_buffer_->transform(r_hand_origin, r_hand_transformed, base_link_frame_, tf2::durationFromSec(0.2));
+    geometry_msgs::msg::Transform l_foot_transformed = tf_buffer_->lookupTransform(l_sole_frame_, r_sole_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform r_foot_transformed = tf_buffer_->lookupTransform(r_sole_frame_, base_link_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform l_hand_transformed = tf_buffer_->lookupTransform(l_wrist_frame_, base_link_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform r_hand_transformed = tf_buffer_->lookupTransform(r_wrist_frame_, base_link_frame_, time, tf2::durationFromSec(0.2)).transform;
 
-    msg.l_leg_pose = l_foot_transformed.pose;
-    msg.r_leg_pose = r_foot_transformed.pose;
-    msg.l_arm_pose = l_hand_transformed.pose;
-    msg.r_arm_pose = r_hand_transformed.pose;
+    std::function transform2pose =  [](geometry_msgs::msg::Transform transform) {
+      geometry_msgs::msg::Pose pose;
+      pose.position.x = transform.translation.x;
+      pose.position.y = transform.translation.y;
+      pose.position.z = transform.translation.z;
+      pose.orientation = transform.rotation;
+      return pose;
+    };
+
+    msg.l_leg_pose = transform2pose(l_foot_transformed);
+    msg.r_leg_pose = transform2pose(r_foot_transformed);
+    msg.l_arm_pose = transform2pose(l_hand_transformed);
+    msg.r_arm_pose = transform2pose(r_hand_transformed);
     msg.header.stamp = this->get_clock()->now();
     return msg;
   } catch (tf2::TransformException &exc) {
