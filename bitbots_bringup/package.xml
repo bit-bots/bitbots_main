@@ -13,6 +13,7 @@
 
     <depend>bitbots_docs</depend>
 
+    <!--
     <exec_depend>bitbots_body_behavior</exec_depend>
     <exec_depend>bitbots_dynamic_kick</exec_depend>
     <exec_depend>bitbots_dynup</exec_depend>
@@ -25,6 +26,7 @@
     <exec_depend>robot_state_publisher</exec_depend>
     <exec_depend>xacro</exec_depend>
     <exec_depend>wolfgang_webots_sim</exec_depend>
+    -->
 
     <export>
         <bitbots_documentation>
