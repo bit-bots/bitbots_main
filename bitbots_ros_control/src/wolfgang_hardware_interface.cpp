@@ -160,9 +160,9 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               // We need to add the tool to the driver for later reading and writing
               driver->setTools(model_number_specified_16, id);
               float mounting_offset;
-              nh_->get_parameter("device_info." + name + ".mounting_offset", mounting_offset);
+              nh_->get_parameter_or("device_info." + name + ".mounting_offset", mounting_offset, 0.0f);
               float joint_offset;
-              nh_->get_parameter("device_info." + name + ".joint_offset", joint_offset);
+              nh_->get_parameter_or("device_info." + name + ".joint_offset", joint_offset, 0.0f);
               servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
             } else {
               if (!only_pressure_ && !only_imu_) {
