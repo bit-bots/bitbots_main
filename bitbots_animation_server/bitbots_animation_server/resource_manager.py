@@ -15,8 +15,8 @@ discovered do not have to be searched again.
 import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
-import rospkg as rospkg
 import rclpy
+from ament_index_python import get_package_share_directory
 from rclpy.node import Node
 
 
@@ -28,8 +28,7 @@ class ResourceManager(object):
         node.declare_parameter("robot_type", "wolfgang")
         anim_package = node.get_parameter('robot_type').get_parameter_value().string_value + "_animations"
 
-        rospack = rospkg.RosPack()
-        path = rospack.get_path(anim_package)
+        path = get_package_share_directory(anim_package)
         self.basepath = abspath(path + "/animations")
 
         self.cache = {}

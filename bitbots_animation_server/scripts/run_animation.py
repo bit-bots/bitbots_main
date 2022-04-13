@@ -1,31 +1,33 @@
 #!/usr/bin/env python3
+import argparse
+
 from rclpy.action import ActionClient
 from actionlib_msgs.msg import GoalStatus
 import rclpy
+from rclpy.duration import Duration
 from rclpy.node import Node
 import sys
 
-import humanoid_league_msgs.msg
+import humanoid_league_msgs.action
 
 
 def anim_run(anim=None, hcm=False):
-    anim_client = ActionClient(self, humanoid_league_msgs.msg.PlayAnimationAction, 'animation')
-    rclpy.init(args=None)
+    node = Node("run_animation")
+    anim_client = ActionClient(node, humanoid_league_msgs.action.PlayAnimation, 'animation')
     if anim is None or anim == "":
-        self.get_logger().warn("Tried to play an animation with an empty name!")
+        node.get_logger().warn("Tried to play an animation with an empty name!")
         return False
-    first_try = anim_client.wait_for_server(
-        Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value
+    first_try = anim_client.wait_for_server(3.0)
     if not first_try:
-        self.get_logger().error(
+        node.get_logger().error(
             "Animation Action Server not running! Motion can not work without animation action server. "
             "Will now wait until server is accessible!")
         anim_client.wait_for_server()
-        self.get_logger().warn("Animation server now running, hcm will go on.")
-    goal = humanoid_league_msgs.msg.PlayAnimationGoal()
+        node.get_logger().warn("Animation server now running, hcm will go on.")
+    goal = humanoid_league_msgs.action.PlayAnimation.Goal()
     goal.animation = anim
     goal.hcm = hcm
-    state = anim_client.send_goal_and_wait(goal)
+    state = anim_client.send_goal(goal)
     if state == GoalStatus.PENDING:
         print('Pending')
     elif state == GoalStatus.ACTIVE:
@@ -51,6 +53,8 @@ def anim_run(anim=None, hcm=False):
 
 
 if __name__ == '__main__':
+    rclpy.init(args=sys.argv)
+
     # run with "rosrun bitbots_animation_server run_animation.py NAME"
     if len(sys.argv) > 1:
         # Support for _anim:=NAME -style execution for legacy reasons
