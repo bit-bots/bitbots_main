@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+git pull
 git submodule foreach git pull
 git -C humanoid_league_misc submodule update
 if [[ -d basler_drivers ]]; then
