@@ -117,57 +117,95 @@ wolfgang_hardware_interface:
       LShoulderPitch:
         id: 2
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RShoulderRoll:
         id: 3
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LShoulderRoll:
         id: 4
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RElbow:
         id: 5
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LElbow:
         id: 6
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RHipYaw:
         id: 7
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LHipYaw:
         id: 8
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RHipRoll:
         id: 9
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LHipRoll:
         id: 10
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RHipPitch:
         id: 11
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LHipPitch:
         id: 12
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RKnee:
         id: 13
         model_number: 1100
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LKnee:
         id: 14
         model_number: 1100
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RAnklePitch:
         id: 15
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LAnklePitch:
         id: 16
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       RAnkleRoll:
         id: 17
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       LAnkleRoll:
         id: 18
         model_number: 321
+        mounting_offset: 0.0
+        joint_offset: 0.0
       HeadPan:
         id: 19
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
       HeadTilt:
         id: 20
         model_number: 311
+        mounting_offset: 0.0
+        joint_offset: 0.0
