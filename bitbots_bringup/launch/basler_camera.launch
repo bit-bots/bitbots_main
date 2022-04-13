@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <arg name="resize" default="true"/>
-    <node pkg="pylon_camera" exec="pylon_camera_node" name="pylon_camera_node" output="screen">
-        <rosparam command="load" file="$(find-pkg-share pylon_camera)/config/camera_settings.yaml"/>
-        <param name="device_user_id" value="$(env ROBOT_NAME)" />
-        <param name="camera_info_url" value="package://pylon_camera/config/camera_calibration_$(env ROBOT_NAME default).yaml" />
+    <!-- camera driver -->
+    <node pkg="pylon_ros2_camera_wrapper" exec="pylon_ros2_camera_wrapper" name="pylon_camera_node" output="screen">
+        <param from="$(find-pkg-share pylon_camera_config)/config/camera_settings.yaml" />
+        <param name="device_user_id" value="$(env ROBOT_NAME default)" />
+        <param name="camera_info_url" value="package://pylon_camera_config/config/camera_calibration_$(env ROBOT_NAME default).yaml" />
+        <param name="startup_user_set" value="CurrentSetting" />
+        <param name="enable_status_publisher" value="true" />
+        <param name="enable_current_params_publisher" value="true" />
     </node>
-    <group if="$(var resize)">
-        <node pkg="nodelet" exec="nodelet" args="standalone image_proc/crop_decimate" name="crop_decimate">
-            <remap from="/camera/image_raw"  to="/pylon_camera_node/image_raw" />
-            <remap from="/camera_out/image_raw" to="/image_resized" />
-            <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/binning.yaml"/>
-        </node>
-        <node pkg="nodelet" exec="nodelet" args="standalone white_balancer/WhiteBalanceNodelet" name="white_balancer">
-            <rosparam command="load" file="$(find-pkg-share white_balancer)/config/config.yaml"/>
-        </node>
-    </group>
+    <!-- Debayer + Binning -->
+    <node_container pkg="rclcpp_components" exec="component_container" name="head_camera_image_proc_container" namespace="">
+        <composable_node pkg="image_proc" plugin="image_proc::DebayerNode" name="debayer">
+            <remap from="image_raw" to="/pylon_camera_node/image_raw"/>
+            <remap from="camera_info" to="/pylon_camera_node/camera_info"/>
+            <remap from="image_color" to="/camera/image_raw"/>
+            <remap from="image_mono" to="/camera/image_mono"/>
+        </composable_node>
+        <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate">
+            <remap from="in/image_raw" to="/camera/image_raw"/>
+            <remap from="in/camera_info" to="/pylon_camera_node/camera_info"/>
+            <remap from="out/image_raw" to="/camera/image_proc"/>
+            <remap from="out/camera_info" to="/camera/camera_info"/>
+            <param from="$(find-pkg-share bitbots_utils)/config/binning.yaml"/>
+        </composable_node>
+    </node_container>
 </launch>
