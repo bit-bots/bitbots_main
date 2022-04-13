@@ -1,5 +1,6 @@
 include:
     - basler_drivers
+    - biped_interfaces
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior
@@ -11,23 +12,30 @@ include:
         - bitbots_bringup
         - bitbots_convenience_frames
         - bitbots_teleop
+        - bitbots_utils
         - system_monitor
     - bitbots_motion:
         - bitbots_animation_server
         - bitbots_dynamic_kick
         - bitbots_dynup
         - bitbots_hcm
-        - bitbots_ik
+        - bitbots_moveit_bindings
         - bitbots_odometry
         - bitbots_quintic_walk
         - bitbots_splines
     - bitbots_msgs
     - bitbots_navigation:
         - bitbots_localization
+        - bitbots_local_planner
         - bitbots_move_base
     - bitbots_tools:
         - bitbots_docs
         - bitbots_test
+    - bitbots_vision:
+        - bitbots_vision
+        - white_balancer
+    - bitbots_world_model:
+        - bitbots_ball_filter
     - center_of_mass
     - dynamic_stack_decider
     - humanoid_base_footprint
@@ -41,26 +49,28 @@ include:
         - humanoid_league_rviz_marker
     - human_pose_estimation_openvino
     - lib:
-        - rot_conv_lib
         - bio_ik
         - bio_ik_service
         - DynamixelSDK
         - dynamixel-workbench
         - dynamixel-workbench-msgs
+        - fp
+        - imu_tools
+        - navigation2
+        - orocos_kinematics_dynamics
         - particle_filter
+        - robot_controllers
+        - ros2_python_extensions
+        - rot_conv_lib
+        - spatio_temporal_voxel_layer
+        - tf2_geometry_msgs
+        - vision_msgs
     - scripts
     - udp_bridge
     - wolfgang_robot:
         - wolfgang_animations
         - wolfgang_description
         - wolfgang_moveit_config
-    - bitbots_vision:
-        - bitbots_vision
-        - python_extensions
-        - white_balancer
-        - bitbots_gestures
-    - bitbots_world_model:
-        - bitbots_ball_filter
 exclude:
     - "*.bag"
     - "*.pyc"
