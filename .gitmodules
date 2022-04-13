@@ -108,3 +108,7 @@
 	path = lib/vision_msgs
 	url = git@github.com:ros-perception/vision_msgs.git
 	branch = ros2
+[submodule "lib/pylon-ros-camera"]
+	path = lib/pylon-ros-camera
+	url = ../../bit-bots/pylon-ros-camera.git
+	branch = galactic
