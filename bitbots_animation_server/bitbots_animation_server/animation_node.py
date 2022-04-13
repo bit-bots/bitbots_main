@@ -85,17 +85,15 @@ class AnimationNode(Node):
             return
 
         animator = self.get_animation_splines(self.current_animation, goal)
-        # start animation
-        rate = self.create_rate(500)
 
         while rclpy.ok() and animator:
-            self.get_logger().warn("hi")
+            last_time = self.get_clock().now()
             # first check if we have another goal
-            #todo this does not work in ros2
+            # todo this does not work in ros2
             # self.check_for_new_goal(goal)
-            #new_goal = self._as.current_goal.goal.animation
+            # new_goal = self._as.current_goal.goal.animation
             ## if there is a new goal, calculate new splines and reset the time
-            #if new_goal != self.current_animation:
+            # if new_goal != self.current_animation:
             #    self.current_animation = new_goal
             #    animator = self.get_animation_splines(self.current_animation)
             #    first = True
@@ -105,6 +103,7 @@ class AnimationNode(Node):
             t = float(self.get_clock().now().seconds_nanoseconds()[0] +
                       self.get_clock().now().seconds_nanoseconds()[1] / 1e9) - animator.get_start_time()
             pose = animator.get_positions_rad(t)
+
             if pose is None:
                 # see walking node reset
 
@@ -113,23 +112,20 @@ class AnimationNode(Node):
                 self.send_animation(False, True, goal.request.hcm, None, None)
                 goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
                 # we give a positive result
-                goal.succeeded(PlayAnimation.Result(successful=True))
-                return
+                goal.succeed()
+                return PlayAnimation.Result(successful=True)
 
             self.send_animation(first, False, goal.request.hcm, pose, animator.get_torque(t))
+
             first = False  # we have sent the first frame, all frames after this can't be the first
             perc_done = int(((float(self.get_clock().now().seconds_nanoseconds()[0] +
                                     self.get_clock().now().seconds_nanoseconds()[
                                         1] / 1e9) - animator.get_start_time()) / animator.get_duration()) * 100)
             perc_done = max(0, min(perc_done, 100))
+
             goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
 
-            try:
-                # catch exception of moving backwards in time, when restarting simulator
-                rate.sleep()
-            except:
-                self.get_logger().warn(
-                    "We moved backwards in time. This is probably because the simulation was reset.")
+            self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
 
     def get_animation_splines(self, animation_name, goal):
         if animation_name not in self.animation_cache:

@@ -27,7 +27,8 @@ def anim_run(anim=None, hcm=False):
     goal = humanoid_league_msgs.action.PlayAnimation.Goal()
     goal.animation = anim
     goal.hcm = hcm
-    state = anim_client.send_goal(goal)
+    # todo not .send_goal does never return
+    state = anim_client.send_goal_async(goal)
     if state == GoalStatus.PENDING:
         print('Pending')
     elif state == GoalStatus.ACTIVE:
