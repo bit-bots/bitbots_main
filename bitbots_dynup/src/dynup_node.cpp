@@ -239,11 +239,6 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
     }
     loopEngine(engine_rate_, goal_handle);
     bitbots_msgs::action::Dynup_Result::SharedPtr r;
-    if (goal_handle->is_canceling()) {
-      goal_handle->canceled(r);
-    } else {
-      goal_handle->succeed(r);
-    }
   } else {
     RCLCPP_ERROR(this->get_logger(),"Could not determine positions! Aborting standup.");
     bitbots_msgs::action::Dynup_Result::SharedPtr r;
@@ -294,10 +289,16 @@ double DynupNode::getTimeDelta() {
 }
 
 void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_handle) {
+  auto result = std::make_shared<DynupGoal::Result>();
   double dt;
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
-  while (!goal_handle->is_canceling()) {
+  while (rclcpp::ok()) {
+    if (goal_handle->is_canceling()) {
+      goal_handle->canceled(result);
+      RCLCPP_INFO(this->get_logger(), "Goal canceled");
+      return;
+    }
     rclcpp::Time startTime = this->get_clock()->now();
     this->get_clock()->sleep_until(
       startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
@@ -306,9 +307,11 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     auto feedback = std::make_shared<bitbots_msgs::action::Dynup_Feedback>();
     feedback->percent_done = engine_.getPercentDone();
     goal_handle->publish_feedback(feedback);
-    if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<double>() || !(params_["stabilizing"].get_value<bool>()) ||
+    if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<int>() || !(params_["stabilizing"].get_value<bool>()) ||
                                         (this->get_clock()->now().seconds() - start_time_ >= engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
-        RCLCPP_DEBUG_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+        RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+        goal_handle->succeed(result);
+        return;
     }
     if (msg.joint_names.empty()) {
         break;

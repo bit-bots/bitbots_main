@@ -28,8 +28,8 @@ Stabilizer::Stabilizer(std::string ns){
 }
 
 void Stabilizer::reset() {
-  pid_trunk_pitch_.reset();
-  pid_trunk_roll_.reset();
+  pid_trunk_pitch_->reset();
+  pid_trunk_roll_->reset();
 
 }
 

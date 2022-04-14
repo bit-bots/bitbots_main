@@ -62,7 +62,7 @@ dynup:
     stabilizing: True
     minimal_displacement: False
     stable_threshold: 0.05
-    stable_duration: 100
+    stable_duration: -1
     stabilization_timeout: 1.5
 
     # Visualizer
