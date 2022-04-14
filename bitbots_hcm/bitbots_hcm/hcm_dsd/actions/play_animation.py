@@ -61,7 +61,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             self.get_logger().warn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value)
+            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value))
         if not first_try:
             server_running = False
             while not server_running and not self.blackboard.shut_down_request and rclpy.ok():
@@ -199,7 +199,7 @@ class PlayAnimationDynup(AbstractActionElement):
         """
 
         first_try = self.blackboard.dynup_action_client.wait_for_server(
-            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value
+            Duration(seconds=self.get_parameter('"hcm/anim_server_wait_time"').get_parameter_value().double_value))
         if not first_try:
             server_running = False
             while not server_running and not self.blackboard.shut_down_request and rclpy.ok():

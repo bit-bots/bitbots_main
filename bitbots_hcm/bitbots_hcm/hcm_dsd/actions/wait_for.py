@@ -26,7 +26,7 @@ class WaitForIMU(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.get_logger().warn("HCM gets no IMU data. Waiting for IMU to connect.", throttle_duration_sec=10
+        self.get_logger().warn("HCM gets no IMU data. Waiting for IMU to connect.", throttle_duration_sec=10)
 
 
 class WaitForPressureStartup(AbstractActionElement):
