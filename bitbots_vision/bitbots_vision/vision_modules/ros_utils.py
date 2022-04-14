@@ -130,7 +130,6 @@ def build_goal_post_msg(goalpost):
     post_msg.bb = build_bounding_box_2d(goalpost)
     if goalpost.get_rating() is not None:
         post_msg.confidence.confidence = float(goalpost.get_rating())
-    # TODO: Add attributes
     return post_msg
 
 def build_ball_array_msg(header, balls):
