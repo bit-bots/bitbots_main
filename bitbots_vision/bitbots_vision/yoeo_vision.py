@@ -12,7 +12,7 @@ from cv_bridge import CvBridge
 from threading import Lock
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import LineInformationInImage, Audio
-from soccer_vision_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
+from soccer_vision_2s_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
 
@@ -210,8 +210,7 @@ class CameraCapCheckComponent(IVisionComponent):
             new_config,
             self._publisher,
             'ROS_audio_msg_topic',
-            Audio,
-            queue_size=10
+            Audio
         )
 
     def run(self, image_msg) -> None:
@@ -324,7 +323,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
     @staticmethod
     def _create_ball_messages(candidates: List[candidate.Candidate]):
         """
-        :rtype: List[soccer_vision_msgs.msg._ball.Ball]
+        :rtype: List[soccer_vision_2s_msgs.msg._ball.Ball]
         """
         return list(map(ros_utils.build_ball_msg, candidates))
 
@@ -334,15 +333,15 @@ class YOEOBallDetectionComponent(IVisionComponent):
         :param image_msg: Image message
         :type image_msg:  sensor_msgs.msg._image.Image
         :param ball_messages: List of ball messages
-        :type ball_messages: List[soccer_vision_msgs.msg._ball.Ball]
-        :rtype: soccer_vision_msgs.msg._ball_array.BallArray
+        :type ball_messages: List[soccer_vision_2s_msgs.msg._ball.Ball]
+        :rtype: soccer_vision_2s_msgs.msg._ball_array.BallArray
         """
-        return ros_utils.build_balls_msg(image_msg.header, ball_messages)
+        return ros_utils.build_ball_array_msg(image_msg.header, ball_messages)
 
     def _publish_balls_message(self, balls_message) -> None:
         """
         :param balls_message: Balls message
-        :type balls_message: soccer_vision_msgs.msg._ball_array.BallArray
+        :type balls_message: soccer_vision_2s_msgs.msg._ball_array.BallArray
         """
         if balls_message:
             self._publisher.publish(balls_message)
@@ -392,8 +391,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
             new_config,
             self._publisher,
             'ROS_goal_posts_msg_topic',
-            GoalpostArray,
-            queue_size=3
+            GoalpostArray
         )
 
     def run(self, image_msg) -> None:
@@ -424,7 +422,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
     @staticmethod
     def _create_goalpost_messages(candidates: List[candidate.Candidate]):
         """
-        :rtype: List[soccer_vision_msgs.msg._goalpost.Goalpost]
+        :rtype: List[soccer_vision_2s_msgs.msg._goalpost.Goalpost]
         """
         return ros_utils.build_goal_post_msgs(candidates)
 
@@ -434,15 +432,15 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         :param image_msg: Image message
         :type image_msg:  sensor_msgs.msg._image.Image
         :param goalpost_messages: List of goalpost messages
-        :type goalpost_messages: List[soccer_vision_msgs.msg._goalpost.Goalpost]
-        :rtype: soccer_vision_msgs.msg._goalpost_array.GoalpostArray
+        :type goalpost_messages: List[soccer_vision_2s_msgs.msg._goalpost.Goalpost]
+        :rtype: soccer_vision_2s_msgs.msg._goalpost_array.GoalpostArray
         """
         return ros_utils.build_goal_post_array_msg(image_msg.header, goalpost_messages)
 
     def _publish_goalposts_message(self, goalposts_message) -> None:
         """
         :param goalposts_message: Goalposts message
-        :type goalposts_message: soccer_vision_msgs.msg._goalpost_array.GoalpostArray
+        :type goalposts_message: soccer_vision_2s_msgs.msg._goalpost_array.GoalpostArray
         """
         if goalposts_message:
             self._publisher.publish(goalposts_message)
@@ -512,14 +510,14 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         :type image_msg:  sensor_msgs.msg._image.Image
         :param field_boundary_points: Points of field boundary
         :type field_boundary_points: List[Tuple[int, int]]
-        :rtype: soccer_vision_msgs.msg._field_boundary.FieldBoundary
+        :rtype: soccer_vision_2s_msgs.msg._field_boundary.FieldBoundary
         """
-        return ros_utils.build_field_boundary_polygon_msg(image_msg.header, field_boundary_points)
+        return ros_utils.build_field_boundary_msg(image_msg.header, field_boundary_points)
 
     def _publish_field_boundary_msg(self, field_boundary_msg) -> None:
         """
         :param field_boundary_msg: Field boundary message
-        :type field_boundary_msg: soccer_vision_msgs.msg._field_boundary.FieldBoundary
+        :type field_boundary_msg: soccer_vision_2s_msgs.msg._field_boundary.FieldBoundary
         """
         self._publisher.publish(field_boundary_msg)
 
@@ -743,8 +741,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
             new_config,
             self._publisher,
             'ROS_obstacle_msg_topic',
-            RobotArray,
-            queue_size=3
+            RobotArray
         )
 
     def run(self, image_msg) -> None:
@@ -752,7 +749,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         :param image_msg: Image message
         :type image_msg:  sensor_msgs.msg._image.Image
         """
-        list_of_obstacle_messages = []  # List[soccer_vision_msgs.msg._robot.Robot]
+        list_of_obstacle_messages = []  # List[soccer_vision_2s_msgs.msg._robot.Robot]
         self._add_team_mates_to(list_of_obstacle_messages)
         self._add_opponents_to(list_of_obstacle_messages)
         self._add_remaining_obstacles_to(list_of_obstacle_messages)
@@ -765,7 +762,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
     def _add_team_mates_to(self, list_of_obstacle_messages) -> None:
         """
         :param list_of_obstacle_messages: List of obstacle messages
-        :type list_of_obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        :type list_of_obstacle_messages: List[soccer_vision_2s_msgs.msg._robot.Robot]
         """
         team_mate_candidates = self._get_team_mate_candidates()
         team_mate_candidate_messages = self._create_obstacle_messages(Robot.TEAM_OWN, team_mate_candidates)
@@ -777,14 +774,14 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
     @staticmethod
     def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]):
         """
-        :rtype: List[soccer_vision_msgs.msg._robot.Robot]
+        :rtype: List[soccer_vision_2s_msgs.msg._robot.Robot]
         """
-        return ros_utils.build_obstacle_msgs(obstacle_type, candidates)
+        return [ros_utils.build_robot_msg(obstacle_type, candidate) for candidate in candidates]
 
     def _add_opponents_to(self, list_of_obstacle_messages) -> None:
         """
         :param list_of_obstacle_messages: List of obstacle messages
-        :type list_of_obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        :type list_of_obstacle_messages: List[soccer_vision_2s_msgs.msg._robot.Robot]
         """
         opponent_candidates = self._get_opponent_candidates()
         opponent_candidate_messages = self._create_obstacle_messages(Robot.TEAM_OPPONENT, opponent_candidates)
@@ -796,7 +793,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
     def _add_remaining_obstacles_to(self, list_of_obstacle_messages: List) -> None:
         """
         :param list_of_obstacle_messages: List of obstacle messages
-        :type list_of_obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
+        :type list_of_obstacle_messages: List[soccer_vision_2s_msgs.msg._robot.Robot]
         """
         remaining_candidates = self._get_remaining_candidates()
         remaining_candidate_messages = self._create_obstacle_messages(Robot.TEAM_UNKNOWN, remaining_candidates)
@@ -811,15 +808,15 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         :param image_msg: Image message
         :type image_msg:  sensor_msgs.msg._image.Image
         :param obstacle_messages: Obstacle messages
-        :type obstacle_messages: List[soccer_vision_msgs.msg._robot.Robot]
-        :rtype: soccer_vision_msgs.msg._robot_array.RobotArray
+        :type obstacle_messages: List[soccer_vision_2s_msgs.msg._robot.Robot]
+        :rtype: soccer_vision_2s_msgs.msg._robot_array.RobotArray
         """
-        return ros_utils.build_obstacle_array_msg(image_msg.header, obstacle_messages)
+        return ros_utils.build_robot_array_msg(image_msg.header, obstacle_messages)
 
     def _publish_obstacles_message(self, obstacles_message) -> None:
         """
         :param obstacles_message: Obstacles message
-        :type obstacles_message: soccer_vision_msgs.msg._robot_array.RobotArray
+        :type obstacles_message: soccer_vision_2s_msgs.msg._robot_array.RobotArray
         """
         self._publisher.publish(obstacles_message)
 
@@ -1060,8 +1057,7 @@ class YOEOVision(Node):
     def _register_subscribers(self, config: Dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image,
                                                                 'ROS_img_msg_topic', Image,
-                                                                callback=self._image_callback,
-                                                                queue_size=config['ROS_img_msg_queue_size'])
+                                                                callback=self._image_callback)
 
     def _image_callback(self, image_msg) -> None:
         # TODO: type

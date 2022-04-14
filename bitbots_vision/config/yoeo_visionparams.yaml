@@ -14,7 +14,6 @@ bitbots_vision:
 
     ROS_audio_msg_topic: 'speak'  # ROS topic of the audio message
     ROS_img_msg_topic: '/image_raw' #'camera/image_proc'  # ROS topic of the image message
-    ROS_img_msg_queue_size: 1  # ROS queue size for the image message
     ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message
     ROS_ball_msg_topic: 'balls_in_image'  # ROS topic of the ball message
     ROS_goal_posts_msg_topic: 'goal_posts_in_image'  # ROS topic of the goal posts message

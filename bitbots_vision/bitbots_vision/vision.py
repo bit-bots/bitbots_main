@@ -12,8 +12,8 @@ from cv_bridge import CvBridge
 from threading import Thread, Lock
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PolygonStamped
-from humanoid_league_msgs.msg import LineInformationInImage, Audio
-from soccer_vision_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
+from humanoid_league_msgs.msg import Audio, GameState
+from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, MarkingArray
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
 
@@ -69,6 +69,7 @@ class Vision(Node):
 
         # Subscriber placeholder
         self._sub_image = None
+        self._sub_gamestate = None
 
         # Debug image drawer placeholder
         self._debug_image_creator = None
@@ -317,12 +318,12 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        self._pub_audio = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio, queue_size=10)
+        self._pub_audio = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio)  # queue_size=10
         self._pub_balls = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallArray)
-        self._pub_lines = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_lines, 'ROS_line_msg_topic', LineInformationInImage, queue_size=5)
+        self._pub_lines = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_lines, 'ROS_line_msg_topic', MarkingArray)  # queue_size=5
         self._pub_line_mask = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', RobotArray, queue_size=3)
-        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalpostArray, queue_size=3)
+        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', RobotArray)  # queue_size=3
+        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalpostArray)  # queue_size=3
         self._pub_debug_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
         self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundary)
         self._pub_white_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
@@ -338,7 +339,9 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback, queue_size=config['ROS_img_msg_queue_size'])
+        self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback)
+        self._sub_gamestate = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_gamestate, 'ROS_gamestate_topic', GameState, callback=ros_utils.gamestate_callback)
+
     def _image_callback(self, image_msg):
         # type: (Image) -> None
         """
@@ -436,9 +439,9 @@ class Vision(Node):
             balls_under_field_boundary,
             self._ball_candidate_threshold)
         # Convert ball cancidate list to ball message list
-        list_of_balls = list(map(ros_utils.build_ball_msg, top_balls))
+        list_of_balls = [ros_utils.build_ball_msg(top_ball) for top_ball in top_balls]
         # Create balls msg with the list of balls
-        balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
+        balls_msg = ros_utils.build_ball_array_msg(image_msg.header, list_of_balls)
         # Publish balls
         self._pub_balls.publish(balls_msg)
 
@@ -463,16 +466,17 @@ class Vision(Node):
         # Init list for obstacle msgs
         list_of_obstacle_msgs = []
         # Add red obstacles
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(Robot.TEAM_OWN, # TODO read if red is our color or not if avalible
-                                                                   self._red_obstacle_detector.get_candidates()))
+        list_of_obstacle_msgs.extend(
+            [ros_utils.build_robot_msg(obstacle, GameState.RED) for obstacle in self._red_obstacle_detector.get_candidates()])
         # Add blue obstacles
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(Robot.TEAM_OPPONENT,
-                                                                   self._blue_obstacle_detector.get_candidates()))
-        # Add UFO's (Undefined Found Obstacles)
-        list_of_obstacle_msgs.extend(ros_utils.build_obstacle_msgs(Robot.TEAM_UNKNOWN,
-                                                                   self._unknown_obstacle_detector.get_candidates()))
+        list_of_obstacle_msgs.extend(
+            [ros_utils.build_robot_msg(obstacle, GameState.BLUE) for obstacle in self._blue_obstacle_detector.get_candidates()])
+        # Add Robots from unknown team
+        list_of_obstacle_msgs.extend(
+            [ros_utils.build_robot_msg(obstacle) for obstacle in self._unknown_obstacle_detector.get_candidates()])
+
         # Build obstacles msgs containing all obstacles
-        obstacles_msg = ros_utils.build_obstacle_array_msg(image_msg.header, list_of_obstacle_msgs)
+        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, list_of_obstacle_msgs)
         # Publish obstacles
         self._pub_obstacle.publish(obstacles_msg)
 
@@ -502,13 +506,11 @@ class Vision(Node):
             self._goal_post_field_boundary_y_offset)
 
         # Get goalpost msgs and add them to the detected goal posts list
-        goal_post_msgs = ros_utils.build_goal_post_msgs(goal_posts)
+        goal_post_msgs = [ros_utils.build_goal_post_msg(goal_post) for goal_post in goal_posts]
         # Create goalposts msg
         goal_posts_msg = ros_utils.build_goal_post_array_msg(image_msg.header, goal_post_msgs)
-        # Check if there is a goal
-        if goal_posts_msg:
-            # If we have a goal, lets publish it
-            self._pub_goal_posts.publish(goal_posts_msg)
+        # Publish goalposts
+        self._pub_goal_posts.publish(goal_posts_msg)
 
         # Debug draw all goal posts
         self._debug_image_creator.draw_obstacle_candidates(
@@ -525,12 +527,12 @@ class Vision(Node):
         # Lines #
         #########
         if self._use_line_points:
-            # Build a LineSegmentInImage message for each linepoint
+            # Build a MarkingSegment message for each line point
             line_points = self._line_detector.get_linepoints()
             # Create line segments
-            line_segments = ros_utils.convert_line_points_to_line_segment_msgs(line_points)
-            # Create line msg
-            line_msg = ros_utils.build_line_information_in_image_msg(image_msg.header, line_segments)
+            marking_segments = ros_utils.convert_line_points_to_marking_segment_msgs(line_points)
+            # Create MarkingArray msg
+            line_msg = ros_utils.build_marking_array_msg(image_msg.header, marking_segments)
             # Publish lines
             self._pub_lines.publish(line_msg)
 
@@ -562,7 +564,7 @@ class Vision(Node):
         # Get field boundary msg
         convex_field_boundary = self._field_boundary_detector.get_convex_field_boundary_points()
         # Build ros message
-        convex_field_boundary_msg = ros_utils.build_field_boundary_polygon_msg(image_msg.header, convex_field_boundary)
+        convex_field_boundary_msg = ros_utils.build_field_boundary_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self._pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
@@ -576,7 +578,7 @@ class Vision(Node):
             (0, 0, 255))
 
         #########
-        # Debug #
+        # Masks #
         #########
 
         # Check, if HSV mask images should be published
@@ -601,6 +603,10 @@ class Vision(Node):
             # Publish mask image
             self._pub_field_mask_image.publish(
                 ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
+
+        #########
+        # Debug #
+        #########
 
         # Check if we should draw debug image
         if self._debug_image_creator.active:
