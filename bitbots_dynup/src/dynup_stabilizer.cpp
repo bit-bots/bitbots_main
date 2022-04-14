@@ -57,7 +57,8 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
     // adapt trunk based on PID controller
     goal_fused.fusedPitch +=
         pid_trunk_pitch_->computeCommand(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
-    goal_fused.fusedRoll += pid_trunk_roll_->computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
+    goal_fused.fusedRoll +=
+        pid_trunk_roll_->computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
 
     is_stable_ = (abs(goal_fused.fusedPitch - current_orientation.fusedPitch) < stable_threshold_) &&
         (abs(goal_fused.fusedRoll - current_orientation.fusedRoll) < stable_threshold_);

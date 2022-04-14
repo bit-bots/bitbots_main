@@ -705,7 +705,6 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
 }
 
 int DynupEngine::getPercentDone() const {
-  RCLCPP_ERROR_STREAM(node_->get_logger(), "" << time_ << duration_);
   return int(time_ / duration_ * 100);
 }
 
