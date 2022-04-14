@@ -13,7 +13,7 @@ from threading import Thread, Lock
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PolygonStamped
 from humanoid_league_msgs.msg import Audio, GameState
-from soccer_vision_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, MarkingArray
+from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, MarkingArray
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
 
@@ -441,7 +441,7 @@ class Vision(Node):
         # Convert ball cancidate list to ball message list
         list_of_balls = [ros_utils.build_ball_msg(top_ball) for top_ball in top_balls]
         # Create balls msg with the list of balls
-        balls_msg = ros_utils.build_balls_msg(image_msg.header, list_of_balls)
+        balls_msg = ros_utils.build_ball_array_msg(image_msg.header, list_of_balls)
         # Publish balls
         self._pub_balls.publish(balls_msg)
 
@@ -467,16 +467,16 @@ class Vision(Node):
         list_of_obstacle_msgs = []
         # Add red obstacles
         list_of_obstacle_msgs.extend(
-            [ros_utils.build_obstacle_msg(obstacle, GameState.RED) for obstacle in self._red_obstacle_detector.get_candidates()])
+            [ros_utils.build_robot_msg(obstacle, GameState.RED) for obstacle in self._red_obstacle_detector.get_candidates()])
         # Add blue obstacles
         list_of_obstacle_msgs.extend(
-            [ros_utils.build_obstacle_msg(obstacle, GameState.BLUE) for obstacle in self._blue_obstacle_detector.get_candidates()])
+            [ros_utils.build_robot_msg(obstacle, GameState.BLUE) for obstacle in self._blue_obstacle_detector.get_candidates()])
         # Add Robots from unknown team
         list_of_obstacle_msgs.extend(
-            [ros_utils.build_obstacle_msg(obstacle) for obstacle in self._unknown_obstacle_detector.get_candidates()])
+            [ros_utils.build_robot_msg(obstacle) for obstacle in self._unknown_obstacle_detector.get_candidates()])
 
         # Build obstacles msgs containing all obstacles
-        obstacles_msg = ros_utils.build_obstacle_array_msg(image_msg.header, list_of_obstacle_msgs)
+        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, list_of_obstacle_msgs)
         # Publish obstacles
         self._pub_obstacle.publish(obstacles_msg)
 
@@ -564,7 +564,7 @@ class Vision(Node):
         # Get field boundary msg
         convex_field_boundary = self._field_boundary_detector.get_convex_field_boundary_points()
         # Build ros message
-        convex_field_boundary_msg = ros_utils.build_field_boundary_polygon_msg(image_msg.header, convex_field_boundary)
+        convex_field_boundary_msg = ros_utils.build_field_boundary_msg(image_msg.header, convex_field_boundary)
         # Publish field boundary
         self._pub_convex_field_boundary.publish(convex_field_boundary_msg)
 

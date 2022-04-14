@@ -6,7 +6,7 @@ from  rclpy import logging
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
 from humanoid_league_msgs.msg import Audio, GameState
-from soccer_vision_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
+from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
 
 
 """
@@ -92,14 +92,15 @@ def build_bounding_box_2d(candidate):
     :param candidate: A vision Candidate
     :return: BoundingBox2D message
     """
-    return BoundingBox2D(
-        size_x=float(candidate.get_width()),
-        size_y=float(candidate.get_height()),
-        center=Pose2D(
-            x=float(candidate.get_center_x()),
-            y=float(candidate.get_center_y()) 
-        )
-    )
+    center = Pose2D()
+    center.position.x = float(candidate.get_center_x())
+    center.position.y = float(candidate.get_center_y())
+
+    bb_msg = BoundingBox2D()
+    bb_msg.size_x = float(candidate.get_width())
+    bb_msg.size_y = float(candidate.get_height())
+    bb_msg.center = center
+    return bb_msg
 
 def build_goal_post_array_msg(header, goal_post_msgs):
     """
@@ -112,8 +113,7 @@ def build_goal_post_array_msg(header, goal_post_msgs):
     # Create goalposts msg
     goal_posts_msg = GoalpostArray()
     # Add header
-    goal_posts_msg.header.frame_id = header.frame_id
-    goal_posts_msg.header.stamp = header.stamp
+    goal_posts_msg.header = header
     # Add detected goal posts to the message
     goal_posts_msg.posts = goal_post_msgs
     return goal_posts_msg
@@ -129,10 +129,11 @@ def build_goal_post_msg(goalpost):
     post_msg = Goalpost()
     post_msg.bb = build_bounding_box_2d(goalpost)
     if goalpost.get_rating() is not None:
-        post_msg.confidence = float(goalpost.get_rating())
+        post_msg.confidence.confidence = float(goalpost.get_rating())
+    # TODO: Add attributes
     return post_msg
 
-def build_balls_msg(header, balls):
+def build_ball_array_msg(header, balls):
     """
     Builds a BallArray message out of a list of ball messages
 
@@ -143,8 +144,7 @@ def build_balls_msg(header, balls):
     # create ball msg
     balls_msg = BallArray()
     # Set header
-    balls_msg.header.frame_id = header.frame_id
-    balls_msg.header.stamp = header.stamp
+    balls_msg.header = header
     # Add balls
     balls_msg.balls = balls
     return balls_msg
@@ -158,31 +158,30 @@ def build_ball_msg(ball_candidate):
     """
     # Create a empty ball message
     ball_msg = Ball()
+    ball_msg.bb = build_bounding_box_2d(ball_candidate)
     ball_msg.center.x = float(ball_candidate.get_center_x())
     ball_msg.center.y = float(ball_candidate.get_center_y())
-    ball_msg.bb = build_bounding_box_2d(ball_candidate)
     if ball_candidate.get_rating() is not None:
-            ball_msg.confidence = float(ball_candidate.get_rating())
+            ball_msg.confidence.confidence = float(ball_candidate.get_rating())
     return ball_msg
 
-def build_obstacle_array_msg(header, obstacles):
+def build_robot_array_msg(header, robots):
     """
     Builds a RobotArray message containing a list of Robot messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param obstacles: a list of Robot messages
+    :param robots: a list of Robot messages
     :return: RobotArray message
     """
     # Create obstacle msg
-    obstacles_msg = RobotArray()
+    robots_msg = RobotArray()
     # Add header
-    obstacles_msg.header.frame_id = header.frame_id
-    obstacles_msg.header.stamp = header.stamp
+    robots_msg.header = header
     # Add obstacles
-    obstacles_msg.robots = obstacles
-    return obstacles_msg
+    robots_msg.robots = robots
+    return robots_msg
 
-def build_obstacle_msg(obstacle, obstacle_color=None):
+def build_robot_msg(obstacle, obstacle_color=None):
     """
     Builds a Robot msg of a detected obstacle of a certain color
 
@@ -192,12 +191,9 @@ def build_obstacle_msg(obstacle, obstacle_color=None):
     """
     obstacle_msg = Robot()
     obstacle_msg.bb = build_bounding_box_2d(obstacle)
-    obstacle_msg.player_number = Robot.TEAM_UNKNOWN 
-    obstacle_msg.team = get_team_from_robot_color(obstacle_color)
-    obstacle_msg.state = Robot.STATE_UNKNOWN
-    obstacle_msg.facing = Robot.FACING_UNKNOWN
+    obstacle_msg.attributes.team = get_team_from_robot_color(obstacle_color)
     if obstacle.get_rating() is not None:
-        obstacle_msg.confidence = float(obstacle.get_rating())
+        obstacle_msg.confidence.confidence = float(obstacle.get_rating())
     return obstacle_msg
 
 def build_field_boundary_msg(header, field_boundary):
@@ -231,8 +227,7 @@ def build_marking_array_msg(header, marking_segments):
     # Create message
     marking_array_msg = MarkingArray()
     # Set header values
-    marking_array_msg.header.frame_id = header.frame_id
-    marking_array_msg.header.stamp = header.stamp
+    marking_array_msg.header = header
     # Set line segments
     marking_array_msg.segments = marking_segments
     return marking_array_msg
@@ -365,7 +360,7 @@ def get_team_from_robot_color(color):
     :return Robot.team: Robot's team
     """
     if color not in [GameState.BLUE, GameState.RED]:  # If color is not known, we can just return unknown
-        return Robot.TEAM_UNKNOWN
+        return Robot().attributes.TEAM_UNKNOWN
 
     # Color is known and we have to first figure out the own color
     # Get own team color
@@ -374,6 +369,6 @@ def get_team_from_robot_color(color):
         own_color = _game_state.team_color
 
     if color == own_color:  # Robot is in own team, if same color
-        return Robot.TEAM_OWN
+        return Robot().attributes.TEAM_OWN
     else:  # Robot is not same color, therefore it is from the opponent's team
-        return Robot.TEAM_OPPONENT
+        return Robot().attributes.TEAM_OPPONENT
