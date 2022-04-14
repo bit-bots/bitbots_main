@@ -270,6 +270,5 @@ class HardwareControlManager:
             self.hcm_state_publisher.publish(self.blackboard.current_state)
             self.node.get_clock().sleep_for(Duration(seconds=0.01))
 
-
-if __name__ == "__main__":
+def main():
     hcm = HardwareControlManager()
