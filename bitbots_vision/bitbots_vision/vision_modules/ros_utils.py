@@ -373,8 +373,27 @@ def get_team_from_robot_color(color):
     own_color = None
     if _game_state is not None:
         own_color = _game_state.team_color
+    else: 
+        return Robot().attributes.TEAM_UNKNOWN
 
     if color == own_color:  # Robot is in own team, if same color
         return Robot().attributes.TEAM_OWN
     else:  # Robot is not same color, therefore it is from the opponent's team
         return Robot().attributes.TEAM_OPPONENT
+
+def get_robot_color_for_team(team):
+    # Color is known and we have to first figure out the own color
+    # Get own team color
+    own_color = None
+    if _game_state is not None:
+        own_color = _game_state.team_color
+    else: 
+        return
+
+    if team == Robot().attributes.TEAM_OWN:
+        return own_color
+    elif team == Robot().attributes.TEAM_OPPONENT:
+        if own_color == GameState.BLUE:
+            return GameState.RED
+        else:
+            return GameState.BLUE
