@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import actionlib
+from rclpy.action import ActionClient
 import argparse
 import math
 import os
 import random
-import rospy
+import rclpy
+from rclpy.node import Node
 import sys
 from time import sleep
 
@@ -14,7 +15,7 @@ from geometry_msgs.msg import Vector3, Quaternion
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 from visualization_msgs.msg import Marker
 
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 showing_feedback = False
 
@@ -28,8 +29,8 @@ if __name__ == "__main__":
     print("Beware: this script may only work when calling it directly on the robot "
           "and will maybe result in tf errors otherwise")
     print("[..] Initializing node", end='')
-    rospy.init_node('dynamic_kick_dummy_client', anonymous=True)
-    marker_pub = rospy.Publisher("debug/dynamic_kick_ball_marker", Marker, queue_size=1)
+    rclpy.init(args=None)
+    marker_pub = self.create_publisher(Marker, "debug/dynamic_kick_ball_marker", 1)
     print("\r[OK] Initializing node")
 
 
@@ -73,14 +74,14 @@ if __name__ == "__main__":
 
     print('[..] Connecting to action server \'dynamic_kick\'', end='')
     sys.stdout.flush()
-    client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
+    client = ActionClient(self, KickAction, 'dynamic_kick')
     if not client.wait_for_server():
         exit(1)
     print('\r[OK] Connecting to action server \'dynamic_kick\'')
     print()
 
     goal = KickGoal()
-    goal.header.stamp = rospy.Time.now()
+    goal.header.stamp = self.get_clock().now()
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
     goal.header.frame_id = frame_prefix + "base_footprint"
     goal.ball_position.x = 0.2
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     marker.scale = Vector3(0.05, 0.05, 0.05)
     marker.type = Marker.SPHERE
     marker.action = Marker.ADD
-    marker.lifetime = rospy.Duration(8)
+    marker.lifetime = Duration(seconds=8)
     marker.color.a = 1
     marker.color.r = 1
     marker.color.g = 1
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     marker.frame_locked = True
     marker_pub.publish(marker)
 """
-    client.send_goal(goal)
+    client.send_goal_async(goal)
     client.done_cb = done_cb
     client.feedback_cb = feedback_cb
     client.active_cb = active_cb

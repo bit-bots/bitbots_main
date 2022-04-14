@@ -17,7 +17,7 @@ class AbstractVisualizer {
    * @param frame The frame in which the position is given
    * @return The visualization marker
    */
-  visualization_msgs::msg::Marker getMarker(const tf2::Vector3 &position, const std::string &frame, rclcpp::Node* node) {
+  visualization_msgs::msg::Marker getMarker(const tf2::Vector3 &position, const std::string &frame, rclcpp::Node::SharedPtr node) {
     visualization_msgs::msg::Marker marker;
 
     marker.action = visualization_msgs::msg::Marker::ADD;

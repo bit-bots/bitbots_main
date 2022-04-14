@@ -9,7 +9,7 @@ void KickIK::init(moveit::core::RobotModelPtr kinematic_model) {
   right_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
 
   /* Reset kinematic goal to default */
-  goal_state_.reset(new robot_state::RobotState(kinematic_model));
+  goal_state_.reset(new moveit::core::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
 
   /* Initialize collision model */
@@ -33,7 +33,7 @@ bitbots_splines::JointGoals KickIK::calculate(const KickPositions &positions) {
   Eigen::Isometry3d trunk_to_flying_foot_goal = trunk_to_support_foot_goal * positions.flying_foot_pose;
 
   // decide which foot is which
-  robot_model::JointModelGroup *support_foot_group, *flying_foot_group;
+  moveit::core::JointModelGroup *support_foot_group, *flying_foot_group;
   if (positions.is_left_kick) {
     support_foot_group = right_leg_joints_group_;
     flying_foot_group = left_leg_joints_group_;

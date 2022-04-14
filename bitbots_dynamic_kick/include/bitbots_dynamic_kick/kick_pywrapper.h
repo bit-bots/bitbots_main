@@ -6,9 +6,9 @@
 #include <Python.h>
 #include <Eigen/Geometry>
 #include <boost/python.hpp>
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <geometry_msgs/Pose.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <bitbots_dynamic_kick/kick_node.h>
 

@@ -38,9 +38,9 @@ PyKickWrapper::PyKickWrapper(const std::string ns) {
 }
 
 moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt, const std::string &joint_state_str) {
-  auto joint_state = from_python<sensor_msgs::JointState>(joint_state_str);
+  auto joint_state = from_python<sensor_msgs::msg::JointState>(joint_state_str);
   kick_node_->jointStateCallback(joint_state);
-  std::string result = to_python<bitbots_msgs::JointCommand>(kick_node_->stepWrapper(dt));
+  std::string result = to_python<bitbots_msgs::msg::JointCommand>(kick_node_->stepWrapper(dt));
   return moveit::py_bindings_tools::serializeMsg(result);
 }
 
@@ -89,7 +89,7 @@ void PyKickWrapper::set_params(const boost::python::object params) {
 }
 
 bool PyKickWrapper::set_goal(const std::string &goal_str, const std::string &joint_state_str) {
-  auto joint_state = from_python<sensor_msgs::JointState>(joint_state_str);
+  auto joint_state = from_python<sensor_msgs::msg::JointState>(joint_state_str);
   kick_node_->jointStateCallback(joint_state);
   auto goal = from_python<bitbots_msgs::KickGoal>(goal_str);
   std::string error_string;
@@ -101,7 +101,7 @@ double PyKickWrapper::get_progress() {
 }
 
 moveit::py_bindings_tools::ByteString PyKickWrapper::get_trunk_pose() {
-  std::string trunk_pose_str = to_python<geometry_msgs::Pose>(kick_node_->getTrunkPose());
+  std::string trunk_pose_str = to_python<geometry_msgs::msg::Pose>(kick_node_->getTrunkPose());
   return moveit::py_bindings_tools::serializeMsg(trunk_pose_str);
 }
 

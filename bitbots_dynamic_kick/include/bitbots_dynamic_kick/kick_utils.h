@@ -2,7 +2,7 @@
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_UTILS_H_
 
 #include <Eigen/Geometry>
-#include <bitbots_dynamic_kick/KickDebug.h>
+#include <bitbots_dynamic_kick/msg/kick_debug.hpp>
 
 namespace bitbots_dynamic_kick {
 
@@ -22,15 +22,15 @@ struct KickGoals {
 };
 
 enum KickPhase {
-  INITIAL = KickDebug::INITIAL,
-  MOVE_TRUNK = KickDebug::MOVE_TRUNK,
-  RAISE_FOOT = KickDebug::RAISE_FOOT,
-  WINDUP = KickDebug::WINDUP,
-  KICK = KickDebug::KICK,
-  MOVE_BACK = KickDebug::MOVE_BACK,
-  LOWER_FOOT = KickDebug::LOWER_FOOT,
-  MOVE_TRUNK_BACK = KickDebug::MOVE_TRUNK_BACK,
-  DONE = KickDebug::DONE
+  INITIAL = bitbots_dynamic_kick::msg::KickDebug::INITIAL,
+  MOVE_TRUNK = bitbots_dynamic_kick::msg::KickDebug::MOVE_TRUNK,
+  RAISE_FOOT = bitbots_dynamic_kick::msg::KickDebug::RAISE_FOOT,
+  WINDUP = bitbots_dynamic_kick::msg::KickDebug::WINDUP,
+  KICK = bitbots_dynamic_kick::msg::KickDebug::KICK,
+  MOVE_BACK = bitbots_dynamic_kick::msg::KickDebug::MOVE_BACK,
+  LOWER_FOOT = bitbots_dynamic_kick::msg::KickDebug::LOWER_FOOT,
+  MOVE_TRUNK_BACK = bitbots_dynamic_kick::msg::KickDebug::MOVE_TRUNK_BACK,
+  DONE = bitbots_dynamic_kick::msg::KickDebug::DONE
 };
 
 }

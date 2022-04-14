@@ -17,11 +17,11 @@ class KickIK : public bitbots_splines::AbstractIK<KickPositions> {
   void reset() override;
 
  private:
-  robot_state::RobotStatePtr goal_state_;
+  moveit::core::RobotStatePtr goal_state_;
   planning_scene::PlanningScenePtr planning_scene_;
-  robot_model::JointModelGroup *legs_joints_group_;
-  robot_model::JointModelGroup *left_leg_joints_group_;
-  robot_model::JointModelGroup *right_leg_joints_group_;
+  moveit::core::JointModelGroup *legs_joints_group_;
+  moveit::core::JointModelGroup *left_leg_joints_group_;
+  moveit::core::JointModelGroup *right_leg_joints_group_;
 };
 }
 

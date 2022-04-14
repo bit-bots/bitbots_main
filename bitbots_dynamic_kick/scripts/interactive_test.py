@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import actionlib
+from rclpy.action import ActionClient
 import argparse
 import math
 import os
 import random
-import rospy
+import rclpy
+from rclpy.node import Node
 import sys
 from time import sleep
 
@@ -15,7 +16,7 @@ from geometry_msgs.msg import Vector3, Quaternion
 from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
 from visualization_msgs.msg import Marker
 
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 import sys, select, termios, tty
 
 showing_feedback = False
@@ -83,7 +84,7 @@ def getKey():
 
 
 if __name__ == "__main__":
-    rospy.init_node('dynamic_kick_interactive_test', anonymous=True)
+    rclpy.init(args=None)
     print("Waiting for kick server and simulation")
 
     def done_cb(state, result):
@@ -128,7 +129,7 @@ if __name__ == "__main__":
 
 
     sys.stdout.flush()
-    client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
+    client = ActionClient(self, KickAction, 'dynamic_kick')
     if not client.wait_for_server():
         exit(1)
 
@@ -151,7 +152,7 @@ if __name__ == "__main__":
 
     def generate_kick_goal(x, y, direction, speed, unstable=False):
         kick_goal = KickGoal()
-        kick_goal.header.stamp = rospy.Time.now()
+        kick_goal.header.stamp = self.get_clock().now()
         kick_goal.header.frame_id = frame_prefix + "base_footprint"
         kick_goal.ball_position.x = x
         kick_goal.ball_position.y = y
@@ -164,7 +165,7 @@ if __name__ == "__main__":
 
     def execute_kick():
         goal = generate_kick_goal(kick_x, kick_y, kick_direction, kick_speed)
-        client.send_goal(goal)
+        client.send_goal_async(goal)
         client.done_cb = done_cb
         client.feedback_cb = feedback_cb
         client.active_cb = active_cb
@@ -172,9 +173,9 @@ if __name__ == "__main__":
 
 
     rospy.wait_for_service("set_robot_pose")
-    set_robot_pose_service = rospy.ServiceProxy("set_robot_pose", SetObjectPose)
+    set_robot_pose_service = self.create_client(SetObjectPose, "set_robot_pose")
     rospy.wait_for_service("set_ball_position")
-    set_ball_pos_service = rospy.ServiceProxy("set_ball_position", SetObjectPosition)
+    set_ball_pos_service = self.create_client(SetObjectPosition, "set_ball_position")
 
 
     def set_robot_pose():
@@ -198,7 +199,7 @@ if __name__ == "__main__":
     sys.stdout.write("\x1b[A")
     print(msg)
 
-    while not rospy.is_shutdown():
+    while rclpy.ok():
         key = getKey()
         if key in moveRobotBindings.keys():
             robot_x += moveRobotBindings[key][0] * x_speed_step
@@ -254,3 +255,4 @@ if __name__ == "__main__":
             f"kick y:     {round(kick_y, 2)}             \n"
             f"kick dir:   {round(kick_direction, 2)}     \n"
             f"kick speed: {round(kick_speed, 2)}         ")
+  ")
