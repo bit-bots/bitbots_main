@@ -28,6 +28,12 @@ namespace bitbots_dynup {
     this->set_parameters(copied_parameters);
   }
 
+  base_link_frame_ = this->get_parameter("base_link_frame").get_value<std::string>();
+  r_sole_frame_ = this->get_parameter("r_sole_frame").get_value<std::string>();
+  l_sole_frame_ = this->get_parameter("l_sole_frame").get_value<std::string>();
+  r_wrist_frame_ = this->get_parameter("r_wrist_frame").get_value<std::string>();
+  l_wrist_frame_ = this->get_parameter("l_wrist_frame").get_value<std::string>();
+
   param_names_ = {
     "engine_rate",
     "arm_extended_length",
