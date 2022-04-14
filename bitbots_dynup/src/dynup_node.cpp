@@ -28,13 +28,6 @@ namespace bitbots_dynup {
     this->set_parameters(copied_parameters);
   }
 
-this->action_server_ = rclcpp_action::create_server<DynupGoal>(
-    this,
-    "dynup",
-    std::bind(&DynupNode::goalCb, this, _1, _2),
-    std::bind(&DynupNode::cancelCb, this, _1),
-    std::bind(&DynupNode::acceptedCb, this, _1));
-
   param_names_ = {
     "engine_rate",
     "arm_extended_length",
@@ -135,6 +128,12 @@ this->action_server_ = rclcpp_action::create_server<DynupGoal>(
   cop_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&DynupNode::imuCallback, this, _1));
   joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1));
 
+  this->action_server_ = rclcpp_action::create_server<DynupGoal>(
+    this,
+    "dynup",
+    std::bind(&DynupNode::goalCb, this, _1, _2),
+    std::bind(&DynupNode::cancelCb, this, _1),
+    std::bind(&DynupNode::acceptedCb, this, _1));
   RCLCPP_INFO(this->get_logger(),"Initialized DynUp and waiting for actions");
   rclcpp::spin(SharedPtr(this));
 }
