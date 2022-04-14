@@ -6,7 +6,7 @@ from  rclpy import logging
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
 from humanoid_league_msgs.msg import Audio, GameState
-from soccer_vision_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
+from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
 
 
 """
@@ -21,7 +21,7 @@ logger = logging.get_logger('bitbots_vision')
 
 general_parameters = []
 
-def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, queue_size=1):
+def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, qos_profile=1, callback_group=None):
     """
     Creates or updates a publisher
 
@@ -31,7 +31,14 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
     :param publisher_object: The python object, that represents the publisher
     :param topic_key: The name of the topic variable in the config dict
     :param data_class: Data type class for ROS messages of the topic we want to subscribe
-    :param queue_size: The ROS message queue size
+    :param qos_profile: A QoSProfile or a history depth to apply to the publisher.
+        In the case that a history depth is provided, the QoS history is set to
+        KEEP_LAST, the QoS history depth is set to the value
+        of the parameter, and all other QoS settings are set to their default values.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1258
+    :param callback_group: The callback group for the publisher's event handlers.
+        If ``None``, then the node's default callback group is used.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1262
     :return: adjusted publisher object
     """
     # Check if topic parameter has changed
@@ -40,11 +47,12 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
         publisher_object = node.create_publisher(
             data_class,
             new_config[topic_key],
-            queue_size)
+            qos_profile,
+            callback_group=callback_group)
         logger.debug("Registered new publisher to " + str(new_config[topic_key]))
     return publisher_object
 
-def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, queue_size=1):
+def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, qos_profile=1, callback_group=None):
     """
     Creates or updates a subscriber
 
@@ -55,10 +63,14 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
     :param topic_key: The name of the topic variable in the config dict
     :param data_class: Data type class for ROS messages of the topic we want to subscribe
     :param callback: The subscriber callback function
-    :param callback_args: Additional arguments for the callback method
-    :param queue_size: The ROS message queue size
-    :param buff_size: The ROS message buffer size
-    :param tcp_nodelay: If True, requests tcp_nodelay from publisher
+    :param qos_profile: A QoSProfile or a history depth to apply to the subscription.
+        In the case that a history depth is provided, the QoS history is set to
+        KEEP_LAST, the QoS history depth is set to the value
+        of the parameter, and all other QoS settings are set to their default values.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1335
+    :param callback_group: The callback group for the subscription. If ``None``, then the
+        nodes default callback group is used.
+        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1339
     :return: adjusted subscriber object
     """
     # Check if topic parameter has changed
@@ -68,7 +80,8 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
             data_class,
             new_config[topic_key],
             callback,
-            queue_size)
+            qos_profile,
+            callback_group=callback_group)
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
@@ -79,14 +92,15 @@ def build_bounding_box_2d(candidate):
     :param candidate: A vision Candidate
     :return: BoundingBox2D message
     """
-    return BoundingBox2D(
-        size_x=float(candidate.get_width()),
-        size_y=float(candidate.get_height()),
-        center=Pose2D(
-            x=float(candidate.get_center_x()),
-            y=float(candidate.get_center_y()) 
-        )
-    )
+    center = Pose2D()
+    center.position.x = float(candidate.get_center_x())
+    center.position.y = float(candidate.get_center_y())
+
+    bb_msg = BoundingBox2D()
+    bb_msg.size_x = float(candidate.get_width())
+    bb_msg.size_y = float(candidate.get_height())
+    bb_msg.center = center
+    return bb_msg
 
 def build_goal_post_array_msg(header, goal_post_msgs):
     """
@@ -99,8 +113,7 @@ def build_goal_post_array_msg(header, goal_post_msgs):
     # Create goalposts msg
     goal_posts_msg = GoalpostArray()
     # Add header
-    goal_posts_msg.header.frame_id = header.frame_id
-    goal_posts_msg.header.stamp = header.stamp
+    goal_posts_msg.header = header
     # Add detected goal posts to the message
     goal_posts_msg.posts = goal_post_msgs
     return goal_posts_msg
@@ -116,10 +129,10 @@ def build_goal_post_msg(goalpost):
     post_msg = Goalpost()
     post_msg.bb = build_bounding_box_2d(goalpost)
     if goalpost.get_rating() is not None:
-        post_msg.confidence = float(goalpost.get_rating())
+        post_msg.confidence.confidence = float(goalpost.get_rating())
     return post_msg
 
-def build_balls_msg(header, balls):
+def build_ball_array_msg(header, balls):
     """
     Builds a BallArray message out of a list of ball messages
 
@@ -130,8 +143,7 @@ def build_balls_msg(header, balls):
     # create ball msg
     balls_msg = BallArray()
     # Set header
-    balls_msg.header.frame_id = header.frame_id
-    balls_msg.header.stamp = header.stamp
+    balls_msg.header = header
     # Add balls
     balls_msg.balls = balls
     return balls_msg
@@ -145,31 +157,30 @@ def build_ball_msg(ball_candidate):
     """
     # Create a empty ball message
     ball_msg = Ball()
+    ball_msg.bb = build_bounding_box_2d(ball_candidate)
     ball_msg.center.x = float(ball_candidate.get_center_x())
     ball_msg.center.y = float(ball_candidate.get_center_y())
-    ball_msg.bb = build_bounding_box_2d(ball_candidate)
     if ball_candidate.get_rating() is not None:
-            ball_msg.confidence = float(ball_candidate.get_rating())
+            ball_msg.confidence.confidence = float(ball_candidate.get_rating())
     return ball_msg
 
-def build_obstacle_array_msg(header, obstacles):
+def build_robot_array_msg(header, robots):
     """
     Builds a RobotArray message containing a list of Robot messages
 
     :param header: ros header of the new message. Mostly the header of the image
-    :param obstacles: a list of Robot messages
+    :param robots: a list of Robot messages
     :return: RobotArray message
     """
     # Create obstacle msg
-    obstacles_msg = RobotArray()
+    robots_msg = RobotArray()
     # Add header
-    obstacles_msg.header.frame_id = header.frame_id
-    obstacles_msg.header.stamp = header.stamp
+    robots_msg.header = header
     # Add obstacles
-    obstacles_msg.robots = obstacles
-    return obstacles_msg
+    robots_msg.robots = robots
+    return robots_msg
 
-def build_obstacle_msg(obstacle, obstacle_color=None):
+def build_robot_msg(obstacle, obstacle_color=None):
     """
     Builds a Robot msg of a detected obstacle of a certain color
 
@@ -179,12 +190,9 @@ def build_obstacle_msg(obstacle, obstacle_color=None):
     """
     obstacle_msg = Robot()
     obstacle_msg.bb = build_bounding_box_2d(obstacle)
-    obstacle_msg.player_number = Robot.TEAM_UNKNOWN 
-    obstacle_msg.team = get_team_from_robot_color(obstacle_color)
-    obstacle_msg.state = Robot.STATE_UNKNOWN
-    obstacle_msg.facing = Robot.FACING_UNKNOWN
+    obstacle_msg.attributes.team = get_team_from_robot_color(obstacle_color)
     if obstacle.get_rating() is not None:
-        obstacle_msg.confidence = float(obstacle.get_rating())
+        obstacle_msg.confidence.confidence = float(obstacle.get_rating())
     return obstacle_msg
 
 def build_field_boundary_msg(header, field_boundary):
@@ -218,8 +226,7 @@ def build_marking_array_msg(header, marking_segments):
     # Create message
     marking_array_msg = MarkingArray()
     # Set header values
-    marking_array_msg.header.frame_id = header.frame_id
-    marking_array_msg.header.stamp = header.stamp
+    marking_array_msg.header = header
     # Set line segments
     marking_array_msg.segments = marking_segments
     return marking_array_msg
@@ -352,7 +359,7 @@ def get_team_from_robot_color(color):
     :return Robot.team: Robot's team
     """
     if color not in [GameState.BLUE, GameState.RED]:  # If color is not known, we can just return unknown
-        return Robot.TEAM_UNKNOWN
+        return Robot().attributes.TEAM_UNKNOWN
 
     # Color is known and we have to first figure out the own color
     # Get own team color
@@ -361,6 +368,6 @@ def get_team_from_robot_color(color):
         own_color = _game_state.team_color
 
     if color == own_color:  # Robot is in own team, if same color
-        return Robot.TEAM_OWN
+        return Robot().attributes.TEAM_OWN
     else:  # Robot is not same color, therefore it is from the opponent's team
-        return Robot.TEAM_OPPONENT
+        return Robot().attributes.TEAM_OPPONENT
