@@ -64,21 +64,23 @@ dynup:
     spline_smoothness: 100
     display_debug: True
 
-    pid_trunk_roll:
-      p: 0.36
-      i: 0.8674
-      d: 0.03735
-      i_clamp: 0
-      i_clamp_min: 0
-      i_clamp_max: 0
-      antiwindup: True
-      publish_state: False
-    pid_trunk_pitch:
-      p: -0.42
-      i: -5.31646
-      d: -0.008295
-      i_clamp: 0
-      i_clamp_min: 0
-      i_clamp_max: 0
-      antiwindup: True
-      publish_state: False
+pid_trunk_roll:
+  ros__parameters:
+    p: 0.36
+    i: 0.8674
+    d: 0.03735
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: True
+    publish_state: False
+pid_trunk_pitch:
+  ros__parameters:
+    p: -0.42
+    i: -5.31646
+    d: -0.008295
+    i_clamp: 0
+    i_clamp_min: 0
+    i_clamp_max: 0
+    antiwindup: True
+    publish_state: False

@@ -14,6 +14,7 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 }
 
 void DynupIK::reset() {
+
   for (size_t i = 0; i < current_joint_states_->name.size(); i++) {
     goal_state_->setJointPositions(current_joint_states_->name[i], &current_joint_states_->position[i]);
   }

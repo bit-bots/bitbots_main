@@ -1,13 +1,32 @@
 #include "bitbots_dynup/dynup_node.h"
 
 namespace bitbots_dynup {
+  using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
+
+  DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
     Node(ns + "dynup", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
     visualizer_("debug/dynup", SharedPtr(this)),
     tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())){
+  // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  std::string check_kinematic_parameters;
+  if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+    while (!parameters_client->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        rclcpp::shutdown();
+      }
+      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10*1e9, "Can't copy parameters from move_group node. Service not available, waiting again...");
+    }
+    rcl_interfaces::msg::ListParametersResult
+      parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+    // set the parameters to our node
+    this->set_parameters(copied_parameters);
+  }
 
 this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     this,
@@ -280,12 +299,11 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   /* Do the loop as long as nothing cancels it */
   while (!goal_handle->is_canceling()) {
     rclcpp::Time startTime = this->get_clock()->now();
-    rclcpp::spin_some(this->get_node_base_interface());
     this->get_clock()->sleep_until(
       startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
     dt = getTimeDelta();
     msg = step(dt);
-    bitbots_msgs::action::Dynup_Feedback::SharedPtr feedback;
+    auto feedback = std::make_shared<bitbots_msgs::action::Dynup_Feedback>();
     feedback->percent_done = engine_.getPercentDone();
     goal_handle->publish_feedback(feedback);
     if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<double>() || !(params_["stabilizing"].get_value<bool>()) ||
