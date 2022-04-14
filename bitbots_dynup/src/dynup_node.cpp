@@ -280,6 +280,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   /* Do the loop as long as nothing cancels it */
   while (!goal_handle->is_canceling()) {
     rclcpp::Time startTime = this->get_clock()->now();
+    rclcpp::spin_some(this->get_node_base_interface());
     this->get_clock()->sleep_until(
       startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
     dt = getTimeDelta();

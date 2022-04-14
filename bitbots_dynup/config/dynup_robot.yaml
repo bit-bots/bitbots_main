@@ -10,7 +10,7 @@ dynup:
     hand_walkready_height: -0.35
     trunk_height: 0.4
     trunk_pitch: 0.0
-    trunk_x_final: 0
+    trunk_x_final: 0.0
 
     arm_side_offset: 0.148
 
@@ -31,6 +31,7 @@ dynup:
     wait_in_squat_back: 0.6
 
     # Front
+    arm_side_offset_front: 0.13
     hands_pitch: -65.86
     leg_min_length_front: 0.244
     max_leg_angle: 71.71
