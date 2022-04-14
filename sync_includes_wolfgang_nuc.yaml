@@ -68,6 +68,9 @@ include:
         - vision_msgs
     - scripts
     - udp_bridge
+    - soccer_interfaces:
+        - soccer_vision_attribute_msgs
+        - soccer_vision_2d_msgs
     - wolfgang_robot:
         - wolfgang_animations
         - wolfgang_description
