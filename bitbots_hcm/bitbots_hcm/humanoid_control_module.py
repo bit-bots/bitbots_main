@@ -9,10 +9,13 @@ from geometry_msgs.msg import PointStamped
 
 from std_msgs.msg import Bool, String
 from sensor_msgs.msg import Imu, JointState
+from diagnostic_msgs.msg import DiagnosticArray
 
-from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Audio
+from humanoid_league_msgs.msg import Animation as AnimationMsg, RobotControlState, Audio
+from humanoid_league_msgs.action import PlayAnimation
 from humanoid_league_speaker.speaker import speak
-from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
+from bitbots_msgs.msg import FootPressure
+from bitbots_msgs.action import Dynup, Kick
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
@@ -34,9 +37,9 @@ class HardwareControlManager:
 
         # stack machine
         self.blackboard = HcmBlackboard()
-        self.blackboard.animation_action_client = ActionClient(self, PlayAnimationAction, 'animation')
-        self.blackboard.dynup_action_client = ActionClient(self, DynUpAction, 'dynup')
-        self.blackboard.dynamic_kick_client = ActionClient(self, KickAction, 'dynamic_kick')
+        self.blackboard.animation_action_client = ActionClient(self, PlayAnimation, 'animation')
+        self.blackboard.dynup_action_client = ActionClient(self, Dynup, 'dynup')
+        self.blackboard.dynamic_kick_client = ActionClient(self, Kick, 'dynamic_kick')
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm")
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
@@ -68,6 +71,7 @@ class HardwareControlManager:
         self.node.create_subscription(PointStamped, "cop_r", self.cop_r_cb, 1)
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
+        self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.blackboard.diag_cb, 1)
 
         self.node.add_on_set_parameters_callback(self.on_set_parameters)
 

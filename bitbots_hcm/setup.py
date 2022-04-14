@@ -32,6 +32,7 @@ setup(
     entry_points={
         'console_scripts': [
             'hcm_node = bitbots_hcm.humanoid_control_module:main',
+            'pause_node = bitbots_hcm.pause:main',
         ],
     }
 )

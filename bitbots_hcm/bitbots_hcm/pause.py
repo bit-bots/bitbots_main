@@ -59,5 +59,5 @@ class Pause(object):
         self.pause_publisher.publish(Bool(data=state))
 
 
-if __name__ == "__main__":
+def main():
     pause = Pause()

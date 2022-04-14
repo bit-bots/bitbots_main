@@ -11,8 +11,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from std_srvs.srv import Empty
 from bitbots_hcm.fall_checker import FallChecker
 from geometry_msgs.msg import Twist
-from bitbots_msgs.msg import KickActionFeedback
-
+from bitbots_msgs.action import Kick
 from humanoid_league_msgs.msg import RobotControlState
 from bitbots_hcm.fall_classifier import FallClassifier
 import rospkg
@@ -120,17 +119,15 @@ class HcmBlackboard():
         self.cop_l_msg = None
         self.cop_r_msg = None
 
-        def last_kick_feedback_callback(msg):
-            self.last_kick_feedback = self.get_clock().now()
 
-        rospy.Subscriber('dynamic_kick/feedback', KickActionFeedback, last_kick_feedback_callback, tcp_nodelay=True,
-                         queue_size=1)
 
         self.servo_diag_error = False
         self.imu_diag_error = False
         self.pressure_diag_error = False
 
-        def diag_cb(msg: DiagnosticArray):
+
+        self.move_base_cancel_pub = self.create_publisher(GoalID, "move_base/cancel", 1)
+    def diag_cb(msg: DiagnosticArray):
             for status in msg.status:
                 if status.name == "/Servos":
                     self.servo_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
@@ -138,10 +135,8 @@ class HcmBlackboard():
                     self.imu_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
                 elif status.name == "/Pressure":
                     self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
-
-        rospy.Subscriber("/diagnostics_agg", DiagnosticArray, diag_cb, tcp_nodelay=True, queue_size=1)
-
-        self.move_base_cancel_pub = self.create_publisher(GoalID, "move_base/cancel", 1)
+    def last_kick_feedback_callback(msg):
+        self.last_kick_feedback = self.get_clock().now()
 
     def cancel_move_base_goal(self):
         self.move_base_cancel_pub.publish(GoalID())

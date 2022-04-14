@@ -1,9 +1,7 @@
 import rclpy
 from rclpy.duration import Duration
-from rclpy.node import Node
-from rclpy.action import ActionClient
-import humanoid_league_msgs.msg
-import bitbots_msgs.msg
+from humanoid_league_msgs.action import PlayAnimation
+from bitbots_msgs.action import Dynup
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from time import sleep
@@ -74,10 +72,10 @@ class AbstractPlayAnimation(AbstractActionElement):
             else:
                 self.get_logger().warn("Animation server did not start.")
                 return False
-        goal = humanoid_league_msgs.msg.PlayAnimationGoal()
+        goal = PlayAnimation.Goal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        self.blackboard.animation_action_client.send_goal_async(goal)
+        self.blackboard.animation_action_client.send_goal_async(goal, feedback_callback=self.blackboard.last_kick_feedback_callback)
         return True
 
     def animation_finished(self):
@@ -212,7 +210,7 @@ class PlayAnimationDynup(AbstractActionElement):
             else:
                 self.get_logger().warn("Dynup server did not start.")
                 return False
-        goal = bitbots_msgs.msg.DynUpGoal()
+        goal = Dynup.Goal()
         goal.direction = self.direction
         self.blackboard.dynup_action_client.send_goal_async(goal)
         return True
