@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import rospy
+import rclpy
+from rclpy.node import Node
+from rclpy.duration import Duration
 from bitbots_msgs.msg import JointCommand
 
 # List of all joint names. Do not change the order as it is important for Gazebo
@@ -10,25 +12,24 @@ JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow
                'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll']
 
 
-class AnimationHcmBridge:
+class AnimationHcmBridge(Node):
     def __init__(self):
-        rospy.init_node("animation_hcm_bridge", anonymous=False)
-        self.joint_publisher = rospy.Publisher("DynamixelController/command", JointCommand, queue_size=10,
-                                               tcp_nodelay=True)
+        rclpy.init(args=None)
+        super().__init__("animation")
+        self.joint_publisher = self.create_publisher(JointCommand, "DynamixelController/command", 1)
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = JOINT_NAMES
-        self.joint_command_msg.positions = [0] * len(JOINT_NAMES)
-        self.joint_command_msg.velocities = [-1] * len(JOINT_NAMES)
-        self.joint_command_msg.accelerations = [-1] * len(JOINT_NAMES)
-        self.joint_command_msg.max_currents = [-1] * len(JOINT_NAMES)
+        self.joint_command_msg.positions = [0.0] * len(JOINT_NAMES)
+        self.joint_command_msg.velocities = [-1.0] * len(JOINT_NAMES)
+        self.joint_command_msg.accelerations = [-1.0] * len(JOINT_NAMES)
+        self.joint_command_msg.max_currents = [-1.0] * len(JOINT_NAMES)
 
-        rospy.Subscriber("animation", Animation, self.animation_cb, queue_size=10, tcp_nodelay=True)
+        self.create_subscription(Animation, "animation", self.animation_cb, 10)
 
-        while not rospy.is_shutdown():
-            rospy.sleep(1)
+        rclpy.spin(self)
 
     def animation_cb(self, msg: Animation):
-        self.joint_command_msg.header.stamp = rospy.Time.now()
+        self.joint_command_msg.header.stamp = self.get_clock().now().to_msg()
         for i in range(len(msg.position.joint_names)):
             name = msg.position.joint_names[i]
             self.joint_command_msg.positions[JOINT_NAMES.index(name)] = msg.position.points[0].positions[i]

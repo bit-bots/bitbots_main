@@ -15,19 +15,20 @@ discovered do not have to be searched again.
 import os.path
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
-import rospkg as rospkg
-import rospy
+import rclpy
+from ament_index_python import get_package_share_directory
+from rclpy.node import Node
 
 
 class ResourceManager(object):
 
-    def __init__(self):
-        if not rospy.has_param("robot_type_name"):
-            rospy.logwarn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
-        anim_package = rospy.get_param("robot_type_name", "wolfgang").lower() + "_animations"
+    def __init__(self, node:Node):
+        if not node.has_parameter("robot_type_name"):
+            node.get_logger().warn("Robot type name parameter was not set. I assume that you want to use Wolfgang")
+        node.declare_parameter("robot_type", "wolfgang")
+        anim_package = node.get_parameter('robot_type').get_parameter_value().string_value + "_animations"
 
-        rospack = rospkg.RosPack()
-        path = rospack.get_path(anim_package)
+        path = get_package_share_directory(anim_package)
         self.basepath = abspath(path + "/animations")
 
         self.cache = {}
@@ -195,8 +196,8 @@ class ResourceManager(object):
 
 _RM = None  # type: ResourceManager
 # Shortcut to search for animations
-def find_all_animations_by_name(*args, **kwargs):
+def find_all_animations_by_name(node, *args, **kwargs):
     global _RM
     if not _RM:
-        _RM = ResourceManager()
+        _RM = ResourceManager(node)
     return _RM.find_all_animations_by_name(*args, **kwargs)

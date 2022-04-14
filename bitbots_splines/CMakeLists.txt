@@ -51,6 +51,8 @@ ament_target_dependencies(${PROJECT_NAME}
     fp
     range-v3
 )
+ament_python_install_package(bitbots_splines)
+
 
 install(DIRECTORY include/
     DESTINATION include)
