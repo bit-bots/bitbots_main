@@ -161,7 +161,7 @@ class HardwareControlManager:
 
     def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""
-        self.blackboard.last_animation_goal_time = msg.header.stamp.to_sec()
+        self.blackboard.last_animation_goal_time = msg.header.stamp
 
         if msg.request:
             self.node.get_logger().info("Got Animation request. HCM will try to get controllable now.")

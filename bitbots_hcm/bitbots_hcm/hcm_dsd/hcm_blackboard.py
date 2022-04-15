@@ -128,7 +128,7 @@ class HcmBlackboard():
 
         self.move_base_cancel_pub = self.node.create_publisher(GoalID, "move_base/cancel", 1)
 
-    def diag_cb(msg: DiagnosticArray):
+    def diag_cb(self, msg: DiagnosticArray):
             for status in msg.status:
                 if status.name == "/Servos":
                     self.servo_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE

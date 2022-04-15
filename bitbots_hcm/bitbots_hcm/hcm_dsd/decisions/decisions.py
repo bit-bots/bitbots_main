@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 from humanoid_league_msgs.msg import RobotControlState
 from humanoid_league_speaker.speaker import speak
 from humanoid_league_msgs.msg import Audio
-from rclpy.time import Time
+from rclpy.time import Time, Duration
 
 
 class StartHCM(AbstractDecisionElement):
@@ -439,7 +439,7 @@ class Kicking(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.last_kick_feedback is not None and \
-                (self.get_clock().now() - self.blackboard.last_kick_feedback) < rospy.Duration.from_sec(1):
+                (self.blackbord.node.get_clock().now() - self.blackboard.last_kick_feedback) < Duration(seconds=1):
             self.blackboard.current_state = RobotControlState.KICKING
             return 'KICKING'
         else:
