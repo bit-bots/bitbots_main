@@ -28,6 +28,7 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(backward_ros REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
