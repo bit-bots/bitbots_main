@@ -12,7 +12,7 @@ from time import sleep
 
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Vector3, Quaternion
-from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from bitbots_msgs.action import Kick
 from visualization_msgs.msg import Marker
 
 from tf_transformations import quaternion_from_euler
@@ -30,7 +30,8 @@ if __name__ == "__main__":
           "and will maybe result in tf errors otherwise")
     print("[..] Initializing node", end='')
     rclpy.init(args=None)
-    marker_pub = self.create_publisher(Marker, "debug/dynamic_kick_ball_marker", 1)
+    node = Node("dummy_client")
+    marker_pub = node.create_publisher(Marker, "debug/dynamic_kick_ball_marker", 1)
     print("\r[OK] Initializing node")
 
 
@@ -74,24 +75,25 @@ if __name__ == "__main__":
 
     print('[..] Connecting to action server \'dynamic_kick\'', end='')
     sys.stdout.flush()
-    client = ActionClient(self, KickAction, 'dynamic_kick')
+    client = ActionClient(node, Kick, 'dynamic_kick')
     if not client.wait_for_server():
         exit(1)
     print('\r[OK] Connecting to action server \'dynamic_kick\'')
     print()
 
-    goal = KickGoal()
-    goal.header.stamp = self.get_clock().now()
+    goal = Kick.Goal()
+    goal.header.stamp = node.get_clock().now().to_msg()
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
     goal.header.frame_id = frame_prefix + "base_footprint"
     goal.ball_position.x = 0.2
     goal.ball_position.y = args.ball_y
-    goal.ball_position.z = 0
+    goal.ball_position.z = 0.0
     goal.unstable = args.unstable
 
-    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(args.kick_direction)))
+    quat_vector = quaternion_from_euler(0, 0, math.radians(args.kick_direction))
+    goal.kick_direction = Quaternion(x=quat_vector[0], y=quat_vector[1], z=quat_vector[2], w=quat_vector[3])
 
-    goal.kick_speed = 6.7 if args.unstable else 1
+    goal.kick_speed = 6.7 if args.unstable else 1.0
 
     """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp
@@ -115,4 +117,4 @@ if __name__ == "__main__":
     client.feedback_cb = feedback_cb
     client.active_cb = active_cb
     print("Sent new goal. Waiting for result")
-    client.wait_for_result()
+    #client.wait_for_result()

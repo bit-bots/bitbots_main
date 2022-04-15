@@ -4,7 +4,8 @@
 
 namespace bitbots_dynamic_kick {
 
-KickEngine::KickEngine() {
+KickEngine::KickEngine(rclcpp::Node::SharedPtr node) {
+  node_ = node;
 }
 
 void KickEngine::reset() {

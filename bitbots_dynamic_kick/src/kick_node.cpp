@@ -6,8 +6,10 @@ using namespace std::chrono_literals;
 
 KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters) :
     Node(ns + "dynamic_kick", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
+    engine_(SharedPtr(this)),
     stabilizer_(ns),
-    visualizer_(ns + "debug/dynamic_kick", SharedPtr(this)) {
+    visualizer_(ns + "debug/dynamic_kick", SharedPtr(this)),
+    tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
 
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
@@ -115,7 +117,6 @@ KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> paramet
                                                                                      std::bind(&KickNode::jointStateCallback,
                                                                                                this,
                                                                                                std::placeholders::_1));
-
   server_ = rclcpp_action::create_server<bitbots_msgs::action::Kick>(this,
                                                                      "dynamic_kick",
                                                                      std::bind(&KickNode::goalCb,
@@ -127,6 +128,8 @@ KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> paramet
 
    callback_handle_ = this->add_on_set_parameters_callback(std::bind(&KickNode::onSetParameters, this, std::placeholders::_1));
 
+  RCLCPP_INFO(this->get_logger(),"Initialized Kick and waiting for actions");
+  rclcpp::spin(SharedPtr(this));
 }
 
 void KickNode::copLCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop) {
@@ -298,13 +301,13 @@ void KickNode::executeCb(const std::shared_ptr<KickGoalHandle> goal_handle) {
   if (goal_handle->is_canceling()) {
     /* Confirm that we canceled the previous goal */
     RCLCPP_INFO(this->get_logger(), "Cancelled old goal");
-    bitbots_msgs::action::Kick::Result::SharedPtr result;
+    auto result = std::make_shared<bitbots_msgs::action::Kick::Result>();
     result->result = bitbots_msgs::action::Kick::Result::ABORTED;
     goal_handle->abort(result);
   } else {
     /* Publish results */
     RCLCPP_INFO(this->get_logger(), "Done kicking ball");
-    bitbots_msgs::action::Kick::Result::SharedPtr result;
+    auto result = std::make_shared<bitbots_msgs::action::Kick::Result>();
     result->result = bitbots_msgs::action::Kick::Result::SUCCESS;
     goal_handle->succeed(result);
   }
@@ -338,7 +341,7 @@ void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<
   rclcpp::Time next_loop_time;
   rclcpp::Time last_time = this->get_clock()->now();
   while (rclcpp::ok()) {
-    rclcpp::spin_some(this->get_node_base_interface());
+    RCLCPP_ERROR_STREAM(this->get_logger(), "L1");
     next_loop_time = last_time + rclcpp::Duration::from_seconds(1.0 / engine_rate_);
     last_time = this->get_clock()->now();
     if (this->get_clock()->sleep_until(next_loop_time)) {

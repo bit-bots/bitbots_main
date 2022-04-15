@@ -69,7 +69,7 @@ class PhaseTimings {
  */
 class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositions> {
  public:
-  KickEngine();
+  KickEngine(rclcpp::Node::SharedPtr node);
 
   /**
    * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
