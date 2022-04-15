@@ -78,7 +78,7 @@ class HardwareControlManager:
 
         self.node.add_on_set_parameters_callback(self.on_set_parameters)
 
-        self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,))
+        self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True)
         self.spin_thread.start()
         self.main_loop()
 
