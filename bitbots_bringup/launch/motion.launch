@@ -7,9 +7,11 @@
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
 
     <!-- load the general game settings -->
+    <!--todo
     <group if="$(var use_game_settings)">
         <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
     </group>
+    -->
 
     <!-- if not in simulation or visualization, launch ros_control -->
     <group unless="$(var sim)">
@@ -23,9 +25,11 @@
     </group>
 
     <!-- launch the animation server -->
-    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
-        <arg name="use_game_settings" value="$(var use_game_settings)"/>
-    </include>
+    <group>
+        <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
+            <arg name="use_game_settings" value="$(var use_game_settings)"/>
+        </include>
+    </group>
 
     <!-- launch the walking -->
     <group if="$(var walking)">
@@ -36,17 +40,23 @@
     </group>
 
     <!-- launch the hcm -->
-    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
-        <arg name="sim" value="$(var sim)"/>
-        <arg name="viz" value="$(var viz)"/>
-        <arg name="use_game_settings" value="$(var use_game_settings)"/>
-    </include>
+    <group>
+        <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+            <arg name="sim" value="$(var sim)"/>
+            <arg name="viz" value="$(var viz)"/>
+            <arg name="use_game_settings" value="$(var use_game_settings)"/>
+        </include>
+    </group>
 
     <!-- launch the kick -->
-    <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
+    <group>
+        <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
+    </group>
 
     <!-- launch dynup -->
-    <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
-        <arg name="sim" value="$(var sim)"/>
-    </include>
+    <group>
+        <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
 </launch>
