@@ -326,6 +326,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
                                         (this->get_clock()->now().seconds() - start_time_ >= engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
         RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
         result->successful = true;
+        server_free_ = true;
         goal_handle->succeed(result);
         return;
     }
