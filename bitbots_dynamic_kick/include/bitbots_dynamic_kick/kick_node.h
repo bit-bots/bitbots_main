@@ -24,6 +24,9 @@
 #include <unistd.h>
 
 namespace bitbots_dynamic_kick {
+using KickGoal = bitbots_msgs::action::Kick;
+using KickGoalHandle = rclcpp_action::ServerGoalHandle<KickGoal>;
+using namespace std::placeholders;
 
 typedef actionlib::SimpleActionServer<bitbots_msgs::action::Kick> ActionServer;
 
@@ -36,7 +39,7 @@ typedef actionlib::SimpleActionServer<bitbots_msgs::action::Kick> ActionServer;
  *
  * Additionally it publishes the KickEngines motor-goals back into ROS
  */
-class KickNode {
+class KickNode : public rclcpp::Node{
  public:
   explicit KickNode(const std::string &ns = std::string());
 
@@ -44,7 +47,7 @@ class KickNode {
    * Callback that gets executed whenever #server_ receives a new goal.
    * @param goal New goal to process
    */
-  void executeCb(const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal_handle);
+  void executeCb(const std::shared_ptr<KickGoalHandle> goal_handle);
 
   /**
    * This wrapper is used in the python wrapper for a single step of the kick
@@ -83,7 +86,6 @@ class KickNode {
   bool isLeftKick();
 
  private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
   rclcpp::Publisher<biped_interfaces::msg::Phase>::SharedPtr support_foot_publisher_;
   rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr cop_l_subscriber_;
@@ -101,7 +103,7 @@ class KickNode {
   bool was_support_foot_published_;
   moveit::core::RobotStatePtr goal_state_;
   moveit::core::RobotStatePtr current_state_;
-  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+  OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
   std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
 
@@ -120,8 +122,7 @@ class KickNode {
   rclcpp_action::CancelResponse
   cancelCb(std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal);
 
-  //todo implement
-  void acceptedCb(const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal);
+  void acceptedCb(const std::shared_ptr<KickGoalHandle> goal);
 
   /**
  * Execute one step of engine-stabilize-ik

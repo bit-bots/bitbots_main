@@ -31,11 +31,6 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
 find_package(PythonLibs COMPONENTS Interpreter Development)
-if (PYTHONLIBS_VERSION_STRING VERSION_LESS "3.8")
-    find_package(Boost REQUIRED COMPONENTS python3)
-else ()
-    find_package(Boost REQUIRED COMPONENTS python)
-endif ()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/KickDebug.msg"
