@@ -705,7 +705,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
 }
 
 int DynupEngine::getPercentDone() const {
-    return int(time_ / duration_ * 100);
+  return int(time_ / duration_ * 100);
 }
 
 double DynupEngine::getDuration() const{

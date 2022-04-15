@@ -24,7 +24,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -115,6 +115,7 @@ namespace bitbots_dynup {
         double start_time_;
         bool debug_;
         std::unique_ptr <tf2_ros::Buffer> tf_buffer_;
+        std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
         std::shared_ptr <robot_model_loader::RobotModelLoader> robot_model_loader_;
         moveit::core::RobotModelPtr kinematic_model_;
 

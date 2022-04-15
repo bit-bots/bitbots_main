@@ -1,3 +1,6 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
 dynup:
   ros__parameters:
     # Engine
@@ -59,28 +62,30 @@ dynup:
     stabilizing: True
     minimal_displacement: False
     stable_threshold: 0.05
-    stable_duration: 100
+    stable_duration: -1
     stabilization_timeout: 1.5
 
     # Visualizer
     spline_smoothness: 100
     display_debug: True
 
-    pid_trunk_roll:
-      p: 0.0
-      i: 0.0
-      d: 0.0
-      i_clamp: 0
-      i_clamp_min: 0
-      i_clamp_max: 0
-      antiwindup: True
-      publish_state: False
-    pid_trunk_pitch:
-      p: -0.3
-      i: 0.0
-      d: -0.005
-      i_clamp: 0
-      i_clamp_min: -0.25
-      i_clamp_max: 0.25
-      antiwindup: True
-      publish_state: False
+pid_trunk_roll:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: 0.0
+    i_clamp_max: 0.0
+    antiwindup: True
+    publish_state: False
+pid_trunk_pitch:
+  ros__parameters:
+    p: -0.3
+    i: 0.0
+    d: -0.005
+    i_clamp: 0.0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
+    antiwindup: True
+    publish_state: False

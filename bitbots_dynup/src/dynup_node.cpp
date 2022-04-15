@@ -1,19 +1,38 @@
 #include "bitbots_dynup/dynup_node.h"
 
 namespace bitbots_dynup {
+  using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
+
+  DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
     Node(ns + "dynup", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
-    visualizer_("debug/dynup", SharedPtr(this)) {
+    visualizer_("debug/dynup", SharedPtr(this)),
+    tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())){
+  // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  std::string check_kinematic_parameters;
+  if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+    while (!parameters_client->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        rclcpp::shutdown();
+      }
+      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10*1e9, "Can't copy parameters from move_group node. Service not available, waiting again...");
+    }
+    rcl_interfaces::msg::ListParametersResult
+      parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+    // set the parameters to our node
+    this->set_parameters(copied_parameters);
+  }
 
-this->action_server_ = rclcpp_action::create_server<DynupGoal>(
-    this,
-    "dynup",
-    std::bind(&DynupNode::goalCb, this, _1, _2),
-    std::bind(&DynupNode::cancelCb, this, _1),
-    std::bind(&DynupNode::acceptedCb, this, _1));
+  base_link_frame_ = this->get_parameter("base_link_frame").get_value<std::string>();
+  r_sole_frame_ = this->get_parameter("r_sole_frame").get_value<std::string>();
+  l_sole_frame_ = this->get_parameter("l_sole_frame").get_value<std::string>();
+  r_wrist_frame_ = this->get_parameter("r_wrist_frame").get_value<std::string>();
+  l_wrist_frame_ = this->get_parameter("l_wrist_frame").get_value<std::string>();
 
   param_names_ = {
     "engine_rate",
@@ -84,6 +103,8 @@ this->action_server_ = rclcpp_action::create_server<DynupGoal>(
   const std::vector<rclcpp::Parameter> params;
   onSetParameters(params);
 
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
   robot_model_loader_ =
       std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
   kinematic_model_ = robot_model_loader_->getModel();
@@ -113,6 +134,12 @@ this->action_server_ = rclcpp_action::create_server<DynupGoal>(
   cop_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&DynupNode::imuCallback, this, _1));
   joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1));
 
+  this->action_server_ = rclcpp_action::create_server<DynupGoal>(
+    this,
+    "dynup",
+    std::bind(&DynupNode::goalCb, this, _1, _2),
+    std::bind(&DynupNode::cancelCb, this, _1),
+    std::bind(&DynupNode::acceptedCb, this, _1));
   RCLCPP_INFO(this->get_logger(),"Initialized DynUp and waiting for actions");
   rclcpp::spin(SharedPtr(this));
 }
@@ -217,11 +244,6 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
     }
     loopEngine(engine_rate_, goal_handle);
     bitbots_msgs::action::Dynup_Result::SharedPtr r;
-    if (goal_handle->is_canceling()) {
-      goal_handle->canceled(r);
-    } else {
-      goal_handle->succeed(r);
-    }
   } else {
     RCLCPP_ERROR(this->get_logger(),"Could not determine positions! Aborting standup.");
     bitbots_msgs::action::Dynup_Result::SharedPtr r;
@@ -272,22 +294,29 @@ double DynupNode::getTimeDelta() {
 }
 
 void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_handle) {
+  auto result = std::make_shared<DynupGoal::Result>();
   double dt;
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
-  while (!goal_handle->is_canceling()) {
+  while (rclcpp::ok()) {
+    if (goal_handle->is_canceling()) {
+      goal_handle->canceled(result);
+      RCLCPP_INFO(this->get_logger(), "Goal canceled");
+      return;
+    }
     rclcpp::Time startTime = this->get_clock()->now();
-    rclcpp::spin_some(this->get_node_base_interface());
     this->get_clock()->sleep_until(
       startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
     dt = getTimeDelta();
     msg = step(dt);
-    bitbots_msgs::action::Dynup_Feedback::SharedPtr feedback;
+    auto feedback = std::make_shared<bitbots_msgs::action::Dynup_Feedback>();
     feedback->percent_done = engine_.getPercentDone();
     goal_handle->publish_feedback(feedback);
-    if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<double>() || !(params_["stabilizing"].get_value<bool>()) ||
+    if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<int>() || !(params_["stabilizing"].get_value<bool>()) ||
                                         (this->get_clock()->now().seconds() - start_time_ >= engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
-        RCLCPP_DEBUG_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+        RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+        goal_handle->succeed(result);
+        return;
     }
     if (msg.joint_names.empty()) {
         break;
@@ -298,39 +327,28 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
 
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
   rclcpp::Time time = this->get_clock()->now();
-
-  /* Construct zero-positions for all poses in their respective local frames */
-  geometry_msgs::msg::PoseStamped l_foot_origin, r_foot_origin, l_hand_origin, r_hand_origin;
-  l_foot_origin.header.frame_id = l_sole_frame_;
-  l_foot_origin.pose.orientation.w = 1;
-  l_foot_origin.header.stamp = time;
-
-  r_foot_origin.header.frame_id = r_sole_frame_;
-  r_foot_origin.pose.orientation.w = 1;
-  r_foot_origin.header.stamp = time;
-
-  l_hand_origin.header.frame_id = l_wrist_frame_;
-  l_hand_origin.pose.orientation.w = 1;
-  l_hand_origin.header.stamp = time;
-
-  r_hand_origin.header.frame_id = r_wrist_frame_;
-  r_hand_origin.pose.orientation.w = 1;
-  r_hand_origin.header.stamp = time;
-
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
   bitbots_dynup::msg::DynupPoses msg;
   try {
     //0.2 second timeout for transformations
-    geometry_msgs::msg::PoseStamped l_foot_transformed, r_foot_transformed, l_hand_transformed, r_hand_transformed;
-    tf_buffer_->transform(l_foot_origin, l_foot_transformed, r_sole_frame_, tf2::durationFromSec(0.2));
-    tf_buffer_->transform(r_foot_origin, r_foot_transformed, base_link_frame_, tf2::durationFromSec(0.2));
-    tf_buffer_->transform(l_hand_origin, l_hand_transformed, base_link_frame_, tf2::durationFromSec(0.2));
-    tf_buffer_->transform(r_hand_origin, r_hand_transformed, base_link_frame_, tf2::durationFromSec(0.2));
+    geometry_msgs::msg::Transform l_foot_transformed = tf_buffer_->lookupTransform(r_sole_frame_, l_sole_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform r_foot_transformed = tf_buffer_->lookupTransform(base_link_frame_, r_sole_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform l_hand_transformed = tf_buffer_->lookupTransform(base_link_frame_, l_wrist_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform r_hand_transformed = tf_buffer_->lookupTransform(base_link_frame_, r_wrist_frame_, time, tf2::durationFromSec(0.2)).transform;
 
-    msg.l_leg_pose = l_foot_transformed.pose;
-    msg.r_leg_pose = r_foot_transformed.pose;
-    msg.l_arm_pose = l_hand_transformed.pose;
-    msg.r_arm_pose = r_hand_transformed.pose;
+    std::function transform2pose =  [](geometry_msgs::msg::Transform transform) {
+      geometry_msgs::msg::Pose pose;
+      pose.position.x = transform.translation.x;
+      pose.position.y = transform.translation.y;
+      pose.position.z = transform.translation.z;
+      pose.orientation = transform.rotation;
+      return pose;
+    };
+
+    msg.l_leg_pose = transform2pose(l_foot_transformed);
+    msg.r_leg_pose = transform2pose(r_foot_transformed);
+    msg.l_arm_pose = transform2pose(l_hand_transformed);
+    msg.r_arm_pose = transform2pose(r_hand_transformed);
     msg.header.stamp = this->get_clock()->now();
     return msg;
   } catch (tf2::TransformException &exc) {
