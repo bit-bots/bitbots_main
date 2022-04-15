@@ -315,6 +315,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<int>() || !(params_["stabilizing"].get_value<bool>()) ||
                                         (this->get_clock()->now().seconds() - start_time_ >= engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
         RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+        result->successful = true;
         goal_handle->succeed(result);
         return;
     }
