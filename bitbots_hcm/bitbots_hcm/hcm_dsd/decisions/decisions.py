@@ -120,21 +120,21 @@ class CheckMotors(AbstractDecisionElement):
 
         # check if we want to turn the motors off after not using them for a longer time
         if self.blackboard.last_motor_goal_time is not None \
-                and self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec() \
+                and self.blackboard.current_time.nanoseconds / 1e9 - self.blackboard.last_motor_goal_time.nanoseconds / 1e9 \
                 > self.blackboard.motor_off_time:
-            self.blackboard.node.logwarn_throttle(5, "Didn't recieve goals for " + str(
-                self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.")
+            self.blackboard.node.get_logger().warn("Didn't recieve goals for " + str(
+                self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.", throttle_duration_sec=5)
             self.publish_debug_data("Time since last motor goals",
-                                    self.blackboard.current_time.to_sec() - self.blackboard.last_motor_goal_time.to_sec())
+                                    self.blackboard.current_time.nanoseconds / 1e9 - self.blackboard.last_motor_goal_time.nanoseconds / 1e9)
             self.blackboard.current_state = RobotControlState.MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off
             return "TURN_OFF"
 
         # see if we get no messages or always the exact same
-        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > self.blackboard.motor_timeout_duration:
+        if self.blackboard.current_time.nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > self.blackboard.motor_timeout_duration:
             if self.blackboard.is_power_on:
                 if (self.blackboard.current_state == RobotControlState.STARTUP and
-                        self.blackboard.current_time.to_sec() - self.blackboard.start_time.to_sec() < 10):
+                        self.blackboard.current_time.nanoseconds / 1e9 - self.blackboard.start_time.nanoseconds / 1e9 < 10):
                     # we are still in startup phase, just wait and dont complain
                     return "MOTORS_NOT_STARTED"
                 else:
@@ -149,7 +149,7 @@ class CheckMotors(AbstractDecisionElement):
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
-            self.get_logger().info("Motors are now connected. Will resume.")
+            self.blackboard.node.get_logger().info("Motors are now connected. Will resume.")
             self.had_problem = False
 
         # motors are on and we can continue
@@ -190,9 +190,9 @@ class CheckIMU(AbstractDecisionElement):
             else:
                 return "IMU_NOT_STARTED"
 
-        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
-            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.to_sec() - \
-                    self.blackboard.start_time.to_sec() < 10:
+        if self.blackboard.current_time.nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > 0.1:
+            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.nanoseconds / 1e9 - \
+                    self.blackboard.start_time.nanoseconds / 1e9 < 10:
                 # wait for the IMU to start
                 return "IMU_NOT_STARTED"
             else:
@@ -202,7 +202,7 @@ class CheckIMU(AbstractDecisionElement):
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
-            self.get_logger().info("IMU is now connected. Will resume.")
+            self.blackboard.node.get_logger().info("IMU is now connected. Will resume.")
             self.had_problem = False
 
         return "OKAY"
@@ -233,9 +233,9 @@ class CheckPressureSensor(AbstractDecisionElement):
         if not self.blackboard.pressure_diag_error:
             self.last_different_msg_time = self.blackboard.current_time
 
-        if self.blackboard.current_time.to_sec() - self.last_different_msg_time.to_sec() > 0.1:
-            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.to_sec() - \
-                    self.blackboard.start_time.to_sec() < 10:
+        if self.blackboard.current_time.nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > 0.1:
+            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.nanoseconds / 1e9 - \
+                    self.blackboard.start_time.nanoseconds / 1e9 < 10:
                 # wait for the pressure sensors to start
                 self.blackboard.current_state = RobotControlState.STARTUP
                 return "PRESSURE_NOT_STARTED"
@@ -245,7 +245,7 @@ class CheckPressureSensor(AbstractDecisionElement):
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
-            self.get_logger().info("Pressure sensors are now connected. Will resume.")
+            self.blackboard.node.get_logger().info("Pressure sensors are now connected. Will resume.")
             self.had_problem = False
 
         return "OKAY"
@@ -416,7 +416,7 @@ class Walking(AbstractDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_walking_goal_time.to_sec() < 0.1:
+        if self.blackboard.current_time.nanoseconds / 1e9 - self.blackboard.last_walking_goal_time.nanoseconds / 1e9 < 0.1:
             self.blackboard.current_state = RobotControlState.WALKING
             if self.blackboard.animation_requested:
                 self.blackboard.animation_requested = False

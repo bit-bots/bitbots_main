@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+import rclpy.logging
 import humanoid_league_msgs.msg
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 import bitbots_hcm.hcm_dsd.hcm_blackboard
@@ -26,7 +27,7 @@ class WaitForIMU(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.get_logger().warn("HCM gets no IMU data. Waiting for IMU to connect.", throttle_duration_sec=10)
+        self.blackboard.node.get_logger().warn("HCM gets no IMU data. Waiting for IMU to connect.", throttle_duration_sec=10)
 
 
 class WaitForPressureStartup(AbstractActionElement):
@@ -50,13 +51,13 @@ class WaitForPressure(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.blackboard.node.logwarn_throttle(30,
+        self.blackboard.node.get_logger().warn(
                                          "HCM gets no correct pressure data. Waiting for pressure sensors to connect.\n"
                                          "Use rqt_monitor to check hardware status. "
                                          "Please check if the pressure sensors are correctly zeroed. If you "
                                          "have no pressure sensors installed, you may want to set the HCM config "
                                          "accordingly. If you just running a visualization on your computer you may want to "
-                                         "set the visualization_active parameter to True.")
+                                         "set the visualization_active parameter to True.", throttle_duration_sec=30)
 
 
 class WaitForMotorStartup(AbstractActionElement):
@@ -80,6 +81,7 @@ class WaitForMotors(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.blackboard.node.logwarn_throttle(10,
+        self.blackboard.node.get_logger().warn(
                                          "HCM gets no data from the motors (/joint_states). Waiting for the motors to "
-                                         "connect.")
+                                         "connect.",
+                                         throttle_duration_sec=10)

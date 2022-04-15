@@ -13,11 +13,10 @@ class AbstractChangeMotorPower(AbstractActionElement):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             # In visualization and simulation, we cannot disable motors
             try:
-                blackboard.node.wait_for_service('/core/switch_power', timeout=10)
+                blackboard.motor_switch_service.wait_for_service(timeout_sec=10)
             except:
-                self.get_logger().warn("HCM waiting for switch power service")
-            blackboard.node.wait_for_service('/core/switch_power')
-            self.switch_power = self.create_client(SetBool, '/core/switch_power')
+                self.blackboard.node.get_logger().warn("HCM waiting for switch power service")
+            blackboard.motor_switch_service.wait_for_service()
 
     def perform(self, reevaluate=False):
         raise NotImplementedError
@@ -26,12 +25,16 @@ class AbstractChangeMotorPower(AbstractActionElement):
 class TurnMotorsOn(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
-            self.switch_power(True)
+            s = SetBool()
+            s.Request.data = False
+            self.blackboard.motor_switch_service.call(s)
         return self.pop()
 
 
 class TurnMotorsOff(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
-            self.switch_power(False)
+            s = SetBool()
+            s.Request.data = True
+            self.blackboard.motor_switch_service.call(s)
         return self.pop()

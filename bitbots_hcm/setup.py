@@ -14,6 +14,11 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch',
             glob.glob('launch/*.launch')),
+
+        ('share/' + package_name + '/config',
+            glob.glob('config/*')),
+        ('share/' + package_name + '/classifier',
+            glob.glob('bitbots_hcm/classifier/*.pkl')),
     ],
     scripts=[
         'scripts/hcm_led.py',
@@ -26,6 +31,8 @@ setup(
         'launch',
         'setuptools',
     ],
+    package_data={'': ['hcm_dsd/hcm.dsd']},
+    include_package_data=True,
     zip_safe=True,
     keywords=['ROS'],
     license='MIT',
