@@ -4,33 +4,34 @@
 walking:
   ros__parameters:
     engine:
-      double_support_ratio: 0.249101155593407
-      first_step_swing_factor: 0.810282783269273
-      foot_distance: 0.0892010830100436
-      foot_rise: 0.0504158921392975
-      freq: 1.72973182436504
-      trunk_height: 0.183555759791475
-      trunk_phase: -0.0012469948672716
-      trunk_pitch: 0.388594634001026
-      trunk_swing: 0.6
-      trunk_x_offset: 0.0233908598440774
-      trunk_y_offset: -0.000632849143066137
-      trunk_z_movement: 0.00861436173478656
+      double_support_ratio: 0.0342053586648699
+      foot_distance: 0.09973162505805092
+      foot_rise: 0.05497813229129129
+      freq: 2.0602972468934273
+      trunk_height: 0.1949735738488786
+      trunk_phase: -0.17379341200557888
+      trunk_pitch: 0.23552387717562837
+      trunk_pitch_p_coef_forward: -1.096883550989211
+      trunk_pitch_p_coef_turn: 0.21536524931847206
+      trunk_swing: 0.6061210769507791
+      trunk_x_offset: 0.00807400804768213
+      trunk_y_offset: -0.002372826648678044
+      trunk_z_movement: 0.029207151813393558
+      first_step_swing_factor: 1.0
       first_step_trunk_phase: -0.5
       foot_apex_phase: 0.5
       foot_overshoot_phase: 1.0
       foot_overshoot_ratio: 0.0
       foot_put_down_phase: 1.0
+      foot_put_down_z_offset: 0.0
       foot_z_pause: 0.0
       trunk_pause: 0.0
-      trunk_pitch_p_coef_forward: 0.0
-      trunk_pitch_p_coef_turn: 0.0
+      trunk_x_offset_p_coef_forward: 0.0
+      trunk_x_offset_p_coef_turn: 0.0
 
       kick_length: 0.09
       kick_vel: 0.2
       kick_phase: 0.75
-
-      foot_put_down_z_offset: 0.0
 
     node:
       # update frequency of the engine
