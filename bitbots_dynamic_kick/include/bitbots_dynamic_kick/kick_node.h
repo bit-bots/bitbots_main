@@ -70,7 +70,7 @@ class KickNode {
   /**
    * Set the current joint state of the robot
    */
-  void jointStateCallback(const sensor_msgs::msg::JointState &joint_states);
+  void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_states);
 
   /**
    * Get the current pose of the trunk, relative to the support foot
@@ -145,9 +145,9 @@ class KickNode {
    */
   bitbots_msgs::msg::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
 
-  void copLCallback(const geometry_msgs::msg::PointStamped &cop);
+  void copLCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop);
 
-  void copRCallback(const geometry_msgs::msg::PointStamped &cop);
+  void copRCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop);
 
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 };

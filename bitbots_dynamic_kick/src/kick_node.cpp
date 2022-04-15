@@ -169,23 +169,23 @@ KickNode::KickNode(const std::string &ns) :
                                                                                std::placeholders::_1));
 }
 
-void KickNode::copLCallback(const geometry_msgs::msg::PointStamped &cop) {
-  if (cop.header.frame_id != l_sole_frame_) {
+void KickNode::copLCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop) {
+  if (cop->header.frame_id != l_sole_frame_) {
     ROS_ERROR_STREAM("cop_l not in " << l_sole_frame_ << " frame! Stabilizing will not work.");
   }
-  stabilizer_.cop_left = cop.point;
+  stabilizer_.cop_left = cop->point;
 }
 
-void KickNode::copRCallback(const geometry_msgs::msg::PointStamped &cop) {
-  if (cop.header.frame_id != r_sole_frame_) {
+void KickNode::copRCallback(const geometry_msgs::msg::PointStamped::SharedPtr  cop) {
+  if (cop->header.frame_id != r_sole_frame_) {
     ROS_ERROR_STREAM("cop_r not in " << r_sole_frame_ << " frame! Stabilizing will not work.");
   }
-  stabilizer_.cop_right = cop.point;
+  stabilizer_.cop_right = cop->point;
 }
 
-void KickNode::jointStateCallback(const sensor_msgs::msg::JointState &joint_states) {
-  for (size_t i = 0; i < joint_states.name.size(); ++i) {
-    current_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
+void KickNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_states) {
+  for (size_t i = 0; i < joint_states->name.size(); ++i) {
+    current_state_->setJointPositions(joint_states->name[i], &joint_states->position[i]);
   }
 }
 
@@ -274,8 +274,8 @@ bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg,
 
   /* Set engines goal_msg and start calculating */
   KickGoals goals;
-  tf2::convert(goal_msg.ball_position, goals.ball_position);
-  tf2::convert(goal_msg.kick_direction, goals.kick_direction);
+  goals.ball_position = {goal_msg.ball_position.x, goal_msg.ball_position.y, goal_msg.ball_position.z};
+  goals.kick_direction = {goal_msg.kick_direction.x, goal_msg.kick_direction.y, goal_msg.kick_direction.z, goal_msg.kick_direction.w};
   goals.kick_speed = goal_msg.kick_speed;
   goals.trunk_to_base_footprint = trunk_to_base_footprint;
   engine_.setGoals(goals);
