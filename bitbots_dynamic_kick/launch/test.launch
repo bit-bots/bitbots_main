@@ -10,7 +10,7 @@
   </include>
 
   <group unless="$(var sim)">
-    <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+    <!--<include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />-->
     <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" launch-prefix="$(var taskset)">
         <remap from="/kick_motor_goals" to="/DynamixelController/command"/>
         <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_config.yaml" />

@@ -4,8 +4,8 @@ namespace bitbots_dynamic_kick {
 using namespace std::chrono_literals;
 
 
-KickNode::KickNode(const std::string &ns) :
-    Node(ns + "dynamic_kick"),
+KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters) :
+    Node(ns + "dynamic_kick", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     stabilizer_(ns),
     visualizer_(ns + "debug/dynamic_kick", SharedPtr(this)) {
 
