@@ -134,7 +134,7 @@ namespace bitbots_dynup {
   cop_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&DynupNode::imuCallback, this, _1));
   joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1));
 
-  server_free = true;
+  server_free_ = true;
   this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     this,
     "dynup",
