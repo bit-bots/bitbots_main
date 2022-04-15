@@ -134,6 +134,7 @@ namespace bitbots_dynup {
   cop_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&DynupNode::imuCallback, this, _1));
   joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1));
 
+  server_free = true;
   this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     this,
     "dynup",
@@ -247,6 +248,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   } else {
     RCLCPP_ERROR(this->get_logger(),"Could not determine positions! Aborting standup.");
     bitbots_msgs::action::Dynup_Result::SharedPtr r;
+    server_free_ = true;
     goal_handle->canceled(r);
   }
 }
@@ -257,13 +259,20 @@ rclcpp_action::GoalResponse DynupNode::goalCb(
 {
   RCLCPP_INFO(this->get_logger(), "Received goal request");
   (void)uuid;
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  if(server_free_) {
+    server_free_ = false;
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  }
+  else {
+    return rclcpp_action::GoalResponse::REJECT;
+  }
 }
 
 rclcpp_action::CancelResponse DynupNode::cancelCb(
     const std::shared_ptr<DynupGoalHandle> goal) {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
   (void)goal;
+  server_free_ = true;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 

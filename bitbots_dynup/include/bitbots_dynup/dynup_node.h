@@ -113,6 +113,7 @@ namespace bitbots_dynup {
         int failed_tick_counter_;
         double last_ros_update_time_;
         double start_time_;
+        bool server_free_;
         bool debug_;
         std::unique_ptr <tf2_ros::Buffer> tf_buffer_;
         std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
