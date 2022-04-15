@@ -20,13 +20,13 @@ class FallChecker(BaseEstimator):
                  thresh_orient_roll=None,
                  smoothing=None):
         self.node = node
-        self.thresh_gyro_pitch = self.node.get_parameter("falling_thresh_gyro_pitch") \
+        self.thresh_gyro_pitch = self.node.get_parameter("falling_thresh_gyro_pitch").get_parameter_value().double_value \
             if thresh_gyro_pitch is None else thresh_gyro_pitch
-        self.thresh_gyro_roll = self.node.get_parameter("falling_thresh_gyro_roll") \
+        self.thresh_gyro_roll = self.node.get_parameter("falling_thresh_gyro_roll").get_parameter_value().double_value \
             if thresh_gyro_roll is None else thresh_gyro_roll
-        self.thresh_orient_pitch = math.radians(self.node.get_parameter("falling_thresh_orient_pitch")) \
+        self.thresh_orient_pitch = math.radians(self.node.get_parameter("falling_thresh_orient_pitch").get_parameter_value().double_value) \
             if thresh_orient_pitch is None else thresh_orient_pitch
-        self.thresh_orient_roll = math.radians(self.node.get_parameter("falling_thresh_orient_roll")) \
+        self.thresh_orient_roll = math.radians(self.node.get_parameter("falling_thresh_orient_roll").get_parameter_value().double_value) \
             if thresh_orient_roll is None else thresh_orient_roll
 
         self.smoothing = self.node.get_parameter("smooth_threshold") if smoothing is None else smoothing
@@ -123,7 +123,7 @@ class FallChecker(BaseEstimator):
 
     def fit(self, x, y):
         # we have to do nothing, as we are not actually fitting any model
-        self.get_logger().warn("You can not train this type of classifier", once=True)
+        self.node.get_logger().warn("You can not train this type of classifier", once=True)
         pass
 
     def score(self, X, y, sample_weight=None):
@@ -145,19 +145,19 @@ class FallChecker(BaseEstimator):
 
         # Decides which side is facing downwards.
         if fused_pitch > math.radians(45):
-            self.get_logger().info("FALLEN TO THE FRONT")
+            self.node.get_logger().info("FALLEN TO THE FRONT")
             return self.FRONT
 
         if fused_pitch < math.radians(-45):
-            self.get_logger().info("FALLEN TO THE BACK")
+            self.node.get_logger().info("FALLEN TO THE BACK")
             return self.BACK
 
         if fused_roll > math.radians(45):
-            self.get_logger().info("FALLEN TO THE RIGHT")
+            self.node.get_logger().info("FALLEN TO THE RIGHT")
             return self.RIGHT
 
         if fused_roll < math.radians(-45):
-            self.get_logger().info("FALLEN TO THE LEFT")
+            self.node.get_logger().info("FALLEN TO THE LEFT")
             return self.LEFT
 
         # If no side is facing downwards, the robot is not fallen yet.
