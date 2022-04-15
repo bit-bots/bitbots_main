@@ -216,7 +216,8 @@ std::pair<Eigen::Vector3d, Eigen::Quaterniond> KickEngine::transformGoal(
   Eigen::Isometry3d base_footprint_to_support_foot = trunk_to_base_footprint.inverse() * trunk_to_support_foot;
   /* now, apply the transforms. Because of eigen, the transform has to be on the left hand side, therefore it must be inversed */
   Eigen::Vector3d ball_transformed = base_footprint_to_support_foot.inverse() * ball_position;
-  Eigen::Matrix3d kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
+  Eigen::Matrix3d
+      kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
   Eigen::Quaterniond kick_direction_transformed(kick_direction_transformed_matrix);
   return std::make_pair(ball_transformed, kick_direction_transformed);
 }

@@ -5,18 +5,20 @@ namespace bitbots_dynamic_kick {
 
 Visualizer::Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node) :
     node_(node),
-    base_topic_(base_topic){
+    base_topic_(base_topic) {
   /* make sure base_topic_ has consistent scheme */
   if (base_topic.compare(base_topic.size() - 1, 1, "/") != 0) {
     base_topic_ += "/";
   }
 
   /* create necessary publishers */
-  goal_publisher_ = node_->create_publisher<visualization_msgs::msg::Marker>(base_topic_ + "received_goal",1);
-  foot_spline_publisher_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>(base_topic_ + "flying_foot_spline",5);
-  trunk_spline_publisher_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>(base_topic_ + "trunk_spline",5);
+  goal_publisher_ = node_->create_publisher<visualization_msgs::msg::Marker>(base_topic_ + "received_goal", 1);
+  foot_spline_publisher_ =
+      node_->create_publisher<visualization_msgs::msg::MarkerArray>(base_topic_ + "flying_foot_spline", 5);
+  trunk_spline_publisher_ =
+      node_->create_publisher<visualization_msgs::msg::MarkerArray>(base_topic_ + "trunk_spline", 5);
   windup_publisher_ = node_->create_publisher<visualization_msgs::msg::Marker>(base_topic_ + "kick_windup_point", 5);
-  debug_publisher_ = node_->create_publisher<bitbots_dynamic_kick::msg::KickDebug>(base_topic_ + "debug",5);
+  debug_publisher_ = node_->create_publisher<bitbots_dynamic_kick::msg::KickDebug>(base_topic_ + "debug", 5);
 }
 
 void Visualizer::setParams(VisualizationParams params) {
@@ -50,7 +52,8 @@ void Visualizer::displayReceivedGoal(const bitbots_msgs::action::Kick::Goal &goa
     return;
 
   visualization_msgs::msg::Marker
-      marker = getMarker({goal.ball_position.x, goal.ball_position.y, goal.ball_position.z}, goal.header.frame_id, node_);
+      marker =
+      getMarker({goal.ball_position.x, goal.ball_position.y, goal.ball_position.z}, goal.header.frame_id, node_);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;

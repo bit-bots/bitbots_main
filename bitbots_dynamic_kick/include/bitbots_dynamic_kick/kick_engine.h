@@ -129,8 +129,8 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   void setRobotState(moveit::core::RobotStatePtr current_state);
 
  private:
-rclcpp::Node::SharedPtr node_;
-    double time_;
+  rclcpp::Node::SharedPtr node_;
+  double time_;
   Eigen::Vector3d ball_position_;
   Eigen::Quaterniond kick_direction_;
   double kick_speed_;

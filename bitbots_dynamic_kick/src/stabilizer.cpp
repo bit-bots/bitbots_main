@@ -3,34 +3,33 @@
 namespace bitbots_dynamic_kick {
 
 Stabilizer::Stabilizer(std::string ns) {
-    pitch_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_pitch");
-    roll_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_roll");
+  pitch_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_pitch");
+  roll_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_roll");
 
-    pitch_node_->declare_parameter<double>("p", 0.0);
-    pitch_node_->declare_parameter<double>("i", 0.0);
-    pitch_node_->declare_parameter<double>("d", 0.0);
-    pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
-    pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
-    pitch_node_->declare_parameter<bool>("antiwindup", false);
-    roll_node_->declare_parameter<double>("p", 0.0);
-    roll_node_->declare_parameter<double>("i", 0.0);
-    roll_node_->declare_parameter<double>("d", 0.0);
-    roll_node_->declare_parameter<double>("i_clamp_max", 0.0);
-    roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
-    roll_node_->declare_parameter<bool>("antiwindup", false);
+  pitch_node_->declare_parameter<double>("p", 0.0);
+  pitch_node_->declare_parameter<double>("i", 0.0);
+  pitch_node_->declare_parameter<double>("d", 0.0);
+  pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
+  pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
+  pitch_node_->declare_parameter<bool>("antiwindup", false);
+  roll_node_->declare_parameter<double>("p", 0.0);
+  roll_node_->declare_parameter<double>("i", 0.0);
+  roll_node_->declare_parameter<double>("d", 0.0);
+  roll_node_->declare_parameter<double>("i_clamp_max", 0.0);
+  roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
+  roll_node_->declare_parameter<bool>("antiwindup", false);
 
-    pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
-    pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
-    pid_trunk_fused_pitch_->initPid();
-    pid_trunk_fused_roll_->initPid();
+  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
+  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
+  pid_trunk_fused_pitch_->initPid();
+  pid_trunk_fused_roll_->initPid();
 
-    reset();
+  reset();
 }
 
-
 void Stabilizer::reset() {
-    pid_trunk_fused_pitch_->reset();
-    pid_trunk_fused_roll_->reset();
+  pid_trunk_fused_pitch_->reset();
+  pid_trunk_fused_roll_->reset();
 }
 
 KickPositions Stabilizer::stabilize(const KickPositions &positions, const rclcpp::Duration &dt) {

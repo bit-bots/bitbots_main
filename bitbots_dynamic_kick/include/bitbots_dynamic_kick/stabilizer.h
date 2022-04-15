@@ -32,10 +32,10 @@ class Stabilizer :
   void setRobotModel(moveit::core::RobotModelPtr model);
  private:
   moveit::core::RobotModelPtr kinematic_model_;
-    std::shared_ptr<control_toolbox::PidROS> pid_trunk_fused_pitch_;
-    std::shared_ptr<control_toolbox::PidROS> pid_trunk_fused_roll_;
-    std::shared_ptr<rclcpp::Node> pitch_node_;
-    std::shared_ptr<rclcpp::Node> roll_node_;
+  std::shared_ptr<control_toolbox::PidROS> pid_trunk_fused_pitch_;
+  std::shared_ptr<control_toolbox::PidROS> pid_trunk_fused_roll_;
+  std::shared_ptr<rclcpp::Node> pitch_node_;
+  std::shared_ptr<rclcpp::Node> roll_node_;
 
   bool use_cop_;
 };
