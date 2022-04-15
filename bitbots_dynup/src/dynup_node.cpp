@@ -264,6 +264,7 @@ rclcpp_action::GoalResponse DynupNode::goalCb(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
   else {
+    RCLCPP_WARN(this->get_logger(), "Dynup is busy, goal rejected!");
     return rclcpp_action::GoalResponse::REJECT;
   }
 }
