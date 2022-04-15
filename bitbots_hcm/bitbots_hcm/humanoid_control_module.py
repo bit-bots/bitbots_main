@@ -22,6 +22,8 @@ from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
 import os
+import threading
+import time
 
 
 class HardwareControlManager:
@@ -41,7 +43,6 @@ class HardwareControlManager:
         self.blackboard = HcmBlackboard(self.node)
         self.blackboard.animation_action_client = ActionClient(self.node, PlayAnimation, 'animation')
         self.blackboard.dynup_action_client = ActionClient(self.node, Dynup, 'dynup')
-        self.blackboard.dynamic_kick_client = ActionClient(self.node, Kick, 'dynamic_kick')
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
@@ -77,6 +78,8 @@ class HardwareControlManager:
 
         self.node.add_on_set_parameters_callback(self.on_set_parameters)
 
+        self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,))
+        self.spin_thread.start()
         self.main_loop()
 
     def deactivate_cb(self, msg):
@@ -203,9 +206,9 @@ class HardwareControlManager:
             out_msg = JointCommand()
             out_msg.positions = msg.position.points[0].positions
             out_msg.joint_names = msg.position.joint_names
-            out_msg.accelerations = [-1] * len(out_msg.joint_names)
-            out_msg.velocities = [-1] * len(out_msg.joint_names)
-            out_msg.max_currents = [-1] * len(out_msg.joint_names)
+            out_msg.accelerations = [-1.0] * len(out_msg.joint_names)
+            out_msg.velocities = [-1.0] * len(out_msg.joint_names)
+            out_msg.max_currents = [-1.0] * len(out_msg.joint_names)
             send_torque = False
             if msg.position.points[0].effort:
                 out_msg.max_currents = [-x for x in msg.position.points[0].effort]
@@ -236,8 +239,8 @@ class HardwareControlManager:
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        rate = self.node.create_rate(500, clock=self.node.get_clock())
-
+        #rate = self.node.create_rate(500, clock=self.node.get_clock())
+        
         while rclpy.ok() and not self.blackboard.shut_down_request:
             if self.hcm_deactivated:
                 self.blackboard.current_state = RobotControlState.CONTROLLABLE
@@ -254,7 +257,8 @@ class HardwareControlManager:
                 except IndexError:
                     # this error will happen during shutdown procedure, just ignore it
                     pass
-
+            time.sleep(0.01)
+            """
             try:
                 # catch exception of moving backwards in time, when restarting simulator
                 rate.sleep()
@@ -262,8 +266,10 @@ class HardwareControlManager:
                 self.node.get_logger().warn(
                     "We moved backwards in time. I hope you just reset the simulation. If not there is something "
                     "wrong")
+            """
         if not self.node.get_parameter("simulation_active"):
             self.on_shutdown_hook()
+        self.spin_thread.join()
 
     def on_shutdown_hook(self):
         if not self.blackboard:

@@ -59,8 +59,9 @@ class HcmBlackboard():
 
         # Animation
         self.animation_action_client = None
+        self.animation_action_current_goal = None
         self.dynup_action_client = None
-        self.dynamic_kick_client = None
+        self.dynup_action_current_goal = None
         self.last_animation_goal_time = self.node.get_clock().now()
         self.external_animation_running = False
         self.animation_requested = False
@@ -138,7 +139,7 @@ class HcmBlackboard():
                     self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
 
     def last_kick_feedback_callback(self, msg):
-        self.last_kick_feedback = self.get_clock().now()
+        self.last_kick_feedback = self.node.get_clock().now()
 
     def cancel_move_base_goal(self):
         self.move_base_cancel_pub.publish(GoalID())
