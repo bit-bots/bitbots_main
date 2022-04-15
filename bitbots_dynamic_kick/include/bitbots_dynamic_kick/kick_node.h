@@ -7,7 +7,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <rclcpp_action/rclcpp_action.hpp>
-#include <actionlib/server/simple_action_server.h>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
@@ -27,8 +26,6 @@ namespace bitbots_dynamic_kick {
 using KickGoal = bitbots_msgs::action::Kick;
 using KickGoalHandle = rclcpp_action::ServerGoalHandle<KickGoal>;
 using namespace std::placeholders;
-
-typedef actionlib::SimpleActionServer<bitbots_msgs::action::Kick> ActionServer;
 
 /**
  * KickNode is that part of bitbots_dynamic_kick which takes care of interacting with ROS and utilizes a KickEngine
