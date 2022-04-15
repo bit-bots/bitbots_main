@@ -111,10 +111,9 @@ if __name__ == "__main__":
     marker.id = 1
     marker.frame_locked = True
     marker_pub.publish(marker)
-"""
-    client.send_goal_async(goal)
-    client.done_cb = done_cb
-    client.feedback_cb = feedback_cb
-    client.active_cb = active_cb
+    """
+    future = client.send_goal_async(goal)
+    future.add_done_callback(done_cb)
+    #future.add_feedback_callback(feedback_cb)
     print("Sent new goal. Waiting for result")
-    #client.wait_for_result()
+    #rclpy.spin_until_future_complete(client, future)
