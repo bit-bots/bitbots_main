@@ -5,13 +5,13 @@
     <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
     <group if="$(var use_game_settings)">
-        <node pkg="bitbots_animation_server" exec="animation_node"  output="screen"><!-- launch-prefix="$(var taskset)">-->
+        <node pkg="bitbots_animation_server" exec="animation_node"  output="screen" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
         </node>
     </group>
 
     <group unless="$(var use_game_settings)">
-        <node pkg="bitbots_animation_server" exec="animation_node"  output="screen"><!-- launch-prefix="$(var taskset)">-->
+        <node pkg="bitbots_animation_server" exec="animation_node"  output="screen" launch-prefix="$(var taskset)">
         </node>
     </group>
 </launch>

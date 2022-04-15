@@ -16,6 +16,6 @@ class SetFootZero(AbstractActionElement):
                 self.blackboard.foot_zero_service.wait_for_service(0.5)
                 self.blackboard.foot_zero_service()
             except:
-                self.get_logger().warn("No foot zeroing service accessible, will not reset sensors")
+                self.blackboard.node.get_logger().warn("No foot zeroing service accessible, will not reset sensors")
 
             self.pop()

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from platform import node
 import numpy
 import rclpy
 from rclpy.duration import Duration
@@ -9,10 +10,13 @@ from geometry_msgs.msg import PointStamped
 
 from std_msgs.msg import Bool, String
 from sensor_msgs.msg import Imu, JointState
+from diagnostic_msgs.msg import DiagnosticArray
 
-from humanoid_league_msgs.msg import Animation as AnimationMsg, PlayAnimationAction, RobotControlState, Audio
+from humanoid_league_msgs.msg import Animation as AnimationMsg, RobotControlState, Audio
+from humanoid_league_msgs.action import PlayAnimation
 from humanoid_league_speaker.speaker import speak
-from bitbots_msgs.msg import FootPressure, DynUpAction, KickAction
+from bitbots_msgs.msg import FootPressure
+from bitbots_msgs.action import Dynup, Kick
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
@@ -22,23 +26,24 @@ import os
 
 class HardwareControlManager:
     def __init__(self):
-        self.node = Node("HCM")
+
+        rclpy.init(args=None)
+        self.node = Node("HCM", allow_undeclared_parameters=True, automatically_declare_parameters_from_overrides=True)
         # necessary for on shutdown hook, in case of direct shutdown before finished initialization
         self.blackboard = None
 
         # --- Initialize Node ---
-        rclpy.init(args=None)
         self.node.get_clock().sleep_for(
             Duration(seconds=0.1))  # Otherwise messages will get lost, bc the init is not finished
         self.node.get_logger().info("Starting hcm")
 
         # stack machine
-        self.blackboard = HcmBlackboard()
-        self.blackboard.animation_action_client = ActionClient(self, PlayAnimationAction, 'animation')
-        self.blackboard.dynup_action_client = ActionClient(self, DynUpAction, 'dynup')
-        self.blackboard.dynamic_kick_client = ActionClient(self, KickAction, 'dynamic_kick')
+        self.blackboard = HcmBlackboard(self.node)
+        self.blackboard.animation_action_client = ActionClient(self.node, PlayAnimation, 'animation')
+        self.blackboard.dynup_action_client = ActionClient(self.node, Dynup, 'dynup')
+        self.blackboard.dynamic_kick_client = ActionClient(self.node, Kick, 'dynamic_kick')
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
-        self.dsd = DSD(self.blackboard, "debug/dsd/hcm")
+        self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'hcm.dsd'))
@@ -68,6 +73,7 @@ class HardwareControlManager:
         self.node.create_subscription(PointStamped, "cop_r", self.cop_r_cb, 1)
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
+        self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.blackboard.diag_cb, 1)
 
         self.node.add_on_set_parameters_callback(self.on_set_parameters)
 
@@ -155,7 +161,7 @@ class HardwareControlManager:
 
     def animation_callback(self, msg):
         """ The animation server is sending us goal positions for the next keyframe"""
-        self.blackboard.last_animation_goal_time = msg.header.stamp.to_sec()
+        self.blackboard.last_animation_goal_time = msg.header.stamp
 
         if msg.request:
             self.node.get_logger().info("Got Animation request. HCM will try to get controllable now.")
@@ -213,7 +219,7 @@ class HardwareControlManager:
             else:
                 self.joint_goal_publisher.publish(out_msg)
 
-    def joint_state_callback(self, msg):
+    def joint_state_callback(self, msg : JointState):
         self.blackboard.last_motor_update_time = msg.header.stamp
         self.blackboard.previous_joint_state = self.blackboard.current_joint_state
         self.blackboard.current_joint_state = msg
@@ -235,12 +241,16 @@ class HardwareControlManager:
         while rclpy.ok() and not self.blackboard.shut_down_request:
             if self.hcm_deactivated:
                 self.blackboard.current_state = RobotControlState.CONTROLLABLE
-                self.hcm_state_publisher.publish(self.blackboard.current_state)
+                msg = RobotControlState()
+                msg.state = self.blackboard.current_state
+                self.hcm_state_publisher.publish(msg)
             else:
                 self.blackboard.current_time = self.node.get_clock().now()
                 try:
                     self.dsd.update()
-                    self.hcm_state_publisher.publish(self.blackboard.current_state)
+                    msg = RobotControlState()
+                    msg.state = self.blackboard.current_state
+                    self.hcm_state_publisher.publish(msg)
                 except IndexError:
                     # this error will happen during shutdown procedure, just ignore it
                     pass
@@ -270,6 +280,5 @@ class HardwareControlManager:
             self.hcm_state_publisher.publish(self.blackboard.current_state)
             self.node.get_clock().sleep_for(Duration(seconds=0.01))
 
-
-if __name__ == "__main__":
+def main():
     hcm = HardwareControlManager()

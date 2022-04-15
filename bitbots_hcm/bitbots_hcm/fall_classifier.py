@@ -2,7 +2,7 @@ import pickle
 import time
 
 from sklearn.preprocessing import StandardScaler
-import tf
+import transforms3d
 from sensor_msgs.msg import JointState, Imu, Image
 from geometry_msgs.msg import Point
 import math
@@ -64,8 +64,7 @@ def get_data_from_msgs(imu_msg, joint_state_msg, cop_l_msg, cop_r_msg, imu_raw=T
         data.append(imu_msg.angular_velocity.y)
         data.append(imu_msg.angular_velocity.z)
     if imu_orient:
-        euler = tf.transformations.euler_from_quaternion(
-            [imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z, imu_msg.orientation.w])
+        euler = transforms3d.euler.quat2euler([imu_msg.orientation.w, imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z])
         data.append(euler[0])
         data.append(euler[1])
         data.append(euler[2])

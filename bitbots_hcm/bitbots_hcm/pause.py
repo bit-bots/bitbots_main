@@ -28,8 +28,6 @@ class Pause(object):
         self.pause_publisher = self.node.create_publisher(Bool, "pause", 10)  # todo latch
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 10)
 
-        self.talking = self.node.get_parameter('talking').get_parameter_value().double_value
-
         while rclpy.ok():
             rclpy.spin_once(self.node)
 
@@ -55,9 +53,9 @@ class Pause(object):
         else:
             text = "Unpause!"
         self.node.get_logger().warn(text)
-        speak(text, self.speak_publisher, speaking_active=self.talking, priority=90)
+        speak(text, self.speak_publisher, speaking_active=True, priority=90)
         self.pause_publisher.publish(Bool(data=state))
 
 
-if __name__ == "__main__":
+def main():
     pause = Pause()

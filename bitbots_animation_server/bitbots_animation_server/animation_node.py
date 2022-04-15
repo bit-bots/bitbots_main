@@ -164,7 +164,7 @@ class AnimationNode(Node):
 
     def send_animation_request(self):
         self.anim_msg.request = True
-        self.anim_msg.header.stamp = self.get_clock().now()
+        self.anim_msg.header.stamp = self.get_clock().now().to_msg()
         self.hcm_publisher.publish(self.anim_msg)
 
     def send_animation(self, first, last, hcm, pose, torque):
