@@ -44,7 +44,7 @@ dynup:
     time_torso_45: 0.462
     trunk_overshoot_angle_front: -10.54
     trunk_x_front: 0.091
-    wait_in_squat_front: 0.165
+    wait_in_squat_front: 1.5
 
     time_walkready: 2.0
     # Rise
