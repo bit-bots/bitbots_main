@@ -5,6 +5,7 @@ from bitbots_msgs.action import Dynup
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from time import sleep
+from action_msgs.msg import GoalStatus
 
 from humanoid_league_msgs.msg import RobotControlState
 
@@ -216,4 +217,5 @@ class PlayAnimationDynup(AbstractActionElement):
         return True
 
     def animation_finished(self):
-        return self.blackboard.dynup_action_current_goal.done() or self.blackboard.dynup_action_current_goal.cancelled() #state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
+        return (self.blackboard.dynup_action_current_goal.done() and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \
+                or self.blackboard.dynup_action_current_goal.cancelled()
