@@ -25,16 +25,16 @@ class AbstractChangeMotorPower(AbstractActionElement):
 class TurnMotorsOn(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
-            s = SetBool()
-            s.Request.data = False
-            self.blackboard.motor_switch_service.call(s)
+            req = SetBool.Request()
+            req.data = True
+            self.blackboard.motor_switch_service.call(req)
         return self.pop()
 
 
 class TurnMotorsOff(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
-            s = SetBool()
-            s.Request.data = True
-            self.blackboard.motor_switch_service.call(s)
+            req = SetBool.Request()
+            req.data = False
+            self.blackboard.motor_switch_service.call(req)
         return self.pop()

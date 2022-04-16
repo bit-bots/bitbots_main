@@ -14,7 +14,7 @@
                 <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
             </group> TODO-->
     <group if="$(var wolfgang)">
-        <node name="hcm" pkg="bitbots_hcm" exec="hcm_node" args="" output="screen" > <!--launch-prefix="$(var taskset)"-->
+        <node name="hcm" pkg="bitbots_hcm" exec="hcm_node" args="" output="screen" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_hcm)/config/hcm_wolfgang.yaml"/>
             <param name="simulation_active" value="$(var sim)" />
             <param name="visualization_active" value="$(var viz)" />

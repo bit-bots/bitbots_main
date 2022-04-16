@@ -12,7 +12,7 @@ dynup:
     trunk_pitch: 0.0
     trunk_x_final: 0.0
 
-    arm_side_offset: 0.148
+    arm_side_offset_back: 0.148
 
     # Back
     arms_angle_back: 120.36
@@ -44,7 +44,7 @@ dynup:
     time_torso_45: 0.462
     trunk_overshoot_angle_front: -10.54
     trunk_x_front: 0.091
-    wait_in_squat_front: 0.165
+    wait_in_squat_front: 1.5
 
     time_walkready: 2.0
     # Rise

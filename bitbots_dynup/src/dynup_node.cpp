@@ -134,6 +134,7 @@ namespace bitbots_dynup {
   cop_subscriber_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&DynupNode::imuCallback, this, _1));
   joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1));
 
+  server_free_ = true;
   this->action_server_ = rclcpp_action::create_server<DynupGoal>(
     this,
     "dynup",
@@ -247,6 +248,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   } else {
     RCLCPP_ERROR(this->get_logger(),"Could not determine positions! Aborting standup.");
     bitbots_msgs::action::Dynup_Result::SharedPtr r;
+    server_free_ = true;
     goal_handle->canceled(r);
   }
 }
@@ -257,13 +259,21 @@ rclcpp_action::GoalResponse DynupNode::goalCb(
 {
   RCLCPP_INFO(this->get_logger(), "Received goal request");
   (void)uuid;
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  if(server_free_) {
+    server_free_ = false;
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  }
+  else {
+    RCLCPP_WARN(this->get_logger(), "Dynup is busy, goal rejected!");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
 }
 
 rclcpp_action::CancelResponse DynupNode::cancelCb(
     const std::shared_ptr<DynupGoalHandle> goal) {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
   (void)goal;
+  server_free_ = true;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -315,6 +325,8 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     if (feedback->percent_done >= 100 && (stable_duration_ >= params_["stable_duration"].get_value<int>() || !(params_["stabilizing"].get_value<bool>()) ||
                                         (this->get_clock()->now().seconds() - start_time_ >= engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
         RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
+        result->successful = true;
+        server_free_ = true;
         goal_handle->succeed(result);
         return;
     }

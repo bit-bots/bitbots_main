@@ -5,6 +5,7 @@ from bitbots_msgs.action import Dynup
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from time import sleep
+from action_msgs.msg import GoalStatus
 
 from humanoid_league_msgs.msg import RobotControlState
 
@@ -76,13 +77,11 @@ class AbstractPlayAnimation(AbstractActionElement):
         goal = PlayAnimation.Goal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        self.blackboard.animation_action_client.send_goal_async(goal, feedback_callback=self.blackboard.last_kick_feedback_callback)
+        self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(goal, feedback_callback=self.blackboard.last_kick_feedback_callback)
         return True
 
     def animation_finished(self):
-        state = self.blackboard.animation_action_client.get_state()
-        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
-
+        return self.blackboard.animation_action_current_goal.cancelled() or self.blackboard.animation_action_current_goal.done()
 
 class PlayAnimationStandUpFront(AbstractPlayAnimation):
     def chose_animation(self):
@@ -198,7 +197,7 @@ class PlayAnimationDynup(AbstractActionElement):
         """
 
         first_try = self.blackboard.dynup_action_client.wait_for_server(
-            Duration(seconds=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').get_parameter_value().double_value))
+            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').get_parameter_value().double_value)
         if not first_try:
             server_running = False
             while not server_running and not self.blackboard.shut_down_request and rclpy.ok():
@@ -206,7 +205,7 @@ class PlayAnimationDynup(AbstractActionElement):
                                       "Dynup Action Server not running! Dynup cannot work without dynup server!"
                                       "Will now wait until server is accessible!",
                                       throttle_duration_sec=5.0)
-                server_running = self.blackboard.dynup_action_client.wait_for_server(Duration(seconds=1))
+                server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Dynup server now running, hcm will go on.")
             else:
@@ -214,9 +213,9 @@ class PlayAnimationDynup(AbstractActionElement):
                 return False
         goal = Dynup.Goal()
         goal.direction = self.direction
-        self.blackboard.dynup_action_client.send_goal_async(goal)
+        self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(goal)
         return True
 
     def animation_finished(self):
-        state = self.blackboard.dynup_action_client.get_state()
-        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
+        return (self.blackboard.dynup_action_current_goal.done() and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \
+                or self.blackboard.dynup_action_current_goal.cancelled()

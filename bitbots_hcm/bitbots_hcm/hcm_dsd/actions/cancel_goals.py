@@ -8,9 +8,17 @@ class CancelGoals(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self):
-        self.blackboard.dynup_action_client.cancel_all_goals()
-        self.blackboard.animation_action_client.cancel_all_goals()
-        self.blackboard.dynamic_kick_client.cancel_all_goals()
+        if self.blackboard.animation_action_current_goal is not None:
+            try:
+                self.blackboard.animation_action_current_goal.cancel()
+            except:
+                pass
+        if self.blackboard.dynup_action_current_goal is not None:
+            try:
+                self.blackboard.dynup_action_current_goal.cancel()
+            except:
+                pass
+            
         self.blackboard.cancel_move_base_goal()
         self.pop()
 

@@ -29,7 +29,7 @@ class FallChecker(BaseEstimator):
         self.thresh_orient_roll = math.radians(self.node.get_parameter("falling_thresh_orient_roll").get_parameter_value().double_value) \
             if thresh_orient_roll is None else thresh_orient_roll
 
-        self.smoothing = self.node.get_parameter("smooth_threshold") if smoothing is None else smoothing
+        self.smoothing = self.node.get_parameter("smooth_threshold").get_parameter_value().double_value if smoothing is None else smoothing
         self.smoothing_list = []
         self.counter = 0
         self.last_result = 0
@@ -87,11 +87,11 @@ class FallChecker(BaseEstimator):
 
         # Prune old elements from smoothing history
         self.smoothing_list = list(filter(
-            lambda x: x[0] > self.get_clock().now() - Duration(seconds=self.smoothing),
+            lambda x: x[0] > self.node.get_clock().now() - Duration(seconds=self.smoothing),
             self.smoothing_list))
 
         # Add the current element
-        self.smoothing_list.append((self.get_clock().now(), result))
+        self.smoothing_list.append((self.node.get_clock().now(), result))
 
         # List only including the results not the whole tuples
         results_list = list(zip(*self.smoothing_list))[1]
