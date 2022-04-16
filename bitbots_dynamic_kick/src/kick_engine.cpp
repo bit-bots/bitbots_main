@@ -4,7 +4,8 @@
 
 namespace bitbots_dynamic_kick {
 
-KickEngine::KickEngine() {
+KickEngine::KickEngine(rclcpp::Node::SharedPtr node) {
+  node_ = node;
 }
 
 void KickEngine::reset() {
@@ -216,7 +217,8 @@ std::pair<Eigen::Vector3d, Eigen::Quaterniond> KickEngine::transformGoal(
   Eigen::Isometry3d base_footprint_to_support_foot = trunk_to_base_footprint.inverse() * trunk_to_support_foot;
   /* now, apply the transforms. Because of eigen, the transform has to be on the left hand side, therefore it must be inversed */
   Eigen::Vector3d ball_transformed = base_footprint_to_support_foot.inverse() * ball_position;
-  Eigen::Matrix3d kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
+  Eigen::Matrix3d
+      kick_direction_transformed_matrix = (base_footprint_to_support_foot.inverse() * kick_direction).rotation();
   Eigen::Quaterniond kick_direction_transformed(kick_direction_transformed_matrix);
   return std::make_pair(ball_transformed, kick_direction_transformed);
 }
@@ -264,7 +266,7 @@ bool KickEngine::calcIsLeftFootKicking(const Eigen::Vector3d &ball_position,
   double angle_2 = rot_conv::EYawOfQuat(kick_direction);
   double angle_diff = angle_2 - angle_1;
 
-  ROS_INFO_STREAM("Choosing " << ((angle_diff < 0) ? "left" : "right") << " foot to kick");
+  RCLCPP_INFO_STREAM(node_->get_logger(), "Choosing " << ((angle_diff < 0) ? "left" : "right") << " foot to kick");
 
   return angle_diff < 0;
 }
@@ -289,7 +291,7 @@ int KickEngine::getPercentDone() const {
   return int(time_ / phase_timings_.move_trunk_back * 100);
 }
 
-geometry_msgs::Pose KickEngine::getTrunkPose() {
+geometry_msgs::msg::Pose KickEngine::getTrunkPose() {
   return trunk_spline_.getGeometryMsgPose(time_);
 }
 
@@ -330,7 +332,7 @@ Eigen::Vector3d KickEngine::getWindupPoint() {
   return windup_point_;
 }
 
-void KickEngine::setRobotState(robot_state::RobotStatePtr current_state) {
+void KickEngine::setRobotState(moveit::core::RobotStatePtr current_state) {
   current_state_ = current_state;
 }
 

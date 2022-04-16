@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 
-import actionlib
+from rclpy.action import ActionClient
 import argparse
 import math
 import os
 import random
-import rospy
+import rclpy
+from rclpy.node import Node
 import sys
 from time import sleep
 
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Vector3, Quaternion
-from bitbots_msgs.msg import KickGoal, KickAction, KickFeedback
+from bitbots_msgs.action import Kick
 from visualization_msgs.msg import Marker
 
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 showing_feedback = False
 
@@ -28,8 +29,9 @@ if __name__ == "__main__":
     print("Beware: this script may only work when calling it directly on the robot "
           "and will maybe result in tf errors otherwise")
     print("[..] Initializing node", end='')
-    rospy.init_node('dynamic_kick_dummy_client', anonymous=True)
-    marker_pub = rospy.Publisher("debug/dynamic_kick_ball_marker", Marker, queue_size=1)
+    rclpy.init(args=None)
+    node = Node("dummy_client")
+    marker_pub = node.create_publisher(Marker, "debug/dynamic_kick_ball_marker", 1)
     print("\r[OK] Initializing node")
 
 
@@ -73,24 +75,25 @@ if __name__ == "__main__":
 
     print('[..] Connecting to action server \'dynamic_kick\'', end='')
     sys.stdout.flush()
-    client = actionlib.SimpleActionClient('dynamic_kick', KickAction)
+    client = ActionClient(node, Kick, 'dynamic_kick')
     if not client.wait_for_server():
         exit(1)
     print('\r[OK] Connecting to action server \'dynamic_kick\'')
     print()
 
-    goal = KickGoal()
-    goal.header.stamp = rospy.Time.now()
+    goal = Kick.Goal()
+    goal.header.stamp = node.get_clock().now().to_msg()
     frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
     goal.header.frame_id = frame_prefix + "base_footprint"
     goal.ball_position.x = 0.2
     goal.ball_position.y = args.ball_y
-    goal.ball_position.z = 0
+    goal.ball_position.z = 0.0
     goal.unstable = args.unstable
 
-    goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, math.radians(args.kick_direction)))
+    quat_vector = quaternion_from_euler(0, 0, math.radians(args.kick_direction))
+    goal.kick_direction = Quaternion(x=quat_vector[0], y=quat_vector[1], z=quat_vector[2], w=quat_vector[3])
 
-    goal.kick_speed = 6.7 if args.unstable else 1
+    goal.kick_speed = 6.7 if args.unstable else 1.0
 
     """marker = Marker()
     marker.header.stamp = goal.ball_position.header.stamp
@@ -100,7 +103,7 @@ if __name__ == "__main__":
     marker.scale = Vector3(0.05, 0.05, 0.05)
     marker.type = Marker.SPHERE
     marker.action = Marker.ADD
-    marker.lifetime = rospy.Duration(8)
+    marker.lifetime = Duration(seconds=8)
     marker.color.a = 1
     marker.color.r = 1
     marker.color.g = 1
@@ -108,10 +111,9 @@ if __name__ == "__main__":
     marker.id = 1
     marker.frame_locked = True
     marker_pub.publish(marker)
-"""
-    client.send_goal(goal)
-    client.done_cb = done_cb
-    client.feedback_cb = feedback_cb
-    client.active_cb = active_cb
+    """
+    future = client.send_goal_async(goal)
+    future.add_done_callback(done_cb)
+    #future.add_feedback_callback(feedback_cb)
     print("Sent new goal. Waiting for result")
-    client.wait_for_result()
+    #rclpy.spin_until_future_complete(client, future)

@@ -2,20 +2,37 @@
 
 namespace bitbots_dynamic_kick {
 
-Stabilizer::Stabilizer() {
-  ros::NodeHandle pid_x_nh = ros::NodeHandle("dynamic_kick/pid_x");
-  ros::NodeHandle pid_y_nh = ros::NodeHandle("dynamic_kick/pid_y");
-  pid_x_.init(pid_x_nh, false);
-  pid_y_.init(pid_y_nh, false);
+Stabilizer::Stabilizer(std::string ns) {
+  pitch_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_pitch");
+  roll_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_roll");
+
+  pitch_node_->declare_parameter<double>("p", 0.0);
+  pitch_node_->declare_parameter<double>("i", 0.0);
+  pitch_node_->declare_parameter<double>("d", 0.0);
+  pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
+  pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
+  pitch_node_->declare_parameter<bool>("antiwindup", false);
+  roll_node_->declare_parameter<double>("p", 0.0);
+  roll_node_->declare_parameter<double>("i", 0.0);
+  roll_node_->declare_parameter<double>("d", 0.0);
+  roll_node_->declare_parameter<double>("i_clamp_max", 0.0);
+  roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
+  roll_node_->declare_parameter<bool>("antiwindup", false);
+
+  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
+  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
+  pid_trunk_fused_pitch_->initPid();
+  pid_trunk_fused_roll_->initPid();
+
   reset();
 }
 
 void Stabilizer::reset() {
-  pid_x_.reset();
-  pid_y_.reset();
+  pid_trunk_fused_pitch_->reset();
+  pid_trunk_fused_roll_->reset();
 }
 
-KickPositions Stabilizer::stabilize(const KickPositions &positions, const ros::Duration &dt) {
+KickPositions Stabilizer::stabilize(const KickPositions &positions, const rclcpp::Duration &dt) {
   KickPositions stabilized_positions = positions;
   if (positions.cop_support_point && use_cop_) {
     /* calculate stabilizing target from center of pressure
@@ -32,8 +49,8 @@ KickPositions Stabilizer::stabilize(const KickPositions &positions, const ros::D
     cop_x_error = cop_x - positions.trunk_pose.translation().x();
     cop_y_error = cop_y - positions.trunk_pose.translation().y();
 
-    double x_correction = pid_x_.computeCommand(cop_x_error, dt);
-    double y_correction = pid_y_.computeCommand(cop_y_error, dt);
+    double x_correction = pid_trunk_fused_roll_->computeCommand(cop_x_error, dt);
+    double y_correction = pid_trunk_fused_pitch_->computeCommand(cop_y_error, dt);
 
     stabilized_positions.trunk_pose.translation().x() += x_correction;
     stabilized_positions.trunk_pose.translation().y() += y_correction;

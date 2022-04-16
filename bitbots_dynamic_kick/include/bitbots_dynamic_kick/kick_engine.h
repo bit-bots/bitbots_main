@@ -8,10 +8,9 @@
 #include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/position_spline.h>
 #include <bitbots_splines/abstract_engine.h>
-#include <bitbots_msgs/KickGoal.h>
-#include <bitbots_msgs/KickFeedback.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <bitbots_msgs/action/kick.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
 #include <tf2/exceptions.h>
@@ -70,7 +69,7 @@ class PhaseTimings {
  */
 class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositions> {
  public:
-  KickEngine();
+  KickEngine(rclcpp::Node::SharedPtr node);
 
   /**
    * Set new goal which the engine tries to kick at. This will remove the old goal completely and plan new splines.
@@ -110,7 +109,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   /**
    * Get the current position of the trunk relative to the support foot
    */
-  geometry_msgs::Pose getTrunkPose();
+  geometry_msgs::msg::Pose getTrunkPose();
 
   bitbots_splines::PoseSpline getFlyingSplines() const;
   bitbots_splines::PoseSpline getTrunkSplines() const;
@@ -127,9 +126,10 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   /**
    * Set a pointer to the current state of the robot, updated from joint states
    */
-  void setRobotState(robot_state::RobotStatePtr current_state);
+  void setRobotState(moveit::core::RobotStatePtr current_state);
 
  private:
+  rclcpp::Node::SharedPtr node_;
   double time_;
   Eigen::Vector3d ball_position_;
   Eigen::Quaterniond kick_direction_;
@@ -139,7 +139,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
   KickParams params_;
   PhaseTimings phase_timings_;
   Eigen::Vector3d windup_point_;
-  robot_state::RobotStatePtr current_state_;
+  moveit::core::RobotStatePtr current_state_;
 
   /**
    *  Calculate splines for a complete kick whereby is_left_kick_ should already be set correctly

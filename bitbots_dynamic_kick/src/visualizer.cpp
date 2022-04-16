@@ -3,25 +3,22 @@
 
 namespace bitbots_dynamic_kick {
 
-Visualizer::Visualizer(const std::string &base_topic) :
-    base_topic_(base_topic),
-    params_() {
+Visualizer::Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node) :
+    node_(node),
+    base_topic_(base_topic) {
   /* make sure base_topic_ has consistent scheme */
   if (base_topic.compare(base_topic.size() - 1, 1, "/") != 0) {
     base_topic_ += "/";
   }
 
   /* create necessary publishers */
-  goal_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "received_goal",
-      /* queue_size */ 5, /* latch */ true);
-  foot_spline_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>(base_topic_ + "flying_foot_spline",
-      /* queue_size */ 5, /* latch */ true);
-  trunk_spline_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>(base_topic_ + "trunk_spline",
-      /* queue_size */ 5, /* latch */ true);
-  windup_publisher_ = node_handle_.advertise<visualization_msgs::Marker>(base_topic_ + "kick_windup_point",
-      /* queue_size */ 5, /* latch */ true);
-  debug_publisher_ = node_handle_.advertise<KickDebug>(base_topic_ + "debug",
-      /* queue_size */ 5, /* latch */ false);
+  goal_publisher_ = node_->create_publisher<visualization_msgs::msg::Marker>(base_topic_ + "received_goal", 1);
+  foot_spline_publisher_ =
+      node_->create_publisher<visualization_msgs::msg::MarkerArray>(base_topic_ + "flying_foot_spline", 5);
+  trunk_spline_publisher_ =
+      node_->create_publisher<visualization_msgs::msg::MarkerArray>(base_topic_ + "trunk_spline", 5);
+  windup_publisher_ = node_->create_publisher<visualization_msgs::msg::Marker>(base_topic_ + "kick_windup_point", 5);
+  debug_publisher_ = node_->create_publisher<bitbots_dynamic_kick::msg::KickDebug>(base_topic_ + "debug", 5);
 }
 
 void Visualizer::setParams(VisualizationParams params) {
@@ -30,65 +27,66 @@ void Visualizer::setParams(VisualizationParams params) {
 
 void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines,
                                       const std::string &support_foot_frame) {
-  if (foot_spline_publisher_.getNumSubscribers() == 0)
+  if (foot_spline_publisher_->get_subscription_count() == 0)
     return;
 
-  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
+  visualization_msgs::msg::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness, node_);
   path.markers[0].color.g = 1;
 
-  foot_spline_publisher_.publish(path);
+  foot_spline_publisher_->publish(path);
 }
 
 void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines,
                                      const std::string &support_foot_frame) {
-  if (trunk_spline_publisher_.getNumSubscribers() == 0)
+  if (trunk_spline_publisher_->get_subscription_count() == 0)
     return;
 
-  visualization_msgs::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness);
+  visualization_msgs::msg::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness, node_);
   path.markers[0].color.g = 1;
 
-  trunk_spline_publisher_.publish(path);
+  trunk_spline_publisher_->publish(path);
 }
 
-void Visualizer::displayReceivedGoal(const bitbots_msgs::KickGoal &goal) {
-  if (goal_publisher_.getNumSubscribers() == 0)
+void Visualizer::displayReceivedGoal(const bitbots_msgs::action::Kick::Goal &goal) {
+  if (goal_publisher_->get_subscription_count() == 0)
     return;
 
-  visualization_msgs::Marker
-      marker = getMarker({goal.ball_position.x, goal.ball_position.y, goal.ball_position.z}, goal.header.frame_id);
+  visualization_msgs::msg::Marker
+      marker =
+      getMarker({goal.ball_position.x, goal.ball_position.y, goal.ball_position.z}, goal.header.frame_id, node_);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
-  marker.type = visualization_msgs::Marker::ARROW;
+  marker.type = visualization_msgs::msg::Marker::ARROW;
   marker.header.stamp = goal.header.stamp;
   marker.pose.orientation = goal.kick_direction;
   marker.scale.x = 0.08 + (goal.kick_speed / 3);
   marker.color.r = 1;
 
-  goal_publisher_.publish(marker);
+  goal_publisher_->publish(marker);
 }
 
 void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame) {
-  if (windup_publisher_.getNumSubscribers() == 0)
+  if (windup_publisher_->get_subscription_count() == 0)
     return;
 
   tf2::Vector3 tf_kick_windup_point;
   tf2::convert(kick_windup_point, tf_kick_windup_point);
-  visualization_msgs::Marker marker = getMarker(tf_kick_windup_point, support_foot_frame);
+  visualization_msgs::msg::Marker marker = getMarker(tf_kick_windup_point, support_foot_frame, node_);
 
   marker.ns = marker_ns_;
   marker.id = MarkerIDs::RECEIVED_GOAL;
   marker.color.g = 1;
 
-  windup_publisher_.publish(marker);
+  windup_publisher_->publish(marker);
 }
 
 void Visualizer::publishGoals(const KickPositions &positions,
                               const KickPositions &stabilized_positions,
-                              const robot_state::RobotStatePtr &robot_state,
+                              const moveit::core::RobotStatePtr &robot_state,
                               KickPhase engine_phase) {
   /* only calculate the debug information if someone is subscribing */
-  if (debug_publisher_.getNumSubscribers() == 0) {
+  if (debug_publisher_->get_subscription_count() == 0) {
     return;
   }
 
@@ -112,8 +110,8 @@ void Visualizer::publishGoals(const KickPositions &positions,
   Eigen::Vector3d flying_foot_position_ik_offset =
       flying_foot_pose_ik_result.translation() - stabilized_positions.flying_foot_pose.translation();
 
-  KickDebug msg;
-  msg.header.stamp = ros::Time::now();
+  bitbots_dynamic_kick::msg::KickDebug msg;
+  msg.header.stamp = node_->get_clock()->now();
   msg.header.frame_id = support_foot_frame;
   msg.engine_phase = engine_phase;
   msg.engine_time = positions.engine_time;
@@ -126,7 +124,7 @@ void Visualizer::publishGoals(const KickPositions &positions,
   msg.flying_foot_pose_ik_result = tf2::toMsg(flying_foot_pose_ik_result);
   msg.flying_foot_position_ik_offset = tf2::toMsg(flying_foot_position_ik_offset);
 
-  debug_publisher_.publish(msg);
+  debug_publisher_->publish(msg);
 }
 
 }
