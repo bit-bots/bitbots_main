@@ -142,7 +142,7 @@ The other values are mostly not that influential but can also be tried.
 Automatic Parameter Optimization
 ================================
 
-As tuning manually is very tedious and does not always yield the best parametes, we apply automatic hyperparmeter optimzation.
+As tuning manually is very tedious and does not always yield the best parameters, we apply automatic hyperparmeter optimzation.
 This is done using the Multi-objective tree-structured Parzen-estimator (MOTPE) algorithm.
 Each of the walking directions (forward, backward, sideward, turning) is one of the objectives which should be optimized.
 MOTPE decides on a set of parameters and we let the robot walk in each direction for a few seconds with increasing speed until the robot falls.
