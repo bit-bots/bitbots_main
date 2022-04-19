@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
-    Node(ns + "walking", rclcpp::NodeOptions().RobotModelLoaderallow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
+    Node(ns + "walking", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
     walk_engine_(SharedPtr(this)),
     stabilizer_(ns),
     ik_(SharedPtr(this)),
