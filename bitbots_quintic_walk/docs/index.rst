@@ -135,7 +135,7 @@ Tune the parameters in the following order:
 6. double_support_ratio: This determines how long per step both feet are on the ground. It should never be zero, since this will most likely not work because the accelerations for the body would get infinitive on step change (see "Introduction to Humanoid Robotics, Shuuji Kajita, 2015" for a detailed explaination). To large values will force the flying leg to move very fast during single support. This value can be fine tuned after setting the other values. Typical values are between 0.05 and 0.3.
 7. trunk_swing: This value determines how much the torso is moving sidewards during walking to put the center of pressure over the support foot. If the robot is falling to the inside of the support foot the value has to be increased, if it is falling to the outside it has to be decreased. The value of 1 means that it goes during maximal sidewards movement as far as the footDistance. Typical values are between 0.1 and 1.
 8. trunk_phase: This moves the trunk movement in relation to the leg movement in phase time. This is difficult to tune but often the value that you want to change when you don't know why the walking doesn't work. Typical values are between -0.1 and 0.1.
-9. trunk_pitch_p_coef_forward: This gives more trunk pitch when running forwards and less when running backwards. Increase this when the robot is falling to the front or back when getting faster.
+9. trunk_pitch_p_coef_forward: This gives more trunk pitch when running forwards and less when running backwards. Increase this when the robot is falling against walk direction when getting faster. Decrease if it falls in walk direction when getting faster.
 
 The other values are mostly not that influential but can also be tried.
 
