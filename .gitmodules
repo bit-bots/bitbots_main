@@ -1,6 +1,3 @@
-[submodule "lib/bio_ik"]
-	path = lib/bio_ik
-	url = https://github.com/TAMS-Group/bio_ik.git
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = ../../bit-bots/DynamixelSDK.git
@@ -9,16 +6,13 @@
 	url = ../../bit-bots/dynamixel-workbench.git
 [submodule "lib/dynamixel-workbench-msgs"]
 	path = lib/dynamixel-workbench-msgs
-	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
+	url = ../../ROBOTIS-GIT/dynamixel-workbench-msgs.git
 [submodule "lib/bio_ik_service"]
 	path = lib/bio_ik_service
-	url = https://github.com/TAMS-Group/bio_ik_service.git
+	url = ../../bit-bots/bio_ik_service.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = ../../bit-bots/dynamic_stack_decider.git
-[submodule "center_of_mass"]
-	path = center_of_mass
-	url = ../../bit-bots/center_of_mass.git
 [submodule "humanoid_base_footprint"]
 	path = humanoid_base_footprint
 	url = ../../bit-bots/humanoid_base_footprint.git
@@ -74,3 +68,43 @@
 	path = lib/spatio_temporal_voxel_layer
 	url = ../../bit-bots/spatio_temporal_voxel_layer
 	branch = melodic-devel
+[submodule "lib/navigation2"]
+	path = lib/navigation2
+	url = ../../ros-planning/navigation2.git
+	branch = main
+[submodule "lib/robot_controllers"]
+	path = lib/robot_controllers
+	url = ../../fetchrobotics/robot_controllers.git
+	branch = ros2
+[submodule "lib/fp"]
+	path = lib/fp
+	url = https://github.com/tylerjw/fp.git
+	branch = main
+[submodule "lib/ros2_python_extension"]
+	path = lib/ros2_python_extension
+	branch = main
+	url = ../../bit-bots/ros2_python_extension.git
+[submodule "soccer_interfaces"]
+	path = soccer_interfaces
+	branch = rolling
+	url = ../../ros-sports/soccer_interfaces.git
+[submodule "lib/imu_tools"]
+	path = lib/imu_tools
+	branch = eloquent
+	url = https://github.com/ccny-ros-pkg/imu_tools.git
+[submodule "biped_interfaces"]
+	path = biped_interfaces
+	branch = rolling
+	url = https://github.com/ros-sports/biped_interfaces
+[submodule "lib/bio_ik"]
+	path = lib/bio_ik
+	branch = ros2
+	url = git@github.com:SammyRamone/bio_ik.git
+[submodule "lib/vision_msgs"]
+	path = lib/vision_msgs
+	url = git@github.com:ros-perception/vision_msgs.git
+	branch = ros2
+[submodule "lib/pylon-ros-camera"]
+	path = lib/pylon-ros-camera
+	url = ../../bit-bots/pylon-ros-camera.git
+	branch = galactic

@@ -53,12 +53,12 @@ def print_debug(msg):
 
 
 try:
-    from bitbots_bringup import game_settings
+    from bitbots_utils import game_settings
 except ImportError:
-    bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "src")
-    print_info("Manually adding {} to PATH to import bitbots_bringup. If this fails please source ros".format(bringup_dir))
+    bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_utils")
+    print_info("Manually adding {} to PATH to import bitbots_utils. If this fails please source ros".format(bringup_dir))
     sys.path.append(bringup_dir)
-    from bitbots_bringup import game_settings
+    from bitbots_utils import game_settings
 
 
 def print_bit_bot():
@@ -374,18 +374,24 @@ def build(target, package='', pre_clean=False):
     """
     print_info("Building on {}".format(target.hostname))
 
+    if package and pre_clean:
+        print_err("Cleaning a specific package is not supported! Not cleaning.")
+    elif pre_clean:
+        cmd_clean = 'rm -rf build instal'
+    else:
+        cmd_clean = ''
+
     cmd = ("sync;"
                "cd {workspace};"
                "source devel/setup.zsh;"
                "{cmd_clean}"
-               "catkin build --force-color {package} {quiet_option} --continue-on-failure --summary || exit 1;"
-               "./src/scripts/repair.sh {quiet_option};"
+               "colcon build {package} --continue-on-error {quiet_option} || exit 1;"
                "sync;"
                ).format(**{
         "workspace": target.workspace,
-        "cmd_clean": "catkin clean -y {};".format(package) if pre_clean else "",
+        "cmd_clean": cmd_clean,
         "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
-        "package": package
+        "package": '--packages-up-to ' + package if package else '',
     })
 
     build_result = _execute_on_target(target, cmd)
