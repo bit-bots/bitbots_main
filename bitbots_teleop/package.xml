@@ -11,11 +11,11 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>rospy</depend>
+  <depend>rclpy</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_docs</depend>
-  <depend>tf-transformations</depend>
+  <depend>tf_transformations</depend>
 
   <exec_depend>std_msgs</exec_depend>
 
