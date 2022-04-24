@@ -105,7 +105,7 @@ class YOEOObstacleDetectorFactory:
     def create(cls,
                config: Dict,
                yoeo: yoeo_handler.IYOEOHandler,
-               color: Union[None, GameState.team_color] = None,
+               color: Union[None, int] = None,
                subtractors: Union[None, List[obstacle.ColorObstacleDetector]] = None) \
             -> obstacle.ColorObstacleDetector:
         if cls._new_robot_detector_has_to_be_created(yoeo):
@@ -151,7 +151,7 @@ class YOEOObstacleDetectorFactory:
         cls._blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
     @classmethod
-    def _select_color_detector_based_on(cls, color: Union[None, GameState.team_color]):
+    def _select_color_detector_based_on(cls, color: Union[None, int]):
         if color == GameState.BLUE:
             color_detector = cls._blue_color_detector
         elif color == GameState.RED:
