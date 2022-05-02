@@ -15,7 +15,7 @@
 	url = ../../bit-bots/dynamic_stack_decider.git
 [submodule "humanoid_base_footprint"]
 	path = humanoid_base_footprint
-	url = ../../bit-bots/humanoid_base_footprint.git
+	url = ../../ros-sports/humanoid_base_footprint.git
 [submodule "bitbots_lowlevel"]
 	path = bitbots_lowlevel
 	url = ../../bit-bots/bitbots_lowlevel.git
