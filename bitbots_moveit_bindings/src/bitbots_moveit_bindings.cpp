@@ -61,6 +61,7 @@ class BitbotsMoveitBindings {
                    robot_description.c_str());
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
+    robot_state_->setToDefaultValues();
 
     // get planning scene for collision checking
     planning_scene_monitor_ =
