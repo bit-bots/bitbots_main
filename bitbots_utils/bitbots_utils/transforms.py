@@ -37,7 +37,7 @@ def sixd2quat(sixd):
 
 
 def quat2fused(q):
-    q_xyzw = xyzw2wxyz(q)
+    q_xyzw = wxyz2xyzw(q)
     # Fused yaw of Quaternion
     fused_yaw = 2.0 * math.atan2(q_xyzw[2],
                                  q_xyzw[3])  # Output of atan2 is [-tau/2,tau/2], so this expression is in [-tau,tau]
