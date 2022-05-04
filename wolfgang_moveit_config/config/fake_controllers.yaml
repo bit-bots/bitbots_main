@@ -113,3 +113,10 @@ fake_All_controller:
     - RShoulderPitch
     - RShoulderRoll
     - RElbow
+
+
+initial:
+  - group: LeftLeg
+    pose: initial
+  - group: RightLeg
+    pose: initial

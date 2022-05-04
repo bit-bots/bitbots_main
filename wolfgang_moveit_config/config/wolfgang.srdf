@@ -89,6 +89,24 @@
         <joint name="RShoulderRoll" />
         <joint name="RElbow" />
     </group>
+
+    <group_state name="initial" group="LeftLeg">
+        <joint name="LHipYaw" value="0.0" />
+        <joint name="LHipRoll" value="0.0" />
+        <joint name="LHipPitch" value="0.7" />
+        <joint name="LKnee" value="1.0" />
+        <joint name="LAnklePitch" value="-0.4" />
+        <joint name="LAnkleRoll" value="0.0" />
+    </group_state>
+    <group_state name="initial" group="RightLeg">
+        <joint name="RHipYaw" value="0.0" />
+        <joint name="RHipRoll" value="0.0" />
+        <joint name="RHipPitch" value="-0.7" />
+        <joint name="RKnee" value="-1.0" />
+        <joint name="RAnklePitch" value="0.4" />
+        <joint name="RAnkleRoll" value="0.0" />
+    </group_state>
+
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="head" link2="l_ankle" reason="Never" />
     <disable_collisions link1="head" link2="l_foot" reason="Never" />
