@@ -285,6 +285,11 @@ class RobotController:
             self.cop_l_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_l", 1)
             self.cop_r_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_r", 1)
             self.ros_node.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
+        else:
+            self.l_sole_frame = "l_sole"
+            self.r_sole_frame = "r_sole"
+            self.camera_optical_frame = "camera_optical_frame"
+            self.head_imu_frame = "head_imu_frame"
 
         if robot == "op3":
             # start pose
