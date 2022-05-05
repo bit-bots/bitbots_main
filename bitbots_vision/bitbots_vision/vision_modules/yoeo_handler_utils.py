@@ -1,12 +1,10 @@
-import logging
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import Tuple
 import numpy as np
 import cv2
 import rclpy
 import yoeo.utils.utils
-from typing import Dict, Tuple, Optional
+from typing import Tuple, Optional
 
 logger = rclpy.logging.get_logger('yoeo_handler_utils')
 
@@ -32,7 +30,7 @@ class IImagePreprocessor(ABC):
         ...
 
     @abstractmethod
-    def configure(self, network_input_size: Tuple[int, int]) -> None:
+    def configure(self, network_input_shape: Tuple[int, int]) -> None:
         ...
 
 
@@ -42,7 +40,7 @@ class ISegmentationPostProcessor:
         ...
 
     @abstractmethod
-    def configure(self, new_config: Dict) -> None:
+    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
         ...
 
 
@@ -52,7 +50,7 @@ class IDetectionPostProcessor:
         ...
 
     @abstractmethod
-    def configure(self, conf_thresh: float, nms_thresh: float) -> None:
+    def configure(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float) -> None:
         ...
 
 
@@ -76,10 +74,12 @@ class OVImagePreprocessor(IImagePreprocessor):
     def process(self, image):
         self._image_dimensions = image.shape[:2]
         self._calculate_paddings()
+
         image = self._normalize_image_to_range_0_1(image)
         image = self._pad_to_square(image)
-        image = self._resize_to_network_input_dimensions(image)
-        image = self._rearrange_axis_from_HWC_to_CHW(image)
+        image = self._resize_to_network_input_shape(image)
+        image = self._rearrange_axes_from_HWC_to_CHW(image)
+
         return image
 
     def _calculate_paddings(self) -> None:
@@ -103,11 +103,11 @@ class OVImagePreprocessor(IImagePreprocessor):
             value=0
         )
 
-    def _resize_to_network_input_dimensions(self, image):
+    def _resize_to_network_input_shape(self, image):
         return cv2.resize(src=image, dsize=self._network_input_shape_WH)
 
     @staticmethod
-    def _rearrange_axis_from_HWC_to_CHW(image):
+    def _rearrange_axes_from_HWC_to_CHW(image):
         # Change data layout from HWC to CHW
         return np.moveaxis(image, 2, 0)
 
@@ -145,6 +145,9 @@ class OVSegmentationPostProcessor(ISegmentationPostProcessor):
         self._applied_padding_h: int = 0
         self._applied_padding_w: int = 0
         self._max_dim: int = 0
+
+    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+        self._image_preprocessor = image_preprocessor
 
     def process(self, segmentation):
         self._get_preprocessor_info()
@@ -184,15 +187,18 @@ class ONNXSegmentationPostProcessor(ISegmentationPostProcessor):
     def __init__(self, image_preprocessor: IImagePreprocessor):
         self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(image_preprocessor)
 
+    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+        self._seg_postprocessor.configure(image_preprocessor)
+
     def process(self, segmentation):
         return self._seg_postprocessor.process(segmentation)
 
 
 class OVDetectionPostProcessor(IDetectionPostProcessor):
-    def __init__(self, image_preprocessor, conf_thresh, nms_thresh):
-        self._image_preprocessor = image_preprocessor
-        self._conf_thresh: int = conf_thresh
-        self._nms_thresh: int = nms_thresh
+    def __init__(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float):
+        self._image_preprocessor: IImagePreprocessor = image_preprocessor
+        self._conf_thresh: float = conf_thresh
+        self._nms_thresh: float = nms_thresh
 
     def process(self, detections):
         import torch
@@ -205,28 +211,26 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         detections = yoeo.utils.utils.rescale_boxes(detections[0], 416, original_dims).numpy()
         return detections
 
-    def configure(self, conf_thresh: float, nms_thresh: float) -> None:
+    def configure(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float) -> None:
+        self._image_preprocessor = image_preprocessor
         self._conf_thresh = conf_thresh
         self._nms_thresh = nms_thresh
 
 
 class ONNXDetectionPostProcessor(IDetectionPostProcessor):
-    def __init__(self, image_preprocessor, conf_thresh, nms_thresh):
-        self._image_preprocessor = image_preprocessor
-        self._conf_thresh: int = conf_thresh
-        self._nms_thresh: int = nms_thresh
+    def __init__(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float):
+        self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
+            image_preprocessor=image_preprocessor,
+            conf_thresh=conf_thresh,
+            nms_thresh=nms_thresh
+        )
 
     def process(self, detections):
-        import torch
-        import yoeo
-        detections = torch.from_numpy(detections)
-        detections = yoeo.utils.utils.non_max_suppression(detections, self._conf_thresh, self._nms_thresh)
-        original_dims = (
-            self._image_preprocessor.get_info().max_dim - 2 * self._image_preprocessor.get_info().applied_padding_h,
-            self._image_preprocessor.get_info().max_dim - 2 * self._image_preprocessor.get_info().applied_padding_w)
-        detections = yoeo.utils.utils.rescale_boxes(detections[0], 416, original_dims).numpy()
-        return detections
+        return self._det_postprocessor.process(detections)
 
-    def configure(self, conf_thresh: float, nms_thresh: float) -> None:
-        self._conf_thresh = conf_thresh
-        self._nms_thresh = nms_thresh
+    def configure(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float) -> None:
+        self._det_postprocessor.configure(
+            image_preprocessor=image_preprocessor,
+            conf_thresh=conf_thresh,
+            nms_thresh=nms_thresh
+        )
