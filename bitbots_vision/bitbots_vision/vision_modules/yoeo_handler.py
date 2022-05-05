@@ -260,6 +260,8 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
     """
 
     def __init__(self, config, model_path):
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
+
         super().__init__(config, model_path)
 
         config_path = os.path.join(model_path, "yoeo.cfg")
@@ -270,6 +272,8 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
         self._conf_thresh: float = config["yoeo_conf_threshold"]
         self._nms_thresh: float = config["yoeo_nms_threshold"]
+
+        logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
