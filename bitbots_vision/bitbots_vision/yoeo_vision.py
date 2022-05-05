@@ -24,7 +24,7 @@ try:
         timecall  # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
 except ImportError:
     profile = lambda x: x
-    logger.info("No Profiling avalabile")
+    logger.info("No Profiling available")
 
 
 class YOEOVision(Node):
@@ -40,7 +40,7 @@ class YOEOVision(Node):
 
         self._package_path = get_package_share_directory('bitbots_vision')
 
-        logger.info('Initializing vision...')
+        logger.info(f"Entering {self.__class__.__name__} constructor")
 
         self._cv_bridge = CvBridge()
 
@@ -68,7 +68,7 @@ class YOEOVision(Node):
 
         self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
-        logger.debug("Constructor ran")
+        logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     def _dynamic_reconfigure_callback(self, params) -> SetParametersResult:
         """
@@ -90,8 +90,6 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
-        logger.debug("Start Configure_vision".upper())
-
         neural_network_type = new_config["neural_network_type"]
         model_path = self._get_model_path(new_config)
 
@@ -102,8 +100,6 @@ class YOEOVision(Node):
         self._set_up_vision_components(new_config)
 
         self._register_subscribers(new_config)
-
-        logger.debug("End Configure_vision".upper())
 
     def _get_model_path(self, config: Dict) -> str:
         return os.path.join(self._package_path, 'models', config['yoeo_model_path'])
@@ -177,9 +173,15 @@ class YOEOVision(Node):
             vision_component.configure(new_config, self._yoeo_handler)
 
     def _register_subscribers(self, config: Dict) -> None:
-        self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image,
-                                                                'ROS_img_msg_topic', Image,
-                                                                callback=self._image_callback)
+        self._sub_image = ros_utils.create_or_update_subscriber(
+            self,
+            self._config,
+            config,
+            self._sub_image,
+            'ROS_img_msg_topic',
+            Image,
+            callback=self._image_callback
+        )
 
     def _image_callback(self, image_msg) -> None:
         # TODO: type
@@ -190,12 +192,12 @@ class YOEOVision(Node):
         Sometimes the queue gets too large, even if the size is limited to 1.
         That is why we drop old images manually.
         """
-        logger.debug("_image_callback called")
+        logger.debug(f"{self.__class__.__name__}._image_callback(...) called")
         if self._image_is_too_old(image_msg) or self._transfer_image_msg_mutex_is_locked():
             return
 
         with self._transfer_image_msg_mutex:
-            self._handle_image(image_msg)
+            self._run_vision_pipeline_with(image_msg)
 
     def _image_is_too_old(self, image_msg) -> bool:
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
@@ -210,15 +212,14 @@ class YOEOVision(Node):
         return self._transfer_image_msg_mutex.locked()
 
     @profile
-    def _handle_image(self, image_msg):
+    def _run_vision_pipeline_with(self, image_msg):
         """
         Run the vision pipeline
         """
 
         image = self._convert_image_msg_to_cv2_image(image_msg)
-
         if image is None:
-            logger.debug("Image content is None :(")
+            logger.error("Vision pipeline - Image content is None")
             return
 
         self._yoeo_handler.set_image(image)
@@ -241,8 +242,9 @@ class YOEOVision(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    rclpy.logging.set_logger_level("bitbots_vision", rclpy.logging.LoggingSeverity.DEBUG)
+    # rclpy.logging.set_logger_level("bitbots_vision", rclpy.logging.LoggingSeverity.DEBUG)
     rclpy.logging.set_logger_level("vision_yoeo", rclpy.logging.LoggingSeverity.DEBUG)
+    rclpy.logging.set_logger_level("yoeo_handler_utils", rclpy.logging.LoggingSeverity.DEBUG)
     node = YOEOVision()
     try:
         rclpy.spin(node)
