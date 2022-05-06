@@ -135,7 +135,7 @@ class SupervisorController:
         return joint_dict, link_dict
 
     def step_sim(self):
-        self.time += self.timestep / 1000
+        self.time += self.timestep / 1000.0
         self.supervisor.step(self.timestep)
 
     def step(self):
