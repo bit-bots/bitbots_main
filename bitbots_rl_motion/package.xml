@@ -17,6 +17,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>bitbots_docs</depend>
+  <depend>diagnostic-aggregator</depend>
 
   <export>
     <bitbots_documentation>

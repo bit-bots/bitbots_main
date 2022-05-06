@@ -4,6 +4,7 @@ import os
 
 import rclpy
 from ament_index_python import get_package_share_directory
+from rclpy import Parameter
 from rclpy.node import Node
 import deep_quintic
 import yaml
@@ -11,8 +12,11 @@ from deep_quintic import env
 from deep_quintic.ros_runner import ALGOS, create_test_env, get_saved_hyperparams
 
 if __name__ == '__main__':
+    rclpy.init()
     node = Node('rl_walk')
-    model_folder = node.get_parameter("/rl_walk/model_folder").get_parameter_value()
+    node.declare_parameter("model_folder", Parameter.Type.STRING)
+    #model_folder = node.get_parameter("model_folder").get_parameter_value()
+    model_folder = "53"
     package_path = get_package_share_directory("bitbots_rl_motion")
     model_folder = os.path.join(package_path, "rl_walk_models", model_folder)
     hyperparams, stats_path = get_saved_hyperparams(model_folder, norm_reward=False, test_mode=True)
@@ -26,7 +30,7 @@ if __name__ == '__main__':
             if loaded_args["env_kwargs"] is not None:
                 env_kwargs = loaded_args["env_kwargs"]
     else:
-        print(f"No args.yml found in {args_path}")
+        node.get_logger().fatal(f"No args.yml found in {args_path}")
         exit()
 
     env_kwargs["node"] = node

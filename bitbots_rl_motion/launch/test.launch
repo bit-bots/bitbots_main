@@ -10,10 +10,6 @@
       <arg name="sim" value="$(var sim)"/>
   </include>
 
-  <group if="$(var use_darwin)">
-    <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_darwin_optimization.yaml"/>
-  </group>
-
   <group unless="$(var use_darwin)">
       <group unless="$(var sim)">
         <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
@@ -21,12 +17,16 @@
   </group>
 
   <group if="$(var sim)">
-    <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_sim.yaml"/>
+    <node name="walking" pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
+        <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+        <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_sim.yaml"/>
+    </node>
   </group>
   <group unless="$(var sim)">
-    <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_real.yaml"/>
+    <node name="walking" pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
+        <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_real.yaml"/>
+    </node>
   </group>
-  <node name="walking" pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
-      <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
-  </node>
+
+
 </launch>
