@@ -17,13 +17,13 @@
   </group>
 
   <group if="$(var sim)">
-    <node name="walking" pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
         <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
         <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_sim.yaml"/>
     </node>
   </group>
   <group unless="$(var sim)">
-    <node name="walking" pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
         <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_real.yaml"/>
     </node>
   </group>
