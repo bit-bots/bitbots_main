@@ -28,7 +28,6 @@ class BallFilter(Node):
         super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.tf_buffer = tf2.Buffer(cache_time=rclpy.duration.Duration(seconds=2))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
-        self.get_logger().warning("init")
         # Setup dynamic reconfigure config
         self.config = {}
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
@@ -41,7 +40,6 @@ class BallFilter(Node):
         :param config: New _config
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
-        self.get_logger().warning("dynamic reconfigure")
         tmp_config = deepcopy(self.config)
         for param in config:
             tmp_config[param.name] = param.value
@@ -113,7 +111,6 @@ class BallFilter(Node):
 
     def ball_callback(self, msg: PoseWithCertaintyArray, optional_distance=True):
         """handles incoming ball messages"""
-        self.get_logger().warning("Ball callback")
         if msg.poses:
             balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
             ball = balls[0]  # Ball with highest confidence
@@ -130,9 +127,7 @@ class BallFilter(Node):
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.get_logger().warning(str(e))
 
-
     def reset_filter_cb(self, req, response):
-        self.get_logger().warning("reset filter calback")
         self.get_logger().info("Resetting bitbots ball filter...")
         self.filter_initialized = False
         return True, ""
@@ -197,7 +192,6 @@ class BallFilter(Node):
         :param x: start x position of the ball
         :param y: start y position of the ball
         """
-        self.get_logger().warning("init filter")
         # initial value of position(x,y) of the ball and velocity
         self.kf.x = np.array([x, y, 0, 0])
 
@@ -220,7 +214,6 @@ class BallFilter(Node):
         self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False)
 
         self.filter_initialized = True
-
 
     def publish_data(self, state: np.array, cov_mat: np.array) -> None:
         """

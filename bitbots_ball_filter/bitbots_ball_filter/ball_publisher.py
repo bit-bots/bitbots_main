@@ -17,9 +17,7 @@ class BP(Node):
             1
         )
         rate = self.create_timer(0.1, self.publish_ball)
-
         self.counter = 0
-
 
     def publish_ball(self):
         array = PoseWithCertaintyArray()

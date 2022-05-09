@@ -49,6 +49,7 @@ class SimBall:
 
 
 if __name__ == '__main__':
-    SimBall()
+    rclpy.spin(SimBall())
+
 
 
