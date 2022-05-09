@@ -15,10 +15,10 @@ from humanoid_league_msgs.msg import (PoseWithCertainty,
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 
-
 from copy import deepcopy
 from rcl_interfaces.msg import SetParametersResult
 from tf2_geometry_msgs import PointStamped
+
 
 class BallFilter(Node):
     def __init__(self):
@@ -60,7 +60,7 @@ class BallFilter(Node):
 
         filter_frame = config['filter_frame']
         if filter_frame == "odom":
-            self.filter_frame = config['odom_frame'] #TODO: how to in ros2?
+            self.filter_frame = config['odom_frame']
         elif filter_frame == "map":
             self.filter_frame = config['map_frame']
         self.get_logger().info(f"Using frame '{self.filter_frame}' for ball filtering")
@@ -98,7 +98,7 @@ class BallFilter(Node):
             self.ball_callback,
             1
         )
-        
+
         self.reset_service = self.create_service(
             Trigger,
             config['ball_filter_reset_service_name'],
@@ -111,6 +111,13 @@ class BallFilter(Node):
 
     def ball_callback(self, msg: PoseWithCertaintyArray, optional_distance=True):
         """handles incoming ball messages"""
+        if optional_distance:
+            if msg.poses:
+                self.select_closest_to_prediction_ball(msg)
+        else:
+            self.select_highest_rated_ball(msg)
+
+    def select_highest_rated_ball(self, msg: PoseWithCertaintyArray):
         if msg.poses:
             balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
             ball = balls[0]  # Ball with highest confidence
@@ -122,10 +129,49 @@ class BallFilter(Node):
             ball_buffer.header = msg.header
             ball_buffer.point = ball.pose.pose.position
             try:
-                self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame, timeout=rclpy.duration.Duration(seconds=0.3))
+                self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
+                                                     timeout=rclpy.duration.Duration(seconds=0.3))
                 self.ball_header = msg.header
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.get_logger().warning(str(e))
+
+    def select_closest_to_prediction_ball(self, msg: PoseWithCertaintyArray):
+        balls = [ball for ball in msg.poses if
+                 ball.confidence > self.min_ball_confidence]  # only look at balls who have at least some minimal certainty
+
+        if not balls:
+            return
+
+        balls_ranked = []
+        for ball in balls:
+            last_distance = self.calc_distance_between_balls(ball, msg.header)
+            self.last_ball_msg = ball
+            ball_buffer = PointStamped()
+            ball_buffer.header = msg.header
+            ball_buffer.point = ball.pose.pose.position
+
+            try:
+                ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
+                                                timeout=rclpy.duration.Duration(seconds=0.3))
+                balls_ranked.append((last_distance, ball))
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self.get_logger().warning(str(e))
+        balls_ranked = sorted(balls_ranked, reverse=False, key=lambda ball_distance: ball_distance[0])
+        self.ball = balls_ranked[0][1]
+        self.ball_header = msg.header
+
+    def calc_distance_between_balls(self, possible_ball, header):
+        ball_buffer = PointStamped()
+        ball_buffer.header = header
+        ball_buffer.point = possible_ball.pose.pose.position
+        try:
+
+            possible_ball_transform = self.tf_buffer.transform(ball_buffer, self.filter_frame,
+                                                               timeout=rclpy.duration.Duration(seconds=0.3))
+            return math.sqrt((possible_ball_transform.point.x - self.ball.point.x) ** 2 + (
+                        possible_ball_transform.point.x - self.ball.point.x) ** 2)
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.get_logger().warning(str(e))
 
     def reset_filter_cb(self, req, response):
         self.get_logger().info("Resetting bitbots ball filter...")
@@ -152,9 +198,10 @@ class BallFilter(Node):
             self.publish_data(*state)
             self.last_state = state
             self.ball = None
-        else: 
+        else:
             if self.filter_initialized:
-                if (self.get_clock().now() - rclpy.time.Time.from_msg(self.ball_header.stamp)) > self.filter_reset_duration:
+                if (self.get_clock().now() - rclpy.time.Time.from_msg(
+                        self.ball_header.stamp)) > self.filter_reset_duration:
                     self.filter_initialized = False
                     self.last_state = None
                     return
@@ -197,9 +244,9 @@ class BallFilter(Node):
 
         # transition matrix
         self.kf.F = np.array([[1.0, 0.0, 1.0, 0.0],
-                             [0.0, 1.0, 0.0, 1.0],
-                             [0.0, 0.0, self.velocity_factor, 0.0],
-                             [0.0, 0.0, 0.0, self.velocity_factor]])
+                              [0.0, 1.0, 0.0, 1.0],
+                              [0.0, 0.0, self.velocity_factor, 0.0],
+                              [0.0, 0.0, 0.0, self.velocity_factor]])
         # measurement function
         self.kf.H = np.array([[1.0, 0.0, 0.0, 0.0],
                               [0.0, 1.0, 0.0, 0.0]])
@@ -208,10 +255,11 @@ class BallFilter(Node):
 
         # assigning measurement noise
         self.kf.R = np.array([[1, 0],
-                             [0, 1]]) * self.measurement_certainty
+                              [0, 1]]) * self.measurement_certainty
 
         # assigning process noise
-        self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False)
+        self.kf.Q = Q_discrete_white_noise(dim=2, dt=self.filter_time_step, var=self.process_noise_variance,
+                                           block_size=2, order_by_dim=False)
 
         self.filter_initialized = True
 
@@ -229,7 +277,7 @@ class BallFilter(Node):
         pose_msg.pose.pose.position.x = float(state[0])
         pose_msg.pose.pose.position.y = float(state[1])
         pose_msg.pose.covariance = np.eye(6).reshape((36))
-        pose_msg.pose.covariance[0] = float( cov_mat[0][0])
+        pose_msg.pose.covariance[0] = float(cov_mat[0][0])
         pose_msg.pose.covariance[1] = float(cov_mat[0][1])
         pose_msg.pose.covariance[6] = float(cov_mat[1][0])
         pose_msg.pose.covariance[7] = float(cov_mat[1][1])
@@ -238,8 +286,8 @@ class BallFilter(Node):
         # velocity
         movement_msg = TwistWithCovarianceStamped()
         movement_msg.header = pose_msg.header
-        movement_msg.twist.twist.linear.x =float( state[2] * self.filter_rate)
-        movement_msg.twist.twist.linear.y =float( state[3] * self.filter_rate)
+        movement_msg.twist.twist.linear.x = float(state[2] * self.filter_rate)
+        movement_msg.twist.twist.linear.y = float(state[3] * self.filter_rate)
         movement_msg.twist.covariance = np.eye(6).reshape((36))
         movement_msg.twist.covariance[0] = float(cov_mat[2][2])
         movement_msg.twist.covariance[1] = float(cov_mat[2][3])
@@ -263,4 +311,3 @@ def main(args=None):
     except KeyboardInterrupt:
         node.destroy_node()
         rclpy.shutdown()
-    
