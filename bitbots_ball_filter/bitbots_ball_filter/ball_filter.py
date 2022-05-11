@@ -110,57 +110,49 @@ class BallFilter(Node):
         return SetParametersResult(successful=True)
 
     def ball_callback(self, msg: PoseWithCertaintyArray, optional_distance=True):
-        """handles incoming ball messages"""
-        if optional_distance:
-            if msg.poses:
+        if msg.poses:
+            if optional_distance:
                 self.select_closest_to_prediction_ball(msg)
-        else:
-            self.select_highest_rated_ball(msg)
+            else:
+                self.select_highest_rated_ball(msg)
 
     def select_highest_rated_ball(self, msg: PoseWithCertaintyArray):
-        if msg.poses:
-            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
-            ball = balls[0]  # Ball with highest confidence
 
-            if ball.confidence < self.min_ball_confidence:
-                return
-            self.last_ball_msg = ball
-            ball_buffer = PointStamped()
-            ball_buffer.header = msg.header
-            ball_buffer.point = ball.pose.pose.position
-            try:
-                self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
-                                                     timeout=rclpy.duration.Duration(seconds=0.3))
-                self.ball_header = msg.header
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self.get_logger().warning(str(e))
+        balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
+
+        ball = balls[0]  # Ball with highest confidence
+        if ball.confidence < self.min_ball_confidence:
+           return
+        self.last_ball_msg = ball
+        ball_buffer = PointStamped()
+        ball_buffer.header = msg.header
+        ball_buffer.point = ball.pose.pose.position
+        try:
+            self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
+                                                 timeout=rclpy.duration.Duration(seconds=0.3))
+            self.ball_header = msg.header
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.get_logger().warning(str(e))
 
     def select_closest_to_prediction_ball(self, msg: PoseWithCertaintyArray):
-        balls = [ball for ball in msg.poses if
-                 ball.confidence > self.min_ball_confidence]  # only look at balls who have at least some minimal certainty
+        closest_distance = math.inf
+        for ball in msg.poses:
+            if closest_distance > self.calc_distance_between_ball_and_filter_state(ball, msg.header):
+                self.last_ball_msg = ball
+        if self.last_ball_msg < self.min_ball_confidence:
+           return
+        ball_buffer = PointStamped()
+        ball_buffer.header = msg.header
+        ball_buffer.point = ball.pose.pose.position
+        try:
+            ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
+                                            timeout=rclpy.duration.Duration(seconds=0.3))
+            self.ball = ball
+            self.ball_header = msg.header
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.get_logger().warning(str(e))
 
-        if not balls:
-            return
-
-        balls_ranked = []
-        for ball in balls:
-            last_distance = self.calc_distance_between_balls(ball, msg.header)
-            self.last_ball_msg = ball
-            ball_buffer = PointStamped()
-            ball_buffer.header = msg.header
-            ball_buffer.point = ball.pose.pose.position
-
-            try:
-                ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
-                                                timeout=rclpy.duration.Duration(seconds=0.3))
-                balls_ranked.append((last_distance, ball))
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self.get_logger().warning(str(e))
-        balls_ranked = sorted(balls_ranked, reverse=False, key=lambda ball_distance: ball_distance[0])
-        self.ball = balls_ranked[0][1]
-        self.ball_header = msg.header
-
-    def calc_distance_between_balls(self, possible_ball, header):
+    def calc_distance_between_ball_and_filter_state(self, possible_ball, header):
         ball_buffer = PointStamped()
         ball_buffer.header = header
         ball_buffer.point = possible_ball.pose.pose.position
@@ -184,7 +176,7 @@ class BallFilter(Node):
         state will be updated according to filter.
         If filter has not been initialized, then that will be done first.
 
-        If there is not data for ball, a prediction will still be made and published
+        If there is no data for ball, a prediction will still be made and published
         Process noise is taken into account
         """
         if self.ball:
