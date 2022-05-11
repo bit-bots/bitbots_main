@@ -31,3 +31,6 @@ bitbots_ball_filter:
 
     # Distance to the current estimation causing a filter reset
     filter_reset_distance: 2
+
+    # True if ball should be selected based on distance to filtered ball
+    optional_distance: True

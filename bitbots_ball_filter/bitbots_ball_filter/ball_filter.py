@@ -57,6 +57,7 @@ class BallFilter(Node):
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rclpy.duration.Duration(seconds=config['filter_reset_time'])
         self.filter_reset_distance = config['filter_reset_distance']
+        self.optional_distance = config['optional_distance']
 
         filter_frame = config['filter_frame']
         if filter_frame == "odom":
@@ -112,34 +113,36 @@ class BallFilter(Node):
     def ball_callback(self, msg: PoseWithCertaintyArray, optional_distance=True):
         if msg.poses:
             if optional_distance:
-                self.select_closest_to_prediction_ball(msg)
+                self.last_ball_msg, self.ball, self.ball_header = self.select_closest_to_prediction_ball(msg)
             else:
-                self.select_highest_rated_ball(msg)
+                self.last_ball_msg, self.ball, self.ball_header = self.select_highest_rated_ball(msg)
 
     def select_highest_rated_ball(self, msg: PoseWithCertaintyArray):
 
         balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
 
-        ball = balls[0]  # Ball with highest confidence
-        if ball.confidence < self.min_ball_confidence:
+        ball_msg = balls[0]  # Ball with highest confidence
+        if ball_msg.confidence < self.min_ball_confidence:
            return
-        self.last_ball_msg = ball
+
         ball_buffer = PointStamped()
         ball_buffer.header = msg.header
-        ball_buffer.point = ball.pose.pose.position
+        ball_buffer.point = ball_msg.pose.pose.position
         try:
-            self.ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
+            ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
                                                  timeout=rclpy.duration.Duration(seconds=0.3))
-            self.ball_header = msg.header
+
+            return ball_msg, ball, msg.header
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.get_logger().warning(str(e))
 
     def select_closest_to_prediction_ball(self, msg: PoseWithCertaintyArray):
         closest_distance = math.inf
+        ball_msg = msg.poses[0]
         for ball in msg.poses:
             if closest_distance > self.calc_distance_between_ball_and_filter_state(ball, msg.header):
-                self.last_ball_msg = ball
-        if self.last_ball_msg < self.min_ball_confidence:
+                ball_msg = ball
+        if ball_msg < self.min_ball_confidence:
            return
         ball_buffer = PointStamped()
         ball_buffer.header = msg.header
@@ -147,8 +150,7 @@ class BallFilter(Node):
         try:
             ball = self.tf_buffer.transform(ball_buffer, self.filter_frame,
                                             timeout=rclpy.duration.Duration(seconds=0.3))
-            self.ball = ball
-            self.ball_header = msg.header
+            return ball_msg, ball, msg.header
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.get_logger().warning(str(e))
 
@@ -161,7 +163,7 @@ class BallFilter(Node):
             possible_ball_transform = self.tf_buffer.transform(ball_buffer, self.filter_frame,
                                                                timeout=rclpy.duration.Duration(seconds=0.3))
             return math.sqrt((possible_ball_transform.point.x - self.ball.point.x) ** 2 + (
-                        possible_ball_transform.point.x - self.ball.point.x) ** 2)
+                        possible_ball_transform.point.y - self.ball.point.y) ** 2)
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.get_logger().warning(str(e))
 
