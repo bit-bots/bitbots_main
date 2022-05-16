@@ -82,7 +82,6 @@ class SupervisorController:
                 self.rotation_fields[name] = node.getField("rotation")
                 self.joint_nodes[name], self.link_nodes[name] = self.collect_joint_and_link_node_references(node, {},
                                                                                                             {})
-
         if self.ros_active:
             # need to handle these topics differently or we will end up having a double //
             if base_ns == "":
@@ -110,9 +109,13 @@ class SupervisorController:
         # add node if it is a joint
         if node.getType() == Node.SOLID:
             name = node.getDef()
+            if name == "":
+                self.ros_node.get_logger().warn("Proto has link without name", once=True)
             link_dict[name] = node
         if node.getType() == Node.HINGE_JOINT:
             name = node.getDef()
+            if name == "":
+                self.ros_node.get_logger().warn("Proto has joint without name", once=True)
             # substract the "Joint" keyword due to naming convention
             name = name[:-5]
             joint_dict[name] = node
@@ -246,7 +249,7 @@ class SupervisorController:
         axis, angle = transforms3d.quaternions.quat2axangle([quat[3], quat[0], quat[1], quat[2]])
         self.set_robot_axis_angle(axis, angle, name)
 
-    def set_robot_position(self, pos, name="amy"):
+    def set_robot_position(self, pos, name="amy"):        
         if name in self.translation_fields:
             self.translation_fields[name].setSFVec3f(list(pos))
 

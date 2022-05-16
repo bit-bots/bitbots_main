@@ -39,10 +39,10 @@ TexturedBackgroundLight {
   texture "stadium_dry"
 }
 
-DEF wolfgang WolfgangOptimization {
+DEF lernbot WolfgangOptimization {
   translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
   rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
-  name "wolfgang"
+  name "lernbot"
   controller "<extern>"
   supervisor TRUE
 }

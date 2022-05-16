@@ -365,7 +365,7 @@ class Simulation:
                     self.paused = not self.paused
                 if nKey in keys and keys[nKey] & p.KEY_WAS_TRIGGERED:
                     self.gravity = not self.gravity
-                    self.set_gravity(self.gravity)
+                    self.set_gravity(self.gravity)  
                     print(f"gravity {self.gravity}")
                 if tKey in keys and keys[tKey] & p.KEY_WAS_TRIGGERED:
                     self.realtime = not self.realtime

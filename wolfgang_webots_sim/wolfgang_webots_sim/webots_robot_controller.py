@@ -52,6 +52,7 @@ class RobotController:
 
         self.is_wolfgang = False
         self.pressure_sensors = None
+        self.pressure_sensor_names = []
         if robot == 'wolfgang':
             self.is_wolfgang = True
             self.proto_motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll",
@@ -72,7 +73,6 @@ class RobotController:
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
             camera_name = "camera"
-            self.pressure_sensor_names = []
             if self.foot_sensors_active:
                 self.pressure_sensor_names = ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
@@ -127,7 +127,11 @@ class RobotController:
                                       "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]", "RightHipPitch",
                                       "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
                                       "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
-            self.external_motor_names = self.proto_motor_names
+            self.external_motor_names = ["RightShoulderPitch", "LeftShoulderPitch",
+                                      "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow", "RightHipYaw",
+                                      "LeftHipYaw", "RightHipRoll", "LeftHipRoll", "RightHipPitch",
+                                      "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
+                                      "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
@@ -155,7 +159,12 @@ class RobotController:
                                       "rightHipPitch", "leftHipPitch", "rightKneePitch", "leftKneePitch",
                                       "rightAnklePitch", "leftAnklePitch", "rightAnkleRoll", "leftAnkleRoll", "neckYaw",
                                       "neckPitch"]
-            self.external_motor_names = self.proto_motor_names
+            self.external_motor_names = ["rightShoulderPitch", "leftShoulderPitch",
+                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw",
+                                      "rightHipYaw", "leftHipYaw", "rightHipRoll", "leftHipRoll",
+                                      "rightHipPitch", "leftHipPitch", "rightKneePitch", "leftKneePitch",
+                                      "rightAnklePitch", "leftAnklePitch", "rightAnkleRoll", "leftAnkleRoll", "neckYaw",
+                                      "neckPitch"]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
@@ -338,6 +347,9 @@ class RobotController:
 
     def set_joint_goal_position(self, joint_name, goal_position, goal_velocity=-1, scaled=False, relative=False):
         motor = self.motors_dict[joint_name]
+        if motor is None:
+            print(f"Joint {motor} not found. Can not set goal position.")
+            return        
         if scaled:
             goal_position = self.convert_joint_radiant_to_scaled(joint_name, goal_position)
         if relative:
