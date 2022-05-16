@@ -15,6 +15,7 @@
 #include <pybind11/complex.h>
 #include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
+#include <cmath>
 
 namespace py = pybind11;
 using namespace ros2_python_extension;
@@ -44,8 +45,11 @@ class PyWalkWrapper {
   void set_parameter(const py::bytes parameter_msg);
   double get_phase();
   double get_freq();
+  py::bytes get_support_state();
+  bool is_left_support();
   void spin_some();
   void publish_debug();
+  bool reset_and_test_if_speed_possible(py::bytes cmd_vel, double pos_threshold);
 
  private:
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;

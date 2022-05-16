@@ -103,12 +103,14 @@ class WalkNode : public rclcpp::Node {
   void robotStateCb(humanoid_league_msgs::msg::RobotControlState::SharedPtr msg);
 
   WalkEngine *getEngine();
+  WalkIK *getIk();
+  moveit::core::RobotModelPtr *get_kinematic_model();
 
   nav_msgs::msg::Odometry getOdometry();
 
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
-  void publish_debug();
+  void publish_debug();  
 
  private:
   std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);

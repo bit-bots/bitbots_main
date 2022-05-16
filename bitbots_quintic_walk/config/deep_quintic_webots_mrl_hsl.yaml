@@ -1,0 +1,87 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
+walking:
+  ros__parameters:
+    engine:
+      double_support_ratio: 0.04363191512788584
+      foot_distance: 0.1516515743703797
+      foot_rise: 0.07200183676457605
+      freq: 2.950460419608511
+      trunk_height: 0.25049734782436134
+      trunk_phase: -0.1228707827877056
+      trunk_pitch: 0.11543700947062846
+      trunk_pitch_p_coef_forward: -0.27790050079494094
+      trunk_pitch_p_coef_turn: -0.05310904366171693
+      trunk_swing: 0.25510119337230386
+      trunk_x_offset: 0.038042713742533284
+      trunk_y_offset: 0.0008428426820471656
+      trunk_z_movement: 0.007069801133420691
+      first_step_swing_factor: 1.0
+      first_step_trunk_phase: -0.5
+      foot_apex_phase: 0.5
+      foot_overshoot_phase: 1.0
+      foot_overshoot_ratio: 0.0
+      foot_put_down_phase: 1.0
+      foot_put_down_z_offset: 0.0
+      foot_z_pause: 0.0
+      trunk_pause: 0.0
+      trunk_x_offset_p_coef_forward: 0.0
+      trunk_x_offset_p_coef_turn: 0.0
+
+      kick_length: 0.09
+      kick_vel: 0.2
+      kick_phase: 0.75
+
+    node:
+      # update frequency of the engine
+      engine_freq: 200.0
+
+      # parameters for bioIK
+      ik_timeout: 0.01
+      ik_reset: False
+
+      debug_active: True
+
+      max_step_x: 1000.0
+      max_step_y: 1000.0
+      max_step_xy: 1000.0
+      max_step_z: 1000.0
+      max_step_angular: 1000.0
+
+      x_speed_multiplier: 1.35
+      y_speed_multiplier: 1.66
+      yaw_speed_multiplier: 1.66
+
+      imu_active: False
+      imu_pitch_threshold: 0.19
+      imu_roll_threshold: 0.4
+      imu_pitch_vel_threshold: 1.3
+      imu_roll_vel_threshold: 5.7
+      pause_duration: 3.0
+
+      pressure_phase_reset_active: False
+      ground_min_pressure: 1.5
+      phase_reset_phase: 0.25
+      joint_min_effort: 35.0
+      effort_phase_reset_active: False
+
+pid_trunk_fused_pitch:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
+    antiwindup: False
+
+pid_trunk_fused_roll:
+  ros__parameters:
+    p: 0.0
+    i: 0.0
+    d: 0.0
+    i_clamp: 0.0
+    i_clamp_min: -0.25
+    i_clamp_max: 0.25
+    antiwindup: False

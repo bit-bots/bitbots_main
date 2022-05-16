@@ -1,3 +1,5 @@
+from cmath import phase
+from tracemalloc import start
 from ros2param.api import parse_parameter_dict
 from std_msgs.msg import Int64
 
@@ -10,6 +12,7 @@ from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from rclpy.serialization import serialize_message, deserialize_message
 from rcl_interfaces.msg import Parameter
+from biped_interfaces.msg import Phase
 
 class PyWalk:
     def __init__(self, namespace="", parameters: [Parameter]=[]):
@@ -91,6 +94,12 @@ class PyWalk:
 
     def get_freq(self):
         return self.py_walk_wrapper.get_freq()
+    
+    def get_support_state(self):
+        return deserialize_message(self.py_walk_wrapper.get_support_state(), Phase)
+    
+    def is_left_support(self):
+        return self.py_walk_wrapper.is_left_support()
 
     def get_odom(self):
         odom = self.py_walk_wrapper.get_odom()
@@ -98,13 +107,8 @@ class PyWalk:
         return result
 
     def publish_debug(self):
-        self.py_walk_wrapper.publish_debug()
+        self.py_walk_wrapper.publish_debug()    
 
-    def test_memory_leak_from(self, twist_msg):
-        self.py_walk_wrapper.test_memory_leak_from(serialize_message(twist_msg))
-
-    def test_memory_leak_to(self):
-        self.py_walk_wrapper.test_memory_leak_to()
-
-    def test_memory_leak_methods(self, msg):
-        self.py_walk_wrapper.test_memory_leak_methods(msg)
+    def reset_and_test_if_speed_possible(self, cmd_vel_msg, threshold=0.001):
+        """Returns true if complete walk cycle with cmd_vel is possible without kinematic issues"""
+        return self.py_walk_wrapper.reset_and_test_if_speed_possible(serialize_message(cmd_vel_msg), threshold)

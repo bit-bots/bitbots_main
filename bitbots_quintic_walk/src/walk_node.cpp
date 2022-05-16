@@ -687,6 +687,14 @@ WalkEngine *WalkNode::getEngine() {
   return &walk_engine_;
 }
 
+WalkIK *WalkNode::getIk() {
+  return &ik_;
+}
+
+moveit::core::RobotModelPtr *WalkNode::get_kinematic_model(){
+  return &kinematic_model_;
+}
+
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
