@@ -55,10 +55,12 @@ class RobotController:
         self.pressure_sensor_names = []
         if robot == 'wolfgang':
             self.is_wolfgang = True
+            # how the names of the joint devices are in the proto file
             self.proto_motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll",
                                       "LShoulderRoll", "RElbow", "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]",
                                       "LHipRoll [hip]", "RHipPitch", "LHipPitch", "RKnee", "LKnee", "RAnklePitch",
                                       "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan", "HeadTilt"]
+            # how the corresponding names of the joints are in the URDF and moveit config                                      
             self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
                                          "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
                                          "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
@@ -176,7 +178,11 @@ class RobotController:
                                       "KneePitch-R", "AnklePitch-R", "AnkleRoll-R", "HipYaw-L", "HipRoll-L [hip]",
                                       "HipPitch-L", "KneePitch-L", "AnklePitch-L", "AnkleRoll-L", "NeckYaw",
                                       "HeadPitch"]
-            self.external_motor_names = self.proto_motor_names
+            self.external_motor_names = ["Shoulder-R", "UpperArm-R", "LowerArm-R", "Shoulder-L",
+                                        "UpperArm-L", "LowerArm-L", "HipYaw-R", "HipRoll-R", "HipPitch-R",
+                                        "KneePitch-R", "AnklePitch-R", "AnkleRoll-R", "HipYaw-L", "HipRoll-L",
+                                        "HipPitch-L", "KneePitch-L", "AnklePitch-L", "AnkleRoll-L", "NeckYaw",
+                                        "HeadPitch"]           
             self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
