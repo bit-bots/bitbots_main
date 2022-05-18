@@ -38,6 +38,7 @@ PROTO Wolfgang [
   field  SFFloat     spring-constant 0.76
   field  SFVec3f     pid             10 0 0
   field  SFFloat     encoderResolution 0.00153398078
+  field  MFNode      externalCamera  NULL
 ]
 {
   Robot {
@@ -66,6 +67,10 @@ PROTO Wolfgang [
     }%
     model "wolfgang"
     children [
+      # for creating videos from the robot, not used during matches
+      Group {
+        children IS externalCamera
+      }
       Transform {
         translation -0.001500 0.053000 0.203500
         rotation -0.707105 0.000001 0.707108 3.141591

@@ -45,6 +45,16 @@ DEF lernbot WolfgangOptimization {
   name "lernbot"
   controller "<extern>"
   supervisor TRUE
+  externalCamera [     
+    Camera {
+      translation 0 -1.5 0  
+      rotation 1.0 0.0 0.0 1.57
+      name "free_camera"
+      fieldOfView 1.04
+      width 800
+      height 600
+    }      
+  ]
 }
 
 DEF refbot WolfgangOptimization {
