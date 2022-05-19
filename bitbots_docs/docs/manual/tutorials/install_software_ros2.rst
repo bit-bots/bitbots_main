@@ -30,10 +30,6 @@ If you are not already using Ubuntu 20.04, consider installing it on your system
       Confirm the host key by typing ``yes``, if asked.
     - Move into the newly created directory with: ``cd bitbots_meta``
     - Clone all sub-repositories and other files by running: ``make pull-init``
-    - Switch to our ROS 2 software version (as it is not the default yet):
-        - Switch branch of bitbots_meta repo: ``git switch feature/ros-2-migration``
-        - Switch branches of all sub-repositories: ``make switch-ros2``
-        - Update all repos: ``make pull-all``
 - If you want to run the robot's cameras on your system, also run the following command: ``make basler`` Confirm the host key by typing ``yes``, if asked.
 
 **3. Install additional dependencies**
