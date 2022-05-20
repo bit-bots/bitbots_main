@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import rospy
+import rclpy
 import numpy as np
 import sys
 
@@ -8,7 +8,8 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 
 class SimBall:
     def __init__(self):
-        rospy.init_node('ball_sim')
+        node = rclpy.create_node('ball_sim_node')
+        node.get_logger().info('Created ball_sim_node')
 
         self.pub_frequency = 20
         if len(sys.argv) > 1:
@@ -20,10 +21,10 @@ class SimBall:
 
         self.velocity = np.zeros((2))
         self.position = np.zeros((2))
-        self.p_pub = rospy.Publisher('position', PoseWithCovarianceStamped, queue_size=1)
-        self.p_err_pub = rospy.Publisher('ball_relative', PoseWithCovarianceStamped, queue_size=1)
-        rate = rospy.Rate(self.pub_frequency)
-        while not rospy.is_shutdown():
+        self.p_pub = node.create_publisher(PoseWithCovarianceStamped, 'position', 1)
+        self.p_err_pub = node.create_publisher(PoseWithCovarianceStamped, 'ball_relative', 1)
+        rate = node.create_rate(self.pub_frequency)
+        while not rclpy.ok():
             self.position += self.velocity * self.dt
             self.velocity = np.clip(self.velocity + self.gen_acceleration(), -3, 3)
             p_err = self.position + self.gen_error()
@@ -47,6 +48,13 @@ class SimBall:
 
 
 if __name__ == '__main__':
-    SimBall()
+    rclpy.init(args=args)
+    node = SimBall()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.destroy_node()
+        rclpy.shutdown()
+
 
 

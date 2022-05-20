@@ -28,11 +28,10 @@ class BallFilter(Node):
         super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.tf_buffer = tf2.Buffer(cache_time=rclpy.duration.Duration(seconds=2))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
-
         # Setup dynamic reconfigure config
         self.config = {}
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
-        #self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
+        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
     def _dynamic_reconfigure_callback(self, config):
         """
@@ -110,7 +109,7 @@ class BallFilter(Node):
         self.filter_timer = self.create_timer(self.filter_time_step, self.filter_step)
         return SetParametersResult(successful=True)
 
-    def ball_callback(self, msg: PoseWithCertaintyArray):
+    def ball_callback(self, msg: PoseWithCertaintyArray, optional_distance=True):
         """handles incoming ball messages"""
         if msg.poses:
             balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
