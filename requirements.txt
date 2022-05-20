@@ -24,3 +24,4 @@ git+https://github.com/SammyRamone/stable-baselines3.git
 git+https://github.com/bit-bots/deep_quintic.git
 git+https://github.com/ruffsl/colcon-clean
 git+https://github.com/DLu/tf_transformations/
+git+https://github.com/bit-bots/YOEO
