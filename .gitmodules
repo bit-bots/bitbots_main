@@ -15,7 +15,7 @@
 	url = ../../bit-bots/dynamic_stack_decider.git
 [submodule "humanoid_base_footprint"]
 	path = humanoid_base_footprint
-	url = ../../bit-bots/humanoid_base_footprint.git
+	url = ../../ros-sports/humanoid_base_footprint.git
 [submodule "bitbots_lowlevel"]
 	path = bitbots_lowlevel
 	url = ../../bit-bots/bitbots_lowlevel.git
@@ -78,7 +78,7 @@
 	branch = ros2
 [submodule "lib/fp"]
 	path = lib/fp
-	url = https://github.com/tylerjw/fp.git
+	url = ../../tylerjw/fp.git
 	branch = main
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
@@ -91,20 +91,20 @@
 [submodule "lib/imu_tools"]
 	path = lib/imu_tools
 	branch = eloquent
-	url = https://github.com/ccny-ros-pkg/imu_tools.git
+	url = ../../ccny-ros-pkg/imu_tools.git
 [submodule "biped_interfaces"]
 	path = biped_interfaces
 	branch = rolling
-	url = https://github.com/ros-sports/biped_interfaces
+	url = ../../ros-sports/biped_interfaces
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
 	branch = ros2
-	url = git@github.com:SammyRamone/bio_ik.git
+	url = ../../SammyRamone/bio_ik.git
 [submodule "lib/vision_msgs"]
 	path = lib/vision_msgs
-	url = git@github.com:ros-perception/vision_msgs.git
+	url = ../../ros-perception/vision_msgs.git
 	branch = ros2
 [submodule "lib/pylon-ros-camera"]
 	path = lib/pylon-ros-camera
-	url = ../../bit-bots/pylon-ros-camera.git
+	url = ../../basler/pylon-ros-camera.git
 	branch = galactic

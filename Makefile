@@ -28,5 +28,3 @@ vision-files:
 
 status:
 	scripts/git_status.bash
-switch-ros2:
-	scripts/switch_ros2.sh
