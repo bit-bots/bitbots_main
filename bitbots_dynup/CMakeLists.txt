@@ -20,7 +20,7 @@ find_package(moveit_ros REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(rotconv REQUIRED)
+find_package(rot_conv REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -67,7 +67,7 @@ ament_target_dependencies(DynupNode
         moveit_ros_planning_interface
         rclcpp
         ros2_python_extension
-        rotconv
+        rot_conv
         sensor_msgs
         std_msgs
         tf2
@@ -96,7 +96,7 @@ ament_target_dependencies(libpy_dynup PUBLIC
         moveit_ros_planning_interface
         rclcpp
         ros2_python_extension
-        rotconv
+        rot_conv
         sensor_msgs
         std_msgs
         tf2
