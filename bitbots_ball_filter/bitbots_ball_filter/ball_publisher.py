@@ -39,3 +39,6 @@ def main(args=None):
     except KeyboardInterrupt:
         node.destroy_node()
         rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

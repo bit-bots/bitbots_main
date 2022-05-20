@@ -8,7 +8,6 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 
 class SimBall:
     def __init__(self):
-        rclpy.init(args=sys.argv)
         node = rclpy.create_node('ball_sim_node')
         node.get_logger().info('Created ball_sim_node')
 
@@ -49,7 +48,13 @@ class SimBall:
 
 
 if __name__ == '__main__':
-    rclpy.spin(SimBall())
+    rclpy.init(args=args)
+    node = SimBall()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 
