@@ -99,7 +99,7 @@
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
 	branch = ros2
-	url = ../../SammyRamone/bio_ik.git
+	url = ../../bit-bots/bio_ik.git
 [submodule "lib/vision_msgs"]
 	path = lib/vision_msgs
 	url = ../../ros-perception/vision_msgs.git
