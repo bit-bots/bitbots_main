@@ -1,0 +1,26 @@
+image_width: 2048
+image_height: 1536
+camera_name: jack
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1338.64532,    0.     , 1026.12387,
+            0.     , 1337.89746,  748.42213,
+            0.     ,    0.     ,    1.     ]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.296788, 0.092555, -0.000154, -0.000361, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1082.11853,    0.     , 1024.68462,    0.     ,
+            0.     , 1193.8877 ,  742.62111,    0.     ,
+            0.     ,    0.     ,    1.     ,    0.     ]
