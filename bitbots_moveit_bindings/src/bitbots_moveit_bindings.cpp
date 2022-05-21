@@ -6,6 +6,9 @@
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
+#include <bio_ik/bio_ik.hpp>
+#include <bio_ik_msgs/msg/ik_request.hpp>
+#include <bio_ik_msgs/msg/ik_response.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
 #include <pybind11/pybind11.h>
@@ -190,46 +193,47 @@ class BitbotsMoveitBindings {
 
   py::bytes getBioIKIK(py::bytes &msg) {
     // extra method to use BioIK specific goals 
-    auto request = ros2_python_extension::fromPython<BioIK::msg::IKRequest>(msg);
+    auto request = ros2_python_extension::fromPython<bio_ik_msgs::msg::IKRequest>(msg);
 
     bio_ik::BioIKKinematicsQueryOptions ik_options;
-    ik_options.return_approximate_solution = request.ik_request.approximate;
-    ik_options.fixed_joints=request.ik_request.fixed_joints;
+    ik_options.return_approximate_solution = request.approximate;
+    ik_options.fixed_joints=request.fixed_joints;
     ik_options.replace = true;
 
-    convertGoals(request.ik_request, ik_options);
+    convertGoals(request, ik_options);
 
     moveit::core::GroupStateValidityCallbackFn callback;
-    if (request.ik_request.avoid_collisions) {
-      callback = [](moveit::core::RobotState *state,
-                    const moveit::core::JointModelGroup *group,
-                    const double *values) {
-        auto planning_scene = getPlanningScene("");
-        state->setJointGroupPositions(group, values);
-        state->update();
-        return !planning_scene ||
-              !planning_scene->isStateColliding(*state, group->getName());
-      };
+    if (request.avoid_collisions) {
+      std::cout << "Avoid collisions not implemented in bitbots_moveit_bindings";
+      exit(1);
+    }
+    auto joint_model_group =
+        robot_model_->getJointModelGroup(request.group_name);
+    if (!joint_model_group) {
+        std::cout << "Group name in IK call not specified";
+        exit(1);
     }
 
-    bool success = robot_state.setFromIK(
+    float timeout_seconds = request.timeout.sec + request.timeout.nanosec * 1e9;
+    bool success = robot_state_->setFromIK(
         joint_model_group, EigenSTL::vector_Isometry3d(),
-        std::vector<std::string>(), request.ik_request.timeout.toSec(),
+        std::vector<std::string>(), timeout_seconds,
         callback, ik_options);
 
-    robot_state.update();
+    robot_state_->update();
 
-    moveit::core::robotStateToRobotStateMsg(robot_state,
-                                            response.ik_response.solution);
-    response.ik_response.solution_fitness = ik_options.solution_fitness;
+    bio_ik_msgs::msg::IKResponse response;
+    moveit::core::robotStateToRobotStateMsg(*robot_state_,
+                                            response.solution);
+    response.solution_fitness = ik_options.solution_fitness;
     if (success) {
-      response.ik_response.error_code.val =
-          moveit_msgs::MoveItErrorCodes::SUCCESS;
+      response.error_code.val =
+          moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
     } else {
-      response.ik_response.error_code.val =
-          moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION;
+      response.error_code.val =
+          moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
     }
-    return ros2_python_extension::toPython<bio_ik_msgs::msg::GetIK::Response>(response);
+    return ros2_python_extension::toPython<bio_ik_msgs::msg::IKResponse>(response);
   }
 
   void setHeadMotors(double pan, double tilt) {
@@ -238,7 +242,7 @@ class BitbotsMoveitBindings {
   }
 
   void setJointStates(py::bytes msg) {
-    sensor_msgs::msg::JointState joint_states = fromPython<sensor_msgs::msg::JointState>(msg);
+    sensor_msgs::msg::JointState joint_states = ros2_python_extension::fromPython<sensor_msgs::msg::JointState>(msg);
     for (size_t i = 0; i < joint_states.name.size(); ++i) {
       robot_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
     }
@@ -253,10 +257,10 @@ class BitbotsMoveitBindings {
   }
 
   py::bytes getJointStates(){
-    robot_state_.getJointStates()
-    return ros2_python_extension::toPython<sensor_msgs::msg::JointState>(response);
+    sensor_msgs::msg::JointState joint_state;
+    robotStateToJointStateMsg(*robot_state_, joint_state);
+    return ros2_python_extension::toPython<sensor_msgs::msg::JointState>(joint_state);
   }
-
 
  private:
   robot_model_loader::RobotModelLoaderPtr loader_;
@@ -266,7 +270,26 @@ class BitbotsMoveitBindings {
   planning_scene::PlanningScenePtr planning_scene_;
   std::shared_ptr<rclcpp::Node> node_;
 
-  static void convertGoals(const bio_ik_msgs::IKRequest &ik_request,
+
+    static tf2::Vector3 p(const geometry_msgs::msg::Point &p) {
+      return tf2::Vector3(p.x, p.y, p.z);
+    }
+
+    static tf2::Vector3 p(const geometry_msgs::msg::Vector3 &p) {
+      return tf2::Vector3(p.x, p.y, p.z);
+    }
+
+    static tf2::Quaternion q(const geometry_msgs::msg::Quaternion &q) {
+      return tf2::Quaternion(q.x, q.y, q.z, q.w);
+    }
+
+    static double w(double w, double def = 1.0) {
+      if (w == 0 || !std::isfinite(w))
+        w = def;
+      return w;
+    }
+
+  static void convertGoals(const bio_ik_msgs::msg::IKRequest &ik_request,
                            bio_ik::BioIKKinematicsQueryOptions &ik_options) {
     for (auto &m : ik_request.position_goals) {
       ik_options.goals.emplace_back(
@@ -357,8 +380,8 @@ PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
       .def(py::init<std::vector<py::bytes>>())
       .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
       .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK)
-      .def("set_head_motors", &CollisionChecker::setHeadMotors, "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
-      .def("set_joint_states", &CollisionChecker::setJointStates, "Set the current joint states")
-      .def("check_collision", &CollisionChecker::checkCollision, "Returns true if the head collides, else false")
-      .def("get_joint_states", &CollisionChecker::getJointStates, "Set the current joint states");
+      .def("set_head_motors", &BitbotsMoveitBindings::setHeadMotors, "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
+      .def("set_joint_states", &BitbotsMoveitBindings::setJointStates, "Set the current joint states")
+      .def("check_collision", &BitbotsMoveitBindings::checkCollision, "Returns true if the head collides, else false")
+      .def("get_joint_states", &BitbotsMoveitBindings::getJointStates, "Set the current joint states");
 }
