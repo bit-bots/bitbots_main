@@ -1,26 +1,24 @@
 #include <bitbots_head_behavior/collision_checker.h>
 
-/* Read a ROS message from a serialized string. */
-template<typename M>
-M from_python(const std::string &str_msg) {
-  size_t serial_size = str_msg.size();
-  boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
-  for (size_t i = 0; i < serial_size; ++i) {
-    buffer[i] = str_msg[i];
+python_parameters(std::vector<py::bytes> parameter_msgs) {
+  // create parameters from serialized messages
+  std::vector<rclcpp::Parameter> cpp_parameters = {};
+  for (auto &parameter_msg: parameter_msgs) {
+    cpp_parameters
+        .push_back(rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
   }
-  ros::serialization::IStream stream(buffer.get(), serial_size);
-  M msg;
-  ros::serialization::Serializer<M>::read(stream, msg);
-  return msg;
+  return cpp_parameters
 }
 
-CollisionChecker::CollisionChecker() {
-  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("robot_description", false));
+CollisionChecker::CollisionChecker(std::vector<py::bytes> parameter_msgs):
+    Node("collision_checker", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(python_parameters(parameters)).automatically_declare_parameters_from_overrides(true)){
+  //load MoveIt! model
+  robot_model_loader_ =
+      std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
   robot_model_ = robot_model_loader_->getModel();
   planning_scene_.reset(new planning_scene::PlanningScene(robot_model_));
-  robot_state_.reset(new moveit::core::msg::RobotState(robot_model_));
+  robot_state_.reset(new moveit::core::RobotState(robot_model_));
   robot_state_->setToDefaultValues();
-  RCLCPP_INFO(this->get_logger(),"Collision checker setup finished");
 }
 
 void CollisionChecker::set_head_motors(double pan, double tilt) {
@@ -28,8 +26,8 @@ void CollisionChecker::set_head_motors(double pan, double tilt) {
   robot_state_->setJointPositions("HeadTilt", &tilt);
 }
 
-void CollisionChecker::set_joint_states(std::string msg) {
-  sensor_msgs::msg::JointState joint_states = from_python<sensor_msgs::msg::JointState>(msg);
+void CollisionChecker::set_joint_states(py::bytes msg) {
+  sensor_msgs::msg::JointState joint_states = fromPython<sensor_msgs::msg::JointState>(msg);
   for (size_t i = 0; i < joint_states.name.size(); ++i) {
     robot_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
   }
@@ -43,12 +41,12 @@ bool CollisionChecker::check_collision() {
   return res.collision;
 }
 
-BOOST_PYTHON_MODULE(collision_checker)
-    {
-        using namespace boost::python;
 
-        class_<CollisionChecker>("CollisionChecker", init<>())
-        .def("set_head_motors", &CollisionChecker::set_head_motors, (arg("pan"), arg("tilt")), "Set the current pan and tilt moter values [radian]")
-        .def("set_joint_states", &CollisionChecker::set_joint_states, "Set the current joint states")
-        .def("check_collision", &CollisionChecker::check_collision, "Returns true if the head collides, else false");
-    }
+
+PYBIND11_MODULE(collision_checker, m){
+    py::class_<CollisionChecker, std::shared_ptr<CollisionChecker>>(m, "CollisionChecker")
+    .def(py::init<std::vector<py::bytes>>()>())
+    .def("set_head_motors", &CollisionChecker::set_head_motors, "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
+    .def("set_joint_states", &CollisionChecker::set_joint_states, "Set the current joint states")
+    .def("check_collision", &CollisionChecker::check_collision, "Returns true if the head collides, else false");
+}
