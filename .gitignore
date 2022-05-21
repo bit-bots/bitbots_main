@@ -194,11 +194,11 @@ ENV/
 # Rope project settings
 .ropeproject
 
-
-/bitbots_body_behaviour/scripts/behaviour_graph.png
-
 # auto-generated documentation
 **/docs/_build
 **/docs/_out
 **/docs/cppapi
 **/docs/pyapi
+
+# Custom ignore
+/bitbots_rl_motion/rl_walk_models
