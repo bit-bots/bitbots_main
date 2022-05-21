@@ -18,8 +18,8 @@ setup(
             glob.glob('launch/*.launch')),
     ],
     scripts=[
-        'scripts/test_lok_at.py',
-        'testHeadBehavior.py'
+        'scripts/test_look_at.py',
+        'scripts/testHeadBehavior.py'
     ],
     install_requires=[
         'launch',

@@ -4,7 +4,6 @@ BehaviourBlackboardCapsule
 """
 
 import math
-import rosparam
 import rclpy
 from rclpy.node import Node
 from rclpy.duration import Duration

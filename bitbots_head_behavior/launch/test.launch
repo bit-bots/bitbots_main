@@ -2,16 +2,21 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
+    <arg name="depends_only" default="false" />
+
     <group unless="$(var sim)">
         <group unless="$(var viz)">
             <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
         </group>
     </group>
 
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
+  <group>
+      <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
+          <arg name="sim" value="$(var sim)"/>
+      </include>
+  </group>
 
     <group if="$(var viz)">
-        <param name="visualization_active" value="true" />
         <!-- translate joint goals to joint states -->
         <node name="motor_goals_viz_helper" pkg="bitbots_utils" exec="motor_goals_viz_helper.py"/>
         <!-- add some visualization tools -->
@@ -27,14 +32,11 @@
         <include file="$(find-pkg-share humanoid_league_transform)/launch/transformer.launch" />
     </group>
 
-
-    <arg name="depends_only" default="false" />
     <rosparam command="load" file="$(find-pkg-share bitbots_head_behavior)/config/head_config.yaml"/>
 
-    <node name="bio_ik_service" pkg="bio_ik_service" exec="bio_ik_service"  output="screen"/>
-
-    <node unless="$(var depends_only)" name="head_behavior" pkg="bitbots_head_behavior" exec="head_node.py"  output="screen">
-            <remap from="/head_motor_goals" to="/DynamixelController/command"/>
-    </node>
-
+    <group unless="$(var depends_only)">
+        <node name="head_behavior" pkg="bitbots_head_behavior" exec="head_node.py"  output="screen">
+                <remap from="/head_motor_goals" to="/DynamixelController/command"/>
+        </node>
+    </group>
 </launch>

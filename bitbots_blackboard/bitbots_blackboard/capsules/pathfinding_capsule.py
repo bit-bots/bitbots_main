@@ -1,14 +1,14 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.publisher import Publisher
 import math
 from rclpy.duration import Duration
 import tf2_ros
 import numpy as np
-from ros_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-from nav_msgs.srv import GetPlanRequest
+from nav_msgs.srv import GetPlan
 
 
 class PathfindingCapsule:
@@ -20,10 +20,10 @@ class PathfindingCapsule:
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         self.position_threshold = self.node.get_parameter('behavior/body/pathfinding_position_threshold').get_parameter_value().double_value
         self.orientation_threshold = self.node.get_parameter('behavior/body/pathfinding_orientation_threshold').get_parameter_value().double_value
-        self.direct_cmd_vel_pub = None  # type: rospy.Publisher
-        self.pathfinding_pub = None  # type: rospy.Publisher
-        self.pathfinding_cancel_pub = None  # type: rospy.Publisher
-        self.path_to_ball_pub = None  # type: rospy.Publisher
+        self.direct_cmd_vel_pub = None  # type: Publisher
+        self.pathfinding_pub = None  # type: Publisher
+        self.pathfinding_cancel_pub = None  # type: Publisher
+        self.path_to_ball_pub = None  # type: Publisher
         self.ball_obstacle_active_pub = None
         self.keep_out_area_pub = None
         self.approach_marker_pub = None

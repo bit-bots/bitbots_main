@@ -5,7 +5,6 @@ GameStatusCapsule
 Provides information about the current game state.
 
 """
-import rosparam
 import rclpy
 from rclpy.node import Node
 from humanoid_league_msgs.msg import GameState

@@ -2,11 +2,14 @@ from io import BytesIO
 import math
 import numpy as np
 import rclpy
+from rclpy.publisher import Publisher
 from rclpy.duration import Duration
 from rclpy.node import Node
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
 import tf2_ros as tf2
+from bitbots_moveit_bindings import get_joint_states, check_collision
+from sensor_msgs.msg import JointState
 
 class HeadCapsule:
     def __init__(self, blackboard):
@@ -18,21 +21,19 @@ class HeadCapsule:
         # preparing message for more performance
         self.pos_msg = JointCommand()
         self.pos_msg.joint_names = ["HeadPan", "HeadTilt"]
-        self.pos_msg.positions = [0, 0]
-        self.pos_msg.velocities = [0, 0]
-        self.pos_msg.accelerations = [17, 17]
-        self.pos_msg.max_currents = [-1, -1]
+        self.pos_msg.positions = [0.0, 0.0]
+        self.pos_msg.velocities = [0.0, 0.0]
+        self.pos_msg.accelerations = [17.0, 17.0]
+        self.pos_msg.max_currents = [-1.0, -1.0]
 
-        self.position_publisher = None  # type: rospy.Publisher
-        self.visual_compass_record_trigger = None  # type: rospy.Publisher
+        self.position_publisher = None  # type: Publisher
+        self.visual_compass_record_trigger = None  # type: Publisher
 
         self.tf_buffer = tf2.Buffer(Duration(seconds=5))
         # tf_listener is necessary, even though unused!
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, self.blackboard.node)
 
         self.current_head_position = [0, 0]
-
-        self.collision_checker = 
 
     def head_mode_callback(self, msg):
         """
@@ -88,7 +89,7 @@ class HeadCapsule:
         else: # Passes the stuff through
             self.pos_msg.positions = pan_position, tilt_position
             self.pos_msg.velocities = [pan_speed, tilt_speed]
-            self.pos_msg.header.stamp = self.get_clock().now()
+            self.pos_msg.header.stamp = self.blackboard.node.get_clock().now()
             self.position_publisher.publish(self.pos_msg)
             return True
 
@@ -119,8 +120,10 @@ class HeadCapsule:
             return True
 
     def check_head_collision(self, head_joints):
-        self.collision_checker.set_head_motors(head_joints[0], head_joints[1])
-        return self.collision_checker.check_collision()
+        joint_state = JointState()
+        joint_state.name = ["HeadPan", "HeadTilt"]
+        joint_state.position = head_joints
+        return check_collision(joint_state)
 
     def move_head_to_position_with_speed_adjustment(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed):
         # Calculate the deltas
@@ -134,7 +137,7 @@ class HeadCapsule:
         # Send new joint values
         self.pos_msg.positions = goal_pan, goal_tilt
         self.pos_msg.velocities = [pan_speed, tilt_speed]
-        self.pos_msg.header.stamp = self.get_clock().now()
+        self.pos_msg.header.stamp = self.blackboard.node.get_clock().now()
         self.position_publisher.publish(self.pos_msg)
 
     def pre_clip(self, pan, tilt):
@@ -156,13 +159,13 @@ class HeadCapsule:
     ##################
 
     def get_head_position(self):
-        joint_states = getJointStates()
+        joint_states = get_joint_states()
         head_pan = None
         head_tilt = None
         for i in range(joint_states.name):
             if joint_states.name[i] == "HeadPan":
                 head_pan = joint_states.position[i]
-            elif joint_states.name[i] = "HeadTilt":
+            elif joint_states.name[i] == "HeadTilt":
                 head_tilt = joint_states.position[i]
         return head_pan, head_tilt
 
