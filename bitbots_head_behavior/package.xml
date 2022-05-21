@@ -14,8 +14,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>rospy</exec_depend>
-  <depend>pybind11</depend>
-  <depend>moveit_ros</depend>
   <depend>std_msgs</depend>
   <depend>ros2_python_extension</depend>
   <exec_depend>humanoid_league_msgs</exec_depend>

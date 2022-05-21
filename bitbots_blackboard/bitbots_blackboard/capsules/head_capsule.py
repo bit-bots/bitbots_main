@@ -6,7 +6,6 @@ from rclpy.duration import Duration
 from rclpy.node import Node
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 from bitbots_msgs.msg import JointCommand
-from bitbots_head_behavior.collision_checker import CollisionChecker
 import tf2_ros as tf2
 
 class HeadCapsule:
@@ -33,7 +32,7 @@ class HeadCapsule:
 
         self.current_head_position = [0, 0]
 
-        self.collision_checker = CollisionChecker()
+        self.collision_checker = 
 
     def head_mode_callback(self, msg):
         """
@@ -72,7 +71,7 @@ class HeadCapsule:
         :param current_tilt_position: Current tilt joint state for better interpolation (only active if both joints are set).
         :return: False if the target position collides, True otherwise
         """
-        self.get_logger().debug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
+        self.blackboard.node.get_logger().debug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
         if clip:
             pan_position, tilt_position = self.pre_clip(pan_position, tilt_position)
@@ -81,7 +80,7 @@ class HeadCapsule:
         if current_pan_position and current_tilt_position:
             if resolve_collision:
                 success = self.avoid_collision_on_path(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
-                if not success: self.get_logger().error("Unable to resolve head colision")
+                if not success: self.blackboard.node.get_logger().error("Unable to resolve head colision")
                 return success
             else:
                 self.move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
@@ -156,17 +155,16 @@ class HeadCapsule:
     # Head positions #
     ##################
 
-    def joint_state_callback(self, msg):
-        buf = BytesIO()
-        msg.serialize(buf)
-        self.collision_checker.set_joint_states(buf.getvalue())
-        if 'HeadPan' in msg.name and 'HeadTilt' in msg.name:
-            head_pan = msg.position[msg.name.index('HeadPan')]
-            head_tilt = msg.position[msg.name.index('HeadTilt')]
-            self.current_head_position = [head_pan, head_tilt]
-
     def get_head_position(self):
-        return self.current_head_position
+        joint_states = getJointStates()
+        head_pan = None
+        head_tilt = None
+        for i in range(joint_states.name):
+            if joint_states.name[i] == "HeadPan":
+                head_pan = joint_states.position[i]
+            elif joint_states.name[i] = "HeadTilt":
+                head_tilt = joint_states.position[i]
+        return head_pan, head_tilt
 
     #####################
     # Pattern generator #

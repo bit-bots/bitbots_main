@@ -17,6 +17,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
+from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 
 
 def run(dsd):
@@ -25,8 +26,7 @@ def run(dsd):
 
     :returns: Never
     """
-    node = Node("head_node")
-    rate = node.create_rate(60)
+    rate = self.node.create_rate(60)
     while rclpy.ok():
         dsd.update()
         rate.sleep()
@@ -40,15 +40,16 @@ def init():
     blackboard, dsd, rostopic subscriber
     """
     rclpy.init(args=None)
-    node = Node("head_node2")
+    # needed to init rclcpp ros for moveit_bindings
+    initRos()
+    self.node = Node("head_node")
     # This is a general purpose initialization function provided by moved
     # It is used to correctly initialize roscpp which is used in the collision checker module
-    roscpp_init('collision_checker', [])
     blackboard = HeadBlackboard()
+    blackboard.node = self.node
 
-    rclpy.Subscriber('head_mode', HeadModeMsg, blackboard.head_capsule.head_mode_callback, queue_size=1)
-    rclpy.Subscriber("ball_position_relative_filtered", PoseWithCovarianceStamped, blackboard.world_model.ball_filtered_callback)
-    rclpy.Subscriber('joint_states', JointState, blackboard.head_capsule.joint_state_callback)
+    self.node.create_subscription(HeadModeMsg, 'head_mode', blackboard.head_capsule.head_mode_callback, 1)
+    self.node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered", blackboard.world_model.ball_filtered_callback, 1)
     blackboard.head_capsule.position_publisher = self.create_publisher(JointCommand, "head_motor_goals", 10)
     blackboard.head_capsule.visual_compass_record_trigger = self.create_publisher(Header, blackboard.config['visual_compass_trigger_topic'], 5)
 
@@ -59,7 +60,7 @@ def init():
     dsd.register_decisions(os.path.join(dirname, 'decisions'))
     dsd.load_behavior(os.path.join(dirname, 'head_behavior.dsd'))
 
-    node.get_logger().debug("Head Behavior completely loaded")
+    self.node.get_logger().debug("Head Behavior completely loaded")
     return dsd
 
 
