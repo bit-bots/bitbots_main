@@ -355,7 +355,7 @@ class Vision(Node):
         # Still accepts very old images, that are most likely from ROS bags.
         image_age = self.get_clock().now() - time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
-            logger.warning(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_sec()} sec)")
+            logger.warning(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_msg().sec} sec)")
             return
 
         if self._transfer_image_msg_mutex.locked():
