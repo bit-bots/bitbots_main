@@ -113,12 +113,6 @@ Currently, the Bit-Bots vision package supports two file types for color lookup 
 
    For large color lookup tables, loading of such files takes a while.
 
-White Balancer
---------------
-
-This repository also includes the ``white_balancer``.
-It is a ROS nodelet that color-corrects incoming images with a predefined light temperature.
-
 Additional Scripts
 ------------------
 

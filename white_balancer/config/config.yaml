@@ -1,7 +1,0 @@
-temp: 3700 #Kelvin
-
-timestamp_offset: 0 #Image timestamp offset
-
-ROS_input_topic: "image_resized"
-
-ROS_output_topic: "camera/image_proc"
