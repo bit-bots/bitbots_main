@@ -1,4 +1,5 @@
 import rclpy
+from rclpy.clock import ClockType
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 import math
@@ -50,7 +51,7 @@ class PathfindingCapsule:
             return msg
         else:
             try:
-                msg.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+                msg.header.stamp = rclpy.Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
                 map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=Duration(seconds=0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))

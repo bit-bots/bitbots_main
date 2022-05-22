@@ -4,6 +4,8 @@ TeamDataCapsule
 """
 import math
 from collections import defaultdict
+
+from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
 import rclpy
@@ -181,7 +183,7 @@ class TeamDataCapsule:
         if teammate_ball is not None:
             return teammate_ball.header.stamp
         else:
-            return rclpy.Time(seconds=0, nanoseconds=0)
+            return rclpy.Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""
