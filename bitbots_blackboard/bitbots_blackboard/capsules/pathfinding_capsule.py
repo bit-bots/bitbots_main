@@ -9,7 +9,6 @@ import numpy as np
 from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-from nav_msgs.srv import GetPlan
 
 
 class PathfindingCapsule:

@@ -3,9 +3,9 @@ AnimationCapsule
 ^^^^^^^^^^^^^^^^
 """
 from rclpy.action import ActionClient
-import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
+
 from humanoid_league_msgs.action import PlayAnimation
 
 

@@ -1,10 +1,8 @@
-import rclpy
-from rclpy.node import Node
 from rclpy.time import Time
 from rclpy.duration import Duration
 from rclpy.action import ActionClient
+
 from bitbots_msgs.action import Kick
-from actionlib_msgs.msg import GoalStatus
 
 
 class KickCapsule():

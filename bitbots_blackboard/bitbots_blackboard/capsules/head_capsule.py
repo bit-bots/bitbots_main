@@ -1,14 +1,13 @@
 from io import BytesIO
 import math
 import numpy as np
-import rclpy
 from rclpy.publisher import Publisher
 from rclpy.duration import Duration
 from rclpy.node import Node
-from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
-from bitbots_msgs.msg import JointCommand
 import tf2_ros as tf2
+
 from bitbots_moveit_bindings import get_joint_states, check_collision
+from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 
 class HeadCapsule:

@@ -3,15 +3,12 @@ BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 """
 
-import math
 import rclpy
-from rclpy.node import Node
 from rclpy.duration import Duration
+from rclpy.node import Node
 import tf2_ros as tf2
-from humanoid_league_msgs.msg import RobotControlState
 
-from humanoid_league_msgs.msg import HeadMode
-
+from humanoid_league_msgs.msg import HeadMode, RobotControlState
 
 class BlackboardCapsule:
     def __init__(self, node: Node):

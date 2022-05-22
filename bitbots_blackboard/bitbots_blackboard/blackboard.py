@@ -1,8 +1,11 @@
 import rclpy
-from bitbots_utils.utils import get_parameter_dict
+from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-from bio_ik_msgs.srv import GetIK
+
+from bitbots_utils.utils import get_parameter_dict
+from humanoid_league_msgs.action import PlayAnimation
+
 from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
 from bitbots_blackboard.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
@@ -11,10 +14,6 @@ from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
-
-from rclpy.action import ActionClient
-from humanoid_league_msgs.action import PlayAnimation
-
 
 class BodyBlackboard:
     def __init__(self, node: Node):
