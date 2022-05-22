@@ -17,7 +17,6 @@ pytorchyolo
 rosdep
 rospkg
 setuptools
-silx
 sklearn
 transforms3d
 git+https://github.com/SammyRamone/stable-baselines3.git
