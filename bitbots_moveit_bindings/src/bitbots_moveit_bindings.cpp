@@ -6,6 +6,9 @@
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
+#include <bio_ik/bio_ik.hpp>
+#include <bio_ik_msgs/msg/ik_request.hpp>
+#include <bio_ik_msgs/msg/ik_response.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.h>
 #include <pybind11/pybind11.h>
@@ -188,6 +191,77 @@ class BitbotsMoveitBindings {
     return ros2_python_extension::toPython<moveit_msgs::srv::GetPositionFK::Response>(response);
   }
 
+  py::bytes getBioIKIK(py::bytes &msg) {
+    // extra method to use BioIK specific goals 
+    auto request = ros2_python_extension::fromPython<bio_ik_msgs::msg::IKRequest>(msg);
+
+    bio_ik::BioIKKinematicsQueryOptions ik_options;
+    ik_options.return_approximate_solution = request.approximate;
+    ik_options.fixed_joints=request.fixed_joints;
+    ik_options.replace = true;
+
+    convertGoals(request, ik_options);
+
+    moveit::core::GroupStateValidityCallbackFn callback;
+    if (request.avoid_collisions) {
+      std::cout << "Avoid collisions not implemented in bitbots_moveit_bindings";
+      exit(1);
+    }
+    auto joint_model_group =
+        robot_model_->getJointModelGroup(request.group_name);
+    if (!joint_model_group) {
+        std::cout << "Group name in IK call not specified";
+        exit(1);
+    }
+
+    float timeout_seconds = request.timeout.sec + request.timeout.nanosec * 1e9;
+    bool success = robot_state_->setFromIK(
+        joint_model_group, EigenSTL::vector_Isometry3d(),
+        std::vector<std::string>(), timeout_seconds,
+        callback, ik_options);
+
+    robot_state_->update();
+
+    bio_ik_msgs::msg::IKResponse response;
+    moveit::core::robotStateToRobotStateMsg(*robot_state_,
+                                            response.solution);
+    response.solution_fitness = ik_options.solution_fitness;
+    if (success) {
+      response.error_code.val =
+          moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+    } else {
+      response.error_code.val =
+          moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
+    }
+    return ros2_python_extension::toPython<bio_ik_msgs::msg::IKResponse>(response);
+  }
+
+  void setHeadMotors(double pan, double tilt) {
+    robot_state_->setJointPositions("HeadPan", &pan);
+    robot_state_->setJointPositions("HeadTilt", &tilt);
+  }
+
+  void setJointStates(py::bytes msg) {
+    sensor_msgs::msg::JointState joint_states = ros2_python_extension::fromPython<sensor_msgs::msg::JointState>(msg);
+    for (size_t i = 0; i < joint_states.name.size(); ++i) {
+      robot_state_->setJointPositions(joint_states.name[i], &joint_states.position[i]);
+    }
+  }
+
+  bool checkCollision() {
+    collision_detection::CollisionRequest req;
+    collision_detection::CollisionResult res;
+    collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
+    planning_scene_->checkCollision(req, res, *robot_state_, acm);
+    return res.collision;
+  }
+
+  py::bytes getJointStates(){
+    sensor_msgs::msg::JointState joint_state;
+    robotStateToJointStateMsg(*robot_state_, joint_state);
+    return ros2_python_extension::toPython<sensor_msgs::msg::JointState>(joint_state);
+  }
+
  private:
   robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
@@ -195,6 +269,109 @@ class BitbotsMoveitBindings {
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
   std::shared_ptr<rclcpp::Node> node_;
+
+
+    static tf2::Vector3 p(const geometry_msgs::msg::Point &p) {
+      return tf2::Vector3(p.x, p.y, p.z);
+    }
+
+    static tf2::Vector3 p(const geometry_msgs::msg::Vector3 &p) {
+      return tf2::Vector3(p.x, p.y, p.z);
+    }
+
+    static tf2::Quaternion q(const geometry_msgs::msg::Quaternion &q) {
+      return tf2::Quaternion(q.x, q.y, q.z, q.w);
+    }
+
+    static double w(double w, double def = 1.0) {
+      if (w == 0 || !std::isfinite(w))
+        w = def;
+      return w;
+    }
+
+  static void convertGoals(const bio_ik_msgs::msg::IKRequest &ik_request,
+                           bio_ik::BioIKKinematicsQueryOptions &ik_options) {
+    for (auto &m : ik_request.position_goals) {
+      ik_options.goals.emplace_back(
+          new bio_ik::PositionGoal(m.link_name, p(m.position), w(m.weight)));
+    }
+
+    for (auto &m : ik_request.orientation_goals) {
+      ik_options.goals.emplace_back(new bio_ik::OrientationGoal(
+          m.link_name, q(m.orientation), w(m.weight)));
+    }
+
+    for (auto &m : ik_request.pose_goals) {
+      auto *g = new bio_ik::PoseGoal(m.link_name, p(m.pose.position),
+                                    q(m.pose.orientation), w(m.weight));
+      g->setRotationScale(w(m.rotation_scale, 0.5));
+      ik_options.goals.emplace_back(g);
+    }
+
+    for (auto &m : ik_request.look_at_goals) {
+      ik_options.goals.emplace_back(new bio_ik::LookAtGoal(
+          m.link_name, p(m.axis), p(m.target), w(m.weight)));
+    }
+
+    for (auto &m : ik_request.min_distance_goals) {
+      ik_options.goals.emplace_back(new bio_ik::MinDistanceGoal(
+          m.link_name, p(m.target), m.distance, w(m.weight)));
+    }
+
+    for (auto &m : ik_request.max_distance_goals) {
+      ik_options.goals.emplace_back(new bio_ik::MaxDistanceGoal(
+          m.link_name, p(m.target), m.distance, w(m.weight)));
+    }
+
+    for (auto &m : ik_request.line_goals) {
+      ik_options.goals.emplace_back(new bio_ik::LineGoal(
+          m.link_name, p(m.position), p(m.direction), w(m.weight)));
+    }
+
+    for (auto &m : ik_request.avoid_joint_limits_goals) {
+      ik_options.goals.emplace_back(
+          new bio_ik::AvoidJointLimitsGoal(w(m.weight), !m.primary));
+    }
+
+    for (auto &m : ik_request.minimal_displacement_goals) {
+      ik_options.goals.emplace_back(
+          new bio_ik::MinimalDisplacementGoal(w(m.weight), !m.primary));
+    }
+
+    for (auto &m : ik_request.center_joints_goals) {
+      ik_options.goals.emplace_back(
+          new bio_ik::CenterJointsGoal(w(m.weight), !m.primary));
+    }
+
+    for (auto &m : ik_request.joint_variable_goals) {
+      ik_options.goals.emplace_back(new bio_ik::JointVariableGoal(
+          m.variable_name, m.variable_position, w(m.weight), m.secondary));
+    }
+
+    for (auto &m : ik_request.balance_goals) {
+      auto *g = new bio_ik::BalanceGoal(p(m.target), w(m.weight));
+      if (m.axis.x || m.axis.y || m.axis.z) {
+        g->setAxis(p(m.axis));
+      }
+      ik_options.goals.emplace_back(g);
+    }
+
+    for (auto &m : ik_request.side_goals) {
+      ik_options.goals.emplace_back(new bio_ik::SideGoal(
+          m.link_name, p(m.axis), p(m.direction), w(m.weight)));
+    }
+
+    for (auto &m : ik_request.direction_goals) {
+      ik_options.goals.emplace_back(new bio_ik::DirectionGoal(
+          m.link_name, p(m.axis), p(m.direction), w(m.weight)));
+    }
+
+    for (auto &m : ik_request.cone_goals) {
+      ik_options.goals.emplace_back(
+          new bio_ik::ConeGoal(m.link_name, p(m.position), w(m.position_weight),
+                              p(m.axis), p(m.direction), m.angle, w(m.weight)));
+    }
+  }
 };
 
 PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
@@ -202,5 +379,9 @@ PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
   py::class_<BitbotsMoveitBindings, std::shared_ptr<BitbotsMoveitBindings>>(m, "BitbotsMoveitBindings")
       .def(py::init<std::vector<py::bytes>>())
       .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
-      .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK);
+      .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK)
+      .def("set_head_motors", &BitbotsMoveitBindings::setHeadMotors, "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
+      .def("set_joint_states", &BitbotsMoveitBindings::setJointStates, "Set the current joint states")
+      .def("check_collision", &BitbotsMoveitBindings::checkCollision, "Returns true if the head collides, else false")
+      .def("get_joint_states", &BitbotsMoveitBindings::getJointStates, "Set the current joint states");
 }
