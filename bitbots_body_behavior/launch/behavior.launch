@@ -2,12 +2,10 @@
     <arg name="wolfgang" default="false" />
     <arg name="use_game_settings" default="false"/>
     <arg name="simple" default="false" />
-    <!-- TODO: this will not stay here -->
-    <param name="game_settings/role" value="offense" />
 
-    <group if="$(arg use_game_settings)">
+    <!--<group if="$(arg use_game_settings)">
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
-    </group>
+    </group>-->
 
     <group unless="$(arg simple)">
         <include file="$(find bitbots_body_behavior)/launch/body_behavior.launch">

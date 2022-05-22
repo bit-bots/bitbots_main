@@ -13,7 +13,7 @@ class AnimationCapsule:
     def __init__(self, node: Node):
         self.node = node
         self.active = False
-        self.animation_client = ActionClient(self, PlayAnimation, 'animation')
+        self.animation_client = ActionClient(node, PlayAnimation, 'animation')
 
     def play_animation(self, animation):
         """

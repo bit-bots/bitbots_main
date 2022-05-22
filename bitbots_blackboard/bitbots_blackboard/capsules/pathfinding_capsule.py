@@ -14,12 +14,12 @@ from tf_transformations import euler_from_quaternion, quaternion_from_euler
 class PathfindingCapsule:
     def __init__(self, blackboard, node: Node):
         self.node = node
-        self.map_frame = self.node.get_parameter('~map_frame').get_parameter_value().string_value
+        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
         # Thresholds to determine whether the transmitted goal is a new one
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=2))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.position_threshold = self.node.get_parameter('behavior/body/pathfinding_position_threshold').get_parameter_value().double_value
-        self.orientation_threshold = self.node.get_parameter('behavior/body/pathfinding_orientation_threshold').get_parameter_value().double_value
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
+        self.position_threshold = self.node.get_parameter('body.pathfinding_position_threshold').get_parameter_value().double_value
+        self.orientation_threshold = self.node.get_parameter('body.pathfinding_orientation_threshold').get_parameter_value().double_value
         self.direct_cmd_vel_pub = None  # type: Publisher
         self.pathfinding_pub = None  # type: Publisher
         self.pathfinding_cancel_pub = None  # type: Publisher
@@ -33,7 +33,7 @@ class PathfindingCapsule:
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
         self._blackboard = blackboard  # type: BodyBlackboard
-        self.orient_to_ball_distance = self.node.get_parameter("move_base/BBPlanner/orient_to_goal_distance").get_parameter_value().double_value
+        self.orient_to_ball_distance = self.node.get_parameter("move_base.BBPlanner.orient_to_goal_distance").get_parameter_value().double_value
 
     def publish(self, msg):
         # type: (PoseStamped) -> None

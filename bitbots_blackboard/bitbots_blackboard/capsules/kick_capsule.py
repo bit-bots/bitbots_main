@@ -27,14 +27,14 @@ class KickCapsule():
 
     def connect(self):
         topic = self.__blackboard.config["dynamic_kick"]["topic"]
-        self.__blackboard.nodeget_logger().info("Connecting {}.KickCapsule to bitbots_dynamic_kick ({})"
+        self.__blackboard.node.get_logger().info("Connecting {}.KickCapsule to bitbots_dynamic_kick ({})"
                       .format(str(self.__blackboard.__class__).split(".")[-1], topic))
-        self.__action_client = ActionClient(self, Kick, topic)
+        self.__action_client = ActionClient(self.__blackboard.node, Kick, topic)
         self.__connected = self.__action_client.wait_for_server(
-            Duration(seconds=self.__blackboard.config["dynamic_kick"]["wait_time"]))
+            self.__blackboard.config["dynamic_kick"]["wait_time"])
 
         if not self.__connected:
-            self.__blackboard.nodeget_logger().error("No dynamic_kick server running on {}".format(topic))
+            self.__blackboard.node.get_logger().error("No dynamic_kick server running on {}".format(topic))
 
     def kick(self, goal):
         """

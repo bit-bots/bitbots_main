@@ -19,7 +19,7 @@ class BlackboardCapsule:
         self.state = None  # type: RobotControlState
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, self.node)
         self.timers = dict()
 
     #####################

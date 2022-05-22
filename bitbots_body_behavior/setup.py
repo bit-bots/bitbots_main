@@ -31,7 +31,7 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'head_node = bitbots_body_behavior.body_behavior:main',
+            'body_behavior = bitbots_body_behavior.body_behavior:main',
         ],
     }
 )

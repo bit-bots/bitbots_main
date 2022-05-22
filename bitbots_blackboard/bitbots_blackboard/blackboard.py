@@ -19,15 +19,15 @@ class BodyBlackboard:
     def __init__(self, node: Node):
         self.node = node
 
-        self.config = self.node.get_parameter_dict(node, "body")
+        self.config = get_parameter_dict(node, "body")
         self.base_footprint_frame = self.node.get_parameter("base_footprint_frame").get_parameter_value().double_value
         self.map_frame = self.node.get_parameter("map_frame").get_parameter_value().double_value
-        self.blackboard = BlackboardCapsule()
-        self.gamestate = GameStatusCapsule()
-        self.animation = AnimationCapsule()
+        self.blackboard = BlackboardCapsule(node)
+        self.gamestate = GameStatusCapsule(node)
+        self.animation = AnimationCapsule(node)
         self.kick = KickCapsule(self)
         self.world_model = WorldModelCapsule(self)
-        self.pathfinding = PathfindingCapsule(self)
+        self.pathfinding = PathfindingCapsule(self, node)
         self.world_model = WorldModelCapsule(self)
         self.team_data = TeamDataCapsule()
         # animations
