@@ -9,6 +9,7 @@
 #include "particle_filter/ImportanceResampling.h"
 #include "particle_filter/CRandomNumberGenerator.h"
 
+namespace bitbots_localization {
 // ImportanceResampling with explorers
 
 template<class StateType>
@@ -106,5 +107,5 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList &sourceList,
 // template <class StateType>
 // void ParticleFilter<StateType>::drawAllFromDistribution(const
 // std::shared_ptr<StateDistribution<StateType>>& distribution) {
-
+};
 #endif  // IMPORTANCERESAMPLINGWE_H

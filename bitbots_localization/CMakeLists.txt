@@ -6,22 +6,29 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(particle_filter REQUIRED)
+find_package(soccer_vision_3d_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME} "srv/ResetFilter.srv"
   "srv/SetPaused.srv"
   DEPENDENCIES builtin_interfaces)
 
-set(INCLUDE_DIRS include ${bitbots_test_INCLUDE_DIRS}
-  ${ament_cmake_INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
-
-set(LIBRARY_DIRS ${bitbots_test_LIBRARY_DIRS} ${ament_cmake_LIBRARY_DIRS})
 
 link_directories(${LIBRARY_DIRS})
 
-set(LIBS ${bitbots_test_LIBRARIES} ${ament_cmake_LIBRARIES})
+set(LIBS ${ament_cmake_LIBRARIES})
 
 ## Compile as C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -39,9 +46,6 @@ find_package(OpenCV)
 
 ## Generate added messages and services with any dependencies listed here
 
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-
-
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
@@ -52,13 +56,10 @@ enable_bitbots_docs()
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 
+include_directories(include)
+
 ## Declare a C++ library
-add_library(${PROJECT_NAME}_lib include/bitbots_localization/map.h
-  include/bitbots_localization/MotionModel.h
-  include/bitbots_localization/ObservationModel.h
-  include/bitbots_localization/RobotState.h
-  include/bitbots_localization/StateDistribution.h
-  include/bitbots_localization/tools.h src/map.cpp src/MotionModel.cpp
+set(SOURCES src/config.cpp src/localization.cpp src/map.cpp src/MotionModel.cpp
   src/ObservationModel.cpp src/RobotState.cpp src/StateDistribution.cpp
   src/tools.cpp)
 
@@ -69,27 +70,30 @@ add_library(${PROJECT_NAME}_lib include/bitbots_localization/map.h
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(localization src/localization.cpp)
+add_executable(localization ${SOURCES})
 
-## Add cmake target dependencies of the executable
-## same as for the library above
+ament_target_dependencies(localization
+  ament_cmake
+  rclcpp
+  OpenCV
+  Boost
+  std_srvs
+  particle_filter
+  humanoid_league_msgs
+  tf2_geometry_msgs
+  soccer_vision_3d_msgs
+  image_transport
+  visualization_msgs
+  cv_bridge
+)
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(localization ${OpenCV_LIBRARIES} ${PROJECT_NAME}_lib
-  ${LIBS})
+rosidl_get_typesupport_target(cpp_typesupport_target
+        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-## Testing
-if(BUILD_TESTING)
-  enable_bitbots_tests()
-endif()
-
-ament_export_dependencies(bitbots_test)
-ament_export_dependencies(ament_cmake)
-ament_export_include_directories(${INCLUDE_DIRS})
-ament_export_libraries(${PROJECT_NAME}_lib ${LIBS})
+target_link_libraries(localization "${cpp_typesupport_target}")
 
 install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
-install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
+install(TARGETS localization DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

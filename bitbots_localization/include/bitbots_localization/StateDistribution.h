@@ -9,8 +9,11 @@
 
 #include <particle_filter/CRandomNumberGenerator.h>
 #include <particle_filter/StateDistribution.h>
-#include <bitbots_localization/msg/robot_state.hpp>
+#include <bitbots_localization/RobotState.h>
 #include <rclcpp/rclcpp.hpp>
+
+
+namespace bitbots_localization {
 
 class RobotStateDistribution : public particle_filter::StateDistribution<RobotState> {
  public:
@@ -117,6 +120,7 @@ class RobotStateDistributionPose : public particle_filter::StateDistribution<Rob
   double y_;
   double t_;
 
+};
 };
 
 #endif //BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H

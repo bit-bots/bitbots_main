@@ -9,11 +9,13 @@
 #include <cstdlib>
 
 #include <particle_filter/MovementModel.h>
-#include <bitbots_localization/msg/robot_state.hpp>
+#include <bitbots_localization/RobotState.h>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <particle_filter/CRandomNumberGenerator.h>
 #include <bitbots_localization/tools.h>
 
+
+namespace bitbots_localization {
 /**
  * @class MyMovementModel
  *
@@ -67,5 +69,5 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
   double sample(double b) const;
 
 };
-
+};
 #endif //BITBOTS_LOCALIZATION_MOTIONMODEL_H
