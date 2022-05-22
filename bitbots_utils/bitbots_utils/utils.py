@@ -70,7 +70,7 @@ def get_parameter_dict(node, prefix):
         if "." in param.name[len(prefix) + 1:]:
             # this is a nested dict with sub values
             subparameter_name = param.name.split(".")[1]
-            config[param.name[len(prefix) + 1 + len(subparameter_name) + 1:]] = get_parameter_dict(node, prefix + "." + subparameter_name)
+            config[subparameter_name] = get_parameter_dict(node, prefix + "." + subparameter_name)
         else:
             # just a normal single parameter
             config[param.name[len(prefix) + 1:]] = param.value
