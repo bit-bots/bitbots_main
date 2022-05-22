@@ -61,3 +61,17 @@ def get_parameters_from_plain_yaml(parameter_file, namespace=''):
     with open(parameter_file, 'r') as f:
         param_dict = yaml.safe_load(f)
         return parse_parameter_dict(namespace=namespace, parameter_dict=param_dict)
+
+
+def get_parameter_dict(node, prefix):
+    parameter_config = node.get_parameters_by_prefix(prefix)
+    config = {}
+    for param in parameter_config.values():
+        if "." in param.name[len(prefix) + 1:]:
+            # this is a nested dict with sub values
+            subparameter_name = param.name.split(".")[1]
+            config[param.name[len(prefix) + 1 + len(subparameter_name) + 1:]] = get_parameter_dict(node, prefix + "." + subparameter_name)
+        else:
+            # just a normal single parameter
+            config[param.name[len(prefix) + 1:]] = param.value
+    return config
