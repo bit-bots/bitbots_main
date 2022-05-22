@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from cv2 import threshold
 from ament_index_python import get_package_share_directory
 from bitbots_moveit_bindings import set_moveit_parameters
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
