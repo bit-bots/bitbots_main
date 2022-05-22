@@ -10,6 +10,7 @@ include:
         - bitbots_ros_control
     - bitbots_misc:
         - bitbots_bringup
+        - bitbots_basler_camera
         - bitbots_convenience_frames
         - bitbots_teleop
         - bitbots_utils
