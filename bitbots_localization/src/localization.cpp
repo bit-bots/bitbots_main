@@ -8,34 +8,33 @@
 namespace bitbots_localization {
 
 Localization::Localization(std::string ns, std::vector<rclcpp::Parameter> parameters) :
-  Node(ns + "bitbots_localization", rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(true)),
+  Node(ns + "bitbots_localization", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
   tfBuffer(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
   tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer)){
 
-  this->declare_parameter<std::string>("odom_frame",  "odom");
-  this->get_parameter("odom_frame",  odom_frame_);
-  this->declare_parameter<std::string>("base_footprint_frame",  "base_footprint");
-  this->get_parameter("base_footprint_frame",  base_footprint_frame_);
-  this->declare_parameter<std::string>("map_frame",  "map");
-  this->get_parameter("map_frame",  map_frame_);
-  this->declare_parameter<std::string>("publishing_frame",  "localization_raw");
-  this->get_parameter("publishing_frame",  publishing_frame_);
+  rclcpp::Logger LOGGER = rclcpp::get_logger("bbbbbb");
+
+  config_ = std::make_shared<Config>(parameters);
+  RCLCPP_ERROR(LOGGER, "lel: %d", static_cast<int>(parameters.size()));
 
   // Get current odometry transform as init
   previousOdomTransform_ = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9*20.0));
 
+  param_callback_handle_ = this->add_on_set_parameters_callback(std::bind(&Localization::onSetParameters, this, _1));
+
   rclcpp::spin(SharedPtr(this));
 }
 
-void Localization::dynamic_reconfigure_callback(const std::vector<rclcpp::Parameter> &parameters) {
-  //config_ = config; TODO create params
+rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
+
+  config_->update_params(parameters);
 
   line_point_cloud_subscriber_ = this->create_subscription<sm::msg::PointCloud2>(
     config_->line_pointcloud_topic, 1, std::bind(&Localization::LinePointcloudCallback, this, _1));
   goal_subscriber_ = this->create_subscription<sv3dm::msg::GoalpostArray>(
     config_->goal_topic, 1, std::bind(&Localization::GoalPostsCallback, this, _1));
   fieldboundary_subscriber_ = this->create_subscription<sv3dm::msg::FieldBoundary>(
-    config_->fieldboundary_in_image_topic, 1, std::bind(&Localization::FieldboundaryCallback, this, _1));
+    config_->fieldboundary_topic, 1, std::bind(&Localization::FieldboundaryCallback, this, _1));
 
   pose_particles_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(config_->particle_publishing_topic, 1);
 
@@ -146,6 +145,10 @@ void Localization::dynamic_reconfigure_callback(const std::vector<rclcpp::Parame
     this, get_clock(),
     rclcpp::Duration(0, uint32_t (1.0e-9 / config_->publishing_frequency)),
     std::bind(&Localization::run_filter_one_step, this));
+
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  return result;
 }
 
 void Localization::run_filter_one_step() {

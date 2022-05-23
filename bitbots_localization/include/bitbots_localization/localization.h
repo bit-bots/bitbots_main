@@ -97,11 +97,10 @@ class Localization : public rclcpp::Node {
                              std::shared_ptr<bl::srv::ResetFilter::Response> res);
 
   /**
-   * Callback for ros dynamic reconfigure
-   * @param config the updated config.
-   * @param config_level Not used.
+   * Callback for new parameters
+   * @param parameters the updated parameters.
    */
-  void dynamic_reconfigure_callback(const std::vector<rclcpp::Parameter> &parameters);
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
   /**
    * Callback for the line point cloud messurements
@@ -149,6 +148,8 @@ class Localization : public rclcpp::Node {
   rclcpp::Subscription<sv3dm::msg::GoalpostArray>::SharedPtr goal_subscriber_;
   rclcpp::Subscription<sv3dm::msg::FieldBoundary>::SharedPtr fieldboundary_subscriber_;
 
+  OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
+
   rclcpp::Publisher<gm::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_covariance_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pose_particles_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr lines_publisher_;
@@ -166,7 +167,6 @@ class Localization : public rclcpp::Node {
   std::shared_ptr<pf::ImportanceResampling<RobotState>> resampling_;
   std::shared_ptr<RobotPoseObservationModel> robot_pose_observation_model_;
   std::shared_ptr<RobotMotionModel> robot_motion_model_;
-  //std::shared_ptr<RobotStateDistribution> robot_state_distribution_;
   std::shared_ptr<RobotStateDistributionStartLeft> robot_state_distribution_start_left_;
   std::shared_ptr<RobotStateDistributionStartRight> robot_state_distribution_start_right_;
   std::shared_ptr<RobotStateDistributionRightHalf> robot_state_distribution_right_half_;
