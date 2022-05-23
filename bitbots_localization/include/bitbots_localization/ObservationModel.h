@@ -32,8 +32,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            std::shared_ptr<Map> map_field_boundary, std::shared_ptr<Map> map_corners,
-                            std::shared_ptr<Map> map_t_crossings, std::shared_ptr<Map> map_crosses,
+                            std::shared_ptr<Map> map_field_boundary,
                             std::shared_ptr<bl::Config> config);
 
   /**
@@ -57,21 +56,6 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   std::vector<std::pair<double, double>> get_measurement_field_boundary() const;
 
-  std::vector<std::pair<double, double>> get_measurement_corners() const;
-
-  std::vector<std::pair<double, double>> get_measurement_t_crossings() const;
-
-  std::vector<std::pair<double, double>> get_measurement_crosses() const;
-
-  static double number_lines;
-  static double number_goals;
-  static double number_fb_points;
-  static double number_corners;
-  static double number_tcrossings;
-  static double number_crosses;
-
-  static int number_of_effective_measurements_;
-
   void set_min_weight(double min_weight);
 
   double get_min_weight() const override;
@@ -94,33 +78,15 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   std::vector<std::pair<double, double>> last_measurement_field_boundary_;
 
-  std::vector<std::pair<double, double>> last_measurement_corners_;
-
-  std::vector<std::pair<double, double>> last_measurement_t_crossings_;
-
-  std::vector<std::pair<double, double>> last_measurement_crosses_;
-
   double min_weight_ = 0;
 
   std::shared_ptr<Map> map_lines_;
   std::shared_ptr<Map> map_goals_;
   std::shared_ptr<Map> map_field_boundary_;
-  std::shared_ptr<Map> map_corners_;
-  std::shared_ptr<Map> map_t_crossings_;
-  std::shared_ptr<Map> map_crosses_;
 
   std::shared_ptr<bl::Config> config_;
 
 };
-
-double RobotPoseObservationModel::number_lines = 0;
-double RobotPoseObservationModel::number_goals = 0;
-double RobotPoseObservationModel::number_fb_points = 0;
-double RobotPoseObservationModel::number_corners = 0;
-double RobotPoseObservationModel::number_tcrossings = 0;
-double RobotPoseObservationModel::number_crosses = 0;
-int RobotPoseObservationModel::number_of_effective_measurements_ = 0;
-
 };
 
 #endif //BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H

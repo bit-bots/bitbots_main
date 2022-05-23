@@ -18,11 +18,12 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>boost</depend>
+  <depend>tf2</depend>
   <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
   <depend>soccer_vision_3d_msgs</depend>
   <depend>bitbots_blackboard</depend>
   <depend>visualization_msgs</depend>
-  <depend>tf2_geometry_msgs</depend>
   <depend>builtin_interfaces</depend>
 
   <exec_depend>map_server</exec_depend>

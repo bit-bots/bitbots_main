@@ -15,7 +15,9 @@ find_package(visualization_msgs REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
@@ -80,7 +82,9 @@ ament_target_dependencies(localization
   std_srvs
   particle_filter
   humanoid_league_msgs
+  tf2
   tf2_geometry_msgs
+  tf2_ros
   soccer_vision_3d_msgs
   image_transport
   visualization_msgs

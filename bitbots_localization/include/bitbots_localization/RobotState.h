@@ -64,7 +64,7 @@ class RobotState {
   visualization_msgs::msg::Marker renderMarker(std::string n_space,
                                           std::string frame,
                                           rclcpp::Duration lifetime,
-                                          std_msgs::ColorRGBA color,
+                                          std_msgs::msg::ColorRGBA color,
                                           rclcpp::Time stamp) const;
 
  private:

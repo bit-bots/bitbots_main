@@ -14,6 +14,7 @@
 
 #include <Eigen/Core>
 
+#include <std_msgs/msg/color_rgba.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -68,6 +69,8 @@ namespace sv3dm = soccer_vision_3d_msgs;
 
 
 namespace bitbots_localization {
+  using namespace std::placeholders;
+
 /**
 * @class Localization
 * @brief Includes the ROS interface, configuration and main loop of the Bit-Bots RoboCup localization.
@@ -82,16 +85,16 @@ class Localization : public rclcpp::Node {
    * @param req Request.
    * @param res Response.
    */
-  bool set_paused_callback( bl::srv::SetPaused::Request &req,
-                            bl::srv::SetPaused::Response &res);
+  bool set_paused_callback(const std::shared_ptr<bl::srv::SetPaused::Request> req,
+                           std::shared_ptr<bl::srv::SetPaused::Response> res);
 
   /**
    * Callback for the filter reset service
    * @param req Request.
    * @param res Response.
    */
-  bool reset_filter_callback(bl::srv::ResetFilter::Request &req,
-                             bl::srv::ResetFilter::Response &res);
+  bool reset_filter_callback(const std::shared_ptr<bl::srv::ResetFilter::Request> req,
+                             std::shared_ptr<bl::srv::ResetFilter::Response> res);
 
   /**
    * Callback for ros dynamic reconfigure
@@ -205,7 +208,7 @@ class Localization : public rclcpp::Node {
   gmms::GaussianMixtureModel pose_gmm_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
   std::shared_ptr<bl::Config> config_;
-  std_msgs::ColorRGBA marker_color;
+  std_msgs::msg::ColorRGBA marker_color;
   bool first_configuration_ = true;
 
   /**
@@ -246,7 +249,7 @@ class Localization : public rclcpp::Node {
     double scale,
     const char name[24],
     std::shared_ptr<Map> map,
-    rclcpp::Publisher<visualization_msgs::msg::Marker> &publisher);
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
 
   /**
    * Updates the messurements for all classes
