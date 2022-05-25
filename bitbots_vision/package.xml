@@ -34,7 +34,6 @@
   <depend>python3-opencv</depend>
   <depend>soccer_vision_2d_msgs</depend>
   <depend>humanoid_league_msgs</depend>
-  <depend>bitbots_basler_camera</depend>
 
   <export>
     <bitbots_documentation>
