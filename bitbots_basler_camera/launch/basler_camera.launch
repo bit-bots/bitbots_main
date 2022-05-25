@@ -22,7 +22,7 @@
             <remap from="in/camera_info" to="/pylon_camera_node/camera_info"/>
             <remap from="out/image_raw" to="/camera/image_proc"/>
             <remap from="out/camera_info" to="/camera/camera_info"/>
-            <param from="$(find-pkg-share bitbots_utils)/config/binning.yaml"/>
+            <param from="$(find-pkg-share bitbots_basler_camera)/config/binning.yaml"/>
         </composable_node>
     </node_container>
 </launch>

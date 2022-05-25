@@ -10,7 +10,6 @@
   <license>MIT</license>
 
   <depend>bitbots_docs</depend>
-  <depend>bitbots_utils</depend>
   <depend>pylon_ros2_camera_wrapper</depend>
   <depend>image_proc</depend>
 
