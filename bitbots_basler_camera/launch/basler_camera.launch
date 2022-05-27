@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
     <!-- camera driver -->
     <node pkg="pylon_ros2_camera_wrapper" exec="pylon_ros2_camera_wrapper" name="pylon_camera_node" output="screen">
         <param from="$(find-pkg-share bitbots_basler_camera)/config/camera_settings.yaml" />
