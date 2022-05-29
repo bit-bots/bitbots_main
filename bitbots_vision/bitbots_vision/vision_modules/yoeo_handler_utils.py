@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 import numpy as np
 import cv2
 import rclpy
-import yoeo.utils.utils
 from typing import Tuple, Optional
 
 logger = rclpy.logging.get_logger('yoeo_handler_utils')
@@ -11,12 +10,18 @@ logger = rclpy.logging.get_logger('yoeo_handler_utils')
 
 @dataclass
 class ImagePreprocessorData:
-    applied_padding_h: int
-    applied_padding_w: int
+    padding_top: int
+    padding_bottom: int
+    padding_left: int
+    padding_right: int
     max_dim: int
 
 
 class IImagePreprocessor(ABC):
+    @abstractmethod
+    def configure(self, network_input_shape: Tuple[int, int]) -> None:
+        ...
+
     @abstractmethod
     def get_info(self) -> ImagePreprocessorData:
         ...
@@ -29,28 +34,28 @@ class IImagePreprocessor(ABC):
     def reset(self) -> None:
         ...
 
-    @abstractmethod
-    def configure(self, network_input_shape: Tuple[int, int]) -> None:
-        ...
-
 
 class ISegmentationPostProcessor:
     @abstractmethod
-    def process(self, segmentation):
+    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
         ...
 
     @abstractmethod
-    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+    def process(self, segmentation):
         ...
 
 
 class IDetectionPostProcessor:
     @abstractmethod
-    def process(self, detections):
+    def configure(self,
+                  image_preprocessor: IImagePreprocessor,
+                  output_img_size: int,
+                  conf_thresh: float,
+                  nms_thresh: float) -> None:
         ...
 
     @abstractmethod
-    def configure(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float) -> None:
+    def process(self, detections):
         ...
 
 
@@ -61,13 +66,20 @@ class OVImagePreprocessor(IImagePreprocessor):
 
         # these attributes change for every image!
         self._image_dimensions: Tuple[int, int] = (0, 0)  # (height, width)
-        self._applied_padding_h: int = 0
-        self._applied_padding_w: int = 0
+        self._padding_top: int = 0
+        self._padding_bottom: int = 0
+        self._padding_left: int = 0
+        self._padding_right: int = 0
+
+    def configure(self, network_input_shape: Tuple[int, int]) -> None:
+        self._network_input_shape_WH = network_input_shape[::-1]  # (height, width) to (width, height)
 
     def get_info(self) -> ImagePreprocessorData:
         return ImagePreprocessorData(
-            applied_padding_h=self._applied_padding_h,
-            applied_padding_w=self._applied_padding_w,
+            padding_top=self._padding_top,
+            padding_bottom=self._padding_bottom,
+            padding_left=self._padding_left,
+            padding_right=self._padding_right,
             max_dim=np.max(self._image_dimensions)
         )
 
@@ -83,10 +95,15 @@ class OVImagePreprocessor(IImagePreprocessor):
         return image
 
     def _calculate_paddings(self) -> None:
-        max_dim = np.max(self._image_dimensions)
         height, width = self._image_dimensions
-        self._applied_padding_h = (max_dim - height) // 2
-        self._applied_padding_w = (max_dim - width) // 2
+
+        total_vertical_padding = max(0, width - height)
+        total_horizontal_padding = max(0, height - width)
+
+        self._padding_top = total_vertical_padding // 2
+        self._padding_bottom = total_vertical_padding - self._padding_top
+        self._padding_left = total_horizontal_padding // 2
+        self._padding_right = total_horizontal_padding - self._padding_left
 
     @staticmethod
     def _normalize_image_to_range_0_1(image):
@@ -95,10 +112,10 @@ class OVImagePreprocessor(IImagePreprocessor):
     def _pad_to_square(self, image):
         return cv2.copyMakeBorder(
             src=image,
-            top=self._applied_padding_h,
-            bottom=self._applied_padding_h,
-            left=self._applied_padding_w,
-            right=self._applied_padding_w,
+            top=self._padding_top,
+            bottom=self._padding_bottom,
+            left=self._padding_left,
+            right=self._padding_right,
             borderType=cv2.BORDER_CONSTANT,
             value=0
         )
@@ -113,16 +130,18 @@ class OVImagePreprocessor(IImagePreprocessor):
 
     def reset(self) -> None:
         self._image_dimensions = (0, 0)
-        self._applied_padding_h = 0
-        self._applied_padding_w = 0
-
-    def configure(self, network_input_shape: Tuple[int, int]) -> None:
-        self._network_input_shape_WH = network_input_shape[::-1]  # (height, width) to (width, height)
+        self._padding_top = 0
+        self._padding_bottom = 0
+        self._padding_left = 0
+        self._padding_right = 0
 
 
 class ONNXImagePreprocessor(IImagePreprocessor):
     def __init__(self, network_input_dimensions):
         self._image_prepocessor: IImagePreprocessor = OVImagePreprocessor(network_input_dimensions)
+
+    def configure(self, network_input_shape: Tuple[int, int]) -> None:
+        self._image_prepocessor.configure(network_input_shape)
 
     def get_info(self) -> ImagePreprocessorData:
         return self._image_prepocessor.get_info()
@@ -133,18 +152,17 @@ class ONNXImagePreprocessor(IImagePreprocessor):
     def reset(self) -> None:
         self._image_prepocessor.reset()
 
-    def configure(self, network_input_shape: Tuple[int, int]) -> None:
-        self._image_prepocessor.configure(network_input_shape)
-
 
 class OVSegmentationPostProcessor(ISegmentationPostProcessor):
     def __init__(self, image_preprocessor: IImagePreprocessor):
         self._image_preprocessor = image_preprocessor
 
         # these attributes change for every segmentation!
-        self._applied_padding_h: int = 0
-        self._applied_padding_w: int = 0
         self._max_dim: int = 0
+        self._padding_top: int = 0
+        self._padding_bottom: int = 0
+        self._padding_left: int = 0
+        self._padding_right: int = 0
 
     def configure(self, image_preprocessor: IImagePreprocessor) -> None:
         self._image_preprocessor = image_preprocessor
@@ -152,15 +170,18 @@ class OVSegmentationPostProcessor(ISegmentationPostProcessor):
     def process(self, segmentation):
         self._get_preprocessor_info()
         segmentation = self._rearrange_axis_from_CHW_to_HWC(segmentation)
-        segmentation = self._resize_to_original_size(segmentation)
-        segmentation = self._remove_padding(segmentation)
+        segmentation = self._resize_to_original_padded_size(segmentation)
+        segmentation = self._unpad(segmentation)
+
         return segmentation
 
     def _get_preprocessor_info(self) -> None:
         preprocessor_info = self._image_preprocessor.get_info()
         self._max_dim = preprocessor_info.max_dim
-        self._applied_padding_h = preprocessor_info.applied_padding_h
-        self._applied_padding_w = preprocessor_info.applied_padding_w
+        self._padding_top = preprocessor_info.padding_top
+        self._padding_bottom = preprocessor_info.padding_bottom
+        self._padding_left = preprocessor_info.padding_left
+        self._padding_right = preprocessor_info.padding_right
 
     @staticmethod
     def _change_dtype_from_int64_to_uint8(image):
@@ -171,16 +192,16 @@ class OVSegmentationPostProcessor(ISegmentationPostProcessor):
         # Change data layout from CHW to HWC
         return np.moveaxis(segmentation, 0, -1)
 
-    def _resize_to_original_size(self, segmentation):
+    def _resize_to_original_padded_size(self, segmentation):
         return cv2.resize(
             src=segmentation,
             dsize=(self._max_dim, self._max_dim),
             interpolation=cv2.INTER_NEAREST_EXACT
         )
 
-    def _remove_padding(self, segmentation):
-        return segmentation[self._applied_padding_h:self._max_dim - self._applied_padding_h,
-               self._applied_padding_w:self._max_dim - self._applied_padding_w, ...]
+    def _unpad(self, segmentation):
+        return segmentation[self._padding_top:self._max_dim - self._padding_bottom,
+                            self._padding_left:self._max_dim - self._padding_right, ...]
 
 
 class ONNXSegmentationPostProcessor(ISegmentationPostProcessor):
@@ -195,32 +216,171 @@ class ONNXSegmentationPostProcessor(ISegmentationPostProcessor):
 
 
 class OVDetectionPostProcessor(IDetectionPostProcessor):
-    def __init__(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float):
+    def __init__(self,
+                 image_preprocessor: IImagePreprocessor,
+                 output_img_size: int,
+                 conf_thresh: float,
+                 nms_thresh: float):
         self._image_preprocessor: IImagePreprocessor = image_preprocessor
         self._conf_thresh: float = conf_thresh
         self._nms_thresh: float = nms_thresh
 
-    def process(self, detections):
-        import torch
-        import yoeo
-        detections = torch.from_numpy(detections)
-        detections = yoeo.utils.utils.non_max_suppression(detections, self._conf_thresh, self._nms_thresh)
-        original_dims = (
-            self._image_preprocessor.get_info().max_dim - 2 * self._image_preprocessor.get_info().applied_padding_h,
-            self._image_preprocessor.get_info().max_dim - 2 * self._image_preprocessor.get_info().applied_padding_w)
-        detections = yoeo.utils.utils.rescale_boxes(detections[0], 416, original_dims).numpy()
-        return detections
+        self._output_img_size: int = output_img_size
 
-    def configure(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float) -> None:
+        self._max_dim: int = 0
+        self._padding_top: int = 0
+        self._padding_bottom: int = 0
+        self._padding_left: int = 0
+        self._padding_right: int = 0
+
+    def configure(self,
+                  image_preprocessor: IImagePreprocessor,
+                  output_img_size: int,
+                  conf_thresh: float,
+                  nms_thresh: float) -> None:
         self._image_preprocessor = image_preprocessor
+        self._output_img_size = output_img_size
         self._conf_thresh = conf_thresh
         self._nms_thresh = nms_thresh
 
+    def process(self, detections):
+        self._get_preprocessor_info()
+        detections = self._perform_nms(detections)
+        detections = self._rescale_boxes(detections)
+
+        return detections
+
+    def _get_preprocessor_info(self) -> None:
+        preprocessor_info = self._image_preprocessor.get_info()
+        self._max_dim = preprocessor_info.max_dim
+        self._padding_top = preprocessor_info.padding_top
+        self._padding_bottom = preprocessor_info.padding_bottom
+        self._padding_left = preprocessor_info.padding_left
+        self._padding_right = preprocessor_info.padding_right
+
+    def _perform_nms(self, prediction):
+
+        # wahrscheinlich #bilder, #boxes, 8
+        # 8 = x, y, w, h, obj_conf, cls_conf, cls_conf, cls_conf
+        number_of_classes = prediction.shape[2] - 5  # number of classes
+
+        # Settings
+        # (pixels) minimum and maximum box width and height
+        max_wh = 4096
+        max_number_of_detections = 300  # maximum number of detections per image
+        max_number_of_boxes = 30000  # maximum number of boxes into torchvision.ops.nms()
+        multi_label = number_of_classes > 1  # multiple labels per box (adds 0.5ms/img)
+
+        output = np.zeros((0, 6))
+
+        # Apply constraints
+        x = prediction[0, ...]
+        x = self._filter_by_objectness_confidence(x)
+        if self._is_empty(x):
+            return output
+
+        box_coordinates = self._convert_box_coordinates(x[:, :4])
+        x = self._calculate_class_confidence_scores(x)  # todo man könnte hier den return auf nur die scores beschränken
+
+        # Detections matrix nx6 (xyxy, conf, cls)
+        if multi_label:
+            i, j = (x[:, 5:] > self._conf_thresh).nonzero()
+            x = np.concatenate((box_coordinates[i], x[i, j + 5, None], j[:, None]), axis=1)
+        else:  # best class only
+            conf = np.max(x[:, 5:], axis=1)
+            j = np.argmax(x[:, 5:], axis=1)
+            x = np.concatenate((box_coordinates, conf[:, None], j[:, None]), axis=1)[conf > self._conf_thresh]
+
+        if self._is_empty(x):
+            return output
+        elif self._too_many_boxes_remain(x, max_number_of_boxes):
+            x = self._keep_only_best_boxes(x, max_number_of_boxes)
+
+        # Batched NMS
+        boxes, scores = self._shift_boxes_by_confidence(x, max_wh)
+        indices = cv2.dnn.NMSBoxes(boxes, scores, self._conf_thresh, self._nms_thresh)
+        if indices.shape[0] > max_number_of_detections:  # limit detections
+            indices = indices[:max_number_of_detections]  ## TODO sind die sortiert nach confidence???
+
+        return x[indices]
+
+    def _filter_by_objectness_confidence(self, prediction):
+        return prediction[prediction[..., 4] > self._conf_thresh]
+
+    @staticmethod
+    def _is_empty(prediction) -> bool:
+        return not prediction.shape[0]
+
+    @staticmethod
+    def _calculate_class_confidence_scores(prediction):
+        # class_confidence_score = conditional_class_probability * box_confidence_score (objectness)
+        # p(class, object)       = p(class | object)             * p(object)
+        prediction[:, 5:] *= prediction[:, 4:5]
+
+        return prediction
+
+    @staticmethod
+    def _too_many_boxes_remain(prediction, max_number_of_boxes) -> bool:
+        return prediction.shape[0] > max_number_of_boxes
+
+    @staticmethod
+    def _keep_only_best_boxes(prediction, max_number_of_boxes):
+        return prediction[prediction[:, 4].argsort(descending=True)[:max_number_of_boxes]]
+
+    @staticmethod
+    def _shift_boxes_by_confidence(prediction, max_wh) -> Tuple:
+        # Batched NMS
+        c = prediction[:, 5:6] * max_wh  # classes
+        # boxes (offset by class), scores
+
+        return prediction[:, :4] + c, prediction[:, 4]
+
+    @staticmethod
+    def _convert_box_coordinates(x):
+        """
+        Transform bounding box coordinates from xywh format (centroid coordinates, width, height) to xyxy format (upper
+        left coordinates, lower right coordinates)
+        :param x
+        :rtype
+        """
+        y = np.zeros_like(x)
+        y[..., 0] = x[..., 0] - x[..., 2] / 2
+        y[..., 1] = x[..., 1] - x[..., 3] / 2
+        y[..., 2] = x[..., 0] + x[..., 2] / 2
+        y[..., 3] = x[..., 1] + x[..., 3] / 2
+
+        return y
+
+    def _rescale_boxes(self, boxes):
+        rescaled_boxes = self._rescale_boxes_to_original_padded_img_size(boxes)
+        rescaled_boxes = self._unpad_box_coordinates(rescaled_boxes)
+
+        return rescaled_boxes
+
+    def _rescale_boxes_to_original_padded_img_size(self, boxes):
+        scale_factor = self._max_dim / self._output_img_size
+        boxes[:, 0:4] = boxes[:, 0:4] * scale_factor
+
+        return boxes
+
+    def _unpad_box_coordinates(self, boxes):
+        boxes[:, 0] = boxes[:, 0] - self._padding_left
+        boxes[:, 1] = boxes[:, 1] - self._padding_top
+        boxes[:, 2] = boxes[:, 2] - self._padding_left
+        boxes[:, 3] = boxes[:, 3] - self._padding_top
+
+        return boxes
+
 
 class ONNXDetectionPostProcessor(IDetectionPostProcessor):
-    def __init__(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float):
+    def __init__(self,
+                 image_preprocessor: IImagePreprocessor,
+                 output_img_size: int,
+                 conf_thresh: float,
+                 nms_thresh: float):
         self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
             image_preprocessor=image_preprocessor,
+            output_img_size=output_img_size,
             conf_thresh=conf_thresh,
             nms_thresh=nms_thresh
         )
@@ -228,9 +388,14 @@ class ONNXDetectionPostProcessor(IDetectionPostProcessor):
     def process(self, detections):
         return self._det_postprocessor.process(detections)
 
-    def configure(self, image_preprocessor: IImagePreprocessor, conf_thresh: float, nms_thresh: float) -> None:
+    def configure(self,
+                  image_preprocessor: IImagePreprocessor,
+                  output_img_size: int,
+                  conf_thresh: float,
+                  nms_thresh: float) -> None:
         self._det_postprocessor.configure(
             image_preprocessor=image_preprocessor,
+            output_img_size=output_img_size,
             conf_thresh=conf_thresh,
             nms_thresh=nms_thresh
         )

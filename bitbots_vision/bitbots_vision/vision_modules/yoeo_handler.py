@@ -6,14 +6,16 @@ from collections import defaultdict
 import numpy as np
 import rclpy
 import os
-from typing import List, Union, Dict, Any, Tuple
+from typing import List, Union, Dict, Any, Tuple, TYPE_CHECKING
 import yaml
 import cv2
 
-from .yoeo_handler_utils import IImagePreprocessor, ISegmentationPostProcessor, OVImagePreprocessor, \
-    OVSegmentationPostProcessor, IDetectionPostProcessor, OVDetectionPostProcessor, ONNXImagePreprocessor, \
-    ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor
+from .yoeo_handler_utils import OVImagePreprocessor, OVSegmentationPostProcessor, OVDetectionPostProcessor,\
+    ONNXImagePreprocessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor
 
+if TYPE_CHECKING:
+    from .yoeo_handler_utils import IImagePreprocessor, ISegmentationPostProcessor, IDetectionPostProcessor
+    
 logger = rclpy.logging.get_logger('vision_yoeo')
 
 try:
@@ -175,6 +177,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._img_preprocessor: IImagePreprocessor = ONNXImagePreprocessor(tuple(self._input_layer.shape[2:]))
         self._det_postprocessor: IDetectionPostProcessor = ONNXDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
+            output_img_size=416, # TODO
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"]
         )
@@ -224,6 +227,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._img_preprocessor: IImagePreprocessor = OVImagePreprocessor((height, width))
         self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
+            output_img_size=416, # TODO
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"]
         )
