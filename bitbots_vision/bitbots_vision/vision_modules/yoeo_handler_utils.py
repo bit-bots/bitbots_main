@@ -233,6 +233,10 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         self._padding_left: int = 0
         self._padding_right: int = 0
 
+        self._nms_max_number_of_boxes = 30000  # maximum number of boxes input into nms
+        self._nms_max_number_of_detections = 300  # maximum number of detections per image
+        self._nms_max_width_height_in_pixels = 4096
+
     def configure(self,
                   image_preprocessor: IImagePreprocessor,
                   output_img_size: int,
@@ -245,7 +249,7 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
 
     def process(self, detections):
         self._get_preprocessor_info()
-        detections = self._perform_nms(detections)
+        detections = self._perform_nms(detections[0, ...])
         detections = self._rescale_boxes(detections)
 
         return detections
@@ -258,82 +262,81 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         self._padding_left = preprocessor_info.padding_left
         self._padding_right = preprocessor_info.padding_right
 
-    def _perform_nms(self, prediction):
+    def _perform_nms(self, detections):
+        # shape prediction: (#boxes, >= 6)
+        # (>= 6)er meaning: (x, y, w, h, obj_conf, cond_class_conf_1, cond_class_conf_2, ...)
 
-        # wahrscheinlich #bilder, #boxes, 8
-        # 8 = x, y, w, h, obj_conf, cls_conf, cls_conf, cls_conf
-        number_of_classes = prediction.shape[2] - 5  # number of classes
+        detections = self._preprocess_detections_for_nms(detections)
 
-        # Settings
-        # (pixels) minimum and maximum box width and height
-        max_wh = 4096
-        max_number_of_detections = 300  # maximum number of detections per image
-        max_number_of_boxes = 30000  # maximum number of boxes into torchvision.ops.nms()
-        multi_label = number_of_classes > 1  # multiple labels per box (adds 0.5ms/img)
+        boxes, scores = self._get_boxes_and_scores_for_nms(detections)
+        indices = cv2.dnn.NMSBoxes(boxes, scores, 0, self._nms_thresh, top_k=self._nms_max_number_of_detections)
 
-        output = np.zeros((0, 6))
+        output = self._postprocess_nms_output(detections, indices)
 
-        # Apply constraints
-        x = prediction[0, ...]
-        x = self._filter_by_objectness_confidence(x)
-        if self._is_empty(x):
-            return output
+        return output
 
-        box_coordinates = self._convert_box_coordinates(x[:, :4])
-        x = self._calculate_class_confidence_scores(x)  # todo man könnte hier den return auf nur die scores beschränken
+    def _preprocess_detections_for_nms(self, detections):
+        detections = self._filter_by_objectness_confidence(detections)
+        detections = self._calculate_class_confidence_scores(detections)
+        detections = self._pin_down_last_dimension_to_6(detections)
+        detections = self._filter_by_class_confidence(detections)
+        if self._too_many_boxes_remain_in(detections):
+            detections = self._keep_only_boxes_with_highest_objectness_confidence(detections)
 
-        # Detections matrix nx6 (xyxy, conf, cls)
-        if multi_label:
-            i, j = (x[:, 5:] > self._conf_thresh).nonzero()
-            x = np.concatenate((box_coordinates[i], x[i, j + 5, None], j[:, None]), axis=1)
-        else:  # best class only
-            conf = np.max(x[:, 5:], axis=1)
-            j = np.argmax(x[:, 5:], axis=1)
-            x = np.concatenate((box_coordinates, conf[:, None], j[:, None]), axis=1)[conf > self._conf_thresh]
+        return detections
 
-        if self._is_empty(x):
-            return output
-        elif self._too_many_boxes_remain(x, max_number_of_boxes):
-            x = self._keep_only_best_boxes(x, max_number_of_boxes)
+    def _filter_by_objectness_confidence(self, detections):
+        return detections[detections[:, 4] > self._conf_thresh]
 
-        # Batched NMS
-        boxes, scores = self._shift_boxes_by_confidence(x, max_wh)
-        indices = cv2.dnn.NMSBoxes(boxes, scores, self._conf_thresh, self._nms_thresh)
-        if indices.shape[0] > max_number_of_detections:  # limit detections
-            indices = indices[:max_number_of_detections]  ## TODO sind die sortiert nach confidence???
-
-        return x[indices]
-
-    def _filter_by_objectness_confidence(self, prediction):
-        return prediction[prediction[..., 4] > self._conf_thresh]
-
-    @staticmethod
-    def _is_empty(prediction) -> bool:
-        return not prediction.shape[0]
-
-    @staticmethod
-    def _calculate_class_confidence_scores(prediction):
+    def _calculate_class_confidence_scores(self, detections):
         # class_confidence_score = conditional_class_probability * box_confidence_score (objectness)
         # p(class, object)       = p(class | object)             * p(object)
-        prediction[:, 5:] *= prediction[:, 4:5]
+        detections[:, 5:] *= detections[:, 4:5]
 
-        return prediction
+        return detections
+
+    def _pin_down_last_dimension_to_6(self, detections):
+        box_coordinates = detections[:, :4]
+        class_confidence_scores = detections[:, 5:]
+
+        if self._is_multilabel_prediction(class_confidence_scores):
+            i, j = (class_confidence_scores > self._conf_thresh).nonzero()
+            x = np.concatenate((box_coordinates[i], class_confidence_scores[i, j, None], j[:, None]), axis=1)
+        else:  # best class only
+            conf = np.max(class_confidence_scores, axis=1)
+            j = np.argmax(class_confidence_scores, axis=1)
+            x = np.concatenate((box_coordinates, conf[:, None], j[:, None]), axis=1)
+
+        return x
 
     @staticmethod
-    def _too_many_boxes_remain(prediction, max_number_of_boxes) -> bool:
-        return prediction.shape[0] > max_number_of_boxes
+    def _is_multilabel_prediction(class_confidence_scores) -> bool:
+        return class_confidence_scores.shape[1] > 1  # makes absolutely no sense
 
-    @staticmethod
-    def _keep_only_best_boxes(prediction, max_number_of_boxes):
-        return prediction[prediction[:, 4].argsort(descending=True)[:max_number_of_boxes]]
+    def _filter_by_class_confidence(self, detections):
+        return detections[detections[:, 5] > self._conf_thresh]
 
-    @staticmethod
-    def _shift_boxes_by_confidence(prediction, max_wh) -> Tuple:
+    def _too_many_boxes_remain_in(self, prediction) -> bool:
+        return prediction.shape[0] > self._nms_max_number_of_boxes
+
+    def _keep_only_boxes_with_highest_objectness_confidence(self, prediction):
+        # Sort by objectness, then discard
+        return prediction[prediction[:, 4].argsort(descending=True)[:self._nms_max_number_of_boxes]]
+
+    def _postprocess_nms_output(self, detections, nms_indices):
+        detections = detections[nms_indices]
+        detections = self._convert_box_coordinates(detections)
+
+        return detections
+
+    def _get_boxes_and_scores_for_nms(self, prediction) -> Tuple:
         # Batched NMS
-        c = prediction[:, 5:6] * max_wh  # classes
+        c = prediction[:, 5:6] * self._nms_max_width_height_in_pixels  # classes
         # boxes (offset by class), scores
+        box_coords = prediction[:, :4].copy()
+        box_coords[:, :2] += c
 
-        return prediction[:, :4] + c, prediction[:, 4]
+        return box_coords, prediction[:, 4]
 
     @staticmethod
     def _convert_box_coordinates(x):
@@ -343,13 +346,14 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         :param x
         :rtype
         """
-        y = np.zeros_like(x)
+        y = np.zeros_like(x[:, :4])
         y[..., 0] = x[..., 0] - x[..., 2] / 2
         y[..., 1] = x[..., 1] - x[..., 3] / 2
         y[..., 2] = x[..., 0] + x[..., 2] / 2
         y[..., 3] = x[..., 1] + x[..., 3] / 2
+        x[:, :4] = y
 
-        return y
+        return x
 
     def _rescale_boxes(self, boxes):
         rescaled_boxes = self._rescale_boxes_to_original_padded_img_size(boxes)
