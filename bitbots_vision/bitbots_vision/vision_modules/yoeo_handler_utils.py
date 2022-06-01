@@ -279,7 +279,7 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         detections = self._filter_by_objectness_confidence(detections)
         detections = self._calculate_class_confidence_scores(detections)
         detections = self._pin_down_last_dimension_to_6(detections)
-        detections = self._filter_by_class_confidence(detections)
+        #detections = self._filter_by_class_confidence(detections)
         if self._too_many_boxes_remain_in(detections):
             detections = self._keep_only_boxes_with_highest_objectness_confidence(detections)
 
@@ -305,7 +305,7 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         else:  # best class only
             conf = np.max(class_confidence_scores, axis=1)
             j = np.argmax(class_confidence_scores, axis=1)
-            x = np.concatenate((box_coordinates, conf[:, None], j[:, None]), axis=1)
+            x = np.concatenate((box_coordinates, conf[:, None], j[:, None]), axis=1)[conf > self._conf_thresh]
 
         return x
 
