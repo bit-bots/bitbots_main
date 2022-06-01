@@ -62,32 +62,3 @@ The calibration files names are following the pattern ``basler_drivers/pylon_cam
 To create new calibration files see
 
 .. _`ROS camera calibration`: http://wiki.ros.org/camera_calibration/Tutorials/MonocularCalibration
-
-White balance
--------------
-
-In case of a correct brightness, but wrong looking colors, have a look at the white balancer node.
-
-This part should be tweaked after all brightness and gain settings, because they could possibly affect the color temperature too.
-
-Our vision pipeline includes a white balancing node on the ROS level.
-Cameras need to adjust their white balance to correct the effects of different light temperatures.
-E.g. a light bulb casts a different light color than the sun.
-Most cameras do this automatically, but wrong values could result in unusable images for the vision.
-Therefore we set this value manually.
-
-The light temperature can be set in the dynamic reconfigure UI of the *whitebalancer*.
-This should be used to find the best settings by tweaking the parameter a bit until the colors nearly look like the colors in real life.
-
-A good benchmark should be white objects in the image, which should be displayed white.
-
-Note: Sometimes human vision recognizes slightly blue-white tones whiter than the real white.
-So if the object appears unnaturally white, turn the setting a bit more in the warmer direction, even if the white looks a bit grayish now.
-This is a brightness issue.
-
-
-After tweaking the settings, the estimated value can be written in the following config file under the name *temp*.
-
-``bitbots_vision/white_balancer/config/config.yaml``
-
-Some good indoor value should be something like 3000 K and for outdoor applications something about 6500 K.

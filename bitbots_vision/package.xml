@@ -35,8 +35,6 @@
   <depend>soccer_vision_2d_msgs</depend>
   <depend>humanoid_league_msgs</depend>
 
-
-
   <export>
     <bitbots_documentation>
       <language>python3</language>
