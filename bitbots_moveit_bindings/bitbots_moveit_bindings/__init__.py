@@ -36,7 +36,7 @@ def get_position_ik(request: GetPositionIK.Request, approximate=False):
     if ik_fk_state is None:
         ik_fk_state = BitbotsMoveitBindings([])
     request_str = serialize_message(request)
-    result_str = bindings.getPositionIK(request_str, approximate)
+    result_str = ik_fk_state.getPositionIK(request_str, approximate)
     return deserialize_message(result_str, GetPositionIK.Response)
 
 def get_position_fk(request: GetPositionFK.Request):
