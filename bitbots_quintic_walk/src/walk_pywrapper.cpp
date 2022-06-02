@@ -4,7 +4,7 @@ void PyWalkWrapper::spin_some() {
   rclcpp::spin_some(walk_node_);
 }
 
-PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs) {
+PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs, bool force_smooth_step_transition) {
   // create parameters from serialized messages
   std::vector<rclcpp::Parameter> cpp_parameters = {};
   for (auto &parameter_msg: parameter_msgs) {
@@ -14,6 +14,7 @@ PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_ms
   walk_node_ = std::make_shared<bitbots_quintic_walk::WalkNode>(ns, cpp_parameters);
   set_robot_state(0);
   walk_node_->initializeEngine();
+  walk_node_->getEngine()->setForceSmoothStepTransition(force_smooth_step_transition);
 }
 
 py::bytes PyWalkWrapper::step(double dt,
@@ -232,7 +233,7 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
   m.def("initRos", &ros2_python_extension::initRos);
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
-      .def(py::init<std::string, std::vector<py::bytes>>())
+      .def(py::init<std::string, std::vector<py::bytes>, bool>())
       .def("step", &PyWalkWrapper::step)
       .def("step_relative", &PyWalkWrapper::step_relative)
       .def("step_open_loop", &PyWalkWrapper::step_open_loop)

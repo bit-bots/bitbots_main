@@ -22,7 +22,7 @@ using namespace ros2_python_extension;
 
 class PyWalkWrapper {
  public:
-  PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs = {});
+  PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs = {}, bool force_smooth_step_transition=false);
   py::bytes step(double dt,
                  py::bytes &cmdvel_msg,
                  py::bytes &imu_msg,
