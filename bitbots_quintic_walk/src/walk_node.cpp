@@ -146,15 +146,11 @@ void WalkNode::run() {
   sup_state.header.stamp = this->get_clock()->now();
   pub_support_->publish(sup_state);
 
-  rclcpp::Time next_loop_time;
-  rclcpp::Time last_time = this->get_clock()->now();
   double dt;
   WalkRequest last_request;
   while (rclcpp::ok()) {
     rclcpp::spin_some(this->get_node_base_interface());
-    next_loop_time = last_time + rclcpp::Duration::from_seconds(1.0 / engine_frequency_);
-    last_time = this->get_clock()->now();
-    if (this->get_clock()->sleep_until(next_loop_time)) {
+    if (this->get_clock()->sleep_for(rclcpp::Duration::from_seconds(1.0 / engine_frequency_))) {
       dt = getTimeDelta();
 
       if (robot_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING
@@ -278,7 +274,7 @@ double WalkNode::getTimeDelta() {
   double current_ros_time = this->get_clock()->now().seconds();
   dt = current_ros_time - last_ros_update_time_;
   if (dt == 0) {
-    RCLCPP_WARN(this->get_logger(), "dt was 0");
+    RCLCPP_WARN(this->get_logger(), "dt was 0; ros time is %f last time was %f", current_ros_time, last_ros_update_time_);
     dt = 0.001;
   }
   last_ros_update_time_ = current_ros_time;
