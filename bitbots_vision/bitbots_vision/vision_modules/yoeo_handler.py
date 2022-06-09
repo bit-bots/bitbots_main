@@ -187,7 +187,12 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(config["yoeo_conf_threshold"], config["yoeo_nms_threshold"])
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer.shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"]
+        )
 
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
@@ -237,7 +242,12 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(config["yoeo_conf_threshold"], config["yoeo_nms_threshold"])
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer.shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"]
+        )
 
     def _select_device(self) -> str:
         if "MYRIAD" in self._inference_engine.available_devices:  # NCS2 stick
