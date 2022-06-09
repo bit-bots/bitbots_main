@@ -154,7 +154,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         self._seg_masks = dict()
 
     def _update_image(self, img) -> None:
-        self._image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # TODO
+        self._image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     @abstractmethod
     def _compute_new_prediction_for(self, image) -> Tuple:
@@ -177,7 +177,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._img_preprocessor: IImagePreprocessor = ONNXImagePreprocessor(tuple(self._input_layer.shape[2:]))
         self._det_postprocessor: IDetectionPostProcessor = ONNXDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
-            output_img_size=416, # TODO
+            output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"]
         )
@@ -227,7 +227,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._img_preprocessor: IImagePreprocessor = OVImagePreprocessor((height, width))
         self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
-            output_img_size=416, # TODO
+            output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"]
         )
