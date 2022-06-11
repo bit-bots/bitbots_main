@@ -29,6 +29,7 @@
     <depend>geometry_msgs</depend>
     <depend>humanoid_league_msgs</depend>
     <depend>moveit_core</depend>
+    <depend>moveit_ros</depend>
     <depend>moveit_ros_move_group</depend>
     <depend>moveit_ros_robot_interaction</depend>
     <depend>moveit_ros_planning_interface</depend>
