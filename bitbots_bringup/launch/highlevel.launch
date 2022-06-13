@@ -22,7 +22,7 @@
 
     <!-- launch vision -->
     <group if="$(var vision)">
-        <include file="$(find-pkg-share bitbots_vision)/launch/vision_startup.launch">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/vision_standalone.launch">
             <arg name="sim" value="$(var sim)" />
             <arg name="use_game_settings" value="$(var use_game_settings)"/>
             <arg name="debug" value="$(var vision_debug)" />
