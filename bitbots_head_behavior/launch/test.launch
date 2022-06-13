@@ -21,7 +21,9 @@
     </group>
 
     <group unless="$(var viz)">
-        <include file="$(find-pkg-share bitbots_vision)/launch/vision_startup.launch" />
+        <include file="$(find-pkg-share bitbots_bringup)/launch/vision_standalone.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
         <include file="$(find-pkg-share humanoid_league_transform)/launch/transformer.launch" />
     </group>
 
