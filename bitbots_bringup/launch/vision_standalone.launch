@@ -8,9 +8,7 @@
     <!-- Start the vision-->
     <include file="$(find-pkg-share bitbots_vision)/launch/vision.launch">
         <arg name="sim" value="$(var sim)" />
-        <arg name="debug" value="$(var vision_debug)" />
-        <arg name="use_game_settings" value="$(var use_game_settings)"/>
-        </include>
+        <arg name="debug" value="$(var debug)" />
     </include>
 
     <!-- Start the camera only when necessary -->
