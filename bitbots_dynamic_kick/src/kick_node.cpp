@@ -341,7 +341,6 @@ void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<
   rclcpp::Time next_loop_time;
   rclcpp::Time last_time = this->get_clock()->now();
   while (rclcpp::ok()) {
-    RCLCPP_ERROR_STREAM(this->get_logger(), "L1");
     next_loop_time = last_time + rclcpp::Duration::from_seconds(1.0 / engine_rate_);
     last_time = this->get_clock()->now();
     if (this->get_clock()->sleep_until(next_loop_time)) {
