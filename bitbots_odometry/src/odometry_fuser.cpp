@@ -199,11 +199,9 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
   tf2::Transform rotation_point_tf;
 
   char current_support_state = biped_interfaces::msg::Phase::DOUBLE_STANCE;
-
-  // this is a hack due to an error in message filter library https://github.com/ros2/message_filters/issues/32
-  rclcpp::Time hack_time = rclcpp::Time(fused_time_.seconds(), fused_time_.nanoseconds());
+  
   biped_interfaces::msg::Phase::ConstSharedPtr
-      current_support_state_msg = support_state_cache_.getElemBeforeTime(hack_time);
+      current_support_state_msg = support_state_cache_.getElemBeforeTime(fused_time_);
 
   if (current_support_state_msg) {
     current_support_state = current_support_state_msg->phase;

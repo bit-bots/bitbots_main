@@ -19,7 +19,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
-  <depend>rotconv</depend>
+  <depend>rot_conv</depend>
   <depend>bitbots_docs</depend>
   <depend>biped_interfaces</depend>
 

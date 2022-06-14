@@ -14,7 +14,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(bitbots_docs REQUIRED)
-find_package(rotconv REQUIRED)
+find_package(rot_conv REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
@@ -38,7 +38,7 @@ ament_target_dependencies(motion_odometry
         biped_interfaces
         geometry_msgs
         bitbots_docs
-        rotconv
+        rot_conv
         sensor_msgs
         tf2_ros
         ament_cmake
@@ -53,7 +53,7 @@ ament_target_dependencies(odometry_fuser
         biped_interfaces
         geometry_msgs
         bitbots_docs
-        rotconv
+        rot_conv
         sensor_msgs
         tf2_ros
         ament_cmake

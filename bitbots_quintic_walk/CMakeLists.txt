@@ -23,7 +23,7 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(rotconv REQUIRED)
+find_package(rot_conv REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -69,7 +69,7 @@ ament_target_dependencies(WalkNode
         moveit_ros_planning_interface
         nav_msgs
         rclcpp
-        rotconv
+        rot_conv
         sensor_msgs
         std_msgs
         tf2
@@ -103,7 +103,7 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         nav_msgs
         rclcpp
         ros2_python_extension
-        rotconv
+        rot_conv
         sensor_msgs
         std_msgs
         tf2

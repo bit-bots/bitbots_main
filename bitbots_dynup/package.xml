@@ -26,7 +26,7 @@
   <depend>moveit_ros_robot_interaction</depend>
   <depend>moveit_ros_planning_interface</depend>
   <depend>bitbots_docs</depend>
-  <depend>rotconv</depend>
+  <depend>rot_conv</depend>
   <depend>control_toolbox</depend>
   <depend>ros2_python_extension</depend>
   <depend>backward_ros</depend>
