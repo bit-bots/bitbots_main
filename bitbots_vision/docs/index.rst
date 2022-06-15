@@ -54,7 +54,7 @@ To start the vision, use
 
 ::
 
-   roslaunch bitbots_vision vision_startup.launch
+   roslaunch bitbots_vision vision.launch
 
 The following parameters are available:
 
@@ -63,15 +63,7 @@ The following parameters are available:
 +=====================+=========+===========================================================================================================================+
 |``sim``              |``false``|Activate simulation time, switch to simulation color settings and deactivate launching of an image provider                |
 +---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
-|``camera``           |``true`` |Deactivate all image providers (e.g. for use with rosbags or in simulation)                                                |
-+---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
-|``basler``           |``true`` |Start the basler camera driver instead of the  `wolves_image_provider <https://github.com/bit-bots/wolves_image_provider>`_|
-+---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
-|``dummyball``        |``false``|NOT start the ball detection to save resources                                                                             |
-+---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
 |``debug``            |``false``|Activate publishing of several debug images which can be inspected in the rqt image view                                   |
-+---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
-|``use_game_settings``|``false``|Load additional game settings                                                                                              |
 +---------------------+---------+---------------------------------------------------------------------------------------------------------------------------+
 
 

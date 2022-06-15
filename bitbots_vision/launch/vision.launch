@@ -1,7 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <launch>
     <!-- Get launch params-->
     <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
-    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
@@ -35,12 +35,5 @@
             <!-- Use sim time-->
             <param name="use_sim_time" value="true"/>
         </node>
-    </group>
-
-    <!-- Start the camera only when necessary -->
-    <group if="$(var camera)">
-        <group unless="$(var sim)">
-            <include file="$(find-pkg-share bitbots_basler_camera)/launch/basler_camera.launch" />
-        </group>
     </group>
 </launch>
