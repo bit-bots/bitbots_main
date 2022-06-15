@@ -11,7 +11,8 @@ import yaml
 import cv2
 
 from .yoeo_handler_utils import OVImagePreprocessor, OVSegmentationPostProcessor, OVDetectionPostProcessor, \
-    ONNXImagePreprocessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor
+    ONNXImagePreprocessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor, \
+    TVMImagePreprocessor, TVMSegmentationPostProcessor, TVMDetectionPostProcessor
 
 if TYPE_CHECKING:
     from .yoeo_handler_utils import IImagePreprocessor, ISegmentationPostProcessor, IDetectionPostProcessor
@@ -299,14 +300,14 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._input_layer_shape = input_shape_dict.get('InputLayer')
 
         height, width = self._input_layer_shape[2], self._input_layer_shape[3]
-        self._img_preprocessor: IImagePreprocessor = OVImagePreprocessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
+        self._img_preprocessor: IImagePreprocessor = TVMImagePreprocessor((height, width))
+        self._det_postprocessor: IDetectionPostProcessor = TVMDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"]
         )
-        self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: ISegmentationPostProcessor = TVMSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 

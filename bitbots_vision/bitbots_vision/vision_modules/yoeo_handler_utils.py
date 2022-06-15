@@ -153,6 +153,23 @@ class ONNXImagePreprocessor(IImagePreprocessor):
         self._image_prepocessor.reset()
 
 
+class TVMImagePreprocessor(IImagePreprocessor):
+    def __init__(self, network_input_dimensions):
+        self._image_prepocessor: IImagePreprocessor = OVImagePreprocessor(network_input_dimensions)
+
+    def configure(self, network_input_shape: Tuple[int, int]) -> None:
+        self._image_prepocessor.configure(network_input_shape)
+
+    def get_info(self) -> ImagePreprocessorData:
+        return self._image_prepocessor.get_info()
+
+    def process(self, image):
+        return self._image_prepocessor.process(image)
+
+    def reset(self) -> None:
+        self._image_prepocessor.reset()
+
+
 class OVSegmentationPostProcessor(ISegmentationPostProcessor):
     def __init__(self, image_preprocessor: IImagePreprocessor):
         self._image_preprocessor = image_preprocessor
@@ -205,6 +222,17 @@ class OVSegmentationPostProcessor(ISegmentationPostProcessor):
 
 
 class ONNXSegmentationPostProcessor(ISegmentationPostProcessor):
+    def __init__(self, image_preprocessor: IImagePreprocessor):
+        self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(image_preprocessor)
+
+    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+        self._seg_postprocessor.configure(image_preprocessor)
+
+    def process(self, segmentation):
+        return self._seg_postprocessor.process(segmentation)
+
+
+class TVMSegmentationPostProcessor(ISegmentationPostProcessor):
     def __init__(self, image_preprocessor: IImagePreprocessor):
         self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(image_preprocessor)
 
@@ -377,6 +405,35 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
 
 
 class ONNXDetectionPostProcessor(IDetectionPostProcessor):
+    def __init__(self,
+                 image_preprocessor: IImagePreprocessor,
+                 output_img_size: int,
+                 conf_thresh: float,
+                 nms_thresh: float):
+        self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
+            image_preprocessor=image_preprocessor,
+            output_img_size=output_img_size,
+            conf_thresh=conf_thresh,
+            nms_thresh=nms_thresh
+        )
+
+    def process(self, detections):
+        return self._det_postprocessor.process(detections)
+
+    def configure(self,
+                  image_preprocessor: IImagePreprocessor,
+                  output_img_size: int,
+                  conf_thresh: float,
+                  nms_thresh: float) -> None:
+        self._det_postprocessor.configure(
+            image_preprocessor=image_preprocessor,
+            output_img_size=output_img_size,
+            conf_thresh=conf_thresh,
+            nms_thresh=nms_thresh
+        )
+
+
+class TVMDetectionPostProcessor(IDetectionPostProcessor):
     def __init__(self,
                  image_preprocessor: IImagePreprocessor,
                  output_img_size: int,
