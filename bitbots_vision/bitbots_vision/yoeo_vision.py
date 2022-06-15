@@ -248,9 +248,6 @@ class YOEOVision(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    # rclpy.logging.set_logger_level("bitbots_vision", rclpy.logging.LoggingSeverity.DEBUG)
-    rclpy.logging.set_logger_level("vision_yoeo", rclpy.logging.LoggingSeverity.DEBUG)
-    rclpy.logging.set_logger_level("yoeo_handler_utils", rclpy.logging.LoggingSeverity.DEBUG)
     node = YOEOVision()
     try:
         rclpy.spin(node)
