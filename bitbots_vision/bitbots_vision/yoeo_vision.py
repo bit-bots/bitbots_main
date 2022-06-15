@@ -106,7 +106,7 @@ class YOEOVision(Node):
 
     @staticmethod
     def _verify_neural_network_type(neural_network_type: str) -> None:
-        if neural_network_type not in {'openvino', 'onnx', 'pytorch'}:
+        if neural_network_type not in {'openvino', 'onnx', 'pytorch', 'tvm'}:
             logger.error(f"Unknown neural network type '{neural_network_type}'")
 
     def _verify_neural_network_files_exist(self, neural_network_type: str, model_path: str) -> None:
