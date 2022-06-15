@@ -10,12 +10,12 @@ from typing import List, Union, Dict, Any, Tuple, TYPE_CHECKING
 import yaml
 import cv2
 
-from .yoeo_handler_utils import OVImagePreprocessor, OVSegmentationPostProcessor, OVDetectionPostProcessor,\
+from .yoeo_handler_utils import OVImagePreprocessor, OVSegmentationPostProcessor, OVDetectionPostProcessor, \
     ONNXImagePreprocessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor
 
 if TYPE_CHECKING:
     from .yoeo_handler_utils import IImagePreprocessor, ISegmentationPostProcessor, IDetectionPostProcessor
-    
+
 logger = rclpy.logging.get_logger('vision_yoeo')
 
 try:
@@ -32,6 +32,12 @@ try:
     import onnxruntime
 except ImportError:
     logger.error("Unable to import onnxruntime. Thigh might be fine if you use another neural network type.")
+
+try:
+    import tvm
+    from tvm.contrib import graph_executor
+except ImportError:
+    logger.error("Unable to import tvm. Thigh might be fine if you use another neural network type.")
 
 
 class IYOEOHandler(ABC):
@@ -264,6 +270,71 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
         detections = self._det_postprocessor.process(network_output[self._output_layer_detections])
         segmentation = self._seg_postprocessor.process(network_output[self._output_layer_segmentations])
+
+        return detections, segmentation
+
+
+class YOEOHandlerTVM(YOEOHandlerTemplate):
+    def __init__(self, config: Dict, model_path: str):
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
+
+        super().__init__(config, model_path)
+
+        binary_path = os.path.join(model_path, "yoeo", "mod.so")
+        params_path = os.path.join(model_path, "yoeo", "mod.params")
+        json_path = os.path.join(model_path, "yoeo", "mod.json")
+
+        logger.debug(f"Loading files...\n\t{binary_path}\n\t{params_path}\n\t{json_path}")
+        binary_lib = tvm.runtime.load_module(binary_path)
+        loaded_params = bytearray(open(params_path, "rb").read())
+        loaded_json = open(json_path).read()
+
+        device = self._select_device()
+
+        logger.debug(f"Creating network on device '{device}'...")
+        self._model = graph_executor.create(loaded_json, binary_lib, device)
+        self._model.load_params(loaded_params)
+
+        input_shape_dict, _ = self._model.get_input_info()
+        self._input_layer_shape = input_shape_dict.get('InputLayer')
+
+        height, width = self._input_layer_shape[2], self._input_layer_shape[3]
+        self._img_preprocessor: IImagePreprocessor = OVImagePreprocessor((height, width))
+        self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer_shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"]
+        )
+        self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(self._img_preprocessor)
+
+        logger.debug(f"Leaving {self.__class__.__name__} constructor")
+
+    def configure(self, config: Dict) -> None:
+        super().configure(config)
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer_shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"]
+        )
+
+    @staticmethod
+    def _select_device() -> tvm.runtime.Device:
+        if tvm.vulkan().exist:
+            return tvm.vulkan()
+        else:
+            return tvm.cpu()
+
+    def _compute_new_prediction_for(self, image):
+        preproccessed_image = self._img_preprocessor.process(image)
+        network_input = preproccessed_image.reshape(self._input_layer_shape)
+
+        self._model.set_input(InputLayer=network_input)
+        self._model.run()
+
+        detections = self._det_postprocessor.process(self._model.get_output(0).numpy())
+        segmentation = self._seg_postprocessor.process(self._model.get_output(1).numpy())
 
         return detections, segmentation
 

@@ -123,6 +123,10 @@ class YOEOVision(Node):
             exists = os.path.exists(os.path.join(model_path, "yoeo.onnx"))
         elif neural_network_type == "pytorch":
             exists = os.path.exists(os.path.join(model_path, "yoeo.pth"))
+        elif neural_network_type == "tvm":
+            exists = os.path.exists(os.path.join(model_path, "yoeo", "mod.so")) and \
+                os.path.exists(os.path.join(model_path, "yoeo", "mod.params")) and \
+                os.path.exists(os.path.join(model_path, "yoeo", "mod.json"))
         return exists
 
     def _set_up_yoeo_handler(self, new_config: Dict) -> None:
@@ -144,6 +148,8 @@ class YOEOVision(Node):
             self._yoeo_handler = yoeo_handler.YOEOHandlerONNX(new_config, model_path)
         elif neural_network_type == "pytorch":
             self._yoeo_handler = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
+        elif neural_network_type == "tvm":
+            self._yoeo_handler = yoeo_handler.YOEOHandlerTVM(new_config, model_path)
         logger.info(f"Using {self._yoeo_handler.__class__.__name__}")
 
     def _yoeo_parameters_have_changed(self, new_config: Dict) -> bool:
