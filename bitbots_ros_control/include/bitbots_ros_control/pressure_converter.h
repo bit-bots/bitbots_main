@@ -18,6 +18,9 @@ class PressureConverter {
   PressureConverter(rclcpp::Node::SharedPtr nh, char side);
  private:
   rclcpp::Node::SharedPtr nh_;
+  rclcpp::executors::StaticSingleThreadedExecutor sub_executor_;
+  rclcpp::CallbackGroup::SharedPtr sub_cbg_;
+  std::thread* sub_executor_thread_;
   rclcpp::Publisher<bitbots_msgs::msg::FootPressure>::SharedPtr filtered_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr cop_pub_;
   std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> wrench_pubs_;
@@ -32,6 +35,8 @@ class PressureConverter {
   int average_, scale_and_zero_average_;
   double cop_threshold_;
   char side_;
+  std::string req_type_;
+  std::shared_ptr<bitbots_msgs::srv::FootScale::Request> request_;
   std::string scale_lr_, zero_lr_, cop_lr_, sole_lr_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr zero_service_;
   rclcpp::Service<bitbots_msgs::srv::FootScale>::SharedPtr scale_service_;
@@ -42,6 +47,7 @@ class PressureConverter {
   void collectMessages();
   void saveYAML();
 };
+
 
 
 
