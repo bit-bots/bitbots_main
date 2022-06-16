@@ -52,7 +52,7 @@ class BallFilter(Node):
         self.filter_time_step = 1.0 / self.filter_rate
         self.filter_reset_duration = rclpy.duration.Duration(seconds=config['filter_reset_time'])
         self.filter_reset_distance = config['filter_reset_distance']
-        self.optional_distance = config['optional_distance']
+        self.closest_distance_match = config['closest_distance_match']
 
         filter_frame = config['filter_frame']
         if filter_frame == "odom":
@@ -113,7 +113,7 @@ class BallFilter(Node):
     def ball_callback(self, msg: PoseWithCertaintyArray) -> None:
         if msg.poses:  # Balls exist
             # Either select ball closest to previous prediction or with highest confidence
-            if self.optional_distance:  # Select ball closest to previous prediction
+            if self.closest_distance_match:  # Select ball closest to previous prediction
                 self.ball_msg = self._get_closest_ball_to_previous_prediction(msg)
             else:  # Select ball with highest confidence
                 self.ball_msg = sorted(msg.poses, key=lambda ball: ball.confidence)[-1]

@@ -33,4 +33,4 @@ bitbots_ball_filter:
     filter_reset_distance: 2
 
     # True if ball should be selected based on distance to filtered ball instead of highest rating
-    optional_distance: True
+    closest_distance_match: True
