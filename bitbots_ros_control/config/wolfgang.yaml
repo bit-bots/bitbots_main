@@ -101,6 +101,12 @@ wolfgang_hardware_interface:
         interface_type: LED
         number_of_LEDs: 3
         start_number: 3
+      IMU_head:
+        id: 241
+        topic: imu_head/data
+        frame: imu_head_frame
+        model_number: 0xBAFF
+        interface_type: IMU
       RShoulderPitch:
         id: 1
         model_number: 311
