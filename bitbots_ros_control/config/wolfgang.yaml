@@ -102,7 +102,7 @@ wolfgang_hardware_interface:
         number_of_LEDs: 3
         start_number: 3
       IMU_head:
-        id: 241
+        id: 242
         topic: imu_head/data
         frame: imu_head_frame
         model_number: 0xBAFF
