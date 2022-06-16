@@ -108,7 +108,7 @@ class BallFilter(Node):
     def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
         self.logger.info("Resetting bitbots ball filter...")
         self.filter_initialized = False
-        return True, ""
+        return response
 
     def ball_callback(self, msg: PoseWithCertaintyArray) -> None:
         if msg.poses:  # Balls exist
@@ -127,10 +127,10 @@ class BallFilter(Node):
 
     def _get_closest_ball_to_previous_prediction(self, msg: PoseWithCertaintyArray) -> Union[PoseWithCertainty, None]:
         closest_distance = math.inf
-        closest_ball_msg = None
+        closest_ball_msg = msg.poses[0]
         for ball_msg in msg.poses:
             ball_transform = self._get_transform(msg.header, ball_msg.pose.pose.position)
-            if ball_transform:
+            if ball_transform and self.ball:
                 distance = math.dist(
                     (ball_transform.point.x, ball_transform.point.y),
                     (self.ball.point.x, self.ball.point.y))
@@ -235,7 +235,7 @@ class BallFilter(Node):
         :param state_vec: current state of kalmanfilter
         :param cov_mat: current covariance matrix
         """
-        header = Header
+        header = Header()
         header.frame_id = self.filter_frame
         header.stamp = rclpy.time.Time.to_msg(self.get_clock().now())
 

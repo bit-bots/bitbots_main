@@ -2,9 +2,8 @@
 import rclpy
 from rclpy.node import Node
 import numpy as np
-import sys
 
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from humanoid_league_msgs.msg import PoseWithCertainty, PoseWithCertaintyArray
 
 
 class SimBall(Node):
@@ -22,10 +21,9 @@ class SimBall(Node):
 
         self.velocity = np.zeros((2))
         self.position = np.zeros((2))
-        self.p_pub = self.create_publisher(PoseWithCovarianceStamped, 'position', 1)
-        self.p_err_pub = self.create_publisher(PoseWithCovarianceStamped, 'ball_relative', 1)
-        self.rate = self.create_rate(self.pub_frequency)
-        rate = self.create_timer(0.1, self.step)
+        self.p_pub = self.create_publisher(PoseWithCertaintyArray, 'position', 1)
+        self.p_err_pub = self.create_publisher(PoseWithCertaintyArray, 'balls_relative', 1)
+        self.timer = self.create_timer(self.dt, self.step)
 
     def step(self):
         self.position += self.velocity * self.dt
@@ -41,12 +39,16 @@ class SimBall(Node):
         return np.multiply(np.random.randn(2), self.max_acceleration) * self.dt
 
     def gen_msg(self, x, y):
-        msg = PoseWithCovarianceStamped()
-        msg.header.frame_id = 'world'
-        msg.pose.pose.position.x = x
-        msg.pose.pose.position.y = y
-        msg.pose.pose.orientation.w = 1.0
-        return msg
+        pose_msg = PoseWithCertainty()
+        pose_msg.pose.pose.position.x = x
+        pose_msg.pose.pose.position.y = y
+        pose_msg.pose.pose.orientation.w = 1.0
+
+        poses_msg = PoseWithCertaintyArray()
+        poses_msg.header.frame_id = 'odom'
+        poses_msg.poses.append(pose_msg)
+        return poses_msg
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -57,5 +59,3 @@ def main(args=None):
     except KeyboardInterrupt:
         node.destroy_node()
         rclpy.shutdown()
-
-
