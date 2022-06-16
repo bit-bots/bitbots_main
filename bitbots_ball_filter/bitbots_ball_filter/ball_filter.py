@@ -173,28 +173,34 @@ class BallFilter(Node):
         Process noise is taken into account
         """
         if self.ball:  # Ball measurement exists
+            # Reset filter, if distance between last prediction and latest measurement is too large
             distance_to_ball = math.dist(
                 (self.kf.get_update()[0][0], self.kf.get_update()[0][1]), self.get_ball_measurement())
             if self.filter_initialized and distance_to_ball > self.filter_reset_distance:
                 self.filter_initialized = False
+                self.logger.info(f"Reset filter! Reason: Distance to ball {distance_to_ball} > {self.filter_reset_distance} (filter_reset_distance)")
+            # Initialize filter if not already
             if not self.filter_initialized:
                 self.init_filter(*self.get_ball_measurement())
+            # Predict and publish
             self.kf.predict()
             self.kf.update(self.get_ball_measurement())
             self.publish_data(*self.kf.get_update())
             self.last_ball_stamp = self.ball.get_header().stamp
-            self.ball = None
-        else:
+            self.ball = None  # Clear handled measurement
+        else:  # No new ball measurement to handle
             if self.filter_initialized:
-                # If last measurement is too old, reset filter
-                if not self.last_ball_stamp or (self.get_clock().now() - rclpy.time.Time.from_msg(self.last_ball_stamp)) > self.filter_reset_duration:
+                # Reset filer,if last measurement is too old
+                age = self.get_clock().now() - rclpy.time.Time.from_msg(self.last_ball_stamp)
+                if not self.last_ball_stamp or age > self.filter_reset_duration:
                     self.filter_initialized = False
+                    self.logger.info(f"Reset filter! Reason: Latest ball is too old {age} > {self.filter_reset_duration} (filter_reset_duration)")
                     return
+                # Empty update, as no new measurement available (and not too old)
                 self.kf.predict()
                 self.kf.update(None)
                 self.publish_data(*self.kf.get_update())
-            else:
-                # Publish old state with huge covariance
+            else:  # Publish old state with huge covariance
                 state_vec, cov_mat = self.kf.get_update()
                 huge_cov_mat = np.eye(cov_mat.shape[0]) * 10
                 self.publish_data(state_vec, huge_cov_mat)
