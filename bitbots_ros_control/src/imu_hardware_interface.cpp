@@ -64,7 +64,7 @@ bool ImuHardwareInterface::init() {
   set_accel_calib_threshold_service_ = nh_->create_service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>(
       "/imu/set_accel_calibration_threshold", std::bind(&ImuHardwareInterface::setAccelCalibrationThreshold, this, _1, _2));
 
-  imu_pub_ = nh_->create_publisher<sensor_msgs::msg::Imu>("/imu/data", 10);
+  imu_pub_ = nh_->create_publisher<sensor_msgs::msg::Imu>(topic_, 10);
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
 
   // read the current values in the IMU module so that they can later be displayed in diagnostic message
