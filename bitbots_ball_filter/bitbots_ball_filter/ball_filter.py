@@ -17,10 +17,11 @@ from std_srvs.srv import Trigger
 from rcl_interfaces.msg import SetParametersResult
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from tf2_geometry_msgs import PointStamped
-from humanoid_league_msgs.msg import PoseWithCertainty, PoseWithCertaintyArray, PoseWithCertaintyStamped
+from humanoid_league_msgs.msg import PoseWithCertaintyStamped
+from soccer_vision_3d_msgs.msg import BallArray, Ball
 
 
-class Ball():
+class BallWrapper():
     def __init__(self, position, header, confidence):
         self.header = header
         self.position = position
@@ -58,7 +59,7 @@ class BallFilter(Node):
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_initialized = False
-        self.ball = None  # type: Ball
+        self.ball = None  # type: BallWrapper
         self.last_ball_stamp = None
 
         self.filter_rate = config['filter_rate']
@@ -102,7 +103,7 @@ class BallFilter(Node):
 
         # setup subscriber
         self.subscriber = self.create_subscription(
-            PoseWithCertaintyArray,
+            BallArray,
             config['ball_subscribe_topic'],
             self.ball_callback,
             1
@@ -123,20 +124,20 @@ class BallFilter(Node):
         self.filter_initialized = False
         return response
 
-    def ball_callback(self, msg: PoseWithCertaintyArray) -> None:
-        if msg.poses:  # Balls exist
+    def ball_callback(self, msg: BallArray) -> None:
+        if msg.balls:  # Balls exist
             # Either select ball closest to previous prediction or with highest confidence
             if self.closest_distance_match:  # Select ball closest to previous prediction
                 ball_msg = self._get_closest_ball_to_previous_prediction(msg)
             else:  # Select ball with highest confidence
-                ball_msg = sorted(msg.poses, key=lambda ball: ball.confidence)[-1]
-            self.ball = Ball(self._get_transform(msg.header, ball_msg.pose.pose.position), msg.header, ball_msg.confidence)
+                ball_msg = sorted(msg.balls, key=lambda ball: ball.confidence.confidence)[-1]
+            self.ball = BallWrapper(self._get_transform(msg.header, ball_msg.center), msg.header, ball_msg.confidence.confidence)
 
-    def _get_closest_ball_to_previous_prediction(self, msg: PoseWithCertaintyArray) -> Union[PoseWithCertainty, None]:
+    def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Union[Ball, None]:
         closest_distance = math.inf
-        closest_ball_msg = msg.poses[0]
-        for ball_msg in msg.poses:
-            ball_transform = self._get_transform(msg.header, ball_msg.pose.pose.position)
+        closest_ball_msg = ball_array.balls[0]
+        for ball_msg in ball_array.balls:
+            ball_transform = self._get_transform(ball_array.header, ball_msg.center)
             if ball_transform and self.ball:
                 distance = math.dist(
                     (ball_transform.point.x, ball_transform.point.y),
@@ -172,8 +173,7 @@ class BallFilter(Node):
         """
         if self.ball:  # Ball measurement exists
             distance_to_ball = math.dist(
-                (self.kf.get_update()[0][0], self.kf.get_update()[0][1]),
-                (self.ball.get_position().point.x, self.ball.get_position().point.y))
+                (self.kf.get_update()[0][0], self.kf.get_update()[0][1]), self.get_ball_measurement())
             if self.filter_initialized and distance_to_ball > self.filter_reset_distance:
                 self.filter_initialized = False
             if not self.filter_initialized:
@@ -181,12 +181,12 @@ class BallFilter(Node):
             self.kf.predict()
             self.kf.update(self.get_ball_measurement())
             self.publish_data(*self.kf.get_update())
-            self.last_ball_stamp = self.ball.get_header()
+            self.last_ball_stamp = self.ball.get_header().stamp
             self.ball = None
         else:
             if self.filter_initialized:
                 # If last measurement is too old, reset filter
-                if not self.last_ball_stamp or (self.get_clock().now() - rclpy.time.Time.from_msg(self.last_ball_stamp.stamp)) > self.filter_reset_duration:
+                if not self.last_ball_stamp or (self.get_clock().now() - rclpy.time.Time.from_msg(self.last_ball_stamp)) > self.filter_reset_duration:
                     self.filter_initialized = False
                     return
                 self.kf.predict()
@@ -200,11 +200,7 @@ class BallFilter(Node):
 
     def get_ball_measurement(self) -> Tuple[float, float]:
         """extracts filter measurement from ball message"""
-        try:
-            return (self.ball.get_position().point.x, self.ball.get_position().point.y)
-        except AttributeError as e:
-            self.logger.warning(f"Did you reconfigure? Something went wrong... {e}")
-            # TODO: Handle return values...
+        return (self.ball.get_position().point.x, self.ball.get_position().point.y)
 
     def init_filter(self, x: float, y: float) -> None:
         """

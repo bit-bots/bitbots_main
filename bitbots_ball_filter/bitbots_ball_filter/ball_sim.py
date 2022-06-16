@@ -4,7 +4,7 @@ from rclpy.node import Node
 import numpy as np
 
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from humanoid_league_msgs.msg import PoseWithCertainty, PoseWithCertaintyArray
+from soccer_vision_3d_msgs.msg import Ball, BallArray
 
 
 class SimBall(Node):
@@ -23,7 +23,7 @@ class SimBall(Node):
         self.velocity = np.zeros((2))
         self.position = np.zeros((2))
         self.p_pub = self.create_publisher(PoseWithCovarianceStamped, 'position', 1)
-        self.p_err_pub = self.create_publisher(PoseWithCertaintyArray, 'balls_relative', 1)
+        self.p_err_pub = self.create_publisher(BallArray, 'balls_relative', 1)
         self.timer = self.create_timer(self.dt, self.step)
 
     def step(self):
@@ -48,16 +48,15 @@ class SimBall(Node):
         return pose_msg
 
     def gen_err_msg(self, x, y):
-        pose_msg = PoseWithCertainty()
-        pose_msg.pose.pose.position.x = x
-        pose_msg.pose.pose.position.y = y
-        pose_msg.pose.pose.orientation.w = 1.0
-        pose_msg.confidence = 0.9
+        ball_msg = Ball()
+        ball_msg.center.x = x
+        ball_msg.center.y = y
+        ball_msg.confidence.confidence = 0.9
 
-        poses_msg = PoseWithCertaintyArray()
-        poses_msg.header.frame_id = 'odom'
-        poses_msg.poses.append(pose_msg)
-        return poses_msg
+        ball_array_msg = BallArray()
+        ball_array_msg.header.frame_id = 'odom'
+        ball_array_msg.balls.append(ball_msg)
+        return ball_array_msg
 
 
 def main(args=None):
