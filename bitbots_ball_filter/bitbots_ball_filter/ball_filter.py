@@ -122,6 +122,7 @@ class BallFilter(Node):
     def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
         self.logger.info("Resetting bitbots ball filter...")
         self.filter_initialized = False
+        response.success = True
         return response
 
     def ball_callback(self, msg: BallArray) -> None:
