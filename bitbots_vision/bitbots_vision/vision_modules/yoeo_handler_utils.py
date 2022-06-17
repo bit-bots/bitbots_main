@@ -9,7 +9,7 @@ logger = rclpy.logging.get_logger('yoeo_handler_utils')
 
 
 @dataclass
-class ImagePreprocessorData:
+class ImagePreProcessorData:
     padding_top: int
     padding_bottom: int
     padding_left: int
@@ -17,13 +17,13 @@ class ImagePreprocessorData:
     max_dim: int
 
 
-class IImagePreprocessor(ABC):
+class IImagePreProcessor(ABC):
     @abstractmethod
     def configure(self, network_input_shape: Tuple[int, int]) -> None:
         ...
 
     @abstractmethod
-    def get_info(self) -> ImagePreprocessorData:
+    def get_info(self) -> ImagePreProcessorData:
         ...
 
     @abstractmethod
@@ -37,7 +37,7 @@ class IImagePreprocessor(ABC):
 
 class ISegmentationPostProcessor:
     @abstractmethod
-    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+    def configure(self, image_preprocessor: IImagePreProcessor) -> None:
         ...
 
     @abstractmethod
@@ -48,7 +48,7 @@ class ISegmentationPostProcessor:
 class IDetectionPostProcessor:
     @abstractmethod
     def configure(self,
-                  image_preprocessor: IImagePreprocessor,
+                  image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
                   nms_thresh: float) -> None:
@@ -59,7 +59,7 @@ class IDetectionPostProcessor:
         ...
 
 
-class OVImagePreprocessor(IImagePreprocessor):
+class OVImagePreProcessor(IImagePreProcessor):
     def __init__(self, network_input_shape):
         self._network_input_shape_WH: Optional[Tuple[int, int]] = None
         self.configure(network_input_shape)
@@ -74,8 +74,8 @@ class OVImagePreprocessor(IImagePreprocessor):
     def configure(self, network_input_shape: Tuple[int, int]) -> None:
         self._network_input_shape_WH = network_input_shape[::-1]  # (height, width) to (width, height)
 
-    def get_info(self) -> ImagePreprocessorData:
-        return ImagePreprocessorData(
+    def get_info(self) -> ImagePreProcessorData:
+        return ImagePreProcessorData(
             padding_top=self._padding_top,
             padding_bottom=self._padding_bottom,
             padding_left=self._padding_left,
@@ -136,14 +136,14 @@ class OVImagePreprocessor(IImagePreprocessor):
         self._padding_right = 0
 
 
-class ONNXImagePreprocessor(IImagePreprocessor):
+class ONNXImagePreProcessor(IImagePreProcessor):
     def __init__(self, network_input_dimensions):
-        self._image_prepocessor: IImagePreprocessor = OVImagePreprocessor(network_input_dimensions)
+        self._image_prepocessor: IImagePreProcessor = OVImagePreProcessor(network_input_dimensions)
 
     def configure(self, network_input_shape: Tuple[int, int]) -> None:
         self._image_prepocessor.configure(network_input_shape)
 
-    def get_info(self) -> ImagePreprocessorData:
+    def get_info(self) -> ImagePreProcessorData:
         return self._image_prepocessor.get_info()
 
     def process(self, image):
@@ -153,14 +153,14 @@ class ONNXImagePreprocessor(IImagePreprocessor):
         self._image_prepocessor.reset()
 
 
-class TVMImagePreprocessor(IImagePreprocessor):
+class TVMImagePreProcessor(IImagePreProcessor):
     def __init__(self, network_input_dimensions):
-        self._image_prepocessor: IImagePreprocessor = OVImagePreprocessor(network_input_dimensions)
+        self._image_prepocessor: IImagePreProcessor = OVImagePreProcessor(network_input_dimensions)
 
     def configure(self, network_input_shape: Tuple[int, int]) -> None:
         self._image_prepocessor.configure(network_input_shape)
 
-    def get_info(self) -> ImagePreprocessorData:
+    def get_info(self) -> ImagePreProcessorData:
         return self._image_prepocessor.get_info()
 
     def process(self, image):
@@ -171,7 +171,7 @@ class TVMImagePreprocessor(IImagePreprocessor):
 
 
 class OVSegmentationPostProcessor(ISegmentationPostProcessor):
-    def __init__(self, image_preprocessor: IImagePreprocessor):
+    def __init__(self, image_preprocessor: IImagePreProcessor):
         self._image_preprocessor = image_preprocessor
 
         # these attributes change for every segmentation!
@@ -181,7 +181,7 @@ class OVSegmentationPostProcessor(ISegmentationPostProcessor):
         self._padding_left: int = 0
         self._padding_right: int = 0
 
-    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+    def configure(self, image_preprocessor: IImagePreProcessor) -> None:
         self._image_preprocessor = image_preprocessor
 
     def process(self, segmentation):
@@ -222,10 +222,10 @@ class OVSegmentationPostProcessor(ISegmentationPostProcessor):
 
 
 class ONNXSegmentationPostProcessor(ISegmentationPostProcessor):
-    def __init__(self, image_preprocessor: IImagePreprocessor):
+    def __init__(self, image_preprocessor: IImagePreProcessor):
         self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(image_preprocessor)
 
-    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+    def configure(self, image_preprocessor: IImagePreProcessor) -> None:
         self._seg_postprocessor.configure(image_preprocessor)
 
     def process(self, segmentation):
@@ -233,10 +233,10 @@ class ONNXSegmentationPostProcessor(ISegmentationPostProcessor):
 
 
 class TVMSegmentationPostProcessor(ISegmentationPostProcessor):
-    def __init__(self, image_preprocessor: IImagePreprocessor):
+    def __init__(self, image_preprocessor: IImagePreProcessor):
         self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(image_preprocessor)
 
-    def configure(self, image_preprocessor: IImagePreprocessor) -> None:
+    def configure(self, image_preprocessor: IImagePreProcessor) -> None:
         self._seg_postprocessor.configure(image_preprocessor)
 
     def process(self, segmentation):
@@ -245,11 +245,11 @@ class TVMSegmentationPostProcessor(ISegmentationPostProcessor):
 
 class OVDetectionPostProcessor(IDetectionPostProcessor):
     def __init__(self,
-                 image_preprocessor: IImagePreprocessor,
+                 image_preprocessor: IImagePreProcessor,
                  output_img_size: int,
                  conf_thresh: float,
                  nms_thresh: float):
-        self._image_preprocessor: IImagePreprocessor = image_preprocessor
+        self._image_preprocessor: IImagePreProcessor = image_preprocessor
         self._conf_thresh: float = conf_thresh
         self._nms_thresh: float = nms_thresh
 
@@ -266,7 +266,7 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         self._nms_max_width_height_in_pixels = 4096
 
     def configure(self,
-                  image_preprocessor: IImagePreprocessor,
+                  image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
                   nms_thresh: float) -> None:
@@ -406,7 +406,7 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
 
 class ONNXDetectionPostProcessor(IDetectionPostProcessor):
     def __init__(self,
-                 image_preprocessor: IImagePreprocessor,
+                 image_preprocessor: IImagePreProcessor,
                  output_img_size: int,
                  conf_thresh: float,
                  nms_thresh: float):
@@ -421,7 +421,7 @@ class ONNXDetectionPostProcessor(IDetectionPostProcessor):
         return self._det_postprocessor.process(detections)
 
     def configure(self,
-                  image_preprocessor: IImagePreprocessor,
+                  image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
                   nms_thresh: float) -> None:
@@ -435,7 +435,7 @@ class ONNXDetectionPostProcessor(IDetectionPostProcessor):
 
 class TVMDetectionPostProcessor(IDetectionPostProcessor):
     def __init__(self,
-                 image_preprocessor: IImagePreprocessor,
+                 image_preprocessor: IImagePreProcessor,
                  output_img_size: int,
                  conf_thresh: float,
                  nms_thresh: float):
@@ -450,7 +450,7 @@ class TVMDetectionPostProcessor(IDetectionPostProcessor):
         return self._det_postprocessor.process(detections)
 
     def configure(self,
-                  image_preprocessor: IImagePreprocessor,
+                  image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
                   nms_thresh: float) -> None:

@@ -10,12 +10,12 @@ from typing import List, Union, Dict, Any, Tuple, TYPE_CHECKING, Optional
 import yaml
 import cv2
 
-from .yoeo_handler_utils import OVImagePreprocessor, OVSegmentationPostProcessor, OVDetectionPostProcessor, \
-    ONNXImagePreprocessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor, \
-    TVMImagePreprocessor, TVMSegmentationPostProcessor, TVMDetectionPostProcessor
+from .yoeo_handler_utils import OVImagePreProcessor, OVSegmentationPostProcessor, OVDetectionPostProcessor, \
+    ONNXImagePreProcessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor, \
+    TVMImagePreProcessor, TVMSegmentationPostProcessor, TVMDetectionPostProcessor
 
 if TYPE_CHECKING:
-    from .yoeo_handler_utils import IImagePreprocessor, ISegmentationPostProcessor, IDetectionPostProcessor
+    from .yoeo_handler_utils import IImagePreProcessor, ISegmentationPostProcessor, IDetectionPostProcessor
 
 logger = rclpy.logging.get_logger('vision_yoeo')
 
@@ -191,7 +191,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
         self._input_layer = self._inference_session.get_inputs()[0]
 
-        self._img_preprocessor: IImagePreprocessor = ONNXImagePreprocessor(tuple(self._input_layer.shape[2:]))
+        self._img_preprocessor: IImagePreProcessor = ONNXImagePreProcessor(tuple(self._input_layer.shape[2:]))
         self._det_postprocessor: IDetectionPostProcessor = ONNXDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
@@ -250,7 +250,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._output_layer_segmentations = self._compiled_model.outputs[1]
 
         _, _, height, width = self._input_layer.shape  # TODO openvino.pyopenvino.Shape...
-        self._img_preprocessor: IImagePreprocessor = OVImagePreprocessor((height, width))
+        self._img_preprocessor: IImagePreProcessor = OVImagePreProcessor((height, width))
         self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
@@ -352,7 +352,6 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         params_path = YOEOPathGetter.get_tvm_params_file_path(model_directory)
         binary_path = YOEOPathGetter.get_tvm_so_file_path(model_directory)
 
-
         logger.debug(f"Loading files...\n\t{binary_path}\n\t{params_path}\n\t{json_path}")
         binary_lib = tvm.runtime.load_module(binary_path)
         loaded_params = bytearray(open(params_path, "rb").read())
@@ -368,7 +367,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._input_layer_shape = input_shape_dict.get('InputLayer')
 
         height, width = self._input_layer_shape[2], self._input_layer_shape[3]
-        self._img_preprocessor: IImagePreprocessor = TVMImagePreprocessor((height, width))
+        self._img_preprocessor: IImagePreProcessor = TVMImagePreProcessor((height, width))
         self._det_postprocessor: IDetectionPostProcessor = TVMDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
