@@ -30,7 +30,7 @@ setup(
     entry_points={
         'console_scripts': [
             'ball_filter = bitbots_ball_filter.ball_filter:main',
-            'ball_publisher = bitbots_ball_filter.ball_publisher:main',
+            'ball_sim = bitbots_ball_filter.ball_sim:main',
         ],
     }
 )
