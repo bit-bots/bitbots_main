@@ -7,6 +7,7 @@ if (NOT CMAKE_CXX_STANDARD)
 endif ()
 
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(bitbots_buttons REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
@@ -26,11 +27,12 @@ find_package(tf2_ros REQUIRED)
 find_package(transmission_interface REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+
 set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 17)
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -pedantic -Wextra)
 
 
 set(SOURCES
