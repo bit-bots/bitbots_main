@@ -14,9 +14,6 @@ bitbots_ball_filter:
     # Filtering rate in Hz
     filter_rate: 62  # we get an image every 16 ms -> 62.5 hz
 
-    # Balls with lower confidence will be dropped
-    min_ball_confidence: 0.6
-
     # Velocity reduction (per axis) factor of the ball per second
     velocity_reduction: 0.6
 
@@ -31,3 +28,6 @@ bitbots_ball_filter:
 
     # Distance to the current estimation causing a filter reset
     filter_reset_distance: 2
+
+    # True if ball should be selected based on distance to filtered ball instead of highest rating
+    closest_distance_match: True
