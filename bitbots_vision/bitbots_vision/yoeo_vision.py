@@ -223,21 +223,21 @@ class YOEOVision(Node):
         Run the vision pipeline
         """
 
-        image = self._convert_image_msg_to_cv2_image(image_msg)
+        image = self._extract_image_from_message(image_msg)
         if image is None:
             logger.error("Vision pipeline - Image content is None")
             return
 
         self._yoeo_handler.set_image(image)
-        self._publish_image_to_components(image)
+        self._forward_image_to_components(image)
 
         self._yoeo_handler.predict()
         self._run_components(image_msg)
 
-    def _convert_image_msg_to_cv2_image(self, image_msg):
+    def _extract_image_from_message(self, image_msg):
         return self._cv_bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
-    def _publish_image_to_components(self, image) -> None:
+    def _forward_image_to_components(self, image) -> None:
         for vision_component in self._vision_components:
             vision_component.set_image(image)
 
