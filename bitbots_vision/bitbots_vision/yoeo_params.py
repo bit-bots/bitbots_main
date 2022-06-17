@@ -90,8 +90,6 @@ gen.add("ROS_obstacle_msg_topic", str, description="ROS topic of the obstacles m
 gen.add("ROS_line_msg_topic", str, description="ROS topic of the line message")
 gen.add("ROS_line_mask_msg_topic", str, description="ROS topic of the line mask message")
 gen.add("ROS_debug_image_msg_topic", str, description="ROS topic of the debug image message")
-gen.add("ROS_red_HSV_mask_image_msg_topic", str, description="ROS topic of the red HSV color detector mask debug image message")
-gen.add("ROS_blue_HSV_mask_image_msg_topic", str, description="ROS topic of the blue HSV color detector mask debug image message")
 gen.add("ROS_field_mask_image_msg_topic", str, description="ROS topic of the field mask debug image message")
 
 gen.add("yoeo_model_path", str, description="Name of YOEO model")

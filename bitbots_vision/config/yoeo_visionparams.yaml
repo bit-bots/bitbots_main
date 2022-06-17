@@ -3,7 +3,7 @@ bitbots_vision:
     # Defining the default vision parameters
     component_ball_detection_active: true           # activate the ball detection
     component_camera_cap_check_active: true         # activate a one-time check whether the camera cap is still on the camera
-    component_debug_image_active: false             # activate the debug image
+    component_debug_image_active: true              # activate the debug image
     component_field_detection_active: true          # activate the field detection
     component_field_boundary_detection_active: true # activate the field boundary detection
     component_goalpost_detection_active: true       # activate the goalpost detection
@@ -13,7 +13,7 @@ bitbots_vision:
     vision_blind_threshold: 30  # Brightness threshold under which the vision thinks, that someone forgot the camera cap
 
     ROS_audio_msg_topic: 'speak'  # ROS topic of the audio message
-    ROS_img_msg_topic: 'camera/image_proc'  # ROS topic of the image message
+    ROS_img_msg_topic: 'image_raw'  # ROS topic of the image message
     ROS_field_boundary_msg_topic: 'field_boundary_in_image'  # ROS topic of the field boundary message
     ROS_ball_msg_topic: 'balls_in_image'  # ROS topic of the ball message
     ROS_goal_posts_msg_topic: 'goal_posts_in_image'  # ROS topic of the goal posts message
@@ -21,8 +21,6 @@ bitbots_vision:
     ROS_line_msg_topic: 'line_in_image'  # ROS topic of the line message
     ROS_line_mask_msg_topic: 'line_mask_in_image'  # ROS topic of the line mask message
     ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
-    ROS_red_HSV_mask_image_msg_topic: 'red_HSV_field_mask'  # ROS topic of the red HSV color detector mask debug image message    # benoetigt?
-    ROS_blue_HSV_mask_image_msg_topic: 'blue_HSV_field_mask'  # ROS topic of the blue HSV color detector mask debug image message # benoetigt?
     ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
 
     yoeo_model_path: '2021_12_06_flo_torso21_yoeo_7'
