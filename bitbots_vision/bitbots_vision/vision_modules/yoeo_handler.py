@@ -6,7 +6,7 @@ from collections import defaultdict
 import numpy as np
 import rclpy
 import os
-from typing import List, Union, Dict, Any, Tuple, TYPE_CHECKING
+from typing import List, Union, Dict, Any, Tuple, TYPE_CHECKING, Optional
 import yaml
 import cv2
 
@@ -101,7 +101,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         self._use_caching = config['caching']
 
     def _load_candidate_class_names(self, model_directory: str) -> None:
-        path = os.path.join(model_directory, "yoeo_names.yaml")
+        path = YOEOPathGetter.get_names_file_path(model_directory)
 
         with open(path, 'r', encoding="utf-8") as fp:
             class_names = yaml.load(fp, Loader=yaml.SafeLoader)
@@ -185,7 +185,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         super().__init__(config, model_directory)
-        onnx_path = os.path.join(model_directory, "onnx", "yoeo.onnx")
+        onnx_path = YOEOPathGetter.get_onnx_onnx_file_path(model_directory)
 
         logger.debug(f"Loading file...\n\t{onnx_path}")
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
@@ -213,7 +213,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(os.path.join(model_directory, "onnx", "yoeo.onnx"))
+        return os.path.exists(YOEOPathGetter.get_onnx_onnx_file_path(model_directory))
 
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
@@ -232,8 +232,8 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         super().__init__(config, model_directory)
-        xml_path = os.path.join(model_directory, "openvino", "yoeo.xml")
-        bin_path = os.path.join(model_directory, "openvino", "yoeo.bin")
+        xml_path = YOEOPathGetter.get_openvino_xml_file_path(model_directory)
+        bin_path = YOEOPathGetter.get_openvino_bin_file_path(model_directory)
 
         # https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
         self._inference_engine = openvino_runtime_Core()
@@ -279,8 +279,8 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(os.path.join(model_directory, "openvino", "yoeo.xml")) and \
-               os.path.exists(os.path.join(model_directory, "openvino", "yoeo.bin"))
+        return os.path.exists(YOEOPathGetter.get_openvino_bin_file_path(model_directory)) and \
+               os.path.exists(YOEOPathGetter.get_openvino_xml_file_path(model_directory))
 
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
@@ -294,15 +294,64 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         return detections, segmentation
 
 
+class YOEOHandlerPytorch(YOEOHandlerTemplate):
+    """
+    Using Pytorch to get YOEO predictions
+    """
+
+    def __init__(self, config, model_directory):
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
+
+        super().__init__(config, model_directory)
+
+        config_path = YOEOPathGetter.get_pytorch_cfg_file(model_directory)
+        weights_path = YOEOPathGetter.get_pytorch_pth_file(model_directory)
+
+        logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
+        self._model = torch_models.load_model(config_path, weights_path)
+
+        self._conf_thresh: float = config["yoeo_conf_threshold"]
+        self._nms_thresh: float = config["yoeo_nms_threshold"]
+
+        logger.debug(f"Leaving {self.__class__.__name__} constructor")
+
+    def configure(self, config: Dict) -> None:
+        super().configure(config)
+        self._conf_thresh = config["yoeo_conf_threshold"]
+        self._nms_thresh = config["yoeo_nms_threshold"]
+
+    @staticmethod
+    def model_files_exist(model_directory: str) -> bool:
+        return os.path.exists(YOEOPathGetter.get_pytorch_cfg_file(model_directory)) and \
+               os.path.exists(YOEOPathGetter.get_pytorch_pth_file(model_directory))
+
+    def _compute_new_prediction_for(self, image):
+        detections, segmentation = torch_detect.detect_image(
+            self._model,
+            image,
+            conf_thres=self._conf_thresh,
+            nms_thres=self._nms_thresh
+        )
+
+        segmentation = self._postprocess_segmentation(segmentation)
+
+        return detections, segmentation
+
+    @staticmethod
+    def _postprocess_segmentation(segmentations: Any):
+        return np.moveaxis(segmentations, 0, -1)
+
+
 class YOEOHandlerTVM(YOEOHandlerTemplate):
     def __init__(self, config: Dict, model_directory: str):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         super().__init__(config, model_directory)
 
-        binary_path = os.path.join(model_directory, "tvm", "yoeo.so")
-        params_path = os.path.join(model_directory, "tvm", "yoeo.params")
-        json_path = os.path.join(model_directory, "tvm", "yoeo.json")
+        json_path = YOEOPathGetter.get_tvm_json_file_path(model_directory)
+        params_path = YOEOPathGetter.get_tvm_params_file_path(model_directory)
+        binary_path = YOEOPathGetter.get_tvm_so_file_path(model_directory)
+
 
         logger.debug(f"Loading files...\n\t{binary_path}\n\t{params_path}\n\t{json_path}")
         binary_lib = tvm.runtime.load_module(binary_path)
@@ -348,9 +397,9 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(os.path.join(model_directory, "tvm", "yoeo.so")) and \
-               os.path.exists(os.path.join(model_directory, "tvm", "yoeo.params")) and \
-               os.path.exists(os.path.join(model_directory, "tvm", "yoeo.json"))
+        return os.path.exists(YOEOPathGetter.get_tvm_json_file_path(model_directory)) and \
+               os.path.exists(YOEOPathGetter.get_tvm_params_file_path(model_directory)) and \
+               os.path.exists(YOEOPathGetter.get_tvm_so_file_path(model_directory))
 
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
@@ -365,52 +414,51 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         return detections, segmentation
 
 
-class YOEOHandlerPytorch(YOEOHandlerTemplate):
-    """
-    Using Pytorch to get YOEO predictions
-    """
+class YOEOPathGetter:
+    @classmethod
+    def _assemble_full_path(cls, model_directory: str, subdir: Optional[str], filename: str) -> str:
+        if subdir is None:
+            path = os.path.join(model_directory, filename)
+        else:
+            path = os.path.join(model_directory, subdir, filename)
 
-    def __init__(self, config, model_directory):
-        logger.debug(f"Entering {self.__class__.__name__} constructor")
+        return path
 
-        super().__init__(config, model_directory)
+    @classmethod
+    def get_names_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, None, "yoeo_names.yaml")
 
-        config_path = os.path.join(model_directory, "pytorch", "yoeo.cfg")
-        weights_path = os.path.join(model_directory, "pytorch", "yoeo.pth")
+    @classmethod
+    def get_onnx_onnx_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, "onnx", "yoeo.onnx")
 
-        logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
-        self._model = torch_models.load_model(config_path, weights_path)
+    @classmethod
+    def get_openvino_bin_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "openvino", "yoeo.bin")
 
-        self._conf_thresh: float = config["yoeo_conf_threshold"]
-        self._nms_thresh: float = config["yoeo_nms_threshold"]
+    @classmethod
+    def get_openvino_xml_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, "openvino", "yoeo.xml")
 
-        logger.debug(f"Leaving {self.__class__.__name__} constructor")
+    @classmethod
+    def get_pytorch_cfg_file(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "pytorch", "yoeo.cfg")
 
-    def configure(self, config: Dict) -> None:
-        super().configure(config)
-        self._conf_thresh = config["yoeo_conf_threshold"]
-        self._nms_thresh = config["yoeo_nms_threshold"]
+    @classmethod
+    def get_pytorch_pth_file(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "pytorch", "yoeo.pth")
 
-    @staticmethod
-    def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(os.path.join(model_directory, "pytorch", "yoeo.pth")) and \
-               os.path.exists(os.path.join(model_directory, "pytorch", "yoeo.cfg"))
+    @classmethod
+    def get_tvm_json_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "tvm", "yoeo.json")
 
-    def _compute_new_prediction_for(self, image):
-        detections, segmentation = torch_detect.detect_image(
-            self._model,
-            image,
-            conf_thres=self._conf_thresh,
-            nms_thres=self._nms_thresh
-        )
+    @classmethod
+    def get_tvm_params_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "tvm", "yoeo.params")
 
-        segmentation = self._postprocess_segmentation(segmentation)
-
-        return detections, segmentation
-
-    @staticmethod
-    def _postprocess_segmentation(segmentations: Any):
-        return np.moveaxis(segmentations, 0, -1)
+    @classmethod
+    def get_tvm_so_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "tvm", "yoeo.so")
 
 
 class YOEODetectorTemplate(CandidateFinder):
