@@ -3,7 +3,7 @@ bitbots_vision:
     # Defining the default vision parameters
     component_ball_detection_active: true           # activate the ball detection
     component_camera_cap_check_active: true         # activate a one-time check whether the camera cap is still on the camera
-    component_debug_image_active: true              # activate the debug image
+    component_debug_image_active: false             # activate the debug image
     component_field_detection_active: true          # activate the field detection
     component_field_boundary_detection_active: true # activate the field boundary detection
     component_goalpost_detection_active: true       # activate the goalpost detection
