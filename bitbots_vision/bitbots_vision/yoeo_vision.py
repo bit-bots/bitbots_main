@@ -117,16 +117,13 @@ class YOEOVision(Node):
     def _model_files_exist(neural_network_type: str, model_path: str) -> bool:
         exists: bool = False
         if neural_network_type == "openvino":
-            exists = os.path.exists(os.path.join(model_path, "yoeo.xml")) and \
-                     os.path.exists(os.path.join(model_path, "yoeo.bin"))
+            exists = yoeo_handler.YOEOHandlerOpenVino.model_files_exist(model_path)
         elif neural_network_type == "onnx":
-            exists = os.path.exists(os.path.join(model_path, "yoeo.onnx"))
+            exists = yoeo_handler.YOEOHandlerONNX.model_files_exist(model_path)
         elif neural_network_type == "pytorch":
-            exists = os.path.exists(os.path.join(model_path, "yoeo.pth"))
+            exists = yoeo_handler.YOEOHandlerPytorch.model_files_exist(model_path)
         elif neural_network_type == "tvm":
-            exists = os.path.exists(os.path.join(model_path, "yoeo", "mod.so")) and \
-                os.path.exists(os.path.join(model_path, "yoeo", "mod.params")) and \
-                os.path.exists(os.path.join(model_path, "yoeo", "mod.json"))
+            exists = yoeo_handler.YOEOHandlerTVM.model_files_exist(model_path)
         return exists
 
     def _set_up_yoeo_handler(self, new_config: Dict) -> None:

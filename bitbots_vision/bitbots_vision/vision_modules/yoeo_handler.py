@@ -65,6 +65,11 @@ class IYOEOHandler(ABC):
         """
         ...
 
+    @staticmethod
+    @abstractmethod
+    def model_files_exist(models_directory: str) -> bool:
+        ...
+
     @abstractmethod
     def predict(self) -> None:
         ...
@@ -163,6 +168,11 @@ class YOEOHandlerTemplate(IYOEOHandler):
     def _update_image(self, img) -> None:
         self._image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+    @staticmethod
+    @abstractmethod
+    def model_files_exist(models_directory: str) -> bool:
+        ...
+
     @abstractmethod
     def _compute_new_prediction_for(self, image) -> Tuple:
         """
@@ -175,7 +185,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         super().__init__(config, model_path)
-        onnx_path = os.path.join(model_path, "yoeo.onnx")
+        onnx_path = os.path.join(model_path, "onnx", "yoeo.onnx")
 
         logger.debug(f"Loading file...\n\t{onnx_path}")
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
@@ -201,6 +211,10 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             nms_thresh=config["yoeo_nms_threshold"]
         )
 
+    @staticmethod
+    def model_files_exist(models_directory: str) -> bool:
+        return os.path.exists(os.path.join(models_directory, "onnx", "yoeo.onnx"))
+
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
 
@@ -218,8 +232,8 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         super().__init__(config, model_path)
-        xml_path = os.path.join(model_path, "yoeo.xml")
-        bin_path = os.path.join(model_path, "yoeo.bin")
+        xml_path = os.path.join(model_path, "openvino", "yoeo.xml")
+        bin_path = os.path.join(model_path, "openvino", "yoeo.bin")
 
         # https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
         self._inference_engine = openvino_runtime_Core()
@@ -247,6 +261,13 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
+    def _select_device(self) -> str:
+        if "MYRIAD" in self._inference_engine.available_devices:  # NCS2 stick
+            device = "MYRIAD"
+        else:
+            device = "CPU"
+        return device
+
     def configure(self, config: Dict) -> None:
         super().configure(config)
         self._det_postprocessor.configure(
@@ -256,12 +277,10 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             nms_thresh=config["yoeo_nms_threshold"]
         )
 
-    def _select_device(self) -> str:
-        if "MYRIAD" in self._inference_engine.available_devices:  # NCS2 stick
-            device = "MYRIAD"
-        else:
-            device = "CPU"
-        return device
+    @staticmethod
+    def model_files_exist(models_directory: str) -> bool:
+        return os.path.exists(os.path.join(models_directory, "openvino", "yoeo.xml")) and \
+               os.path.exists(os.path.join(models_directory, "openvino", "yoeo.bin"))
 
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
@@ -281,9 +300,9 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
         super().__init__(config, model_path)
 
-        binary_path = os.path.join(model_path, "yoeo", "mod.so")
-        params_path = os.path.join(model_path, "yoeo", "mod.params")
-        json_path = os.path.join(model_path, "yoeo", "mod.json")
+        binary_path = os.path.join(model_path, "tvm", "yoeo.so")
+        params_path = os.path.join(model_path, "tvm", "yoeo.params")
+        json_path = os.path.join(model_path, "tvm", "yoeo.json")
 
         logger.debug(f"Loading files...\n\t{binary_path}\n\t{params_path}\n\t{json_path}")
         binary_lib = tvm.runtime.load_module(binary_path)
@@ -311,6 +330,13 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
+    @staticmethod
+    def _select_device() -> tvm.runtime.Device:
+        if tvm.vulkan().exist:
+            return tvm.vulkan()
+        else:
+            return tvm.cpu()
+
     def configure(self, config: Dict) -> None:
         super().configure(config)
         self._det_postprocessor.configure(
@@ -321,11 +347,10 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         )
 
     @staticmethod
-    def _select_device() -> tvm.runtime.Device:
-        if tvm.vulkan().exist:
-            return tvm.vulkan()
-        else:
-            return tvm.cpu()
+    def model_files_exist(models_directory: str) -> bool:
+        return os.path.exists(os.path.join(models_directory, "tvm", "yoeo.so")) and \
+               os.path.exists(os.path.join(models_directory, "tvm", "yoeo.params")) and \
+               os.path.exists(os.path.join(models_directory, "tvm", "yoeo.json"))
 
     def _compute_new_prediction_for(self, image):
         preproccessed_image = self._img_preprocessor.process(image)
@@ -350,8 +375,8 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
         super().__init__(config, model_path)
 
-        config_path = os.path.join(model_path, "yoeo.cfg")
-        weights_path = os.path.join(model_path, "yoeo.pth")
+        config_path = os.path.join(model_path, "pytorch", "yoeo.cfg")
+        weights_path = os.path.join(model_path, "pytorch", "yoeo.pth")
 
         logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
         self._model = torch_models.load_model(config_path, weights_path)
@@ -365,6 +390,11 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         super().configure(config)
         self._conf_thresh = config["yoeo_conf_threshold"]
         self._nms_thresh = config["yoeo_nms_threshold"]
+
+    @staticmethod
+    def model_files_exist(models_directory: str) -> bool:
+        return os.path.exists(os.path.join(models_directory, "pytorch", "yoeo.pth")) and \
+               os.path.exists(os.path.join(models_directory, "pytorch", "yoeo.cfg"))
 
     def _compute_new_prediction_for(self, image):
         detections, segmentation = torch_detect.detect_image(
