@@ -470,8 +470,7 @@ class FieldBoundaryAlgorithm:
         Finds the points of the field boundary in the image.
 
         :param np.ndarray _image: Image to calculate the field boundary on
-        :param _field_detector: Instance of IFieldDetector
-       # TODO :type _field_detector: :class:`bitbots_vision.vision_module.color.ColorDetector`
+        :param IFileDetector _field_detector: Instance of IFieldDetector
         :param int _x_steps: Number of horizontal steps
         :param int _y_steps: Number of vertical steps
         :param int _roi_height: Height of Region Of Interest in which we are looking for green
