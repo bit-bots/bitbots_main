@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
     <!-- Get launch params-->
-    <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg name="sim" default="false" description="true: activates simulation time and switches to simulation color settings" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
