@@ -26,10 +26,8 @@ bitbots_vision:
     ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
 
     yoeo_model_path: '2021_12_06_flo_torso21_yoeo_7'
- #   yolo_openvino_model_path: '2020_11_12_flo_yolo_openvino'  # Name of the YOEO model
     yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
-
     yoeo_framework: 'tvm'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
 
     ball_candidate_field_boundary_y_offset: 0  # Threshold in which ball candidates over the field boundary are allowed.
