@@ -97,7 +97,7 @@ gen.add("ROS_field_mask_image_msg_topic", str, description="ROS topic of the fie
 gen.add("yoeo_model_path", str, description="Name of YOEO model")
 gen.add("yoeo_nms_threshold", float, description="YOEO Non-maximum suppression threshold", min=0.0, max=1.0)
 gen.add("yoeo_conf_threshold", float, description="YOEO confidence threshold", min=0.0, max=1.0)
-gen.add("neural_network_type", str, description="The neural network type that should be used ['pytorch', 'openvino', 'onnx', 'tvm']")
+gen.add("yoeo_framework", str, description="The neural network framework that should be used ['pytorch', 'openvino', 'onnx', 'tvm']")
 
 gen.add("ball_candidate_field_boundary_y_offset", int, description="Threshold in which ball candidates over the field boundary are allowed.", min=0, max=800)
 gen.add("ball_candidate_rating_threshold", float, description="A threshold for the minimum candidate rating", min=0.0, max=1.0)

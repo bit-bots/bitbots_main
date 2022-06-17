@@ -90,11 +90,11 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
-        neural_network_type = new_config["neural_network_type"]
+        yoeo_framework = new_config["yoeo_framework"]
         model_path = self._get_model_path(new_config)
 
-        self._verify_neural_network_type(neural_network_type)
-        self._verify_neural_network_files_exist(neural_network_type, model_path)
+        self._verify_yoeo_framework(yoeo_framework)
+        self._verify_neural_network_files_exist(yoeo_framework, model_path)
 
         self._set_up_yoeo_handler(new_config)
         self._set_up_vision_components(new_config)
@@ -105,24 +105,24 @@ class YOEOVision(Node):
         return os.path.join(self._package_path, 'models', config['yoeo_model_path'])
 
     @staticmethod
-    def _verify_neural_network_type(neural_network_type: str) -> None:
-        if neural_network_type not in {'openvino', 'onnx', 'pytorch', 'tvm'}:
-            logger.error(f"Unknown neural network type '{neural_network_type}'")
+    def _verify_yoeo_framework(yoeo_framework: str) -> None:
+        if yoeo_framework not in {'openvino', 'onnx', 'pytorch', 'tvm'}:
+            logger.error(f"Unknown neural network framework '{yoeo_framework}'")
 
-    def _verify_neural_network_files_exist(self, neural_network_type: str, model_path: str) -> None:
-        if not self._model_files_exist(neural_network_type, model_path):
+    def _verify_neural_network_files_exist(self, yoeo_framework: str, model_path: str) -> None:
+        if not self._model_files_exist(yoeo_framework, model_path):
             logger.error("No matching model file(s) found!")
 
     @staticmethod
-    def _model_files_exist(neural_network_type: str, model_path: str) -> bool:
+    def _model_files_exist(yoeo_framework: str, model_path: str) -> bool:
         exists: bool = False
-        if neural_network_type == "openvino":
+        if yoeo_framework == "openvino":
             exists = yoeo_handler.YOEOHandlerOpenVino.model_files_exist(model_path)
-        elif neural_network_type == "onnx":
+        elif yoeo_framework == "onnx":
             exists = yoeo_handler.YOEOHandlerONNX.model_files_exist(model_path)
-        elif neural_network_type == "pytorch":
+        elif yoeo_framework == "pytorch":
             exists = yoeo_handler.YOEOHandlerPytorch.model_files_exist(model_path)
-        elif neural_network_type == "tvm":
+        elif yoeo_framework == "tvm":
             exists = yoeo_handler.YOEOHandlerTVM.model_files_exist(model_path)
         return exists
 
@@ -134,18 +134,18 @@ class YOEOVision(Node):
 
     def _new_yoeo_handler_is_needed(self, new_config: Dict) -> bool:
         return self._yoeo_handler is None or \
-               ros_utils.config_param_change(self._config, new_config, ['neural_network_type'])
+               ros_utils.config_param_change(self._config, new_config, ['yoeo_framework'])
 
     def _instantiate_new_yoeo_handler(self, new_config: Dict) -> None:
-        neural_network_type = new_config["neural_network_type"]
+        yoeo_framework = new_config["yoeo_framework"]
         model_path = self._get_model_path(new_config)
-        if neural_network_type == "openvino":
+        if yoeo_framework == "openvino":
             self._yoeo_handler = yoeo_handler.YOEOHandlerOpenVino(new_config, model_path)
-        elif neural_network_type == "onnx":
+        elif yoeo_framework == "onnx":
             self._yoeo_handler = yoeo_handler.YOEOHandlerONNX(new_config, model_path)
-        elif neural_network_type == "pytorch":
+        elif yoeo_framework == "pytorch":
             self._yoeo_handler = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
-        elif neural_network_type == "tvm":
+        elif yoeo_framework == "tvm":
             self._yoeo_handler = yoeo_handler.YOEOHandlerTVM(new_config, model_path)
         logger.info(f"Using {self._yoeo_handler.__class__.__name__}")
 
