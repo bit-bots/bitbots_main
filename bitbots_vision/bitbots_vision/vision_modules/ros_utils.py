@@ -14,6 +14,8 @@ e.g. methods to convert candidates to ROS messages or methods to modify the dyna
 """
 
 _cv_bridge = CvBridge()
+
+global _game_state
 _game_state = None
 
 logger = logging.get_logger('bitbots_vision')
@@ -355,6 +357,7 @@ def gamestate_callback(gamestate_msg):
     """
     This method is called by the GameState msg subscriber.
     """
+    global _game_state
     _game_state = gamestate_msg
 
 def get_team_from_robot_color(color):
@@ -365,6 +368,8 @@ def get_team_from_robot_color(color):
     :param GameState.team_color color: Robot color
     :return Robot.team: Robot's team
     """
+    global _game_state
+
     if color not in [GameState.BLUE, GameState.RED]:  # If color is not known, we can just return unknown
         return Robot().attributes.TEAM_UNKNOWN
 
@@ -382,6 +387,8 @@ def get_team_from_robot_color(color):
         return Robot().attributes.TEAM_OPPONENT
 
 def get_robot_color_for_team(team):
+    global _game_state
+
     # Color is known and we have to first figure out the own color
     # Get own team color
     own_color = None
