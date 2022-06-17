@@ -1,4 +1,4 @@
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Optional, List, Tuple
 
 import cv2
 import rclpy
@@ -30,7 +30,7 @@ class DebugImageColors:
 
 class DebugImageFactory:
     _config: Dict = {}
-    _debug_image: Union[None, debug.DebugImage] = None
+    _debug_image: Optional[debug.DebugImage] = None
 
     @classmethod
     def create(cls, config: Dict) -> debug.DebugImage:
@@ -50,9 +50,9 @@ class DebugImageFactory:
 
 
 class YOEOFieldBoundaryDetectorFactory:
-    _field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
-    _field_boundary_detector_search_method: Union[None, str] = None
-    _yoeo_id: Union[None, int] = None
+    _field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
+    _field_boundary_detector_search_method: Optional[str] = None
+    _yoeo_id: Optional[int] = None
 
     @classmethod
     def create(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> field_boundary.FieldBoundaryDetector:
@@ -80,17 +80,17 @@ class YOEOFieldBoundaryDetectorFactory:
 
 class YOEOObstacleDetectorFactory:
     _config: Dict = {}
-    _blue_color_detector: Union[None, color.HsvSpaceColorDetector] = None
-    _red_color_detector: Union[None, color.HsvSpaceColorDetector] = None
+    _blue_color_detector: Optional[color.HsvSpaceColorDetector] = None
+    _red_color_detector: Optional[color.HsvSpaceColorDetector] = None
     _robot_detector = None
-    _yoeo_id: Union[None, int] = None
+    _yoeo_id: Optional[int] = None
 
     @classmethod
     def create(cls,
                config: Dict,
                yoeo: yoeo_handler.IYOEOHandler,
-               color: Union[None, int] = None,
-               subtractors: Union[None, List[obstacle.ColorObstacleDetector]] = None) \
+               color: Optional[int] = None,
+               subtractors: Optional[List[obstacle.ColorObstacleDetector]] = None) \
             -> obstacle.ColorObstacleDetector:
         if cls._new_robot_detector_has_to_be_created(yoeo):
             cls._create_new_robot_detector(yoeo)
@@ -135,7 +135,7 @@ class YOEOObstacleDetectorFactory:
         cls._blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
 
     @classmethod
-    def _select_color_detector_based_on(cls, color: Union[None, int]):
+    def _select_color_detector_based_on(cls, color: Optional[int]):
         if color == GameState.BLUE:
             color_detector = cls._blue_color_detector
         elif color == GameState.RED:
@@ -179,7 +179,7 @@ class CameraCapCheckComponent(IVisionComponent):
         self._image = None  # numpy nd.array (height, width, channels)
         self._is_first_image: bool = True
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._camera_cap_brightness_threshold = config['vision_blind_threshold']
@@ -249,11 +249,11 @@ class YOEOBallDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._ball_detector: Union[None, yoeo_handler.YOEOBallDetector] = None
-        self._debug_image: Union[None, debug.DebugImage] = None
-        self._field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
+        self._ball_detector: Optional[yoeo_handler.YOEOBallDetector] = None
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._ball_detector = yoeo_handler.YOEOBallDetector(yoeo)
@@ -354,11 +354,11 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._debug_image: Union[None, debug.DebugImage] = None
-        self._field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
-        self._goalpost_detector: Union[None, yoeo_handler.YOEOGoalpostDetector] = None
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
+        self._goalpost_detector: Optional[yoeo_handler.YOEOGoalpostDetector] = None
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._debug_image = DebugImageFactory.create(config)
@@ -450,10 +450,10 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._debug_image: Union[None, debug.DebugImage] = None
-        self._field_boundary_detector: Union[None, field_boundary.FieldBoundaryDetector] = None
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._debug_image = DebugImageFactory.create(config)
@@ -527,10 +527,10 @@ class YOEOLineDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._debug_image: Union[None, debug.DebugImage] = None
-        self._line_detector: Union[None, yoeo_handler.IYOEOSegmentation] = None
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._line_detector: Optional[yoeo_handler.IYOEOSegmentation] = None
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._debug_image = DebugImageFactory.create(config)
@@ -600,9 +600,9 @@ class YOEOFieldDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._field_detector: Union[None, yoeo_handler.IYOEOSegmentation] = None
+        self._field_detector: Optional[yoeo_handler.IYOEOSegmentation] = None
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._field_detector = yoeo_handler.YOEOFieldSegmentation(yoeo)
@@ -673,14 +673,14 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._debug_image: Union[None, debug.DebugImage] = None
+        self._debug_image: Optional[debug.DebugImage] = None
 
-        self._misc_obstacles_detector: Union[None, obstacle.ColorObstacleDetector] = None
-        self._opponents_detector: Union[None, obstacle.ColorObstacleDetector] = None
-        self._team_mates_detector: Union[None, obstacle.ColorObstacleDetector] = None
+        self._misc_obstacles_detector: Optional[obstacle.ColorObstacleDetector] = None
+        self._opponents_detector: Optional[obstacle.ColorObstacleDetector] = None
+        self._team_mates_detector: Optional[obstacle.ColorObstacleDetector] = None
 
         self._node: Node = node
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         own_color, opponent_color = self._determine_team_colors()
@@ -835,8 +835,8 @@ class DebugImageComponent(IVisionComponent):
     def __init__(self, node):
         self._config: Dict = {}
         self._node: Node = node
-        self._debug_image: Union[None, debug.DebugImage] = None
-        self._publisher: Union[None, rclpy.publisher.Publisher] = None
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
         self._debug_image = DebugImageFactory.create(config)
