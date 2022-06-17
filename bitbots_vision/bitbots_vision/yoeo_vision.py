@@ -21,7 +21,7 @@ logger = rclpy.logging.get_logger('bitbots_vision')
 
 try:
     from profilehooks import profile, \
-        timecall  # Profilehooks profiles certain functions in you add the @profile or @timecall decorator.
+        timecall  # Profilehooks profiles certain functions if you add the @profile or @timecall decorator.
 except ImportError:
     profile = lambda x: x
     logger.info("No Profiling available")
