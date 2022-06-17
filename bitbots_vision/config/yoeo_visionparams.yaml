@@ -67,6 +67,5 @@ bitbots_vision:
     obstacle_candidate_max_width: 150  # Maximum width of an obstacle
     obstacle_finder_step_length: 5  # Length of an object detection step along the field boundary
     obstacle_finder_value_increase: 2.0  # Factor of the impact of the height of the field boundary on the distance threshold
-    obstacle_own_team_color: blue  # current team color of our team (red or blue)
 
     caching: true  # Used to deactivate caching for profiling reasons
