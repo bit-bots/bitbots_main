@@ -23,8 +23,8 @@ from soccer_vision_3d_msgs.msg import BallArray, Ball
 
 class BallWrapper():
     def __init__(self, position, header, confidence):
-        self.header = header
         self.position = position
+        self.header = header
         self.confidence = confidence
 
     def get_header(self):
@@ -132,7 +132,11 @@ class BallFilter(Node):
                 ball_msg = self._get_closest_ball_to_previous_prediction(msg)
             else:  # Select ball with highest confidence
                 ball_msg = sorted(msg.balls, key=lambda ball: ball.confidence.confidence)[-1]
-            self.ball = BallWrapper(self._get_transform(msg.header, ball_msg.center), msg.header, ball_msg.confidence.confidence)
+            
+            # A ball measurement was selected, now we save it for the next filter step
+            position = self._get_transform(msg.header, ball_msg.center)
+            if position is not None:
+                self.ball = BallWrapper(position, msg.header, ball_msg.confidence.confidence)
 
     def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Union[Ball, None]:
         closest_distance = math.inf
@@ -207,7 +211,7 @@ class BallFilter(Node):
 
     def get_ball_measurement(self) -> Tuple[float, float]:
         """extracts filter measurement from ball message"""
-        return (self.ball.get_position().point.x, self.ball.get_position().point.y)
+        return self.ball.get_position().point.x, self.ball.get_position().point.y
 
     def init_filter(self, x: float, y: float) -> None:
         """
