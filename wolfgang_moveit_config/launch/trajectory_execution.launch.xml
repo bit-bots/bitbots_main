@@ -4,7 +4,7 @@
 
   <!-- Flag indicating whether MoveIt! is allowed to load/unload  or switch controllers -->
   <arg name="moveit_manage_controllers" default="true"/>
-  <param name="moveit_manage_controllers" value="$(arg moveit_manage_controllers)"/>
+  <param name="moveit_manage_controllers" value="$(var moveit_manage_controllers)"/>
 
   <!-- When determining the expected duration of a trajectory, this multiplicative factor is applied to get the allowed duration of execution -->
   <param name="trajectory_execution/allowed_execution_duration_scaling" value="1.2"/> <!-- default 1.2 -->
@@ -15,6 +15,6 @@
 
   <!-- Load the robot specific controller manager; this sets the moveit_controller_manager ROS parameter -->
   <arg name="moveit_controller_manager" default="wolfgang" />
-  <include file="$(find wolfgang_moveit_config)/launch/$(arg moveit_controller_manager)_moveit_controller_manager.launch.xml" />
+  <include file="$(find-pkg-share wolfgang_moveit_config)/launch/$(var moveit_controller_manager)_moveit_controller_manager.launch.xml" />
 
 </launch>

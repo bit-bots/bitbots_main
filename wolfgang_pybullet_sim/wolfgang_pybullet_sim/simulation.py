@@ -7,11 +7,13 @@ import os
 import pybullet as p
 from time import sleep, time
 
-import rospy
-import tf
+import rclpy
+import tf_transformations
+import tf2_py
 from scipy import signal
 import pybullet_data
 import rospkg
+from ament_index_python import get_package_share_directory
 from transforms3d.euler import quat2euler, euler2quat
 from transforms3d.quaternions import quat2mat, rotate_vector, qinverse
 
@@ -118,6 +120,7 @@ class Simulation:
         self.field_index = None
         if self.field_on:
             # Load field
+
             rospack = rospkg.RosPack()
             path = os.path.join(rospack.get_path('wolfgang_pybullet_sim'), 'models')
             p.setAdditionalSearchPath(path)  # needed to find field model
@@ -139,13 +142,12 @@ class Simulation:
 
         if self.urdf_path is None:
             # use standards
-            rospack = rospkg.RosPack()
             if self.robot_type == "op2":
-                self.urdf_path = rospack.get_path("robotis_op2_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("robotis_op2_description") + "/urdf/robot.urdf"
             elif self.robot_type == "sigmaban":
-                self.urdf_path = rospack.get_path("sigmaban_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("sigmaban_description") + "/urdf/robot.urdf"
             else:
-                self.urdf_path = rospack.get_path("wolfgang_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("wolfgang_description") + "/urdf/robot.urdf"
         robot_index = p.loadURDF(self.urdf_path, self.start_position, self.start_orientation, flags=flags,
                                  useFixedBase=not physics_active)
         self.robot_indexes.append(robot_index)
@@ -225,7 +227,7 @@ class Simulation:
         """
         p.applyExternalForce(robot_index, link_id, force, position, flags=p.WORLD_FRAME)
 
-    def set_foot_dynamics(self, contact_damping, contact_stiffness, joint_damping, lateral_friction=1,
+    def set_dynamics(self, contact_damping=-1.0, contact_stiffness=-1.0, lateral_friction=1,
                           spinning_friction=1, rolling_friction=1, restitution=0, robot_index=1):
         # set dynamic values for all links and ground
         for link_name in self.links[robot_index].keys():
@@ -233,17 +235,21 @@ class Simulation:
                              "rrb"] or link_name in self.foot_link_names:
                 # print(p.getLinkState(self.robot_type_index, self.links[link_name]))
                 p.changeDynamics(robot_index, self.links[robot_index][link_name],
-                                 lateralFriction=1,
-                                 spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+                                 lateralFriction=lateral_friction,
+                                 spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
         if self.plane_index:
-            p.changeDynamics(self.plane_index, -1, lateralFriction=1,
-                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+            p.changeDynamics(self.plane_index, -1, lateralFriction=lateral_friction,
+                             spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
         if self.field_index:
-            p.changeDynamics(self.field_index, -1, lateralFriction=1,
-                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+            p.changeDynamics(self.field_index, -1, lateralFriction=lateral_friction,
+                             spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
         if self.terrain_index:
-            p.changeDynamics(self.terrain_index, -1, lateralFriction=1,
-                             spinningFriction=0.1, rollingFriction=0.1, restitution=0.9)
+            p.changeDynamics(self.terrain_index, -1, lateralFriction=lateral_friction,
+                             spinningFriction=spinning_friction, rollingFriction=rolling_friction, restitution=restitution,
+                                 contactDamping=contact_damping, contactStiffness=contact_stiffness)
 
     def randomize_links(self, mass_bounds, inertia_bounds, robot_index=1):
         i = 0
@@ -442,7 +448,7 @@ class Simulation:
                 joint.set_position(pos_in_rad)
 
     def reset_robot_pose_rpy(self, position, rpy, robot_index=1):
-        quat = tf.transformations.quaternion_from_euler(*rpy)
+        quat = tf_transformations.quaternion_from_euler(*rpy)
         self.reset_robot_pose(position, quat, robot_index=robot_index)
 
     def get_robot_pose(self, robot_index=1):
