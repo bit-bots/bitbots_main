@@ -19,9 +19,15 @@ bool ServoBusInterface::init() {
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;
   switch_individual_torque_ = false;
+  reading_successes_ = 0;
+  reading_errors_ = 0;
 
-  torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
-
+  rclcpp::Parameter torqueless_parameter = rclcpp::Parameter("torqueless_mode", false);
+  torqueless_mode_ = nh_->get_parameter_or("torqueless_mode", torqueless_parameter, rclcpp::Parameter("torqueless_mode", false));
+  read_volt_temp_  = nh_->get_parameter("servos.read_volt_temp").as_bool();
+  vt_update_rate_  = nh_->get_parameter("servos.VT_update_rate").as_int();
+  warn_volt_ = nh_->get_parameter("servos.warn_volt").as_double();
+  warn_temp_ = nh_->get_parameter("servos.warn_temp").as_double();
 
   // Load dynamixel config from parameter server
   if (!loadDynamixels()) {
@@ -153,13 +159,14 @@ bool ServoBusInterface::writeROMRAM() {
    */
   RCLCPP_DEBUG(nh_->get_logger(), "Writing ROM and RAM values");
   // get a list of all parameters in this section
-  rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list = nh_->list_parameters({"servos/ROM_RAM"}, 0);
+  rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list = nh_->list_parameters({"servos.ROM_RAM"}, 0);
   bool sucess = true;
   int i = 0;
   // iterate over the parameters and set each one
-  for (const std::string &register_name: rom_ram_parameter_list.names) {
-    int register_value;
-    nh_->get_parameter("servos.ROM_RAM." + register_name, register_value);
+  for (std::string &register_name: rom_ram_parameter_list.names) {
+    int register_value = nh_->get_parameter(register_name).as_int();
+    // remove the servos.ROM_RAM.
+    register_name = register_name.substr(15);
     RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on all servos to %d", register_name.c_str(), register_value);
 
     int *values = (int *) malloc(joint_names_.size()*sizeof(int));

@@ -83,7 +83,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       // iterate over all devices and ping them to see what is connected to this bus
       std::vector<std::tuple<int, std::string, float, float>> servos_on_port;
       for (std::pair<std::string, int> &device: dxl_devices) {
-        RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
+        //RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
         std::string name = device.first;
         int id = device.second;
         if (std::find(pinged.begin(), pinged.end(), device.first)!=pinged.end()) {

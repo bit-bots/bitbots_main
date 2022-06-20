@@ -20,7 +20,7 @@
         <rosparam command="load" file="$(find-pkg-share bitbots_bringup)/config/game_settings.yaml" />
     </group>-->
 
-    <node pkg="diagnostic_aggregator" exec="aggregator_node" >
+    <node pkg="diagnostic_aggregator" exec="aggregator_node" args="--ros-args --log-level WARN">
         <param from="$(find-pkg-share bitbots_ros_control)/config/analyzers.yaml" />
     </node>
     <node pkg="bitbots_ros_control" exec="led_error_blink.py" name="error_blink"/>
