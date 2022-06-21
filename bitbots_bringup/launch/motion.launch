@@ -7,9 +7,11 @@
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
 
     <!-- load the general game settings -->
+    <!--todo
     <group if="$(var use_game_settings)">
         <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
     </group>
+    -->
 
     <!-- if not in simulation or visualization, launch ros_control -->
     <group unless="$(var sim)">
