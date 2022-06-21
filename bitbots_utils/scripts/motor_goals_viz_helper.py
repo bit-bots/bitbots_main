@@ -103,8 +103,7 @@ class MotorVizHelper(Node):
                 else:
                     self.joint_publisher.publish(self.joint_state_msg)
                 rate.sleep()
-            except ROSInterruptException:
-                self.get_logger().warn('motor_viz_helper: shutting down')
+            except (ROSInterruptException, KeyboardInterrupt):
                 break
 
     def joint_command_cb(self, msg: JointCommand):
