@@ -16,7 +16,7 @@ class TFWorld(object):
         br = tf2.StaticTransformBroadcaster(node)
         transform = TransformStamped()
         transform.header.frame_id = "map"
-        transform.header.stamp = (node.get_clock().now() + Duration(seconds=0, nanoseconds=0.1*10e6)).to_msg()
+        transform.header.stamp = node.get_clock().now().to_msg()
         transform.child_frame_id = "odom"
 
         transform.transform.translation.x = 0.0
@@ -32,6 +32,6 @@ class TFWorld(object):
         except KeyboardInterrupt:
             pass
         rclpy.shutdown()
-        
+
 if __name__ == "__main__":
     TFWorld()
