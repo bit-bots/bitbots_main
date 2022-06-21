@@ -88,7 +88,7 @@ class HeadCapsule:
         else: # Passes the stuff through
             self.pos_msg.positions = pan_position, tilt_position
             self.pos_msg.velocities = [pan_speed, tilt_speed]
-            self.pos_msg.header.stamp = self.blackboard.node.get_clock().now()
+            self.pos_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             self.position_publisher.publish(self.pos_msg)
             return True
 
@@ -161,7 +161,7 @@ class HeadCapsule:
         joint_states = get_joint_states()
         head_pan = None
         head_tilt = None
-        for i in range(joint_states.name):
+        for i in range(len(joint_states.name)):
             if joint_states.name[i] == "HeadPan":
                 head_pan = joint_states.position[i]
             elif joint_states.name[i] == "HeadTilt":
