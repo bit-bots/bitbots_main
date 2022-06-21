@@ -25,11 +25,9 @@
     </group>
 
     <!-- launch the animation server -->
-    <group>
-        <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
-        </include>
-    </group>
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
+        <arg name="use_game_settings" value="$(var use_game_settings)"/>
+    </include>
 
     <!-- launch the walking -->
     <group if="$(var walking)">
@@ -40,23 +38,17 @@
     </group>
 
     <!-- launch the hcm -->
-    <group>
-        <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
-            <arg name="sim" value="$(var sim)"/>
-            <arg name="viz" value="$(var viz)"/>
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
-        </include>
-    </group>
+    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
+        <arg name="use_game_settings" value="$(var use_game_settings)"/>
+    </include>
 
     <!-- launch the kick -->
-    <group>
-        <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
-    </group>
+    <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
 
     <!-- launch dynup -->
-    <group>
-        <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
-            <arg name="sim" value="$(var sim)"/>
-        </include>
-    </group>
+    <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
 </launch>
