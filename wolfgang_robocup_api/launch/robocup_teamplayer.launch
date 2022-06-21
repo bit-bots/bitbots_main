@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="record" default="true" doc="true: records rosbag" />
-    <arg name="nth_image" default="15" doc="records every nth image" />
     <arg name="out_dir" default="/robocup-logs" doc="Output directory" />
 
     <!-- record rosbag -->
     <group if="$(arg record)">
         <include file="$(find wolfgang_robocup_api)/launch/record_bag.launch">
-            <arg name="nth_image" default="$(arg nth_image)" />
             <arg name="out_dir" default="$(arg out_dir)" />
         </include>
     </group>
