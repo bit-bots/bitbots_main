@@ -53,15 +53,18 @@ void OdometryFuser::loop() {
 
   // This specifies the throttle of error messages
   float msg_rate = 10.0;
+  rclcpp::Time start_time = this->now();
 
   // wait for transforms from joints
-  while (!tf_buffer_
-      ->canTransform(l_sole_frame_,
+  while (!tf_buffer_->canTransform(l_sole_frame_,
                      base_link_frame_,
                      rclcpp::Time(0, 0, RCL_ROS_TIME),
                      rclcpp::Duration::from_nanoseconds(1 * 1e9))
-      && rclcpp::ok()) {
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000, "Waiting for transforms from robot joints");
+         && rclcpp::ok()) {
+    // don't spam directly with warnings, since it is normal that it will take a second to get the transform
+    if ((this->now() - start_time).seconds() > 10){
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000, "Waiting for transforms from robot joints");
+    }
   }
 
   auto node_pointer = this->shared_from_this();

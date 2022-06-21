@@ -20,6 +20,7 @@ MotionOdometry::MotionOdometry()
   this->get_parameter("y_scaling", y_scaling_);
   this->declare_parameter<double>("yaw_scaling", 1.0);
   this->get_parameter("yaw_scaling", yaw_scaling_);
+  joint_update_time_= rclcpp::Time(0, 0, RCL_ROS_TIME);
   current_support_state_ = -1;
   previous_support_state_ = -1;
   walk_support_state_sub_ =
@@ -55,17 +56,21 @@ void MotionOdometry::loop() {
   std::string previous_support_link = r_sole_frame_;
   std::string current_support_link;
   auto node_pointer = this->shared_from_this();
+  rclcpp::Time start_time = this->now();
 
   while (rclcpp::ok()) {
-    rclcpp::Time startTime = this->get_clock()->now();
+    rclcpp::Time cycle_start_time = this->now();
 
     rclcpp::spin_some(node_pointer);
 
     //check if joint states were received, otherwise we can't provide odometry
     rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
     if (joints_delta_t.seconds() > 0.1) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
-                            "No joint states received. Will not provide odometry.");
+      // only warn if we did not just start as this results in unecessary warnings
+      if ((this->now() - start_time).seconds() > 10){
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
+                             "No joint states received. Will not provide odometry.");
+      }
     } else {
       // check if step finished, meaning left->right or right->left support. double support is skipped
       // the support foot change is published when the joint goals for the last movements are published.
@@ -162,7 +167,7 @@ void MotionOdometry::loop() {
       }
     }
     this->get_clock()->sleep_until(
-      startTime + rclcpp::Duration::from_nanoseconds(1e9 / 200));
+      cycle_start_time + rclcpp::Duration::from_nanoseconds(1e9 / 200));
   }
 }
 
