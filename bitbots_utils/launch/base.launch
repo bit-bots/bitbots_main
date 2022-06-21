@@ -8,7 +8,7 @@
     <arg name="robot_type" default="wolfgang" description="what kind of robot should be started" />
 
     <!-- global parameters -->
-    <node name="parameter_blackboard" pkg="demo_nodes_cpp" exec="parameter_blackboard">
+    <node name="parameter_blackboard" pkg="demo_nodes_cpp" exec="parameter_blackboard" args="--ros-args --log-level WARN">
         <param name="simulation_active" value="$(var sim)"/>
         <param name="use_sim_time" value="$(var sim)"/>
 
