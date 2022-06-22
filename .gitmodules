@@ -58,9 +58,6 @@
 [submodule "lib/particle_filter"]
 	path = lib/particle_filter
 	url = ../../bit-bots/particle_filter.git
-[submodule "lib/rot_conv_lib"]
-	path = lib/rot_conv_lib
-	url = ../../bit-bots/rot_conv_lib.git
 [submodule "bitbots_world_model"]
 	path = bitbots_world_model
 	url = ../../bit-bots/bitbots_world_model.git
