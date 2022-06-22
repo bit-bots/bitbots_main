@@ -63,7 +63,6 @@ include:
         - pylon-ros-camera
         - robot_controllers
         - ros2_python_extension
-        - rot_conv_lib
         - spatio_temporal_voxel_layer
         - tf2_geometry_msgs
         - vision_msgs
