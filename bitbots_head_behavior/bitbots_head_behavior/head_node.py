@@ -19,27 +19,11 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 
 
-def run(dsd):
-    """
-    Main run-loop
-
-    :returns: Never
-    """
-    rate = dsd.blackboard.node.create_rate(60)
-    while rclpy.ok():
-        dsd.update()
-        rate.sleep()
-
-
-def init():
+def init(node):
     """
     Initialize new components needed for head_behavior:
     blackboard, dsd, rostopic subscriber
     """
-    rclpy.init(args=None)
-    # needed to init rclcpp ros for moveit_bindings
-    initRos()
-    node = Node("head_node", automatically_declare_parameters_from_overrides=True)
     # This is a general purpose initialization function provided by moved
     # It is used to correctly initialize roscpp which is used in the collision checker module
     blackboard = HeadBlackboard(node)
@@ -62,4 +46,20 @@ def init():
 
 
 def main(args=None):
-    run(init())
+    rclpy.init(args=None)
+    # needed to init rclcpp ros for moveit_bindings
+    initRos()
+    node = Node("head_node", automatically_declare_parameters_from_overrides=True)
+    
+    dsd = init(node)
+    node.create_timer(1/60.0, dsd.update)
+
+    
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    
+    node.destroy_node()
+    rclpy.shutdown()
+

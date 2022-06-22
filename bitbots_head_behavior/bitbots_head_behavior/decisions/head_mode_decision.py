@@ -29,7 +29,6 @@ class HeadModeDecision(AbstractDecisionElement):
         if self.blackboard.head_capsule.head_mode is None:
             # configured default value
             self.publish_debug_data('using_default', True)
-            print(self.blackboard.config)
             head_mode = self.blackboard.config['defaults']['head_mode']
         else:
             head_mode = self.blackboard.head_capsule.head_mode

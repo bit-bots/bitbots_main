@@ -23,7 +23,7 @@
         <!-- add some visualization tools -->
         <include file="$(find-pkg-share humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
         <!-- create fake tf from map to robot -->
-        <node name="map_odom" pkg="bitbots_utils" exec="tf_map_odom.py" output="screen" />
+        <node pkg="tf2_ros" exec="static_transform_publisher" name="static_map2odom_tf" args="--x -0.0 --y -0.0 --z 0.0 --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id map --child-frame-id odom" />
     </group>
 
     <group unless="$(var viz)">
