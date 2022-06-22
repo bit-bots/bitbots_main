@@ -57,14 +57,13 @@ include:
         - dynamixel-workbench-msgs
         - fp
         - imu_tools
+        - ipm
         - navigation2
-        - orocos_kinematics_dynamics
         - particle_filter
         - pylon-ros-camera
         - robot_controllers
         - ros2_python_extension
         - spatio_temporal_voxel_layer
-        - tf2_geometry_msgs
         - vision_msgs
     - scripts
     - udp_bridge
