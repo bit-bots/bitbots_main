@@ -22,8 +22,7 @@ bool ServoBusInterface::init() {
   reading_successes_ = 0;
   reading_errors_ = 0;
 
-  rclcpp::Parameter torqueless_parameter = rclcpp::Parameter("torqueless_mode", false);
-  torqueless_mode_ = nh_->get_parameter_or("torqueless_mode", torqueless_parameter, rclcpp::Parameter("torqueless_mode", false));
+  torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
   read_volt_temp_  = nh_->get_parameter("servos.read_volt_temp").as_bool();
   vt_update_rate_  = nh_->get_parameter("servos.VT_update_rate").as_int();
   warn_volt_ = nh_->get_parameter("servos.warn_volt").as_double();
