@@ -136,7 +136,7 @@ class HeadCapsule:
         # Send new joint values
         self.pos_msg.positions = goal_pan, goal_tilt
         self.pos_msg.velocities = [pan_speed, tilt_speed]
-        self.pos_msg.header.stamp = self.blackboard.node.get_clock().now()
+        self.pos_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         self.position_publisher.publish(self.pos_msg)
 
     def pre_clip(self, pan, tilt):
