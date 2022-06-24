@@ -417,53 +417,6 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         return detections, segmentation
 
 
-class YOEOPathGetter:
-    @classmethod
-    def _assemble_full_path(cls, model_directory: str, subdir: Optional[str], filename: str) -> str:
-        if subdir is None:
-            path = os.path.join(model_directory, filename)
-        else:
-            path = os.path.join(model_directory, subdir, filename)
-
-        return path
-
-    @classmethod
-    def get_names_file_path(cls, model_directory) -> str:
-        return cls._assemble_full_path(model_directory, None, "yoeo_names.yaml")
-
-    @classmethod
-    def get_onnx_onnx_file_path(cls, model_directory) -> str:
-        return cls._assemble_full_path(model_directory, "onnx", "yoeo.onnx")
-
-    @classmethod
-    def get_openvino_bin_file_path(cls, model_directory: str) -> str:
-        return cls._assemble_full_path(model_directory, "openvino", "yoeo.bin")
-
-    @classmethod
-    def get_openvino_xml_file_path(cls, model_directory) -> str:
-        return cls._assemble_full_path(model_directory, "openvino", "yoeo.xml")
-
-    @classmethod
-    def get_pytorch_cfg_file(cls, model_directory: str) -> str:
-        return cls._assemble_full_path(model_directory, "pytorch", "yoeo.cfg")
-
-    @classmethod
-    def get_pytorch_pth_file(cls, model_directory: str) -> str:
-        return cls._assemble_full_path(model_directory, "pytorch", "yoeo.pth")
-
-    @classmethod
-    def get_tvm_json_file_path(cls, model_directory: str) -> str:
-        return cls._assemble_full_path(model_directory, "tvm", "yoeo.json")
-
-    @classmethod
-    def get_tvm_params_file_path(cls, model_directory: str) -> str:
-        return cls._assemble_full_path(model_directory, "tvm", "yoeo.params")
-
-    @classmethod
-    def get_tvm_so_file_path(cls, model_directory: str) -> str:
-        return cls._assemble_full_path(model_directory, "tvm", "yoeo.so")
-
-
 class YOEODetectorTemplate(CandidateFinder):
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__()
@@ -591,3 +544,50 @@ class YOEOLineSegmentation(YOEOSegmentationTemplate):
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
         return self._yoeo_handler.get_segmentation_mask_for("lines")
+
+
+class YOEOPathGetter:
+    @classmethod
+    def _assemble_full_path(cls, model_directory: str, subdir: Optional[str], filename: str) -> str:
+        if subdir is None:
+            path = os.path.join(model_directory, filename)
+        else:
+            path = os.path.join(model_directory, subdir, filename)
+
+        return path
+
+    @classmethod
+    def get_names_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, None, "yoeo_names.yaml")
+
+    @classmethod
+    def get_onnx_onnx_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, "onnx", "yoeo.onnx")
+
+    @classmethod
+    def get_openvino_bin_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "openvino", "yoeo.bin")
+
+    @classmethod
+    def get_openvino_xml_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, "openvino", "yoeo.xml")
+
+    @classmethod
+    def get_pytorch_cfg_file(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "pytorch", "yoeo.cfg")
+
+    @classmethod
+    def get_pytorch_pth_file(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "pytorch", "yoeo.pth")
+
+    @classmethod
+    def get_tvm_json_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "tvm", "yoeo.json")
+
+    @classmethod
+    def get_tvm_params_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "tvm", "yoeo.params")
+
+    @classmethod
+    def get_tvm_so_file_path(cls, model_directory: str) -> str:
+        return cls._assemble_full_path(model_directory, "tvm", "yoeo.so")
