@@ -293,8 +293,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
         return ros_utils.build_ball_array_msg(image_msg.header, ball_messages)
 
     def _publish_balls_message(self, balls_message: BallArray) -> None:
-        if balls_message:
-            self._publisher.publish(balls_message)
+        self._publisher.publish(balls_message)
 
     def _add_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
         self._debug_image.draw_ball_candidates(candidates, DebugImageColors.ball, thickness=1)
@@ -370,8 +369,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         return ros_utils.build_goal_post_array_msg(image_msg.header, goalpost_messages)
 
     def _publish_goalposts_message(self, goalposts_message: GoalpostArray) -> None:
-        if goalposts_message:
-            self._publisher.publish(goalposts_message)
+        self._publisher.publish(goalposts_message)
 
     def _add_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
         self._debug_image.draw_obstacle_candidates(candidates, DebugImageColors.goalposts, thickness=1)
