@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from rcl_interfaces.msg import ParameterDescriptor, FloatingPointRange, IntegerRange, ParameterType
 
 class ParameterGenerator:  # TODO own file
