@@ -44,8 +44,8 @@ class TeamDataCapsule:
         self.role_update = None
         self.data_timeout = self.node.get_parameter("team_data_timeout").get_parameter_value().double_value
         self.ball_max_covariance = self.node.get_parameter("ball_max_covariance").get_parameter_value().double_value
-        self.ball_lost_time = Duration(seconds=self.node.get_parameter('behavior/body/ball_lost_time').get_parameter_value().double_value)
-        self.pose_precision_threshold = self.node.get_parameter('behavior/body/pose_precision_threshold').get_parameter_value().double_value
+        self.ball_lost_time = Duration(seconds=self.node.get_parameter('body.ball_lost_time').get_parameter_value().double_value)
+        self.pose_precision_threshold = self.node.get_parameter('body.pose_precision_threshold').get_parameter_value().double_value
 
     def is_valid(self, data: TeamData):
         return self.get_clock().now() - data.header.stamp < Duration(seconds=self.data_timeout) \

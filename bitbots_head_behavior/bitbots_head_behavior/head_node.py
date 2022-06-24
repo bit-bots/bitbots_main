@@ -17,6 +17,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
+from rclpy.executors import MultiThreadedExecutor
 
 
 def init(node):
@@ -50,13 +51,15 @@ def main(args=None):
     # needed to init rclcpp ros for moveit_bindings
     initRos()
     node = Node("head_node", automatically_declare_parameters_from_overrides=True)
+    multi_executor = MultiThreadedExecutor()
+    multi_executor.add_node(node)
     
     dsd = init(node)
     node.create_timer(1/60.0, dsd.update)
 
     
     try:
-        rclpy.spin(node)
+        multi_executor.spin()
     except KeyboardInterrupt:
         pass
     

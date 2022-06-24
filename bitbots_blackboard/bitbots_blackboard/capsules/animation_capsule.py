@@ -27,8 +27,7 @@ class AnimationCapsule:
         if animation is None or animation == "":
             self.node.get_logger().warn("Tried to play an animation with an empty name!")
             return False
-        first_try = self.animation_client.wait_for_server(
-            Duration(seconds=self.node.get_parameter("hcm/anim_server_wait_time").get_parameter_value().double_value))
+        first_try = self.animation_client.wait_for_server(Duration(seconds=10))
         if not first_try:
             self.node.get_logger().error(
                 "Animation Action Server not running! Motion can not work without animation action server. "

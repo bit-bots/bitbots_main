@@ -15,6 +15,8 @@
         <arg name="sim" value="$(var sim)"/>
     </include>  
 
+    <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch" />
+
     <group if="$(var viz)">
         <!-- translate joint goals to joint states -->
         <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--head"/>

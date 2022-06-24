@@ -21,8 +21,8 @@ class ShowWorldModelObjects:
 
         # object properties
         self.ball_diameter = 0.17
-        self.lifetime_ball = rospy.get_param('behavior/body/ball_lost_time')
-        self.lifetime_goal = rospy.get_param('behavior/body/goal_lost_time')
+        self.lifetime_ball = rospy.get_param('body.ball_lost_time')
+        self.lifetime_goal = rospy.get_param('body.goal_lost_time')
         self.lifetime_ball_kick_area = 1
         self.post_diameter = 0.15
         self.post_height = 1.10
@@ -98,10 +98,10 @@ class ShowWorldModelObjects:
         rospy.Subscriber("debug/viz_ball_kick_area", String, self.kick_area_cb, queue_size=10)
 
         # load kick area info
-        kick_max_x = rospy.get_param('behavior/body/kick_max_x')
-        kick_max_y = rospy.get_param('behavior/body/kick_max_y')
-        kick_min_x = rospy.get_param('behavior/body/kick_min_x')
-        kick_min_y = rospy.get_param('behavior/body/kick_min_y')
+        kick_max_x = rospy.get_param('body.kick_max_x')
+        kick_max_y = rospy.get_param('body.kick_max_y')
+        kick_min_x = rospy.get_param('body.kick_min_x')
+        kick_min_y = rospy.get_param('body.kick_min_y')
         self.kick_area_info = [kick_max_x, kick_max_y, kick_min_x, kick_min_y]
 
         # init tf listener for ball_kick_area_viz

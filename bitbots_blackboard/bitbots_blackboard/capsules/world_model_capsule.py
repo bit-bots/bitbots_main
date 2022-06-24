@@ -26,6 +26,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 from sensor_msgs.msg import PointCloud2 as pc2
+from bitbots_utils.utils import get_parameter_dict
 
 
 class GoalRelative:
@@ -47,7 +48,7 @@ class GoalRelative:
 class WorldModelCapsule:
     def __init__(self, blackboard):
         self._blackboard = blackboard
-        self.body_config = self._blackboard.node.get_parameters_by_prefix("behavior.body")
+        self.body_config = get_parameter_dict(self._blackboard.node, "body")
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
