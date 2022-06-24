@@ -8,7 +8,7 @@
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <group if"$(var yoeo)">
+    <group if="$(var yoeo)">
         <!-- Start the YOEO vision normally-->
         <group unless="$(var sim)">
             <node pkg="bitbots_vision" exec="yoeo_vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">

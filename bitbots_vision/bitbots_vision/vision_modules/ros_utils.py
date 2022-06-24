@@ -361,7 +361,7 @@ def get_team_from_robot_color(color: GameState.team_color)-> RobotAttributes.tea
     else:  # Robot is not same color, therefore it is from the opponent's team
         return RobotAttributes.TEAM_OPPONENT
 
-def get_robot_color_for_team(team: RobotAttributes.team) -> Union[GameState.team_color, None]:
+def get_robot_color_for_team(team: RobotAttributes.team) -> Union[int, None]:
     """
     Maps team (own, opponent, unknown) to the current robot color.
     """
