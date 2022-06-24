@@ -185,7 +185,6 @@ class YOEOVision(Node):
         Sometimes the queue gets too large, even if the size is limited to 1.
         That is why we drop old images manually.
         """
-        logger.debug(f"{self.__class__.__name__}._image_callback(...) called")
         if self._image_is_too_old(image_msg):
             return
 
