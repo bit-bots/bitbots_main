@@ -207,11 +207,8 @@ class CameraCapCheckComponent(IVisionComponent):
             self._issue_oral_warning()
 
     def _camera_cap_could_be_on(self) -> bool:
-        mean_image_brightness = self._calculate_mean_image_brightness()
+        mean_image_brightness = self._image.mean()
         return mean_image_brightness < self._camera_cap_brightness_threshold
-
-    def _calculate_mean_image_brightness(self) -> float:
-        return sum(cv2.mean(self._image))
 
     @staticmethod
     def _log_error() -> None:
