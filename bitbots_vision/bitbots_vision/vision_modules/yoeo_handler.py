@@ -86,7 +86,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         self._det_candidates: Dict = defaultdict(list)
         self._det_class_names: Union[None, List[str]] = None
 
-        self._image = None  # : Union[None, numpy.ndarray]
+        self._image: Union[None, np.ndarray] = None
 
         self._seg_class_names: Union[None, List[str]] = None
         self._seg_masks: Dict = dict()
@@ -175,8 +175,6 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     @abstractmethod
     def _compute_new_prediction_for(self, image) -> Tuple:
-        """
-        """
         ...
 
 

@@ -107,7 +107,7 @@ class OVImagePreProcessor(IImagePreProcessor):
 
     @staticmethod
     def _normalize_image_to_range_0_1(image):
-        return image.astype(np.float64) / 255  # TODO müsste auch ohne astype gehen
+        return image/ 255
 
     def _pad_to_square(self, image):
         return cv2.copyMakeBorder(
@@ -262,7 +262,7 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         self._padding_right: int = 0
 
         self._nms_max_number_of_boxes = 30000  # maximum number of boxes input into nms
-        self._nms_max_number_of_detections = 300  # maximum number of detections per image
+        self._nms_max_number_of_detections = 30  # maximum number of detections per image
         self._nms_max_width_height_in_pixels = 4096
 
     def configure(self,
