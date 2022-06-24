@@ -84,11 +84,11 @@ class YOEOHandlerTemplate(IYOEOHandler):
         logger.debug(f"Entering YOEOHandlerTemplate constructor")
 
         self._det_candidates: Dict = defaultdict(list)
-        self._det_class_names: Union[None, List[str]] = None
+        self._det_class_names: Optional[List[str]] = None
 
-        self._image: Union[None, np.ndarray] = None
+        self._image: Optional[np.ndarray] = None
 
-        self._seg_class_names: Union[None, List[str]] = None
+        self._seg_class_names: Optional[List[str]] = None
         self._seg_masks: Dict = dict()
 
         self._use_caching: bool = config['caching']
