@@ -1,14 +1,14 @@
+from __future__ import annotations
 from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
 if TYPE_CHECKING:
-    from soccer_vision_2d_msgs.msg import Ball
+    from soccer_vision_2d_msgs.msg import Ball, Goalpost
 
-import cv2
 import numpy as np
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import Audio, GameState
-from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, Goalpost, GoalpostArray, RobotArray, Robot
+from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
 from bitbots_vision.vision_modules import field_boundary, color, debug, \
     obstacle, ros_utils, candidate
 
