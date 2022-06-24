@@ -8,7 +8,6 @@ from ament_index_python.packages import get_package_share_directory
 from rcl_interfaces.msg import SetParametersResult
 from copy import deepcopy
 from cv_bridge import CvBridge
-from threading import Lock
 from sensor_msgs.msg import Image
 from bitbots_vision.vision_modules import yoeo_handler, ros_utils
 from bitbots_vision.vision_modules.yoeo_vision_components import IVisionComponent, CameraCapCheckComponent, \
@@ -47,14 +46,6 @@ class YOEOVision(Node):
         self._config: Dict = {}
 
         self._sub_image = None
-
-        # Reconfigure data transfer variable
-        self._transfer_reconfigure_data = None
-        self._transfer_reconfigure_data_mutex = Lock()
-
-        # Image transfer variable
-        self._transfer_image_msg = None
-        self._transfer_image_msg_mutex = Lock()
 
         self._yoeo_handler: Union[None, yoeo_handler.IYOEOHandler] = None
         self._vision_components: Union[None, List[IVisionComponent]] = None
@@ -195,11 +186,10 @@ class YOEOVision(Node):
         That is why we drop old images manually.
         """
         logger.debug(f"{self.__class__.__name__}._image_callback(...) called")
-        if self._image_is_too_old(image_msg) or self._transfer_image_msg_mutex_is_locked():
+        if self._image_is_too_old(image_msg):
             return
 
-        with self._transfer_image_msg_mutex:
-            self._run_vision_pipeline_with(image_msg)
+        self._run_vision_pipeline(image_msg)
 
     def _image_is_too_old(self, image_msg) -> bool:
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
@@ -210,15 +200,8 @@ class YOEOVision(Node):
         else:
             return False
 
-    def _transfer_image_msg_mutex_is_locked(self) -> bool:
-        return self._transfer_image_msg_mutex.locked()
-
     @profile
-    def _run_vision_pipeline_with(self, image_msg):
-        """
-        Run the vision pipeline
-        """
-
+    def _run_vision_pipeline(self, image_msg):
         image = self._extract_image_from_message(image_msg)
         if image is None:
             logger.error("Vision pipeline - Image content is None")
