@@ -4,17 +4,16 @@ import cv2
 import yaml
 import pickle
 import numpy as np
-from copy import deepcopy
+
 from rclpy import logging
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
-from .field_boundary import IFieldDetector
 
 
 logger = logging.get_logger('bitbots_vision')
 
 
-class ColorDetector(IFieldDetector):
+class ColorDetector:
     """
     The abstract class :class:`.ColorDetector` defines a representation of valid colors e.g. the soccer field colors.
     It is used e.g. to check, if a pixel's color matches the defined color lookup table or to create masked binary images.
