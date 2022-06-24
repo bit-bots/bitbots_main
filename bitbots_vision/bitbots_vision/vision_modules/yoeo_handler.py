@@ -253,7 +253,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._output_layer_detections = self._compiled_model.outputs[0]
         self._output_layer_segmentations = self._compiled_model.outputs[1]
 
-        _, _, height, width = self._input_layer.shape  # TODO openvino.pyopenvino.Shape...
+        _, _, height, width = self._input_layer.shape
         self._img_preprocessor: IImagePreProcessor = OVImagePreProcessor((height, width))
         self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
