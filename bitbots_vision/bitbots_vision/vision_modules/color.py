@@ -3,11 +3,9 @@ import abc
 import cv2
 import yaml
 import pickle
-import rclpy
 import numpy as np
-from rclpy import logging
 from copy import deepcopy
-from threading import Lock
+from rclpy import logging
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
 from .field_boundary import IFieldDetector
