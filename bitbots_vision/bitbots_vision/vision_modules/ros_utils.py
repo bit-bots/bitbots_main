@@ -331,28 +331,6 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
             return True
     return False
 
-
-def publish_vision_config(config, publisher):
-    """
-    Publishes the given config.
-
-    :param config: A vision config
-    :param publisher: The ROS publisher object
-    """
-    # Clean config dict to avoid not dumpable types
-    config_cleaned = {}
-    # Iterate over all config keys and values
-    for key, value in config.items():
-        # Check if the value is dumpable
-        if not isinstance(value, DynamicReconfigureConfig):
-            config_cleaned[key] = value
-    # Create new config message
-    msg = Config()
-    # The message contains a string. So the config gets serialized and send as string
-    msg.data = yaml.dump(config_cleaned)
-    # Publish config
-    publisher.publish(msg)
-
 def gamestate_callback(gamestate_msg):
     """
     This method is called by the GameState msg subscriber.
