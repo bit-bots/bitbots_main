@@ -626,7 +626,10 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
 
     def _add_opponents_to(self, obstacle_msgs: List[Robot]) -> None:
         opponent_candidates = self._get_opponent_candidates()
-        opponent_candidate_messages = self._create_obstacle_messages(Robot().attributes.TEAM_OPPONENT, opponent_candidates)
+        opponent_candidate_messages = self._create_obstacle_messages(
+            Robot().attributes.TEAM_OPPONENT,
+            opponent_candidates
+        )
         obstacle_msgs.extend(opponent_candidate_messages)
 
     def _get_opponent_candidates(self) -> List[candidate.Candidate]:
@@ -634,7 +637,10 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
 
     def _add_remaining_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
         remaining_candidates = self._get_remaining_candidates()
-        remaining_candidate_messages = self._create_obstacle_messages(Robot().attributes.TEAM_UNKNOWN, remaining_candidates)
+        remaining_candidate_messages = self._create_obstacle_messages(
+            Robot().attributes.TEAM_UNKNOWN,
+            remaining_candidates
+        )
         obstacle_msgs.extend(remaining_candidate_messages)
 
     def _get_remaining_candidates(self) -> List[candidate.Candidate]:
