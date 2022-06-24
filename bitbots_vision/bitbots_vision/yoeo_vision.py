@@ -2,6 +2,7 @@
 from typing import Dict, Union, List
 
 import os
+import numpy as np
 import rclpy
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
@@ -34,7 +35,7 @@ class YOEOVision(Node):
     It also handles the dynamic reconfiguration of the bitbots_vision.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('bitbots_vision')
 
         self._package_path = get_package_share_directory('bitbots_vision')
@@ -176,8 +177,7 @@ class YOEOVision(Node):
             callback=self._image_callback
         )
 
-    def _image_callback(self, image_msg) -> None:
-        # TODO: type
+    def _image_callback(self, image_msg: Image) -> None:
         """
         This method is called by the Image-message subscriber.
         Too old Image-Messages are dropped.
@@ -185,12 +185,10 @@ class YOEOVision(Node):
         Sometimes the queue gets too large, even if the size is limited to 1.
         That is why we drop old images manually.
         """
-        if self._image_is_too_old(image_msg):
-            return
+        if not self._image_is_too_old(image_msg):
+            self._run_vision_pipeline(image_msg)
 
-        self._run_vision_pipeline(image_msg)
-
-    def _image_is_too_old(self, image_msg) -> bool:
+    def _image_is_too_old(self, image_msg: Image) -> bool:
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
@@ -200,7 +198,7 @@ class YOEOVision(Node):
             return False
 
     @profile
-    def _run_vision_pipeline(self, image_msg):
+    def _run_vision_pipeline(self, image_msg: Image) -> None:
         image = self._extract_image_from_message(image_msg)
         if image is None:
             logger.error("Vision pipeline - Image content is None")
@@ -212,14 +210,14 @@ class YOEOVision(Node):
         self._yoeo_handler.predict()
         self._run_components(image_msg)
 
-    def _extract_image_from_message(self, image_msg):
+    def _extract_image_from_message(self, image_msg: Image) -> np.ndarray:
         return self._cv_bridge.imgmsg_to_cv2(image_msg, 'bgr8')
 
-    def _forward_image_to_components(self, image) -> None:
+    def _forward_image_to_components(self, image: np.ndarray) -> None:
         for vision_component in self._vision_components:
             vision_component.set_image(image)
 
-    def _run_components(self, image_msg) -> None:
+    def _run_components(self, image_msg: Image) -> None:
         for vision_component in self._vision_components:
             vision_component.run(image_msg)
 
