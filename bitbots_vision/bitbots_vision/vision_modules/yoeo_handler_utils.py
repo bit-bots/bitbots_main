@@ -308,8 +308,6 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
         detections = self._calculate_class_confidence_scores(detections)
         detections = self._pin_down_last_dimension_to_6(detections)
         #detections = self._filter_by_class_confidence(detections)
-        if self._too_many_boxes_remain_in(detections):
-            detections = self._keep_only_boxes_with_highest_objectness_confidence(detections)
 
         return detections
 
@@ -343,13 +341,6 @@ class OVDetectionPostProcessor(IDetectionPostProcessor):
 
     def _filter_by_class_confidence(self, detections):
         return detections[detections[:, 5] > self._conf_thresh]
-
-    def _too_many_boxes_remain_in(self, prediction) -> bool:
-        return prediction.shape[0] > self._nms_max_number_of_boxes
-
-    def _keep_only_boxes_with_highest_objectness_confidence(self, prediction):
-        # Sort by objectness, then discard
-        return prediction[prediction[:, 4].argsort(descending=True)[:self._nms_max_number_of_boxes]]
 
     def _postprocess_nms_output(self, detections, nms_indices):
         detections = detections[nms_indices]
