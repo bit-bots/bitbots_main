@@ -1,12 +1,13 @@
-import os
 import re
-import rclpy
+from typing import Union
 import yaml
 from rclpy import logging
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
 from humanoid_league_msgs.msg import Audio, GameState
 from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
+from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
+
 
 """
 This module provides some methods needed for the ros environment,
@@ -289,7 +290,6 @@ def set_general_parameters(params):
 
 
 def config_param_change(old_config, new_config, params_expressions, check_generals=True):
-    # type: (dict, dict, [str]) -> bool
     """
     Checks whether some of the specified config params have changed.
 
@@ -360,13 +360,10 @@ def gamestate_callback(gamestate_msg):
     global _game_state
     _game_state = gamestate_msg
 
-def get_team_from_robot_color(color):
+def get_team_from_robot_color(color: GameState.team_color)-> RobotAttributes.team:
     """
     Maps the detected robot color to the current team.
     If the color is the same as the current team, returns own team, else returns opponent team.
-
-    :param GameState.team_color color: Robot color
-    :return Robot.team: Robot's team
     """
     global _game_state
 
@@ -379,14 +376,17 @@ def get_team_from_robot_color(color):
     if _game_state is not None:
         own_color = _game_state.team_color
     else: 
-        return Robot().attributes.TEAM_UNKNOWN
+        return RobotAttributes.TEAM_UNKNOWN
 
     if color == own_color:  # Robot is in own team, if same color
-        return Robot().attributes.TEAM_OWN
+        return RobotAttributes.TEAM_OWN
     else:  # Robot is not same color, therefore it is from the opponent's team
-        return Robot().attributes.TEAM_OPPONENT
+        return RobotAttributes.TEAM_OPPONENT
 
-def get_robot_color_for_team(team):
+def get_robot_color_for_team(team: RobotAttributes.team) -> Union[GameState.team_color, None]:
+    """
+    Maps team (own, opponent, unknown) to the current robot color.
+    """
     global _game_state
 
     # Color is known and we have to first figure out the own color
@@ -395,11 +395,11 @@ def get_robot_color_for_team(team):
     if _game_state is not None:
         own_color = _game_state.team_color
     else: 
-        return
+        return None  # This gets handled later
 
-    if team == Robot().attributes.TEAM_OWN:
+    if team == RobotAttributes.TEAM_OWN:
         return own_color
-    elif team == Robot().attributes.TEAM_OPPONENT:
+    elif team == RobotAttributes.TEAM_OPPONENT:
         if own_color == GameState.BLUE:
             return GameState.RED
         else:

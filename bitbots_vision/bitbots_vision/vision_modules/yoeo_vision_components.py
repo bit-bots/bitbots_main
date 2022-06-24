@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Union
 
 import cv2
 import rclpy
@@ -709,7 +709,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         self._config = config
 
     @staticmethod
-    def _determine_team_colors() -> Tuple[int, int]:
+    def _determine_team_colors() -> Tuple[Union[int, None], Union[int, None]]:
         own_color = ros_utils.get_robot_color_for_team(Robot().attributes.TEAM_OWN)
         opponent_color = ros_utils.get_robot_color_for_team(Robot().attributes.TEAM_OPPONENT)
         return own_color, opponent_color
