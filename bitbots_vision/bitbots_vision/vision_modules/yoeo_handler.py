@@ -88,7 +88,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
         self._image: Optional[np.ndarray] = None
 
-        self._new_prediction_needed: bool = False
+        self._prediction_is_up_to_date: bool = True
 
         self._seg_class_names: Optional[List[str]] = None
         self._seg_masks: Dict = dict()
@@ -147,10 +147,10 @@ class YOEOHandlerTemplate(IYOEOHandler):
             self._create_detection_candidate_lists_from(detections)
             self._create_segmentation_masks_based_on(segmentation)
 
-            self._new_prediction_needed = False
+            self._prediction_is_up_to_date = True
 
     def _prediction_has_to_be_updated(self) -> bool:
-        return not self._use_caching or self._new_prediction_needed  # not (self._seg_masks or self._det_candidates)
+        return not self._use_caching or not self._prediction_is_up_to_date  # not (self._seg_masks or self._det_candidates)
 
     def _create_detection_candidate_lists_from(self, detections) -> None:
         for detection in detections:
@@ -172,7 +172,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     def _update_image(self, img) -> None:
         self._image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        self._new_prediction_needed = True
+        self._prediction_is_up_to_date = False
 
     @staticmethod
     @abstractmethod
