@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from typing import Dict, Union, List
+from typing import Dict, Optional, List
 
 import os
 import numpy as np
@@ -48,8 +48,8 @@ class YOEOVision(Node):
 
         self._sub_image = None
 
-        self._yoeo_handler: Union[None, yoeo_handler.IYOEOHandler] = None
-        self._vision_components: Union[None, List[IVisionComponent]] = None
+        self._yoeo_handler: Optional[yoeo_handler.IYOEOHandler] = None
+        self._vision_components: Optional[List[IVisionComponent]] = None
 
         # Setup reconfiguration
         gen.declare_params(self)
