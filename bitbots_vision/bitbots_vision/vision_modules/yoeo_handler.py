@@ -6,7 +6,7 @@ from collections import defaultdict
 import numpy as np
 import rclpy
 import os
-from typing import List, Union, Dict, Any, Tuple, TYPE_CHECKING, Optional
+from typing import List, Dict, Any, Tuple, TYPE_CHECKING, Optional
 import yaml
 import cv2
 
@@ -88,6 +88,8 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
         self._image: Optional[np.ndarray] = None
 
+        self._new_prediction_needed: bool = False
+
         self._seg_class_names: Optional[List[str]] = None
         self._seg_masks: Dict = dict()
 
@@ -140,12 +142,15 @@ class YOEOHandlerTemplate(IYOEOHandler):
     def predict(self) -> None:
         if self._prediction_has_to_be_updated():
             logger.debug(f"Computing new prediction...")
+
             detections, segmentation = self._compute_new_prediction_for(self._image)
             self._create_detection_candidate_lists_from(detections)
             self._create_segmentation_masks_based_on(segmentation)
 
+            self._new_prediction_needed = False
+
     def _prediction_has_to_be_updated(self) -> bool:
-        return not self._use_caching or not (self._seg_masks or self._det_candidates)
+        return not self._use_caching or self._new_prediction_needed  # not (self._seg_masks or self._det_candidates)
 
     def _create_detection_candidate_lists_from(self, detections) -> None:
         for detection in detections:
@@ -167,6 +172,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     def _update_image(self, img) -> None:
         self._image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self._new_prediction_needed = True
 
     @staticmethod
     @abstractmethod
