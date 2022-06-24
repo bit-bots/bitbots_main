@@ -74,9 +74,8 @@ class YOEOVision(Node):
         """
         Callback for the dynamic reconfigure configuration.
 
-        :param params: new config # TODO
+        :param dict params: new config
         """
-        logger.info(f"type params: {type(params)}")
         new_config = self._get_updated_config_with(params)
         self._configure_vision(new_config)
         self._config = new_config
@@ -206,7 +205,7 @@ class YOEOVision(Node):
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
-                f"Vision: Dropping incoming Image-Message because it is too old! ({image_age.to_sec()} sec)")
+                f"Vision: Dropping incoming Image-Message because it is too old! ({image_age.to_msg().sec} sec)")
             return True
         else:
             return False
