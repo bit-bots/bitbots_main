@@ -1,25 +1,26 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="sim" default="false"/>
+  <arg name="viz" default="false"/>
   <arg name="robot_type" default="wolfgang"/>
 
   <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
   <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
   <let name="taskset" value=""/><!--todo hack-->
 
-  <group>
-      <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
-          <arg name="sim" value="$(var sim)"/>
-          <arg name="robot_type" value="$(var robot_type)"/>
-      </include>
-  </group>
+  <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
+      <arg name="sim" value="$(var sim)"/>
+      <arg name="robot_type" value="$(var robot_type)"/>
+  </include>
 
   <group unless="$(var sim)">
-    <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
-    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
-      <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_$(var robot_type)_robot.yaml"/>
-      <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
-    </node>
+    <group unless="$(var viz)">
+      <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+      <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+        <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_$(var robot_type)_robot.yaml"/>
+        <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+      </node>
+    </group>
   </group>
 
   <group if="$(var sim)">
@@ -29,5 +30,13 @@
     </node>
   </group>
 
+  <group if="$(var viz)">
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen">
+        <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_$(var robot_type)_robot.yaml"/>
+    </node>
+    <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--walking --robot-type $(var robot_type)"/>
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_quintic_walk)/config/walk.rviz" name="walk_rviz"/>
+    <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+  </group>
 
 </launch>

@@ -35,11 +35,8 @@ class BitbotsMoveitBindings {
         options = rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(cpp_parameters).automatically_declare_parameters_from_overrides(true);
     node_ = std::make_shared<rclcpp::Node>("BitbotsMoveitBindings", options);
     // set logging level to warn to reduce spam
-    auto ret = rcutils_logging_set_logger_level(node_->get_logger().get_name(), RCUTILS_LOG_SEVERITY_WARN);
-    if (ret != RCUTILS_RET_OK) {
-        RCLCPP_ERROR(node_->get_logger(), "Error setting severity: %s", rcutils_get_error_string().str);
-        rcutils_reset_error();
-    }
+    node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
+
 
     if (cpp_parameters.empty()) {
       // get all kinematics parameters from the move_group node if they are not provided via the constructor
