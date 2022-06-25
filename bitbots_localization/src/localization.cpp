@@ -7,22 +7,27 @@
 
 namespace bitbots_localization {
 
-Localization::Localization(std::string ns, std::vector<rclcpp::Parameter> parameters) :
-  Node(ns + "bitbots_localization", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
+Localization::Localization() :
+  Node("bitbots_localization", rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(true)),
   tfBuffer(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
   tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer)){
 
-  rclcpp::Logger LOGGER = rclcpp::get_logger("bbbbbb");
+  auto parameters = this->get_parameters(this->list_parameters({}, 10).names); // Remove hack TODO
 
   config_ = std::make_shared<Config>(parameters);
-  RCLCPP_ERROR(LOGGER, "lel: %d", static_cast<int>(parameters.size()));
+
+  Localization::onSetParameters(parameters);
+
+  RCLCPP_ERROR(this->get_logger(), "Created config");
 
   // Get current odometry transform as init
   previousOdomTransform_ = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9*20.0));
 
+  RCLCPP_ERROR(this->get_logger(), "Got first odom transform");
+
   param_callback_handle_ = this->add_on_set_parameters_callback(std::bind(&Localization::onSetParameters, this, _1));
 
-  rclcpp::spin(SharedPtr(this));
+  RCLCPP_ERROR(this->get_logger(), "Finished configuration, entering normal state");
 }
 
 rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
@@ -142,16 +147,20 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   }
 
   publishing_timer_ = rclcpp::create_timer(
-    this, get_clock(),
+    this, this->get_clock(),
     rclcpp::Duration(0, uint32_t (1.0e-9 / config_->publishing_frequency)),
     std::bind(&Localization::run_filter_one_step, this));
 
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
+
+  RCLCPP_ERROR(this->get_logger(), "%d", uint32_t (1.0e9 / config_->publishing_frequency));
+  RCLCPP_ERROR(this->get_logger(), "Finished configuration");
   return result;
 }
 
 void Localization::run_filter_one_step() {
+  RCLCPP_ERROR(this->get_logger(), "Step %f", this->get_clock()->now().seconds());
   timer_callback_count_++;
   resampled_ = false;
 
@@ -193,6 +202,7 @@ void Localization::run_filter_one_step() {
 }
 
 void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) {
+  RCLCPP_ERROR(this->get_logger(), "GOT Line!");
   line_pointcloud_relative_ = msg;
 }
 
@@ -392,7 +402,7 @@ void Localization::publish_transforms() {
     map_odom_transform.transform = tf2::toMsg(map_tf);
 
     if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
-      // do not resend a transform for the same timestamp
+       // do not resend a transform for the same timestamp
       map_odom_tf_last_published_time_ = map_odom_transform.header.stamp;
       br->sendTransform(map_odom_transform);
     }
@@ -442,6 +452,7 @@ void Localization::publish_particle_markers() {
   red.g = 0;
   red.b = 0;
   red.a = 1;
+
   pose_particles_publisher_->publish(
     robot_pf_->renderMarkerArray(
       "pose_marker",
@@ -514,11 +525,9 @@ void Localization::publish_debug_rating(
 }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char * argv[]) {
   rclcpp::init(argc, argv);
-  // init node
-  bitbots_localization::Localization localization("");
-
-  // TODO handle params
+  rclcpp::spin(std::make_shared<bitbots_localization::Localization>());
+  rclcpp::shutdown();
   return 0;
 }

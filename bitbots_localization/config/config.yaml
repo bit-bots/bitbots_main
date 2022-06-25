@@ -60,12 +60,12 @@ bitbots_localization:
     percentage_best_particles: 50
 
     distance_factor : 0.5
-    lines_factor: 1
-    goals_factor: 0
-    field_boundary_factor: 0
-    corners_factor : 0
-    t_crossings_factor: 0
-    crosses_factor : 0
+    lines_factor: 1.0
+    goals_factor: 0.0
+    field_boundary_factor: 0.0
+    corners_factor : 0.0
+    t_crossings_factor: 0.0
+    crosses_factor : 0.0
 
     line_element_confidence: 0.01
     goal_element_confidence: 0.0

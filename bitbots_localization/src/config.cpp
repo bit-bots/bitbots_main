@@ -19,9 +19,10 @@ namespace bitbots_localization
 
   void Config::update_params(std::vector<rclcpp::Parameter> parameters)
   {
-    rclcpp::Logger LOGGER = rclcpp::get_logger("aaaaa");
+    rclcpp::Logger LOGGER = rclcpp::get_logger("localization_param_loading");
     for (rclcpp::Parameter param : parameters)
     {
+      RCLCPP_DEBUG(LOGGER, "Currently loading param: %s", param.get_name().c_str());
       switch (hash(param.get_name().c_str()))
       {
         case hash("init_mode"):
@@ -29,7 +30,6 @@ namespace bitbots_localization
           break;
         case hash("line_pointcloud_topic"):
           this->line_pointcloud_topic = param.as_string();
-          RCLCPP_ERROR(LOGGER, "Lol: %s", this->line_pointcloud_topic.c_str());
           break;
         case hash("goal_topic"):
           this->goal_topic = param.as_string();

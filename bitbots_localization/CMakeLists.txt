@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(particle_filter REQUIRED)
 find_package(soccer_vision_3d_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
@@ -33,7 +34,6 @@ link_directories(${LIBRARY_DIRS})
 set(LIBS ${ament_cmake_LIBRARIES})
 
 ## Compile as C++17
-set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Werror -Wno-unused)
 
 ## Find catkin macros and libraries
