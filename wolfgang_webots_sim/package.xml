@@ -3,14 +3,14 @@
   <name>wolfgang_webots_sim</name>
   <version>1.4.0</version>
   <description>Simulation environment using Webots for Wolfgang robot.</description>
-  
+
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann </maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  
+
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -22,6 +22,12 @@
   <depend>std_msgs</depend>
   <depend>bitbots_docs</depend>
   <depend>gazebo_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>transforms3d</depend>
+  <depend>python3-numpy</depend>
+  <depend>std_srvs</depend>
+  
+
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>xvfb</exec_depend>
 
