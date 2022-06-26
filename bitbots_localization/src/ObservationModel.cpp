@@ -78,11 +78,6 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 }
 
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::msg::PointCloud2 measurement){
-
-  rclcpp::Logger LOGGER = rclcpp::get_logger("localization_param_loading");
-
-  RCLCPP_ERROR(LOGGER, "Currently getting a point cloud");
-
   for (sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x"); iter_xyz != iter_xyz.end(); ++iter_xyz)
   {
     std::pair<double, double> linePolar = cartesianToPolar(iter_xyz[0], iter_xyz[1]);

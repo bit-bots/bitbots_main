@@ -22,18 +22,7 @@ Localization::Localization() :
 
   Localization::onSetParameters(parameters);
 
-  RCLCPP_ERROR(this->get_logger(), "Created config");
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-  // Get current odometry transform as init
-  previousOdomTransform_ = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9*20.0));
-
-  RCLCPP_ERROR(this->get_logger(), "Got first odom transform");
-
   param_callback_handle_ = this->add_on_set_parameters_callback(std::bind(&Localization::onSetParameters, this, _1));
-
-  RCLCPP_ERROR(this->get_logger(), "Finished configuration, entering normal state");
 }
 
 rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
@@ -165,13 +154,10 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
 
-  RCLCPP_ERROR(this->get_logger(), "%d", uint32_t (1.0e9 / config_->publishing_frequency));
-  RCLCPP_ERROR(this->get_logger(), "Finished configuration");
   return result;
 }
 
 void Localization::run_filter_one_step() {
-  RCLCPP_ERROR(this->get_logger(), "Step %f", this->get_clock()->now().seconds());
   timer_callback_count_++;
   resampled_ = false;
 
@@ -213,7 +199,6 @@ void Localization::run_filter_one_step() {
 }
 
 void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) {
-  RCLCPP_ERROR(this->get_logger(), "GOT Line!");
   line_pointcloud_relative_ = msg;
 }
 
