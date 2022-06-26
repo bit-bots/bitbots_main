@@ -16,7 +16,20 @@ Localization::Localization() :
   tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer)),
   br(std::make_shared<tf2_ros::TransformBroadcaster>(this)){
 
-  auto parameters = this->get_parameters(this->list_parameters({}, 10).names); // Remove hack TODO
+  // Wait for transforms to become available and init them
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  while(true){
+    try{
+      previousOdomTransform_ = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9*20.0));
+      break;
+    }catch (const tf2::LookupException &ex) {
+      RCLCPP_INFO(this->get_logger(),"Transforms not available, waiting for them... \n %s", ex.what());
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+  }
+  RCLCPP_INFO(this->get_logger(),"Transforms are available now");
+
+  auto parameters = this->get_parameters(this->list_parameters({}, 10).names);
 
   config_ = std::make_shared<Config>(parameters);
 
