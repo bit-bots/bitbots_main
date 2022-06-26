@@ -23,7 +23,7 @@ class LocalizationHandler(Node):
 
         dirname = get_package_share_directory("bitbots_localization") + "/localization_dsd"
         self.get_logger().info(dirname)
-        self.dsd = DSD(self.blackboard, "debug/dsd/localization")
+        self.dsd = DSD(self.blackboard, "debug/dsd/localization", self)
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'localization.dsd'))

@@ -28,7 +28,6 @@
   <depend>backward_ros</depend>
   <depend>dynamic_stack_decider</depend>
   <depend>python3-numpy</depend>
-  <depend>bitbots_blackboard</depend>
 
   <exec_depend>map_server</exec_depend>
   <exec_depend>message_runtime</exec_depend>
