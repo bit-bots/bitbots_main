@@ -1,6 +1,7 @@
 import rclpy
-from rclpy.node import Node
 import tf2_ros as tf2
+from rclpy.duration import Duration
+from rclpy.time import Time
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from bitbots_localization.srv import ResetFilter
 
@@ -17,11 +18,11 @@ class AbstractInitialize(AbstractActionElement):
                 blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
                     blackboard.odom_frame,
                     blackboard.base_footprint_frame,
-                    rospy.Time(0),
+                    Time(0),
                     Duration(seconds=1.0))  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-                self.get_logger().error(f"Not able to save the odom position due to a tf error: {e}")
-            print("Set last init action type to ", blackboard.last_init_action_type)
+                self.blackboard.node.get_logger().warn(f"Not able to save the odom position due to a tf error: {e}")
+            self.blackboard.node.get_logger().info("Set last init action type to ", blackboard.last_init_action_type)
 
         self.called = False
         self.last_service_call = 0
@@ -33,100 +34,63 @@ class AbstractInitialize(AbstractActionElement):
         raise NotImplementedError
 
 
-class InitPose(AbstractInitialize):
-    def perform(self, reevaluate=False):
-        self.get_logger().debug("initializing pose")
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(0, None, None, None)
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
-        return self.pop()
-
-
 class InitLeftHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
-        self.get_logger().debug("initializing left half")
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(1, None, None, None)
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        self.do_not_reevaluate()
+        self.blackboard.node.get_logger().debug("Initializing on the left half")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.reset_filter_proxy(1, None, None, None)
         return self.pop()
 
 
 class InitRightHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
-        self.get_logger().debug("initializing right half")
-
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(2, None, None, None)
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        self.do_not_reevaluate()
+        self.blackboard.node.get_logger().debug("Initializing on the right half")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.reset_filter_proxy(2, None, None, None)
         return self.pop()
 
 
 class InitPosition(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        self.get_logger().debug("initializing position")
-
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(
-                3,
-                self.blackboard.poseX,
-                self.blackboard.poseY,
-                None)
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        self.blackboard.node.get_logger().debug("Initializing position")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.reset_filter_proxy(3, self.blackboard.poseX, self.blackboard.poseY, None)
         return self.pop()
 
 
 class InitSide(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        self.get_logger().debug("initializing on the side line of our half")
-
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(0, None, None, None)
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.reset_filter_proxy(0, None, None, None)
         return self.pop()
 
 
 class InitGoal(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        self.get_logger().debug("initializing in the center of our goal")
-
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(4, -self.get_parameter(''field_length', 9) / 2, 0').get_parameter_value().double_value
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.reset_filter_proxy.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.reset_filter_proxy(4, -self.blackboard.field_length / 2, 0)
         return self.pop()
 
 
 class InitPenaltyKick(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        self.get_logger().debug("initializing behind penalty mark")
-
-        rospy.wait_for_service('reset_localization')
-        reset_filter_proxy = self.create_client(ResetFilter, 'reset_localization')
-        try:
-            resp = reset_filter_proxy(4, self.get_parameter(''field_length', 9) / 2 - 2, 0').get_parameter_value().double_value
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        self.blackboard.node.get_logger().debug("Initializing behind penalty mark")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.reset_filter_proxy(4, self.blackboard.field_length / 2 - 2, 0)
         return self.pop()
 
 
@@ -140,5 +104,5 @@ class RedoLastInit(AbstractInitialize):
         self.sub_action = blackboard.last_init_action_type(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.get_logger().debug("redoing the last init")
+        self.get_logger().debug("Redoing the last init")
         return self.sub_action.perform(reevaluate)

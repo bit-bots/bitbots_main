@@ -1,9 +1,6 @@
-import rclpy
-from rclpy.node import Node
 import numpy as np
 import tf2_ros as tf2
-from std_msgs.msg import Header
-from tf2_geometry_msgs import PointStamped
+from rclpy.time import Time
 from humanoid_league_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
@@ -285,9 +282,9 @@ class WalkedSinceLastInit(AbstractDecisionElement):
             odom_transform = self.blackboard.tf_buffer.lookup_transform(
                 self.blackboard.odom_frame,
                 self.blackboard.base_footprint_frame,
-                rospy.Time(0))
+                Time(0))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-            self.get_logger().error(f"Reset localization to last init state, because we got up and have no tf: {e}")
+            self.blackboard.node.get_logger().error(f"Reset localization to last init state, because we got up and have no tf: {e}")
             # We assume that we didn't walk if the tf lookup fails
             return "YES"
 

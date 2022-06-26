@@ -8,14 +8,13 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>cv_bridge</depend>
-  <depend>dynamic_reconfigure</depend>
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>libopencv-dev</depend>
   <depend>particle_filter</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
-  <depend>rospy</depend>
+  <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>boost</depend>
   <depend>tf2</depend>
@@ -27,6 +26,9 @@
   <depend>builtin_interfaces</depend>
   <depend>nav2_map_server</depend>
   <depend>backward_ros</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>python3-numpy</depend>
+  <depend>bitbots_blackboard</depend>
 
   <exec_depend>map_server</exec_depend>
   <exec_depend>message_runtime</exec_depend>

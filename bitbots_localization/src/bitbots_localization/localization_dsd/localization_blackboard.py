@@ -1,33 +1,37 @@
-import rclpy
-from rclpy.node import Node
-import numpy
+import numpy as np
 import tf2_ros as tf2
-from std_msgs.msg import Header
-from tf2_geometry_msgs import PointStamped
-from humanoid_league_msgs.msg import GameState, RobotControlState
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
+from rclpy.duration import Duration
+from bitbots_localization.srv import ResetFilter, SetPaused
+
 
 class LocalizationBlackboard:
 
-    def __init__(self):
-        self.current_time = rospy.Time()
+    def __init__(self, node):
+        self.node = node
+
         self.shut_down_request = False
         self.last_initialized = None
         self.initialized = False
 
         # tf stuff
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
-        self.odom_frame = self.get_parameter(''~odom_frame'').get_parameter_value().double_value
-        self.base_footprint_frame = self.get_parameter(''~base_footprint_frame'').get_parameter_value().double_value
+        self.tf_listener = tf2.TransformListener(self.blackboard.tf_buffer, node)
+        self.odom_frame = node.get_parameter('odom_frame').get_parameter_value().string_value
+        self.base_footprint_frame = node.get_parameter('base_footprint_frame').get_parameter_value().string_value
+
+        self.field_length = node.get_parameter('field_length').get_parameter_value().double_value
+
+        # services
+        self.reset_filter_proxy = node.create_client(ResetFilter, 'reset_localization')
+        self.stop_filter_proxy = node.create_client(SetPaused, 'pause_localization')
 
         # Pose
-        self.pose_timeout_duration = rospy.Time(10)
         self.last_pose_update_time = None
         self.poseX = 0
         self.poseY = 0
-        self.orientation = numpy.array([0, 0, 0, 1])
-        self.covariance = numpy.array([])
+        self.orientation = np.array([0, 0, 0, 1])
+        self.covariance = np.array([])
 
         #GameState
         self.gamestate = GameStatusCapsule()
