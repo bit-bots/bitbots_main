@@ -4,13 +4,17 @@
 
 #include "bitbots_localization/localization.h"
 
+#include <chrono>
+#include <thread>
+
 
 namespace bitbots_localization {
 
 Localization::Localization() :
   Node("bitbots_localization", rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(true)),
   tfBuffer(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
-  tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer)){
+  tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer)),
+  br(std::make_shared<tf2_ros::TransformBroadcaster>(this)){
 
   auto parameters = this->get_parameters(this->list_parameters({}, 10).names); // Remove hack TODO
 
@@ -19,6 +23,8 @@ Localization::Localization() :
   Localization::onSetParameters(parameters);
 
   RCLCPP_ERROR(this->get_logger(), "Created config");
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
   // Get current odometry transform as init
   previousOdomTransform_ = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9*20.0));
@@ -33,6 +39,11 @@ Localization::Localization() :
 rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
 
   config_->update_params(parameters);
+
+  odom_frame_ = this->get_parameter("odom_frame").as_string();
+  base_footprint_frame_ = this->get_parameter("base_footprint_frame").as_string();
+  map_frame_ = this->get_parameter("map_frame").as_string();
+  publishing_frame_ = this->get_parameter("publishing_frame").as_string();
 
   line_point_cloud_subscriber_ = this->create_subscription<sm::msg::PointCloud2>(
     config_->line_pointcloud_topic, 1, std::bind(&Localization::LinePointcloudCallback, this, _1));
@@ -148,7 +159,7 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
 
   publishing_timer_ = rclcpp::create_timer(
     this, this->get_clock(),
-    rclcpp::Duration(0, uint32_t (1.0e-9 / config_->publishing_frequency)),
+    rclcpp::Duration(0, uint32_t (1.0e9 / config_->publishing_frequency)),
     std::bind(&Localization::run_filter_one_step, this));
 
   rcl_interfaces::msg::SetParametersResult result;
@@ -400,6 +411,8 @@ void Localization::publish_transforms() {
     map_tf = localization_transform_tf * odom_transform_tf.inverse();
 
     map_odom_transform.transform = tf2::toMsg(map_tf);
+
+    RCLCPP_DEBUG(this->get_logger(),"Transform %s", geometry_msgs::msg::to_yaml(map_odom_transform).c_str());
 
     if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
        // do not resend a transform for the same timestamp
