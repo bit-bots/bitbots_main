@@ -1,18 +1,19 @@
 Software installation with ROS2
 ===============================
 
-In this tutorial, we will learn how to install ROS2 Rolling Ridley on Ubuntu 20.04 and build our software stack.
+In this tutorial, we will learn how to install ROS2 Rolling Ridley on Ubuntu 22.04 and build our software stack.
 
-**0. Use Ubuntu 20.04**
+**0. Use Ubuntu 22.04**
 
 As ROS works best on Ubuntu, we are using this distribution.
-Currently, ROS 2 Rolling runs on Ubuntu 20.04.
-If you are not already using Ubuntu 20.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS 2 docker (https://github.com/timonegk/rosdocked)
+Currently, ROS 2 Rolling runs on Ubuntu 22.04.
+If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS 2 docker (https://github.com/timonegk/rosdocked)
 
 **1. Setup and Install ROS 2**
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended `ros-rolling-desktop`: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
-- Install additional dependencies: ``sudo apt install libfmt-dev librange-v3-dev liburdfdom-dev python3-colcon-common-extensions ros-rolling-backward-ros ros-rolling-desktop ros-rolling-control-msgs ros-rolling-control-toolbox ros-rolling-controller-manager ros-rolling-effort-controllers ros-rolling-joint-state-broadcaster ros-rolling-joint-trajectory-controller ros-rolling-joy ros-rolling-moveit-ros ros-rolling-moveit-ros-move-group ros-rolling-moveit-ros-planning ros-rolling-moveit-ros-planning-interface ros-rolling-moveit-ros-robot-interaction ros-rolling-moveit-simple-controller-manager ros-rolling-position-controllers ros-rolling-robot-localization ros-rolling-velocity-controllers ros-rolling-vision-msgs ros-rolling-xacro ros-rolling-gazebo-msgs``
+- Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
+- Install additional dependencies: ``sudo apt install espeak ffmpeg libfmt-dev librange-v3-dev librostest-dev libtf-conversions-dev liburdfdom-dev libyaml-cpp-dev python3-colcon-common-extensions python3-pybind11 python3-rosdep ros-rolling-backward-ros ros-rolling-behaviortree-cpp-v3 ros-rolling-bondcpp ros-rolling-camera-info-manager ros-rolling-control-msgs ros-rolling-control-toolbox ros-rolling-controller-interface ros-rolling-controller-manager ros-rolling-desktop ros-rolling-diagnostic-aggregator ros-rolling-diagnostic-updater ros-rolling-effort-controllers ros-rolling-gazebo-msgs ros-rolling-image-proc ros-rolling-joint-state-broadcaster ros-rolling-joint-state-publisher-gui ros-rolling-joint-trajectory-controller ros-rolling-joy ros-rolling-joy-linux ros-rolling-moveit-core ros-rolling-moveit-planners-ompl ros-rolling-moveit-ros ros-rolling-moveit-ros-move-group ros-rolling-moveit-ros-planning ros-rolling-moveit-ros-planning-interface ros-rolling-moveit-ros-robot-interaction ros-rolling-moveit-simple-controller-manager ros-rolling-plotjuggler-ros ros-rolling-position-controllers ros-rolling-robot-localization ros-rolling-rot-conv ros-rolling-soccer-vision-2d-msgs ros-rolling-soccer-vision-3d-msgs ros-rolling-test-msgs ros-rolling-tf-transformations ros-rolling-transmission-interface ros-rolling-velocity-controllers ros-rolling-xacro``
 
 **2. Download our software**
 
@@ -95,10 +96,9 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
   alias sr='source /opt/ros/rolling/setup.bash'
   alias sc='source \$COLCON_WS/install/setup.bash'
-  alias sa='sr && sc && sz'
+  alias sa='sr && sc'
   EOF
 
 **TODOs**
 
-- Migrate all ROS 1 packages to ROS 2!
 - Install Webots simulator
