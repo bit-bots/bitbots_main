@@ -63,6 +63,8 @@ walking:
       joint_min_effort: 35.0
       effort_phase_reset_active: False
 
+      odom_pub_factor: 1
+
 pid_trunk_fused_pitch:
   ros__parameters:
     p: 0.0

@@ -132,6 +132,19 @@ void MotionOdometry::loop() {
           tf_buffer_->lookupTransform(previous_support_link_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
       tf2::Transform current_support_to_base;
       tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
+      double x = current_support_to_base.getOrigin().x();
+      if (current_odom_msg_.twist.twist.linear.x > 0) {
+        x = x * x_forward_scaling_;
+      }else{
+        x = x * x_backward_scaling_;
+      }
+      double y = current_support_to_base.getOrigin().y() * y_scaling_;
+      double yaw = tf2::getYaw(current_support_to_base.getRotation()) * x_backward_scaling_;
+      current_support_to_base.setOrigin({x, y, 0});
+      tf2::Quaternion q;
+      q.setRPY(0, 0, yaw);
+      current_support_to_base.setRotation(q);
+
       tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
       geometry_msgs::msg::TransformStamped odom_to_base_link_msg = geometry_msgs::msg::TransformStamped();
       odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
