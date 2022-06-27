@@ -8,8 +8,8 @@ walking:
       trunk_height: 0.40
       trunk_phase: -0.1
       trunk_pitch: 0.0
-      trunk_pitch_p_coef_forward: 2.0
-      trunk_pitch_p_coef_turn: -0.05
+      trunk_pitch_p_coef_forward: 0.0
+      trunk_pitch_p_coef_turn: 0.0
       trunk_swing: 0.25
       trunk_x_offset: 0.0
       trunk_y_offset: 0.005
