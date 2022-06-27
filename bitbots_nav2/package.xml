@@ -16,7 +16,6 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
 
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
   <exec_depend>gazebo_msgs</exec_depend>
 
   <depend>humanoid_league_msgs</depend>
@@ -24,12 +23,9 @@
   <depend>nav2_bringup</depend>
   <depend>base_local_planner</depend>
   <depend>ros2_numpy</depend>
-  <doc_depend>bitbots_docs</doc_depend>
 
   <export>
-    <bitbots_documentation>
-      <language>-</language>
-      <status>tested_viz</status>
-    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
   </export>
+
 </package>
