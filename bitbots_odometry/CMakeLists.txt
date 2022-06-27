@@ -60,7 +60,6 @@ ament_target_dependencies(odometry_fuser
         rclcpp
         Eigen3)
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
 install(TARGETS motion_odometry

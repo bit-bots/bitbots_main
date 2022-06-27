@@ -53,7 +53,7 @@ namespace bitbots_quintic_walk {
 
 class WalkNode : public rclcpp::Node {
  public:
-  explicit WalkNode(std::string ns, std::vector<rclcpp::Parameter> parameters = {});
+  explicit WalkNode(std::string ns = "", std::vector<rclcpp::Parameter> parameters = {});
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(double dt,
                                        geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
@@ -112,6 +112,7 @@ class WalkNode : public rclcpp::Node {
 
   void publish_debug();
   rclcpp::TimerBase::SharedPtr startTimer();
+  double getTimerFreq();
 
  private:
   std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);

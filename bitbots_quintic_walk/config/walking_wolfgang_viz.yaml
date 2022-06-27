@@ -4,7 +4,7 @@ walking:
       double_support_ratio: 0.05
       foot_distance: 0.2
       foot_rise: 0.05
-      freq: 1.1
+      freq: 0.5
       trunk_height: 0.40
       trunk_phase: -0.1
       trunk_pitch: 0.0

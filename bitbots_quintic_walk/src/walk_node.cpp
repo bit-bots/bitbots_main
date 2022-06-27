@@ -680,9 +680,8 @@ moveit::core::RobotModelPtr *WalkNode::get_kinematic_model(){
   return &kinematic_model_;
 }
 
-rclcpp::TimerBase::SharedPtr WalkNode::startTimer(){
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / engine_frequency_);
-  return rclcpp::create_timer(this, this->get_clock(), timer_duration, [this]() -> void {run();});
+double WalkNode::getTimerFreq(){
+  return engine_frequency_;
 }
 
 } // namespace bitbots_quintic_walk
@@ -690,12 +689,12 @@ rclcpp::TimerBase::SharedPtr WalkNode::startTimer(){
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   // init node
-  bitbots_quintic_walk::WalkNode node = bitbots_quintic_walk::WalkNode("");
-  node.initializeEngine();
-  rclcpp::TimerBase::SharedPtr timer = node.startTimer();
-  bitbots_quintic_walk::WalkNode::SharedPtr node_pointer = node.shared_from_this();
+  auto node = std::make_shared<bitbots_quintic_walk::WalkNode>();
+  node->initializeEngine();
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / node->getTimerFreq());
+  rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->run();});
   rclcpp::executors::EventsExecutor exec;
-  exec.add_node(node_pointer);
+  exec.add_node(node);
 
   exec.spin();
   rclcpp::shutdown();
