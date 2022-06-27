@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<MotionOdometry>();
 
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 100.0);
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 200.0);
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->loop();});
   rclcpp::executors::EventsExecutor exec;
   exec.add_node(node);

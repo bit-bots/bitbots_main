@@ -55,6 +55,5 @@ class OdometryFuser : public rclcpp::Node {
   geometry_msgs::msg::TransformStamped tf_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   rclcpp::Time start_time_;
-  rclcpp::Time last_time_stamp_;
 };
 

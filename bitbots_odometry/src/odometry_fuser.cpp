@@ -42,7 +42,6 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(50), imu_sub_, motion_odom_sub_);
   sync.registerCallback(&OdometryFuser::imuCallback, this);
   start_time_ = this->now();
-  last_time_stamp_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 }
 
@@ -125,8 +124,6 @@ void OdometryFuser::loop() {
   fused_odom_msg = toMsg(fused_odometry);
   tf_.transform = fused_odom_msg;
   br_->sendTransform(tf_);
-
-  last_time_stamp_ = fused_time_;
 }
 
 void OdometryFuser::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
