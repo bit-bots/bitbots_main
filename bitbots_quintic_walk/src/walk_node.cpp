@@ -53,6 +53,8 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   y_speed_multiplier_ = 1;
   yaw_speed_multiplier_ = 1;
 
+  odom_counter_ = 0;
+  last_request_ = WalkRequest();
 
   // read config values one time during start
   this->get_parameter("node.engine_freq", engine_frequency_);
@@ -134,87 +136,74 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   first_run_ = true;
 
   callback_handle_ = this->add_on_set_parameters_callback(std::bind(&WalkNode::onSetParameters, this, _1));
-}
-
-void WalkNode::run() {
-  int odom_counter = 0;
   walk_engine_.reset();
-  WalkResponse response;
+
   // publish the starting support state once, especially for odometry. we always start with the same foot
   biped_interfaces::msg::Phase sup_state;
   sup_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
   sup_state.header.stamp = this->get_clock()->now();
   pub_support_->publish(sup_state);
+}
 
-  double dt;
-  WalkRequest last_request;
-  while (rclcpp::ok()) {
-    rclcpp::spin_some(this->get_node_base_interface());
-    if (this->get_clock()->sleep_for(rclcpp::Duration::from_seconds(1.0 / engine_frequency_))) {
-      dt = getTimeDelta();
+void WalkNode::run() {
+  double dt = getTimeDelta();
 
-      if (robot_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING
-          || robot_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
-        // the robot fell, we have to reset everything and do nothing else
-        walk_engine_.reset();
-        stabilizer_.reset();
-      } else {
-        // we don't want to walk, even if we have orders, if we are not in the right state
-        /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
-         * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
-        // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-        current_request_.walkable_state = robot_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
-            robot_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING ||
-            robot_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF;
+  if (robot_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING
+      || robot_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
+    // the robot fell, we have to reset everything and do nothing else
+    walk_engine_.reset();
+    stabilizer_.reset();
+  } else {
+    // we don't want to walk, even if we have orders, if we are not in the right state
+    /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
+     * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
+    // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
+    current_request_.walkable_state = robot_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
+        robot_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING ||
+        robot_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF;
 
-        // reset when we start walking, otherwise PID controller will use old I value
-        if ((last_request.linear_orders[0] == 0 && last_request.linear_orders[1] == 0 && last_request.angular_z == 0)
-            &&
-                (current_request_.linear_orders[0] != 0 || current_request_.linear_orders[1] != 0
-                    || current_request_.angular_z != 0)) {
-          stabilizer_.reset();
-        }
-        last_request = current_request_;
-
-        // perform all the actual calculations
-        bitbots_msgs::msg::JointCommand joint_goals = step(dt);
-
-        // only publish goals if we are not idle
-        if (walk_engine_.getState() != WalkState::IDLE) {
-          pub_controller_command_->publish(joint_goals);
-
-          // publish current support state
-          biped_interfaces::msg::Phase support_state;
-          if (walk_engine_.isDoubleSupport()) {
-            support_state.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
-          } else if (walk_engine_.isLeftSupport()) {
-            support_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
-          } else {
-            support_state.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
-          }
-          // publish if foot changed
-          if (current_support_foot_ != support_state.phase) {
-            support_state.header.stamp = this->get_clock()->now();
-            pub_support_->publish(support_state);
-            current_support_foot_ = support_state.phase;
-          }
-
-          // publish debug information
-          if (debug_active_) {
-            publish_debug();
-          }
-        }
-      }
-      // always publish odometry to not confuse odometry fuser
-      odom_counter++;
-      if (odom_counter > odom_pub_factor_) {
-        pub_odometry_->publish(getOdometry());
-        odom_counter = 0;
-      }
-    } else {
-      RCLCPP_WARN(this->get_logger(), "There is some time issue.");
-      usleep(1);
+    // reset when we start walking, otherwise PID controller will use old I value
+    if ((last_request_.linear_orders[0] == 0 && last_request_.linear_orders[1] == 0 && last_request_.angular_z == 0)
+        && (current_request_.linear_orders[0] != 0 || current_request_.linear_orders[1] != 0
+                || current_request_.angular_z != 0)) {
+      stabilizer_.reset();
     }
+    last_request_ = current_request_;
+
+    // perform all the actual calculations
+    bitbots_msgs::msg::JointCommand joint_goals = step(dt);
+
+    // only publish goals if we are not idle
+    if (walk_engine_.getState() != WalkState::IDLE) {
+      pub_controller_command_->publish(joint_goals);
+
+      // publish current support state
+      biped_interfaces::msg::Phase support_state;
+      if (walk_engine_.isDoubleSupport()) {
+        support_state.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
+      } else if (walk_engine_.isLeftSupport()) {
+        support_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
+      } else {
+        support_state.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
+      }
+      // publish if foot changed
+      if (current_support_foot_ != support_state.phase) {
+        support_state.header.stamp = this->get_clock()->now();
+        pub_support_->publish(support_state);
+        current_support_foot_ = support_state.phase;
+      }
+
+      // publish debug information
+      if (debug_active_) {
+        publish_debug();
+      }
+    }
+  }
+  // always publish odometry to not confuse odometry fuser
+  odom_counter_++;
+  if (odom_counter_ > odom_pub_factor_) {
+    pub_odometry_->publish(getOdometry());
+    odom_counter_ = 0;
   }
 }
 
@@ -691,14 +680,23 @@ moveit::core::RobotModelPtr *WalkNode::get_kinematic_model(){
   return &kinematic_model_;
 }
 
+rclcpp::TimerBase::SharedPtr WalkNode::startTimer(){
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / engine_frequency_);
+  return rclcpp::create_timer(this, this->get_clock(), timer_duration, [this]() -> void {run();});
+}
+
 } // namespace bitbots_quintic_walk
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   // init node
-  bitbots_quintic_walk::WalkNode node("");
-
-  // run the node
+  bitbots_quintic_walk::WalkNode node = bitbots_quintic_walk::WalkNode("");
   node.initializeEngine();
-  node.run();
+  rclcpp::TimerBase::SharedPtr timer = node.startTimer();
+  bitbots_quintic_walk::WalkNode::SharedPtr node_pointer = node.shared_from_this();
+  rclcpp::executors::EventsExecutor exec;
+  exec.add_node(node_pointer);
+
+  exec.spin();
+  rclcpp::shutdown();
 }

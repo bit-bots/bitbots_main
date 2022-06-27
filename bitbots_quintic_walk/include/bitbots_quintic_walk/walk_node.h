@@ -110,7 +110,8 @@ class WalkNode : public rclcpp::Node {
 
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
-  void publish_debug();  
+  void publish_debug();
+  rclcpp::TimerBase::SharedPtr startTimer();
 
  private:
   std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
@@ -165,7 +166,10 @@ class WalkNode : public rclcpp::Node {
 
   int robot_state_;
 
-  char current_support_foot_;
+  int current_support_foot_;
+
+  int odom_counter_;
+  WalkRequest last_request_;
 
   WalkResponse current_response_;
   WalkResponse current_stabilized_response_;
