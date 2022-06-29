@@ -26,6 +26,9 @@ Stabilizer::Stabilizer(std::string ns){
     pid_trunk_pitch_->initPid();
     pid_trunk_roll_->initPid();
 
+    imu_ = std::make_shared<sensor_msgs::msg::Imu>();
+    imu_->orientation.w = 1;
+
     reset();
 }
 
