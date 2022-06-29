@@ -1,6 +1,7 @@
 #include <bitbots_dynup/dynup_ik.h>
 namespace bitbots_dynup {
 void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
+  current_joint_states_ = std::make_shared<sensor_msgs::msg::JointState>();
   /* Extract joint groups from kinematics model */
   l_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
   r_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");

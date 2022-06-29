@@ -30,14 +30,14 @@ class HardwareControlManager:
     def __init__(self):
 
         rclpy.init(args=None)
-        self.node = Node("HCM", allow_undeclared_parameters=True, automatically_declare_parameters_from_overrides=True)
+        self.node = Node("hcm", allow_undeclared_parameters=True, automatically_declare_parameters_from_overrides=True)
         # necessary for on shutdown hook, in case of direct shutdown before finished initialization
         self.blackboard = None
 
         # --- Initialize Node ---
-        self.node.get_clock().sleep_for(
-            Duration(seconds=0.1))  # Otherwise messages will get lost, bc the init is not finished
-        self.node.get_logger().info("Starting hcm")
+        # Otherwise messages will get lost, bc the init is not finished
+        self.node.get_clock().sleep_for(Duration(seconds=0.1))  
+        self.node.get_logger().debug("Starting hcm")
 
         # stack machine
         self.blackboard = HcmBlackboard(self.node)
@@ -55,8 +55,8 @@ class HardwareControlManager:
         self.hcm_state_publisher = self.node.create_publisher(RobotControlState, 'robot_state', 1)  # todo latch
         self.blackboard.speak_publisher = self.node.create_publisher(Audio, 'speak', 1)
 
-        self.node.get_clock().sleep_for(
-            Duration(seconds=0.1))  # important to make sure the connection to the speaker is established, for next line
+        # important to make sure the connection to the speaker is established, for next line
+        self.node.get_clock().sleep_for(Duration(seconds=0.1)) 
         speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
 
         self.node.create_subscription(Imu, "imu/data", self.update_imu, 1)
@@ -83,7 +83,6 @@ class HardwareControlManager:
         self.main_loop()
 
     def deactivate_cb(self, msg):
-        # we need to make sure the hcm got new sensor messages in between
         self.hcm_deactivated = msg.data
 
     def pause(self, msg):
@@ -169,7 +168,7 @@ class HardwareControlManager:
         if msg.request:
             self.node.get_logger().info("Got Animation request. HCM will try to get controllable now.")
             # animation has to wait
-            # state machine should try to become controllable
+            # dsd should try to become controllable
             self.blackboard.animation_requested = True
             return
 
@@ -209,7 +208,6 @@ class HardwareControlManager:
             out_msg.accelerations = [-1.0] * len(out_msg.joint_names)
             out_msg.velocities = [-1.0] * len(out_msg.joint_names)
             out_msg.max_currents = [-1.0] * len(out_msg.joint_names)
-            send_torque = False
             if msg.position.points[0].effort:
                 out_msg.max_currents = [-x for x in msg.position.points[0].effort]
             if self.blackboard.shut_down_request:
@@ -239,7 +237,7 @@ class HardwareControlManager:
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        #rate = self.node.create_rate(500, clock=self.node.get_clock())
+        rate = self.node.create_rate(500, clock=self.node.get_clock())
         
         while rclpy.ok() and not self.blackboard.shut_down_request:
             if self.hcm_deactivated:
@@ -257,7 +255,7 @@ class HardwareControlManager:
                 except IndexError:
                     # this error will happen during shutdown procedure, just ignore it
                     pass
-            time.sleep(0.01)
+            rate.sleep()
             """
             try:
                 # catch exception of moving backwards in time, when restarting simulator

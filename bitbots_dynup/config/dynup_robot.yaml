@@ -64,7 +64,7 @@ dynup:
     spline_smoothness: 100
     display_debug: True
 
-pid_trunk_roll:
+dynup_pid_trunk_fused_roll:
   ros__parameters:
     p: 0.36
     i: 0.8674
@@ -74,7 +74,7 @@ pid_trunk_roll:
     i_clamp_max: 0
     antiwindup: True
     publish_state: False
-pid_trunk_pitch:
+dynup_pid_trunk_fused_pitch:
   ros__parameters:
     p: -0.42
     i: -5.31646

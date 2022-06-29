@@ -3,8 +3,8 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer(std::string ns){
-  pitch_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_pitch");
-  roll_node_ = rclcpp::Node::make_shared(ns + "pid_trunk_fused_roll");
+  pitch_node_ = rclcpp::Node::make_shared(ns + "walk_pid_trunk_fused_pitch");
+  roll_node_ = rclcpp::Node::make_shared(ns + "walk_pid_trunk_fused_roll");
   // ensure that there is no unecessary infos from the PID nodes
   pitch_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
   roll_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
