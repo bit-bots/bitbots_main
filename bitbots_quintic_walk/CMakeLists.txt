@@ -75,10 +75,7 @@ ament_target_dependencies(WalkNode
         tf2
         tf2_eigen
         tf2_geometry_msgs
-        tf2_ros
-        fmt
-        fp
-        range-v3)
+        tf2_ros)
 
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -109,10 +106,7 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         tf2
         tf2_eigen
         tf2_geometry_msgs
-        tf2_ros
-        fmt
-        fp
-        range-v3)
+        tf2_ros)
 
 target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 
