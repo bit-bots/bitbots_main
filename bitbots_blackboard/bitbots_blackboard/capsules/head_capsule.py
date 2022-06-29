@@ -159,14 +159,9 @@ class HeadCapsule:
 
     def get_head_position(self):
         joint_states = get_joint_states()
-        head_pan = None
-        head_tilt = None
-        for i in range(len(joint_states.name)):
-            if joint_states.name[i] == "HeadPan":
-                head_pan = joint_states.position[i]
-            elif joint_states.name[i] == "HeadTilt":
-                head_tilt = joint_states.position[i]
-        return head_pan, head_tilt
+        head_pan = joint_states.position[joint_states.name.index("HeadPan")]
+        head_tilt =joint_states.position[joint_states.name.index("HeadTilt")]
+
 
     #####################
     # Pattern generator #

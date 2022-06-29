@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from PIL import Image, ImageDraw
 
+import ros2_numpy
+
 import rclpy
 from rclpy.node import Node
 from rclpy.duration import Duration
@@ -598,7 +600,7 @@ class WorldModelCapsule:
         normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (
                     np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
         # Build the OccupancyGrid message
-        msg = ros_numpy.msgify(
+        msg = ros2_numpy.msgify(
             OccupancyGrid,
             normalized_costmap,
             info=MapMetaData(
@@ -627,9 +629,9 @@ class WorldModelCapsule:
         for pose in self._blackboard.team_data.get_active_teammate_poses(count_goalies=False):
             # Get positions
             goal_position = np.array([self.field_length / 2, 0, 0])  # position of the opponent goal
-            teammate_position = ros_numpy.numpify(pose.position)
+            teammate_position = ros2_numpy.numpify(pose.position)
             # Get vector
-            vector_teammate_to_goal = goal_position - ros_numpy.numpify(pose.position)
+            vector_teammate_to_goal = goal_position - ros2_numpy.numpify(pose.position)
             # Position between robot and goal but 1m away from the robot
             pass_pos = vector_teammate_to_goal / np.linalg.norm(vector_teammate_to_goal) * pass_dist + teammate_position
             # Convert position to array index
