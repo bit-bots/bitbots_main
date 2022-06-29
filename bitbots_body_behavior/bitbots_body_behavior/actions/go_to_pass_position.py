@@ -1,6 +1,5 @@
 import math
 
-import rospy
 from actionlib_msgs.msg import GoalStatus
 from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import Point
@@ -40,7 +39,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
         goal_yaw = 0
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
         pose_msg.header.frame_id = self.blackboard.map_frame
         pose_msg.pose.position.x = goal_x
         pose_msg.pose.position.y = goal_y

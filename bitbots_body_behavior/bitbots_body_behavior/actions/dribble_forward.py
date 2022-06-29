@@ -1,5 +1,4 @@
 import numpy as np
-import rospy
 import tf2_ros as tf2
 from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import Point, Quaternion, Twist

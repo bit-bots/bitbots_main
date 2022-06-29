@@ -1,6 +1,4 @@
 # -*- coding:utf-8 -*-
-import rospy
-
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
 
@@ -55,7 +53,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
             return "THIRD"
         else:
             # emergency fall back if something goes wrong
-            rospy.logwarn("Rank to ball had some issues")
+            self.blackboard.node.get_logger().warning("Rank to ball had some issues")
             return "FIRST"
 
     def get_reevaluate(self):

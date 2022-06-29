@@ -1,4 +1,5 @@
-import rospy
+from rclpy.duration import Duration
+import rclpy
 import humanoid_league_msgs.msg
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -27,7 +28,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             success = self.start_animation(anim)
             # if we fail, we need to abort this action
             if not success:
-                rospy.logerr("Could not start animation. Will abort play animation action!")
+                self.blackboard.node.get_logger().error("Could not start animation. Will abort play animation action!")
                 return self.pop()
 
             self.first_perform = False
@@ -50,23 +51,23 @@ class AbstractPlayAnimation(AbstractActionElement):
         :return:
         """
 
-        rospy.loginfo("Playing animation " + anim)
+        self.blackboard.node.get_logger().info("Playing animation " + anim)
         if anim is None or anim == "":
-            rospy.logwarn("Tried to play an animation with an empty name!")
+            self.blackboard.node.get_logger().warning("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            rospy.Duration(1))
+            Duration(1))
         if not first_try:
             server_running = False
-            while not server_running and not rospy.is_shutdown():
-                rospy.logerr_throttle(5.0,
+            while not server_running and not rclpy.ok():
+                self.blackboard.node.get_logger().error_throttle(5.0,
                                       "Animation Action Server not running! Motion can not work without animation action server. "
                                       "Will now wait until server is accessible!")
-                server_running = self.blackboard.animation_action_client.wait_for_server(rospy.Duration(1))
+                server_running = self.blackboard.animation_action_client.wait_for_server(Duration(1))
             if server_running:
-                rospy.logwarn("Animation server now running, hcm will go on.")
+                self.blackboard.node.get_logger().warning("Animation server now running, hcm will go on.")
             else:
-                rospy.logwarn("Animation server did not start.")
+                self.blackboard.node.get_logger().warning("Animation server did not start.")
                 return False
         goal = humanoid_league_msgs.msg.PlayAnimationGoal()
         goal.animation = anim
@@ -86,24 +87,24 @@ class PlayAnimationGoalieArms(AbstractPlayAnimation):
 
 class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING GOALIE FALLING RIGHT ANIMATION")
+        self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING RIGHT ANIMATION")
         return self.blackboard.goalie_falling_right_animation
 
 
 class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING GOALIE FALLING LEFT ANIMATION")
+        self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING LEFT ANIMATION")
         return self.blackboard.goalie_falling_left_animation
 
 class PlayAnimationGoalieFallCenter(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING GOALIE FALLING CENTER ANIMATION")
+        self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING CENTER ANIMATION")
         return self.blackboard.goalie_falling_center_animation
 
 
 class PlayAnimationCheering(AbstractPlayAnimation):
     def chose_animation(self):
-        rospy.loginfo("PLAYING CHEERING ANIMATION")
+        self.blackboard.node.get_logger().info("PLAYING CHEERING ANIMATION")
         return self.blackboard.cheering_animation
 
 

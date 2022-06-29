@@ -1,5 +1,4 @@
 import math
-import rospy
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
@@ -9,7 +8,7 @@ from tf.transformations import quaternion_from_euler
 
 def create_pose_msg(frame, x, y, theta):
     pose_msg = PoseStamped()
-    pose_msg.header.stamp = rospy.Time.now()
+    pose_msg.header.stamp = self.blackboard.node.get_clock().now()
     pose_msg.header.frame_id = frame
     pose_msg.pose.position.x = x
     pose_msg.pose.position.y = y

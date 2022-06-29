@@ -1,6 +1,6 @@
 import random
 
-import rospy
+from rclpy.duration import Duration
 from tf2_geometry_msgs import PoseStamped
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -21,11 +21,11 @@ class WalkInPlace(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.duration = parameters.get('duration', None)
 
-        self.start_time = rospy.Time.now()
+        self.start_time = self.blackboard.node.get_clock().now()
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
-        if self.duration is not None and (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
+        if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(self.duration):
             return self.pop()
 
         self.blackboard.pathfinding.cancel_goal()
@@ -40,7 +40,7 @@ class Stand(WalkInPlace):
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
-        if self.duration is not None and (rospy.Time.now() - self.start_time) >= rospy.Duration(self.duration):
+        if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(self.duration):
             return self.pop()
         # need to keep publishing this since path planning publishes a few more messages
         self.blackboard.pathfinding.stop_walk()
@@ -55,4 +55,4 @@ class StandAndWaitRandom(Stand):
         self.max = parameters.get('max', None)
         self.duration = random.uniform(self.min, self.max)
 
-        self.start_time = rospy.Time.now()
+        self.start_time = self.blackboard.node.get_clock().now()

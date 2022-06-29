@@ -1,5 +1,3 @@
-import rospy
-
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from std_msgs.msg import String
 
@@ -38,7 +36,7 @@ class BallKickArea(AbstractDecisionElement):
             elif self.last_descision == "NEAR":
                 self.no_near_decisions += 1
             else:
-                rospy.logerr(f"Unknown BallKickArea last return value: {self.last_descision}")
+                self.blackboard.node.get_logger().error(f"Unknown BallKickArea last return value: {self.last_descision}")
         # We are outside of both areas
         else:
             self.last_descision = 'FAR'

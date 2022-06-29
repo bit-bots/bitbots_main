@@ -9,7 +9,6 @@ Goes to a position or an object
 """
 
 import math
-import rospy
 import tf2_ros as tf2
 from tf.transformations import quaternion_from_euler
 from tf2_geometry_msgs import PoseStamped
@@ -31,7 +30,7 @@ class GoToRelativePosition(AbstractActionElement):
         if self.first:
             self.first = False
             pose_msg = PoseStamped()
-            pose_msg.header.stamp = rospy.Time.now()
+            pose_msg.header.stamp = self.blackboard.node.get_clock().now()
             pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
             pose_msg.pose.position.x = self.point[0]
@@ -45,7 +44,7 @@ class GoToRelativePosition(AbstractActionElement):
             self.blackboard.pathfinding.publish(pose_msg)
             # TODO: this in good
             # waiting until the robot started to walk
-            rospy.sleep(0.25)
+            self.blackboard.node.create_rate(4).sleep()
         if not self.blackboard.blackboard.is_currently_walking():
             self.pop()
 
@@ -61,7 +60,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = self.point[0]

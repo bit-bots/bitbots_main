@@ -12,8 +12,7 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_python</buildtool_depend>
-
-  <exec_depend>rospy</exec_depend>
+  <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>bitbots_body_behavior</depend>
   <depend>bitbots_moveit_bindings</depend>
