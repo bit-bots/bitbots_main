@@ -5,6 +5,7 @@ import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.action import ActionClient
+from rclpy.executors import MultiThreadedExecutor
 
 from geometry_msgs.msg import PointStamped
 
@@ -31,7 +32,12 @@ class HardwareControlManager:
 
         rclpy.init(args=None)
         self.node = Node("hcm", allow_undeclared_parameters=True, automatically_declare_parameters_from_overrides=True)
-        # necessary for on shutdown hook, in case of direct shutdown before finished initialization
+        multi_executor = MultiThreadedExecutor()
+        multi_executor.add_node(self.node)
+        self.spin_thread = threading.Thread(target=multi_executor.spin, args=(), daemon=True)
+        #self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True)
+        self.spin_thread.start()        
+
         self.blackboard = None
 
         # --- Initialize Node ---
@@ -78,8 +84,7 @@ class HardwareControlManager:
 
         self.node.add_on_set_parameters_callback(self.on_set_parameters)
 
-        self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True)
-        self.spin_thread.start()
+
         self.main_loop()
 
     def deactivate_cb(self, msg):
@@ -236,35 +241,31 @@ class HardwareControlManager:
 
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
-            All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
-        rate = self.node.create_rate(500, clock=self.node.get_clock())
-        
-        while rclpy.ok() and not self.blackboard.shut_down_request:
-            if self.hcm_deactivated:
-                self.blackboard.current_state = RobotControlState.CONTROLLABLE
-                msg = RobotControlState()
-                msg.state = self.blackboard.current_state
-                self.hcm_state_publisher.publish(msg)
-            else:
-                self.blackboard.current_time = self.node.get_clock().now()
-                try:
-                    self.dsd.update()
+            All the forwarding of joint goals is directly done in the callbacks to reduce latency. """                
+        last_loop_start_time = self.node.get_clock().now()
+        while rclpy.ok() and not self.blackboard.shut_down_request:                        
+            loop_start_time = self.node.get_clock().now()
+            #can happen in simulation due to bad implementation in rclpy
+            if(last_loop_start_time != loop_start_time):                
+                last_loop_start_time = loop_start_time
+                if self.hcm_deactivated:
+                    self.blackboard.current_state = RobotControlState.CONTROLLABLE
                     msg = RobotControlState()
                     msg.state = self.blackboard.current_state
                     self.hcm_state_publisher.publish(msg)
-                except IndexError:
-                    # this error will happen during shutdown procedure, just ignore it
-                    pass
-            rate.sleep()
-            """
-            try:
-                # catch exception of moving backwards in time, when restarting simulator
-                rate.sleep()
-            except:
-                self.node.get_logger().warn(
-                    "We moved backwards in time. I hope you just reset the simulation. If not there is something "
-                    "wrong")
-            """
+                else:
+                    self.blackboard.current_time = self.node.get_clock().now()
+                    try:
+                        self.dsd.update()
+                        msg = RobotControlState()
+                        msg.state = self.blackboard.current_state
+                        self.hcm_state_publisher.publish(msg)
+                    except IndexError:
+                        # this error will happen during shutdown procedure, just ignore it
+                        pass
+            self.node.get_clock().sleep_until(loop_start_time + Duration(seconds=1/500.0))
+            #time.sleep(0.01)
+
         if not self.node.get_parameter("simulation_active"):
             self.on_shutdown_hook()
         self.spin_thread.join()

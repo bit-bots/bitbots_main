@@ -16,6 +16,7 @@
     <group if="$(var wolfgang)">
         <node pkg="bitbots_hcm" exec="hcm_node" args="" output="screen" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_hcm)/config/hcm_wolfgang.yaml"/>
+            <param name="use_sim_time" value="$(var sim)" />
             <param name="simulation_active" value="$(var sim)" />
             <param name="visualization_active" value="$(var viz)" />
         </node>
