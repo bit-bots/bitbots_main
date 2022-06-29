@@ -4,6 +4,7 @@
     <arg name="robot_type" default="wolfgang"/>
     <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 1"/>
     <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
+    <let name="taskset" value=""/><!--todo hack-->
 
     <group unless="$(var sim)">
         <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">

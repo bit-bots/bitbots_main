@@ -206,7 +206,7 @@ class HardwareControlManager:
                     return
 
         # forward positions to motors, if some where transmitted
-        if len(msg.position.points) > 0:
+        if len(msg.position.points) > 0 and self.blackboard.current_state != RobotControlState.GETTING_UP:
             out_msg = JointCommand()
             out_msg.positions = msg.position.points[0].positions
             out_msg.joint_names = msg.position.joint_names
