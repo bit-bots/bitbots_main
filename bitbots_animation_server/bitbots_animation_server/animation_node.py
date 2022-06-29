@@ -82,7 +82,7 @@ class AnimationNode(Node):
             self.send_animation_request()
             self.get_logger().info("HCM not controllable. Only sent request to make it come controllable.")
             goal.abborted(text="HCM not controllable. Will now become controllable. Try again later.")
-            return
+            return PlayAnimation.Result(successful=False)
 
         animator = self.get_animation_splines(self.current_animation, goal)
 
@@ -126,11 +126,12 @@ class AnimationNode(Node):
             goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
 
             self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
+        return PlayAnimation.Result(successful=False)
 
     def get_animation_splines(self, animation_name, goal):
         if animation_name not in self.animation_cache:
             self.get_logger().error("Animation '%s' not found" % animation_name)
-            goal.aborted(False, "Animation not found")
+            #goal.aborted(False, "Animation not found")            
             return
 
         parsed_animation = self.animation_cache[animation_name]
