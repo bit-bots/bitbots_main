@@ -1,14 +1,22 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     
     <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
 
+    <group if="$(var viz)">
+        <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--all"/>
+        <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_quintic_walk)/config/walk.rviz"/>
+        <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+    </group>
+
     <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
         <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
         <arg name="torqueless_mode" value="$(var torqueless_mode)" />
     </include>
 </launch>

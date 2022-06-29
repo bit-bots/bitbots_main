@@ -33,6 +33,7 @@
     <group if="$(var walking)">
         <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="viz" value="$(var viz)"/>
             <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
     </group>
@@ -45,10 +46,12 @@
     </include>
 
     <!-- launch the kick -->
-    <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
+    <!-- TODO -->
+    <!--<include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/> -->
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
         <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
     </include>
 </launch>
