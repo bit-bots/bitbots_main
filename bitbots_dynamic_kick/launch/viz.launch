@@ -1,10 +1,9 @@
 <launch>
-  <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch" />
-  <node name="rviz" pkg="rviz" exec="rviz" output="screen" required="true"
+  <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
+  <node name="rviz2" pkg="rviz2" exec="rviz2" output="screen"
     args="-d $(find-pkg-share wolfgang_description)/config/wolfgang.rviz" />
   <node name="motor_goals_viz_helper" pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--kick" />
   <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen">
-    <rosparam command="load" file="$(find-pkg-share bitbots_dynamic_kick)/config/kick_config.yaml" />
-    <rosparam command="load" file="$(find-pkg-share bitbots_dynamic_kick)/config/kick_config_unstable.yaml" />
+    <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_config.yaml" />
   </node>
 </launch>
