@@ -30,14 +30,7 @@ class MotorVizHelper(Node):
         parser.add_argument("--ros-args", help="just to filter ros args", action="store_true")
         parser.add_argument("-r", help="just to filter ros args", action="store_true")
         parser.add_argument("__node", help="just to filter ros args", action="store_true")
-        argv = sys.argv[1:]
-        try:
-            argv.remove("--ros-args")
-            argv.remove("-r")
-            argv.remove("__node:=joint_goal_viz")
-        except:
-            pass
-        self.args = parser.parse_args(argv)
+        self.args, unknown = parser.parse_known_args()
 
         if self.args.robot_type == "wolfgang":
             # List of all joint names. Do not change the order as it is important for Gazebo
