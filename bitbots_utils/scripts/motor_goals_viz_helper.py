@@ -2,12 +2,11 @@
 
 import argparse
 import sys
-import threading
 
 import rclpy
-from rclpy.exceptions import ROSInterruptException
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Float64MultiArray, Float64
+from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
 from humanoid_league_msgs.msg import Animation
@@ -85,19 +84,13 @@ class MotorVizHelper(Node):
         self.joint_command_msg.velocities = [float(-1)] * 20
 
     def loop(self):
-        rate = self.create_rate(100)
         self.update_time = self.get_clock().now()
-        while rclpy.ok():
-            try:
-                self.update_joint_states(self.joint_command_msg)
-                self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
-                if self.args.gazebo:
-                    self.joint_publisher.publish(self.get_float_array())
-                else:
-                    self.joint_publisher.publish(self.joint_state_msg)
-                rate.sleep()
-            except (ROSInterruptException, KeyboardInterrupt):
-                break
+        self.update_joint_states(self.joint_command_msg)
+        self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
+        if self.args.gazebo:
+            self.joint_publisher.publish(self.get_float_array())
+        else:
+            self.joint_publisher.publish(self.joint_state_msg)
 
     def joint_command_cb(self, msg: JointCommand):
         self.joint_command_msg.header.stamp = self.get_clock().now().to_msg()
@@ -142,13 +135,16 @@ class MotorVizHelper(Node):
 
 
 if __name__ == '__main__':
-    rclpy.init(args=None)
+    rclpy.init(args=sys.argv)
 
     node = MotorVizHelper()
-    # necessary so that sleep in loop() is not blocking
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
-    thread.start()
-    node.loop()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    node.create_timer(0.01, node.loop)
+
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
 
     node.destroy_node()
-    rclpy.shutdown()
