@@ -7,17 +7,17 @@
         <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
     </group>-->
 
-    <group unless="$(arg simple)">
-        <include file="$(find bitbots_body_behavior)/launch/body_behavior.launch">
-            <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    <group unless="$(var simple)">
+        <include file="$(find-pkg-share bitbots_body_behavior)/launch/body_behavior.launch">
+            <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
     </group>
-    <group if="$(arg simple)">
-        <include file="$(find bitbots_body_behavior)/launch/simple_behavior.launch" />
+    <group if="$(var simple)">
+        <include file="$(find-pkg-share bitbots_body_behavior)/launch/simple_behavior.launch" />
     </group>
 
-    <include file="$(find bitbots_head_behavior)/launch/head_behavior.launch">
-        <arg name="use_game_settings" value="$(arg use_game_settings)"/>
+    <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch">
+        <arg name="use_game_settings" value="$(var use_game_settings)"/>
     </include>
 
 </launch>
