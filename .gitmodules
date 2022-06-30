@@ -91,8 +91,8 @@
 	url = ../../ros-sports/biped_interfaces
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
-	branch = master
-	url = ../../bit-bots/bio_ik.git
+	branch = ros2
+	url = ../../PickNikRobotics/bio_ik.git
 [submodule "lib/vision_msgs"]
 	path = lib/vision_msgs
 	url = ../../ros-perception/vision_msgs.git
