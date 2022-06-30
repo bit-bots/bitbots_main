@@ -13,22 +13,20 @@
 
     <depend>bitbots_docs</depend>
 
-    <!--
     <exec_depend>bitbots_basler_camera</exec_depend>
-    <exec_depend>bitbots_body_behavior</exec_depend>
-    <exec_depend>bitbots_dynamic_kick</exec_depend>
     <exec_depend>bitbots_dynup</exec_depend>
-    <exec_depend>bitbots_hcm</exec_depend>
-    <exec_depend>bitbots_head_behavior</exec_depend>
-    <exec_depend>bitbots_localization</exec_depend>
     <exec_depend>bitbots_quintic_walk</exec_depend>
-    <exec_depend>bitbots_vision</exec_depend>
     <exec_depend>bitbots_ros_control</exec_depend>
     <exec_depend>bitbots_utils</exec_depend>
+    <exec_depend>bitbots_vision</exec_depend>
     <exec_depend>robot_state_publisher</exec_depend>
-    <exec_depend>xacro</exec_depend>
     <exec_depend>wolfgang_webots_sim</exec_depend>
-    -->
+    <exec_depend>xacro</exec_depend>
+    <!-- <exec_depend>bitbots_body_behavior</exec_depend> -->
+    <!-- <exec_depend>bitbots_dynamic_kick</exec_depend> -->
+    <!-- <exec_depend>bitbots_hcm</exec_depend> -->
+    <!-- <exec_depend>bitbots_head_behavior</exec_depend> -->
+    <!-- <exec_depend>bitbots_localization</exec_depend> -->
 
     <export>
         <bitbots_documentation>
