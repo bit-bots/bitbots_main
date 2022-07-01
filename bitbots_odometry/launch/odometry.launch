@@ -16,6 +16,7 @@
         <param name="y_scaling" value="1.0"/>
         <param name="yaw_scaling" value="1.4"/>
         <param name="use_sim_time" value="$(var sim)"/>
+        <param name="publish_walk_odom_tf" value="false"/>
     </node>
 
     <node name="odometry_fuser" pkg="bitbots_odometry" exec="odometry_fuser" launch-prefix="$(var taskset)">

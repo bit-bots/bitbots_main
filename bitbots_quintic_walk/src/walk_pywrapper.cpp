@@ -4,7 +4,7 @@ void PyWalkWrapper::spin_some() {
   rclcpp::spin_some(walk_node_);
 }
 
-PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs) {
+PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs, bool force_smooth_step_transition) {
   // create parameters from serialized messages
   std::vector<rclcpp::Parameter> cpp_parameters = {};
   for (auto &parameter_msg: parameter_msgs) {
@@ -14,6 +14,7 @@ PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_ms
   walk_node_ = std::make_shared<bitbots_quintic_walk::WalkNode>(ns, cpp_parameters);
   set_robot_state(0);
   walk_node_->initializeEngine();
+  walk_node_->getEngine()->setForceSmoothStepTransition(force_smooth_step_transition);
 }
 
 py::bytes PyWalkWrapper::step(double dt,
@@ -124,6 +125,22 @@ double PyWalkWrapper::get_freq() {
   return walk_node_->getEngine()->getFreq();
 }
 
+py::bytes PyWalkWrapper::get_support_state() {
+  biped_interfaces::msg::Phase support_state;
+  if (walk_node_->getEngine()->isDoubleSupport()) {
+    support_state.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
+  } else if (walk_node_->getEngine()->isLeftSupport()) {
+    support_state.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
+  } else {
+    support_state.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
+  }
+  return toPython<biped_interfaces::msg::Phase>(support_state);
+}
+
+bool PyWalkWrapper::is_left_support(){
+  return walk_node_->getEngine()->isLeftSupport();
+}
+
 void PyWalkWrapper::set_robot_state(int state) {
   humanoid_league_msgs::msg::RobotControlState state_msg;
   state_msg.state = state;
@@ -144,13 +161,79 @@ void PyWalkWrapper::publish_debug(){
   walk_node_->publish_debug();
 }
 
+bool PyWalkWrapper::reset_and_test_if_speed_possible(py::bytes cmd_vel, double pos_threshold){
+  walk_node_->reset(bitbots_quintic_walk::WalkState::WALKING,
+                    0.0,
+                    std::make_shared<geometry_msgs::msg::Twist>(fromPython<geometry_msgs::msg::Twist>(cmd_vel)),
+                    true);
+  bitbots_quintic_walk::WalkEngine *engine = walk_node_->getEngine();                    
+  bitbots_quintic_walk::WalkIK *ik = walk_node_->getIk();
+  bitbots_quintic_walk::WalkResponse current_response;                    
+  bitbots_splines::JointGoals joint_goals;  
+  moveit::core::RobotStatePtr goal_state;
+  goal_state.reset(new moveit::core::RobotState(*walk_node_->get_kinematic_model()));
+  double pos_offset;
+  tf2::Vector3 support_off;
+  tf2::Vector3 fly_off;
+  tf2::Vector3 tf_vec_left;
+  tf2::Vector3 tf_vec_right;
+  Eigen::Vector3d l_transform;
+  Eigen::Vector3d r_transform;  
+  int support_foot_changes = 0;
+  bool last_support_foot = engine->isLeftSupport();
+
+  while(support_foot_changes < 2){                    
+    current_response = engine->update(0.01);
+    joint_goals = ik->calculate(current_response);
+
+    // count finished half steps for stop condition
+    if (engine->isLeftSupport() != last_support_foot){
+      last_support_foot = engine->isLeftSupport();
+      support_foot_changes++;
+    }
+
+    tf2::Transform trunk_to_support_foot = current_response.support_foot_to_trunk.inverse();
+    tf2::Transform trunk_to_flying_foot = trunk_to_support_foot * current_response.support_foot_to_flying_foot;
+        
+    // set joints in the state to compute forward kinematics
+    std::vector<std::string> names = joint_goals.first;
+    std::vector<double> goals = joint_goals.second;
+    for (size_t i = 0; i < names.size(); i++) {
+      // besides its name, this method only changes a single joint position...
+      goal_state->setJointPositions(names[i], &goals[i]);
+    }
+    goal_state->updateLinkTransforms();
+
+    // read out forward kinematics and compare    
+    l_transform = goal_state->getGlobalLinkTransform("l_sole").translation();
+    r_transform = goal_state->getGlobalLinkTransform("r_sole").translation();
+    tf2::convert(l_transform, tf_vec_left);
+    tf2::convert(r_transform, tf_vec_right);
+    if (current_response.is_left_support_foot) {
+      support_off = trunk_to_support_foot.getOrigin() - tf_vec_left;
+      fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_right;
+    } else {
+      support_off = trunk_to_support_foot.getOrigin() - tf_vec_right;
+      fly_off = trunk_to_flying_foot.getOrigin() - tf_vec_left;      
+    }
+
+    pos_offset = std::abs(support_off.x()) + std::abs(support_off.y()) + std::abs(support_off.z()) + std::abs(fly_off.x()) + std::abs(fly_off.y()) + std::abs(fly_off.z());
+    //RCLCPP_WARN(walk_node_->get_logger(), "%f", pos_offset);
+    // todo orientation offset not so simple due to quaternions but could be checked too. typically the position is enough to see that the IK solution is wrong
+    if (pos_offset > pos_threshold){
+      return false;
+    }
+  }
+  return true;
+}
+
 PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
 
   m.def("initRos", &ros2_python_extension::initRos);
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
-      .def(py::init<std::string, std::vector<py::bytes>>())
+      .def(py::init<std::string, std::vector<py::bytes>, bool>())
       .def("step", &PyWalkWrapper::step)
       .def("step_relative", &PyWalkWrapper::step_relative)
       .def("step_open_loop", &PyWalkWrapper::step_open_loop)
@@ -164,5 +247,8 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
       .def("get_freq", &PyWalkWrapper::get_freq)
       .def("get_odom", &PyWalkWrapper::get_odom)
       .def("spin_some", &PyWalkWrapper::spin_some)
-      .def("publish_debug", &PyWalkWrapper::publish_debug);
+      .def("publish_debug", &PyWalkWrapper::publish_debug)
+      .def("get_support_state", &PyWalkWrapper::get_support_state)
+      .def("is_left_support", &PyWalkWrapper::is_left_support)
+      .def("reset_and_test_if_speed_possible", &PyWalkWrapper::reset_and_test_if_speed_possible);
 }

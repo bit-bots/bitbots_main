@@ -148,6 +148,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   double getWantedTrunkPitch();
 
   void setPauseDuration(double duration);
+  void setForceSmoothStepTransition(bool force);
 
   tf2::Transform getLeft();
   tf2::Transform getRight();
@@ -188,6 +189,9 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   // Current support foot (left or right).
   bool is_left_support_foot_;
+
+  // forces smooth spline transition if a low engine rate is used
+  bool force_smooth_step_transition_;
 
   // Pose diff [dx, dy, dtheta] from support foot to flying foot last and next position.
   tf2::Transform support_to_last_;

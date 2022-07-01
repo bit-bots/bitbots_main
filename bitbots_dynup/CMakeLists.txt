@@ -116,7 +116,6 @@ install(TARGETS libpy_dynup
 #  enable_bitbots_tests()
 #endif()
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
 install(TARGETS DynupNode
@@ -128,5 +127,7 @@ install(DIRECTORY launch
 install(DIRECTORY config
         DESTINATION share/${PROJECT_NAME})
 
+install(DIRECTORY scripts
+        DESTINATION share/${PROJECT_NAME})
 
 ament_package()

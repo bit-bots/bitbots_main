@@ -67,7 +67,7 @@ class AbstractPlayAnimation(AbstractActionElement):
                 self.blackboard.node.get_logger().warn(
                                       "Animation Action Server not running! Motion can not work without animation action server. "
                                       "Will now wait until server is accessible!",
-                                      throttle_duration_sec=5.0)
+                                      throttle_duration_sec=10.0)
                 server_running = self.blackboard.animation_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Animation server now running, hcm will go on.")
@@ -204,7 +204,7 @@ class PlayAnimationDynup(AbstractActionElement):
                 self.blackboard.node.get_logger().warn(
                                       "Dynup Action Server not running! Dynup cannot work without dynup server!"
                                       "Will now wait until server is accessible!",
-                                      throttle_duration_sec=5.0)
+                                      throttle_duration_sec=10.0)
                 server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Dynup server now running, hcm will go on.")

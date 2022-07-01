@@ -8,21 +8,23 @@
 
     <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 2"/>
     <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
+    <let name="taskset" value=""/><!--todo hack-->
 
     <!-- 
             <group if="$(var use_game_settings)">
                 <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
             </group> TODO-->
     <group if="$(var wolfgang)">
-        <node name="hcm" pkg="bitbots_hcm" exec="hcm_node" args="" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_hcm" exec="hcm_node" args="" output="screen" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_hcm)/config/hcm_wolfgang.yaml"/>
+            <param name="use_sim_time" value="$(var sim)" />
             <param name="simulation_active" value="$(var sim)" />
             <param name="visualization_active" value="$(var viz)" />
         </node>
     </group>
 
-    <node name="pause" pkg="bitbots_hcm" exec="pause_node" />
+    <node pkg="bitbots_hcm" exec="pause_node" />
 
-    <node name="hcm_led" pkg="bitbots_hcm" exec="hcm_led.py" />
+    <node pkg="bitbots_hcm" exec="hcm_led.py" />
 
 </launch>

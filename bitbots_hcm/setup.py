@@ -19,19 +19,21 @@ setup(
             glob.glob('config/*')),
         ('share/' + package_name + '/classifier',
             glob.glob('bitbots_hcm/classifier/*.pkl')),
+
+        ('share/' + package_name + '/actions',
+            glob.glob(package_name + '/hcm_dsd/actions/*.py')),
+        ('share/' + package_name + '/decisions' ,
+            glob.glob(package_name + '/hcm_dsd/decisions/*.py')),
+        ('share/' + package_name,
+            [package_name+'/hcm_dsd/hcm.dsd'])
     ],
     scripts=[
         'scripts/hcm_led.py',
-        'scripts/MakeGraph.py',
-        'scripts/send_motor_traj.py',
-        'scripts/test_publisher.py',
-        'scripts/test_subscriber.py'
     ],
     install_requires=[
         'launch',
         'setuptools',
     ],
-    package_data={'': ['hcm_dsd/hcm.dsd']},
     include_package_data=True,
     zip_safe=True,
     keywords=['ROS'],

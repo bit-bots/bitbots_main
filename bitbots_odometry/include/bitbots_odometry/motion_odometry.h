@@ -41,4 +41,10 @@ class MotionOdometry : public rclcpp::Node {
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
 
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  rclcpp::Time foot_change_time_;
+  std::string previous_support_link_;
+  std::string current_support_link_;
+  rclcpp::Time start_time_;
 };

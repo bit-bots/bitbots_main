@@ -30,6 +30,7 @@ class OdometryFuser : public rclcpp::Node {
  public:
   OdometryFuser();
   void loop();
+  bool wait_for_tf();
  private:
   sensor_msgs::msg::Imu imu_data_;
   nav_msgs::msg::Odometry odom_data_;
@@ -48,5 +49,12 @@ class OdometryFuser : public rclcpp::Node {
   tf2::Quaternion getCurrentMotionOdomYaw(tf2::Quaternion motion_odom_rotation);
   tf2::Quaternion getCurrentImuRotationWithoutYaw(tf2::Quaternion imu_rotation);
   tf2::Transform getCurrentRotationPoint();
+
+  message_filters::Subscriber<sensor_msgs::msg::Imu> imu_sub_;
+  message_filters::Subscriber<nav_msgs::msg::Odometry> motion_odom_sub_;
+  geometry_msgs::msg::TransformStamped tf_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
+  rclcpp::Time start_time_;
+  message_filters::Synchronizer<SyncPolicy> sync_;
 };
 

@@ -10,6 +10,9 @@ set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
 find_package(bitbots_docs REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
+find_package(bio_ik REQUIRED)
+find_package(bio_ik_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
@@ -28,6 +31,9 @@ pybind11_add_module(libbitbots_moveit_bindings SHARED
 )
 
 ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
+  backward_ros
+  bio_ik
+  bio_ik_msgs
   moveit_core
   moveit_msgs
   moveit_ros_planning_interface
