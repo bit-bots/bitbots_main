@@ -22,11 +22,11 @@ def set_moveit_parameters(parameters: [Parameter], type):
     serialized_parameters = []
     for parameter in parameters:
         serialized_parameters.append(serialize_message(parameter))
-    if type=="ikfk":
+    if type == "ikfk":
         ik_fk_state = BitbotsMoveitBindings(serialized_parameters)
-    elif type=="collsion":
+    elif type == "collision":
         collision_state = BitbotsMoveitBindings(serialized_parameters)
-    elif type=="current":
+    elif type == "current":
         current_state = BitbotsMoveitBindings(serialized_parameters)
     else:
         print("Type for bitbots_moveit_bindings state not correctly defined")
