@@ -34,6 +34,8 @@ ament_export_include_directories(${INCLUDE_DIRS})
 
 install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY rl_walk_models DESTINATION share/${PROJECT_NAME})
+
 
 install(PROGRAMS
   scripts/rl_walk.py

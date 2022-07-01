@@ -1,5 +1,8 @@
 <launch>
+  <arg name="sim" default="false"/>
+  <arg name="viz" default="false"/>
   <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+
   <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
   <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 

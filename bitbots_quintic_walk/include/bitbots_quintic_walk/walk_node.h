@@ -53,7 +53,7 @@ namespace bitbots_quintic_walk {
 
 class WalkNode : public rclcpp::Node {
  public:
-  explicit WalkNode(std::string ns, std::vector<rclcpp::Parameter> parameters = {});
+  explicit WalkNode(std::string ns = "", std::vector<rclcpp::Parameter> parameters = {});
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(double dt,
                                        geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
@@ -103,12 +103,16 @@ class WalkNode : public rclcpp::Node {
   void robotStateCb(humanoid_league_msgs::msg::RobotControlState::SharedPtr msg);
 
   WalkEngine *getEngine();
+  WalkIK *getIk();
+  moveit::core::RobotModelPtr *get_kinematic_model();
 
   nav_msgs::msg::Odometry getOdometry();
 
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
   void publish_debug();
+  rclcpp::TimerBase::SharedPtr startTimer();
+  double getTimerFreq();
 
  private:
   std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
@@ -163,7 +167,10 @@ class WalkNode : public rclcpp::Node {
 
   int robot_state_;
 
-  char current_support_foot_;
+  int current_support_foot_;
+
+  int odom_counter_;
+  WalkRequest last_request_;
 
   WalkResponse current_response_;
   WalkResponse current_stabilized_response_;

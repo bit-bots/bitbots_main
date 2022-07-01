@@ -10,12 +10,12 @@ set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
 #find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(moveit_ros REQUIRED)
@@ -57,6 +57,7 @@ add_executable(WalkNode ${SOURCES})
 
 ament_target_dependencies(WalkNode
         ament_cmake
+        backward_ros
         biped_interfaces
         bitbots_msgs
         bitbots_splines
@@ -74,11 +75,7 @@ ament_target_dependencies(WalkNode
         tf2
         tf2_eigen
         tf2_geometry_msgs
-        tf2_ros
-        Eigen3
-        fmt
-        fp
-        range-v3)
+        tf2_ros)
 
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -109,10 +106,7 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         tf2
         tf2_eigen
         tf2_geometry_msgs
-        tf2_ros
-        fmt
-        fp
-        range-v3)
+        tf2_ros)
 
 target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}")
 

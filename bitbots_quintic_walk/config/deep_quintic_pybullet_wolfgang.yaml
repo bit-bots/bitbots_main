@@ -72,7 +72,7 @@ walking:
       joint_min_effort: 35.0
       effort_phase_reset_active: False
 
-pid_trunk_fused_pitch:
+walk_pid_trunk_fused_pitch:
   ros__parameters:
     p: 0.0
     i: 0.0
@@ -82,7 +82,7 @@ pid_trunk_fused_pitch:
     i_clamp_max: 0.0
     antiwindup: False
 
-pid_trunk_fused_roll:
+walk_pid_trunk_fused_roll:
   ros__parameters:
     p: 0.0
     i: 0.0

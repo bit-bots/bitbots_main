@@ -74,10 +74,7 @@ ament_target_dependencies(KickNode
         tf2_eigen
         tf2_geometry_msgs
         tf2_ros
-        Eigen3
-        fmt
-        fp
-        range-v3)
+        Eigen3)
 
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -109,10 +106,7 @@ target_link_libraries(KickNode "${cpp_typesupport_target}")
 #        tf2
 #        tf2_eigen
 #        tf2_geometry_msgs
-#        tf2_ros
-#        fmt
-#        fp
-#        range-v3)
+#        tf2_ros)
 #target_link_libraries(py_dynamic_kick PRIVATE "${cpp_typesupport_target}")
 
 #ament_python_install_package(bitbots_dynamic_kick_py)

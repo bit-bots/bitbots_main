@@ -63,7 +63,7 @@ walking:
       y_speed_multiplier: 1
       yaw_speed_multiplier: 1
 
-pid_trunk_fused_pitch:
+walk_pid_trunk_fused_pitch:
   ros__parameters:
     p: 0
     i: 0
@@ -73,7 +73,7 @@ pid_trunk_fused_pitch:
     i_clamp_max: 0
     antiwindup: False
 
-pid_trunk_fused_roll:
+walk_pid_trunk_fused_roll:
   ros__parameters:
     p: 0
     i: 0

@@ -8,6 +8,7 @@ from std_msgs.msg import Bool
 from bitbots_msgs.srv import ManualPenalize
 from humanoid_league_msgs.msg import GameState
 from humanoid_league_speaker.speaker import speak
+from rclpy.executors import ExternalShutdownException
 
 
 class Pause(object):
@@ -29,7 +30,10 @@ class Pause(object):
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 10)
 
         while rclpy.ok():
-            rclpy.spin_once(self.node)
+            try:
+                rclpy.spin_once(self.node)
+            except (ExternalShutdownException, KeyboardInterrupt):
+                exit(0)
 
     def manual_update(self, req):
         if req.penalize == 0:

@@ -4,15 +4,19 @@ import os
 
 import rclpy
 from ament_index_python import get_package_share_directory
+from rclpy import Parameter
 from rclpy.node import Node
 import deep_quintic
 import yaml
 from deep_quintic import env
 from deep_quintic.ros_runner import ALGOS, create_test_env, get_saved_hyperparams
+from stable_baselines3.common.vec_env.base_vec_env import VecEnvWrapper
 
 if __name__ == '__main__':
+    rclpy.init()
     node = Node('rl_walk')
-    model_folder = node.get_parameter("/rl_walk/model_folder").get_parameter_value()
+    node.declare_parameter("model_folder", Parameter.Type.STRING)
+    model_folder = node.get_parameter("model_folder").get_parameter_value().string_value
     package_path = get_package_share_directory("bitbots_rl_motion")
     model_folder = os.path.join(package_path, "rl_walk_models", model_folder)
     hyperparams, stats_path = get_saved_hyperparams(model_folder, norm_reward=False, test_mode=True)
@@ -26,7 +30,7 @@ if __name__ == '__main__':
             if loaded_args["env_kwargs"] is not None:
                 env_kwargs = loaded_args["env_kwargs"]
     else:
-        print(f"No args.yml found in {args_path}")
+        node.get_logger().fatal(f"No args.yml found in {args_path}")
         exit()
 
     env_kwargs["node"] = node
@@ -43,12 +47,13 @@ if __name__ == '__main__':
 
     # direct reference to wolfgang env object
     env = venv.venv.envs[0].env.env
+
     custom_objects = {
         "learning_rate": 0.0,
         "lr_schedule": lambda _: 0.0,
         "clip_range": lambda _: 0.0,
     }
-    model_path = os.path.join(model_folder, "model.zip")
+    model_path = os.path.join(model_folder, "model")
     node.get_logger().info(f"Loading model from {model_path}")
     model = ALGOS[loaded_args['algo']].load(model_path, env=venv, custom_objects=custom_objects)
 

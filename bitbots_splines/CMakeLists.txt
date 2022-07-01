@@ -8,7 +8,6 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(bitbots_docs REQUIRED)
-find_package(bio_ik REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -38,7 +37,6 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
     bitbots_docs
-    bio_ik
     rclcpp
     std_msgs
     geometry_msgs
@@ -47,9 +45,6 @@ ament_target_dependencies(${PROJECT_NAME}
     moveit_ros_planning
     Eigen3
     PkgConfig
-    fmt
-    fp
-    range-v3
 )
 ament_python_install_package(bitbots_splines)
 
@@ -64,7 +59,6 @@ install(TARGETS ${PROJECT_NAME}
 
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(bitbots_docs)
-ament_export_dependencies(bio_ik)
 ament_export_dependencies(rclcpp)
 ament_export_dependencies(std_msgs)
 ament_export_include_directories(${INCLUDE_DIRS})

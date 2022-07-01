@@ -142,7 +142,6 @@ namespace bitbots_dynup {
     std::bind(&DynupNode::cancelCb, this, _1),
     std::bind(&DynupNode::acceptedCb, this, _1));
   RCLCPP_INFO(this->get_logger(),"Initialized DynUp and waiting for actions");
-  rclcpp::spin(SharedPtr(this));
 }
 
 bitbots_msgs::msg::JointCommand DynupNode::step(double dt,
@@ -309,14 +308,12 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
   while (rclcpp::ok()) {
+    rclcpp::Time startTime = this->get_clock()->now();
     if (goal_handle->is_canceling()) {
       goal_handle->canceled(result);
       RCLCPP_INFO(this->get_logger(), "Goal canceled");
       return;
-    }
-    rclcpp::Time startTime = this->get_clock()->now();
-    this->get_clock()->sleep_until(
-      startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
+    }    
     dt = getTimeDelta();
     msg = step(dt);
     auto feedback = std::make_shared<bitbots_msgs::action::Dynup_Feedback>();
@@ -334,6 +331,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
         break;
     }
     joint_goal_publisher_->publish(msg);
+    this->get_clock()->sleep_until(startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
   }
 }
 
@@ -407,7 +405,12 @@ DynupIK *DynupNode::getIK() {
 
 
 int main(int argc, char **argv) {
-    rclcpp::init(argc, argv);
-    // init node
-    bitbots_dynup::DynupNode node("");
+  rclcpp::init(argc, argv);
+  // init node
+  auto node = std::make_shared<bitbots_dynup::DynupNode>();
+  rclcpp::executors::EventsExecutor exec;
+  exec.add_node(node);
+
+  exec.spin();
+  rclcpp::shutdown();
 }

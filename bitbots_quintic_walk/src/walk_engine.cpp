@@ -20,6 +20,7 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node) :
     left_kick_requested_(false),
     right_kick_requested_(false),
     is_left_support_foot_(false),
+    force_smooth_step_transition_(false),
     foot_pos_vel_at_foot_change_({0.0, 0.0, 0.0}),
     foot_pos_acc_at_foot_change_({0.0, 0.0, 0.0}),
     foot_orientation_pos_at_last_foot_change_({0, 0, 0}),
@@ -421,6 +422,11 @@ void WalkEngine::saveCurrentRobotState() {
     factor = last_phase_ / 0.5;
   } else {
     factor = last_phase_;
+  }
+  if (force_smooth_step_transition_){
+    // special case where we want a smooth transition while having a very low sampling rate
+    // for example as reference for a RL walking policy during training    
+    factor = 1.0;
   }
   double period_time = half_period * factor;
 
@@ -1031,6 +1037,10 @@ int WalkEngine::getPercentDone() const {
 
 void WalkEngine::setPauseDuration(double duration) {
   pause_duration_ = duration;
+}
+
+void WalkEngine::setForceSmoothStepTransition(bool force){
+  force_smooth_step_transition_ = force;
 }
 
 double WalkEngine::getFreq() const {
