@@ -387,5 +387,5 @@ PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
       .def("set_head_motors", &BitbotsMoveitBindings::setHeadMotors, "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
       .def("set_joint_states", &BitbotsMoveitBindings::setJointStates, "Set the current joint states")
       .def("check_collision", &BitbotsMoveitBindings::checkCollision, "Returns true if the head collides, else false")
-      .def("get_joint_states", &BitbotsMoveitBindings::getJointStates, "Set the current joint states");
+      .def("get_joint_states", &BitbotsMoveitBindings::getJointStates, "Get the current joint states");
 }
