@@ -21,8 +21,11 @@ find_package(moveit_ros REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(ros2_python_extension)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_kdl REQUIRED)
 
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Wno-unused)
 
 enable_bitbots_docs()
 
@@ -40,6 +43,9 @@ ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
   moveit_ros_planning
   moveit_ros
   ros2_python_extension
+  tf2
+  tf2_ros
+  tf2_kdl
 )
 
 ament_python_install_package(${PROJECT_NAME})

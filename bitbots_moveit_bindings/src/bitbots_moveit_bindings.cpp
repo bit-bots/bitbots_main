@@ -6,7 +6,7 @@
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include <bio_ik/bio_ik.hpp>
+#include <bio_ik/bio_ik.h>
 #include <bio_ik_msgs/msg/ik_request.hpp>
 #include <bio_ik_msgs/msg/ik_response.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
