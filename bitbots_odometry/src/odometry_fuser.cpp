@@ -15,7 +15,8 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
                                  support_state_cache_(100),
                                  imu_sub_(this, "imu/data"),
                                  motion_odom_sub_(this, "motion_odometry"),
-                                 br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)){
+                                 br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
+                                 sync_(message_filters::Synchronizer<SyncPolicy>(SyncPolicy(50), imu_sub_, motion_odom_sub_)){
 
   this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
@@ -39,8 +40,7 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
                                                                  1,
                                                                  std::bind(&OdometryFuser::supportCallback, this, _1));
 
-  message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(50), imu_sub_, motion_odom_sub_);
-  sync.registerCallback(&OdometryFuser::imuCallback, this);
+  sync_.registerCallback(&OdometryFuser::imuCallback, this);
   start_time_ = this->now();
   fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 }
