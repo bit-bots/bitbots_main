@@ -238,7 +238,7 @@ bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg,
   /* Set engines goal_msg and start calculating */
   KickGoals goals;
   goals.ball_position = {goal_msg.ball_position.x, goal_msg.ball_position.y, goal_msg.ball_position.z};
-  goals.kick_direction = {goal_msg.kick_direction.x, goal_msg.kick_direction.y, goal_msg.kick_direction.z, goal_msg.kick_direction.w};
+  goals.kick_direction = {goal_msg.kick_direction.w, goal_msg.kick_direction.x, goal_msg.kick_direction.y, goal_msg.kick_direction.z};
   goals.kick_speed = goal_msg.kick_speed;
   goals.trunk_to_base_footprint = trunk_to_base_footprint;
   engine_.setGoals(goals);
@@ -341,7 +341,6 @@ void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<
   rclcpp::Time next_loop_time;
   rclcpp::Time last_time = this->get_clock()->now();
   while (rclcpp::ok()) {
-    RCLCPP_ERROR_STREAM(this->get_logger(), "L1");
     next_loop_time = last_time + rclcpp::Duration::from_seconds(1.0 / engine_rate_);
     last_time = this->get_clock()->now();
     if (this->get_clock()->sleep_until(next_loop_time)) {

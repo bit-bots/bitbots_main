@@ -122,7 +122,7 @@ target_link_libraries(KickNode "${cpp_typesupport_target}")
 #endif ()
 enable_bitbots_docs()
 
-install(DIRECTORY scripts DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY scripts USE_SOURCE_PERMISSIONS DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS KickNode DESTINATION lib/${PROJECT_NAME})
