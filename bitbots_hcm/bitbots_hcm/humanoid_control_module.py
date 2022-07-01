@@ -24,7 +24,7 @@ from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from dynamic_stack_decider.dsd import DSD
 import os
 import threading
-import time
+from rclpy.executors import ExternalShutdownException
 
 
 class HardwareControlManager:
@@ -44,8 +44,9 @@ class HardwareControlManager:
         # Otherwise messages will get lost, bc the init is not finished
         self.node.get_clock().sleep_for(Duration(seconds=0.1))  
         self.node.get_logger().debug("Starting hcm")
+        self.simulation_active = self.node.get_parameter("simulation_active")
 
-        # stack machine
+        # dsd
         self.blackboard = HcmBlackboard(self.node)
         self.blackboard.animation_action_client = ActionClient(self.node, PlayAnimation, 'animation')
         self.blackboard.dynup_action_client = ActionClient(self.node, Dynup, 'dynup')
@@ -244,29 +245,33 @@ class HardwareControlManager:
             All the forwarding of joint goals is directly done in the callbacks to reduce latency. """                
         last_loop_start_time = self.node.get_clock().now()
         while rclpy.ok() and not self.blackboard.shut_down_request:                        
-            loop_start_time = self.node.get_clock().now()
-            #can happen in simulation due to bad implementation in rclpy
-            if(last_loop_start_time != loop_start_time):                
-                last_loop_start_time = loop_start_time
-                if self.hcm_deactivated:
-                    self.blackboard.current_state = RobotControlState.CONTROLLABLE
-                    msg = RobotControlState()
-                    msg.state = self.blackboard.current_state
-                    self.hcm_state_publisher.publish(msg)
-                else:
-                    self.blackboard.current_time = self.node.get_clock().now()
-                    try:
-                        self.dsd.update()
+            try:
+                loop_start_time = self.node.get_clock().now()
+                #can happen in simulation due to bad implementation in rclpy
+                if(last_loop_start_time != loop_start_time):                
+                    last_loop_start_time = loop_start_time
+                    if self.hcm_deactivated:
+                        self.blackboard.current_state = RobotControlState.CONTROLLABLE
                         msg = RobotControlState()
                         msg.state = self.blackboard.current_state
                         self.hcm_state_publisher.publish(msg)
-                    except IndexError:
-                        # this error will happen during shutdown procedure, just ignore it
-                        pass
-            self.node.get_clock().sleep_until(loop_start_time + Duration(seconds=1/500.0))
-            #time.sleep(0.01)
+                    else:
+                        self.blackboard.current_time = self.node.get_clock().now()
+                        try:
+                            self.dsd.update()
+                            msg = RobotControlState()
+                            msg.state = self.blackboard.current_state
+                            self.hcm_state_publisher.publish(msg)
+                        except IndexError:
+                            # this error will happen during shutdown procedure, just ignore it
+                            pass
+                self.node.get_clock().sleep_until(loop_start_time + Duration(seconds=1/500.0))
+            except (ExternalShutdownException, KeyboardInterrupt):
+                if not self.simulation_active:
+                    self.on_shutdown_hook()
+                exit(0)                
 
-        if not self.node.get_parameter("simulation_active"):
+        if not self.simulation_active:
             self.on_shutdown_hook()
         self.spin_thread.join()
 

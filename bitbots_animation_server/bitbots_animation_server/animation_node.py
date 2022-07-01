@@ -19,6 +19,7 @@ from bitbots_animation_server.resource_manager import find_all_animations_by_nam
 from humanoid_league_msgs.msg import RobotControlState
 from bitbots_animation_server.spline_animator import SplineAnimator
 from rclpy.action import ActionServer
+from rclpy.executors import ExternalShutdownException
 
 
 class AnimationNode(Node):
@@ -87,45 +88,48 @@ class AnimationNode(Node):
         animator = self.get_animation_splines(self.current_animation, goal)
 
         while rclpy.ok() and animator:
-            last_time = self.get_clock().now()
-            # first check if we have another goal
-            # todo this does not work in ros2
-            # self.check_for_new_goal(goal)
-            # new_goal = self._as.current_goal.goal.animation
-            ## if there is a new goal, calculate new splines and reset the time
-            # if new_goal != self.current_animation:
-            #    self.current_animation = new_goal
-            #    animator = self.get_animation_splines(self.current_animation)
-            #    first = True
+            try:            
+                last_time = self.get_clock().now()
+                # first check if we have another goal
+                # todo this does not work in ros2
+                # self.check_for_new_goal(goal)
+                # new_goal = self._as.current_goal.goal.animation
+                ## if there is a new goal, calculate new splines and reset the time
+                # if new_goal != self.current_animation:
+                #    self.current_animation = new_goal
+                #    animator = self.get_animation_splines(self.current_animation)
+                #    first = True
 
-            # if we're here we want to play the next keyframe, cause there is no other goal
-            # compute next pose
-            t = float(self.get_clock().now().seconds_nanoseconds()[0] +
-                      self.get_clock().now().seconds_nanoseconds()[1] / 1e9) - animator.get_start_time()
-            pose = animator.get_positions_rad(t)
+                # if we're here we want to play the next keyframe, cause there is no other goal
+                # compute next pose
+                t = float(self.get_clock().now().seconds_nanoseconds()[0] +
+                        self.get_clock().now().seconds_nanoseconds()[1] / 1e9) - animator.get_start_time()
+                pose = animator.get_positions_rad(t)
 
-            if pose is None:
-                # see walking node reset
+                if pose is None:
+                    # see walking node reset
 
-                # animation is finished
-                # tell it to the hcm
-                self.send_animation(False, True, goal.request.hcm, None, None)
-                goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
-                # we give a positive result
-                goal.succeed()
-                return PlayAnimation.Result(successful=True)
+                    # animation is finished
+                    # tell it to the hcm
+                    self.send_animation(False, True, goal.request.hcm, None, None)
+                    goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
+                    # we give a positive result
+                    goal.succeed()
+                    return PlayAnimation.Result(successful=True)
 
-            self.send_animation(first, False, goal.request.hcm, pose, animator.get_torque(t))
+                self.send_animation(first, False, goal.request.hcm, pose, animator.get_torque(t))
 
-            first = False  # we have sent the first frame, all frames after this can't be the first
-            perc_done = int(((float(self.get_clock().now().seconds_nanoseconds()[0] +
-                                    self.get_clock().now().seconds_nanoseconds()[
-                                        1] / 1e9) - animator.get_start_time()) / animator.get_duration()) * 100)
-            perc_done = max(0, min(perc_done, 100))
+                first = False  # we have sent the first frame, all frames after this can't be the first
+                perc_done = int(((float(self.get_clock().now().seconds_nanoseconds()[0] +
+                                        self.get_clock().now().seconds_nanoseconds()[
+                                            1] / 1e9) - animator.get_start_time()) / animator.get_duration()) * 100)
+                perc_done = max(0, min(perc_done, 100))
 
-            goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
+                goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
 
-            self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
+                self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
+            except (ExternalShutdownException, KeyboardInterrupt):
+                exit()
         return PlayAnimation.Result(successful=False)
 
     def get_animation_splines(self, animation_name, goal):
@@ -193,4 +197,7 @@ class AnimationNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     animation = AnimationNode()
-    rclpy.spin(animation)
+    try:
+        rclpy.spin(animation)
+    except (ExternalShutdownException, KeyboardInterrupt):
+        exit(0)
