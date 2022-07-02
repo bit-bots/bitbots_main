@@ -229,32 +229,33 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   // only calculate joint goals from this if the engine is not idle
   current_response_.current_fused_roll = current_trunk_fused_roll_;
   current_response_.current_fused_pitch = current_trunk_fused_pitch_;
-
-  // get stabilized goals from stabilizer
-  current_stabilized_response_ = stabilizer_.stabilize(current_response_, rclcpp::Duration::from_nanoseconds(1e9 * dt));
-
-  // compute motor goals from IK
-  motor_goals_ = ik_.calculate(current_stabilized_response_);
-
-  // change to joint command message type
+  
   bitbots_msgs::msg::JointCommand command;
-  command.header.stamp = this->get_clock()->now();
-  /*
-   * Since our JointGoals type is a vector of strings
-   *  combined with a vector of numbers (motor name -> target position)
-   *  and bitbots_msgs::msg::JointCommand needs both vectors as well,
-   *  we can just assign them
-   */
-  command.joint_names = motor_goals_.first;
-  command.positions = motor_goals_.second;
+  if (walk_engine_.getState()!=WalkState::IDLE){
+    // get stabilized goals from stabilizer
+    current_stabilized_response_ = stabilizer_.stabilize(current_response_, rclcpp::Duration::from_nanoseconds(1e9 * dt));
 
-  /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
-  std::vector<double> vels(motor_goals_.first.size(), -1.0);
-  std::vector<double> accs(motor_goals_.first.size(), -1.0);
-  std::vector<double> pwms(motor_goals_.first.size(), -1.0);
-  command.velocities = vels;
-  command.accelerations = accs;
-  command.max_currents = pwms;
+    // compute motor goals from IK
+    motor_goals_ = ik_.calculate(current_stabilized_response_); 
+  
+    command.header.stamp = this->get_clock()->now();
+    /*
+    * Since our JointGoals type is a vector of strings
+    *  combined with a vector of numbers (motor name -> target position)
+    *  and bitbots_msgs::msg::JointCommand needs both vectors as well,
+    *  we can just assign them
+    */
+    command.joint_names = motor_goals_.first;
+    command.positions = motor_goals_.second;
+
+    /* And because we are setting position goals and not movement goals, these vectors are set to -1.0*/
+    std::vector<double> vels(motor_goals_.first.size(), -1.0);
+    std::vector<double> accs(motor_goals_.first.size(), -1.0);
+    std::vector<double> pwms(motor_goals_.first.size(), -1.0);
+    command.velocities = vels;
+    command.accelerations = accs;
+    command.max_currents = pwms;
+  }
 
   return command;
 }
