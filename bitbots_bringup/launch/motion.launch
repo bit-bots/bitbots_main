@@ -46,8 +46,7 @@
     </include>
 
     <!-- launch the kick -->
-    <!-- TODO -->
-    <!--<include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/> -->
+    <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch"/>
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
