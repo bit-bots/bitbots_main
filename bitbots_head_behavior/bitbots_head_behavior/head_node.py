@@ -18,6 +18,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from rclpy.executors import MultiThreadedExecutor
+from ament_index_python import get_package_share_directory
 
 
 def init(node):
@@ -35,7 +36,7 @@ def init(node):
     blackboard.head_capsule.position_publisher = node.create_publisher(JointCommand, "head_motor_goals", 10)
     blackboard.head_capsule.visual_compass_record_trigger = node.create_publisher(Header, blackboard.config['visual_compass_trigger_topic'], 5)
 
-    dirname = os.path.dirname(os.path.realpath(__file__))
+    dirname = get_package_share_directory("bitbots_head_behavior")
 
     dsd = DSD(blackboard, 'debug/dsd/head_behavior', node)
     dsd.register_actions(os.path.join(dirname, 'actions'))

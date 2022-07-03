@@ -322,11 +322,9 @@ class WorldModelCapsule:
         if reset_ball_filter:  # Reset the ball filter
             result = self.reset_ball_filter()
             if result.success:
-                self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'",
-                                                        logger_name='bitbots_blackboard')
+                self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
             else:
-                self._blackboard.node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'",
-                                                        logger_name='bitbots_blackboard')
+                self._blackboard.node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'")
 
     ###########
     # ## Goal #
@@ -402,7 +400,7 @@ class WorldModelCapsule:
     def goalposts_callback(self, goal_parts: PoseWithCertaintyArray):
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
-        goal_parts.header.stamp = goal_parts.header.stamp + Duration(nanoseconds=0.01 * 1e9).to_msg()
+        goal_parts.header.stamp = goal_parts.header.stamp + Duration(seconds=0.01).to_msg()
 
         # Tuple(First Post, Second Post, Distance)
         goal_combination = (-1, -1, -1)

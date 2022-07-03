@@ -16,6 +16,12 @@ setup(
             glob.glob('config/*.yaml')),
         ('share/' + package_name + '/launch',
             glob.glob('launch/*.launch')),
+        ('share/' + package_name + '/actions',
+            glob.glob(package_name + '/actions/*.py')),
+        ('share/' + package_name + '/decisions' ,
+            glob.glob(package_name + '/decisions/*.py')),
+        ('share/' + package_name,
+            [package_name+'/main.dsd'])
     ],
     scripts=[
         'scripts/backup_behavior.py',
