@@ -21,6 +21,21 @@ PyCharm Integration
   Download :download:`our python style</_static/bitbots_python_style.xml>` and select it. Choose a name to store it.
 * Make sure to select all python code inspections in Editor > Inspections > Python.
 
+VSCode Integration
+~~~~~~~~~~~~~~~~~~
+Install the Python extension.
+Add the following lines to your setting.json ($HOME/.config/Code/User/settings.json)
+
+.. code-block:: json
+
+   "python.formatting.provider": "yapf",
+   "python.formatting.yapfArgs": [
+       "--style={based_on_style: google, column_limit: 120}"
+   ],
+   "editor.formatOnType": true,
+   "editor.formatOnPaste": true,
+
+
 
 C++
 ---
@@ -34,6 +49,17 @@ CLion Integration
 * Go to File > Settings > Editor > Code Style. Click the gear icon and select Import Scheme > IntelliJ Idea code style XML.
   Download :download:`our cpp style</_static/bitbots_cpp_style.xml>` and select it. Choose a name to store it.
 * Make sure to select all python code inspections in Editor > Inspections > C/C++.
+
+VSCdoe Integration
+~~~~~~~~~~~~~~~~~~
+Install the C/C++ extension.
+Add the following lines to your setting.json ($HOME/.config/Code/User/settings.json)
+
+.. code-block:: json
+
+   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google}",
+   "editor.formatOnType": true,
+   "editor.formatOnPaste": true,
 
 
 Git
