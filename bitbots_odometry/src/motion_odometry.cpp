@@ -140,7 +140,7 @@ void MotionOdometry::loop() {
       }
       double y = current_support_to_base.getOrigin().y() * y_scaling_;
       double yaw = tf2::getYaw(current_support_to_base.getRotation()) * x_backward_scaling_;
-      current_support_to_base.setOrigin({x, y, 0});
+      current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
       tf2::Quaternion q;
       q.setRPY(0, 0, yaw);
       current_support_to_base.setRotation(q);
