@@ -57,10 +57,9 @@ Add the following lines to your setting.json ($HOME/.config/Code/User/settings.j
 
 .. code-block:: json
 
-   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google}",
    "editor.formatOnType": true,
    "editor.formatOnPaste": true,
-
+   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, AccessModifierOffset: -2, ConstructorInitializerIndentWidth: 2, AlignEscapedNewlinesLeft: false, AlignTrailingComments: true, AllowAllParametersOfDeclarationOnNextLine: false, AllowShortIfStatementsOnASingleLine: false, AllowShortLoopsOnASingleLine: false, AllowShortFunctionsOnASingleLine: None, AlwaysBreakTemplateDeclarations: true, AlwaysBreakBeforeMultilineStrings: true, BreakBeforeBinaryOperators: false, BreakBeforeTernaryOperators: false, BreakConstructorInitializersBeforeComma: false, BinPackParameters: true, ColumnLimit: 120, ConstructorInitializerAllOnOneLineOrOnePerLine: true, DerivePointerBinding: false, PointerBindsToType: true, ExperimentalAutoDetectBinPacking: false, IndentCaseLabels: true, MaxEmptyLinesToKeep: 1, NamespaceIndentation: None, ObjCSpaceBeforeProtocolList: true, PenaltyBreakBeforeFirstCallParameter: 19, PenaltyBreakComment: 60, PenaltyBreakString: 1, PenaltyBreakFirstLessLess: 1000, PenaltyExcessCharacter: 1000, PenaltyReturnTypeOnItsOwnLine: 90, SpacesBeforeTrailingComments: 2, Cpp11BracedListStyle: true, Standard: Auto, IndentWidth: 2, TabWidth: 2, UseTab: Never, IndentFunctionDeclarationAfterType: false, SpacesInParentheses: false, SpacesInAngles: false, SpaceInEmptyParentheses: false, SpacesInCStyleCastParentheses: false, SpaceAfterControlStatementKeyword: true, SpaceBeforeAssignmentOperators: true, ContinuationIndentWidth: 4, SortIncludes: false, SpaceAfterCStyleCast: false, BreakBeforeBraces: Custom, BraceWrapping: {AfterClass: 'false', AfterControlStatement: 'false', AfterEnum : 'false', AfterFunction : 'false', AfterNamespace : 'false', AfterStruct : 'false', AfterUnion : 'false', BeforeCatch : 'false', BeforeElse : 'false', IndentBraces : 'false'}}",
 
 Git
 ---
