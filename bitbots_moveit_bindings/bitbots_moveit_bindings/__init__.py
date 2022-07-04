@@ -66,6 +66,12 @@ def get_joint_states():
     global current_state
     if current_state is None:
         current_state = BitbotsMoveitBindings([])
+        current_state.subscribe_joint_states()
     result_str = current_state.get_joint_states()
     return deserialize_message(result_str, JointState)
 
+def spin():
+    global current_state
+    if current_state is None:
+        current_state = BitbotsMoveitBindings([])
+    current_state.spin_once()
