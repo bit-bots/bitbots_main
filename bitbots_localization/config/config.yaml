@@ -1,84 +1,83 @@
+bitbots_localization:
+  ros__parameters:
 
-  ########
-  # MISC #
-  ########
+    ########
+    # MISC #
+    ########
 
-  init_mode: 0
+    init_mode: 0
 
-  field_boundary_interpolation_steps: 1
+    #############
+    # ROS-Stuff #
+    #############
 
+    line_topic: 'line_relative'
+    line_pointcloud_topic: 'line_mask_relative_pc'
+    goal_topic: 'goals_simulated'
+    fieldboundary_topic: 'field_boundary_relative'
+    fieldboundary_in_image_topic: 'field_boundary_in_image'
 
-  #############
-  # ROS-Stuff #
-  #############
+    particle_publishing_topic: 'pose_particles'
 
-  line_topic: 'line_relative'
-  line_pointcloud_topic: 'line_mask_relative_pc'
-  goal_topic: 'goals_simulated'
-  fieldboundary_topic: 'field_boundary_relative'
-  fieldboundary_in_image_topic: 'field_boundary_in_image'
+    publishing_frequency: 10
 
-  particle_publishing_topic: 'pose_particles'
+    #################
+    # Visualization #
+    #################
 
-  publishing_frequency: 10
-
-  #################
-  # Visualization #
-  #################
-
-  debug_visualization: true
-
-
-  ###################
-  # Particle Filter #
-  ###################
+    debug_visualization: true
 
 
-  particle_number: 300
-  resampling_interval: 2
+    ###################
+    # Particle Filter #
+    ###################
 
-  diffusion_x_std_dev: 0.8
-  diffusion_y_std_dev: 0.8
-  diffusion_t_std_dev: 0.9
-  diffusion_multiplicator: 0.001
-  starting_diffusion: 0.05
-  starting_steps_with_higher_diffusion: 40
 
-  drift_distance_to_direction: 2.0
-  drift_roation_to_direction: 0.0
-  drift_distance_to_distance: 0.1
-  drift_roation_to_distance: 0.2
-  drift_distance_to_rotation: 0.0
-  drift_rotation_to_rotation: 3.0
+    particle_number: 300
+    resampling_interval: 2
 
-  max_rotation: 0.45
-  max_translation: 0.09
+    diffusion_x_std_dev: 0.8
+    diffusion_y_std_dev: 0.8
+    diffusion_t_std_dev: 0.9
+    diffusion_multiplicator: 0.001
+    starting_diffusion: 0.05
+    starting_steps_with_higher_diffusion: 40
 
-  min_weight: 0.01
-  min_resampling_weight: 0.1
-  out_of_field_weight_decrease: 0.01
-  out_of_field_range: 0.5  # in m
-  percentage_best_particles: 50
+    drift_distance_to_direction: 2.0
+    drift_roation_to_direction: 0.0
+    drift_distance_to_distance: 0.1
+    drift_roation_to_distance: 0.2
+    drift_distance_to_rotation: 0.0
+    drift_rotation_to_rotation: 3.0
 
-  distance_factor : 0.5
-  lines_factor: 1
-  goals_factor: 0
-  field_boundary_factor: 0
-  corners_factor : 0
-  t_crossings_factor: 0
-  crosses_factor : 0
+    max_rotation: 0.45
+    max_translation: 0.09
 
-  line_element_confidence: 0.01
-  goal_element_confidence: 0.0
-  field_boundary_element_confidence: 0.0
-  corner_element_confidence: 0.0
-  t_crossing_element_confidence: 0.0
-  cross_element_confidence: 0.0
+    min_weight: 0.01
+    min_resampling_weight: 0.1
+    out_of_field_weight_decrease: 0.01
+    out_of_field_range: 0.5  # in m
+    percentage_best_particles: 50
 
-  min_motion_linear: 0.0
-  min_motion_angular: 0.0
-  filter_only_with_motion: false
+    distance_factor : 0.5
+    lines_factor: 1.0
+    goals_factor: 0.0
+    field_boundary_factor: 0.0
+    corners_factor : 0.0
+    t_crossings_factor: 0.0
+    crosses_factor : 0.0
 
-  measurement_out_of_map_punishment: 10.0
+    line_element_confidence: 0.01
+    goal_element_confidence: 0.0
+    field_boundary_element_confidence: 0.0
+    corner_element_confidence: 0.0
+    t_crossing_element_confidence: 0.0
+    cross_element_confidence: 0.0
 
-  walking_moved_distance: 0.5
+    min_motion_linear: 0.0
+    min_motion_angular: 0.0
+    filter_only_with_motion: false
+
+    measurement_out_of_map_punishment: 10.0
+
+    walking_moved_distance: 0.5

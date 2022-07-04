@@ -12,6 +12,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <bitbots_localization/tools.h>
 
+
+namespace bitbots_localization {
 /**
 * @class RobotState
 * @brief Sample state for a particle filter that localizes the Robot.
@@ -19,12 +21,12 @@
 class RobotState {
  public:
   RobotState();
-  
+
   /**
    * @param x Position of the robot.
    * @param y Position of the robot.
    * @param T Orientaion of the robot in radians.
-   */ 
+   */
   RobotState(double x, double y, double T);
 
   RobotState operator*(float factor) const;
@@ -62,7 +64,8 @@ class RobotState {
   visualization_msgs::msg::Marker renderMarker(std::string n_space,
                                           std::string frame,
                                           rclcpp::Duration lifetime,
-                                          std_msgs::ColorRGBA color) const;
+                                          std_msgs::msg::ColorRGBA color,
+                                          rclcpp::Time stamp) const;
 
  private:
 
@@ -70,6 +73,7 @@ class RobotState {
   double m_YPos;
   double m_SinTheta;
   double m_CosTheta;
+};
 };
 
 #endif //BITBOTS_LOCALIZATION_ROBOTSTATE_H

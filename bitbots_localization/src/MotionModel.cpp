@@ -4,6 +4,8 @@
 
 #include <bitbots_localization/MotionModel.h>
 
+namespace bitbots_localization {
+
 RobotMotionModel::RobotMotionModel(
   const particle_filter::CRandomNumberGenerator &random_number_generator,
   double diffuse_xStdDev,
@@ -59,4 +61,5 @@ void RobotMotionModel::diffuse(RobotState &state) const {
 double RobotMotionModel::sample(double b) const {
 
   return random_number_generator_.getGaussian(b);
+}
 }

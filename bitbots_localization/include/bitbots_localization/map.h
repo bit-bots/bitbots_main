@@ -8,23 +8,22 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/point.hpp>
 
-#include <bitbots_localization/msg/robot_state.hpp>
-#include <bitbots_localization/LocalizationConfig.h>
+#include <bitbots_localization/RobotState.h>
 #include <geometry_msgs/msg/point.hpp>
 #include <bitbots_localization/tools.h>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace gm = geometry_msgs;
 namespace bl = bitbots_localization;
 
-
+namespace bitbots_localization {
 /**
 * @class Map
-* @brief Stores a map for a messurement class (e.g. a map of the lines)  
+* @brief Stores a map for a messurement class (e.g. a map of the lines)
 */
 class Map {
  public:
@@ -32,10 +31,9 @@ class Map {
   /**
    * @param name of the environment. (E.g. webots)
    * @param type of the map. (E.g. lines)
-   * @param config Config of the localization.
-   */ 
-  explicit Map(const std::string& file_path, const bl::LocalizationConfig &config);
-  explicit Map(const std::string& name, const std::string& type, const bl::LocalizationConfig &config);
+   * @param out_of_map_value value used for padding the out of field area.
+   */
+  explicit Map(const std::string& name, const std::string& type, const double out_of_map_value);
 
   cv::Mat map;
 
@@ -50,8 +48,8 @@ class Map {
                                                 double stateT);
 
  private:
-     bl::LocalizationConfig config_;
+    double out_of_map_value_;
 
 };
-
+};
 #endif //BITBOTS_LOCALIZATION_MAP_H

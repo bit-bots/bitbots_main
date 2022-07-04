@@ -4,35 +4,38 @@
 
 # Settings override for the gazebo simulator field
 
-#############################
-# Initial pose of the robot #
-#############################
+bitbots_localization:
+  ros__parameters:
 
-# Initialize at sideline
-# TODO better parameters
-initial_robot_x1: 2.5
-initial_robot_y1: 3
-initial_robot_t1: -1.5
-initial_robot_x2: 2.5
-initial_robot_y2: -3
-initial_robot_t2: 1.57
+    #############################
+    # Initial pose of the robot #
+    #############################
 
-# Inertial single point position
-initial_robot_x: -2.0
-initial_robot_y: 0
-initial_robot_t: 0
+    # Initialize at sideline
+    # TODO better parameters
+    initial_robot_x1: 2.5
+    initial_robot_y1: 3.0
+    initial_robot_t1: -1.5
+    initial_robot_x2: 2.5
+    initial_robot_y2: -3
+    initial_robot_t2: 1.57
 
-########
-# Maps #
-########
+    # Inertial single point position
+    initial_robot_x: -2.0
+    initial_robot_y: 0.0
+    initial_robot_t: 0.0
 
-##################
-# Field settings #
-##################
+    ########
+    # Maps #
+    ########
 
-# Field size
-field_x: 9
-field_y: 6
+    ##################
+    # Field settings #
+    ##################
 
-# Padding
-field_padding: 1.0
+    # Field size
+    field_x: 9.0
+    field_y: 6.0
+
+    # Padding
+    field_padding: 1.0

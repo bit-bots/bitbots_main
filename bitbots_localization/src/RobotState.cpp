@@ -4,7 +4,9 @@
 
 #include "../include/bitbots_localization/RobotState.h"
 
-RobotState::msg::RobotState() :
+namespace bitbots_localization {
+
+RobotState::RobotState() :
     is_explorer_(false),
     m_XPos(0.0),
     m_YPos(0.0),
@@ -13,7 +15,7 @@ RobotState::msg::RobotState() :
 
 }
 
-RobotState::msg::RobotState(double x, double y, double T) :
+RobotState::RobotState(double x, double y, double T) :
     is_explorer_(false),
     m_XPos(x),
     m_YPos(y),
@@ -129,9 +131,10 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
 visualization_msgs::msg::Marker RobotState::renderMarker(std::string n_space,
                                                     std::string frame,
                                                     rclcpp::Duration lifetime,
-                                                    std_msgs::ColorRGBA color) const {
+                                                    std_msgs::msg::ColorRGBA color,
+                                                    rclcpp::Time stamp) const {
   visualization_msgs::msg::Marker msg;
-  msg.header.stamp = this->get_clock()->now()();
+  msg.header.stamp = stamp;
   msg.header.frame_id = frame;
   msg.action = visualization_msgs::msg::Marker::ADD;
   msg.type = visualization_msgs::msg::Marker::ARROW;
@@ -155,4 +158,5 @@ visualization_msgs::msg::Marker RobotState::renderMarker(std::string n_space,
   msg.id = reinterpret_cast<uint64_t>(this);
 
   return msg;
+}
 }

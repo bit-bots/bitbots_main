@@ -1,5 +1,7 @@
 #include <bitbots_localization/tools.h>
 
+namespace bitbots_localization {
+
 std::pair<double,double> cartesianToPolar(double x, double y)
 {
     double r = hypot(x, y);
@@ -17,11 +19,6 @@ std::pair<double, double> polarToCartesian(double t, double r)
     return std::make_pair(x, y);
 }
 
-double signedAngle(double angle_a, double angle_b)
-{
-    return signedAngle(angle_a - angle_b);
-}
-
 double signedAngle(double angle)
 {
     if (angle > M_PI)
@@ -35,4 +32,8 @@ double signedAngle(double angle)
     return angle;
 }
 
-
+double signedAngle(double angle_a, double angle_b)
+{
+    return signedAngle(angle_a - angle_b);
+}
+}

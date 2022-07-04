@@ -1,22 +1,18 @@
 import rclpy
 from rclpy.node import Node
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_localization.srv import SetPaused
 
 
 class AbstractLocalizationPause(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLocalizationPause, self).__init__(blackboard, dsd, parameters=parameters)
-        self.stop_filter_prox = self.create_client(SetPaused, 'pause_localization')
 
     def set_paused(self, paused):
         self.do_not_reevaluate()
-        rospy.wait_for_service('pause_localization')
-        try:
-            resp = self.stop_filter_prox(paused)
-        except rospy.ServiceException as e:
-            self.get_logger().error(f"Service call failed: {e}")
+        while not self.blackboard.stop_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
+        self.blackboard.stop_filter_proxy(paused)
 
 
 class LocalizationStop(AbstractLocalizationPause):
@@ -24,7 +20,7 @@ class LocalizationStop(AbstractLocalizationPause):
         super(LocalizationStop, self).__init__(blackboard, dsd, parameters=parameters)
 
     def perform(self, reevaluate=False):
-        self.get_logger().debug("Stop localization")
+        self.blackboard.node.get_logger().debug("Stop localization")
         self.set_paused(True)
         return self.pop()
 
@@ -34,11 +30,11 @@ class LocalizationStart(AbstractLocalizationPause):
         super(LocalizationStart, self).__init__(blackboard, dsd, parameters=parameters)
 
     def perform(self, reevaluate=False):
-        self.get_logger().debug("Start localization")
+        self.blackboard.node.get_logger().debug("Start localization")
         self.set_paused(False)
         return self.pop()
 
 class DoNothing(AbstractActionElement):
     def perform(self, reevaluate=False):
-        self.get_logger().debug("doing nothing")
+        self.blackboard.node.get_logger().debug("Doing nothing")
         return

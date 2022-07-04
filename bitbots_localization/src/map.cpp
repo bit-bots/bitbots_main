@@ -4,15 +4,17 @@
 
 #include "bitbots_localization/map.h"
 #include <boost/filesystem.hpp>
-#include <ros/package.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace fs = boost::filesystem;
 
-Map::Map(const std::string& name, const std::string& type, const bl::LocalizationConfig &config) {
+namespace bitbots_localization {
+
+Map::Map(const std::string& name, const std::string& type, const double out_of_map_value) {
   // Set config
-  config_ = config;
+  out_of_map_value_ = out_of_map_value;
   //get package path
-  std::string package_path = ros::package::getPath("bitbots_localization");
+  std::string package_path = ament_index_cpp::get_package_share_directory("bitbots_localization");
   //make boost path
   fs::path map_path = fs::path("config/fields") / fs::path(name) / fs::path(type);
   //convert to absolute path
@@ -20,7 +22,7 @@ Map::Map(const std::string& name, const std::string& type, const bl::Localizatio
   //load map
   map = cv::imread(absolute_map_path.string(), cv::IMREAD_GRAYSCALE);
   if (!map.data) {
-    RCLCPP_ERROR(this->get_logger(),"No image data '%s'", map_path.c_str());
+    RCLCPP_ERROR(rclcpp::get_logger("bitbots_localization"), "No image data '%s'", map_path.c_str());
   }
 }
 
@@ -37,7 +39,7 @@ double Map::get_occupancy(double x, double y) {
   x = std::round(x + mapWidth / 2.0); //assuming lines are centered on map
   y = std::round(y + mapHeight / 2.0);
 
-  double occupancy = -config_.measurement_out_of_map_punishment; // punish points outside the map
+  double occupancy = out_of_map_value_; // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
     occupancy = 100 - map.at<uchar>(y, x);
@@ -85,10 +87,5 @@ std::pair<double, double> Map::observationRelative(std::pair<double, double> obs
   //std::pair<double, double> observationRelative = std::make_pair(xGlobal, yGlobal);
 
   return observationRelative; // in cartesian
-
-
 }
-
-
-
-
+}
