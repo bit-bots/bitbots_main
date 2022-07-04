@@ -16,6 +16,8 @@ setup(
             glob.glob('config/*.yaml')),
         ('share/' + package_name + '/launch',
             glob.glob('launch/*.launch')),
+        ('share/' + package_name + '/launch',
+            glob.glob('launch/*.py')),
         ('share/' + package_name + '/actions',
             glob.glob(package_name + '/actions/*.py')),
         ('share/' + package_name + '/decisions' ,

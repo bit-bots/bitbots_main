@@ -6,7 +6,7 @@ from rclpy.duration import Duration
 from rclpy.node import Node
 import tf2_ros as tf2
 
-from bitbots_moveit_bindings import get_joint_states, check_collision
+from bitbots_moveit_bindings import get_joint_states, check_collision, spin
 from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 
@@ -157,10 +157,12 @@ class HeadCapsule:
     # Head positions #
     ##################
 
-    def get_head_position(self):
+    def get_head_position(self):             
+        spin()
         joint_states = get_joint_states()
         head_pan = joint_states.position[joint_states.name.index("HeadPan")]
         head_tilt =joint_states.position[joint_states.name.index("HeadTilt")]
+        return head_pan, head_tilt
 
 
     #####################

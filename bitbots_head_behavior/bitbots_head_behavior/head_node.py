@@ -32,9 +32,11 @@ def init(node):
     blackboard.node = node
 
     node.create_subscription(HeadModeMsg, 'head_mode', blackboard.head_capsule.head_mode_callback, 1)
-    node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered", blackboard.world_model.ball_filtered_callback, 1)
+    node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered",
+                             blackboard.world_model.ball_filtered_callback, 1)
     blackboard.head_capsule.position_publisher = node.create_publisher(JointCommand, "head_motor_goals", 10)
-    blackboard.head_capsule.visual_compass_record_trigger = node.create_publisher(Header, blackboard.config['visual_compass_trigger_topic'], 5)
+    blackboard.head_capsule.visual_compass_record_trigger = node.create_publisher(
+        Header, blackboard.config['visual_compass_trigger_topic'], 5)
 
     dirname = get_package_share_directory("bitbots_head_behavior")
 
@@ -49,21 +51,18 @@ def init(node):
 
 def main(args=None):
     rclpy.init(args=None)
-    # needed to init rclcpp ros for moveit_bindings
+    #needed to init rclcpp ros for moveit_bindings
     initRos()
     node = Node("head_node", automatically_declare_parameters_from_overrides=True)
     multi_executor = MultiThreadedExecutor()
     multi_executor.add_node(node)
-    
-    dsd = init(node)
-    node.create_timer(1/60.0, dsd.update)
 
-    
+    dsd = init(node)
+    node.create_timer(1 / 60.0, dsd.update)
+
     try:
         multi_executor.spin()
     except KeyboardInterrupt:
         pass
-    
-    node.destroy_node()
-    rclpy.shutdown()
 
+    node.destroy_node()
