@@ -7,9 +7,6 @@
 [submodule "lib/dynamixel-workbench-msgs"]
 	path = lib/dynamixel-workbench-msgs
 	url = ../../ROBOTIS-GIT/dynamixel-workbench-msgs.git
-[submodule "lib/bio_ik_service"]
-	path = lib/bio_ik_service
-	url = ../../bit-bots/bio_ik_service.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = ../../bit-bots/dynamic_stack_decider.git
@@ -73,10 +70,6 @@
 	path = lib/robot_controllers
 	url = ../../fetchrobotics/robot_controllers.git
 	branch = ros2
-[submodule "lib/fp"]
-	path = lib/fp
-	url = ../../tylerjw/fp.git
-	branch = main
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
 	branch = main
