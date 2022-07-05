@@ -20,7 +20,6 @@ from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from rclpy.executors import MultiThreadedExecutor
 from ament_index_python import get_package_share_directory
 
-
 def init(node):
     """
     Initialize new components needed for head_behavior:
@@ -34,6 +33,7 @@ def init(node):
     node.create_subscription(HeadModeMsg, 'head_mode', blackboard.head_capsule.head_mode_callback, 1)
     node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered",
                              blackboard.world_model.ball_filtered_callback, 1)
+    node.create_subscription(JointState, "joint_states", blackboard.head_capsule.joint_state_callback, 1)
     blackboard.head_capsule.position_publisher = node.create_publisher(JointCommand, "head_motor_goals", 10)
     blackboard.head_capsule.visual_compass_record_trigger = node.create_publisher(
         Header, blackboard.config['visual_compass_trigger_topic'], 5)
