@@ -9,8 +9,6 @@ from sensor_msgs.msg import JointState
 ik_fk_state = None
 # this is only used for collision states. it updates with joint states
 collision_state = None
-# this only provides the current state and updates with joint states
-current_state = None
 
 def set_moveit_parameters(parameters: [Parameter], type):
     """
@@ -61,17 +59,3 @@ def check_collision(joint_state):
     set_joint_states(serialize_message(joint_state))
     collision = collision_state.check_collision()
     return collision
-
-def get_joint_states():
-    global current_state
-    if current_state is None:
-        current_state = BitbotsMoveitBindings([])
-        current_state.subscribe_joint_states()
-    result_str = current_state.get_joint_states()
-    return deserialize_message(result_str, JointState)
-
-def spin():
-    global current_state
-    if current_state is None:
-        current_state = BitbotsMoveitBindings([])
-    current_state.spin_once()

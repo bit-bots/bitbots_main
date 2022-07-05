@@ -86,25 +86,6 @@ public:
     exec_->add_node(node_);
   }
 
-  void subscribeJointStates() {
-    node_->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1,
-                                                             std::bind(&BitbotsMoveitBindings::jointStateCb, this, _1));
-    // need to start a executor and spin it in another thread
-    // t_ = std::thread([this] { while(true){RCLCPP_ERROR(node_->get_logger(),
-    // "spin"); exec_->spin_once(); }} );
-    RCLCPP_ERROR(node_->get_logger(), "subscribed");
-  }
-
-  void spin_once() {
-    RCLCPP_ERROR(node_->get_logger(), "spin once");
-    exec_->spin_once();
-  }
-
-  void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg) {
-    RCLCPP_ERROR(node_->get_logger(), "cb");
-    jointStateToRobotState(*msg, *robot_state_);
-  }
-
   py::bytes getPositionIK(py::bytes& msg, bool approximate = false) {
     auto request = ros2_python_extension::fromPython<moveit_msgs::srv::GetPositionIK::Request>(msg);
     moveit_msgs::srv::GetPositionIK::Response response;
@@ -384,9 +365,5 @@ PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
       .def("set_head_motors", &BitbotsMoveitBindings::setHeadMotors,
            "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
       .def("set_joint_states", &BitbotsMoveitBindings::setJointStates, "Set the current joint states")
-      .def("check_collision", &BitbotsMoveitBindings::checkCollision, "Returns true if the head collides, else false")
-      .def("get_joint_states", &BitbotsMoveitBindings::getJointStates, "Get the current joint states")
-      .def("subscribe_joint_states", &BitbotsMoveitBindings::subscribeJointStates,
-           "Subscribe to the joint states and update robot state accordingly")
-      .def("spin_once", &BitbotsMoveitBindings::spin_once, "Spin the joint state subscriber");
+      .def("check_collision", &BitbotsMoveitBindings::checkCollision, "Returns true if the head collides, else false");
 }
