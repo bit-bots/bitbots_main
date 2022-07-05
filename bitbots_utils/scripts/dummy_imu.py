@@ -3,6 +3,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 from sensor_msgs.msg import Imu
 
 
@@ -16,21 +17,18 @@ class DummyImu(Node):
         self.msg.orientation.w = 1.0
 
     def loop(self):
-        r = self.create_rate(100)
-        while rclpy.ok():
-            self.msg.header.stamp = self.get_clock().now().to_msg()
-            self.pub.publish(self.msg)
-            r.sleep()
+        self.msg.header.stamp = self.get_clock().now().to_msg()
+        self.pub.publish(self.msg)
 
 
 if __name__ == '__main__':
     rclpy.init(args=None)
 
     node = DummyImu()
-    # necessary so that sleep in loop() is not blocking
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
-    thread.start()
-    node.loop()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    node.create_timer(0.01, node.loop)
+    executor.spin()
 
     node.destroy_node()
     rclpy.shutdown()
