@@ -16,26 +16,24 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>rospy</depend>
-
-  <depend>std_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>bitbots_utils</depend>
-  <depend>dynamic_reconfigure</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>wolfgang_description</depend>
-  <depend>wolfgang_animations</depend>
-  <depend>wolfgang_moveit_config</depend>
-  <depend>dynamic_stack_decider</depend>
-  <depend>humanoid_league_speaker</depend>
-  <depend>humanoid_base_footprint</depend>
+  <depend>backward_ros</depend>
   <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>pybind11</depend>
+  <depend>Python3</depend>
+  <depend>PythonLibs</depend>
+  <depend>rclpy</depend>
+  <depend>ros2_python_extension</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
 
   <export>
     <bitbots_documentation>
       <language>python3</language>
       <status>tested_integration</status>
     </bitbots_documentation>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type><!--todo this does not call the setup py and not all files are correctly installed-->
   </export>
 </package>

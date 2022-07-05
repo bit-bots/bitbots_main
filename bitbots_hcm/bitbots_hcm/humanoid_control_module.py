@@ -6,6 +6,7 @@ from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from rclpy.executors import MultiThreadedExecutor
+from rclpy.parameter import Parameter
 
 from geometry_msgs.msg import PointStamped
 
@@ -25,27 +26,43 @@ from dynamic_stack_decider.dsd import DSD
 import os
 import threading
 from rclpy.executors import ExternalShutdownException
+from bitbots_utils.utils import get_parameters_from_ros_yaml
+from ament_index_python import get_package_share_directory
+from rcl_interfaces.msg import Parameter as ParameterMsg
 
 
 class HardwareControlManager:
-    def __init__(self):
 
+    def __init__(self, use_sim_time, simulation_active, visualization_active):
         rclpy.init(args=None)
-        self.node = Node("hcm", allow_undeclared_parameters=True, automatically_declare_parameters_from_overrides=True)
+        node_name = "hcm_py"
+        parameter_msgs : list(ParameterMsg)= get_parameters_from_ros_yaml(
+            node_name,
+            f"{get_package_share_directory('bitbots_hcm')}/config/hcm_wolfgang.yaml",
+            use_wildcard=True)
+        parameters = []
+        for parameter_msg in parameter_msgs:
+            parameters.append(Parameter.from_parameter_msg(parameter_msg))
+        if use_sim_time:
+            parameters.append(Parameter("use_sime_time", type_=Parameter.Type.BOOL, value=True))
+        if simulation_active:
+            parameters.append(Parameter("simulation_active", type_=Parameter.Type.BOOL, value=True))
+        if visualization_active:
+            parameters.append(Parameter("visualization_active", type_=Parameter.Type.BOOL, value=True))
+        self.node = Node(node_name, allow_undeclared_parameters=True, automatically_declare_parameters_from_overrides=True, parameter_overrides=parameters)
         multi_executor = MultiThreadedExecutor()
         multi_executor.add_node(self.node)
         self.spin_thread = threading.Thread(target=multi_executor.spin, args=(), daemon=True)
         #self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True)
-        self.spin_thread.start()        
+        self.spin_thread.start()
 
         self.blackboard = None
 
         # --- Initialize Node ---
         # Otherwise messages will get lost, bc the init is not finished
-        self.node.get_clock().sleep_for(Duration(seconds=0.1))  
+        self.node.get_clock().sleep_for(Duration(seconds=0.1))
         self.node.get_logger().debug("Starting hcm")
         self.simulation_active = self.node.get_parameter("simulation_active")
-
         # dsd
         self.blackboard = HcmBlackboard(self.node)
         self.blackboard.animation_action_client = ActionClient(self.node, PlayAnimation, 'animation')
@@ -56,16 +73,14 @@ class HardwareControlManager:
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
         self.dsd.load_behavior(os.path.join(dirname, 'hcm.dsd'))
         self.hcm_deactivated = False
-
         # Publisher / subscriber
         self.joint_goal_publisher = self.node.create_publisher(JointCommand, 'DynamixelController/command', 1)
         self.hcm_state_publisher = self.node.create_publisher(RobotControlState, 'robot_state', 1)  # todo latch
         self.blackboard.speak_publisher = self.node.create_publisher(Audio, 'speak', 1)
 
         # important to make sure the connection to the speaker is established, for next line
-        self.node.get_clock().sleep_for(Duration(seconds=0.1)) 
+        self.node.get_clock().sleep_for(Duration(seconds=0.1))
         speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
-
         self.node.create_subscription(Imu, "imu/data", self.update_imu, 1)
         self.node.create_subscription(FootPressure, "foot_pressure_left/filtered", self.update_pressure_left, 1)
         self.node.create_subscription(FootPressure, "foot_pressure_right/filtered", self.update_pressure_right, 1)
@@ -82,9 +97,7 @@ class HardwareControlManager:
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.blackboard.diag_cb, 1)
-
         self.node.add_on_set_parameters_callback(self.on_set_parameters)
-
 
         self.main_loop()
 
@@ -242,13 +255,13 @@ class HardwareControlManager:
 
     def main_loop(self):
         """ Keeps updating the DSD and publish its current state.
-            All the forwarding of joint goals is directly done in the callbacks to reduce latency. """                
+            All the forwarding of joint goals is directly done in the callbacks to reduce latency. """
         last_loop_start_time = self.node.get_clock().now()
-        while rclpy.ok() and not self.blackboard.shut_down_request:                        
+        while rclpy.ok() and not self.blackboard.shut_down_request:
             try:
                 loop_start_time = self.node.get_clock().now()
                 #can happen in simulation due to bad implementation in rclpy
-                if(last_loop_start_time != loop_start_time):                
+                if(last_loop_start_time != loop_start_time):
                     last_loop_start_time = loop_start_time
                     if self.hcm_deactivated:
                         self.blackboard.current_state = RobotControlState.CONTROLLABLE
@@ -269,7 +282,7 @@ class HardwareControlManager:
             except (ExternalShutdownException, KeyboardInterrupt):
                 if not self.simulation_active:
                     self.on_shutdown_hook()
-                exit(0)                
+                exit(0)
 
         if not self.simulation_active:
             self.on_shutdown_hook()
@@ -291,4 +304,4 @@ class HardwareControlManager:
             self.node.get_clock().sleep_for(Duration(seconds=0.01))
 
 def main():
-    hcm = HardwareControlManager()
+    hcm = HardwareControlManager(False, False, False)

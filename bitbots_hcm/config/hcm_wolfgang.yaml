@@ -1,4 +1,4 @@
-hcm:
+/**:
   ros__parameters:
     #IMU
     imu_timeout_duration: 0.1 # time without messages from the IMU till error is produced [s]
