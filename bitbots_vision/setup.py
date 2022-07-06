@@ -32,6 +32,7 @@ setup(
     entry_points={
         'console_scripts': [
             'vision = bitbots_vision.vision:main',
+            'yoeo_vision = bitbots_vision.yoeo_vision:main',
         ],
     }
 )

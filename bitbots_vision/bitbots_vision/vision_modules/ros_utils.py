@@ -1,12 +1,12 @@
-import os
 import re
-import rclpy
+from typing import Union
 import yaml
-from  rclpy import logging
+from rclpy import logging
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
 from humanoid_league_msgs.msg import Audio, GameState
 from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
+from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 
 
 """
@@ -15,6 +15,8 @@ e.g. methods to convert candidates to ROS messages or methods to modify the dyna
 """
 
 _cv_bridge = CvBridge()
+
+global _game_state
 _game_state = None
 
 logger = logging.get_logger('bitbots_vision')
@@ -25,7 +27,7 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
     """
     Creates or updates a publisher
 
-    :param node: ROS node to which the publisher is binded
+    :param node: ROS node to which the publisher is bound
     :param old_config: Previous config dict
     :param new_config: Current config dict
     :param publisher_object: The python object, that represents the publisher
@@ -56,7 +58,7 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
     """
     Creates or updates a subscriber
 
-    :param node: ROS node to which the publisher is binded
+    :param node: ROS node to which the publisher is bound
     :param old_config: Previous config dict
     :param new_config: Current config dict
     :param subscriber_object: The python object, that represents the subscriber
@@ -85,6 +87,7 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
+
 def build_bounding_box_2d(candidate):
     """
     Builds a BoundingBox2D message out of a vision Candidate
@@ -101,6 +104,7 @@ def build_bounding_box_2d(candidate):
     bb_msg.size_y = float(candidate.get_height())
     bb_msg.center = center
     return bb_msg
+
 
 def build_goal_post_array_msg(header, goal_post_msgs):
     """
@@ -147,6 +151,7 @@ def build_ball_array_msg(header, balls):
     # Add balls
     balls_msg.balls = balls
     return balls_msg
+
 
 def build_ball_msg(ball_candidate):
     """
@@ -231,6 +236,7 @@ def build_marking_array_msg(header, marking_segments):
     marking_array_msg.segments = marking_segments
     return marking_array_msg
 
+
 def build_image_msg(header, image, desired_encoding="passthrough"):
     """
     Builds a Image message
@@ -261,6 +267,7 @@ def convert_line_points_to_marking_segment_msgs(line_points):
         marking_segments.append(marking_segment)
     return marking_segments
 
+
 def speak(string, speech_publisher):
     """
     Sends a speak message and let the robot say the given string.
@@ -272,6 +279,7 @@ def speak(string, speech_publisher):
     speak_message.text = string
     speech_publisher.publish(speak_message)
 
+
 def set_general_parameters(params):
     """
     Sets params, that should trigger every `config_param_change` call.
@@ -280,14 +288,14 @@ def set_general_parameters(params):
     """
     general_parameters.extend(params)
 
+
 def config_param_change(old_config, new_config, params_expressions, check_generals=True):
-    # type: (dict, dict, [str]) -> bool
     """
     Checks whether some of the specified config params have changed.
 
     :param dict old_config: old config dict
     :param dict new_config: new config dict
-    :param list of str or str params_expressions: regex discribing parameter name or list of parameter names
+    :param list of str or str params_expressions: regex describing parameter name or list of parameter names
     :param bool check_generals: Also check for general params (Default True)
     :return bool: True if parameter has changed
     """
@@ -323,41 +331,20 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
             return True
     return False
 
-def publish_vision_config(config, publisher):
-    """
-    Publishes the given config.
-
-    :param config: A vision config
-    :param publisher: The ROS publisher object
-    """
-    # Clean config dict to avoid not dumpable types
-    config_cleaned = {}
-    # Iterate over all config keys and values
-    for key, value in config.items():
-        # Check if the value is dumpable
-        if not isinstance(value, DynamicReconfigureConfig):
-            config_cleaned[key] = value
-    # Create new config message
-    msg = Config()
-    # The message contains a string. So the config gets serialized and send as string
-    msg.data = yaml.dump(config_cleaned)
-    # Publish config
-    publisher.publish(msg)
-
 def gamestate_callback(gamestate_msg):
     """
     This method is called by the GameState msg subscriber.
     """
+    global _game_state
     _game_state = gamestate_msg
 
-def get_team_from_robot_color(color):
+def get_team_from_robot_color(color: GameState.team_color)-> RobotAttributes.team:
     """
     Maps the detected robot color to the current team.
     If the color is the same as the current team, returns own team, else returns opponent team.
-
-    :param GameState.team_color color: Robot color
-    :return Robot.team: Robot's team
     """
+    global _game_state
+
     if color not in [GameState.BLUE, GameState.RED]:  # If color is not known, we can just return unknown
         return Robot().attributes.TEAM_UNKNOWN
 
@@ -366,8 +353,32 @@ def get_team_from_robot_color(color):
     own_color = None
     if _game_state is not None:
         own_color = _game_state.team_color
+    else: 
+        return RobotAttributes.TEAM_UNKNOWN
 
     if color == own_color:  # Robot is in own team, if same color
-        return Robot().attributes.TEAM_OWN
+        return RobotAttributes.TEAM_OWN
     else:  # Robot is not same color, therefore it is from the opponent's team
-        return Robot().attributes.TEAM_OPPONENT
+        return RobotAttributes.TEAM_OPPONENT
+
+def get_robot_color_for_team(team: RobotAttributes.team) -> Union[int, None]:
+    """
+    Maps team (own, opponent, unknown) to the current robot color.
+    """
+    global _game_state
+
+    # Color is known and we have to first figure out the own color
+    # Get own team color
+    own_color = None
+    if _game_state is not None:
+        own_color = _game_state.team_color
+    else: 
+        return None  # This gets handled later
+
+    if team == RobotAttributes.TEAM_OWN:
+        return own_color
+    elif team == RobotAttributes.TEAM_OPPONENT:
+        if own_color == GameState.BLUE:
+            return GameState.RED
+        else:
+            return GameState.BLUE
