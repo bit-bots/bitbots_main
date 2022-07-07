@@ -10,6 +10,10 @@
 #include "humanoid_league_msgs/msg/robot_control_state.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "builtin_interfaces/msg/time.hpp"
+#include <ros2_python_extension/serialization.hpp>
+#include "std_msgs/msg/header.hpp"
+
 
 using std::placeholders::_1;
 namespace py = pybind11;
@@ -36,6 +40,7 @@ public:
 
     // create goal publisher
     pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
+    pub_robot_state_ = this->create_publisher<humanoid_league_msgs::msg::RobotControlState>("robot_state", 1);
 
     // create subscriber motor goals
     anim_sub_ = this->create_subscription<humanoid_league_msgs::msg::Animation>(
@@ -66,17 +71,15 @@ public:
         this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
   }
 
-  void animation_callback(const humanoid_league_msgs::msg::Animation msg) {
+  void animation_callback(humanoid_league_msgs::msg::Animation msg) {
     // The animation server is sending us goal positions for the next keyframe
-    //  todo
-    // self.blackboard.last_animation_goal_time = msg.header.stamp
+    hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(msg.header.stamp));
 
     if (msg.request) {
       RCLCPP_INFO(this->get_logger(), "Got Animation request. HCM will try to get controllable now.");
       // animation has to wait
       // dsd should try to become controllable
-      // todo
-      // self.blackboard.animation_requested = True
+      hcm_py_.attr("set_animation_requested")(true);
       return;
     }
     if (msg.first) {
@@ -88,12 +91,9 @@ public:
         // check if we can run an animation now
         if (current_state_ != humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
           RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
-          // todo
-          // self.blackboard.external_animation_running = True
         } else {
           // we're already controllable, go to animation running
-          // todo
-          // self.blackboard.external_animation_running = True
+          hcm_py_.attr("set_external_animation_running")(true);
         }
       }
     }
@@ -101,10 +101,10 @@ public:
     if (msg.last) {
       if (msg.hcm) {
         // This was an animation from the DSD
-        // todo
-        // self.blackboard.hcm_animation_finished = True
+        hcm_py_.attr("set_hcm_animation_finished")(true);
       } else {
         // this is the last frame, we want to tell the DSD that we're finished with the animations
+        hcm_py_.attr("set_hcm_animation_finished")(false);
         if (msg.position.points.size() == 0) {
           // probably this was just to tell us we're finished
           // we don't need to set another position to the motors
@@ -159,81 +159,44 @@ public:
   void record_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (msg.joint_names.size() == 0) {
       // record tells us that its finished
-      // todo
-      // self.blackboard.record_active = False
+      hcm_py_.attr("set_record_active")(false);
     } else {
-      // todo
-      //  self.blackboard.record_active = True
+      hcm_py_.attr("set_record_active")(true);
       pub_controller_command_->publish(msg);
     }
   }
-  void walking_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
-    // todo
-    //  self.blackboard.last_walking_goal_time =self.node.get_clock().now()
+  void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
+    hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(msg.header.stamp));
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING) {
       pub_controller_command_->publish(msg);
     }
   }
 
-  void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
-    // todo
-    // self.blackboard.last_motor_update_time = msg.header.stamp
-    // self.blackboard.previous_joint_state = self.blackboard.current_joint_state
-    // self.blackboard.current_joint_state = msg
+  void joint_state_callback(sensor_msgs::msg::JointState msg) {
+    hcm_py_.attr("set_last_motor_update_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(msg.header.stamp));
+    hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(msg));
   }
 
-  void cop_l_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg) {
-    // todo
-    //          self.blackboard.cop_l_msg = msg
+  void cop_l_callback(geometry_msgs::msg::PointStamped msg) {
+    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(msg), true);
   }
 
-  void cop_r_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg) {
-    // todo
-    //          self.blackboard.cop_r_msg = msg
+  void cop_r_callback(geometry_msgs::msg::PointStamped msg) {
+    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(msg), false);
   }
 
-  void pressure_l_callback(const bitbots_msgs::msg::FootPressure::SharedPtr msg) {
-    // Gets new pressure values and writes them to the blackboard
-    // todo
-    // self.blackboard.last_pressure_update_time = msg.header.stamp
-    // self.blackboard.pressures[0] = msg.left_front;
-    // self.blackboard.pressures[1] = msg.left_back;
-    // self.blackboard.pressures[2] = msg.right_front;
-    // self.blackboard.pressures[3] = msg.right_back;
+  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
+    hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(msg));
   }
 
-  void pressure_r_callback(const bitbots_msgs::msg::FootPressure::SharedPtr msg) {
-    // Gets new pressure values and writes them to the blackboard
-    // todo
-    // self.blackboard.last_pressure_update_time = msg.header.stamp
-    // self.blackboard.pressures[4] = msg.left_front;
-    // self.blackboard.pressures[5] = msg.left_back;
-    // self.blackboard.pressures[6] = msg.right_front;
-    // self.blackboard.pressures[7] = msg.right_back;
+  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
+    hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(msg));
   }
 
-  void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg) {
+  void imu_callback(sensor_msgs::msg::Imu msg) {
     // Gets new IMU values and computes the smoothed values of these
-    /* todo
-    self.blackboard.last_imu_update_time = msg.header.stamp
-
-    self.blackboard.accel = numpy.array(
-        [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
-    self.blackboard.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
-    self.blackboard.quaternion = numpy.array(
-        ([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]))
-
-    self.blackboard.smooth_gyro = numpy.multiply(self.blackboard.smooth_gyro, 0.95) + numpy.multiply(
-        self.blackboard.gyro, 0.05)
-    self.blackboard.smooth_accel = numpy.multiply(self.blackboard.smooth_accel, 0.99) + numpy.multiply(
-        self.blackboard.accel, 0.01)
-    self.blackboard.not_much_smoothed_gyro = numpy.multiply(self.blackboard.not_much_smoothed_gyro,
-                                                            0.5) + numpy.multiply(self.blackboard.gyro, 0.5)
-
-    self.blackboard.imu_msg = msg
-
-    */
+    hcm_py_.attr("set_imu")(ros2_python_extension::toPython(msg));
   }
 
   void loop() {
@@ -241,7 +204,11 @@ public:
     hcm_py_.attr("loop")();
     // update current HCM state for joint mutex
     py::object result = hcm_py_.attr("get_state")();
-    current_state_ = result.cast<int>();    
+    current_state_ = result.cast<int>();
+    // publish current state
+    humanoid_league_msgs::msg::RobotControlState state_msg = humanoid_league_msgs::msg::RobotControlState();
+    state_msg.state = current_state_;
+    pub_robot_state_->publish(state_msg);
   }
 
 private:
@@ -250,6 +217,7 @@ private:
   int current_state_;
 
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
+  rclcpp::Publisher<humanoid_league_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;
   rclcpp::Subscription<humanoid_league_msgs::msg::Animation>::SharedPtr anim_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr dynup_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;

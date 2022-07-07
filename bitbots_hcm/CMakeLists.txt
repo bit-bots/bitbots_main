@@ -8,6 +8,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(pybind11 REQUIRED)
@@ -27,6 +28,7 @@ ament_target_dependencies(HCM
     ament_cmake
     backward_ros
     bitbots_msgs
+    builtin_interfaces
     geometry_msgs
     humanoid_league_msgs
     rclcpp
