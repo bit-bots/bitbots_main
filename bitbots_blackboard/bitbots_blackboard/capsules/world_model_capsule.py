@@ -5,12 +5,14 @@ WorldModelCapsule
 Provides information about the world model.
 """
 import math
-import ros_numpy
 import numpy as np
+from rclpy.clock import ClockType
 from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from PIL import Image, ImageDraw
+
+import ros2_numpy
 
 import rclpy
 from rclpy.node import Node
@@ -25,7 +27,8 @@ from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovaria
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
-import sensor_msgs.point_cloud2 as pc2
+from sensor_msgs.msg import PointCloud2 as pc2
+from bitbots_utils.utils import get_parameter_dict
 
 
 class GoalRelative:
@@ -45,67 +48,75 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, blackboard, node: Node):
-        self.node = node
+    def __init__(self, blackboard):
         self._blackboard = blackboard
-        self.body_config = self.node.get_parameter("behavior/body").get_parameter_value().string_value
+        self.body_config = get_parameter_dict(self._blackboard.node, "body")
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, self._blackboard.node)
 
-        self.odom_frame = self.node.get_parameter('~odom_frame').get_parameter_value().string_value
-        self.map_frame = self.node.get_parameter('~map_frame').get_parameter_value().string_value
-        self.ball_frame = self.node.get_parameter('~ball_frame').get_parameter_value().string_value
-        self.base_footprint_frame = self.node.get_parameter('~base_footprint_frame').get_parameter_value().string_value
+        self.odom_frame = self._blackboard.node.get_parameter('odom_frame').get_parameter_value().string_value
+        self.map_frame = self._blackboard.node.get_parameter('map_frame').get_parameter_value().string_value
+        self.ball_frame = self._blackboard.node.get_parameter('ball_frame').get_parameter_value().string_value
+        self.base_footprint_frame = self._blackboard.node.get_parameter(
+            'base_footprint_frame').get_parameter_value().string_value
 
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
-        self.ball_odom.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+        self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_odom.header.frame_id = self.odom_frame
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
-        self.ball_map.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+        self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_map.header.frame_id = self.map_frame
         self.ball_teammate = PointStamped()
-        self.ball_teammate.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+        self.ball_teammate.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_teammate.header.frame_id = self.map_frame
-        self.ball_lost_time = Duration(seconds=self.node.get_parameter('behavior/body/ball_lost_time').get_parameter_value().double_value)
+        self.ball_lost_time = Duration(seconds=self._blackboard.node.get_parameter(
+            'body.ball_lost_time').get_parameter_value().double_value)
         self.ball_twist_map = None
         self.ball_filtered = None
-        self.ball_twist_lost_time = Duration(seconds=self.node.get_parameter('behavior/body/ball_twist_lost_time').get_parameter_value().double_value)
-        self.ball_twist_precision_threshold = self.node.get_parameter('behavior/body/ball_twist_precision_threshold').get_parameter_value().double_value
-        self.reset_ball_filter = self.node.create_client(Trigger, 'ball_filter_reset')
+        self.ball_twist_lost_time = Duration(seconds=self._blackboard.node.get_parameter(
+            'body.ball_twist_lost_time').get_parameter_value().double_value)
+        self.ball_twist_precision_threshold = self._blackboard.node.get_parameters_by_prefix(
+            'body.ball_twist_precision_threshold')
+        self.reset_ball_filter = self._blackboard.node.create_client(Trigger, 'ball_filter_reset')
 
         self.goal = GoalRelative()  # The goal in the base footprint frame
         self.goal_odom = GoalRelative()
-        self.goal_odom.header.stamp = self.get_clock().now()
+        self.goal_odom.header.stamp = self._blackboard.node.get_clock().now().to_msg()
         self.goal_odom.header.frame_id = self.odom_frame
 
         self.my_data = dict()
         self.counter = 0
-        self.ball_seen_time = rclpy.Time(seconds=0, nanoseconds=0)
-        self.ball_seen_time_teammate = rclpy.Time(seconds=0, nanoseconds=0)
-        self.goal_seen_time = rclpy.Time(seconds=0, nanoseconds=0)
+        self.ball_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        self.ball_seen_time_teammate = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        self.goal_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         self.ball_seen = False
         self.ball_seen_teammate = False
-        self.field_length = self.node.get_parameter('field_length').get_parameter_value().double_value
-        self.field_width = self.node.get_parameter('field_width').get_parameter_value().double_value
-        self.goal_width = self.node.get_parameter('goal_width').get_parameter_value().double_value
-        self.map_margin = self.node.get_parameter('behavior/body/map_margin').get_parameter_value().double_value
-        self.obstacle_costmap_smoothing_sigma = self.node.get_parameter('"behavior/body/obstacle_costmap_smoothing_sigma"').get_parameter_value().double_value
-        self.obstacle_cost = self.node.get_parameter('behavior/body/obstacle_cost').get_parameter_value().double_value
+        self.field_length = self._blackboard.node.get_parameter('field_length').get_parameter_value().double_value
+        self.field_width = self._blackboard.node.get_parameter('field_width').get_parameter_value().double_value
+        self.goal_width = self._blackboard.node.get_parameter('goal_width').get_parameter_value().double_value
+        self.map_margin = self._blackboard.node.get_parameter(
+            'body.map_margin').get_parameter_value().double_value
+        self.obstacle_costmap_smoothing_sigma = self._blackboard.node.get_parameter(
+            'body.obstacle_costmap_smoothing_sigma').get_parameter_value().double_value
+        self.obstacle_cost = self._blackboard.node.get_parameter(
+            'body.obstacle_cost').get_parameter_value().double_value
 
-        self.use_localization = self.node.get_parameter('behavior/body/use_localization').get_parameter_value().double_value
+        self.use_localization = self._blackboard.node.get_parameter(
+            'body.use_localization').get_parameter_value().bool_value
 
-        self.pose_precision_threshold = self.node.get_parameter('behavior/body/pose_precision_threshold').get_parameter_value().double_value
+        self.pose_precision_threshold = self._blackboard.node.get_parameters_by_prefix(
+            'body.pose_precision_threshold')
 
         # Publisher for visualization in RViZ
-        self.ball_publisher = self.create_publisher(PointStamped, 'debug/viz_ball', 1)
-        self.goal_publisher = self.create_publisher(PoseWithCertaintyArray, 'debug/viz_goal', 1)
-        self.ball_twist_publisher = self.create_publisher(TwistStamped, 'debug/ball_twist', 1)
-        self.used_ball_pub = self.create_publisher(PointStamped, 'debug/used_ball', 1)
-        self.which_ball_pub = self.create_publisher(Header, 'debug/which_ball_is_used', 1)
-        self.costmap_publisher = self.create_publisher(OccupancyGrid, 'debug/costmap', 1)
+        self.ball_publisher = self._blackboard.node.create_publisher(PointStamped, 'debug/viz_ball', 1)
+        self.goal_publisher = self._blackboard.node.create_publisher(PoseWithCertaintyArray, 'debug/viz_goal', 1)
+        self.ball_twist_publisher = self._blackboard.node.create_publisher(TwistStamped, 'debug/ball_twist', 1)
+        self.used_ball_pub = self._blackboard.node.create_publisher(PointStamped, 'debug/used_ball', 1)
+        self.which_ball_pub = self._blackboard.node.create_publisher(Header, 'debug/which_ball_is_used', 1)
+        self.costmap_publisher = self._blackboard.node.create_publisher(OccupancyGrid, 'debug/costmap', 1)
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
@@ -121,7 +132,7 @@ class WorldModelCapsule:
 
     def ball_seen_self(self):
         """Returns true if we have seen the ball recently (less than ball_lost_time ago)"""
-        return self.get_clock().now() - self.ball_seen_time < self.ball_lost_time
+        return self._blackboard.node.get_clock().now() - self.ball_seen_time < self.ball_lost_time
 
     def ball_last_seen(self):
         """
@@ -140,7 +151,7 @@ class WorldModelCapsule:
 
     def ball_has_been_seen(self):
         """Returns true if we or a teammate have seen the ball recently (less than ball_lost_time ago)"""
-        return self.get_clock().now() - self.ball_last_seen() < self.ball_lost_time
+        return self._blackboard.node.get_clock().now() - self.ball_last_seen() < self.ball_lost_time
 
     def get_ball_position_xy(self):
         """Return the ball saved in the map or odom frame"""
@@ -177,7 +188,8 @@ class WorldModelCapsule:
                     self.which_ball_pub.publish(h)
                     return teammate_ball
                 else:
-                    self.get_logger().error("our ball is bad but the teammates ball is worse or cant be transformed")
+                    self._blackboard.node.get_logger().error(
+                        "our ball is bad but the teammates ball is worse or cant be transformed")
                     h = Header()
                     h.stamp = self.ball_map.header.stamp
                     h.frame_id = "own_ball_map"
@@ -197,8 +209,8 @@ class WorldModelCapsule:
         try:
             ball_bfp = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
         except (tf2.ExtrapolationException) as e:
-            self.get_logger().warn(e)
-            self.get_logger().error('Severe transformation problem concerning the ball!')
+            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().error('Severe transformation problem concerning the ball!')
             return None
         return ball_bfp.x, ball_bfp.y
 
@@ -236,25 +248,25 @@ class WorldModelCapsule:
             self.forget_ball(own=True, team=False, reset_ball_filter=False)
             return
 
-        ball_buffer = PointStamped(msg.header, msg.pose.pose.position)
+        ball_buffer = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
             self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=0.3))
             self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=0.3))
             self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=0.3))
             # Set timestamps to zero to get the newest transform when this is transformed later
-            self.ball_odom.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
-            self.ball_map.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
-            self.ball_seen_time = self.get_clock().now()
+            self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            self.ball_seen_time = self._blackboard.node.get_clock().now()
             self.ball_publisher.publish(self.ball)
             self.ball_seen = True
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(e)
 
     def recent_ball_twist_available(self):
         if self.ball_twist_map is None:
             return False
-        return self.get_clock().now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
+        return self._blackboard.node.get_clock().now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
 
     def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
         x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
@@ -283,7 +295,7 @@ class WorldModelCapsule:
                 self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
                 self.ball_twist_map.twist.linear.z = point_b.point.z - point_a.point.z
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self.get_logger().warn(e)
+                self._blackboard.node.get_logger().warn(e)
         else:
             self.ball_twist_map = TwistStamped(header=msg.header, twist=msg.twist.twist)
         if self.ball_twist_map is not None:
@@ -300,19 +312,19 @@ class WorldModelCapsule:
         :type reset_ball_filter: bool, optional
         """
         if own:  # Forget own ball
-            self.ball_seen_time = rclpy.Time(seconds=0, nanoseconds=0)
+            self.ball_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
             self.ball = PointStamped()
 
         if team:  # Forget team ball
-            self.ball_seen_time_teammate = rclpy.Time(seconds=0, nanoseconds=0)
+            self.ball_seen_time_teammate = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
             self.ball_teammate = PointStamped()
 
         if reset_ball_filter:  # Reset the ball filter
             result = self.reset_ball_filter()
             if result.success:
-                self.get_logger().info(f"Received message from ball filter: '{result.message}'", logger_name='bitbots_blackboard')
+                self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
             else:
-                self.get_logger().warn(f"Ball filter reset failed with: '{result.message}'", logger_name='bitbots_blackboard')
+                self._blackboard.node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'")
 
     ###########
     # ## Goal #
@@ -366,16 +378,16 @@ class WorldModelCapsule:
         else, it is the point between the posts
         :return:
         """
-        left = PointStamped(self.goal_odom.header, self.goal_odom.left_post)
-        right = PointStamped(self.goal_odom.header, self.goal_odom.right_post)
-        left.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
-        right.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+        left = PointStamped(header=self.goal_odom.header, point=self.goal_odom.left_post)
+        right = PointStamped(header=self.goal_odom.header, point=self.goal_odom.right_post)
+        left.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        right.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         try:
             left_bfp = self.tf_buffer.transform(left, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
             right_bfp = self.tf_buffer.transform(right, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
         except tf2.ExtrapolationException as e:
-            self.get_logger().warn(e)
-            self.get_logger().error('Severe transformation problem concerning the goal!')
+            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().error('Severe transformation problem concerning the goal!')
             return None
 
         return (left_bfp.x + right_bfp.x / 2.0), \
@@ -388,7 +400,7 @@ class WorldModelCapsule:
     def goalposts_callback(self, goal_parts: PoseWithCertaintyArray):
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
-        goal_parts.header.stamp = goal_parts.header.stamp + rospy.Duration.from_sec(0.01)
+        goal_parts.header.stamp = goal_parts.header.stamp + Duration(seconds=0.01).to_msg()
 
         # Tuple(First Post, Second Post, Distance)
         goal_combination = (-1, -1, -1)
@@ -424,21 +436,21 @@ class WorldModelCapsule:
 
         self.goal_odom.header = goal_parts.header
         if goal_parts.header.frame_id != self.odom_frame:
-            goal_left_buffer = PointStamped(goal_parts.header, left_post)
-            goal_right_buffer = PointStamped(goal_parts.header, right_post)
+            goal_left_buffer = PointStamped(header=goal_parts.header, point=left_post)
+            goal_right_buffer = PointStamped(header=goal_parts.header, point=right_post)
             try:
                 self.goal_odom.left_post = self.tf_buffer.transform(goal_left_buffer, self.odom_frame,
                                                                     timeout=Duration(seconds=0.2)).point
                 self.goal_odom.right_post = self.tf_buffer.transform(goal_right_buffer, self.odom_frame,
                                                                      timeout=Duration(seconds=0.2)).point
                 self.goal_odom.header.frame_id = self.odom_frame
-                self.goal_seen_time = self.get_clock().now()
+                self.goal_seen_time = self._blackboard.node.get_clock().now()
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self.get_logger().warn(e)
+                self._blackboard.node.get_logger().warn(e)
         else:
             self.goal_odom.left_post = left_post
             self.goal_odom.right_post = right_post
-            self.goal_seen_time = self.get_clock().now()
+            self.goal_seen_time = self._blackboard.node.get_clock().now()
         self.goal_publisher.publish(self.goal_odom.to_pose_with_certainty_array())
 
     ###########
@@ -481,9 +493,10 @@ class WorldModelCapsule:
         """
         try:
             # get the most recent transform
-            transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame, rclpy.Time(seconds=0, nanoseconds=0))
+            transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame,
+                                                        Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-            self.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(e)
             return None
         return transform
 
@@ -517,13 +530,14 @@ class WorldModelCapsule:
         # if we can do this, we should be able to transform the ball
         # (unless the localization dies in the next 0.2 seconds)
         try:
-            t = self.get_clock().now()-Duration(seconds=0.3)
+            t = self._blackboard.node.get_clock().now() - Duration(seconds=0.3)
         except TypeError as e:
-            self.get_logger().error(e)
-            t = rclpy.Time(seconds=0, nanoseconds=0)
-        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)   
+            self._blackboard.node.get_logger().error(e)
+            t = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
 
-    #############
+        #############
+
     # ## Common #
     #############
 
@@ -581,17 +595,18 @@ class WorldModelCapsule:
         Publishes the costmap for rviz
         """
         # Normalize costmap to match the rviz color scheme in a good way
-        normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
+        normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (
+                    np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
         # Build the OccupancyGrid message
-        msg = ros_numpy.msgify(
+        msg = ros2_numpy.msgify(
             OccupancyGrid,
             normalized_costmap,
             info=MapMetaData(
                 resolution=0.1,
                 origin=Pose(
                     position=Point(
-                        x=-self.field_length/2 - self.map_margin,
-                        y=-self.field_width/2 - self.map_margin,
+                        x=-self.field_length / 2 - self.map_margin,
+                        y=-self.field_width / 2 - self.map_margin,
                     )
                 )))
         # Change the frame to allow namespaces
@@ -612,9 +627,9 @@ class WorldModelCapsule:
         for pose in self._blackboard.team_data.get_active_teammate_poses(count_goalies=False):
             # Get positions
             goal_position = np.array([self.field_length / 2, 0, 0])  # position of the opponent goal
-            teammate_position = ros_numpy.numpify(pose.position)
+            teammate_position = ros2_numpy.numpify(pose.position)
             # Get vector
-            vector_teammate_to_goal = goal_position - ros_numpy.numpify(pose.position)
+            vector_teammate_to_goal = goal_position - ros2_numpy.numpify(pose.position)
             # Position between robot and goal but 1m away from the robot
             pass_pos = vector_teammate_to_goal / np.linalg.norm(vector_teammate_to_goal) * pass_dist + teammate_position
             # Convert position to array index
@@ -657,7 +672,7 @@ class WorldModelCapsule:
             return 0.0
 
         point = PointStamped()
-        point.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+        point.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         point.header.frame_id = self.base_footprint_frame
         point.point.x = x
         point.point.y = y
@@ -666,7 +681,7 @@ class WorldModelCapsule:
             # Transform point of interest to the map
             point = self.tf_buffer.transform(point, self.map_frame, timeout=Duration(seconds=0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(e)
             return 0.0
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
@@ -677,13 +692,18 @@ class WorldModelCapsule:
         This costmap includes a gradient towards the enemy goal and high costs outside the playable area
         """
         # Get parameters
-        goalpost_safety_distance = self.node.get_parameter(
-            "behavior/body/goalpost_safety_distance").get_parameter_value().double_value  # offset in y direction from the goalpost
-        keep_out_border = self.node.get_parameter("behavior/body/keep_out_border").get_parameter_value().double_value  # dangerous border area
-        in_field_value_our_side = self.node.get_parameter("behavior/body/in_field_value_our_side").get_parameter_value().double_value  # start value on our side
-        corner_value = self.node.get_parameter("behavior/body/corner_value").get_parameter_value().double_value  # cost in a corner
-        goalpost_value = self.node.get_parameter("behavior/body/goalpost_value").get_parameter_value().double_value  # cost at a goalpost
-        goal_value = self.node.get_parameter("behavior/body/goal_value").get_parameter_value().double_value  # cost in the goal
+        goalpost_safety_distance = self._blackboard.node.get_parameter(
+            "body.goalpost_safety_distance").get_parameter_value().double_value  # offset in y direction from the goalpost
+        keep_out_border = self._blackboard.node.get_parameter(
+            "body.keep_out_border").get_parameter_value().double_value  # dangerous border area
+        in_field_value_our_side = self._blackboard.node.get_parameter(
+            "body.in_field_value_our_side").get_parameter_value().double_value  # start value on our side
+        corner_value = self._blackboard.node.get_parameter(
+            "body.corner_value").get_parameter_value().double_value  # cost in a corner
+        goalpost_value = self._blackboard.node.get_parameter(
+            "body.goalpost_value").get_parameter_value().double_value  # cost at a goalpost
+        goal_value = self._blackboard.node.get_parameter(
+            "body.goal_value").get_parameter_value().double_value  # cost in the goal
 
         # Create Grid
         grid_x, grid_y = np.mgrid[
@@ -745,7 +765,8 @@ class WorldModelCapsule:
                                 method='linear')
 
         # Smooth the costmap to get more continus gradients
-        self.base_costmap = gaussian_filter(interpolated, self.node.get_parameter("behavior/body/base_costmap_smoothing_sigma").get_parameter_value().double_value)
+        self.base_costmap = gaussian_filter(interpolated, self._blackboard.node.get_parameter(
+            "body.base_costmap_smoothing_sigma").get_parameter_value().double_value)
         self.costmap = self.base_costmap.copy()
 
         # plt.imshow(self.costmap, origin='lower')
@@ -793,7 +814,7 @@ class WorldModelCapsule:
             return 0.0
 
         pose = PoseStamped()
-        pose.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+        pose.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         pose.header.frame_id = self.base_footprint_frame
         pose.pose.position.x = x
         pose.pose.position.y = y
@@ -804,7 +825,7 @@ class WorldModelCapsule:
             pose = self.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(e)
             return 0.0
         d = euler_from_quaternion(
             [pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]

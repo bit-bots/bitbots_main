@@ -4,6 +4,8 @@ TeamDataCapsule
 """
 import math
 from collections import defaultdict
+
+from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
 import rclpy
@@ -42,8 +44,8 @@ class TeamDataCapsule:
         self.role_update = None
         self.data_timeout = self.node.get_parameter("team_data_timeout").get_parameter_value().double_value
         self.ball_max_covariance = self.node.get_parameter("ball_max_covariance").get_parameter_value().double_value
-        self.ball_lost_time = Duration(seconds=self.node.get_parameter('behavior/body/ball_lost_time').get_parameter_value().double_value)
-        self.pose_precision_threshold = self.node.get_parameter('behavior/body/pose_precision_threshold').get_parameter_value().double_value
+        self.ball_lost_time = Duration(seconds=self.node.get_parameter('body.ball_lost_time').get_parameter_value().double_value)
+        self.pose_precision_threshold = self.node.get_parameter('body.pose_precision_threshold').get_parameter_value().double_value
 
     def is_valid(self, data: TeamData):
         return self.get_clock().now() - data.header.stamp < Duration(seconds=self.data_timeout) \
@@ -181,7 +183,7 @@ class TeamDataCapsule:
         if teammate_ball is not None:
             return teammate_ball.header.stamp
         else:
-            return rclpy.Time(seconds=0, nanoseconds=0)
+            return rclpy.Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""

@@ -2,7 +2,6 @@ import abc
 import math
 
 import rclpy
-from rclpy.node import Node
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -94,7 +93,7 @@ class AbstractSearchPattern(AbstractActionElement):
         # Convert to radians
         head_pan = math.radians(head_pan)
         head_tilt = math.radians(head_tilt)
-        self.get_logger().debug("Searching at {}, {}".format(head_pan, head_tilt))
+        self.blackboard.node.get_logger().debug("Searching at {}, {}".format(head_pan, head_tilt))
 
         success = self.blackboard.head_capsule.send_motor_goals(
             head_pan,
@@ -105,7 +104,7 @@ class AbstractSearchPattern(AbstractActionElement):
             current_tilt_position=current_head_tilt)
 
         if not success:
-            self.get_logger().warn(f"Pattern position {self.index} collided, the pattern should probably be changed")
+            self.blackboard.node.get_logger().warn(f"Pattern position {self.index} collided, the pattern should probably be changed")
             # Try the next pattern position
             self.index += 1
         else:

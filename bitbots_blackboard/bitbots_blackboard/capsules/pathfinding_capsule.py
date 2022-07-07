@@ -1,29 +1,29 @@
 import rclpy
+from rclpy.clock import ClockType
 from rclpy.node import Node
+from rclpy.publisher import Publisher
 import math
 from rclpy.duration import Duration
 import tf2_ros
 import numpy as np
-from ros_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-from nav_msgs.srv import GetPlanRequest
 
 
 class PathfindingCapsule:
     def __init__(self, blackboard, node: Node):
         self.node = node
-        self.map_frame = self.node.get_parameter('~map_frame').get_parameter_value().string_value
+        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
         # Thresholds to determine whether the transmitted goal is a new one
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=2))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.position_threshold = self.node.get_parameter('behavior/body/pathfinding_position_threshold').get_parameter_value().double_value
-        self.orientation_threshold = self.node.get_parameter('behavior/body/pathfinding_orientation_threshold').get_parameter_value().double_value
-        self.direct_cmd_vel_pub = None  # type: rospy.Publisher
-        self.pathfinding_pub = None  # type: rospy.Publisher
-        self.pathfinding_cancel_pub = None  # type: rospy.Publisher
-        self.path_to_ball_pub = None  # type: rospy.Publisher
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
+        self.position_threshold = self.node.get_parameter('body.pathfinding_position_threshold').get_parameter_value().double_value
+        self.orientation_threshold = self.node.get_parameter('body.pathfinding_orientation_threshold').get_parameter_value().double_value
+        self.direct_cmd_vel_pub = None  # type: Publisher
+        self.pathfinding_pub = None  # type: Publisher
+        self.pathfinding_cancel_pub = None  # type: Publisher
+        self.path_to_ball_pub = None  # type: Publisher
         self.ball_obstacle_active_pub = None
         self.keep_out_area_pub = None
         self.approach_marker_pub = None
@@ -33,7 +33,7 @@ class PathfindingCapsule:
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
         self._blackboard = blackboard  # type: BodyBlackboard
-        self.orient_to_ball_distance = self.node.get_parameter("move_base/BBPlanner/orient_to_goal_distance").get_parameter_value().double_value
+        self.orient_to_ball_distance = self.node.get_parameter("move_base.BBPlanner.orient_to_goal_distance").get_parameter_value().double_value
 
     def publish(self, msg):
         # type: (PoseStamped) -> None
@@ -50,7 +50,7 @@ class PathfindingCapsule:
             return msg
         else:
             try:
-                msg.header.stamp = rclpy.Time(seconds=0, nanoseconds=0)
+                msg.header.stamp = rclpy.Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
                 map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=Duration(seconds=0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))

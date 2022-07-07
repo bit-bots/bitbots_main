@@ -5,14 +5,14 @@ GameStatusCapsule
 Provides information about the current game state.
 
 """
-import rosparam
-import rclpy
 from rclpy.node import Node
+
 from humanoid_league_msgs.msg import GameState
 
 
 class GameStatusCapsule:
     def __init__(self, node: Node):
+        self.node = node
         self.team_id = self.node.get_parameter('team_id').get_parameter_value().double_value
         self.gamestate = GameState()
         self.last_update = 0

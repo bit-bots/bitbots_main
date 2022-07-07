@@ -23,12 +23,12 @@ class Wait(AbstractActionElement):
         :param parameters['time']: Time to wait in seconds
         """
         super(Wait, self).__init__(blackboard, dsd)
-        self.time = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) + float(parameters['time'])
+        self.time = float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0] + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9) + float(parameters['time'])
 
     def perform(self, reevaluate=False):
         """
         Only pop when the wait-time has elapsed
         """
 
-        if self.time < float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9):
+        if self.time < float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0] + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9):
             self.pop()

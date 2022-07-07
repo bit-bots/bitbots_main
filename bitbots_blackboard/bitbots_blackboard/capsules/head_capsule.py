@@ -1,15 +1,18 @@
 from io import BytesIO
 import math
 import numpy as np
-import rclpy
+from rclpy.publisher import Publisher
 from rclpy.duration import Duration
 from rclpy.node import Node
-from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
-from bitbots_msgs.msg import JointCommand
-from bitbots_head_behavior.collision_checker import CollisionChecker
 import tf2_ros as tf2
 
+from bitbots_moveit_bindings import check_collision
+from bitbots_msgs.msg import JointCommand
+from sensor_msgs.msg import JointState
+
+
 class HeadCapsule:
+
     def __init__(self, blackboard):
         self.blackboard = blackboard
 
@@ -19,21 +22,23 @@ class HeadCapsule:
         # preparing message for more performance
         self.pos_msg = JointCommand()
         self.pos_msg.joint_names = ["HeadPan", "HeadTilt"]
-        self.pos_msg.positions = [0, 0]
-        self.pos_msg.velocities = [0, 0]
-        self.pos_msg.accelerations = [17, 17]
-        self.pos_msg.max_currents = [-1, -1]
+        self.pos_msg.positions = [0.0, 0.0]
+        self.pos_msg.velocities = [0.0, 0.0]
+        self.pos_msg.accelerations = [17.0, 17.0]
+        self.pos_msg.max_currents = [-1.0, -1.0]
 
-        self.position_publisher = None  # type: rospy.Publisher
-        self.visual_compass_record_trigger = None  # type: rospy.Publisher
+        self.position_publisher = None  # type: Publisher
+        self.visual_compass_record_trigger = None  # type: Publisher
 
         self.tf_buffer = tf2.Buffer(Duration(seconds=5))
         # tf_listener is necessary, even though unused!
-        self.tf_listener = tf2.TransformListener(self.tf_buffer)
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, self.blackboard.node)
 
-        self.current_head_position = [0, 0]
-
-        self.collision_checker = CollisionChecker()
+        self.current_joint_state = JointState()
+        self.current_joint_state.name = ["HeadPan", "HeadTilt"]
+        self.current_joint_state.position = [0.0, 0.0]
+        self.current_joint_state.velocity = [0.0, 0.0]
+        self.current_joint_state.effort = [0.0, 0.0]
 
     def head_mode_callback(self, msg):
         """
@@ -41,6 +46,10 @@ class HeadCapsule:
         Saves the messages head mode on the blackboard
         """
         self.head_mode = msg.headMode
+
+    def joint_state_callback(self, msg):
+        self.current_joint_state = msg
+
 
     #################
     # Head position #
@@ -61,7 +70,15 @@ class HeadCapsule:
         else:
             return 0
 
-    def send_motor_goals(self, pan_position, tilt_position, pan_speed=1.5, tilt_speed=1.5, current_pan_position=None, current_tilt_position=None, clip=True, resolve_collision=False):
+    def send_motor_goals(self,
+                         pan_position,
+                         tilt_position,
+                         pan_speed=1.5,
+                         tilt_speed=1.5,
+                         current_pan_position=None,
+                         current_tilt_position=None,
+                         clip=True,
+                         resolve_collision=False):
         """
         :param pan_position: pan in radians
         :param tilt_position: tilt in radians
@@ -72,7 +89,7 @@ class HeadCapsule:
         :param current_tilt_position: Current tilt joint state for better interpolation (only active if both joints are set).
         :return: False if the target position collides, True otherwise
         """
-        self.get_logger().debug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
+        self.blackboard.node.get_logger().debug("target pan/tilt: {}/{}".format(pan_position, tilt_position))
 
         if clip:
             pan_position, tilt_position = self.pre_clip(pan_position, tilt_position)
@@ -80,20 +97,31 @@ class HeadCapsule:
         # Check if we should use the better interpolation
         if current_pan_position and current_tilt_position:
             if resolve_collision:
-                success = self.avoid_collision_on_path(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
-                if not success: self.get_logger().error("Unable to resolve head colision")
+                success = self.avoid_collision_on_path(pan_position, tilt_position, current_pan_position,
+                                                       current_tilt_position, pan_speed, tilt_speed)
+                if not success:
+                    self.blackboard.node.get_logger().error("Unable to resolve head colision")
                 return success
             else:
-                self.move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed)
+                self.move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position,
+                                                                 current_tilt_position, pan_speed, tilt_speed)
                 return True
-        else: # Passes the stuff through
-            self.pos_msg.positions = pan_position, tilt_position
-            self.pos_msg.velocities = [pan_speed, tilt_speed]
-            self.pos_msg.header.stamp = self.get_clock().now()
+        else:  # Passes the stuff through
+            self.pos_msg.positions = float(pan_position), float(tilt_position)
+            self.pos_msg.velocities = float(pan_speed), float(tilt_speed)
+            self.pos_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             self.position_publisher.publish(self.pos_msg)
             return True
 
-    def avoid_collision_on_path(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed, max_depth=4, depth=0):
+    def avoid_collision_on_path(self,
+                                goal_pan,
+                                goal_tilt,
+                                current_pan,
+                                current_tilt,
+                                pan_speed,
+                                tilt_speed,
+                                max_depth=4,
+                                depth=0):
         # Backup behavior if max recursion depth is reached
         if depth > max_depth:
             self.move_head_to_position_with_speed_adjustment(0, 0, current_pan, current_tilt, pan_speed, tilt_speed)
@@ -103,7 +131,7 @@ class HeadCapsule:
         distance = math.sqrt((goal_pan - current_pan)**2 + (goal_tilt - current_tilt)**2)
 
         # Caculate step size
-        step_count = int(distance/math.radians(3))
+        step_count = int(distance / math.radians(3))
 
         # Calculate path
         pan_steps = np.linspace(current_pan, goal_pan, step_count)
@@ -113,17 +141,22 @@ class HeadCapsule:
         # Checks if we have collisions on our path
         if any(map(self.check_head_collision, path)) or self.check_head_collision((goal_pan, goal_tilt)):
             # Check if the problem is solved if we move our head up at the goal position
-            return self.avoid_collision_on_path(goal_pan, goal_tilt + math.radians(10), current_pan, current_tilt, pan_speed, tilt_speed, max_depth, depth + 1)
+            return self.avoid_collision_on_path(goal_pan, goal_tilt + math.radians(10), current_pan, current_tilt,
+                                                pan_speed, tilt_speed, max_depth, depth + 1)
         else:
             # Every thing is fine, we can send our motor goals
-            self.move_head_to_position_with_speed_adjustment(goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed)
+            self.move_head_to_position_with_speed_adjustment(goal_pan, goal_tilt, current_pan, current_tilt, pan_speed,
+                                                             tilt_speed)
             return True
 
     def check_head_collision(self, head_joints):
-        self.collision_checker.set_head_motors(head_joints[0], head_joints[1])
-        return self.collision_checker.check_collision()
+        joint_state = JointState()
+        joint_state.name = ["HeadPan", "HeadTilt"]
+        joint_state.position = head_joints
+        return check_collision(joint_state)
 
-    def move_head_to_position_with_speed_adjustment(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed):
+    def move_head_to_position_with_speed_adjustment(self, goal_pan, goal_tilt, current_pan, current_tilt, pan_speed,
+                                                    tilt_speed):
         # Calculate the deltas
         delta_pan = abs(current_pan - goal_pan)
         delta_tilt = abs(current_tilt - goal_tilt)
@@ -133,9 +166,9 @@ class HeadCapsule:
         else:
             pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
         # Send new joint values
-        self.pos_msg.positions = goal_pan, goal_tilt
-        self.pos_msg.velocities = [pan_speed, tilt_speed]
-        self.pos_msg.header.stamp = self.get_clock().now()
+        self.pos_msg.positions = float(goal_pan), float(goal_tilt)
+        self.pos_msg.velocities = float(pan_speed), float(tilt_speed)
+        self.pos_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         self.position_publisher.publish(self.pos_msg)
 
     def pre_clip(self, pan, tilt):
@@ -156,22 +189,14 @@ class HeadCapsule:
     # Head positions #
     ##################
 
-    def joint_state_callback(self, msg):
-        buf = BytesIO()
-        msg.serialize(buf)
-        self.collision_checker.set_joint_states(buf.getvalue())
-        if 'HeadPan' in msg.name and 'HeadTilt' in msg.name:
-            head_pan = msg.position[msg.name.index('HeadPan')]
-            head_tilt = msg.position[msg.name.index('HeadTilt')]
-            self.current_head_position = [head_pan, head_tilt]
-
     def get_head_position(self):
-        return self.current_head_position
+        head_pan = self.current_joint_state.position[self.current_joint_state.name.index("HeadPan")]
+        head_tilt = self.current_joint_state.position[self.current_joint_state.name.index("HeadTilt")]
+        return head_pan, head_tilt
 
     #####################
     # Pattern generator #
     #####################
-
 
     def _lineAngle(self, line, line_count, min_angle, max_angle):
         """
@@ -196,7 +221,7 @@ class HeadCapsule:
         Splits a scanline in a number of dedicated steps
         """
         if steps == 0:
-           return []
+            return []
         steps += 1
         delta = abs(min_pan - max_pan)
         step_size = delta / float(steps)
@@ -207,7 +232,14 @@ class HeadCapsule:
             output_points.append(point)
         return output_points
 
-    def generate_pattern(self, lineCount, maxHorizontalAngleLeft, maxHorizontalAngleRight, maxVerticalAngleUp, maxVerticalAngleDown, reduce_last_scanline=1, interpolation_steps=0):
+    def generate_pattern(self,
+                         lineCount,
+                         maxHorizontalAngleLeft,
+                         maxHorizontalAngleRight,
+                         maxVerticalAngleUp,
+                         maxVerticalAngleDown,
+                         reduce_last_scanline=1,
+                         interpolation_steps=0):
         """
         :param lineCount: Number of scanlines
         :param maxHorizontalAngleLeft: maximum look left angle
@@ -235,7 +267,8 @@ class HeadCapsule:
 
             # Interpolate to next keyframe if we are moving horizontally
             if rightSide != rightDirection:
-                interpolatedKeyframes = self._interpolatedSteps(interpolation_steps, currentPoint[1], maxHorizontalAngleRight, maxHorizontalAngleLeft)
+                interpolatedKeyframes = self._interpolatedSteps(interpolation_steps, currentPoint[1],
+                                                                maxHorizontalAngleRight, maxHorizontalAngleLeft)
                 if rightDirection:
                     interpolatedKeyframes.reverse()
                 keyframes.extend(interpolatedKeyframes)
