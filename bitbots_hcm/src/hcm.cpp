@@ -31,7 +31,20 @@ public:
     this->get_parameter("simulation_active", simulation_active);
     this->get_parameter("visualization_active", visualization_active);
 
-    current_state_ = humanoid_league_msgs::msg::RobotControlState::STARTUP;        
+    current_state_ = humanoid_league_msgs::msg::RobotControlState::STARTUP;
+
+    current_imu_ = sensor_msgs::msg::Imu();
+    current_pressure_left_ = bitbots_msgs::msg::FootPressure();
+    current_pressure_right_ = bitbots_msgs::msg::FootPressure();
+    current_cop_left_ = geometry_msgs::msg::PointStamped();
+    current_cop_right_ = geometry_msgs::msg::PointStamped();
+    current_joint_state_ = sensor_msgs::msg::JointState();
+    last_walking_time_ = builtin_interfaces::msg::Time();
+    record_active_ = false;
+    hcm_anim_finished_ = false;
+    external_animation_running_ = false;
+    animation_requested_ = false;
+    last_animation_goal_time_ = builtin_interfaces::msg::Time();
 
     // from bitbots_hcm.humanoid_control_module import HardwareControlManager
     auto hcm_module = py::module::import("bitbots_hcm.humanoid_control_module");
@@ -73,13 +86,13 @@ public:
 
   void animation_callback(humanoid_league_msgs::msg::Animation msg) {
     // The animation server is sending us goal positions for the next keyframe
-    hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(msg.header.stamp));
+    last_animation_goal_time_ = msg.header.stamp;
 
     if (msg.request) {
       RCLCPP_INFO(this->get_logger(), "Got Animation request. HCM will try to get controllable now.");
       // animation has to wait
       // dsd should try to become controllable
-      hcm_py_.attr("set_animation_requested")(true);
+      animation_requested_ = true;
       return;
     }
     if (msg.first) {
@@ -93,7 +106,7 @@ public:
           RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
         } else {
           // we're already controllable, go to animation running
-          hcm_py_.attr("set_external_animation_running")(true);
+          external_animation_running_ = true;
         }
       }
     }
@@ -101,10 +114,10 @@ public:
     if (msg.last) {
       if (msg.hcm) {
         // This was an animation from the DSD
-        hcm_py_.attr("set_hcm_animation_finished")(true);
+        hcm_anim_finished_ = true;
       } else {
         // this is the last frame, we want to tell the DSD that we're finished with the animations
-        hcm_py_.attr("set_hcm_animation_finished")(false);
+        hcm_anim_finished_ = false;
         if (msg.position.points.size() == 0) {
           // probably this was just to tell us we're finished
           // we don't need to set another position to the motors
@@ -159,14 +172,14 @@ public:
   void record_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (msg.joint_names.size() == 0) {
       // record tells us that its finished
-      hcm_py_.attr("set_record_active")(false);
+      record_active_ = false;
     } else {
-      hcm_py_.attr("set_record_active")(true);
+      record_active_ = true;
       pub_controller_command_->publish(msg);
     }
   }
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
-    hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(msg.header.stamp));
+    last_walking_time_ = msg.header.stamp;
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING) {
       pub_controller_command_->publish(msg);
@@ -174,32 +187,44 @@ public:
   }
 
   void joint_state_callback(sensor_msgs::msg::JointState msg) {
-    hcm_py_.attr("set_last_motor_update_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(msg.header.stamp));
-    hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(msg));
+    current_joint_state_ = msg;
   }
 
   void cop_l_callback(geometry_msgs::msg::PointStamped msg) {
-    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(msg), true);
+    current_cop_right_ = msg;
   }
 
   void cop_r_callback(geometry_msgs::msg::PointStamped msg) {
-    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(msg), false);
+    current_cop_left_ = msg;
   }
 
   void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
-    hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(msg));
+    current_pressure_left_ = msg;
   }
 
   void pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
-    hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(msg));
+    current_pressure_right_ = msg;
   }
 
   void imu_callback(sensor_msgs::msg::Imu msg) {
-    // Gets new IMU values and computes the smoothed values of these
-    hcm_py_.attr("set_imu")(ros2_python_extension::toPython(msg));
+    current_imu_ = msg;
   }
 
   void loop() {
+    // update all input to the HCM
+    hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
+    hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
+    hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
+    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(current_cop_left_), false);
+    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(current_cop_right_), true);
+    hcm_py_.attr("set_last_motor_update_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(current_joint_state_.header.stamp));
+    hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
+    hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
+    hcm_py_.attr("set_record_active")(record_active_);
+    hcm_py_.attr("set_hcm_animation_finished")(hcm_anim_finished_);
+    hcm_py_.attr("set_external_animation_running")(external_animation_running_);
+    hcm_py_.attr("set_animation_requested")(animation_requested_);
+    hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
     // run HCM
     hcm_py_.attr("loop")();
     // update current HCM state for joint mutex
@@ -215,6 +240,18 @@ private:
   py::scoped_interpreter python_;
   py::object hcm_py_;
   int current_state_;
+  sensor_msgs::msg::Imu current_imu_;
+  bitbots_msgs::msg::FootPressure current_pressure_left_;
+  bitbots_msgs::msg::FootPressure current_pressure_right_;
+  geometry_msgs::msg::PointStamped current_cop_left_;
+  geometry_msgs::msg::PointStamped current_cop_right_;
+  sensor_msgs::msg::JointState current_joint_state_;
+  builtin_interfaces::msg::Time last_walking_time_;
+  bool record_active_;
+  bool hcm_anim_finished_;
+  bool external_animation_running_;
+  bool animation_requested_;
+  builtin_interfaces::msg::Time last_animation_goal_time_;
 
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
   rclcpp::Publisher<humanoid_league_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;

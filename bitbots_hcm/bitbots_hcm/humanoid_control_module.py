@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from platform import node
-from sqlite3 import Time
 import numpy
 import rclpy
 from rclpy.duration import Duration
@@ -8,6 +7,7 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.parameter import Parameter
+from rclpy.time import Time
 
 from geometry_msgs.msg import PointStamped
 
@@ -31,7 +31,7 @@ from bitbots_utils.utils import get_parameters_from_ros_yaml
 from ament_index_python import get_package_share_directory
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rclpy.serialization import serialize_message, deserialize_message
-
+from builtin_interfaces.msg import Time as TimeMsg
 
 class HardwareControlManager:
 
@@ -147,7 +147,7 @@ class HardwareControlManager:
             self.node.get_clock().sleep_for(Duration(seconds=0.01))
 
     def set_last_animation_goal_time(self, time_msg_serialized):
-        self.blackboard.last_animation_goal_time = deserialize_message(time_msg_serialized)
+        self.blackboard.last_animation_goal_time = deserialize_message(time_msg_serialized, TimeMsg)
 
     def set_animation_requested(self, animation_requested):
         self.blackboard.animation_requested = animation_requested
@@ -162,23 +162,23 @@ class HardwareControlManager:
         self.blackboard.record_active = active
 
     def set_last_walking_goal_time(self, time_msg_serialized):
-        self.blackboard.last_walking_goal_time = Time.from_msg(deserialize_message(time_msg_serialized))
+        self.blackboard.last_walking_goal_time = Time.from_msg(deserialize_message(time_msg_serialized, TimeMsg))
 
     def set_last_motor_update_time(self, time_msg_serialized):
-        self.blackboard.last_motor_update_time = deserialize_message(time_msg_serialized)
+        self.blackboard.last_motor_update_time = deserialize_message(time_msg_serialized, TimeMsg)
 
     def set_current_joint_state(self, joint_state_msg_serialized):
         self.blackboard.previous_joint_state = self.blackboard.current_joint_state
-        self.blackboard.current_joint_state = deserialize_message(joint_state_msg_serialized)
+        self.blackboard.current_joint_state = deserialize_message(joint_state_msg_serialized, JointState)
 
     def set_cop(self, cop_msg_serialized, left):
         if left:
-            self.blackboard.cop_l_msg = deserialize_message(cop_msg_serialized)
+            self.blackboard.cop_l_msg = deserialize_message(cop_msg_serialized, PointStamped)
         else:
-            self.blackboard.cop_r_msg = deserialize_message(cop_msg_serialized)
+            self.blackboard.cop_r_msg = deserialize_message(cop_msg_serialized, PointStamped)
 
     def set_pressure_left(self, pressure_msg_serialized):
-        msg = deserialize_message(pressure_msg_serialized)
+        msg = deserialize_message(pressure_msg_serialized, FootPressure)
         self.blackboard.last_pressure_update_time = msg.header.stamp
         self.blackboard.pressures[0] = msg.left_front
         self.blackboard.pressures[1] = msg.left_back
@@ -186,7 +186,7 @@ class HardwareControlManager:
         self.blackboard.pressures[3] = msg.right_back
 
     def set_pressure_right(self, pressure_msg_serialized):
-        msg = deserialize_message(pressure_msg_serialized)
+        msg = deserialize_message(pressure_msg_serialized, FootPressure)
         self.blackboard.last_pressure_update_time = msg.header.stamp
         self.blackboard.pressures[4] = msg.left_front
         self.blackboard.pressures[5] = msg.left_back
@@ -194,7 +194,7 @@ class HardwareControlManager:
         self.blackboard.pressures[7] = msg.right_back
 
     def set_imu(self, imu_msg_serialized):
-        msg = deserialize_message(imu_msg_serialized)
+        msg = deserialize_message(imu_msg_serialized, Imu)
         self.blackboard.last_imu_update_time = msg.header.stamp
 
         self.blackboard.accel = numpy.array(
