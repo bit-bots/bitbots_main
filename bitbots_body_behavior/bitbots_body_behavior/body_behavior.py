@@ -72,13 +72,13 @@ class BodyDSD:
         node.create_subscription(Twist, "cmd_vel", D.blackboard.pathfinding.cmd_vel_cb)
 
     
-def loop(dsd):
-    self.dsd.update()
-    self.dsd.blackboard.team_data.publish_strategy()
-    self.dsd.blackboard.team_data.publish_time_to_ball()
-    counter = (counter + 1) % self.dsd.blackboard.config['time_to_ball_divider']
-    if counter == 0:
-        self.dsd.blackboard.pathfinding.calculate_time_to_ball()    
+    def loop(self):
+        self.dsd.update()
+        self.dsd.blackboard.team_data.publish_strategy()
+        self.dsd.blackboard.team_data.publish_time_to_ball()
+        counter = (counter + 1) % self.dsd.blackboard.config['time_to_ball_divider']
+        if counter == 0:
+            self.dsd.blackboard.pathfinding.calculate_time_to_ball()    
 
 def main(args=None):
     rclpy.init(args=None)
