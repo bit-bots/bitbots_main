@@ -4,7 +4,7 @@ import numpy as np
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 
 class GoToCornerKickPosition(AbstractActionElement):

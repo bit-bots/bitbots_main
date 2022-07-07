@@ -1,8 +1,8 @@
 import math
 import numpy as np
-from bitbots_msgs.msg import KickGoal
+from bitbots_msgs.action import Kick
 from geometry_msgs.msg import Quaternion
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -57,7 +57,7 @@ class KickBallDynamic(AbstractKickAction):
 
         if not self.blackboard.kick.is_currently_kicking:
             if not self._goal_sent:
-                goal = KickGoal()
+                goal = Kick.Goal()
                 goal.header.stamp = self.blackboard.node.get_clock().now()
 
                 # currently we use a tested left or right kick

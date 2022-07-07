@@ -1,6 +1,6 @@
 from dynamic_stack_decider import AbstractActionElement
 from humanoid_league_msgs.msg import Strategy
-from sensor_msgs.point_cloud2 import create_cloud_xyz32
+from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
 from std_msgs.msg import Header
 
 

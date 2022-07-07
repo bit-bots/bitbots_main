@@ -33,7 +33,8 @@ class PathfindingCapsule:
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
         self._blackboard = blackboard  # type: BodyBlackboard
-        self.orient_to_ball_distance = self.node.get_parameter("move_base.BBPlanner.orient_to_goal_distance").get_parameter_value().double_value
+        #self.orient_to_ball_distance = self.node.get_parameter("move_base.BBPlanner.orient_to_goal_distance").get_parameter_value().double_value
+        self.orient_to_ball_distance = 0.5  # TODO: fill in new value once the planner is ported
 
     def publish(self, msg):
         # type: (PoseStamped) -> None

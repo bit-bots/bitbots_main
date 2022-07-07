@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from tf.transformations import euler_from_quaternion
+from tf_transformations import euler_from_quaternion
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 

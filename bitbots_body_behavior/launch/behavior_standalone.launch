@@ -4,9 +4,7 @@
     <arg name="wolfgang" default="true" />
     <arg name="simple" default="false" />
 
-    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch">
-        <arg name="wolfgang" value="$(var wolfgang)"/>   
-    </include>
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
 
     <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
         <arg name="simple" value="$(var simple)" />

@@ -28,9 +28,9 @@ class BodyBlackboard:
         self.kick = KickCapsule(self)
         self.world_model = WorldModelCapsule(self)
         self.pathfinding = PathfindingCapsule(self, node)
-        self.team_data = TeamDataCapsule()
+        self.team_data = TeamDataCapsule(node)
         # animations
-        self.animation_action_client = ActionClient(self, PlayAnimation, 'animation')
+        self.animation_action_client = ActionClient(node, PlayAnimation, 'animation')
         self.goalie_arms_animation = self.node.get_parameter(
             "Animations.Goalie.goalieArms").get_parameter_value().string_value
         self.goalie_falling_right_animation = self.node.get_parameter(

@@ -3,7 +3,7 @@ from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.msg import HeadMode
 from geometry_msgs.msg import PoseStamped
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 
 def create_pose_msg(frame, x, y, theta):

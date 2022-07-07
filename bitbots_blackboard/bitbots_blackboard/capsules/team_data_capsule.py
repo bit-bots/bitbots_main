@@ -12,12 +12,28 @@ import rclpy
 from rclpy.node import Node
 from humanoid_league_msgs.msg import Strategy, TeamData
 from geometry_msgs.msg import PointStamped
+from rcl_interfaces.srv import GetParameters
+from rclpy.parameter import parameter_value_to_python
 
 
 class TeamDataCapsule:
     def __init__(self, node: Node):
         self.node = node
-        self.bot_id = self.node.get_parameter("bot_id").get_parameter_value().double_value
+
+        client = self.node.create_client(GetParameters, 'parameter_blackboard/get_parameters')
+        ready = client.wait_for_service(timeout_sec=5.0)
+        if not ready:
+            raise RuntimeError('Wait for parameter blackboard timed out')
+        request = GetParameters.Request()
+        request.names = ['bot_id', 'role']
+        future = client.call_async(request)
+        rclpy.spin_until_future_complete(node, future)
+        response = future.result()
+        print(type(response))
+        print(type(response.values[0]))
+        self.bot_id = parameter_value_to_python(response.values[0])
+        role_name = parameter_value_to_python(response.values[1])
+
         self.strategy_sender = None  # type: rospy.Publisher
         self.time_to_ball_publisher = None  # type: rospy.Publisher
         # indexed with one to match robot ids
@@ -38,14 +54,16 @@ class TeamDataCapsule:
         }
         self.own_time_to_ball = 9999.0
         self.strategy = Strategy()
-        self.strategy.role = self.roles[self.node.get_parameter('role').get_parameter_value().string_value]
+        self.strategy.role = self.roles[role_name]
         self.strategy_update = None
         self.action_update = None
         self.role_update = None
         self.data_timeout = self.node.get_parameter("team_data_timeout").get_parameter_value().double_value
         self.ball_max_covariance = self.node.get_parameter("ball_max_covariance").get_parameter_value().double_value
         self.ball_lost_time = Duration(seconds=self.node.get_parameter('body.ball_lost_time').get_parameter_value().double_value)
-        self.pose_precision_threshold = self.node.get_parameter('body.pose_precision_threshold').get_parameter_value().double_value
+        self.pose_precision_threshold_x_sdev = self.node.get_parameter('body.pose_precision_threshold.x_sdev').get_parameter_value().double_value
+        self.pose_precision_threshold_y_sdev = self.node.get_parameter('body.pose_precision_threshold.y_sdev').get_parameter_value().double_value
+        self.pose_precision_threshold_theta_sdev = self.node.get_parameter('body.pose_precision_threshold.theta_sdev').get_parameter_value().double_value
 
     def is_valid(self, data: TeamData):
         return self.get_clock().now() - data.header.stamp < Duration(seconds=self.data_timeout) \
@@ -209,9 +227,9 @@ class TeamDataCapsule:
             stamp = single_teamdata.header.stamp
             if self.get_clock().now() - stamp < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
-                    if robot_x_std_dev < self.pose_precision_threshold['x_sdev'] and \
-                            robot_y_std_dev < self.pose_precision_threshold['y_sdev'] and \
-                            robot_theta_std_dev < self.pose_precision_threshold['theta_sdev']:
+                    if robot_x_std_dev < self.pose_precision_threshold_x_sdev and \
+                            robot_y_std_dev < self.pose_precision_threshold_y_sdev and \
+                            robot_theta_std_dev < self.pose_precision_threshold_theta_sdev:
                         robot_dist = self.get_robot_ball_euclidian_distance(single_teamdata)
                         if robot_dist < best_robot_dist:
                             best_ball = PointStamped()
