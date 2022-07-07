@@ -49,7 +49,6 @@ class HeadCapsule:
 
     def joint_state_callback(self, msg):
         self.current_joint_state = msg
-        self.blackboard.node.get_logger().warn("a")
 
 
     #################
@@ -108,8 +107,8 @@ class HeadCapsule:
                                                                  current_tilt_position, pan_speed, tilt_speed)
                 return True
         else:  # Passes the stuff through
-            self.pos_msg.positions = pan_position, tilt_position
-            self.pos_msg.velocities = [pan_speed, tilt_speed]
+            self.pos_msg.positions = float(pan_position), float(tilt_position)
+            self.pos_msg.velocities = float(pan_speed), float(tilt_speed)
             self.pos_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             self.position_publisher.publish(self.pos_msg)
             return True
@@ -167,8 +166,8 @@ class HeadCapsule:
         else:
             pan_speed = self._calculate_lower_speed(delta_tilt, delta_pan, tilt_speed)
         # Send new joint values
-        self.pos_msg.positions = goal_pan, goal_tilt
-        self.pos_msg.velocities = [pan_speed, tilt_speed]
+        self.pos_msg.positions = float(goal_pan), float(goal_tilt)
+        self.pos_msg.velocities = float(pan_speed), float(tilt_speed)
         self.pos_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         self.position_publisher.publish(self.pos_msg)
 
