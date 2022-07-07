@@ -49,5 +49,8 @@ install(DIRECTORY launch
 install(DIRECTORY config
     DESTINATION share/${PROJECT_NAME})
 
+install(DIRECTORY scripts USE_SOURCE_PERMISSIONS DESTINATION lib/${PROJECT_NAME})
+
+
 ament_python_install_package(${PROJECT_NAME})
 ament_package()

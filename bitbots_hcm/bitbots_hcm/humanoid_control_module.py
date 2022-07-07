@@ -211,7 +211,3 @@ class HardwareControlManager:
                                                                 0.5) + numpy.multiply(self.blackboard.gyro, 0.5)
 
         self.blackboard.imu_msg = msg
-
-
-def main():
-    hcm = HardwareControlManager(False, False, False)
