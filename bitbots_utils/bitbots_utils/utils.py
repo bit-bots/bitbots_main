@@ -1,11 +1,18 @@
+if TYPE_CHECKING:
+    from rclpy.node import Node
+    from typing import Dict, List
+
 import os
 
 import yaml
+import rclpy
 from ament_index_python import get_package_share_directory
 from ros2param.api import parse_parameter_dict
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
+from rcl_interfaces.srv import GetParameters
+from rclpy.parameter import parameter_value_to_python
 
 
 def read_urdf(robot_name):
@@ -75,3 +82,23 @@ def get_parameter_dict(node, prefix):
             # just a normal single parameter
             config[param.name[len(prefix) + 1:]] = param.value
     return config
+
+def get_parameters_from_other_node(own_node: Node, other_node_name: str, parameter_names: List(str), service_timeout_sec: float = 20.0) -> Dict:
+    """
+    Used to receive parameters from other running nodes.
+    Returns a dict with requested parameter name as dict key and parameter value as dict value.
+    """
+    client = own_node.create_client(GetParameters, f'{other_node_name}/get_parameters')
+    ready = client.wait_for_service(timeout_sec=service_timeout_sec)
+    if not ready:
+        raise RuntimeError(f'Wait for {other_node_name} parameter service timed out')
+    request = GetParameters.Request()
+    request.names = parameter_names
+    future = client.call_async(request)
+    rclpy.spin_until_future_complete(own_node, future)
+    response = future.result()
+
+    results = {}  # Received parameter
+    for i, param in enumerate(parameter_names):
+        results[param] =  parameter_value_to_python(response.values[i])
+    return results
