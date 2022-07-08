@@ -14,25 +14,16 @@ from humanoid_league_msgs.msg import Strategy, TeamData
 from geometry_msgs.msg import PointStamped
 from rcl_interfaces.srv import GetParameters
 from rclpy.parameter import parameter_value_to_python
-
+from bitbots_utils import get_parameters_from_other_node
 
 class TeamDataCapsule:
     def __init__(self, node: Node):
         self.node = node
 
-        client = self.node.create_client(GetParameters, 'parameter_blackboard/get_parameters')
-        ready = client.wait_for_service(timeout_sec=5.0)
-        if not ready:
-            raise RuntimeError('Wait for parameter blackboard timed out')
-        request = GetParameters.Request()
-        request.names = ['bot_id', 'role']
-        future = client.call_async(request)
-        rclpy.spin_until_future_complete(node, future)
-        response = future.result()
-        print(type(response))
-        print(type(response.values[0]))
-        self.bot_id = parameter_value_to_python(response.values[0])
-        role_name = parameter_value_to_python(response.values[1])
+        # Retrieve game settings from parameter blackboard
+        params = get_parameters_from_other_node(self.node, 'parameter_blackboard',  ['bot_id', 'role'])
+        self.bot_id = params['bot_id']
+        role_name = params['role']
 
         self.strategy_sender = None  # type: rospy.Publisher
         self.time_to_ball_publisher = None  # type: rospy.Publisher
