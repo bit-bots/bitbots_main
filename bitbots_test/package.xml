@@ -17,7 +17,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>bitbots_docs</build_depend>
-  <depend>rostest</depend>
+  <depend>ament_cmake_gtest</depend>
   <depend>roscpp</depend>
   <depend>rosunit</depend>
   <depend>rosgraph_msgs</depend>
