@@ -27,10 +27,8 @@ OBSTACLE_NUMBER = 4
 OBSTACLE_HEIGT = 0.8
 OBSTACLE_DIAMETER = 0.2
 
-rclpy.init(args=None)
 
-
-class TeamCommMarker(object):
+class TeamCommMarker:
     def __init__(self, server):
         self.server = server
         self.pose = Pose()
@@ -75,15 +73,15 @@ class TeamCommMarker(object):
         self.int_marker = InteractiveMarker()
         self.int_marker.header.frame_id = "map"
         self.int_marker.pose = self.pose
-        self.int_marker.scale = 1
+        self.int_marker.scale = 1.0
 
         self.int_marker.name = self.marker_name
 
         control = InteractiveMarkerControl()
         control.orientation.w = math.sqrt(2) / 2
-        control.orientation.x = 0
+        control.orientation.x = 0.0
         control.orientation.y = math.sqrt(2) / 2
-        control.orientation.z = 0
+        control.orientation.z = 0.0
         control.interaction_mode = self.interaction_mode
         self.int_marker.controls.append(copy.deepcopy(control))
 
@@ -95,7 +93,7 @@ class TeamCommMarker(object):
         self.int_marker.controls.append(control)
 
         # we want to use our special callback function
-        self.server.insert(self.int_marker, self.feedback)
+        self.server.insert(self.int_marker, feedback_callback=self.feedback)
 
 
 class RobotMarker(TeamCommMarker):  # todo change color based on active
@@ -133,12 +131,12 @@ class RobotMarker(TeamCommMarker):  # todo change color based on active
     def make_individual_markers(self, msg):
         marker = Marker()
         marker.type = Marker.CUBE
-        marker.scale = Vector3(ROBOT_DIAMETER, ROBOT_DIAMETER, ROBOT_HEIGHT)
+        marker.scale = Vector3(x=ROBOT_DIAMETER, y=ROBOT_DIAMETER, z=ROBOT_HEIGHT)
         marker.color.r = 1.0
         marker.color.g = 1.0
         marker.color.b = 0.5
         marker.color.a = 0.4
-        marker.pose.position = Point(0, 0, ROBOT_HEIGHT / 2)
+        marker.pose.position = Point(x=0.0, y=0.0, z=(ROBOT_HEIGHT / 2))
         return (marker,)
 
 
@@ -165,23 +163,24 @@ class BallMarker(TeamCommMarker):
 
 
 class TeamMessage:
-    def __init__(self, robot):
+    def __init__(self, robot, node):
         self.robot = robot
-        self.pub = self.create_publisher(TeamData, "team_data", 1)
+        self.node = node
+        self.pub = self.node.create_publisher(TeamData, "team_data", 1)
 
-    def publish(self, dt):
+    def publish(self):
         if self.robot.active:
             msg = TeamData()
-            msg.header.stamp = self.get_clock().now()
+            msg.header.stamp = self.node.get_clock().now().to_msg()
             msg.header.frame_id = "map"
             msg.robot_id = self.robot.robot_id
             msg.robot_position.pose = self.robot.pose
-            msg.robot_position.covariance = [self.robot.covariance, 0, 0, 0, 0, 0,
-                                             0, self.robot.covariance, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, self.robot.covariance]
+            msg.robot_position.covariance = [float(self.robot.covariance), 0.0, 0.0, 0.0, 0.0, 0.0,
+                                             0.0, float(self.robot.covariance), 0.0, 0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0, 0.0, 0.0, float(self.robot.covariance)]
 
             if self.robot.ball.active:
                 try:
@@ -201,27 +200,27 @@ class TeamMessage:
                     pos_in_robot, mat_in_robot, _, _ = decompose(trans_in_robot)
 
                     ball_relative = PoseWithCovariance()
-                    ball_relative.pose.position = Point(*pos_in_robot)
+                    ball_relative.pose.position = Point(x=pos_in_robot[0], y=pos_in_robot[1], z=pos_in_robot[2])
 
                     ball_absolute = PoseWithCovariance()
                     ball_absolute.pose.position = self.robot.ball.pose.position
-                    ball_absolute.pose.orientation = Quaternion(0, 0, 0, 1)
-                    ball_absolute.covariance = [self.robot.ball.covariance, 0, 0, 0, 0, 0,
-                                                0, self.robot.ball.covariance, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, self.robot.ball.covariance]
+                    ball_absolute.pose.orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+                    ball_absolute.covariance = [float(self.robot.ball.covariance), 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                0.0, float(self.robot.ball.covariance), 0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0, 0.0, float(self.robot.ball.covariance)]
                     msg.ball_absolute = ball_absolute
 
                     cartesian_distance = math.sqrt(
                         ball_relative.pose.position.x ** 2 + ball_relative.pose.position.y ** 2)
                     msg.time_to_position_at_ball = cartesian_distance / ROBOT_SPEED
                 except tf2_ros.LookupException as ex:
-                    self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0
+                    self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0)
                     return None
                 except tf2_ros.ExtrapolationException as ex:
-                    self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0
+                    self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0)
                     return None
                 self.pub.publish(msg)
             else:
@@ -234,12 +233,19 @@ class TeamMessage:
 
 if __name__ == "__main__":
     # retrieve InteractiveMarkerServer and setup subscribers and publishers
-    server = InteractiveMarkerServer("basic_controls")
+    rclpy.init(args=None)
+    node = Node('teamcomm_test_marker')
+    server = InteractiveMarkerServer(node, "basic_controls")
     robot = RobotMarker(server)
     server.applyChanges()
 
-    team_message = TeamMessage(robot)
+    team_message = TeamMessage(robot, node)
     # create a timer to update the published ball transform
-    rospy.Timer(Duration(seconds=0.05), team_message.publish)
+    node.create_timer(0.05, team_message.publish)
     # run and block until finished
-    rclpy.spin(self)
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+
+    node.destroy_node()
