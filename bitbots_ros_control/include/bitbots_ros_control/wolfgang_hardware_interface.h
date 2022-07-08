@@ -41,6 +41,9 @@ class WolfgangHardwareInterface {
 
   bool only_imu_;
   bool only_pressure_;
+  bool core_present_;
+  bool last_power_status_;
+  CoreHardwareInterface* core_interface_;
 };
 }
 
