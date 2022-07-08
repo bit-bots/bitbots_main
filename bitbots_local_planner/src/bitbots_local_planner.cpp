@@ -34,6 +34,34 @@ namespace bitbots_local_planner
 
         auto plugin_name = name;
 
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".carrot_distance",
+            rclcpp::ParameterValue(10));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".max_rotation_vel",
+            rclcpp::ParameterValue(0.5));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".max_vel_x",
+            rclcpp::ParameterValue(0.05));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".max_vel_y",
+            rclcpp::ParameterValue(0.05));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".min_vel_x",
+            rclcpp::ParameterValue(0.02));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".orient_to_goal_distance",
+            rclcpp::ParameterValue(1.0));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".rotation_slow_down_factor",
+            rclcpp::ParameterValue(0.3));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".smoothing_k",
+            rclcpp::ParameterValue(0.04));
+        nav2_util::declare_parameter_if_not_declared(
+            node, plugin_name + ".translation_slow_down_factor",
+            rclcpp::ParameterValue(0.5));
+
         node->get_parameter(plugin_name + ".carrot_distance", config_carrot_distance);
         node->get_parameter(plugin_name + ".max_rotation_vel", config_max_rotation_vel);
         node->get_parameter(plugin_name + ".max_vel_x", config_max_vel_x);
@@ -83,25 +111,26 @@ namespace bitbots_local_planner
         auto cmd_vel = geometry_msgs::msg::Twist();
 
         // Query the current robot pose as a transform
-        tf2::Stamped<tf2::Transform> current_pose;
-        geometry_msgs::msg::PoseStamped current_pose_gm;
-        costmap_ros_->getRobotPose(current_pose_gm);
-        tf2::fromMsg(current_pose_gm, current_pose);
+        geometry_msgs::msg::Pose current_pose;
+        geometry_msgs::msg::PoseStamped current_pose_stamped;
+        costmap_ros_->getRobotPose(current_pose_stamped);
+        current_pose = current_pose_stamped.pose;
+
 
         // Calculate the heading angle from our current position to the carrot
         double walk_angle = std::atan2(
-            goal_pose_.getOrigin().y() - current_pose.getOrigin().y(),
-            goal_pose_.getOrigin().x() - current_pose.getOrigin().x());
+            goal_pose_.position.y - current_pose.position.y,
+            goal_pose_.position.x - current_pose.position.x);
 
         // Calculate the heading angle from our current position to the final position of the global plan
         double final_walk_angle = std::atan2(
-            end_pose_.getOrigin().y() - current_pose.getOrigin().y(),
-            end_pose_.getOrigin().x() - current_pose.getOrigin().x());
+            end_pose_.position.y - current_pose.position.y,
+            end_pose_.position.x - current_pose.position.x);
 
         // Calculate the distance from our current position to the final position of the global plan
         double distance = std::hypot(
-            end_pose_.getOrigin().x() - current_pose.getOrigin().x(),
-            end_pose_.getOrigin().y() - current_pose.getOrigin().y());
+            end_pose_.position.x - current_pose.position.x,
+            end_pose_.position.y - current_pose.position.y);
 
         // Calculate the translational walk velocity. It considers the distance and breaks if we are close to the final position of the global plan
         double walk_vel = std::min(distance * config_translation_slow_down_factor, config_max_vel_x);
@@ -111,12 +140,12 @@ namespace bitbots_local_planner
         if (distance > config_orient_to_goal_distance)
         {
             // Calculate the difference between our current heading and the heading towards the final position of the global plan
-            diff = final_walk_angle - tf2::getYaw(current_pose.getRotation());
+            diff = final_walk_angle - tf2::getYaw(current_pose.orientation);
         }
         else
         {
             // Calculate the difference between our current heading and the heading of the final position of the global plan
-            diff = tf2::getYaw(end_pose_.getRotation()) - tf2::getYaw(current_pose.getRotation());
+            diff = tf2::getYaw(end_pose_.orientation) - tf2::getYaw(current_pose.orientation);
         }
 
         // Get the min angle of the difference
@@ -134,8 +163,8 @@ namespace bitbots_local_planner
         double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
 
         // Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
-        cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
-        cmd_vel.linear.y = std::sin(walk_angle - tf2::getYaw(current_pose.getRotation())) * walk_vel;
+        cmd_vel.linear.x = std::cos(walk_angle - tf2::getYaw(current_pose.orientation)) * walk_vel;
+        cmd_vel.linear.y = std::sin(walk_angle - tf2::getYaw(current_pose.orientation)) * walk_vel;
 
         // Scale command accordingly if a limit is acceded
         if (cmd_vel.linear.x > config_max_vel_x) {
@@ -181,6 +210,7 @@ namespace bitbots_local_planner
         // Create stamped msg
         auto cmd_vel_stamped = geometry_msgs::msg::TwistStamped();
         cmd_vel_stamped.header.stamp = clock_->now();
+        cmd_vel_stamped.header.frame_id = "base_footprint";
         cmd_vel_stamped.twist = cmd_vel;
         return cmd_vel_stamped;
     }
@@ -190,28 +220,30 @@ namespace bitbots_local_planner
         // Save global plan
 	    global_plan_ = path.poses;
 
+        for (geometry_msgs::msg::PoseStamped & pose : global_plan_)
+        {
+            pose.header = path.header;
+        }
+
         // set carrot distance to the config value or the end of the path if it is shorter
 	    int carrot_distance = std::min((int)global_plan_.size() - 1, config_carrot_distance);
 
         // Querys the pose of our carrot which we want to follow
-        this->getXPose(
+        goal_pose_ = this->getXPose(
             costmap_ros_->getGlobalFrameID(),
-            goal_pose_,
             carrot_distance);
 
         // Query the final pose of our robot at the end of the global plan
-        this->getXPose(
+        end_pose_ = this->getXPose(
             costmap_ros_->getGlobalFrameID(),
-            end_pose_,
             global_plan_.size() - 1);
-
-        // Set our old pose
-        old_goal_pose_ = goal_pose_;
     }
 
 
-    void BBPlanner::getXPose(
-        const std::string &global_frame, tf2::Stamped<tf2::Transform> &goal_pose, int plan_point) {
+    geometry_msgs::msg::Pose BBPlanner::getXPose(
+            const std::string &global_frame,
+            int plan_point)
+    {
         if (global_plan_.empty()) {
             RCLCPP_ERROR(*logger_.get(), "Received plan with zero length");
         }
@@ -219,25 +251,12 @@ namespace bitbots_local_planner
             RCLCPP_ERROR(*logger_.get(),"Goal_functions: Plan_point %d to big. Plan size: %lu", plan_point, global_plan_.size());
         }
 
-        const geometry_msgs::msg::PoseStamped &plan_goal_pose = global_plan_.at(plan_point);
+        geometry_msgs::msg::PoseStamped &plan_goal_pose = global_plan_.at(plan_point);
+        geometry_msgs::msg::PoseStamped result;
         try {
-            tf_buffer_->canTransform(global_frame, rclcpp::Time(0),
-                                plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp,
-                                plan_goal_pose.header.frame_id, rclcpp::Duration(0, 0.5 * 1e9));
-
-            geometry_msgs::msg::TransformStamped tmp = tf_buffer_->lookupTransform(global_frame,
-                                                                            rclcpp::Time(0),
-                                                                            plan_goal_pose.header.frame_id,
-                                                                            plan_goal_pose.header.stamp,
-                                                                            plan_goal_pose.header.frame_id,
-                                                                            rclcpp::Duration(0, 0.5 * 1e9));
-            tf2::Stamped<tf2::Transform> transform;
-            tf2::convert(tmp, transform);
-
-            tf2::convert(plan_goal_pose, goal_pose);
-            goal_pose.setData(transform * goal_pose);
-            goal_pose.stamp_ = transform.stamp_;
-            goal_pose.frame_id_ = global_frame;
+            geometry_msgs::msg::TransformStamped transform = tf_buffer_->lookupTransform(
+                global_frame, plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp);
+            tf2::doTransform(plan_goal_pose, result, transform);
         }
         catch (tf2::LookupException &ex) {
             RCLCPP_ERROR(*logger_.get(),"No Transform available Error: %s\n", ex.what());
@@ -254,6 +273,7 @@ namespace bitbots_local_planner
                         global_plan_[0].header.frame_id.c_str());
             }
         }
+        return result.pose;
     }
 
     void BBPlanner::motionOdomCB(const nav_msgs::msg::Odometry::SharedPtr msg)
@@ -281,8 +301,7 @@ namespace bitbots_local_planner
         gui_path.header.stamp = clock_->now();
         // The the positions of the two path elements (1. The robot position, 2. The carrot position)
         gui_path.poses[0].pose.position = robot_pose.pose.position;
-        gui_path.poses[1].pose.position.x = goal_pose_.getOrigin().x();
-        gui_path.poses[1].pose.position.y = goal_pose_.getOrigin().y();
+        gui_path.poses[1].pose.position = goal_pose_.position;
         // Publish
         local_plan_publisher_->publish(gui_path);
     }

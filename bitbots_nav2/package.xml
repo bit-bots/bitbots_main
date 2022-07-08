@@ -19,6 +19,7 @@
   <exec_depend>gazebo_msgs</exec_depend>
 
   <depend>humanoid_league_msgs</depend>
+  <depend>bitbots_local_planner</depend>
   <depend>rclpy</depend>
   <depend>nav2_bringup</depend>
   <depend>ros2_numpy</depend>

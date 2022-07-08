@@ -1,6 +1,6 @@
 <class_libraries>
   <library path="bitbots_local_planner">
-    <class type="bitbots_local_planner::BBPlanner" base_class_type="nav_core::BaseLocalPlanner">
+    <class type="bitbots_local_planner::BBPlanner" base_class_type="nav2_core::Controller">
       <description>
         A simple local planner for humanoid robots.
       </description>

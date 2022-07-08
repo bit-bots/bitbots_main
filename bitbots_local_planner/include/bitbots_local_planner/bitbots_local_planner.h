@@ -3,6 +3,7 @@
 
 #include <nav_msgs/msg/odometry.hpp>
 #include <nav2_costmap_2d/costmap_2d_ros.hpp>
+#include "nav2_util/node_utils.hpp"
 #include <cmath>
 #include <nav2_core/controller.hpp>
 #include <tf2_ros/transform_listener.h>
@@ -62,9 +63,9 @@ class BBPlanner : public nav2_core::Controller {
 
  private:
 
-  void getXPose(
-              const std::string &global_frame,
-              tf2::Stamped<tf2::Transform> &goal_pose, int plan_point);
+  geometry_msgs::msg::Pose getXPose(
+    const std::string &global_frame,
+    int plan_point);
 
   /**
   *@brief Publish the global plan for visualization.
@@ -87,11 +88,11 @@ class BBPlanner : public nav2_core::Controller {
   // check if plan first at first time
   bool first_setPlan_;
   // last point of the global plan in global frame
-  tf2::Stamped<tf2::Transform> goal_pose_;
+  geometry_msgs::msg::Pose goal_pose_;
   // true if the robot should rotate to gobal plan if new global goal set
-  tf2::Stamped<tf2::Transform> old_goal_pose_;
+  geometry_msgs::msg::Pose old_goal_pose_;
   // The final pose
-  tf2::Stamped<tf2::Transform> end_pose_;
+  geometry_msgs::msg::Pose end_pose_;
   // Publisher where the local plan for visulatation is published
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr local_plan_publisher_;
 

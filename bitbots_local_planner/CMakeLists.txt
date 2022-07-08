@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_local_planner)
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -fmax-errors=1)
 set(CMAKE_CXX_STANDARD 17)
 
 
@@ -15,6 +15,7 @@ find_package(nav_2d_utils REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
 nav2_package()
@@ -38,7 +39,6 @@ set(dependencies
 
 add_library(bitbots_local_planner SHARED
 src/bitbots_local_planner.cpp
-src/transform_global_plan.cpp
 )
 
 ament_target_dependencies(bitbots_local_planner
