@@ -16,7 +16,7 @@ class LocalizationBlackboard:
 
         # tf stuff
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10))
-        self.tf_listener = tf2.TransformListener(self.blackboard.tf_buffer, node)
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, node)
         self.odom_frame = node.get_parameter('odom_frame').get_parameter_value().string_value
         self.base_footprint_frame = node.get_parameter('base_footprint_frame').get_parameter_value().string_value
 
@@ -50,3 +50,12 @@ class LocalizationBlackboard:
         self.last_init_action_type = False
         self.last_init_odom_transform = None
 
+    def _callback_pose(self, msg):
+        self.last_pose_update_time = msg.header.stamp
+        self.poseX = msg.pose.pose.position.x
+        self.poseY = msg.pose.pose.position.y
+        self.orientation = msg.pose.pose.orientation
+        self.covariance = msg.pose.covariance
+
+    def _callback_robot_control_state(self, msg):
+        self.robot_control_state = msg.state
