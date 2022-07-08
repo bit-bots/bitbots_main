@@ -21,7 +21,6 @@
   <depend>humanoid_league_msgs</depend>
   <depend>rclpy</depend>
   <depend>nav2_bringup</depend>
-  <depend>base_local_planner</depend>
   <depend>ros2_numpy</depend>
 
   <export>
