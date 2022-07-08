@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package format="2">
+  <name>bitbots_localization_handler</name>
+  <version>1.0.0</version>
+  <description>The bitbots_localization_handler uses high level information to improve 
+  the localization, e.g. by setting the pose estimation next to the side line after being penalized.
+  </description>
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>bitbots_blackboard</depend>
+  <depend>bitbots_localization</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>geometry_msgs</depend>
+  <depend>humanoid_league_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+    <bitbots_documentation>
+      <status>tested_integration</status>
+      <language>python2</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
