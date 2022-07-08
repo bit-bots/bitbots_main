@@ -24,7 +24,7 @@ PyCharm Integration
 VSCode Integration
 ~~~~~~~~~~~~~~~~~~
 Install the Python extension.
-Add the following lines to your setting.json ($HOME/.config/Code/User/settings.json)
+Add the following lines to your settings.json ($HOME/.config/Code/User/settings.json)
 
 .. code-block:: json
 
@@ -50,10 +50,10 @@ CLion Integration
   Download :download:`our cpp style</_static/bitbots_cpp_style.xml>` and select it. Choose a name to store it.
 * Make sure to select all python code inspections in Editor > Inspections > C/C++.
 
-VSCdoe Integration
+VSCode Integration
 ~~~~~~~~~~~~~~~~~~
 Install the C/C++ extension.
-Add the following lines to your setting.json ($HOME/.config/Code/User/settings.json)
+Add the following lines to your settings.json ($HOME/.config/Code/User/settings.json)
 
 .. code-block:: json
 
