@@ -6,7 +6,7 @@
     <arg name="sim" default="false"/>
     <arg name="simple" default="false" description="Whether to use the simple behavior" />
     <arg name="teamcom" default="false"/>
-    <arg name="transformer" default="true"/>
+    <arg name="ipm" default="true"/>
     <arg name="use_game_settings" default="true"/>
     <arg name="vision" default="true"/>
     <arg name="ball_filter" default="true"/>
@@ -29,10 +29,10 @@
         </include>
     </group>
 
-    <!-- launch transformer -->
-    <group if="$(var transformer)">
-        <include file="$(find-pkg-share humanoid_league_transform)/launch/transformer.launch">
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
+    <!-- launch soccer inverse perspective mapping (ipm) -->
+    <group if="$(var ipm)">
+        <include file="$(find-pkg-share soccer_ipm)/launch/soccer_ipm.launch">
+            <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
 
