@@ -2,7 +2,7 @@
     <arg name="sim" default="false" description="true: activates simulation time" />
 
     <include file="$(find-pkg-share nav2_bringup)/launch/navigation_launch.py">
-        <arg name="sim" value="$(var sim)"/>
+        <arg name="use_sim_time" value="$(var sim)"/>
         <arg name="params_file" value="$(find-pkg-share bitbots_nav2)/config/nav2_params.yaml"/>
     </include>
 </launch>
