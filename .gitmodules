@@ -85,7 +85,11 @@
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
 	branch = ros2
-	url = ../../PickNikRobotics/bio_ik.git
+    url = ../../PickNikRobotics/bio_ik.git
+[submodule "lib/bio_ik_msgs"]
+	path = lib/bio_ik_msgs
+	branch = master
+	url = ../../bit-bots/bio_ik_msgs.git
 [submodule "lib/vision_msgs"]
 	path = lib/vision_msgs
 	url = ../../ros-perception/vision_msgs.git
