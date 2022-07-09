@@ -3,17 +3,13 @@ TeamDataCapsule
 ^^^^^^^^^^^^^^^
 """
 import math
-from collections import defaultdict
 
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
-from rclpy.time import Time
 import rclpy
 from rclpy.node import Node
 from humanoid_league_msgs.msg import Strategy, TeamData
 from geometry_msgs.msg import PointStamped
-from rcl_interfaces.srv import GetParameters
-from rclpy.parameter import parameter_value_to_python
 from bitbots_utils import get_parameters_from_other_node
 
 class TeamDataCapsule:
