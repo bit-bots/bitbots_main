@@ -4,7 +4,6 @@
     <arg name="sim" default="false" description="true: activates simulation time and switches to simulation color settings" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
     <arg name="yoeo" default="true" description="true: uses yoeo detection, else yolo and conventional methods" />
-    <arg name="use_game_settings" default="false" description="true: uses game settings such as the own team color; default false" \>
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
@@ -19,9 +18,6 @@
                 <!-- Set debug params-->
                 <param name="vision_publish_debug_image" value="$(var debug)" />
                 <param name="vision_publish_field_mask_image" value="$(var debug)" />
-
-                <!-- Use game settings-->
-                <param name="use_game_settings" value="$(var use_game_settings)" \>
             </node>
         </group>
         <!-- Start the YOEO vision in sim configuration-->
@@ -38,9 +34,6 @@
 
                 <!-- Use sim time-->
                 <param name="use_sim_time" value="true"/>
-
-                <!-- Use game settings-->
-                <param name="use_game_settings" value="$(var use_game_settings)" \>
             </node>
         </group>
     </group>
@@ -56,9 +49,6 @@
                 <param name="vision_publish_debug_image" value="$(var debug)" />
                 <param name="vision_publish_HSV_mask_image" value="$(var debug)" />
                 <param name="vision_publish_field_mask_image" value="$(var debug)" />
-
-                <!-- Use game settings-->
-                <param name="use_game_settings" value="$(var use_game_settings)" \>
             </node>
         </group>
         <!-- Start the vision in sim configuration-->
@@ -76,9 +66,6 @@
 
                 <!-- Use sim time-->
                 <param name="use_sim_time" value="true"/>
-
-                <!-- Use game settings-->
-                <param name="use_game_settings" value="$(var use_game_settings)" \>
             </node>
         </group>
     </group>

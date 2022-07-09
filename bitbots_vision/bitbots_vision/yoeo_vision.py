@@ -60,6 +60,9 @@ class YOEOVision(Node):
 
         self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
+        # Update team color
+        ros_utils.update_own_team_color(self)
+
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     def _dynamic_reconfigure_callback(self, params) -> SetParametersResult:
@@ -71,6 +74,7 @@ class YOEOVision(Node):
         new_config = self._get_updated_config_with(params)
         self._configure_vision(new_config)
         self._config = new_config
+        self._first_dynamic_reconfigure_callback = True
 
         return SetParametersResult(successful=True)
 
@@ -81,13 +85,6 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
-        # Update team color
-        if ros_utils.config_param_change(self._config, new_config, "use_game_settings"):
-            if new_config['use_game_settings']:
-                ros_utils.update_team_color(self)
-            else:
-                ros_utils.reset_own_team_color()
-
         yoeo_framework = new_config["yoeo_framework"]
         model_path = self._get_model_path(new_config)
 

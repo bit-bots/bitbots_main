@@ -123,13 +123,6 @@ class Vision(Node):
         """
         self._register_or_update_all_publishers(config)
 
-        # Update team color
-        if ros_utils.config_param_change(self._config, config, "use_game_settings"):
-            if config['use_game_settings']:
-                ros_utils.update_team_color(self)
-            else:
-                ros_utils.reset_own_team_color()
-
         # Set max number of balls
         self._max_balls = config['ball_candidate_max_count']
 

@@ -354,14 +354,12 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
 
 
 def update_own_team_color(vision_node: Node):
-    params = get_parameters_from_other_node(vision_node, 'parameter_blackboard', ['team_color'])
     global own_team_color
+    params = get_parameters_from_other_node(vision_node,
+                                            'parameter_blackboard', ['team_color'],
+                                            service_timeout_sec=2.0)
     own_team_color = params['team_color']
-
-
-def reset_own_team_color():
-    global own_team_color
-    own_team_color = None
+    vision_node._logger.debug(f"Own team color is: {own_team_color}")
 
 
 def get_team_from_robot_color(color: int) -> RobotAttributes.team:
