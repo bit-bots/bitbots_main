@@ -83,7 +83,7 @@ def get_parameter_dict(node, prefix):
 
 def get_parameters_from_other_node(own_node: Node,
                                    other_node_name: str,
-                                   parameter_names: List(str),
+                                   parameter_names: List[str],
                                    service_timeout_sec: float = 20.0) -> Dict:
     """
     Used to receive parameters from other running nodes.
