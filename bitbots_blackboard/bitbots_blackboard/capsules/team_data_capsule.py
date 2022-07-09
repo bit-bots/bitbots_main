@@ -10,7 +10,7 @@ import rclpy
 from rclpy.node import Node
 from humanoid_league_msgs.msg import Strategy, TeamData
 from geometry_msgs.msg import PointStamped
-from bitbots_utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_parameters_from_other_node
 
 
 class TeamDataCapsule:
