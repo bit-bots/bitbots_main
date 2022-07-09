@@ -115,34 +115,23 @@ class Target:
         melody = "wolfgang_ws"
 
     class RobotComputers:
-        amy = [c + "1" for c in ["nuc", "odroid", "jetson"]]
-        rory = [c + "2" for c in ["nuc", "odroid", "jetson"]]
-        jack = [c + "3" for c in ["nuc", "odroid", "jetson"]]
-        donna = [c + "4" for c in ["nuc", "odroid", "jetson"]]
-        melody = [c + "5" for c in ["nuc", "odroid", "jetson"]]
+        amy = ["nuc1"]
+        rory = ["nuc2"]
+        jack = ["nuc3"]
+        donna = ["nuc4"]
+        melody = ["nuc5"]
         davros = ["davros"]
 
     class IPs:
         __prefix__ = "192.168.1."
         nuc1 = __prefix__ + "11"
-        odroid1 = __prefix__ + "21"
-        jetson1 = __prefix__ + "31"
         nuc2 = __prefix__ + "12"
-        odroid2 = __prefix__ + "22"
-        jetson2 = __prefix__ + "32"
         nuc3 = __prefix__ + "13"
-        odroid3 = __prefix__ + "23"
-        jetson3 = __prefix__ + "33"
         nuc4 = __prefix__ + "14"
-        odroid4 = __prefix__ + "24"
-        jetson4 = __prefix__ + "34"
         nuc5 = __prefix__ + "15"
-        odroid5 = __prefix__ + "25"
-        jetson5 = __prefix__ + "35"
         davros = __prefix__ + "25"
-        # TODO davros and odroid5 have the same IP
 
-    def __init__(self, ip, ssh_target):
+    def __init__(self, ip, ssh_target, hostname=None, robot_name=None):
         """
         :type ip: str
         :type ssh_target: str
@@ -151,14 +140,20 @@ class Target:
         self.ssh_target = ssh_target  # type: str
 
         # figure out hostname
-        for name, iip in self.IPs.__dict__.items():
-            if isinstance(ip, str) and iip == ip:
-                self.hostname = name
+        if hostname:
+            self.hostname = hostname
+        else:
+            for name, iip in self.IPs.__dict__.items():
+                if isinstance(ip, str) and iip == ip:
+                    self.hostname = name
 
         # figure out robot_name
-        for name, computers in self.RobotComputers.__dict__.items():
-            if isinstance(computers, list) and self.hostname in computers:
-                self.robot_name = name
+        if robot_name:
+            self.robot_name = robot_name
+        else:
+            for name, computers in self.RobotComputers.__dict__.items():
+                if isinstance(computers, list) and self.hostname in computers:
+                    self.robot_name = name
 
         self.workspace = getattr(self.Workspaces, self.robot_name)  # type: str
 
@@ -187,7 +182,7 @@ def parse_arguments():
     parser.add_argument("--clean-build", action="store_true",
                         help="Clean workspace before building. If --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
+    parser.add_argument("--no-rosdeps", action="store_false", default=False, dest="check_rosdeps",
                         help="Don't check installed rosdeps on the target."
                              "Might be useful when no internet connection is available.")
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
@@ -241,8 +236,20 @@ def parse_targets(targets):
                 print_err("Unable to connect to {}".format(target))
                 sys.exit(1)
 
-            print_info("Reparsing {}'s hostname ({})".format(target, host_inspect_result.stdout.replace("\n", "")))
-            res.extend(parse_targets(host_inspect_result.stdout.replace("\n", "")))
+            hostname = host_inspect_result.stdout.strip()
+            robot_name = None
+            for robot, computers in Target.RobotComputers.__dict__.items():
+                if hostname in computers:
+                    robot_name = robot
+                    break
+
+            if robot_name is None:
+                print_err("{} does not seem to be part of a known robot".format(target))
+                sys.exit(1)
+
+            res.append(Target(target, target, hostname=hostname, robot_name=robot_name))
+            print_info("Using robot={}, hostname={} ip={} for target {}".format(
+                robot_name, hostname, target, target))
 
     return res
 
@@ -383,7 +390,8 @@ def build(target, package='', pre_clean=False):
 
     cmd = ("sync;"
                "cd {workspace};"
-               "source devel/setup.zsh;"
+               "source /opt/ros/rolling/setup.zsh;"
+               "source install/setup.zsh;"
                "{cmd_clean}"
                "colcon build {package} --continue-on-error {quiet_option} || exit 1;"
                "sync;"
