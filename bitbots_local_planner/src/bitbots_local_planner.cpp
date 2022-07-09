@@ -157,7 +157,7 @@ namespace bitbots_local_planner
             config_max_rotation_vel);
 
         // Get odometry velocity vector
-        geometry_msgs::PoseStamped robot_vel;
+        geometry_msgs::msg::PoseStamped robot_vel;
         //odom_helper_.getRobotVel(robot_vel); TODO implement
         // Calc current velocity value
         double current_vel_ = std::hypot(robot_vel.pose.position.x, robot_vel.pose.position.y);
