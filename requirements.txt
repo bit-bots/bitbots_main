@@ -12,9 +12,9 @@ pip
 protobuf
 psutil
 pydot
-python-espeak
 pyopencl
 pytorchyolo
+pyttsx3
 rosdep
 rospkg
 setuptools
