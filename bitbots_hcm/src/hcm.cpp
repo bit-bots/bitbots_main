@@ -278,15 +278,15 @@ int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_hcm::HCM_CPP>();
 
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 500);
-  //rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void { node->loop(); });
   rclcpp::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::executors::EventsExecutor>();
   exec->add_node(node);
   std::thread thread_obj(thread_spin, exec);
 
-  while (rclcpp::ok()){
+  rclcpp::Rate rate = rclcpp::Rate(500.0);
+  while (rclcpp::ok()) {
     node->loop();
+    rate.sleep();
   }
-  
+
   rclcpp::shutdown();
 }
