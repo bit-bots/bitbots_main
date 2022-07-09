@@ -17,8 +17,6 @@ setup(
 
         ('share/' + package_name + '/config',
             glob.glob('config/*')),
-        ('share/' + package_name + '/classifier',
-            glob.glob('bitbots_hcm/classifier/*.pkl')),
 
         ('share/' + package_name + '/actions',
             glob.glob(package_name + '/hcm_dsd/actions/*.py')),
@@ -38,10 +36,4 @@ setup(
     zip_safe=True,
     keywords=['ROS'],
     license='MIT',
-    entry_points={
-        'console_scripts': [
-            'hcm_node = bitbots_hcm.humanoid_control_module:main',
-            'pause_node = bitbots_hcm.pause:main',
-        ],
-    }
 )

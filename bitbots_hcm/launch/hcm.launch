@@ -22,7 +22,7 @@
         </node>
     </group>
 
-    <node pkg="bitbots_hcm" exec="pause_node" />
+    <node pkg="bitbots_hcm" exec="pause.py" />
 
     <node pkg="bitbots_hcm" exec="hcm_led.py" />
 
