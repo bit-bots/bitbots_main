@@ -14,8 +14,7 @@ for ifaceName in interfaces():
         ip_adress = ' '.join(addresses)
 
 hostname = socket.gethostname()
-IPAddr = socket.gethostbyname(hostname)
-ip_parts = IPAddr.split(".")
+ip_parts = ip_adress.split(".")
 ip = ip_parts[0] + " point " + ip_parts[1] + " point " + ip_parts[2] + " point " + ip_parts[3]
 
 engine = pyttsx3.init()
