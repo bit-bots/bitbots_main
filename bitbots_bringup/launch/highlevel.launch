@@ -56,13 +56,13 @@
     </group>
     <group unless="$(var localization)">
         <!-- simulate map frame -->
-        <node name="map_odom" pkg="bitbots_move_base" exec="tf_map_odom.py" output="screen" />
+        <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
         <!-- publish perfect covariance -->
-        <node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" />
+        <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
     </group>
 
     <!-- launch pathplanning -->
-    <include file="$(find-pkg-share bitbots_move_base)/launch/pathfinding_move_base.launch" />
+    <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.py" />
 
     <!-- launch behavior -->
     <group if="$(var behavior)">

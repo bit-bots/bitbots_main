@@ -1,8 +1,8 @@
-/**:
+parameter_blackboard:
   ros__parameters:
-    game_settings:
-      behavior/body/role_positions/pos_number: 0
-      bot_id: 5
-      role: offense
-      team_color: 0
-      team_id: 18
+    robot_type_name: Wolfgang
+    position_number: 0
+    bot_id: 5
+    role: offense
+    team_color: 0
+    team_id: 18
