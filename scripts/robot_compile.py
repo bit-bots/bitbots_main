@@ -107,12 +107,13 @@ hy-             +dddddddm`        ydddddddd              -yh
 
 class Target:
     class Workspaces:
-        amy = "wolfgang_ws"
-        rory = "wolfgang_ws"
-        jack = "wolfgang_ws"
-        donna = "wolfgang_ws"
+        amy = "colcon_ws"
+        rory = "colcon_ws"
+        jack = "colcon_ws"
+        donna = "colcon_ws"
+        melody = "colcon_ws"
+        rose = "colcon_ws"
         davros = "davros_ws"
-        melody = "wolfgang_ws"
 
     class RobotComputers:
         amy = ["nuc1"]
@@ -120,6 +121,7 @@ class Target:
         jack = ["nuc3"]
         donna = ["nuc4"]
         melody = ["nuc5"]
+        rose = ["nuc6"]
         davros = ["davros"]
 
     class IPs:
@@ -129,6 +131,7 @@ class Target:
         nuc3 = __prefix__ + "13"
         nuc4 = __prefix__ + "14"
         nuc5 = __prefix__ + "15"
+        nuc6 = __prefix__ + "16"
         davros = __prefix__ + "25"
 
     def __init__(self, ip, ssh_target, hostname=None, robot_name=None):
@@ -239,7 +242,7 @@ def parse_targets(targets):
             hostname = host_inspect_result.stdout.strip()
             robot_name = None
             for robot, computers in Target.RobotComputers.__dict__.items():
-                if hostname in computers:
+                if isinstance(computers, list) and hostname in computers:
                     robot_name = robot
                     break
 
