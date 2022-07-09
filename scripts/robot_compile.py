@@ -182,7 +182,7 @@ def parse_arguments():
     parser.add_argument("--clean-build", action="store_true",
                         help="Clean workspace before building. If --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="check_rosdeps",
+    parser.add_argument("--no-rosdeps", action="store_false", default=False, dest="check_rosdeps",
                         help="Don't check installed rosdeps on the target."
                              "Might be useful when no internet connection is available.")
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
