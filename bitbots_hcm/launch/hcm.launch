@@ -15,15 +15,14 @@
                 <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
             </group> TODO-->
     <group if="$(var wolfgang)">
-        <node pkg="bitbots_hcm" exec="hcm_node" args="" output="screen" launch-prefix="$(var taskset)">
-            <param from="$(find-pkg-share bitbots_hcm)/config/hcm_wolfgang.yaml"/>
+        <node pkg="bitbots_hcm" exec="HCM" args="" output="screen" launch-prefix="$(var taskset)">
             <param name="use_sim_time" value="$(var sim)" />
             <param name="simulation_active" value="$(var sim)" />
             <param name="visualization_active" value="$(var viz)" />
         </node>
     </group>
 
-    <node pkg="bitbots_hcm" exec="pause_node" />
+    <node pkg="bitbots_hcm" exec="pause.py" />
 
     <node pkg="bitbots_hcm" exec="hcm_led.py" />
 

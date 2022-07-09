@@ -8,7 +8,7 @@ Here is an example code snippet for using the IK:
 
     from bitbots_moveit_bindings import get_position_ik
     from moveit_msgs.srv import GetPositionIKRequest, GetPositionIKResponse
-    from tf.transformations import quaternion_from_euler
+    from tf_transformations import quaternion_from_euler
 
     # create request
     request = GetPositionIKRequest()

@@ -8,7 +8,6 @@ from geometry_msgs.msg import Point
 import math
 import numpy as np
 
-
 class FallClassifier:
 
     def __init__(self, path, smooth_threshold=10):

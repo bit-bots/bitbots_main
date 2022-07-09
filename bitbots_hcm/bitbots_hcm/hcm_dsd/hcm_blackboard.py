@@ -32,7 +32,6 @@ class HcmBlackboard():
         # we assume that the time does not change during one update cycle
         self.current_time = self.node.get_clock().now()
         self.start_time = self.current_time
-
         # Imu
         self.last_imu_update_time = None
         self.imu_timeout_duration = self.node.get_parameter("imu_timeout_duration")
@@ -45,7 +44,7 @@ class HcmBlackboard():
         self.pickup_accel_threshold = 1000
 
         # Pressure sensors
-        self.pressure_sensors_installed = self.node.get_parameter('pressure_sensors_installed').get_parameter_value().double_value
+        self.pressure_sensors_installed = self.node.get_parameter('pressure_sensors_installed').get_parameter_value().bool_value
         self.pressure_timeout_duration = self.node.get_parameter("pressure_timeout_duration").get_parameter_value().double_value
         self.last_pressure_update_time = None
         # initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
@@ -54,7 +53,6 @@ class HcmBlackboard():
         self.foot_zero_service = self.node.create_client(Empty, foot_zero_service_name)
 
         self.motor_switch_service = self.node.create_client(SetBool, 'core/switch_power')
-
 
 
         # Animation
@@ -80,7 +78,6 @@ class HcmBlackboard():
         self.stand_up_back_animation = self.node.get_parameter("animations.stand_up_back").get_parameter_value().string_value
         self.stand_up_left_animation = self.node.get_parameter("animations.stand_up_left").get_parameter_value().string_value
         self.stand_up_right_animation = self.node.get_parameter("animations.stand_up_right").get_parameter_value().string_value
-
         # motors
         # initialize with current time, or motors will be turned off on start
         self.last_motor_goal_time = self.node.get_clock().now()
@@ -98,7 +95,6 @@ class HcmBlackboard():
         self.walkready_pose_dict = keyframes[-1]["goals"]
         self.walkready_pose_threshold = self.node.get_parameter("animations.walkready_pose_threshold").get_parameter_value().double_value
         self.is_power_on = False
-
         # walking
         self.last_walking_goal_time = self.node.get_clock().now()
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
@@ -115,7 +111,6 @@ class HcmBlackboard():
 
         # direct messages for falling classier
         # todo needs refactoring
-
         path = get_package_share_directory('bitbots_hcm')
         smooth_threshold = self.node.get_parameter('smooth_threshold').get_parameter_value().double_value
         self.classifier = FallClassifier(path + "/classifier/", smooth_threshold=smooth_threshold)
@@ -130,17 +125,16 @@ class HcmBlackboard():
         self.move_base_cancel_pub = self.node.create_publisher(GoalID, "move_base/cancel", 1)
 
     def diag_cb(self, msg: DiagnosticArray):
-            for status in msg.status:
-                if status.name == "/Servos":
-                    self.servo_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
-                elif status.name == "/IMU":
-                    self.imu_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
-                elif status.name == "/Pressure":
-                    self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
+        for status in msg.status:
+            if status.name == "/Servos":
+                self.servo_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
+            elif status.name == "/IMU":
+                self.imu_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
+            elif status.name == "/Pressure":
+                self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
 
     def last_kick_feedback_callback(self, msg):
         self.last_kick_feedback = self.node.get_clock().now()
 
     def cancel_move_base_goal(self):
         self.move_base_cancel_pub.publish(GoalID())
-
