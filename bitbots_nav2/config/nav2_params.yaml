@@ -71,7 +71,6 @@ controller_server:
       xy_goal_tolerance: 0.03
       yaw_goal_tolerance: 0.1
 
-    # DWB parameters
     FollowPath:
       plugin: "bitbots_local_planner::BBPlanner"
       carrot_distance: 20
