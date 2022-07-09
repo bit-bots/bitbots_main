@@ -5,13 +5,11 @@ import yaml
 import os
 
 
-# every parameter has its own SETTING_PATH
+# path to the game settings yaml and to the game setting options
 SETTING_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                            "config", "game_settings.yaml")
-TO_BE_SET_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                              "config", "to_be_set_game_settings.yaml")
-
-
+                            "bitbots_utils", "config", "game_settings.yaml")
+OPTIONS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                              "bitbots_utils","config", "game_settings_options.yaml")
 def provide_config(path):
     """
     reads out the yaml you are asking for with the path parameter
@@ -40,7 +38,8 @@ def ask_for_config_option(name: object, definition: object, current_value: objec
     :return: new chosen value for this config option, can be the old one
     """
     print('=============== {} ==============='.format(name))
-
+    if type(definition) is range:
+        definition = list(definition)
     print("Options: {}".format(definition))
     print("Explanations: {}".format(explanation))
     if current_value is not None:
@@ -53,12 +52,11 @@ def ask_for_config_option(name: object, definition: object, current_value: objec
         new_value = input(input_prompt).lower()
 
         if new_value == '':
-            new_value = current_value
-            value_is_valid = True
+            if current_value is not None:
+                new_value = current_value
+                value_is_valid = True
         else:
             value_is_valid = check_new_value(new_value, definition)
-
-    print()
     def_type = type(definition[0])
     return def_type(new_value)
 
@@ -71,11 +69,7 @@ def check_new_value(new_value: str, definition) -> bool:
     :return: true if valid, false if not
     """
 
-    if type(definition) is range:
-        definition = list(definition)
-
-    if definition == "custom":
-        return True
+    
 
     definitiontype = type(definition[0])
 
@@ -84,67 +78,36 @@ def check_new_value(new_value: str, definition) -> bool:
     except:
         print("{} could not be converted to a {}. Are you sure it is in the right format?".format(new_value,definitiontype))
 
-    if type(definition) is list:
-        if new_value in definition:
-            return True
-        else:
-            # print(new_value, definition)
-            print(' {} no valid option'.format(new_value))
-            # print(type(definition[0]))
-            return False
 
-    elif definition is bool:
-        if new_value == "true" or new_value == "false":
-            return True
-        else:
-            return False
-
-    elif definition is int:
-        try:
-            int(new_value)
-            return True
-        except ValueError:
-            return False
-
-    elif definition is float:
-        try:
-            float(new_value)
-            return True
-        except ValueError:
-            return False
-
-    elif definition is str:
+    if new_value in definition:
         return True
-
     else:
-        # We could not validate the type or values so we assume it is incorrect
+        # print(new_value, definition)
+        print(' {} no valid option'.format(new_value))
         return False
+
 
 
 def main():
     config = provide_config(SETTING_PATH)
-
-    # every option for a config-value is listed here
-    '''
-    options = {
-        #'playernumber': {'package': 'bla', 'file': 'doc', 'parameter': 'playernumber', 'options': ['1', '2', '3', '4']},
-        'bot_id': {'package': 'humanoid_league_game_controller', 'file': '/config/game_controller.yaml', 'options': ['1', '2', '3', '4', '5']},
-        'team_id': {'package': 'humanoid_league_game_controller', 'file': '/config/game_controller.yaml', 'options': ['1', '2', '3', '4', '5']}
-    }
-    '''
-    to_be_set = provide_config(TO_BE_SET_PATH)
-
-    for key, value in to_be_set.items():
-        if key in config.keys():
-            config[key] = ask_for_config_option(key, to_be_set[key]['options'], config[key],
-                                                to_be_set[key]['explanation'])
+    #config = config['parameter_blackboard']['ros_parameters']
+    ros_parameters = config['parameter_blackboard']['ros_parameters']
+    if ros_parameters is None:
+        ros_parameters = {}
+        config['parameter_blackboard']['ros_parameters'] = ros_parameters
+        
+    options = provide_config(OPTIONS_PATH)
+    
+    for key in options.keys():
+        if key in ros_parameters.keys():
+            ros_parameters[key] = ask_for_config_option(key, options[key]['options'], ros_parameters[key],
+                                                options[key]['explanation'])
+            print("typ am ende: ", ros_parameters[key])
         else:
-            config[key] = to_be_set[key].copy()
-            del config[key]['options']
-            del config[key]['explanation']
-            del config[key]['file']
-            del config[key]['package']
-            config[key] = ask_for_config_option(key, to_be_set[key]['options'], to_be_set[key]['explanation'])
+            value = ask_for_config_option(key, options[key]['options'], None,
+                                                options[key]['explanation'])
+            ros_parameters.update({key : value})
+
 
     with open(SETTING_PATH, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)

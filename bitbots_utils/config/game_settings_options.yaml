@@ -5,27 +5,17 @@
 # for settings which are not coverable by ranges or lists you can type "custom"
 # This will accept any input and write it to the game_settings.yaml
 bot_id:
-  file: /config/game_controller.yaml
-  package: humanoid_league_game_controller
-  options: !!python/object/apply:builtins.range [1, 7, 1]
+  options: [1, 2, 3, 4, 5, 6]
   explanation: ""
 team_id:
-  file: /config/game_controller.yaml
-  package: humanoid_league_game_controller
   options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
   explanation: ""
 team_color:
-  package: humanoid_league_team_communication
-  file: /config/team_communication_config.yaml
   options: [0, 1]
   explanation: "0 is blue, 1 is red"
 role:
-  package: bitbots_body_behavior
-  file: /config/body_behavior.yaml
   options: ['goalie', 'offense', 'defense', 'penalty']
   explanation: ""
-behavior/body/role_positions/pos_number:
-  package: bitbots_body_behavior
-  file: /config/body_behavior.yaml
+position_number:
   options: [0, 1, 2]
   explanation: "0 = center, 1 = left, 2 = right"
