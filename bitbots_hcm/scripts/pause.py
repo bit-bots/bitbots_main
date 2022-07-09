@@ -61,5 +61,5 @@ class Pause(object):
         self.pause_publisher.publish(Bool(data=state))
 
 
-def main():
+if __name__ == '__main__':
     pause = Pause()
