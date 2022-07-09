@@ -4,9 +4,19 @@
     <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
-    <include file="$(find-pkg-share bitbots_quintic_walk)/launch/test.launch" >
+
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="$(var sim)"/>
-        <arg name="viz" value="$(var viz)"/>
+    </include>
+   
+    <group if="$(var viz)">
+        <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--walking"/>
+        <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_nav2)/config/pathplanning.rviz"/>
+        <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+    </group>
+
+    <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch" >
+        <arg name="sim" value="$(var sim)"/>
     </include>
     <node pkg="tf2_ros" exec="static_transform_publisher" name="static_map2odom_tf" args="--x -0.0 --y -0.0 --z 0.0 --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id map --child-frame-id odom" />
 </launch>
