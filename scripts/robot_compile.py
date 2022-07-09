@@ -198,7 +198,6 @@ def parse_targets(targets):
     :type targets: str
     :rtype: list
     """
-    print(targets)
     res = []
 
     for target in targets.split(","):
