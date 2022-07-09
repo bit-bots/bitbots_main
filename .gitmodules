@@ -4,9 +4,6 @@
 [submodule "lib/dynamixel-workbench"]
 	path = lib/dynamixel-workbench
 	url = ../../bit-bots/dynamixel-workbench.git
-[submodule "lib/dynamixel-workbench-msgs"]
-	path = lib/dynamixel-workbench-msgs
-	url = ../../ROBOTIS-GIT/dynamixel-workbench-msgs.git
 [submodule "dynamic_stack_decider"]
 	path = dynamic_stack_decider
 	url = ../../bit-bots/dynamic_stack_decider.git
@@ -58,14 +55,6 @@
 [submodule "bitbots_world_model"]
 	path = bitbots_world_model
 	url = ../../bit-bots/bitbots_world_model.git
-[submodule "lib/spatio_temporal_voxel_layer"]
-	path = lib/spatio_temporal_voxel_layer
-	url = ../../bit-bots/spatio_temporal_voxel_layer
-	branch = melodic-devel
-[submodule "lib/navigation2"]
-	path = lib/navigation2
-	url = ../../ros-planning/navigation2.git
-	branch = main
 [submodule "lib/robot_controllers"]
 	path = lib/robot_controllers
 	url = ../../fetchrobotics/robot_controllers.git
