@@ -7,20 +7,20 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(rostest REQUIRED)
+find_package(ament_cmake_gtest REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(bitbots_docs REQUIRED)
 
-set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS} ${rostest_INCLUDE_DIRS}
+set(INCLUDE_DIRS include ${ament_cmake_INCLUDE_DIRS} ${ament_cmake_gtest_INCLUDE_DIRS}
   ${rclcpp_INCLUDE_DIRS} ${bitbots_docs_INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
 
-set(LIBRARY_DIRS ${ament_cmake_LIBRARY_DIRS} ${rostest_LIBRARY_DIRS}
+set(LIBRARY_DIRS ${ament_cmake_LIBRARY_DIRS} ${ament_cmake_gtest_LIBRARY_DIRS}
   ${rclcpp_LIBRARY_DIRS} ${bitbots_docs_LIBRARY_DIRS})
 
 link_directories(${LIBRARY_DIRS})
 
-set(LIBS ${ament_cmake_LIBRARIES} ${rostest_LIBRARIES} ${rclcpp_LIBRARIES}
+set(LIBS ${ament_cmake_LIBRARIES} ${ament_cmake_gtest_LIBRARIES} ${rclcpp_LIBRARIES}
   ${bitbots_docs_LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -50,7 +50,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(ament_cmake)
-ament_export_dependencies(rostest)
+ament_export_dependencies(ament_cmake_gtest)
 ament_export_dependencies(rclcpp)
 ament_export_dependencies(bitbots_docs)
 ament_export_include_directories(${INCLUDE_DIRS})
