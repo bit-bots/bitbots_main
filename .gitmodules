@@ -90,10 +90,6 @@
 	path = lib/bio_ik_msgs
 	branch = master
 	url = ../../bit-bots/bio_ik_msgs.git
-[submodule "lib/vision_msgs"]
-	path = lib/vision_msgs
-	url = ../../ros-perception/vision_msgs.git
-	branch = ros2
 [submodule "lib/pylon-ros-camera"]
 	path = lib/pylon-ros-camera
 	url = ../../basler/pylon-ros-camera.git
