@@ -13,9 +13,9 @@
 #include <tf2/utils.h>
 #include <nav_msgs/msg/path.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/msg/pose_stamped.h>
+#include <geometry_msgs/msg/twist.h>
+#include <geometry_msgs/msg/point.h>
 #include <string>
 #include <angles/angles.h>
 #include <nav2_costmap_2d/costmap_2d.hpp>
