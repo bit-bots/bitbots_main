@@ -20,6 +20,8 @@ bitbots_vision:
     ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
     ROS_gamestate_topic: 'gamestate'  # ROS topic of the GameState message
 
+    use_game_settings: False  # Uses game settings such as the own team color
+
     yolo_darknet_model_path: '2021_04_22_jonas_torso21_tiny'  # Name of the yolo model
     yolo_openvino_model_path: '2020_11_12_flo_yolo_openvino'  # Name of the yolo model
     yolo_nms_threshold: 0.4  # Non maximum suppression threshold

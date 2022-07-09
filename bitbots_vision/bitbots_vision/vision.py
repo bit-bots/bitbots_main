@@ -11,7 +11,6 @@ from copy import deepcopy
 from cv_bridge import CvBridge
 from threading import Thread, Lock
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import PolygonStamped
 from humanoid_league_msgs.msg import Audio, GameState
 from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, MarkingArray
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
@@ -22,7 +21,7 @@ from .params import gen
 logger = logging.get_logger('bitbots_vision')
 
 try:
-    from profilehooks import profile, timecall # Profilehooks profiles certain functions if you add the @profile or @timecall decorator.
+    from profilehooks import profile, timecall  # Profilehooks profiles certain functions if you add the @profile or @timecall decorator.
 except ImportError:
     profile = lambda x: x
     logger.info("No Profiling avalabile")
@@ -35,6 +34,7 @@ class Vision(Node):
     This class defines the whole image processing pipeline, which uses the modules from the `vision_modules`.
     It also handles the dynamic reconfiguration of the bitbots_vision.
     """
+
     def __init__(self):
         # type () -> None
         """
@@ -69,7 +69,6 @@ class Vision(Node):
 
         # Subscriber placeholder
         self._sub_image = None
-        self._sub_gamestate = None
 
         # Debug image drawer placeholder
         self._debug_image_creator = None
@@ -97,8 +96,10 @@ class Vision(Node):
         # Add general params
         ros_utils.set_general_parameters(["caching"])
 
-        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
+        # Initially update team color
+        ros_utils.update_team_color(self)
 
+        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
     def _dynamic_reconfigure_callback(self, params):
         """
@@ -121,6 +122,13 @@ class Vision(Node):
         :param level: The level is a definable int in the Vision.cfg file. All changed params are or ed together by dynamic reconfigure.
         """
         self._register_or_update_all_publishers(config)
+
+        # Update team color
+        if ros_utils.config_param_change(self._config, config, "use_game_settings"):
+            if config['use_game_settings']:
+                ros_utils.update_team_color(self)
+            else:
+                ros_utils.reset_own_team_color()
 
         # Set max number of balls
         self._max_balls = config['ball_candidate_max_count']
@@ -167,7 +175,8 @@ class Vision(Node):
         # Set the white color detector
         if ros_utils.config_param_change(self._config, config, r'^white_color_detector_'):
             if config['white_color_detector_use_color_lookup_table']:
-                self._white_color_detector = color.PixelListColorDetector(config, self._package_path, 'white_color_detector_color_lookup_table_path')
+                self._white_color_detector = color.PixelListColorDetector(
+                    config, self._package_path, 'white_color_detector_color_lookup_table_path')
             else:
                 self._white_color_detector = color.HsvSpaceColorDetector(config, "white")
 
@@ -181,14 +190,13 @@ class Vision(Node):
 
         # Check if params changed
         if ros_utils.config_param_change(self._config, config,
-                r'^field_color_detector_') and not config['field_color_detector_use_hsv']:
+                                         r'^field_color_detector_') and not config['field_color_detector_use_hsv']:
             # Set the static field color detector
-            self._field_color_detector = color.PixelListColorDetector(
-                config,
-                self._package_path)
+            self._field_color_detector = color.PixelListColorDetector(config, self._package_path)
 
         # Check if params changed
-        if ros_utils.config_param_change(self._config, config,
+        if ros_utils.config_param_change(
+                self._config, config,
                 r'^field_color_detector_|field_color_detector_use_hsv') and config['field_color_detector_use_hsv']:
             # Override field color hsv detector
             self._field_color_detector = color.HsvSpaceColorDetector(config, "field")
@@ -198,30 +206,22 @@ class Vision(Node):
             config['field_boundary_detector_search_method'])
 
         # Set the field boundary detector
-        self._field_boundary_detector = field_boundary_detector_class(
-            config,
-            self._field_color_detector)
+        self._field_boundary_detector = field_boundary_detector_class(config, self._field_color_detector)
 
         # Set the line detector
-        self._line_detector = lines.LineDetector(
-            config,
-            self._white_color_detector,
-            self._field_color_detector,
-            self._field_boundary_detector)
+        self._line_detector = lines.LineDetector(config, self._white_color_detector, self._field_color_detector,
+                                                 self._field_boundary_detector)
 
         # Set the obstacle detector
-        self._obstacle_detector = obstacle.ObstacleDetector(
-            config,
-            self._field_boundary_detector)
+        self._obstacle_detector = obstacle.ObstacleDetector(config, self._field_boundary_detector)
 
         # If dummy ball detection is activated, set the dummy ballfinder as ball detector
         if config['neural_network_type'] == 'dummy':
             self._ball_detector = candidate.DummyCandidateFinder()
             # If we don't use YOLO set the conventional goalpost detector.
-            self._goalpost_detector = obstacle.ColorObstacleDetector(
-                self._obstacle_detector,
-                self._white_color_detector,
-                threshold=config['obstacle_color_threshold'])
+            self._goalpost_detector = obstacle.ColorObstacleDetector(self._obstacle_detector,
+                                                                     self._white_color_detector,
+                                                                     threshold=config['obstacle_color_threshold'])
 
         # Check if the yolo ball/goalpost detector is activated and if the non tpu version is used
         if config['neural_network_type'] in ['yolo_opencv', 'yolo_darknet', 'yolo_pytorch']:
@@ -258,7 +258,8 @@ class Vision(Node):
         if config['neural_network_type'] in ['yolo_ncs2']:
             if ros_utils.config_param_change(self._config, config, ['neural_network_type', 'yolo_openvino_model_path']):
                 # Build absolute model path
-                yolo_openvino_model_path = os.path.join(self._package_path, 'models', config['yolo_openvino_model_path'])
+                yolo_openvino_model_path = os.path.join(self._package_path, 'models',
+                                                        config['yolo_openvino_model_path'])
                 # Check if it exists
                 if not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.bin")) \
                         or not os.path.exists(os.path.join(yolo_openvino_model_path, "yolo.xml")):
@@ -278,11 +279,10 @@ class Vision(Node):
                 self._obstacle_detector = yolo_handler.YoloRobotDetector(config, self._yolo)
 
         # Set the other obstacle detectors
-        self._red_obstacle_detector = obstacle.ColorObstacleDetector(
-            self._obstacle_detector,
-            self._red_color_detector,
-            threshold=config['obstacle_color_threshold'],
-            subtractors=[self._goalpost_detector])
+        self._red_obstacle_detector = obstacle.ColorObstacleDetector(self._obstacle_detector,
+                                                                     self._red_color_detector,
+                                                                     threshold=config['obstacle_color_threshold'],
+                                                                     subtractors=[self._goalpost_detector])
         self._blue_obstacle_detector = obstacle.ColorObstacleDetector(
             self._obstacle_detector,
             self._blue_color_detector,
@@ -318,18 +318,37 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        self._pub_audio = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_audio, 'ROS_audio_msg_topic', Audio)  # queue_size=10
-        self._pub_balls = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_balls, 'ROS_ball_msg_topic', BallArray)
-        self._pub_lines = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_lines, 'ROS_line_msg_topic', MarkingArray)  # queue_size=5
-        self._pub_line_mask = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_line_mask, 'ROS_line_mask_msg_topic', Image)
-        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle, 'ROS_obstacle_msg_topic', RobotArray)  # queue_size=3
-        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts, 'ROS_goal_posts_msg_topic', GoalpostArray)  # queue_size=3
-        self._pub_debug_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_debug_image, 'ROS_debug_image_msg_topic', Image)
-        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_convex_field_boundary, 'ROS_field_boundary_msg_topic', FieldBoundary)
-        self._pub_white_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_white_mask_image, 'ROS_white_HSV_mask_image_msg_topic', Image)
-        self._pub_red_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_red_mask_image, 'ROS_red_HSV_mask_image_msg_topic', Image)
-        self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_blue_mask_image, 'ROS_blue_HSV_mask_image_msg_topic', Image)
-        self._pub_field_mask_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_field_mask_image, 'ROS_field_mask_image_msg_topic', Image)
+        self._pub_audio = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_audio,
+                                                               'ROS_audio_msg_topic', Audio)  # queue_size=10
+        self._pub_balls = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_balls,
+                                                               'ROS_ball_msg_topic', BallArray)
+        self._pub_lines = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_lines,
+                                                               'ROS_line_msg_topic', MarkingArray)  # queue_size=5
+        self._pub_line_mask = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_line_mask,
+                                                                   'ROS_line_mask_msg_topic', Image)
+        self._pub_obstacle = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_obstacle,
+                                                                  'ROS_obstacle_msg_topic', RobotArray)  # queue_size=3
+        self._pub_goal_posts = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_goal_posts,
+                                                                    'ROS_goal_posts_msg_topic',
+                                                                    GoalpostArray)  # queue_size=3
+        self._pub_debug_image = ros_utils.create_or_update_publisher(self, self._config, config, self._pub_debug_image,
+                                                                     'ROS_debug_image_msg_topic', Image)
+        self._pub_convex_field_boundary = ros_utils.create_or_update_publisher(self, self._config, config,
+                                                                               self._pub_convex_field_boundary,
+                                                                               'ROS_field_boundary_msg_topic',
+                                                                               FieldBoundary)
+        self._pub_white_mask_image = ros_utils.create_or_update_publisher(self, self._config, config,
+                                                                          self._pub_white_mask_image,
+                                                                          'ROS_white_HSV_mask_image_msg_topic', Image)
+        self._pub_red_mask_image = ros_utils.create_or_update_publisher(self, self._config, config,
+                                                                        self._pub_red_mask_image,
+                                                                        'ROS_red_HSV_mask_image_msg_topic', Image)
+        self._pub_blue_mask_image = ros_utils.create_or_update_publisher(self, self._config, config,
+                                                                         self._pub_blue_mask_image,
+                                                                         'ROS_blue_HSV_mask_image_msg_topic', Image)
+        self._pub_field_mask_image = ros_utils.create_or_update_publisher(self, self._config, config,
+                                                                          self._pub_field_mask_image,
+                                                                          'ROS_field_mask_image_msg_topic', Image)
 
     def _register_or_update_all_subscribers(self, config):
         # type: (dict) -> None
@@ -339,8 +358,13 @@ class Vision(Node):
         :param dict config: new, incoming _config
         :return: None
         """
-        self._sub_image = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_image, 'ROS_img_msg_topic', Image, callback=self._image_callback)
-        self._sub_gamestate = ros_utils.create_or_update_subscriber(self, self._config, config, self._sub_gamestate, 'ROS_gamestate_topic', GameState, callback=ros_utils.gamestate_callback)
+        self._sub_image = ros_utils.create_or_update_subscriber(self,
+                                                                self._config,
+                                                                config,
+                                                                self._sub_image,
+                                                                'ROS_img_msg_topic',
+                                                                Image,
+                                                                callback=self._image_callback)
 
     def _image_callback(self, image_msg):
         # type: (Image) -> None
@@ -355,7 +379,8 @@ class Vision(Node):
         # Still accepts very old images, that are most likely from ROS bags.
         image_age = self.get_clock().now() - time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
-            logger.warning(f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_msg().sec} sec)")
+            logger.warning(
+                f"Vision: Dropped incoming Image-message, because its too old! ({image_age.to_msg().sec} sec)")
             return
 
         if self._transfer_image_msg_mutex.locked():
@@ -385,7 +410,7 @@ class Vision(Node):
             self._handle_forgotten_camera_cap(image)
 
         # Instances that should be notified with the new image
-        internal_image_subscribers =[
+        internal_image_subscribers = [
             self._field_color_detector,
             self._white_color_detector,
             self._red_color_detector,
@@ -435,9 +460,7 @@ class Vision(Node):
             self._field_boundary_detector.candidates_under_convex_field_boundary(
                 all_balls,
                 self._ball_candidate_y_offset)
-        top_balls = candidate.Candidate.rating_threshold(
-            balls_under_field_boundary,
-            self._ball_candidate_threshold)
+        top_balls = candidate.Candidate.rating_threshold(balls_under_field_boundary, self._ball_candidate_threshold)
         # Convert ball cancidate list to ball message list
         list_of_balls = [ros_utils.build_ball_msg(top_ball) for top_ball in top_balls]
         # Create balls msg with the list of balls
@@ -446,18 +469,11 @@ class Vision(Node):
         self._pub_balls.publish(balls_msg)
 
         # Debug draw all ball candidates
-        self._debug_image_creator.draw_ball_candidates(
-            all_balls,
-            (0, 0, 255))
+        self._debug_image_creator.draw_ball_candidates(all_balls, (0, 0, 255))
         # Debug draw possible ball candidates under the field boundary
-        self._debug_image_creator.draw_ball_candidates(
-            balls_under_field_boundary,
-            (0, 255, 255))
+        self._debug_image_creator.draw_ball_candidates(balls_under_field_boundary, (0, 255, 255))
         # Debug draw top ball candidate
-        self._debug_image_creator.draw_ball_candidates(
-            top_balls,
-            (0, 255, 0),
-            thickness=2)
+        self._debug_image_creator.draw_ball_candidates(top_balls, (0, 255, 0), thickness=2)
 
         #############
         # Obstacles #
@@ -466,11 +482,15 @@ class Vision(Node):
         # Init list for obstacle msgs
         list_of_obstacle_msgs = []
         # Add red obstacles
-        list_of_obstacle_msgs.extend(
-            [ros_utils.build_robot_msg(obstacle, GameState.RED) for obstacle in self._red_obstacle_detector.get_candidates()])
+        list_of_obstacle_msgs.extend([
+            ros_utils.build_robot_msg(obstacle, GameState.RED)
+            for obstacle in self._red_obstacle_detector.get_candidates()
+        ])
         # Add blue obstacles
-        list_of_obstacle_msgs.extend(
-            [ros_utils.build_robot_msg(obstacle, GameState.BLUE) for obstacle in self._blue_obstacle_detector.get_candidates()])
+        list_of_obstacle_msgs.extend([
+            ros_utils.build_robot_msg(obstacle, GameState.BLUE)
+            for obstacle in self._blue_obstacle_detector.get_candidates()
+        ])
         # Add Robots from unknown team
         list_of_obstacle_msgs.extend(
             [ros_utils.build_robot_msg(obstacle) for obstacle in self._unknown_obstacle_detector.get_candidates()])
@@ -481,20 +501,14 @@ class Vision(Node):
         self._pub_obstacle.publish(obstacles_msg)
 
         # Debug draw unknown obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._unknown_obstacle_detector.get_candidates(),
-            (0, 0, 0),
-            thickness=3)
+        self._debug_image_creator.draw_obstacle_candidates(self._unknown_obstacle_detector.get_candidates(), (0, 0, 0),
+                                                           thickness=3)
         # Debug draw red obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._red_obstacle_detector.get_candidates(),
-            (0, 0, 255),
-            thickness=3)
+        self._debug_image_creator.draw_obstacle_candidates(self._red_obstacle_detector.get_candidates(), (0, 0, 255),
+                                                           thickness=3)
         # Debug draw blue obstacles
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._blue_obstacle_detector.get_candidates(),
-            (255, 0, 0),
-            thickness=3)
+        self._debug_image_creator.draw_obstacle_candidates(self._blue_obstacle_detector.get_candidates(), (255, 0, 0),
+                                                           thickness=3)
 
         ########
         # Goal #
@@ -502,8 +516,7 @@ class Vision(Node):
 
         # Get all goalposts under field boundary
         goal_posts = self._field_boundary_detector.candidates_under_convex_field_boundary(
-            self._goalpost_detector.get_candidates(),
-            self._goal_post_field_boundary_y_offset)
+            self._goalpost_detector.get_candidates(), self._goal_post_field_boundary_y_offset)
 
         # Get goalpost msgs and add them to the detected goal posts list
         goal_post_msgs = [ros_utils.build_goal_post_msg(goal_post) for goal_post in goal_posts]
@@ -513,15 +526,10 @@ class Vision(Node):
         self._pub_goal_posts.publish(goal_posts_msg)
 
         # Debug draw all goal posts
-        self._debug_image_creator.draw_obstacle_candidates(
-            self._goalpost_detector.get_candidates(),
-            (180, 180, 180),
-            thickness=3)
+        self._debug_image_creator.draw_obstacle_candidates(self._goalpost_detector.get_candidates(), (180, 180, 180),
+                                                           thickness=3)
         # Debug draw goal posts which start in the field
-        self._debug_image_creator.draw_obstacle_candidates(
-            goal_posts,
-            (255, 255, 255),
-            thickness=3)
+        self._debug_image_creator.draw_obstacle_candidates(goal_posts, (255, 255, 255), thickness=3)
 
         #########
         # Lines #
@@ -537,9 +545,7 @@ class Vision(Node):
             self._pub_lines.publish(line_msg)
 
             # Draw debug line points
-            self._debug_image_creator.draw_points(
-                line_points,
-                (0, 0, 255))
+            self._debug_image_creator.draw_points(line_points, (0, 0, 255))
 
         if self._use_line_mask:
             # Define detections (Balls, Goal Posts) that are excluded from the line mask
@@ -552,10 +558,7 @@ class Vision(Node):
             self._pub_line_mask.publish(line_mask_message)
 
             # Draw debug line mask
-            self._debug_image_creator.draw_mask(
-                line_mask,
-                color=(255, 0, 0),
-                opacity=0.8)
+            self._debug_image_creator.draw_mask(line_mask, color=(255, 0, 0), opacity=0.8)
 
         ##################
         # Field boundary #
@@ -569,13 +572,10 @@ class Vision(Node):
         self._pub_convex_field_boundary.publish(convex_field_boundary_msg)
 
         # Debug draw convex field boundary
-        self._debug_image_creator.draw_field_boundary(
-            convex_field_boundary,
-            (0, 255, 255))
+        self._debug_image_creator.draw_field_boundary(convex_field_boundary, (0, 255, 255))
         # Debug draw field boundary
-        self._debug_image_creator.draw_field_boundary(
-            self._field_boundary_detector.get_field_boundary_points(),
-            (0, 0, 255))
+        self._debug_image_creator.draw_field_boundary(self._field_boundary_detector.get_field_boundary_points(),
+                                                      (0, 0, 255))
 
         #########
         # Masks #
@@ -589,20 +589,16 @@ class Vision(Node):
             blue_mask = self._blue_color_detector.get_mask_image()
 
             # Publish mask images
-            self._pub_white_mask_image.publish(
-                ros_utils.build_image_msg(image_msg.header, white_mask, '8UC1'))
-            self._pub_red_mask_image.publish(
-                ros_utils.build_image_msg(image_msg.header, red_mask, '8UC1'))
-            self._pub_blue_mask_image.publish(
-                ros_utils.build_image_msg(image_msg.header, blue_mask, '8UC1'))
+            self._pub_white_mask_image.publish(ros_utils.build_image_msg(image_msg.header, white_mask, '8UC1'))
+            self._pub_red_mask_image.publish(ros_utils.build_image_msg(image_msg.header, red_mask, '8UC1'))
+            self._pub_blue_mask_image.publish(ros_utils.build_image_msg(image_msg.header, blue_mask, '8UC1'))
 
         # Check, if field mask image should be published
         if self._publish_field_mask_image:
             # Mask image
             field_mask = self._field_color_detector.get_mask_image()
             # Publish mask image
-            self._pub_field_mask_image.publish(
-                ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
+            self._pub_field_mask_image.publish(ros_utils.build_image_msg(image_msg.header, field_mask, '8UC1'))
 
         #########
         # Debug #
@@ -612,10 +608,7 @@ class Vision(Node):
         if self._debug_image_creator.active:
             # publish debug image
             self._pub_debug_image.publish(
-                ros_utils.build_image_msg(
-                    image_msg.header,
-                    self._debug_image_creator.get_image(),
-                    'bgr8'))
+                ros_utils.build_image_msg(image_msg.header, self._debug_image_creator.get_image(), 'bgr8'))
 
     def _conventional_precalculation(self):
         """

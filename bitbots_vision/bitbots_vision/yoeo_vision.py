@@ -81,6 +81,13 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
+        # Update team color
+        if ros_utils.config_param_change(self._config, new_config, "use_game_settings"):
+            if new_config['use_game_settings']:
+                ros_utils.update_team_color(self)
+            else:
+                ros_utils.reset_own_team_color()
+
         yoeo_framework = new_config["yoeo_framework"]
         model_path = self._get_model_path(new_config)
 
@@ -167,15 +174,13 @@ class YOEOVision(Node):
             vision_component.configure(new_config, self._yoeo_handler)
 
     def _register_subscribers(self, config: Dict) -> None:
-        self._sub_image = ros_utils.create_or_update_subscriber(
-            self,
-            self._config,
-            config,
-            self._sub_image,
-            'ROS_img_msg_topic',
-            Image,
-            callback=self._image_callback
-        )
+        self._sub_image = ros_utils.create_or_update_subscriber(self,
+                                                                self._config,
+                                                                config,
+                                                                self._sub_image,
+                                                                'ROS_img_msg_topic',
+                                                                Image,
+                                                                callback=self._image_callback)
 
     def _image_callback(self, image_msg: Image) -> None:
         """

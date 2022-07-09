@@ -88,6 +88,8 @@ gen.add("ROS_blue_HSV_mask_image_msg_topic", str, description="ROS topic of the 
 gen.add("ROS_field_mask_image_msg_topic", str, description="ROS topic of the field mask debug image message")
 gen.add("ROS_gamestate_topic", str, description="ROS topic of the GameState message")
 
+gen.add("use_game_settings", bool, description="uses game settings such as the own team color")
+
 gen.add("neural_network_type", str, description="The neural network type that should be used (yolo_opencv, yolo_darknet, yolo_ncs2, yolo_pytorch or dummy)")
 
 gen.add("yolo_darknet_model_path", str, description="Name of the yolo model")

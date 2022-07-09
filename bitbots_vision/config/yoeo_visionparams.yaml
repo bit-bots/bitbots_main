@@ -23,6 +23,8 @@ bitbots_vision:
     ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
     ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
 
+    use_game_settings: False  # Uses game settings such as the own team color
+
     yoeo_model_path: '2021_12_06_flo_torso21_yoeo_7'
     yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
