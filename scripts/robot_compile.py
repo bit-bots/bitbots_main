@@ -387,7 +387,7 @@ def build(target, package='', pre_clean=False):
     if package and pre_clean:
         print_err("Cleaning a specific package is not supported! Not cleaning.")
     elif pre_clean:
-        cmd_clean = 'rm -rf build instal'
+        cmd_clean = 'rm -rf build install'
     else:
         cmd_clean = ''
 
@@ -396,7 +396,7 @@ def build(target, package='', pre_clean=False):
                "source /opt/ros/rolling/setup.zsh;"
                "source install/setup.zsh;"
                "{cmd_clean}"
-               "colcon build {package} --continue-on-error {quiet_option} || exit 1;"
+               "colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
                "sync;"
                ).format(**{
         "workspace": target.workspace,
