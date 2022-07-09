@@ -1,45 +1,64 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bitbots_local_planner)
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -fmax-errors=1)
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(catkin REQUIRED
-  COMPONENTS
+
+find_package(ament_cmake REQUIRED)
+find_package(nav2_common REQUIRED)
+find_package(angles REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav2_core REQUIRED)
+find_package(nav2_util REQUIRED)
+find_package(nav_2d_utils REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(backward_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+
+nav2_package()
+
+include_directories(
+  include
+)
+
+set(dependencies
   angles
-  cmake_modules
-  costmap_2d
-  dynamic_reconfigure
+  nav2_costmap_2d
   geometry_msgs
-  base_local_planner
-  nav_core
+  nav2_core
+  nav2_util
+  nav_2d_utils
   nav_msgs
   pluginlib
-  roscpp
-  tf2
   tf2_ros
   tf2_geometry_msgs
 )
 
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+add_library(bitbots_local_planner SHARED
+src/bitbots_local_planner.cpp
 )
 
-# dynamic reconfigure
-generate_dynamic_reconfigure_options(
-  cfg/BBPlanner.cfg
+ament_target_dependencies(bitbots_local_planner
+  ${dependencies}
 )
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES bitbots_local_planner
-  CATKIN_DEPENDS dynamic_reconfigure pluginlib roscpp
+install(TARGETS bitbots_local_planner
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
-add_library(bitbots_local_planner
-  src/bitbots_local_planner.cpp
-  src/transform_global_plan.cpp
+install(DIRECTORY include/
+  DESTINATION include/
 )
 
-target_link_libraries(bitbots_local_planner ${catkin_LIBRARIES})
-add_dependencies(bitbots_local_planner bitbots_local_planner_gencfg)
+ament_export_include_directories(include)
+ament_export_libraries(bitbots_local_planner)
+ament_export_dependencies(${dependencies})
+
+pluginlib_export_plugin_description_file(nav2_core blp_plugin.xml)
+
+ament_package()
