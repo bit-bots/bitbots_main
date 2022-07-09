@@ -88,5 +88,6 @@
 	url = ../../Flova/ipm.git
 	branch = soccer_ipm
 [submodule "lib/ros2_numpy"]
-	path = lib/ros2_numpy
+    path = lib/ros2_numpy
+    branch = rolling
 	url = ../../Box-Robotics/ros2_numpy.git
