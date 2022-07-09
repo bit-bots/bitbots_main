@@ -12,6 +12,7 @@ pip
 protobuf
 psutil
 pydot
+python-espeak
 pyopencl
 pytorchyolo
 rosdep
