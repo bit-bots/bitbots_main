@@ -400,7 +400,7 @@ class TeleopKeyboard(Node):
             twist.linear.x = float(0)
             twist.linear.y = float(0)
             twist.linear.z = float(0)
-            twist.angular.x = float(0)
+            twist.angular.x = float(-1)
             twist.angular.y = float(0)
             twist.angular.z = float(0)
             self.pub.publish(twist)
