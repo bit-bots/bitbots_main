@@ -12,37 +12,29 @@ import struct
 import tf2_ros
 import transforms3d
 from rclpy.time import Time
-from rclpy.timer import Timer
 from std_msgs.msg import Header, Float32
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, TwistWithCovarianceStamped
-from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy, \
-    PoseWithCertaintyStamped
+from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped, PoseStamped
+from bitbots_utils.utils import get_parameters_from_other_node
 
 import robocup_extension_pb2
 
 
 class HumanoidLeagueTeamCommunication:
+
     def __init__(self):
         rospack = rospkg.RosPack()
         self._package_path = rospack.get_path("humanoid_league_team_communication")
         self.socket = None
-        self.node = Node("team_comm")
-        self.node.get_logger().info("Initializing humanoid_league_team_communication...", logger_name="team_comm")
+        self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
+        self.logger = self.node.get_logger()
+        self.logger.info("Initializing humanoid_league_team_communication...", logger_name="team_comm")
 
-        self.node.declare_parameter('bot_id', 1)
-        self.node.declare_parameter('team_id', 1)
-        self.node.declare_parameter('map_frame', 'map')
-        self.node.declare_parameter('target_host', '127.0.0.1')
-        self.node.declare_parameter('target_port', 9999)
-        self.node.declare_parameter('receive_port', 9998)
-        self.node.declare_parameter('local_target_ports', [])
-        self.node.declare_parameter('rate', 1)
-        self.node.declare_parameter('life_time', 1)
-        self.node.declare_parameter('avg_walking_speed', 0.0)
-        self.player_id = self.node.get_parameter('bot_id').get_parameter_value().integer_value
-        self.team_id = self.node.get_parameter('team_id').get_parameter_value().integer_value
-        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
+        params_blackboard = get_parameters_from_other_node(self.node, "parameter_blackboard", ['bot_id', 'team_id'])
+        self.player_id = params_blackboard['bot_id']
+        self.team_id = params_blackboard['team_id']
+
         self.target_host = self.node.get_parameter('target_host').get_parameter_value().string_value
         self.local_target_ports = self.node.get_parameter(
             'local_target_ports').get_parameter_value().integer_array_value
@@ -53,6 +45,8 @@ class HumanoidLeagueTeamCommunication:
         self.avg_walking_speed = self.node.get_parameter('avg_walking_speed').get_parameter_value().double_value
 
         self.topics = self.node.get_parameters_by_prefix('topics')
+        self.frames = self.node.get_parameters_by_prefix('frames')
+        self.map_frame = self.frames['map_frame']
 
         if self.target_host == '127.0.0.1':
             # local mode, bind to port depending on bot id and team id
@@ -80,11 +74,9 @@ class HumanoidLeagueTeamCommunication:
         self.move_base_goal = None  # type: PoseStamped
 
         # Protobuf <-> ROS Message mappings
-        self.team_mapping = (
-            (robocup_extension_pb2.Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
-            (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
-            (robocup_extension_pb2.Team.RED, ObstacleRelative.ROBOT_MAGENTA)
-        )
+        self.team_mapping = ((robocup_extension_pb2.Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
+                             (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
+                             (robocup_extension_pb2.Team.RED, ObstacleRelative.ROBOT_MAGENTA))
         self.role_mapping = (
             (robocup_extension_pb2.Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
             (robocup_extension_pb2.Role.ROLE_IDLING, Strategy.ROLE_IDLING),
@@ -140,7 +132,7 @@ class HumanoidLeagueTeamCommunication:
         self.node.create_subscription(PoseStamped, self.topics['move_base_goal_topic'], self.move_base_goal_cb, 1)
 
     def get_connection(self):
-        self.node.get_logger().info(f"Binding to port {self.receive_port}", logger_name="team_comm")
+        self.logger.info(f"Binding to port {self.receive_port}", logger_name="team_comm")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.bind(('0.0.0.0', self.receive_port))
         return sock
@@ -148,7 +140,7 @@ class HumanoidLeagueTeamCommunication:
     def close_connection(self):
         if self.socket:
             self.socket.close()
-            self.node.get_logger().info("Connection closed.", logger_name="team_comm")
+            self.logger.info("Connection closed.", logger_name="team_comm")
 
     def receive_msg(self):
         return self.socket.recv(1024)
@@ -181,12 +173,13 @@ class HumanoidLeagueTeamCommunication:
             # Transform to map
             obstacle_pose = PoseStamped(msg.header, obstacle.pose.pose.pose)
             try:
-                obstacle_map = self.tf_buffer.transform(obstacle_pose, self.map_frame,
+                obstacle_map = self.tf_buffer.transform(obstacle_pose,
+                                                        self.map_frame,
                                                         timeout=Duration(nanoseconds=0.3e9))
                 obstacle.pose.pose.pose = obstacle_map.pose
                 self.obstacles.obstacles.append(obstacle)
             except tf2_ros.TransformException:
-                self.node.get_logger().error("TeamComm: Could not transform obstacle to map frame")
+                self.logger.error("TeamComm: Could not transform obstacle to map frame")
 
     def ball_cb(self, msg: PoseWithCovarianceStamped):
         # Transform to map
@@ -195,7 +188,7 @@ class HumanoidLeagueTeamCommunication:
             self.ball = self.tf_buffer.transform(ball_point, self.map_frame, timeout=Duration(nanoseconds=0.3e9))
             self.ball_covariance = msg.pose.covariance
         except tf2_ros.TransformException:
-            self.node.get_logger().error("TeamComm: Could not transform ball to map frame")
+            self.logger.error("TeamComm: Could not transform ball to map frame")
             self.ball = None
 
     def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
@@ -215,6 +208,7 @@ class HumanoidLeagueTeamCommunication:
                 self.handle_message(msg)
 
     def handle_message(self, msg):
+
         def covariance_proto_to_ros(fmat3, ros_covariance):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             ros_covariance[0] = fmat3.x.x
@@ -322,6 +316,7 @@ class HumanoidLeagueTeamCommunication:
         self.pub_team_data.publish(team_data)
 
     def send_message(self, event):
+
         def covariance_ros_to_proto(ros_covariance, fmat3):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             fmat3.x.x = ros_covariance[0]
@@ -394,8 +389,7 @@ class HumanoidLeagueTeamCommunication:
         if self.obstacles and self.node.get_clock().now() - self.obstacles.header.stamp < Duration(
                 seconds=self.lifetime):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
-                if obstacle.type in (ObstacleRelative.ROBOT_CYAN,
-                                     ObstacleRelative.ROBOT_MAGENTA,
+                if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
                                      ObstacleRelative.ROBOT_UNDEFINED):
                     robot = robocup_extension_pb2.Robot()
                     robot.player_id = obstacle.playerNumber
@@ -410,8 +404,8 @@ class HumanoidLeagueTeamCommunication:
 
         if (self.ball and self.node.get_clock().now() - self.ball.header.stamp < Duration(seconds=self.lifetime) and
                 self.pose and self.node.get_clock().now() - self.pose.header.stamp < Duration(seconds=self.lifetime)):
-            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x) ** 2 +
-                                      (self.ball.point.y - self.pose.pose.pose.position.y) ** 2)
+            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x)**2 +
+                                      (self.ball.point.y - self.pose.pose.pose.position.y)**2)
             message.time_to_ball = ball_distance / self.avg_walking_speed
 
         if self.strategy and self.node.get_clock().now() - self.strategy_time < Duration(seconds=self.lifetime):
@@ -431,7 +425,7 @@ class HumanoidLeagueTeamCommunication:
 
         msg = message.SerializeToString()
         for port in self.target_ports:
-            self.node.get_logger().debug(f'Sending to {port} on {self.target_host}', logger_name="team_comm")
+            self.logger.debug(f'Sending to {port} on {self.target_host}', logger_name="team_comm")
             self.socket.sendto(msg, (self.target_host, port))
 
 

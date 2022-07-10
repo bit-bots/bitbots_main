@@ -24,13 +24,17 @@ team_comm:
 
     # ROS Topics
     topics:
-      team_data_topic: 'team_data'
-      strategy_topic: 'strategy'
-      time_to_ball_topic: 'time_to_ball'
-      pose_topic: 'pose_with_covariance'
-      ball_topic: 'ball_position_relative_filtered'
-      ball_velocity_topic: 'ball_relative_movement'
-      obstacle_topic: 'obstacles_relative'
-      cmd_vel_topic: 'cmd_vel'
-      gamestate_topic: 'gamestate'
-      move_base_goal_topic: 'move_base/current_goal'
+      team_data_topic: "team_data"
+      strategy_topic: "strategy"
+      time_to_ball_topic: "time_to_ball"
+      pose_topic: "pose_with_covariance"
+      ball_topic: "ball_position_relative_filtered"
+      ball_velocity_topic: "ball_relative_movement"
+      obstacle_topic: "obstacles_relative"
+      cmd_vel_topic: "cmd_vel"
+      gamestate_topic: "gamestate"
+      move_base_goal_topic: "move_base/current_goal"
+
+    # TF Frames
+    frames:
+      map_frame: "map"
