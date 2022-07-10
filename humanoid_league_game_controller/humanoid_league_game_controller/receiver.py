@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-
-from __future__ import unicode_literals, print_function
-
 """
 This code provides a gamecontroller client for the RoboCup Humanoid League.
 
@@ -11,20 +8,20 @@ This code provides a gamecontroller client for the RoboCup Humanoid League.
 
 """
 
-
 import socket
 import time
 import rclpy
-from rclpy import logging
-from rclpy.node import Node
 
 from construct import Container, ConstError
-
-from humanoid_league_msgs.msg import GameState as GameStateMsg
+from rclpy import logging
+from rclpy.node import Node
 from std_msgs.msg import Bool
+from humanoid_league_msgs.msg import GameState as GameStateMsg
 from humanoid_league_game_controller.gamestate import GameState, ReturnData, GAME_CONTROLLER_RESPONSE_VERSION
+from bitbots_utils.utils import get_parameters_from_other_node
 
 logger = logging.get_logger('humanoid_league_game_controller')
+
 
 class GameStateReceiver(Node):
     """ This class puts up a simple UDP Server which receives the
@@ -38,10 +35,9 @@ class GameStateReceiver(Node):
     def __init__(self):
         super().__init__('game_controller', automatically_declare_parameters_from_overrides=True)
 
-        # Information that is used when sending the answer to the game controller
-        # TODO: Check if parameters can be renamed -> where do they come from
-        self.team_number = self.get_parameter('team_id').value
-        self.player_number = self.get_parameter('bot_id').value
+        params = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id', 'bot_id'])
+        self.team_number = params['team_id']
+        self.player_number = params['bot_id']
         logger.info('We are playing as player {} in team {}'.format(self.player_number, self.team_number))
 
         self.state_publisher = self.create_publisher(GameStateMsg, 'gamestate', 1)
@@ -119,7 +115,7 @@ class GameStateReceiver(Node):
                 self.time += 5  # Resend message every five seconds
                 logger.info("No GameController message received, allowing robot to move", throttle_duration_sec=5)
                 msg = GameStateMsg()
-                msg.game_state = 3 # PLAYING
+                msg.game_state = 3  # PLAYING
                 self.state_publisher.publish(msg)
                 msg2 = Bool()
                 msg2.data = False
@@ -129,12 +125,11 @@ class GameStateReceiver(Node):
         """ Sends a life sign to the game controller """
         return_message = 0 if self.man_penalize else 2
 
-        data = Container(
-            header=b"RGrt",
-            version=GAME_CONTROLLER_RESPONSE_VERSION,
-            team=self.team_number,
-            player=self.player_number,
-            message=return_message)
+        data = Container(header=b"RGrt",
+                         version=GAME_CONTROLLER_RESPONSE_VERSION,
+                         team=self.team_number,
+                         player=self.player_number,
+                         message=return_message)
         try:
             destination = peer[0], self.answer_port
             logger.debug('Sending answer to {} port {}'.format(destination[0], destination[1]))
@@ -155,8 +150,7 @@ class GameStateReceiver(Node):
         rival_team = self.select_team_by(is_not_own_team, state.teams)
 
         if not own_team or not rival_team:
-            logger.error('Team {} not playing, only {} and {}'.format(self.team_number,
-                                                                      state.teams[0].team_number,
+            logger.error('Team {} not playing, only {} and {}'.format(self.team_number, state.teams[0].team_number,
                                                                       state.teams[1].team_number))
             return
 
@@ -212,6 +206,7 @@ class GameStateReceiver(Node):
         selected = [team for team in teams if predicate(team.team_number)]
         return next(iter(selected), None)
 
+
 def main(args=None):
     rclpy.init(args=args)
     receiver = GameStateReceiver()
@@ -221,6 +216,7 @@ def main(args=None):
     except KeyboardInterrupt:
         receiver.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

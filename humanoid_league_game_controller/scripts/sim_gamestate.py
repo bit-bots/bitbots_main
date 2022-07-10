@@ -5,15 +5,21 @@
 # The script provides a simple mechanism to test robot behaviour in different game states,
 # when no game controller is running
 
-import rospy
-from humanoid_league_msgs.msg import GameState as GameStateMsg
-
 import sys
 import select
 import termios
 import tty
+import threading
 
-msg = """
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile
+from humanoid_league_msgs.msg import GameState as GameStateMsg
+from bitbots_utils.utils import get_parameters_from_other_node
+
+
+class SimGamestate(Node):
+    msg = """
 Setting the GameState by entering a number:
 
 0: GAMESTATE_INITAL=0
@@ -37,79 +43,96 @@ j: STATE_THROW_IN = 9
 
 p:     toggle penalized
 t:     toggle secondary state team
-m:     toggle secondary state mode     
+m:     toggle secondary state mode
 
 CTRL-C to quit
 
 
-
 """
 
+    def __init__(self):
+        super().__init__("SimGamestate")
+        self.logger = node.get_logger()
 
-def get_key():
-    tty.setraw(sys.stdin.fileno())
-    select.select([sys.stdin], [], [], 0)
-    return_key = sys.stdin.read(1)
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return return_key
+        params = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id', 'bot_id'])
+        self.team_id = params['team_id']
+
+        self.settings = termios.tcgetattr(sys.stdin)
+
+        namespaces = ['amy', 'rory', 'jack', 'donna', 'rose']
+        publishers = [
+            self.node.create_publisher(GameStateMsg, f'{n}/gamestate', QoSProfile(durability=1, depth=1))
+            for n in namespaces
+        ]
+
+        gameState = GameStateMsg()
+        gameState.header.stamp = self.node.get_clock().now().to_msg()
+
+        # Init secondary state team to our teamID
+        gameState.secondaryStateTeam = self.team_id
+        ourTeamID = gameState.secondaryStateTeam
+
+        try:
+            print(self.msg)
+            while True:
+                key = self.get_key()
+                if key == '\x03':
+                    break
+                elif key in ['0', '1', '2', '3', '4']:
+                    int_key = int(key)
+                    gameState.gameState = int_key
+                elif key == 'p':  # penalize / unpenalize
+                    gameState.penalized = not gameState.penalized
+                elif key in [chr(ord('a') + x) for x in range(10)]:
+                    gameState.secondaryState = ord(key) - ord('a')
+                elif key == 'm':
+                    gameState.secondaryStateMode = (gameState.secondaryStateMode + 1) % 3
+                elif key == 't':
+                    if gameState.secondaryStateTeam == self.team_id:
+                        gameState.secondaryStateTeam = self.team_id + 1
+                    else:
+                        gameState.secondaryStateTeam = self.team_id
+
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A")
+                for publisher in publishers:
+                    publisher.publish(gameState)
+
+                print(f"""Gamestate:            {gameState.gameState}
+Secondary State:      {gameState.secondaryState}
+Secondary State Team: {gameState.secondaryStateTeam}
+Penalized:            {gameState.penalized}
+""")
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            print()
+
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
+
+    def get_key(self):
+        tty.setraw(sys.stdin.fileno())
+        select.select([sys.stdin], [], [], 0)
+        return_key = sys.stdin.read(1)
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
+        return return_key
 
 
 if __name__ == "__main__":
-    settings = termios.tcgetattr(sys.stdin)
-
-    rospy.init_node('sim_gamestate')
-
-    namespaces = ['amy/', 'rory/', 'jack/', 'donna/', '']
-    publishers = [
-            rospy.Publisher(n + 'gamestate', GameStateMsg, queue_size=1, latch=True)
-            for n in namespaces
-    ]
-
-    gameState = GameStateMsg()
-    gameState.header.stamp = rospy.Time.now()
-
-    # init secondary state team to our teamID
-    gameState.secondaryStateTeam = rospy.get_param("team_id", 8)  # 8 is the default TeamID in the behavior
-    ourTeamID = gameState.secondaryStateTeam
+    rclpy.init(args=None)
+    node = SimGamestate()
 
     try:
-        print(msg)
-        while True:
-            key = get_key()
-            if key == '\x03':
-                break
-            elif key in ['0', '1', '2', '3', '4']:
-                int_key = int(key)
-                gameState.gameState = int_key
-            elif key == 'p':  # penalize / unpenalize
-                gameState.penalized = not gameState.penalized
-            elif key in [chr(ord('a')+x) for x in range(10)]:
-                gameState.secondaryState = ord(key) - ord('a')
-            elif key == 'm':
-                gameState.secondaryStateMode = (gameState.secondaryStateMode + 1) % 3
-            elif key == 't':
-                if gameState.secondaryStateTeam == ourTeamID:
-                    gameState.secondaryStateTeam = ourTeamID + 1
-                else:
-                    gameState.secondaryStateTeam = ourTeamID
+        # Necessary so that sleep in loop() is not blocking
+        thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+        thread.start()
+        node.loop()
+    except KeyboardInterrupt:
+        pass
 
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            sys.stdout.write("\x1b[A")
-            for publisher in publishers:
-                publisher.publish(gameState)
-
-            print("Gamestate:            " + str(
-                gameState.gameState) + "       \nSecondary State:      " + str(
-                gameState.secondaryState) + "       \nSecondary State Team: " + str(
-                gameState.secondaryStateTeam) + " \nPenalized:            " + str(gameState.penalized) +
-                  "            ")
-
-    except Exception as e:
-        print(e)
-
-    finally:
-        print("\n")
-
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+    node.destroy_node()
+    rclpy.shutdown()

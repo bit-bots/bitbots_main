@@ -23,7 +23,6 @@
   <depend>python3-construct</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_docs</depend>
-  <exec_depend>bitbots_bringup</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>
