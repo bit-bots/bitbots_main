@@ -19,6 +19,7 @@ $CheckPickup
             DO_NOTHING --> @DoNothing
             GAMESTATE_RECEIVED --> $CheckPenalized
                 YES --> @InitSide, @DoNothing
+                JUST_UNPENALIZED --> @InitSide, @DoNothing
                 NO --> $GameStateDecider
                     INITIAL --> @InitSide, @DoNothing
                     SET --> #InitSet
