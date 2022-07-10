@@ -34,7 +34,7 @@ class LocalizationBlackboard:
         self.covariance = np.array([])
 
         #GameState
-        self.gamestate = GameStatusCapsule()
+        self.gamestate = GameStatusCapsule(node)
 
         #Robot Control State
         self.robot_control_state = None
