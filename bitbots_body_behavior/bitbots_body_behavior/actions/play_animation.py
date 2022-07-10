@@ -1,6 +1,7 @@
 from rclpy.duration import Duration
 import rclpy
 import humanoid_league_msgs.msg
+from humanoid_league_msgs.action import PlayAnimation
 from actionlib_msgs.msg import GoalStatus
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -56,20 +57,20 @@ class AbstractPlayAnimation(AbstractActionElement):
             self.blackboard.node.get_logger().warning("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            Duration(1))
+            Duration(seconds=1))
         if not first_try:
             server_running = False
             while not server_running and not rclpy.ok():
                 self.blackboard.node.get_logger().error_throttle(5.0,
                                       "Animation Action Server not running! Motion can not work without animation action server. "
                                       "Will now wait until server is accessible!")
-                server_running = self.blackboard.animation_action_client.wait_for_server(Duration(1))
+                server_running = self.blackboard.animation_action_client.wait_for_server(Duration(seconds=1))
             if server_running:
                 self.blackboard.node.get_logger().warning("Animation server now running, hcm will go on.")
             else:
                 self.blackboard.node.get_logger().warning("Animation server did not start.")
                 return False
-        goal = humanoid_league_msgs.msg.PlayAnimationGoal()
+        goal = PlayAnimation.Goal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
         self.blackboard.animation_action_client.send_goal(goal)

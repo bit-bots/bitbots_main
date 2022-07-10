@@ -27,7 +27,7 @@ class GameStatusCapsule:
         return value == self.get_gamestate()
 
     def get_gamestate(self):
-        return self.gamestate.gameState
+        return self.gamestate.game_state
 
     def get_secondary_state(self):
         return self.gamestate.secondaryState
@@ -53,19 +53,19 @@ class GameStatusCapsule:
         return self.gamestate.rivalScore
 
     def get_seconds_since_own_goal(self):
-        return float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_goal_from_us_time
+        return float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_goal_from_us_time
 
     def get_seconds_since_any_goal(self):
-        return float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_goal_time
+        return float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_goal_time
 
     def get_seconds_remaining(self):
         # Time from the message minus time passed since receiving it
-        return max(self.gamestate.secondsRemaining - (float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update), 0)
+        return max(self.gamestate.secondsRemaining - (float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update), 0)
 
     def get_secondary_seconds_remaining(self):
         """Seconds remaining for things like kickoff"""
         # Time from the message minus time passed since receiving it
-        return max(self.gamestate.secondary_seconds_remaining - (float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update), 0)
+        return max(self.gamestate.secondary_seconds_remaining - (float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update), 0)
 
     def get_seconds_since_last_drop_ball(self):
         """Returns the seconds since the last drop in"""
@@ -73,10 +73,10 @@ class GameStatusCapsule:
             return None
         else:
             # Time from the message plus seconds passed since receiving it
-            return self.gamestate.dropInTime + (float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update)
+            return self.gamestate.dropInTime + (float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update)
 
     def get_seconds_since_unpenalized(self):
-        return float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.unpenalized_time
+        return float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.unpenalized_time
 
     def get_is_penalized(self):
         return self.gamestate.penalized
@@ -92,17 +92,17 @@ class GameStatusCapsule:
 
     def gamestate_callback(self, gs):
         if self.gamestate.penalized and not gs.penalized:
-            self.unpenalized_time = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.unpenalized_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
 
         if gs.ownScore > self.gamestate.ownScore:
-            self.last_goal_from_us_time = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
-            self.last_goal_time = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.last_goal_from_us_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.last_goal_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
 
         if gs.rivalScore > self.gamestate.rivalScore:
-            self.last_goal_time = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.last_goal_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
 
         if gs.secondaryStateMode == 2 and self.gamestate.secondaryStateMode != 2 \
-                and gs.gameState == GameState.GAMESTATE_PLAYING:
+                and gs.game_state == GameState.GAMESTATE_PLAYING:
             # secondary action is now executed but we will not see this in the new messages.
             # it will look like a normal kick off, but we need to remember that this is some sort of free kick
             # we set the kickoff value accordingly, then we will not be allowed to move if it is a kick for the others
@@ -114,5 +114,5 @@ class GameStatusCapsule:
         if self.free_kick_kickoff_team is not None:
             gs.hasKickOff = self.free_kick_kickoff_team == self.team_id
 
-        self.last_update = float(self.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9)
+        self.last_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
         self.gamestate = gs

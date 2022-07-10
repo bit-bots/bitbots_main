@@ -25,7 +25,7 @@ from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.blackboard import BodyBlackboard
-from dynamic_stack_decider import dsd
+from dynamic_stack_decider.dsd import DSD
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped, Twist
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Float32
@@ -35,8 +35,9 @@ from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 
 class BodyDSD:
     def __init__(self, node):
+        self.node = node
         blackboard = BodyBlackboard(node)
-        self.dsd = dsd.DSD(blackboard, 'debug/dsd/body_behavior', node)
+        self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config 
 
         self.dsd.blackboard.team_data.strategy_sender = node.create_publisher(Strategy, "strategy", 2)
         self.dsd.blackboard.team_data.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
@@ -54,9 +55,8 @@ class BodyDSD:
 
         self.dsd.register_actions(os.path.join(dirname, "actions"))
         self.dsd.register_decisions(os.path.join(dirname, "decisions"))
-
+        
         self.dsd.load_behavior(os.path.join(dirname, "main.dsd"))
-
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
 
         # TODO: callbacks away from the blackboard!
@@ -74,7 +74,6 @@ class BodyDSD:
         #node.create_subscription(MoveBaseActionResult, "move_base/result", blackboard.pathfinding.status_callback, qos_profile=1)
         node.create_subscription(Twist, "cmd_vel", blackboard.pathfinding.cmd_vel_cb, qos_profile=1)
 
-
     def loop(self):
         self.dsd.update()
         self.dsd.blackboard.team_data.publish_strategy()
@@ -83,16 +82,15 @@ class BodyDSD:
         if counter == 0:
             self.dsd.blackboard.pathfinding.calculate_time_to_ball()
 
+
 def main(args=None):
     rclpy.init(args=None)
-    # needed to init rclcpp ros for moveit_bindings
-    initRos()
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
-    multi_executor = MultiThreadedExecutor()
-    multi_executor.add_node(node)
-
     body_dsd = BodyDSD(node)
     node.create_timer(1/60.0, body_dsd.loop)
+    multi_executor = MultiThreadedExecutor()
+    multi_executor.add_node(node)
+    
 
     try:
         multi_executor.spin()

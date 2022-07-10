@@ -28,7 +28,6 @@ def init(node):
     # This is a general purpose initialization function provided by moved
     # It is used to correctly initialize roscpp which is used in the collision checker module
     blackboard = HeadBlackboard(node)
-    blackboard.node = node
 
     node.create_subscription(HeadModeMsg, 'head_mode', blackboard.head_capsule.head_mode_callback, 1)
     node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered",

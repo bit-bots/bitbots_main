@@ -25,7 +25,7 @@ class WalkInPlace(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
-        if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(self.duration):
+        if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(seconds=self.duration):
             return self.pop()
 
         self.blackboard.pathfinding.cancel_goal()
@@ -40,7 +40,7 @@ class Stand(WalkInPlace):
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
-        if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(self.duration):
+        if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(seconds=self.duration):
             return self.pop()
         # need to keep publishing this since path planning publishes a few more messages
         self.blackboard.pathfinding.stop_walk()

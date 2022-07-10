@@ -15,7 +15,7 @@
 
 #KickBallWithAvoidance
 $AvoidBall
-    NO --> $BallClose + distance:%body.ball_reaproach_dist + angle:%body.ball_reapproach_angle
+    NO --> $BallClose + distance:%body.ball_reapproach_dist + angle:%body.ball_reapproach_angle
         YES --> $BallKickArea
             NEAR --> #PerformKick
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFront, @GoToBall + target:map_goal
