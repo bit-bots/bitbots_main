@@ -395,7 +395,7 @@ def build(target, package='', pre_clean=False):
                "cd {workspace};"
                "source /opt/ros/rolling/setup.zsh;"
                "source install/setup.zsh;"
-               "{cmd_clean}"
+               "{cmd_clean};"
                "colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
                "sync;"
                ).format(**{
