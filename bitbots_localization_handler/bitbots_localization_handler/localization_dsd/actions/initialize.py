@@ -107,5 +107,5 @@ class RedoLastInit(AbstractInitialize):
         self.sub_action = blackboard.last_init_action_type(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.get_logger().debug("Redoing the last init")
+        self.blackboard.node.get_logger().debug("Redoing the last init")
         return self.sub_action.perform(reevaluate)
