@@ -282,7 +282,7 @@ class WalkedSinceLastInit(AbstractDecisionElement):
             odom_transform = self.blackboard.tf_buffer.lookup_transform(
                 self.blackboard.odom_frame,
                 self.blackboard.base_footprint_frame,
-                Time(0))
+                Time(seconds=0, nanoseconds=0))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self.blackboard.node.get_logger().error(f"Reset localization to last init state, because we got up and have no tf: {e}")
             # We assume that we didn't walk if the tf lookup fails
