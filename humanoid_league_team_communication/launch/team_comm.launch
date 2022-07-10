@@ -1,6 +1,6 @@
 <launch>
     <group>
-        <node pkg="humanoid_league_team_communication" exec="team_comm" output="screen">
+        <node pkg="humanoid_league_team_communication" exec="team_comm.py" output="screen">
             <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml"/>
         </node>
     </group>
