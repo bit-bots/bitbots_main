@@ -6,7 +6,7 @@ bitbots_vision:
     component_debug_image_active: false             # activate the debug image
     component_field_detection_active: true          # activate the field detection
     component_field_boundary_detection_active: true # activate the field boundary detection
-    component_goalpost_detection_active: true       # activate the goalpost detection
+    component_goalpost_detection_active: false       # activate the goalpost detection
     component_line_detection_active: true           # activate the line detection
     component_obstacle_detection_active: true       # activate the obstacle detection
 
@@ -23,7 +23,7 @@ bitbots_vision:
     ROS_debug_image_msg_topic: 'debug_image'  # ROS topic of the debug image message
     ROS_field_mask_image_msg_topic: 'field_mask'  # ROS topic of the field mask debug image message
 
-    yoeo_model_path: '2021_12_06_flo_torso21_yoeo_7'
+    yoeo_model_path: '2022_10_07_flo_torso21_yoeox'
     yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
     yoeo_framework: 'tvm'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
