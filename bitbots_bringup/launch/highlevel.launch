@@ -16,7 +16,6 @@
     <!-- launch game controller -->
     <group if="$(var game_controller)">
         <include file="$(find-pkg-share humanoid_league_game_controller)/launch/game_controller.launch">
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
     </group>
 
@@ -24,7 +23,6 @@
     <group if="$(var vision)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/vision_standalone.launch">
             <arg name="sim" value="$(var sim)" />
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
             <arg name="debug" value="$(var vision_debug)" />
         </include>
     </group>
@@ -39,7 +37,6 @@
     <!-- launch teamcom -->
     <group if="$(var teamcom)">
         <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm.launch">
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
     </group>
 
@@ -62,7 +59,7 @@
     </group>
 
     <!-- launch pathplanning -->
-    <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.py" />
+    <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.launch" />
 
     <!-- launch behavior -->
     <group if="$(var behavior)">
