@@ -193,13 +193,13 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
     // when we only have 1 or two devices it's only the core
     if (pinged.empty() || pinged.size()==1 || pinged.size()==2) {
       RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 5000, "Could not start ros control. Power is off!");
-      speakError(speak_pub_, "Could not start ros control. Power is off!");
+      speakError(speak_pub_, "Could not start ross control. Power is off!");
     } else {
       if (first_ping_error_) {
         first_ping_error_ = false;
       } else {
         RCLCPP_ERROR(nh_->get_logger(), "Could not ping all devices!");
-        speakError(speak_pub_, "error starting ros control");
+        speakError(speak_pub_, "error starting ross control");
         // check which devices were not pinged successful
         for (std::pair<std::string, int> &device: dxl_devices) {
           if (std::find(pinged.begin(), pinged.end(), device.first)!=pinged.end()) {
@@ -211,7 +211,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
     }
     return false;
   } else {
-    speakError(speak_pub_, "ros control startup successful");
+    speakError(speak_pub_, "ross control startup successful");
     return true;
   }
 }
