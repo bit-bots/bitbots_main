@@ -336,7 +336,7 @@ class HumanoidLeagueTeamCommunication:
         message.current_pose.player_id = self.player_id
         message.current_pose.team = self.team_id
 
-        if self.gamestate and self.node.get_clock().now() - self.gamestate.header.stamp < Duration(
+        if self.gamestate and now - self.gamestate.header.stamp < Duration(
                 seconds=self.lifetime):
             if self.gamestate.penalized:
                 # If we are penalized, we are not allowed to send team communication
@@ -346,7 +346,7 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.state = robocup_extension_pb2.State.UNKNOWN_STATE
 
-        if self.pose and self.node.get_clock().now() - self.pose.header.stamp < Duration(seconds=self.lifetime):
+        if self.pose and now - self.pose.header.stamp < Duration(seconds=self.lifetime):
             message.current_pose.position.x = self.pose.pose.pose.position.x
             message.current_pose.position.y = self.pose.pose.pose.position.y
             q = self.pose.pose.pose.orientation
@@ -359,19 +359,19 @@ class HumanoidLeagueTeamCommunication:
             message.current_pose.covariance.y.y = 100
             message.current_pose.covariance.z.z = 100
 
-        if self.cmd_vel and self.node.get_clock().now() - self.cmd_vel_time < Duration(seconds=self.lifetime):
+        if self.cmd_vel and now - self.cmd_vel_time < Duration(seconds=self.lifetime):
             message.walk_command.x = self.cmd_vel.linear.x
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        if self.move_base_goal and self.node.get_clock().now() - self.move_base_goal.header.stamp < Duration(
+        if self.move_base_goal and now - self.move_base_goal.header.stamp < Duration(
                 seconds=self.lifetime):
             message.target_pose.position.x = self.move_base_goal.pose.position.x
             message.target_pose.position.y = self.move_base_goal.pose.position.y
             q = self.move_base_goal.pose.orientation
             message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
 
-        if self.ball and self.node.get_clock().now() - self.ball.header.stamp < Duration(seconds=self.lifetime):
+        if self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime):
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
             message.ball.position.z = self.ball.point.z
@@ -385,7 +385,7 @@ class HumanoidLeagueTeamCommunication:
             message.ball.covariance.y.y = 100
             message.ball.covariance.z.z = 100
 
-        if self.obstacles and self.node.get_clock().now() - self.obstacles.header.stamp < Duration(
+        if self.obstacles and now - self.obstacles.header.stamp < Duration(
                 seconds=self.lifetime):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
                 if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
@@ -401,13 +401,20 @@ class HumanoidLeagueTeamCommunication:
                     message.others.append(robot)
                     message.other_robot_confidence.append(obstacle.pose.confidence)
 
+<<<<<<< Updated upstream
         if (self.ball and self.node.get_clock().now() - self.ball.header.stamp < Duration(seconds=self.lifetime) and
                 self.pose and self.node.get_clock().now() - self.pose.header.stamp < Duration(seconds=self.lifetime)):
             ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x)**2 +
                                       (self.ball.point.y - self.pose.pose.pose.position.y)**2)
+=======
+        if (self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime) and
+                self.pose and now - self.pose.header.stamp < Duration(seconds=self.lifetime)):
+            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x) ** 2 +
+                                      (self.ball.point.y - self.pose.pose.pose.position.y) ** 2)
+>>>>>>> Stashed changes
             message.time_to_ball = ball_distance / self.avg_walking_speed
 
-        if self.strategy and self.node.get_clock().now() - self.strategy_time < Duration(seconds=self.lifetime):
+        if self.strategy and now - self.strategy_time < Duration(seconds=self.lifetime):
             role_mapping = dict(((b, a) for a, b in self.role_mapping))
             message.role = role_mapping[self.strategy.role]
 
@@ -417,7 +424,7 @@ class HumanoidLeagueTeamCommunication:
             side_mapping = dict(((b, a) for a, b in self.side_mapping))
             message.offensive_side = side_mapping[self.strategy.offensive_side]
 
-        if self.time_to_ball and self.node.get_clock().now() - self.time_to_ball_time < Duration(seconds=self.lifetime):
+        if self.time_to_ball and now - self.time_to_ball_time < Duration(seconds=self.lifetime):
             message.time_to_ball = self.time_to_ball
         else:
             message.time_to_ball = 9999.0
