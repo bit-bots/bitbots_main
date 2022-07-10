@@ -46,4 +46,4 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
 
-    node.destroy_node()
+    node.destroy_node() 
