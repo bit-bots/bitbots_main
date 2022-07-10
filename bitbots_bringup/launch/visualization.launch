@@ -2,6 +2,7 @@
 <launch>
     <!-- arguments -->
     <arg name="behavior" default="true" description="if the behavior should be started" />
+    <arg name="ipm" default="false" description="if the soccer ipm should be used" />
     <arg name="localization" default="false" description="if the localization should be used" />
     <arg name="motion" default="true" description="if the motion should be started" />
     <arg name="game_controller" default="false" description="if the game controller node should be started" />
@@ -25,6 +26,7 @@
     <!-- launch highlevel nodes, except vision and transformer (we have fake vision instead) -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
         <arg name="behavior" value="$(var behavior)" />
+        <arg name="ipm" value="$(var ipm)" />
         <arg name="localization" value="$(var localization)" />
         <arg name="game_controller" value="$(var game_controller)" />
         <arg name="vision" value="false" />
@@ -42,5 +44,5 @@
     <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm_test_marker.launch">
         <arg name="rviz" value="false" />
     </include>
-    <node name="show_world_model_objects" pkg="bitbots_body_behavior" exec="show_world_model_objects.py" output="screen"/>
+    <!-- <node name="show_world_model_objects" pkg="bitbots_body_behavior" exec="show_world_model_objects.py" output="screen"/> -->
 </launch>
