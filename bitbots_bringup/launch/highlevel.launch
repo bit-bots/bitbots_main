@@ -35,10 +35,10 @@
     </group>
 
     <!-- launch teamcom -->
-    <!--<group if="$(var teamcom)">
+    <group if="$(var teamcom)">
         <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm.launch">
         </include>
-    </group>-->
+    </group>
 
     <!-- launch ball_filter -->
     <group if="$(var ball_filter)">
