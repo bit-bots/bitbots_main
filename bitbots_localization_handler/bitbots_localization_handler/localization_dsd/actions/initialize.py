@@ -40,7 +40,7 @@ class InitLeftHalf(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the left half")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy.call(ResetFilter.Request(init_mode=1))
+        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=1))
         return self.pop()
 
 
@@ -50,7 +50,7 @@ class InitRightHalf(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the right half")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy.call(ResetFilter.Request(init_mode=2))
+        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=2))
         return self.pop()
 
 
@@ -60,7 +60,7 @@ class InitPosition(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing position")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy.call(
+        self.blackboard.reset_filter_proxy.call_async(
             ResetFilter.Request(init_mode=3, x=self.blackboard.poseX, y=self.blackboard.poseY))
         return self.pop()
 
@@ -71,7 +71,7 @@ class InitSide(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy.call(ResetFilter.Request(init_mode=0))
+        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=0))
         return self.pop()
 
 
@@ -81,7 +81,7 @@ class InitGoal(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.reset_filter_proxy.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy.call(
+        self.blackboard.reset_filter_proxy.call_async(
             ResetFilter.Request(init_mode=4, x=-self.blackboard.field_length / 2, y=0))
         return self.pop()
 
@@ -92,7 +92,7 @@ class InitPenaltyKick(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing behind penalty mark")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy.call(
+        self.blackboard.reset_filter_proxy.call_async(
             ResetFilter.Request(init_mode=4, x=self.blackboard.field_length / 2 - 2, y=0))
         return self.pop()
 
