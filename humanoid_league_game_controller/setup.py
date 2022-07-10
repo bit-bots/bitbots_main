@@ -1,5 +1,4 @@
 import glob
-import os
 
 from setuptools import find_packages
 from setuptools import setup
@@ -23,6 +22,7 @@ setup(
         'setuptools',
         'construct',
     ],
+    scripts=['scripts/sim_gamestate.py'],
     zip_safe=True,
     keywords=['ROS'],
     license='MIT',

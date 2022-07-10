@@ -19,9 +19,7 @@ from bitbots_utils.utils import get_parameters_from_other_node
 
 
 class SimGamestate(Node):
-    msg = """
-Setting the GameState by entering a number:
-
+    msg = """Setting the GameState by entering a number:
 0: GAMESTATE_INITAL=0
 1: GAMESTATE_READY=1
 2: GAMESTATE_SET=2
@@ -29,7 +27,6 @@ Setting the GameState by entering a number:
 4: GAMESTATE_FINISHED=4
 
 Set the secondary game state by entering:
-
 a: STATE_NORMAL = 0
 b: STATE_PENALTYSHOOT = 1
 c: STATE_OVERTIME = 2
@@ -48,11 +45,13 @@ m:     toggle secondary state mode
 CTRL-C to quit
 
 
+
+
 """
 
     def __init__(self):
-        super().__init__("SimGamestate")
-        self.logger = node.get_logger()
+        super().__init__("sim_gamestate")
+        self.logger = self.get_logger()
 
         params = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id', 'bot_id'])
         self.team_id = params['team_id']
@@ -61,16 +60,15 @@ CTRL-C to quit
 
         namespaces = ['amy', 'rory', 'jack', 'donna', 'rose']
         publishers = [
-            self.node.create_publisher(GameStateMsg, f'{n}/gamestate', QoSProfile(durability=1, depth=1))
+            self.create_publisher(GameStateMsg, f'{n}/gamestate', QoSProfile(durability=1, depth=1))
             for n in namespaces
         ]
 
-        gameState = GameStateMsg()
-        gameState.header.stamp = self.node.get_clock().now().to_msg()
+        game_state_msg = GameStateMsg()
+        game_state_msg.header.stamp = self.get_clock().now().to_msg()
 
         # Init secondary state team to our teamID
-        gameState.secondaryStateTeam = self.team_id
-        ourTeamID = gameState.secondaryStateTeam
+        game_state_msg.secondary_state_team = self.team_id
 
         try:
             print(self.msg)
@@ -80,31 +78,32 @@ CTRL-C to quit
                     break
                 elif key in ['0', '1', '2', '3', '4']:
                     int_key = int(key)
-                    gameState.gameState = int_key
+                    game_state_msg.game_state = int_key
                 elif key == 'p':  # penalize / unpenalize
-                    gameState.penalized = not gameState.penalized
+                    game_state_msg.penalized = not game_state_msg.penalized
                 elif key in [chr(ord('a') + x) for x in range(10)]:
-                    gameState.secondaryState = ord(key) - ord('a')
+                    game_state_msg.secondary_state = ord(key) - ord('a')
                 elif key == 'm':
-                    gameState.secondaryStateMode = (gameState.secondaryStateMode + 1) % 3
+                    game_state_msg.secondary_state_mode = (game_state_msg.secondary_state_mode + 1) % 3
                 elif key == 't':
-                    if gameState.secondaryStateTeam == self.team_id:
-                        gameState.secondaryStateTeam = self.team_id + 1
+                    if game_state_msg.secondary_state_team == self.team_id:
+                        game_state_msg.secondary_state_team = self.team_id + 1
                     else:
-                        gameState.secondaryStateTeam = self.team_id
+                        game_state_msg.secondary_state_team = self.team_id
 
+                sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 for publisher in publishers:
-                    publisher.publish(gameState)
-
-                print(f"""Gamestate:            {gameState.gameState}
-Secondary State:      {gameState.secondaryState}
-Secondary State Team: {gameState.secondaryStateTeam}
-Penalized:            {gameState.penalized}
-""")
+                    publisher.publish(game_state_msg)
+                print(
+f"""Penalized:            {game_state_msg.penalized} 
+Secondary State Team: {game_state_msg.secondary_state_team}
+Secondary State Mode: {game_state_msg.secondary_state_mode}
+Secondary State:      {game_state_msg.secondary_state}
+Gamestate:            {game_state_msg.game_state}""")
 
         except Exception as e:
             print(e)
