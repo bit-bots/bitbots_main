@@ -29,7 +29,7 @@ wolfgang_hardware_interface:
       read_pwm: false
       read_volt_temp: true # this also corresponds for the error byte
 
-      VT_update_rate: 100 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
+      VT_update_rate: 50 # how many normal (position) reads have to be performed before one time the temperature, voltage and error is read
       warn_temp: 55.0
       warn_volt: 14.0
 
