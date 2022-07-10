@@ -12,7 +12,7 @@ class AbstractLocalizationPause(AbstractActionElement):
         self.do_not_reevaluate()
         while not self.blackboard.stop_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.stop_filter_proxy(paused)
+        self.blackboard.stop_filter_proxy.call(paused)
 
 
 class LocalizationStop(AbstractLocalizationPause):

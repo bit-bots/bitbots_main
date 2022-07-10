@@ -40,7 +40,7 @@ class InitLeftHalf(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the left half")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy(1, None, None, None)
+        self.blackboard.reset_filter_proxy.call(1, None, None, None)
         return self.pop()
 
 
@@ -50,7 +50,7 @@ class InitRightHalf(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the right half")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy(2, None, None, None)
+        self.blackboard.reset_filter_proxy.call(2, None, None, None)
         return self.pop()
 
 
@@ -60,7 +60,7 @@ class InitPosition(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing position")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy(3, self.blackboard.poseX, self.blackboard.poseY, None)
+        self.blackboard.reset_filter_proxy.call(3, self.blackboard.poseX, self.blackboard.poseY, None)
         return self.pop()
 
 
@@ -70,7 +70,7 @@ class InitSide(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy(0, None, None, None)
+        self.blackboard.reset_filter_proxy.call(0, None, None, None)
         return self.pop()
 
 
@@ -80,7 +80,7 @@ class InitGoal(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.reset_filter_proxy.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy(4, -self.blackboard.field_length / 2, 0)
+        self.blackboard.reset_filter_proxy.call(4, -self.blackboard.field_length / 2, 0)
         return self.pop()
 
 
@@ -90,7 +90,7 @@ class InitPenaltyKick(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing behind penalty mark")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
-        self.blackboard.reset_filter_proxy(4, self.blackboard.field_length / 2 - 2, 0)
+        self.blackboard.reset_filter_proxy.call(4, self.blackboard.field_length / 2 - 2, 0)
         return self.pop()
 
 
