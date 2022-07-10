@@ -11,7 +11,7 @@ $CheckPickup
     JUST_DOWN --> @LocalizationStart, @DoNothing
     DOWN --> $GettingUpState
         YES --> @LocalizationStop, @DoNothing
-        GOTUP --> $WalkedSinceLastInit + dist:%bitbots_localization/walking_moved_distance
+        GOTUP --> $WalkedSinceLastInit + dist:%walking_moved_distance
             YES --> @InitPosition, @LocalizationStart, @DoNothing
             NO --> @RedoLastInit, @LocalizationStart, @DoNothing
         NO --> $CheckGameStateReceived
