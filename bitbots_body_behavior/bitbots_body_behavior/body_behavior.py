@@ -37,7 +37,7 @@ class BodyDSD:
     def __init__(self, node):
         self.node = node
         blackboard = BodyBlackboard(node)
-        self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config 
+        self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config
 
         self.dsd.blackboard.team_data.strategy_sender = node.create_publisher(Strategy, "strategy", 2)
         self.dsd.blackboard.team_data.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
@@ -55,7 +55,7 @@ class BodyDSD:
 
         self.dsd.register_actions(os.path.join(dirname, "actions"))
         self.dsd.register_decisions(os.path.join(dirname, "decisions"))
-        
+
         self.dsd.load_behavior(os.path.join(dirname, "main.dsd"))
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
 
@@ -90,7 +90,7 @@ def main(args=None):
     node.create_timer(1/60.0, body_dsd.loop)
     multi_executor = MultiThreadedExecutor()
     multi_executor.add_node(node)
-    
+
 
     try:
         multi_executor.spin()
