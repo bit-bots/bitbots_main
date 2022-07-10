@@ -289,9 +289,9 @@ void KickNode::executeCb(const std::shared_ptr<KickGoalHandle> goal_handle) {
   bool success = init(base_footprint_kick_goal, error_string);
   /* there was an error, abort the kick */
   if (!success) {
-    bitbots_msgs::action::Kick::Result::SharedPtr result;
+    bitbots_msgs::action::Kick::Result::SharedPtr result = std::make_shared<bitbots_msgs::action::Kick::Result>();
     result->result = bitbots_msgs::action::Kick::Result::REJECTED;
-    goal_handle->canceled(result);
+    goal_handle->abort(result);
   }
 
   /* everything is set up, start calculating now until the kick is finished or an error occurs */

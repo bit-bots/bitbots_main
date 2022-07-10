@@ -243,12 +243,12 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
       }
     }
     loopEngine(engine_rate_, goal_handle);
-    bitbots_msgs::action::Dynup_Result::SharedPtr r;
   } else {
     RCLCPP_ERROR(this->get_logger(),"Could not determine positions! Aborting standup.");
-    bitbots_msgs::action::Dynup_Result::SharedPtr r;
+    bitbots_msgs::action::Dynup_Result::SharedPtr r = std::make_shared<bitbots_msgs::action::Dynup_Result>();
+    r->successful = false;
     server_free_ = true;
-    goal_handle->canceled(r);
+    goal_handle->abort(r);
   }
 }
 
