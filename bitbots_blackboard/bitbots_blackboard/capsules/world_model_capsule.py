@@ -5,6 +5,7 @@ WorldModelCapsule
 Provides information about the world model.
 """
 import math
+from bitbots_meta.bitbots_behavior.bitbots_blackboard.bitbots_blackboard.blackboard import BodyBlackboard
 import numpy as np
 from rclpy.clock import ClockType
 from scipy.ndimage import gaussian_filter
@@ -48,7 +49,7 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, blackboard):
+    def __init__(self, blackboard: BodyBlackboard):
         self._blackboard = blackboard
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
@@ -320,7 +321,7 @@ class WorldModelCapsule:
             self.ball_teammate = PointStamped()
 
         if reset_ball_filter:  # Reset the ball filter
-            result = self.reset_ball_filter()
+            result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
             if result.success:
                 self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
             else:
@@ -598,7 +599,7 @@ class WorldModelCapsule:
         normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (
                     np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
         # Build the OccupancyGrid message
-        msg = ros2_numpy.msgify(
+        msg: OccupancyGrid = ros2_numpy.msgify(
             OccupancyGrid,
             normalized_costmap,
             info=MapMetaData(

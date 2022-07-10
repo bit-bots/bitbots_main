@@ -55,7 +55,7 @@ class BlackboardCapsule:
         :param duration_secs: Duration of the timer in seconds
         :return: None
         """
-        self.timers[timer_name] = self.get_clock().now() + rclpy.Duration.from_sec(int(duration_secs))
+        self.timers[timer_name] = self.node.get_clock().now() + Duration(seconds=duration_secs)
 
     def end_timer(self, timer_name):
         """
@@ -63,7 +63,7 @@ class BlackboardCapsule:
         :param timer_name: Name of the timer
         :return: None
         """
-        self.timers[timer_name] = self.get_clock().now()
+        self.timers[timer_name] = self.node.get_clock().now()
 
     def timer_running(self, timer_name):
         """
@@ -73,7 +73,7 @@ class BlackboardCapsule:
         """
         if timer_name not in self.timers:
             return False
-        return self.get_clock().now() < self.timers[timer_name]
+        return self.node.get_clock().now() < self.timers[timer_name]
 
     def timer_remaining(self, timer_name):
         """
@@ -84,7 +84,7 @@ class BlackboardCapsule:
 
         if timer_name not in self.timers:
             return -1
-        return (self.timers[timer_name] - self.get_clock().now()).to_sec()
+        return (self.timers[timer_name] - self.node.get_clock().now()).to_sec()
 
     def timer_ended(self, timer_name):
         """
@@ -94,5 +94,5 @@ class BlackboardCapsule:
         """
         if timer_name not in self.timers:
             return True  # Don't wait for a non-existing Timer
-        return self.get_clock().now() > self.timers[timer_name]
+        return self.node.get_clock().now() > self.timers[timer_name]
 

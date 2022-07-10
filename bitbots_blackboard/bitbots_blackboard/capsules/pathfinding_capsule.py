@@ -2,17 +2,20 @@ import rclpy
 from rclpy.clock import ClockType
 from rclpy.node import Node
 from rclpy.publisher import Publisher
+from rclpy.time import Time
 import math
 from rclpy.duration import Duration
 import tf2_ros
 import numpy as np
+from ros2_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from bitbots_blackboard.bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class PathfindingCapsule:
-    def __init__(self, blackboard, node: Node):
+    def __init__(self, blackboard: BodyBlackboard, node: Node):
         self.node = node
         self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
         # Thresholds to determine whether the transmitted goal is a new one
@@ -32,7 +35,7 @@ class PathfindingCapsule:
         self.status = -1  # Current status of movebase
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
-        self._blackboard = blackboard  # type: BodyBlackboard
+        self._blackboard = blackboard
         #self.orient_to_ball_distance = self.node.get_parameter("move_base.BBPlanner.orient_to_goal_distance").get_parameter_value().double_value
         self.orient_to_ball_distance = 0.5  # TODO: fill in new value once the planner is ported
 
@@ -51,7 +54,7 @@ class PathfindingCapsule:
             return msg
         else:
             try:
-                msg.header.stamp = rclpy.Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+                msg.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
                 map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=Duration(seconds=0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))
@@ -63,7 +66,7 @@ class PathfindingCapsule:
                 map_goal.pose.position.z = 0
                 return map_goal
             except Exception as e:
-                self.get_logger().warn(e)
+                self.node.get_logger().warn(e)
                 return
 
     def fix_rotation(self, msg):
@@ -192,11 +195,11 @@ class PathfindingCapsule:
             angle = math.atan2(ball_v, ball_u)
             ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
         else:
-            self.get_logger().error("Target %s for go_to_ball action not specified.", target)
+            self.node.get_logger().error("Target %s for go_to_ball action not specified.", target)
             return
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.get_clock().now()
+        pose_msg.header.stamp = self.node.get_clock().now()
         pose_msg.header.frame_id = ball_point[3]
         pose_msg.pose.position = Point(ball_point[0], ball_point[1], 0)
         quaternion = quaternion_from_euler(0, 0, ball_point[2])

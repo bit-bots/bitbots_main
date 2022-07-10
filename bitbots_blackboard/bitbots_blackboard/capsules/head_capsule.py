@@ -1,4 +1,3 @@
-from io import BytesIO
 import math
 import numpy as np
 from rclpy.publisher import Publisher
@@ -6,6 +5,7 @@ from rclpy.duration import Duration
 from rclpy.node import Node
 import tf2_ros as tf2
 
+from humanoid_league_msgs.msg import HeadMode
 from bitbots_moveit_bindings import check_collision
 from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
@@ -40,12 +40,12 @@ class HeadCapsule:
         self.current_joint_state.velocity = [0.0, 0.0]
         self.current_joint_state.effort = [0.0, 0.0]
 
-    def head_mode_callback(self, msg):
+    def head_mode_callback(self, msg: HeadMode):
         """
         ROS Subscriber callback for /head_mode message.
         Saves the messages head mode on the blackboard
         """
-        self.head_mode = msg.headMode
+        self.head_mode = msg.head_mode
 
     def joint_state_callback(self, msg):
         self.current_joint_state = msg

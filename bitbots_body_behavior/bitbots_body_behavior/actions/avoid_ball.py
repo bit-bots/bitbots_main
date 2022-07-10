@@ -1,12 +1,13 @@
 from std_msgs.msg import Bool
+from bitbots_meta.bitbots_behavior.bitbots_blackboard.bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AvoidBall(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters):
+    def __init__(self, blackboard: BodyBlackboard, dsd, parameters):
         super(AvoidBall, self).__init__(blackboard, dsd, parameters)
-
+        self.blackboard = blackboard
         self.active = parameters.get('active', True)
 
     def perform(self, reevaluate=False):
