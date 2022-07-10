@@ -121,7 +121,7 @@ class YOEOVision(Node):
         if self._new_yoeo_handler_is_needed(new_config):
             self._instantiate_new_yoeo_handler(new_config)
         elif self._yoeo_parameters_have_changed(new_config):
-            self._yoeo_handler.set_config(new_config)
+            self._yoeo_handler.configure(new_config)
 
     def _new_yoeo_handler_is_needed(self, new_config: Dict) -> bool:
         return self._yoeo_handler is None or \
