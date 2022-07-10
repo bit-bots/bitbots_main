@@ -353,7 +353,7 @@ def get_team_from_robot_color(color: GameState.team_color)-> RobotAttributes.tea
     own_color = None
     if _game_state is not None:
         own_color = _game_state.team_color
-    else: 
+    else:
         return RobotAttributes.TEAM_UNKNOWN
 
     if color == own_color:  # Robot is in own team, if same color
@@ -372,7 +372,7 @@ def get_robot_color_for_team(team: RobotAttributes.team) -> Union[int, None]:
     own_color = None
     if _game_state is not None:
         own_color = _game_state.team_color
-    else: 
+    else:
         return None  # This gets handled later
 
     if team == RobotAttributes.TEAM_OWN:
