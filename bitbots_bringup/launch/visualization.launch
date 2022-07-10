@@ -39,7 +39,7 @@
     <include file="$(find-pkg-share humanoid_league_interactive_marker)/launch/interactive_marker.launch">
         <arg name="rviz" value="false" />
     </include>
-    <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm_test_marker.launch" >
+    <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm_test_marker.launch">
         <arg name="rviz" value="false" />
     </include>
     <node name="show_world_model_objects" pkg="bitbots_body_behavior" exec="show_world_model_objects.py" output="screen"/>
