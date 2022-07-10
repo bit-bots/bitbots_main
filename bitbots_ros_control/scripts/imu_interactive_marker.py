@@ -34,7 +34,7 @@ class IMUMarker:
         self.pose.orientation.w = 1
 
         int_marker = InteractiveMarker()
-        int_marker.header.frame_id = "imu_frame"
+        int_marker.header.frame_id = "odom"
         int_marker.pose = self.pose
         int_marker.scale = 1
         int_marker.name = self.marker_name
