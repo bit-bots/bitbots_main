@@ -65,7 +65,7 @@ walking:
 
 walk_pid_trunk_fused_pitch:
   ros__parameters:
-    p: 0.25
+    p: 0.0
     i: 0.0
     d: 0.0
     i_clamp: 0.0
@@ -75,7 +75,7 @@ walk_pid_trunk_fused_pitch:
 
 walk_pid_trunk_fused_roll:
   ros__parameters:
-    p: 0.111
+    p: 0.0
     i: 0.0
     d: 0.0
     i_clamp: 0.0
