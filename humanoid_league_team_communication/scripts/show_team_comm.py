@@ -36,7 +36,7 @@ Robot 1
 
 class TeamCommPrinter(Node):
     def __init__(self):
-        super().__init__("team_comm")
+        super().__init__("show_team_comm")
         self.subscriber = self.create_subscription(TeamData, "team_data", self.data_cb, 1)
         self.team_data = {}
         for i in range(1, 5):

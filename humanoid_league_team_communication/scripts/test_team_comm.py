@@ -9,7 +9,7 @@ from humanoid_league_msgs.msg import ObstacleRelativeArray, ObstacleRelative, Po
 
 if __name__ == '__main__':
     rclpy.init(args=None)
-    node = rclpy.create_node("team_comm")
+    node = rclpy.create_node("test_team_comm")
     ball_pub = node.create_publisher(PoseWithCertaintyArray, "balls_relative", 1)
     position_pub = node.create_publisher(PoseWithCertainty, "pose_with_certainty", 1)
     obstacle_pub = node.create_publisher(ObstacleRelativeArray, "obstacles_relative", 1)
