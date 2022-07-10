@@ -18,8 +18,8 @@ $CheckPickup
             NO_GAMESTATE_INIT --> @InitSide, @DoNothing
             DO_NOTHING --> @DoNothing
             GAMESTATE_RECEIVED --> $CheckPenalized
-                YES --> @InitSide, @DoNothing
-                JUST_UNPENALIZED --> @InitSide, @DoNothing
+                YES --> @LocalizationStop, @DoNothing
+                JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
                 NO --> $GameStateDecider
                     INITIAL --> @InitSide, @DoNothing
                     SET --> #InitSet
