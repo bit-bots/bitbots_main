@@ -255,7 +255,9 @@ namespace bitbots_local_planner
         geometry_msgs::msg::PoseStamped result;
         try {
             geometry_msgs::msg::TransformStamped transform = tf_buffer_->lookupTransform(
-                global_frame, plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp);
+                global_frame,
+                plan_goal_pose.header.frame_id,
+                rclcpp::Time(0));
             tf2::doTransform(plan_goal_pose, result, transform);
         }
         catch (tf2::LookupException &ex) {
