@@ -56,7 +56,8 @@ try:
     from bitbots_utils import game_settings
 except ImportError:
     bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_utils")
-    print_info("Manually adding {} to PATH to import bitbots_utils. If this fails please source ros".format(bringup_dir))
+    print_info(
+        "Manually adding {} to PATH to import bitbots_utils. If this fails please source ros".format(bringup_dir))
     sys.path.append(bringup_dir)
     from bitbots_utils import game_settings
 
@@ -106,6 +107,7 @@ hy-             +dddddddm`        ydddddddd              -yh
 
 
 class Target:
+
     class Workspaces:
         amy = "colcon_ws"
         rory = "colcon_ws"
@@ -170,9 +172,11 @@ class Target:
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Compile and configure software for the Wolfgang humanoid robot "
-                                                 "platform")
-    parser.add_argument("target", type=str, help="The target robot or computer you want to compile for. Multiple "
-                                                 "targets can be specified seperated by ,")
+                                     "platform")
+    parser.add_argument("target",
+                        type=str,
+                        help="The target robot or computer you want to compile for. Multiple "
+                        "targets can be specified seperated by ,")
 
     mode = parser.add_mutually_exclusive_group(required=False)
     mode.add_argument("-s", "--sync-only", action="store_true", help="Only sync file from you to the target")
@@ -182,12 +186,16 @@ def parse_arguments():
 
     parser.add_argument("-p", "--package", default='', help="Sync/Compile only the given ROS package")
     parser.add_argument("-y", "--yes-to-all", action="store_true", help="Answer yes to all questions")
-    parser.add_argument("--clean-build", action="store_true",
+    parser.add_argument("--clean-build",
+                        action="store_true",
                         help="Clean workspace before building. If --package is given, clean only that package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--no-rosdeps", action="store_false", default=False, dest="check_rosdeps",
+    parser.add_argument("--no-rosdeps",
+                        action="store_false",
+                        default=False,
+                        dest="check_rosdeps",
                         help="Don't check installed rosdeps on the target."
-                             "Might be useful when no internet connection is available.")
+                        "Might be useful when no internet connection is available.")
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
     parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
@@ -209,20 +217,20 @@ def parse_targets(targets):
         if hasattr(Target.RobotComputers, target):
             for computer in getattr(Target.RobotComputers, target):
                 res.append(Target(getattr(Target.IPs, computer), getattr(Target.IPs, computer)))
-                print_info("Using robot={} hostname={} ip={} for target {}".format(
-                    res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
+                print_info("Using robot={} hostname={} ip={} for target {}".format(res[-1].robot_name, res[-1].hostname,
+                                                                                   res[-1].ip, target))
 
         # this mean, a hostname was specified
         elif hasattr(Target.IPs, target):
             res.append(Target(getattr(Target.IPs, target), target))
-            print_info("Using robot={} hostname={} ip={} for target {}".format(
-                res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
+            print_info("Using robot={} hostname={} ip={} for target {}".format(res[-1].robot_name, res[-1].hostname,
+                                                                               res[-1].ip, target))
 
         # this means a known IP address was specified
         elif target in Target.IPs.__dict__.values():
             res.append(Target(target, target))
-            print_info("Using robot={} hostname={} ip={} for target {}".format(
-                res[-1].robot_name, res[-1].hostname, res[-1].ip, target))
+            print_info("Using robot={} hostname={} ip={} for target {}".format(res[-1].robot_name, res[-1].hostname,
+                                                                               res[-1].ip, target))
 
         # this means an arbitrary target (likely an IP) was specified
         else:
@@ -251,8 +259,7 @@ def parse_targets(targets):
                 sys.exit(1)
 
             res.append(Target(target, target, hostname=hostname, robot_name=robot_name))
-            print_info("Using robot={}, hostname={} ip={} for target {}".format(
-                robot_name, hostname, target, target))
+            print_info("Using robot={}, hostname={} ip={} for target {}".format(robot_name, hostname, target, target))
 
     return res
 
@@ -294,7 +301,7 @@ def get_includes_from_file(file_path, package=''):
     return includes
 
 
-def _execute_on_target(target, command, catch_output = False):
+def _execute_on_target(target, command, catch_output=False):
     """
     Execute a command on the given target over ssh
 
@@ -303,11 +310,7 @@ def _execute_on_target(target, command, catch_output = False):
     :type catch_output: bool
     :rtype: subprocess.CompletedProcess
     """
-    real_cmd = [
-        "ssh",
-        "bitbots@{}".format(target.ssh_target),
-        command
-    ]
+    real_cmd = ["ssh", "bitbots@{}".format(target.ssh_target), command]
     print_debug("Calling {}".format(" ".join(real_cmd)))
 
     if not catch_output:
@@ -337,10 +340,7 @@ def sync(target, package='', pre_clean=False):
         "--delete",
     ]
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
-    cmd.extend([
-        BITBOTS_META + "/",
-        "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)
-    ])
+    cmd.extend([BITBOTS_META + "/", "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)])
 
     print_debug("Calling {}".format(" ".join(cmd)))
     sync_result = subprocess.run(cmd)
@@ -349,31 +349,6 @@ def sync(target, package='', pre_clean=False):
         sys.exit(sync_result.returncode)
 
     print_success("Synchronization of {} successful".format(target.hostname))
-
-
-def sync_gamesettings(target):
-    """
-    :type target: Target
-    """
-    print_info("Synchronizing gamesettings to {}".format(target.hostname))
-    cmd = [
-        "rsync",
-        "--checksum",
-        "--archive",
-        "-v" if LOGLEVEL.current >= LOGLEVEL.DEBUG else "",
-        os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_bringup", "config", "game_settings.yaml"),
-        "bitbots@{}:{}/src/bitbots_misc/bitbots_bringup/config/game_settings.yaml"
-            .format(target.ssh_target, target.workspace)
-    ]
-
-    print_debug("Calling {}".format(" ".join(cmd)))
-    sync_result = subprocess.run(cmd)
-    if sync_result.returncode != 0:
-        print_err("Synchronizing game settings with {} failed with error code {}"
-                  .format(target.hostname, sync_result.returncode))
-        sys.exit(sync_result.returncode)
-
-    print_success("Synchronizing game settings with {} succeeded".format(target.hostname))
 
 
 def build(target, package='', pre_clean=False):
@@ -392,18 +367,18 @@ def build(target, package='', pre_clean=False):
         cmd_clean = ''
 
     cmd = ("sync;"
-               "cd {workspace};"
-               "source /opt/ros/rolling/setup.zsh;"
-               "source install/setup.zsh;"
-               "{cmd_clean}"
-               "colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
-               "sync;"
-               ).format(**{
-        "workspace": target.workspace,
-        "cmd_clean": cmd_clean,
-        "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
-        "package": '--packages-up-to ' + package if package else '',
-    })
+           "cd {workspace};"
+           "source /opt/ros/rolling/setup.zsh;"
+           "source install/setup.zsh;"
+           "{cmd_clean}"
+           "colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
+           "sync;").format(
+               **{
+                   "workspace": target.workspace,
+                   "cmd_clean": cmd_clean,
+                   "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
+                   "package": '--packages-up-to ' + package if package else '',
+               })
 
     build_result = _execute_on_target(target, cmd)
     if build_result.returncode != 0:
@@ -421,15 +396,12 @@ def check_rosdeps(target):
     """
     print_info("Checking installed rosdeps on {}".format(target.hostname))
 
-    cmd = "rosdep check {} --ignore-src --from-paths {}".format(
-        "" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
-        os.path.join(target.workspace, "src")
-    )
+    cmd = "rosdep check {} --ignore-src --from-paths {}".format("" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
+                                                                os.path.join(target.workspace, "src"))
 
     rosdep_result = _execute_on_target(target, cmd)
     if rosdep_result.returncode != 0:
-        print_warn("rosdep check on {} had non-zero exit code. Check its output for more info"
-                   .format(target.hostname))
+        print_warn("rosdep check on {} had non-zero exit code. Check its output for more info".format(target.hostname))
 
     print_success("Rosdeps on {} installed successfully".format(target.hostname))
 
@@ -451,12 +423,17 @@ def configure_wifi(target):
                              .split("\n")[1:]
         for i in connection_ids:
             _execute_on_target(target, 'nmcli connection down {}'.format(i)).check_returncode()
-            _execute_on_target(target, 'nmcli connection modify {} connection.autoconnect FALSE'.format(i)).check_returncode()
-            _execute_on_target(target, 'nmcli connection modify {} connection.autoconnect-priority 0'.format(i)).check_returncode()
+            _execute_on_target(target,
+                               'nmcli connection modify {} connection.autoconnect FALSE'.format(i)).check_returncode()
+            _execute_on_target(
+                target, 'nmcli connection modify {} connection.autoconnect-priority 0'.format(i)).check_returncode()
 
         _execute_on_target(target, "nmcli connection up {}".format(connection_id)).check_returncode()
-        _execute_on_target(target, "nmcli connection modify {} connection.autoconnect TRUE".format(connection_id)).check_returncode()
-        _execute_on_target(target, "nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
+        _execute_on_target(
+            target, "nmcli connection modify {} connection.autoconnect TRUE".format(connection_id)).check_returncode()
+        _execute_on_target(
+            target,
+            "nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
 
 
 def main():
@@ -498,7 +475,6 @@ def main():
         else:
             print_info("Running game-settings script for {}".format(target.hostname))
             game_settings.main()
-            sync_gamesettings(target)
             configure_wifi(target)
 
 
