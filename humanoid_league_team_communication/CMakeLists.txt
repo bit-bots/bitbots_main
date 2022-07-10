@@ -35,7 +35,4 @@ install(DIRECTORY config
 install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS
     DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS
-    DESTINATION lib/${PROJECT_NAME})
-
 ament_package()
