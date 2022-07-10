@@ -58,7 +58,7 @@ CTRL-C to quit
 
         self.settings = termios.tcgetattr(sys.stdin)
 
-        namespaces = ['amy', 'rory', 'jack', 'donna', 'rose']
+        namespaces = ['']  # ['amy/', 'rory/', 'jack/', 'donna/', 'rose/']
         publishers = [
             self.create_publisher(GameStateMsg, f'{n}/gamestate', QoSProfile(durability=1, depth=1))
             for n in namespaces
