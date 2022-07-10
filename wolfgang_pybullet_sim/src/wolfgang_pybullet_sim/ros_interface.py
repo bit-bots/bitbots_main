@@ -45,7 +45,6 @@ class ROSInterface:
         # we just use the first robot
         self.robot_index = self.simulation.robot_indexes[0]
 
-        #srv = Server(simConfig, self._dynamic_reconfigure_callback, namespace=namespace)
 
         # publisher
         self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_left/raw", FootPressure,
