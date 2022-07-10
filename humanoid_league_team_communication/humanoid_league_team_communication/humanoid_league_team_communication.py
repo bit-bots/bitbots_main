@@ -45,8 +45,7 @@ class HumanoidLeagueTeamCommunication:
         self.avg_walking_speed = self.node.get_parameter('avg_walking_speed').get_parameter_value().double_value
 
         self.topics = self.node.get_parameters_by_prefix('topics')
-        self.frames = self.node.get_parameters_by_prefix('frames')
-        self.map_frame = self.frames['map_frame']
+        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
 
         if self.target_host == '127.0.0.1':
             # local mode, bind to port depending on bot id and team id
