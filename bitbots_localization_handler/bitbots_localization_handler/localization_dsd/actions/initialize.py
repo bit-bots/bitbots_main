@@ -18,7 +18,7 @@ class AbstractInitialize(AbstractActionElement):
                 blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
                     blackboard.odom_frame,
                     blackboard.base_footprint_frame,
-                    Time(secunds=0, nanoseconds=0),
+                    Time(seconds=0, nanoseconds=0),
                     Duration(seconds=1.0))  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
                 self.blackboard.node.get_logger().warn(f"Not able to save the odom position due to a tf error: {e}")
