@@ -31,11 +31,15 @@ from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Float32
 from ament_index_python import get_package_share_directory
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
-
+from bitbots_utils.utils import get_parameters_from_other_node
+from rclpy.parameter import Parameter
 
 class BodyDSD:
-    def __init__(self, node):
+    def __init__(self, node:Node):
         self.node = node
+        global_parameters = get_parameters_from_other_node["field_length", "field_width"]
+        self.node.declare_parameter(Parameter("field_length", Parameter.Type.DOUBLE, global_parameters["field_length"]))
+        self.node.declare_parameter(Parameter("field_width", Parameter.Type.DOUBLE, global_parameters["field_width"]))
         blackboard = BodyBlackboard(node)
         self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config 
 
