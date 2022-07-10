@@ -139,9 +139,6 @@ namespace bitbots_localization
         case hash("measurement_out_of_map_punishment"):
           this->measurement_out_of_map_punishment = param.as_double();
           break;
-        case hash("walking_moved_distance"):
-          this->walking_moved_distance = param.as_double();
-          break;
         case hash("field_x"):
           this->field_x = param.as_double();
           break;

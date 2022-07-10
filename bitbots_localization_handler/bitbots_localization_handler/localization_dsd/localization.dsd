@@ -11,14 +11,15 @@ $CheckPickup
     JUST_DOWN --> @LocalizationStart, @DoNothing
     DOWN --> $GettingUpState
         YES --> @LocalizationStop, @DoNothing
-        GOTUP --> $WalkedSinceLastInit + dist:%bitbots_localization/walking_moved_distance
+        GOTUP --> $WalkedSinceLastInit + dist:%walking_moved_distance
             YES --> @InitPosition, @LocalizationStart, @DoNothing
             NO --> @RedoLastInit, @LocalizationStart, @DoNothing
         NO --> $CheckGameStateReceived
             NO_GAMESTATE_INIT --> @InitSide, @DoNothing
             DO_NOTHING --> @DoNothing
             GAMESTATE_RECEIVED --> $CheckPenalized
-                YES --> @InitSide, @DoNothing
+                YES --> @LocalizationStop, @DoNothing
+                JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
                 NO --> $GameStateDecider
                     INITIAL --> @InitSide, @DoNothing
                     SET --> #InitSet
