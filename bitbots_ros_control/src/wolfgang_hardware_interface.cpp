@@ -10,6 +10,9 @@ namespace bitbots_ros_control {
 WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh) : servo_interface_(nh) {
   nh_ = nh;
   first_ping_error_ = true;
+  core_present_ = false;
+  last_power_status_ = false;
+  current_power_status_ = false;
   speak_pub_ = nh->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
 
   // load parameters
@@ -109,11 +112,12 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               int read_rate;
               nh_->get_parameter("device_info." + name + ".read_rate", read_rate);
               driver->setTools(model_number_specified_16, id);
-              CoreHardwareInterface *interface = new CoreHardwareInterface(nh_, driver, id, read_rate);
+              core_interface_ = new CoreHardwareInterface(nh_, driver, id, read_rate);
               // turn on power, just to be sure
-              interface->write(nh_->get_clock()->now(), rclcpp::Duration::from_nanoseconds(1e9*0));
-              interfaces_on_port.push_back(interface);
-            } else if (model_number_specified==0 && !only_imu_) {//model number is currently 0 on foot sensors
+              core_interface_->write(nh_->get_clock()->now(), rclcpp::Duration::from_nanoseconds(1e9*0));
+              interfaces_on_port.push_back(core_interface_);
+              core_present_ = true;
+            } else if (model_number_specified == 0 && !only_imu_) {  // model number is currently 0 on foot sensors
               // bitfoot
               std::string topic;
               if (!nh_->get_parameter("device_info." + name + ".topic", topic)) {
@@ -121,7 +125,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               }
               BitFootHardwareInterface *interface = new BitFootHardwareInterface(nh_, driver, id, topic, name);
               interfaces_on_port.push_back(interface);
-            } else if (model_number_specified==0xBAFF && interface_type=="IMU" && !only_pressure_) {
+            } else if (model_number_specified == 0xBAFF && interface_type == "IMU" && !only_pressure_) {
               //IMU
               std::string topic;
               if (!nh_->get_parameter("device_info." + name + ".topic", topic)) {
@@ -137,7 +141,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
                * Therefore, a pointer to this class is passed down to the RobotHW classes
                * registering further interfaces */
               interfaces_on_port.push_back(interface);
-            } else if (model_number_specified==0xBAFF && interface_type=="Button" && !only_pressure_) {
+            } else if (model_number_specified == 0xBAFF && interface_type == "Button" && !only_pressure_) {
               // Buttons
               std::string topic;
               if (!nh_->get_parameter("device_info." + name + ".topic", topic)) {
@@ -146,16 +150,16 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               int read_rate;
               nh_->get_parameter("device_info." + name + ".read_rate", read_rate);
               interfaces_on_port.push_back(new ButtonHardwareInterface(nh_, driver, id, topic, read_rate));
-            } else if ((model_number_specified==0xBAFF || model_number_specified==0xABBA) && interface_type=="LED"
-                && !only_pressure_) {
+            } else if ((model_number_specified == 0xBAFF || model_number_specified == 0xABBA) &&
+                       interface_type == "LED" && !only_pressure_) {
               // LEDs
               int number_of_LEDs, start_number;
               nh_->get_parameter("device_info." + name + ".number_of_LEDs", number_of_LEDs);
               nh_->get_parameter("device_info." + name + ".start_number", start_number);
               interfaces_on_port.push_back(new LedsHardwareInterface(nh_, driver, id, number_of_LEDs, start_number));
-            } else if ((model_number_specified==311 || model_number_specified==321 || model_number_specified==1100)
-                && !only_pressure_
-                && !only_imu_) {
+            } else if ((model_number_specified == 311 || model_number_specified == 321 ||
+                        model_number_specified == 1100) &&
+                       !only_pressure_ && !only_imu_) {
               // Servos
               // We need to add the tool to the driver for later reading and writing
               driver->setTools(model_number_specified_16, id);
@@ -207,7 +211,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
     }
     return false;
   } else {
-    speakError(speak_pub_, "ross control startup successful");
+    speakError(speak_pub_, "ros control startup successful");
     return true;
   }
 }
@@ -255,17 +259,37 @@ void threaded_read(std::vector<HardwareInterface *> &port_interfaces,
 }
 
 void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
-  std::vector<std::thread> threads;
-  // start all reads
-  for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
-    threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+  // give feedback to power changes
+  if (core_present_){
+    if(current_power_status_ && !last_power_status_){
+      speakError(speak_pub_, "Power switched on!");
+    }else if(!current_power_status_ && last_power_status_){
+      speakError(speak_pub_, "Power switched off!");
+    }
   }
-  // wait for all reads to finish
-  for (std::thread &thread: threads) {
-    thread.join();
+  if (!core_present_ || current_power_status_){
+    // only read all hardware if power is on
+    std::vector<std::thread> threads;
+    // start all reads
+    for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
+      threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+    }
+    // wait for all reads to finish
+    for (std::thread &thread: threads) {
+      thread.join();
+    }
+    // aggregate all servo values for controller
+    servo_interface_.read(t, dt);
+    if (core_present_){
+      last_power_status_ = current_power_status_;
+      current_power_status_ = core_interface_->get_power_status();
+    }
+  }else{
+    // read core to see if power is back on
+    core_interface_->read(t, dt);
+    last_power_status_ = current_power_status_;
+    current_power_status_ = core_interface_->get_power_status();
   }
-  // aggregate all servo values for controller
-  servo_interface_.read(t, dt);
 }
 
 void threaded_write(std::vector<HardwareInterface *> &port_interfaces,
@@ -277,17 +301,26 @@ void threaded_write(std::vector<HardwareInterface *> &port_interfaces,
 }
 
 void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
-  // write all controller values to interfaces
-  servo_interface_.write(t, dt);
-  std::vector<std::thread> threads;
-  // start all writes
-  for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
-    threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
-  }
+  if (core_present_ && !last_power_status_ && current_power_status_ &&
+      nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
+    // when we can read the power and see that it was just switched on, we write the ROM RAM again
+    servo_interface_.writeROMRAM(false);
+  } else if(core_present_ && !current_power_status_){
+    // if power is off only write CORE
+    core_interface_->write(t, dt);
+  } else {
+    // write all controller values to interfaces
+    servo_interface_.write(t, dt);
+    std::vector<std::thread> threads;
+    // start all writes
+    for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
+      threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+    }
 
-  // wait for all writes to finish
-  for (std::thread &thread: threads) {
-    thread.join();
+    // wait for all writes to finish
+    for (std::thread &thread: threads) {
+      thread.join();
+    }
   }
 }
 }

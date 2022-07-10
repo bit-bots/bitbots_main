@@ -50,6 +50,10 @@ bool CoreHardwareInterface::init() {
   return true;
 }
 
+bool CoreHardwareInterface::get_power_status(){
+  return power_switch_status_.data;
+}
+
 void CoreHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   /**
    * Reads the CORE board

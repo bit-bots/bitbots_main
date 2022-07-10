@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   rclcpp::Time current_time = nh->get_clock()->now();
   rclcpp::Duration period = nh->get_clock()->now() - current_time;
   bool first_update = true;
-  float control_loop_hz;
+  float control_loop_hz = 500.0;
   nh->get_parameter("control_loop_hz", control_loop_hz);
   rclcpp::Rate rate(control_loop_hz);
   rclcpp::Time stop_time;

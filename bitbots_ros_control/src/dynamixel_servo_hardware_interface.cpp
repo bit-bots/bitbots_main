@@ -14,6 +14,12 @@ void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
   bus_interfaces_.push_back(bus);
 }
 
+void DynamixelServoHardwareInterface::writeROMRAM(bool first_time){
+  for (ServoBusInterface *bus: bus_interfaces_) {
+    bus->writeROMRAM(first_time);
+  }
+}
+
 bool DynamixelServoHardwareInterface::init() {
   /*
   * This initializes the hardware interface based on the values set in the config.

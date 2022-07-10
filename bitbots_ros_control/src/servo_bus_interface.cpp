@@ -84,7 +84,7 @@ bool ServoBusInterface::init() {
 
   // write ROM and RAM values if wanted
   if (nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
-    if (!writeROMRAM()) {
+    if (!writeROMRAM(true)) {
       RCLCPP_WARN(nh_->get_logger(), "Couldn't write ROM and RAM values to all servos.");
     }
   }
@@ -152,7 +152,7 @@ bool ServoBusInterface::loadDynamixels() {
   return success;
 }
 
-bool ServoBusInterface::writeROMRAM() {
+bool ServoBusInterface::writeROMRAM(bool first_time) {
   /**
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
@@ -172,7 +172,9 @@ bool ServoBusInterface::writeROMRAM() {
     for (size_t num = 0; num < joint_names_.size(); num++) {
       values[num] = register_value;
     }
-    driver_->addSyncWrite(register_name.c_str());
+    if (first_time){
+      driver_->addSyncWrite(register_name.c_str());
+    }
     sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
     free(values);
   }

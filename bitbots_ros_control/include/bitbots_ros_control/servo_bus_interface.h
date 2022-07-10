@@ -32,7 +32,7 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
   bool loadDynamixels();
-  bool writeROMRAM();
+  bool writeROMRAM(bool first_time);
 
   void syncWritePWM();
 

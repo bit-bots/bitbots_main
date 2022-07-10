@@ -22,6 +22,8 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
  public:
   explicit CoreHardwareInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver, int id, int read_rate);
 
+  bool get_power_status();
+
   bool init();
 
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
