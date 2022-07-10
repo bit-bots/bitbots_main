@@ -93,7 +93,7 @@ class InitPenaltyKick(AbstractInitialize):
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info('Localization reset service not available, waiting again...')
         self.blackboard.reset_filter_proxy.call_async(
-            ResetFilter.Request(init_mode=4, x=float)self.blackboard.field_length / 2 - 2), y=0.0))
+            ResetFilter.Request(init_mode=4, x=float(self.blackboard.field_length / 2 - 2), y=0.0))
         return self.pop()
 
 
