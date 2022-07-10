@@ -19,8 +19,8 @@ def init(node: Node):
 
     global_params_dict = get_parameters_from_other_node(node, "parameter_blackboard", ["field_length", "team_id"])
     node.get_logger().warn(f"{global_params_dict}")
-    global_params = [Parameter("field_length", Parameter.Type.DOUBLE, global_params_dict["field_length"]), 
-                     Parameter("team_id", Parameter.Type.INTEGER, global_params_dict["team_id"])]
+    global_params = [("field_length", global_params_dict["field_length"]),
+                     ("team_id", global_params_dict["team_id"])]
     node.get_logger().warn(f"{global_params}")
     node.declare_parameters(parameters=global_params, namespace="")
 
