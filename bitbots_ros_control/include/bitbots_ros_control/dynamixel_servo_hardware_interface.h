@@ -57,7 +57,7 @@ class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInte
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
   void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
   void addBusInterface(ServoBusInterface *bus);
-  void writeROMRAM();
+  void writeROMRAM(bool first_time);
 
 private:
   rclcpp::Node::SharedPtr nh_;

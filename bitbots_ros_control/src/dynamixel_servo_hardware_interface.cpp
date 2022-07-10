@@ -14,9 +14,9 @@ void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
   bus_interfaces_.push_back(bus);
 }
 
-void DynamixelServoHardwareInterface::writeROMRAM(){
+void DynamixelServoHardwareInterface::writeROMRAM(bool first_time){
   for (ServoBusInterface *bus: bus_interfaces_) {
-    bus->writeROMRAM();
+    bus->writeROMRAM(first_time);
   }
 }
 

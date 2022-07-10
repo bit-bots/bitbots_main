@@ -117,7 +117,6 @@ install(DIRECTORY config
         DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch
         DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY scripts/
-        DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

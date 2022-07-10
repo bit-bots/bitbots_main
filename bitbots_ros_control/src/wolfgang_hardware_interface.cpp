@@ -11,7 +11,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
   nh_ = nh;
   first_ping_error_ = true;
   core_present_ = false;
-  last_power_status_ = true;
+  last_power_status_ = false;
+  current_power_status_ = false;
   speak_pub_ = nh->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
 
   // load parameters
@@ -258,17 +259,37 @@ void threaded_read(std::vector<HardwareInterface *> &port_interfaces,
 }
 
 void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
-  std::vector<std::thread> threads;
-  // start all reads
-  for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
-    threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+  // give feedback to power changes
+  if (core_present_){
+    if(current_power_status_ && !last_power_status_){
+      speakError(speak_pub_, "Power switched on!");
+    }else if(!current_power_status_ && last_power_status_){
+      speakError(speak_pub_, "Power switched off!");
+    }
   }
-  // wait for all reads to finish
-  for (std::thread &thread: threads) {
-    thread.join();
+  if (!core_present_ || current_power_status_){
+    // only read all hardware if power is on
+    std::vector<std::thread> threads;
+    // start all reads
+    for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
+      threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+    }
+    // wait for all reads to finish
+    for (std::thread &thread: threads) {
+      thread.join();
+    }
+    // aggregate all servo values for controller
+    servo_interface_.read(t, dt);
+    if (core_present_){
+      last_power_status_ = current_power_status_;
+      current_power_status_ = core_interface_->get_power_status();
+    }
+  }else{
+    // read core to see if power is back on
+    core_interface_->read(t, dt);
+    last_power_status_ = current_power_status_;
+    current_power_status_ = core_interface_->get_power_status();
   }
-  // aggregate all servo values for controller
-  servo_interface_.read(t, dt);
 }
 
 void threaded_write(std::vector<HardwareInterface *> &port_interfaces,
@@ -280,10 +301,14 @@ void threaded_write(std::vector<HardwareInterface *> &port_interfaces,
 }
 
 void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
-  // when we can read the power and see that it was just switched on, we write the ROM RAM again
-  if(core_present_ && last_power_status_ == false && core_interface_->get_power_status() && nh_->get_parameter("servos.set_ROM_RAM").as_bool()){
-    servo_interface_.writeROMRAM();
-  }else{
+  if (core_present_ && !last_power_status_ && current_power_status_ &&
+      nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
+    // when we can read the power and see that it was just switched on, we write the ROM RAM again
+    servo_interface_.writeROMRAM(false);
+  } else if(core_present_ && !current_power_status_){
+    // if power is off only write CORE
+    core_interface_->write(t, dt);
+  } else {
     // write all controller values to interfaces
     servo_interface_.write(t, dt);
     std::vector<std::thread> threads;
@@ -297,6 +322,5 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
       thread.join();
     }
   }
-  last_power_status_ = core_interface_->get_power_status();
 }
 }
