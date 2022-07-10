@@ -37,11 +37,11 @@
     </group>
 
     <!-- launch teamcom -->
-    <group if="$(var teamcom)">
+    <!--<group if="$(var teamcom)">
         <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm.launch">
             <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
-    </group>
+    </group>-->
 
     <!-- launch ball_filter -->
     <group if="$(var ball_filter)">
@@ -62,7 +62,7 @@
     </group>
 
     <!-- launch pathplanning -->
-    <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.py" />
+    <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.launch" />
 
     <!-- launch behavior -->
     <group if="$(var behavior)">
