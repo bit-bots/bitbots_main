@@ -1,6 +1,5 @@
 import time
 import numpy
-from sympy import true
 import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
