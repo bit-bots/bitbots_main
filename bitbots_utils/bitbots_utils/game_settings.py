@@ -102,7 +102,6 @@ def main():
         if key in ros_parameters.keys():
             ros_parameters[key] = ask_for_config_option(key, options[key]['options'], ros_parameters[key],
                                                 options[key]['explanation'])
-            print("typ am ende: ", ros_parameters[key])
         else:
             value = ask_for_config_option(key, options[key]['options'], None,
                                                 options[key]['explanation'])
