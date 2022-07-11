@@ -3,5 +3,6 @@ parameter_blackboard:
     # Field measurements in meters
     field_width: 6.0
     field_length: 9.0
+    goal_width: 2.6
 
     robot_type_name: Wolfgang

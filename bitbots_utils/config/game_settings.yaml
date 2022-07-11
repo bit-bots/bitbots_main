@@ -1,2 +1,7 @@
 parameter_blackboard:
-  ros_parameters:
+  ros__parameters:
+    bot_id: 1
+    position_number: 0
+    role: defense
+    team_color: 0
+    team_id: 1
