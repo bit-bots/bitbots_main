@@ -401,17 +401,10 @@ class HumanoidLeagueTeamCommunication:
                     message.others.append(robot)
                     message.other_robot_confidence.append(obstacle.pose.confidence)
 
-<<<<<<< Updated upstream
-        if (self.ball and self.node.get_clock().now() - self.ball.header.stamp < Duration(seconds=self.lifetime) and
-                self.pose and self.node.get_clock().now() - self.pose.header.stamp < Duration(seconds=self.lifetime)):
-            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x)**2 +
-                                      (self.ball.point.y - self.pose.pose.pose.position.y)**2)
-=======
         if (self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime) and
                 self.pose and now - self.pose.header.stamp < Duration(seconds=self.lifetime)):
             ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x) ** 2 +
                                       (self.ball.point.y - self.pose.pose.pose.position.y) ** 2)
->>>>>>> Stashed changes
             message.time_to_ball = ball_distance / self.avg_walking_speed
 
         if self.strategy and now - self.strategy_time < Duration(seconds=self.lifetime):
