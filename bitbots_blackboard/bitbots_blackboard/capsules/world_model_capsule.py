@@ -78,7 +78,7 @@ class WorldModelCapsule:
         self.ball_filtered = None
         self.ball_twist_lost_time = Duration(seconds=self._blackboard.node.get_parameter(
             'body.ball_twist_lost_time').get_parameter_value().double_value)
-        self.ball_twist_precision_threshold = self._blackboard.node.get_parameters_by_prefix(
+        self.ball_twist_precision_threshold = get_parameter_dict(self._blackboard.node,
             'body.ball_twist_precision_threshold')
         self.reset_ball_filter = self._blackboard.node.create_client(Trigger, 'ball_filter_reset')
 
@@ -95,7 +95,6 @@ class WorldModelCapsule:
         self.ball_seen = False
         self.ball_seen_teammate = False
         parameters = get_parameters_from_other_node(self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"])
-        self._blackboard.node.get_logger().warning(str(parameters))
         self.field_length = parameters["field_length"]
         self.field_width = parameters["field_width"]
         self.goal_width = parameters["goal_width"]
@@ -109,7 +108,7 @@ class WorldModelCapsule:
         self.use_localization = self._blackboard.node.get_parameter(
             'body.use_localization').get_parameter_value().bool_value
 
-        self.pose_precision_threshold = self._blackboard.node.get_parameters_by_prefix(
+        self.pose_precision_threshold = get_parameter_dict(self._blackboard.node,
             'body.pose_precision_threshold')
 
         # Publisher for visualization in RViZ

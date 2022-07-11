@@ -4,6 +4,7 @@ This is the ROS-Node which contains the head behavior, starts the appropriate DS
 and subscribes to head_behavior specific ROS-Topics.
 """
 import os
+import threading
 
 import rclpy
 from rclpy.node import Node
@@ -53,11 +54,11 @@ def main(args=None):
     #needed to init rclcpp ros for moveit_bindings
     initRos()
     node = Node("head_node", automatically_declare_parameters_from_overrides=True)
+    dsd = init(node)
+    node.create_timer(1 / 60.0, dsd.update)
     multi_executor = MultiThreadedExecutor()
     multi_executor.add_node(node)
 
-    dsd = init(node)
-    node.create_timer(1 / 60.0, dsd.update)
 
     try:
         multi_executor.spin()

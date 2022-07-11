@@ -12,13 +12,13 @@ class VisualCompassRecord(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(VisualCompassRecord, self).__init__(blackboard, dsd, parameters)
-        
+
         self.index = 0
         self.pan_speed = self.blackboard.config['record_pattern_speed_pan']
         self.tilt_speed = self.blackboard.config['record_pattern_speed_tilt']
         self.interpolation_steps = self.blackboard.config['interpolation_steps']
 
-        # Generate a scan pattern for the left side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
+        # Generate a scan pattern for the left side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config.
         self.pattern_left = self.blackboard.head_capsule.generate_pattern(  self.blackboard.config['record_pattern_scan_lines'],
                                                                             max(self.blackboard.config['record_pattern_pan_max_left']),
                                                                             min(self.blackboard.config['record_pattern_pan_max_left']),
@@ -26,7 +26,7 @@ class VisualCompassRecord(AbstractActionElement):
                                                                             min(self.blackboard.config['record_pattern_tilt_max']),
                                                                             interpolation_steps=self.interpolation_steps)
 
-        # Generate a scan pattern for the right side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config. 
+        # Generate a scan pattern for the right side, with the min/max values from the config. The min/max statements are used to ensure that the values aren't switched in the config.
         self.pattern_right = self.blackboard.head_capsule.generate_pattern(  self.blackboard.config['record_pattern_scan_lines'],
                                                                             max(self.blackboard.config['record_pattern_pan_max_right']),
                                                                             min(self.blackboard.config['record_pattern_pan_max_right']),
@@ -38,11 +38,11 @@ class VisualCompassRecord(AbstractActionElement):
         self.pattern = self.pattern_left + self.pattern_right
         self.threshold = self.blackboard.config['position_reached_threshold']
 
-    def _notify_visual_compass(self): 
+    def _notify_visual_compass(self):
         msg = Header()
         msg.stamp = self.get_clock().now()
         self.blackboard.head_capsule.visual_compass_record_trigger.publish(msg)
-        self.get_logger().info("Notify visual compass")
+        self.blackboard.node.get_logger().info("Notify visual compass")
 
     def perform(self, reevaluate=False):
         """
@@ -55,7 +55,7 @@ class VisualCompassRecord(AbstractActionElement):
         # Convert to radians
         head_pan = math.radians(head_pan)
         head_tilt = math.radians(head_tilt)
-        self.get_logger().debug("Searching at {}, {}".format(head_pan, head_tilt))
+        self.blackboard.node.get_logger().debug("Searching at {}, {}".format(head_pan, head_tilt))
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()

@@ -62,7 +62,7 @@ class HeadModeDecision(AbstractDecisionElement):
         elif head_mode == HeadMode.LOOK_FRONT:
             return 'LOOK_FRONT'
         else:
-            self.get_logger().error('the set head_mode ({}) is not known'.format(head_mode))
+            self.blackboard.node.get_logger().error('the set head_mode ({}) is not known'.format(head_mode))
 
     def get_reevaluate(self):
         """
