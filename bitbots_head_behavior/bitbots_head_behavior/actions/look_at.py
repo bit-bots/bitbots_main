@@ -37,7 +37,7 @@ class AbstractLookAt(AbstractActionElement):
 
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
-
+        self.blackboard.node.get_logger().warning("##########in get motor goals")
         target = Point(point.x, point.y, point.z)
         self.request.look_at_goals[0].target = target
         response = get_bioik_ik(self.request)

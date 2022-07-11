@@ -11,7 +11,7 @@ class AvoidBall(AbstractActionElement):
         self.active = parameters.get('active', True)
 
     def perform(self, reevaluate=False):
-        self.blackboard.pathfinding.ball_obstacle_active_pub.publish(Bool(self.active))
+        self.blackboard.pathfinding.ball_obstacle_active_pub.publish(Bool(data=self.active))
         self.blackboard.pathfinding.avoid_ball = self.active
         self.publish_debug_data("avoid_ball", self.blackboard.pathfinding.avoid_ball)
         self.pop()

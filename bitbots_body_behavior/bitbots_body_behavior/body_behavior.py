@@ -45,7 +45,7 @@ class BodyDSD:
         self.dsd.blackboard.team_data.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
         self.dsd.blackboard.blackboard.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
         self.dsd.blackboard.pathfinding.direct_cmd_vel_pub = node.create_publisher(Twist, 'cmd_vel', 1)
-        self.dsd.blackboard.pathfinding.pathfinding_pub = node.create_publisher(PoseStamped, 'move_base_simple/goal', 1)
+        self.dsd.blackboard.pathfinding.pathfinding_pub = node.create_publisher(PoseStamped, 'goal_pose', 1)
         self.dsd.blackboard.pathfinding.pathfinding_cancel_pub = node.create_publisher(GoalID, 'move_base/cancel', 1)
         self.dsd.blackboard.pathfinding.ball_obstacle_active_pub = node.create_publisher(Bool, "ball_obstacle_active", 1)
         self.dsd.blackboard.pathfinding.keep_out_area_pub = node.create_publisher(PointCloud2, "keep_out_area", 1)

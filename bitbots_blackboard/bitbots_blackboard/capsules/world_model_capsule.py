@@ -401,7 +401,7 @@ class WorldModelCapsule:
     def goalposts_callback(self, goal_parts: PoseWithCertaintyArray):
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
-        goal_parts.header.stamp = goal_parts.header.stamp + Duration(seconds=0.01).to_msg()
+        goal_parts.header.stamp = (Time.from_msg(goal_parts.header.stamp) + Duration(seconds=0.01)).to_msg()
 
         # Tuple(First Post, Second Post, Distance)
         goal_combination = (-1, -1, -1)
@@ -447,7 +447,7 @@ class WorldModelCapsule:
                 self.goal_odom.header.frame_id = self.odom_frame
                 self.goal_seen_time = self._blackboard.node.get_clock().now()
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self._blackboard.node.get_logger().warn(e)
+                self._blackboard.node.get_logger().warn(str(e))
         else:
             self.goal_odom.left_post = left_post
             self.goal_odom.right_post = right_post

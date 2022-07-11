@@ -60,7 +60,7 @@ class TeamDataCapsule:
             'body.pose_precision_threshold.theta_sdev').get_parameter_value().double_value
 
     def is_valid(self, data: TeamData):
-        return self.node.get_clock().now() - data.header.stamp < Duration(seconds=self.data_timeout) \
+        return self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout) \
                and data.state != TeamData.STATE_PENALIZED
 
     def get_goalie_ball_position(self):

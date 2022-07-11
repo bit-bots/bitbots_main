@@ -15,6 +15,7 @@ class AbstractPlayAnimation(AbstractActionElement):
         super(AbstractPlayAnimation, self).__init__(blackboard, dsd, parameters=None)
 
         self.first_perform = True
+        self.finished = False
 
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
@@ -35,7 +36,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             self.first_perform = False
             return
 
-        if self.animation_finished():
+        if self.finished:
             # we are finished playing this animation
             return self.pop()
 
@@ -51,7 +52,7 @@ class AbstractPlayAnimation(AbstractActionElement):
         :param anim: animation to play
         :return:
         """
-
+        self.finished = False
         self.blackboard.node.get_logger().info("Playing animation " + anim)
         if anim is None or anim == "":
             self.blackboard.node.get_logger().warning("Tried to play an animation with an empty name!")
@@ -73,12 +74,12 @@ class AbstractPlayAnimation(AbstractActionElement):
         goal = PlayAnimation.Goal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        self.blackboard.animation_action_client.send_goal(goal)
+        future = self.blackboard.animation_action_client.send_goal_async(goal)
+        future.add_done_callback(self.done_cb)
         return True
 
-    def animation_finished(self):
-        state = self.blackboard.animation_action_client.get_state()
-        return state in [GoalStatus.PREEMPTED, GoalStatus.SUCCEEDED, GoalStatus.ABORTED, GoalStatus.REJECTED, GoalStatus.LOST]
+    def done_cb(self, future):
+        self.finished = True
 
 
 class PlayAnimationGoalieArms(AbstractPlayAnimation):

@@ -53,7 +53,7 @@ class PathfindingCapsule:
             return msg
         else:
             try:
-                msg.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+                msg.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg() #TODO: maybe weird
                 map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=Duration(seconds=0.5))
                 e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
                                            map_goal.pose.orientation.z, map_goal.pose.orientation.w))
@@ -62,7 +62,7 @@ class PathfindingCapsule:
                 map_goal.pose.orientation.y = q[1]
                 map_goal.pose.orientation.z = q[2]
                 map_goal.pose.orientation.w = q[3]
-                map_goal.pose.position.z = 0
+                map_goal.pose.position.z = 0.0
                 return map_goal
             except Exception as e:
                 self.node.get_logger().warn(e)

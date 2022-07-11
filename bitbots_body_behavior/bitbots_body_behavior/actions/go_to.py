@@ -30,15 +30,15 @@ class GoToRelativePosition(AbstractActionElement):
         if self.first:
             self.first = False
             pose_msg = PoseStamped()
-            pose_msg.header.stamp = self.blackboard.node.get_clock().now()
+            pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
             pose_msg.pose.position.x = self.point[0]
             pose_msg.pose.position.y = self.point[1]
-            pose_msg.pose.position.z = 0
+            pose_msg.pose.position.z = 0.0
 
-            rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-            pose_msg.pose.orientation = Quaternion(*rotation)
+            x, y, z, w = quaternion_from_euler(0, 0, math.radians(self.point[2]))
+            pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
 
             # To have the object we are going to in front of us, go to a point behind it
             self.blackboard.pathfinding.publish(pose_msg)

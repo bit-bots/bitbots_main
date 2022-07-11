@@ -34,6 +34,8 @@ class AnimationCapsule:
                 "Will now wait until server is accessible!")
             self.animation_client.wait_for_server()
             self.node.get_logger().warn("Animation server now running, hcm will go on.")
+        self.node.get_logger().error(
+            "#############################")
         goal = PlayAnimation.Goal()
         goal.animation = animation
         goal.hcm = False  # the animation is from the hcm
@@ -41,6 +43,8 @@ class AnimationCapsule:
         self.active = True
 
     def cb_unset_is_busy(self, _p1, _p2):
+        self.node.get_logger().error(
+            "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         self.active = False
 
     def is_animation_busy(self):
