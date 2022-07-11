@@ -91,10 +91,10 @@ def check_new_value(new_value: str, definition) -> bool:
 def main():
     config = provide_config(SETTING_PATH)
     #config = config['parameter_blackboard']['ros_parameters']
-    ros_parameters = config['parameter_blackboard']['ros_parameters']
+    ros_parameters = config['parameter_blackboard']['ros__parameters']
     if ros_parameters is None:
         ros_parameters = {}
-        config['parameter_blackboard']['ros_parameters'] = ros_parameters
+        config['parameter_blackboard']['ros__parameters'] = ros_parameters
         
     options = provide_config(OPTIONS_PATH)
     
