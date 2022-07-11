@@ -153,10 +153,7 @@ class TeamDataCapsule:
     def get_role(self):
         return self.strategy.role, self.role_update
 
-    def set_action(self, action: Union[
-                Strategy.ACTION_UNDEFINED, Strategy.ACTION_POSITIONING, Strategy.ACTION_GOING_TO_BALL,
-                Strategy.ACTION_TRYING_TO_SCORE, Strategy.ACTION_WAITING, Strategy.ACTION_SEARCHING,
-                Strategy.ACTION_KICKING, Strategy.ACTION_LOCALIZING]):
+    def set_action(self, action):
         """Set the action of this robot
 
         :param action: An action from humanoid_league_msgs/Strategy"""

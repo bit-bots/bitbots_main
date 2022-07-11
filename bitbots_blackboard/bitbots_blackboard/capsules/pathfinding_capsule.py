@@ -11,11 +11,10 @@ from ros2_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point, Twist
 from actionlib_msgs.msg import GoalID
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-from bitbots_blackboard.bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class PathfindingCapsule:
-    def __init__(self, blackboard: BodyBlackboard, node: Node):
+    def __init__(self, blackboard: "BodyBlackboard", node: Node):
         self.node = node
         self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
         # Thresholds to determine whether the transmitted goal is a new one

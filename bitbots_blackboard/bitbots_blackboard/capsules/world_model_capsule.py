@@ -5,7 +5,6 @@ WorldModelCapsule
 Provides information about the world model.
 """
 import math
-from bitbots_meta.bitbots_behavior.bitbots_blackboard.bitbots_blackboard.blackboard import BodyBlackboard
 import numpy as np
 from rclpy.clock import ClockType
 from scipy.ndimage import gaussian_filter
@@ -49,7 +48,7 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, blackboard: BodyBlackboard):
+    def __init__(self, blackboard: "BodyBlackboard"):
         self._blackboard = blackboard
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.

@@ -1,5 +1,5 @@
 from std_msgs.msg import Bool
-from bitbots_meta.bitbots_behavior.bitbots_blackboard.bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
