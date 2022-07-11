@@ -117,6 +117,9 @@ class CheckMotors(AbstractDecisionElement):
                 return "OKAY"
             else:
                 return "MOTORS_NOT_STARTED"
+        else:
+            if self.blackboard.servo_overload:
+                return "OVERLOAD"
 
         # check if we want to turn the motors off after not using them for a longer time
         if self.blackboard.last_motor_goal_time is not None \

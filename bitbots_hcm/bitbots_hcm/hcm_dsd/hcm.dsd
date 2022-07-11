@@ -14,6 +14,7 @@ $StartHCM
             RECORD_ACTIVE --> @StayRecord
             FREE --> $CheckMotors
                 MOTORS_NOT_STARTED --> @WaitForMotorStartup
+                OVERLOAD --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayMotorsOff
                 PROBLEM --> @WaitForMotors
                 TURN_OFF --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayMotorsOff
                 TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:rise

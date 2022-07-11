@@ -119,6 +119,7 @@ class HcmBlackboard():
         self.cop_r_msg = None
 
         self.servo_diag_error = False
+        self.servo_overload = False
         self.imu_diag_error = False
         self.pressure_diag_error = False
 
@@ -126,11 +127,14 @@ class HcmBlackboard():
 
     def diag_cb(self, msg: DiagnosticArray):
         for status in msg.status:
-            if status.name == "/Servos":
+            if "//Servos/" in status.name:
+                if status.level == DiagnosticStatus.ERROR and "Overload" in status.message:
+                    self.servo_overload = True
+            elif "//Servos" in status.name:
                 self.servo_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
-            elif status.name == "/IMU":
+            elif "//IMU" in status.name:
                 self.imu_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
-            elif status.name == "/Pressure":
+            elif "//Pressure" in status.name:
                 self.pressure_diag_error = status.level == DiagnosticStatus.ERROR or status.level == DiagnosticStatus.STALE
 
     def last_kick_feedback_callback(self, msg):
