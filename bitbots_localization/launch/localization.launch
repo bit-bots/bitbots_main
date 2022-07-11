@@ -33,4 +33,11 @@
         <param name="use_sim_time" value="$(var sim)"/>
         <param name="yaml_filename" value="$(find-pkg-share bitbots_localization)/config/fields/$(var fieldname)/map_server.yaml" />
     </node>
+
+    <!-- life cycle manager for map server -->
+    <node name="lifecycle_manager_navigation" pkg="nav2_lifecycle_manager" exec="lifecycle_manager" output="screen">
+        <param name="autostart" value="true"/>
+        <param name="use_sim_time" value="$(var sim)"/>
+        <param name="node_names" value="[field_map_server]" />
+    </node>
 </launch>
