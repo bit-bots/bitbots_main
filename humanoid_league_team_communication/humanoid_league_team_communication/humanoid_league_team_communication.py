@@ -4,7 +4,6 @@ import socket
 from typing import Optional
 
 import rclpy
-from rclpy import logging
 from rclpy.duration import Duration
 from rclpy.node import Node
 import struct
@@ -21,15 +20,14 @@ from ament_index_python.packages import get_package_share_directory
 
 from humanoid_league_team_communication import robocup_extension_pb2
 
-logger = logging.get_logger("humanoid_league_team_communication")
-
 class HumanoidLeagueTeamCommunication:
     def __init__(self):
         self._package_path = get_package_share_directory("humanoid_league_team_communication")
         self.socket = None
         self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
+        self.logger = self.node.get_logger()
 
-        logger.info("Initializing humanoid_league_team_communication...")
+        self.logger.info("Initializing humanoid_league_team_communication...")
 
         params_blackboard = get_parameters_from_other_node(self.node, "parameter_blackboard", ['bot_id', 'team_id'])
         self.player_id = params_blackboard['bot_id']
@@ -131,7 +129,7 @@ class HumanoidLeagueTeamCommunication:
         self.node.create_subscription(PoseStamped, self.topics['move_base_goal_topic'], self.move_base_goal_cb, 1)
 
     def get_connection(self):
-        logger.info(f"Binding to port {self.receive_port}")
+        self.logger.info(f"Binding to port {self.receive_port}")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.bind(('0.0.0.0', self.receive_port))
         return sock
@@ -139,7 +137,7 @@ class HumanoidLeagueTeamCommunication:
     def close_connection(self):
         if self.socket:
             self.socket.close()
-            logger.info("Connection closed.")
+            self.logger.info("Connection closed.")
 
     def receive_msg(self):
         return self.socket.recv(1024)
@@ -178,7 +176,7 @@ class HumanoidLeagueTeamCommunication:
                 obstacle.pose.pose.pose = obstacle_map.pose
                 self.obstacles.obstacles.append(obstacle)
             except tf2_ros.TransformException:
-                logger.error("TeamComm: Could not transform obstacle to map frame")
+                self.logger.error("TeamComm: Could not transform obstacle to map frame")
 
     def ball_cb(self, msg: PoseWithCovarianceStamped):
         # Transform to map
@@ -187,7 +185,7 @@ class HumanoidLeagueTeamCommunication:
             self.ball = self.tf_buffer.transform(ball_point, self.map_frame, timeout=Duration(nanoseconds=0.3e9))
             self.ball_covariance = msg.pose.covariance
         except tf2_ros.TransformException:
-            logger.error("TeamComm: Could not transform ball to map frame")
+            self.logger.error("TeamComm: Could not transform ball to map frame")
             self.ball = None
 
     def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
@@ -424,7 +422,7 @@ class HumanoidLeagueTeamCommunication:
 
         msg = message.SerializeToString()
         for port in self.target_ports:
-            logger.debug(f'Sending to {port} on {self.target_host}')
+            self.logger.debug(f'Sending to {port} on {self.target_host}')
             self.socket.sendto(msg, (self.target_host, port))
 
 def main():
