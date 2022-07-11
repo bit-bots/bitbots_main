@@ -234,7 +234,7 @@ class TeamMessage:
 if __name__ == "__main__":
     # retrieve InteractiveMarkerServer and setup subscribers and publishers
     rclpy.init(args=None)
-    node = Node('teamcomm_test_marker')
+    node = Node('team_comm_test_marker')
     server = InteractiveMarkerServer(node, "basic_controls")
     robot = RobotMarker(server)
     server.applyChanges()

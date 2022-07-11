@@ -3,6 +3,8 @@ import sys
 
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
+from rclpy.constants import S_TO_NS
 from humanoid_league_msgs.msg import TeamData, Strategy
 from transforms3d.euler import quat2euler
 
@@ -32,16 +34,14 @@ Robot 1
         SIDE: UNDEFINED
 """
 
-
-class TeamCommPrinter:
-
+class TeamCommPrinter(Node):
     def __init__(self):
-        rclpy.init(args=None)
+        super().__init__("show_team_comm")
         self.subscriber = self.create_subscription(TeamData, "team_data", self.data_cb, 1)
         self.team_data = {}
         for i in range(1, 5):
             self.team_data[i] = TeamData()
-            self.team_data[i].robot_id = -1
+            self.team_data[i].robot_id = i
         self.states = {TeamData.STATE_UNKNOWN: "Unknown",
                        TeamData.STATE_PENALIZED: "Penalized",
                        TeamData.STATE_UNPENALIZED: "Unpenalized"}
@@ -71,7 +71,8 @@ class TeamCommPrinter:
     def generate_string(self, data: TeamData):
         lines = []
         lines.append(f"Robot {data.robot_id}")
-        time = min(100, round((self.get_clock().now() - data.header.stamp).to_sec()))
+        duration = self.get_clock().now() - Time.from_msg(data.header.stamp)
+        time = min(100, round(duration.nanoseconds / S_TO_NS))
         lines.append(f"Time since message: {time:<3}")
         lines.append(f"State: {self.states[data.state]:<11}")
         lines.append(f"Position")
@@ -118,8 +119,7 @@ class TeamCommPrinter:
                 print(f"{line}")
             rate.sleep()
 
-
 if __name__ == '__main__':
+    rclpy.init(args=None)
     printer = TeamCommPrinter()
     printer.run()
-er.run()
