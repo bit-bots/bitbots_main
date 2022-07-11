@@ -189,7 +189,7 @@ class WorldModelCapsule:
                     self.which_ball_pub.publish(h)
                     return teammate_ball
                 else:
-                    self._blackboard.node.get_logger().error(
+                    self._blackboard.node.get_logger().warning(
                         "our ball is bad but the teammates ball is worse or cant be transformed")
                     h = Header()
                     h.stamp = self.ball_map.header.stamp
