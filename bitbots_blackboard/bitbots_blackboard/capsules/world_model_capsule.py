@@ -28,7 +28,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 from sensor_msgs.msg import PointCloud2 as pc2
-from bitbots_utils.utils import get_parameter_dict
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 
 
 class GoalRelative:
@@ -48,7 +48,7 @@ class GoalRelative:
 
 
 class WorldModelCapsule:
-    def __init__(self, blackboard):
+    def __init__(self, blackboard: "BodyBlackboard"):
         self._blackboard = blackboard
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
@@ -78,7 +78,7 @@ class WorldModelCapsule:
         self.ball_filtered = None
         self.ball_twist_lost_time = Duration(seconds=self._blackboard.node.get_parameter(
             'body.ball_twist_lost_time').get_parameter_value().double_value)
-        self.ball_twist_precision_threshold = self._blackboard.node.get_parameters_by_prefix(
+        self.ball_twist_precision_threshold = get_parameter_dict(self._blackboard.node,
             'body.ball_twist_precision_threshold')
         self.reset_ball_filter = self._blackboard.node.create_client(Trigger, 'ball_filter_reset')
 
@@ -94,9 +94,10 @@ class WorldModelCapsule:
         self.goal_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         self.ball_seen = False
         self.ball_seen_teammate = False
-        self.field_length = self._blackboard.node.get_parameter('field_length').get_parameter_value().double_value
-        self.field_width = self._blackboard.node.get_parameter('field_width').get_parameter_value().double_value
-        self.goal_width = self._blackboard.node.get_parameter('goal_width').get_parameter_value().double_value
+        parameters = get_parameters_from_other_node(self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"])
+        self.field_length = parameters["field_length"]
+        self.field_width = parameters["field_width"]
+        self.goal_width = parameters["goal_width"]
         self.map_margin = self._blackboard.node.get_parameter(
             'body.map_margin').get_parameter_value().double_value
         self.obstacle_costmap_smoothing_sigma = self._blackboard.node.get_parameter(
@@ -107,7 +108,7 @@ class WorldModelCapsule:
         self.use_localization = self._blackboard.node.get_parameter(
             'body.use_localization').get_parameter_value().bool_value
 
-        self.pose_precision_threshold = self._blackboard.node.get_parameters_by_prefix(
+        self.pose_precision_threshold = get_parameter_dict(self._blackboard.node,
             'body.pose_precision_threshold')
 
         # Publisher for visualization in RViZ
@@ -188,7 +189,7 @@ class WorldModelCapsule:
                     self.which_ball_pub.publish(h)
                     return teammate_ball
                 else:
-                    self._blackboard.node.get_logger().error(
+                    self._blackboard.node.get_logger().warning(
                         "our ball is bad but the teammates ball is worse or cant be transformed")
                     h = Header()
                     h.stamp = self.ball_map.header.stamp
@@ -320,7 +321,7 @@ class WorldModelCapsule:
             self.ball_teammate = PointStamped()
 
         if reset_ball_filter:  # Reset the ball filter
-            result = self.reset_ball_filter()
+            result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
             if result.success:
                 self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
             else:
@@ -400,7 +401,7 @@ class WorldModelCapsule:
     def goalposts_callback(self, goal_parts: PoseWithCertaintyArray):
         # todo: transform to base_footprint too!
         # adding a minor delay to timestamp to ease transformations.
-        goal_parts.header.stamp = goal_parts.header.stamp + Duration(seconds=0.01).to_msg()
+        goal_parts.header.stamp = (Time.from_msg(goal_parts.header.stamp) + Duration(seconds=0.01)).to_msg()
 
         # Tuple(First Post, Second Post, Distance)
         goal_combination = (-1, -1, -1)
@@ -446,7 +447,7 @@ class WorldModelCapsule:
                 self.goal_odom.header.frame_id = self.odom_frame
                 self.goal_seen_time = self._blackboard.node.get_clock().now()
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self._blackboard.node.get_logger().warn(e)
+                self._blackboard.node.get_logger().warn(str(e))
         else:
             self.goal_odom.left_post = left_post
             self.goal_odom.right_post = right_post
@@ -598,7 +599,7 @@ class WorldModelCapsule:
         normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (
                     np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
         # Build the OccupancyGrid message
-        msg = ros2_numpy.msgify(
+        msg: OccupancyGrid = ros2_numpy.msgify(
             OccupancyGrid,
             normalized_costmap,
             info=MapMetaData(

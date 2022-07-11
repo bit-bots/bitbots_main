@@ -145,7 +145,7 @@
       ball_far_approach_position_thresh: 0.2
 
       # We reapproach the ball after it has moved further away than this distance. This includes movig to the far approach position. Balls further away are also recognized as obstacles.
-      ball_reaproach_dist: 1.0
+      ball_reapproach_dist: 1.0
 
       # Distance at which the ball is normally approached
       ball_approach_dist: 0.20
@@ -248,7 +248,4 @@
 
     role: "goalie"
 
-    # Field measurements in meters
-    field_width: 6.0
-    field_length: 9.0
     goal_width: 2.6

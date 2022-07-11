@@ -9,13 +9,14 @@ from rclpy.node import Node
 import tf2_ros as tf2
 
 from humanoid_league_msgs.msg import HeadMode, RobotControlState
+from bitbots_utils.utils import get_parameters_from_other_node
 
 class BlackboardCapsule:
     def __init__(self, node: Node):
         self.node = node
         self.my_data = {}
         self.head_pub = None  # type: rospy.Publisher
-        self.duty = self.node.get_parameter('role')  # TODO: adapt to Leo's script
+        self.duty = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])['role']
         self.state = None  # type: RobotControlState
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
@@ -28,7 +29,7 @@ class BlackboardCapsule:
 
     def set_head_duty(self, head_duty):
         head_duty_msg = HeadMode()
-        head_duty_msg.headMode = head_duty
+        head_duty_msg.head_mode = head_duty
         self.head_pub.publish(head_duty_msg)
 
     ###################
@@ -55,7 +56,7 @@ class BlackboardCapsule:
         :param duration_secs: Duration of the timer in seconds
         :return: None
         """
-        self.timers[timer_name] = self.get_clock().now() + rclpy.Duration.from_sec(int(duration_secs))
+        self.timers[timer_name] = self.node.get_clock().now() + Duration(seconds=duration_secs)
 
     def end_timer(self, timer_name):
         """
@@ -63,7 +64,7 @@ class BlackboardCapsule:
         :param timer_name: Name of the timer
         :return: None
         """
-        self.timers[timer_name] = self.get_clock().now()
+        self.timers[timer_name] = self.node.get_clock().now()
 
     def timer_running(self, timer_name):
         """
@@ -73,7 +74,7 @@ class BlackboardCapsule:
         """
         if timer_name not in self.timers:
             return False
-        return self.get_clock().now() < self.timers[timer_name]
+        return self.node.get_clock().now() < self.timers[timer_name]
 
     def timer_remaining(self, timer_name):
         """
@@ -84,7 +85,7 @@ class BlackboardCapsule:
 
         if timer_name not in self.timers:
             return -1
-        return (self.timers[timer_name] - self.get_clock().now()).to_sec()
+        return (self.timers[timer_name] - self.node.get_clock().now()).to_sec()
 
     def timer_ended(self, timer_name):
         """
@@ -94,5 +95,5 @@ class BlackboardCapsule:
         """
         if timer_name not in self.timers:
             return True  # Don't wait for a non-existing Timer
-        return self.get_clock().now() > self.timers[timer_name]
+        return self.node.get_clock().now() > self.timers[timer_name]
 

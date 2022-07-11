@@ -16,20 +16,20 @@ class AbstractLookAt(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractLookAt, self).__init__(blackboard, dsd, parameters)
 
-        self.head_tf_frame = self.blackboard.node.get_parameter('~base_link_frame').get_parameter_value().string_value  # base_link is required by bio_ik
-        self.camera_frame = self.blackboard.node.get_parameter('~camera_frame').get_parameter_value().string_value
+        self.head_tf_frame = self.blackboard.node.get_parameter('base_link_frame').value  # base_link is required by bio_ik
+        self.camera_frame = self.blackboard.node.get_parameter('camera_frame').value
         self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
         self.request = IKRequest()
         self.request.group_name = "Head"
-        self.request.timeout.secs = 1
+        self.request.timeout.sec = 1
         self.request.approximate = True
         self.request.look_at_goals.append(LookAtGoal())
         # has to be without prefix since this is used for bio ik and frames inside the urdf are not prefixed
         self.request.look_at_goals[0].link_name = "camera"
-        self.request.look_at_goals[0].weight = 1
-        self.request.look_at_goals[0].axis.x = 1
+        self.request.look_at_goals[0].weight = 1.0
+        self.request.look_at_goals[0].axis.x = 1.0
 
         self.pan_speed = self.blackboard.config['look_at']['pan_speed']
         self.tilt_speed = self.blackboard.config['look_at']['tilt_speed']
@@ -37,7 +37,7 @@ class AbstractLookAt(AbstractActionElement):
 
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
-
+        self.blackboard.node.get_logger().warning("##########in get motor goals")
         target = Point(point.x, point.y, point.z)
         self.request.look_at_goals[0].target = target
         response = get_bioik_ik(self.request)
@@ -59,13 +59,13 @@ class AbstractLookAt(AbstractActionElement):
         try:
             point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
         except tf2.LookupException as e:
-            self.get_logger().warn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
+            self.blackboard.node.get_logger().warn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return
         except tf2.ConnectivityException as e:
-            self.get_logger().warn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
+            self.blackboard.node.get_logger().warn('The transforms {} and {} are not connected in the TF Tree (ConnectivityException)'.format(point.header.frame_id, self.head_tf_frame))
             return
         except tf2.ExtrapolationException as e:
-            self.get_logger().warn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
+            self.blackboard.node.get_logger().warn('The transform {} is currently not available (ExtrapolationException)'.format(self.head_tf_frame))
             return
 
         head_pan, head_tilt = self.get_motor_goals_from_point(point.point)

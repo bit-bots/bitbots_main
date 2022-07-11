@@ -1,9 +1,8 @@
 import math
 import numpy as np
-import rospy
-from bitbots_msgs.msg import KickGoal
+from bitbots_msgs.action import Kick
 from geometry_msgs.msg import Quaternion
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -25,7 +24,7 @@ class KickBallStatic(AbstractKickAction):
         elif 'left' == parameters['foot']:
             self.kick = 'kick_left'  # TODO get actual name of parameter from some config
         else:
-            rospy.logerr(
+            self.blackboard.node.get_logger().error(
                 'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
 
     def perform(self, reevaluate=False):
@@ -58,8 +57,8 @@ class KickBallDynamic(AbstractKickAction):
 
         if not self.blackboard.kick.is_currently_kicking:
             if not self._goal_sent:
-                goal = KickGoal()
-                goal.header.stamp = rospy.Time.now()
+                goal = Kick.Goal()
+                goal.header.stamp = self.blackboard.node.get_clock().now()
 
                 # currently we use a tested left or right kick
                 goal.header.frame_id = self.blackboard.world_model.base_footprint_frame  # the ball position is stated in this frame
@@ -112,7 +111,7 @@ class KickBallVeryHard(AbstractKickAction):
         elif 'left' == parameters['foot']:
             self.hard_kick = 'kick_left'  # TODO get actual name of parameter from some config
         else:
-            rospy.logerr(
+            self.blackboard.node.get_logger().error(
                 'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
 
     def perform(self, reevaluate=False):

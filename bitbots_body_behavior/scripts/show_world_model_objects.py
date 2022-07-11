@@ -108,7 +108,7 @@ class ShowWorldModelObjects:
         self.tfBuffer = tf2_ros.Buffer()
         listener = tf2_ros.TransformListener(self.tfBuffer)
 
-        self.last_received_kick_info = rospy.Time.now()
+        self.last_received_kick_info = self.blackboard.node.get_clock().now()
 
         self.kick_area()
         rospy.spin()
@@ -129,7 +129,7 @@ class ShowWorldModelObjects:
                 continue
 
             # set stamp and frame_id
-            self.marker_kick_area.header.stamp = rospy.Time.now()
+            self.marker_kick_area.header.stamp = self.blackboard.node.get_clock().now()
             self.marker_kick_area.header.frame_id = self.base_footprint_frame
             # set corners of the two square markers
             point1 = Point()
@@ -148,7 +148,7 @@ class ShowWorldModelObjects:
             self.marker_kick_area.points = kick_area
 
             # set color back to grey
-            if abs(self.last_received_kick_info - rospy.Time.now()) > rospy.Duration(1):
+            if abs(self.last_received_kick_info - self.blackboard.node.get_clock().now()) > rospy.Duration(1):
                 self.marker_kick_area.color.r = 0.8
                 self.marker_kick_area.color.g = 0.8
                 self.marker_kick_area.color.b = 0.8
@@ -185,7 +185,7 @@ class ShowWorldModelObjects:
             self.marker_kick_area.color.r = 1.0
             self.marker_kick_area.color.g = 0.0
             self.marker_kick_area.color.b = 0.0
-        self.last_received_kick_info = rospy.Time.now()
+        self.last_received_kick_info = self.blackboard.node.get_clock().now()
 
 
 if __name__ == "__main__":

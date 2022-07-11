@@ -4,8 +4,7 @@ import numpy as np
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
-import rospy
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 
 class GoToDefensePosition(AbstractActionElement):
@@ -47,7 +46,7 @@ class GoToDefensePosition(AbstractActionElement):
         our_pose = [robot_x, robot_y]
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         if self.mode == "freekick_first":

@@ -1,10 +1,14 @@
 from dynamic_stack_decider import AbstractActionElement
 from humanoid_league_msgs.msg import Strategy
 
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+
 
 class ChangeAction(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters):
+    def __init__(self, blackboard: BodyBlackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard = blackboard
 
         self.action = parameters.get('action', None)
         self.actions = {

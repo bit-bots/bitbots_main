@@ -1,6 +1,4 @@
 # -*- coding:utf-8 -*-
-import rospy
-
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import GameState
 

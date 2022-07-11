@@ -1,6 +1,5 @@
 import random
 
-import rospy
 from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import Point
 
@@ -36,11 +35,11 @@ class GoToRolePosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = self.role_position[0]
         pose_msg.pose.position.y = self.role_position[1]
-        pose_msg.pose.orientation.w = 1
+        pose_msg.pose.orientation.w = 1.0
 
         self.blackboard.pathfinding.publish(pose_msg)

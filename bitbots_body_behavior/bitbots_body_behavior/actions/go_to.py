@@ -9,9 +9,8 @@ Goes to a position or an object
 """
 
 import math
-import rospy
 import tf2_ros as tf2
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 from tf2_geometry_msgs import PoseStamped
 from geometry_msgs.msg import Quaternion
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -31,21 +30,21 @@ class GoToRelativePosition(AbstractActionElement):
         if self.first:
             self.first = False
             pose_msg = PoseStamped()
-            pose_msg.header.stamp = rospy.Time.now()
+            pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             pose_msg.header.frame_id = self.blackboard.base_footprint_frame
 
             pose_msg.pose.position.x = self.point[0]
             pose_msg.pose.position.y = self.point[1]
-            pose_msg.pose.position.z = 0
+            pose_msg.pose.position.z = 0.0
 
-            rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-            pose_msg.pose.orientation = Quaternion(*rotation)
+            x, y, z, w = quaternion_from_euler(0, 0, math.radians(self.point[2]))
+            pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
 
             # To have the object we are going to in front of us, go to a point behind it
             self.blackboard.pathfinding.publish(pose_msg)
             # TODO: this in good
             # waiting until the robot started to walk
-            rospy.sleep(0.25)
+            self.blackboard.node.create_rate(4).sleep()
         if not self.blackboard.blackboard.is_currently_walking():
             self.pop()
 
@@ -61,7 +60,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = self.point[0]

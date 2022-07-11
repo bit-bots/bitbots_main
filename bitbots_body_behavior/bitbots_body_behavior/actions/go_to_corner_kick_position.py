@@ -4,8 +4,7 @@ import numpy as np
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
-import rospy
-from tf.transformations import quaternion_from_euler
+from tf_transformations import quaternion_from_euler
 
 
 class GoToCornerKickPosition(AbstractActionElement):
@@ -17,7 +16,7 @@ class GoToCornerKickPosition(AbstractActionElement):
         # optional parameter which goes into the block position at a certain distance to the ball
         self.mode = parameters.get('mode', None)
         if self.mode is None or self.mode not in ("striker", "supporter", "others"):
-            rospy.logerr("mode for corner kick not specified")
+            self.blackboard.node.get_logger().error("mode for corner kick not specified")
             exit()
 
     def perform(self, reevaluate=False):
@@ -41,7 +40,7 @@ class GoToCornerKickPosition(AbstractActionElement):
         field_width = self.blackboard.world_model.field_width
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = rospy.Time.now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         # decide if the corner is on the left or right side of our goal

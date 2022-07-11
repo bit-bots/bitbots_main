@@ -1,4 +1,4 @@
-import rospy
+from rclpy.duration import Duration
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from humanoid_league_msgs.msg import GameState
 
@@ -6,7 +6,7 @@ from humanoid_league_msgs.msg import GameState
 class AllowedToMove(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(AllowedToMove, self).__init__(blackboard, dsd, parameters)
-        self.ball_lost_time = rospy.Duration.from_sec(self.blackboard.config['ball_lost_time'])
+        self.ball_lost_time = Duration(seconds=self.blackboard.config['ball_lost_time'])
         self.kickoff_min_ball_movement = self.blackboard.config["kickoff_min_ball_movement"]
 
     def perform(self, reevaluate=False):
@@ -47,7 +47,7 @@ class AllowedToMove(AbstractDecisionElement):
                 # check if this is a normal kickoff
                 if self.blackboard.gamestate.free_kick_kickoff_team is None:
                     # if we know where the ball is and that it moved, we can play too
-                    if rospy.Time.now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time and (
+                    if self.blackboard.node.get_clock().now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time and (
                             abs(ball_pos[0]) > self.kickoff_min_ball_movement or
                             abs(ball_pos[1]) > self.kickoff_min_ball_movement):
                         self.publish_debug_data("Reason", "Opp kick off ball moved")
@@ -64,7 +64,7 @@ class AllowedToMove(AbstractDecisionElement):
                     return 'NORMAL'
         else:
             self.publish_debug_data("Reason", "Error fallback to normal")
-            rospy.logerr("UNKNOWN STATE !!!")
+            self.blackboard.node.get_logger().error("UNKNOWN STATE !!!")
             return 'NORMAL'
 
     def get_reevaluate(self):
