@@ -92,8 +92,6 @@ gen.add("ROS_line_mask_msg_topic", str, description="ROS topic of the line mask 
 gen.add("ROS_debug_image_msg_topic", str, description="ROS topic of the debug image message")
 gen.add("ROS_field_mask_image_msg_topic", str, description="ROS topic of the field mask debug image message")
 
-gen.add("use_game_settings", bool, description="uses game settings such as the own team color")
-
 gen.add("yoeo_model_path", str, description="Name of YOEO model")
 gen.add("yoeo_nms_threshold", float, description="YOEO Non-maximum suppression threshold", min=0.0, max=1.0)
 gen.add("yoeo_conf_threshold", float, description="YOEO confidence threshold", min=0.0, max=1.0)
