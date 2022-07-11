@@ -1,14 +1,13 @@
 import re
 from typing import Union
-import yaml
 from rclpy import logging
+from rclpy.node import Node
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
-from humanoid_league_msgs.msg import Audio, GameState
+from humanoid_league_msgs.msg import Audio
 from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
-
-
+from bitbots_utils.utils import get_parameters_from_other_node
 """
 This module provides some methods needed for the ros environment,
 e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
@@ -16,14 +15,22 @@ e.g. methods to convert candidates to ROS messages or methods to modify the dyna
 
 _cv_bridge = CvBridge()
 
-global _game_state
-_game_state = None
-
 logger = logging.get_logger('bitbots_vision')
 
 general_parameters = []
 
-def create_or_update_publisher(node, old_config, new_config, publisher_object, topic_key, data_class, qos_profile=1, callback_group=None):
+global own_team_color
+own_team_color = None
+
+
+def create_or_update_publisher(node,
+                               old_config,
+                               new_config,
+                               publisher_object,
+                               topic_key,
+                               data_class,
+                               qos_profile=1,
+                               callback_group=None):
     """
     Creates or updates a publisher
 
@@ -46,15 +53,23 @@ def create_or_update_publisher(node, old_config, new_config, publisher_object, t
     # Check if topic parameter has changed
     if config_param_change(old_config, new_config, topic_key):
         # Create the new publisher
-        publisher_object = node.create_publisher(
-            data_class,
-            new_config[topic_key],
-            qos_profile,
-            callback_group=callback_group)
+        publisher_object = node.create_publisher(data_class,
+                                                 new_config[topic_key],
+                                                 qos_profile,
+                                                 callback_group=callback_group)
         logger.debug("Registered new publisher to " + str(new_config[topic_key]))
     return publisher_object
 
-def create_or_update_subscriber(node, old_config, new_config, subscriber_object, topic_key, data_class, callback, qos_profile=1, callback_group=None):
+
+def create_or_update_subscriber(node,
+                                old_config,
+                                new_config,
+                                subscriber_object,
+                                topic_key,
+                                data_class,
+                                callback,
+                                qos_profile=1,
+                                callback_group=None):
     """
     Creates or updates a subscriber
 
@@ -78,12 +93,11 @@ def create_or_update_subscriber(node, old_config, new_config, subscriber_object,
     # Check if topic parameter has changed
     if config_param_change(old_config, new_config, topic_key):
         # Create the new subscriber
-        subscriber_object = node.create_subscription(
-            data_class,
-            new_config[topic_key],
-            callback,
-            qos_profile,
-            callback_group=callback_group)
+        subscriber_object = node.create_subscription(data_class,
+                                                     new_config[topic_key],
+                                                     callback,
+                                                     qos_profile,
+                                                     callback_group=callback_group)
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
@@ -122,6 +136,7 @@ def build_goal_post_array_msg(header, goal_post_msgs):
     goal_posts_msg.posts = goal_post_msgs
     return goal_posts_msg
 
+
 def build_goal_post_msg(goalpost):
     """
     Builds a Goalpost message
@@ -135,6 +150,7 @@ def build_goal_post_msg(goalpost):
     if goalpost.get_rating() is not None:
         post_msg.confidence.confidence = float(goalpost.get_rating())
     return post_msg
+
 
 def build_ball_array_msg(header, balls):
     """
@@ -166,8 +182,9 @@ def build_ball_msg(ball_candidate):
     ball_msg.center.x = float(ball_candidate.get_center_x())
     ball_msg.center.y = float(ball_candidate.get_center_y())
     if ball_candidate.get_rating() is not None:
-            ball_msg.confidence.confidence = float(ball_candidate.get_rating())
+        ball_msg.confidence.confidence = float(ball_candidate.get_rating())
     return ball_msg
+
 
 def build_robot_array_msg(header, robots):
     """
@@ -185,6 +202,7 @@ def build_robot_array_msg(header, robots):
     robots_msg.robots = robots
     return robots_msg
 
+
 def build_robot_msg(obstacle, obstacle_color=None):
     """
     Builds a Robot msg of a detected obstacle of a certain color
@@ -199,6 +217,7 @@ def build_robot_msg(obstacle, obstacle_color=None):
     if obstacle.get_rating() is not None:
         obstacle_msg.confidence.confidence = float(obstacle.get_rating())
     return obstacle_msg
+
 
 def build_field_boundary_msg(header, field_boundary):
     """
@@ -219,6 +238,7 @@ def build_field_boundary_msg(header, field_boundary):
         p.y = float(point[1])
         field_boundary_msg.points.append(p)
     return field_boundary_msg
+
 
 def build_marking_array_msg(header, marking_segments):
     """
@@ -249,6 +269,7 @@ def build_image_msg(header, image, desired_encoding="passthrough"):
     image_msg = _cv_bridge.cv2_to_imgmsg(image, desired_encoding)
     image_msg.header = header
     return image_msg
+
 
 def convert_line_points_to_marking_segment_msgs(line_points):
     """
@@ -331,54 +352,46 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
             return True
     return False
 
-def gamestate_callback(gamestate_msg):
-    """
-    This method is called by the GameState msg subscriber.
-    """
-    global _game_state
-    _game_state = gamestate_msg
 
-def get_team_from_robot_color(color: GameState.team_color)-> RobotAttributes.team:
+def update_own_team_color(vision_node: Node):
+    global own_team_color
+    params = get_parameters_from_other_node(vision_node,
+                                            'parameter_blackboard', ['team_color'],
+                                            service_timeout_sec=2.0)
+    own_team_color = params['team_color']
+    vision_node._logger.debug(f"Own team color is: {own_team_color}")
+
+
+def get_team_from_robot_color(color: int) -> RobotAttributes.team:
     """
     Maps the detected robot color to the current team.
     If the color is the same as the current team, returns own team, else returns opponent team.
     """
-    global _game_state
-
-    if color not in [GameState.BLUE, GameState.RED]:  # If color is not known, we can just return unknown
-        return Robot().attributes.TEAM_UNKNOWN
-
-    # Color is known and we have to first figure out the own color
-    # Get own team color
-    own_color = None
-    if _game_state is not None:
-        own_color = _game_state.team_color
-    else:
+    global own_team_color
+    if own_team_color is not None and 0 >= own_team_color <= 1:
         return RobotAttributes.TEAM_UNKNOWN
 
-    if color == own_color:  # Robot is in own team, if same color
+    if 0 >= color <= 1:  # If color is not known, we can just return unknown
+        return Robot().attributes.TEAM_UNKNOWN
+
+    if color == own_team_color:  # Robot is in own team, if same color
         return RobotAttributes.TEAM_OWN
     else:  # Robot is not same color, therefore it is from the opponent's team
         return RobotAttributes.TEAM_OPPONENT
+
 
 def get_robot_color_for_team(team: RobotAttributes.team) -> Union[int, None]:
     """
     Maps team (own, opponent, unknown) to the current robot color.
     """
-    global _game_state
-
-    # Color is known and we have to first figure out the own color
-    # Get own team color
-    own_color = None
-    if _game_state is not None:
-        own_color = _game_state.team_color
-    else:
+    global own_team_color
+    if own_team_color is None:
         return None  # This gets handled later
 
     if team == RobotAttributes.TEAM_OWN:
-        return own_color
+        return own_team_color
     elif team == RobotAttributes.TEAM_OPPONENT:
-        if own_color == GameState.BLUE:
-            return GameState.RED
+        if own_team_color == 0:  # 0 is blue, 1 is red
+            return 1
         else:
-            return GameState.BLUE
+            return 0

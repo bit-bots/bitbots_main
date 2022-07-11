@@ -60,6 +60,9 @@ class YOEOVision(Node):
 
         self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
+        # Update team color
+        ros_utils.update_own_team_color(self)
+
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     def _dynamic_reconfigure_callback(self, params) -> SetParametersResult:
@@ -71,6 +74,7 @@ class YOEOVision(Node):
         new_config = self._get_updated_config_with(params)
         self._configure_vision(new_config)
         self._config = new_config
+        self._first_dynamic_reconfigure_callback = True
 
         return SetParametersResult(successful=True)
 
@@ -167,15 +171,13 @@ class YOEOVision(Node):
             vision_component.configure(new_config, self._yoeo_handler)
 
     def _register_subscribers(self, config: Dict) -> None:
-        self._sub_image = ros_utils.create_or_update_subscriber(
-            self,
-            self._config,
-            config,
-            self._sub_image,
-            'ROS_img_msg_topic',
-            Image,
-            callback=self._image_callback
-        )
+        self._sub_image = ros_utils.create_or_update_subscriber(self,
+                                                                self._config,
+                                                                config,
+                                                                self._sub_image,
+                                                                'ROS_img_msg_topic',
+                                                                Image,
+                                                                callback=self._image_callback)
 
     def _image_callback(self, image_msg: Image) -> None:
         """

@@ -42,6 +42,7 @@ except ImportError:
 
 
 class IYOEOHandler(ABC):
+
     @abstractmethod
     def configure(self, config: Dict) -> None:
         ...
@@ -80,6 +81,7 @@ class IYOEOHandler(ABC):
 
 
 class YOEOHandlerTemplate(IYOEOHandler):
+
     def __init__(self, config: Dict, model_directory: str):
         logger.debug(f"Entering YOEOHandlerTemplate constructor")
 
@@ -185,6 +187,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
 
 class YOEOHandlerONNX(YOEOHandlerTemplate):
+
     def __init__(self, config: Dict, model_directory: str):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -200,20 +203,17 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"]
-        )
+            nms_thresh=config["yoeo_nms_threshold"])
         self._seg_postprocessor: ISegmentationPostProcessor = ONNXSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(
-            image_preprocessor=self._img_preprocessor,
-            output_img_size=self._input_layer.shape[2],
-            conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"]
-        )
+        self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
+                                          output_img_size=self._input_layer.shape[2],
+                                          conf_thresh=config["yoeo_conf_threshold"],
+                                          nms_thresh=config["yoeo_nms_threshold"])
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
@@ -232,6 +232,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
 
 class YOEOHandlerOpenVino(YOEOHandlerTemplate):
+
     def __init__(self, config: Dict, model_directory: str):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -259,8 +260,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"]
-        )
+            nms_thresh=config["yoeo_nms_threshold"])
         self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
@@ -274,12 +274,10 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(
-            image_preprocessor=self._img_preprocessor,
-            output_img_size=self._input_layer.shape[2],
-            conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"]
-        )
+        self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
+                                          output_img_size=self._input_layer.shape[2],
+                                          conf_thresh=config["yoeo_conf_threshold"],
+                                          nms_thresh=config["yoeo_nms_threshold"])
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
@@ -330,12 +328,10 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
                os.path.exists(YOEOPathGetter.get_pytorch_pth_file(model_directory))
 
     def _compute_new_prediction_for(self, image):
-        detections, segmentation = torch_detect.detect_image(
-            self._model,
-            image,
-            conf_thres=self._conf_thresh,
-            nms_thres=self._nms_thresh
-        )
+        detections, segmentation = torch_detect.detect_image(self._model,
+                                                             image,
+                                                             conf_thres=self._conf_thresh,
+                                                             nms_thres=self._nms_thresh)
 
         segmentation = self._postprocess_segmentation(segmentation)
 
@@ -347,6 +343,7 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
 
 class YOEOHandlerTVM(YOEOHandlerTemplate):
+
     def __init__(self, config: Dict, model_directory: str):
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -376,14 +373,13 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"]
-        )
+            nms_thresh=config["yoeo_nms_threshold"])
         self._seg_postprocessor: ISegmentationPostProcessor = TVMSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     @staticmethod
-    def _select_device() -> tvm.runtime.Device:
+    def _select_device() -> "tvm.runtime.Device":
         if tvm.vulkan().exist:
             return tvm.vulkan()
         else:
@@ -391,12 +387,10 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(
-            image_preprocessor=self._img_preprocessor,
-            output_img_size=self._input_layer_shape[2],
-            conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"]
-        )
+        self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
+                                          output_img_size=self._input_layer_shape[2],
+                                          conf_thresh=config["yoeo_conf_threshold"],
+                                          nms_thresh=config["yoeo_nms_threshold"])
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
@@ -418,6 +412,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
 
 class YOEODetectorTemplate(CandidateFinder):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__()
 
@@ -435,6 +430,7 @@ class YOEODetectorTemplate(CandidateFinder):
 
 
 class YOEOBallDetector(YOEODetectorTemplate):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__(yoeo_handler)
 
@@ -443,6 +439,7 @@ class YOEOBallDetector(YOEODetectorTemplate):
 
 
 class YOEOGoalpostDetector(YOEODetectorTemplate):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__(yoeo_handler)
 
@@ -451,6 +448,7 @@ class YOEOGoalpostDetector(YOEODetectorTemplate):
 
 
 class YOEORobotDetector(YOEODetectorTemplate):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__(yoeo_handler)
 
@@ -459,6 +457,7 @@ class YOEORobotDetector(YOEODetectorTemplate):
 
 
 class IYOEOSegmentation(ABC):
+
     @abstractmethod
     def compute(self) -> None:
         ...
@@ -485,6 +484,7 @@ class IYOEOSegmentation(ABC):
 
 
 class YOEOSegmentationTemplate(IYOEOSegmentation):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         self._yoeo_handler = yoeo_handler
 
@@ -511,6 +511,7 @@ class YOEOSegmentationTemplate(IYOEOSegmentation):
 
 
 class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
+
     def __init__(self, yoeo_handler):
         super().__init__(yoeo_handler)
 
@@ -523,6 +524,7 @@ class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
 
 
 class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__(yoeo_handler)
 
@@ -535,6 +537,7 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
 
 
 class YOEOLineSegmentation(YOEOSegmentationTemplate):
+
     def __init__(self, yoeo_handler: YOEOHandlerTemplate):
         super().__init__(yoeo_handler)
 
@@ -547,6 +550,7 @@ class YOEOLineSegmentation(YOEOSegmentationTemplate):
 
 
 class YOEOPathGetter:
+
     @classmethod
     def _assemble_full_path(cls, model_directory: str, subdir: Optional[str], filename: str) -> str:
         if subdir is None:
