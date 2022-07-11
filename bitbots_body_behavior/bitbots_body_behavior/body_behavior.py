@@ -36,10 +36,8 @@ from rclpy.parameter import Parameter
 
 class BodyDSD:
     def __init__(self, node:Node):
+        self.counter = 0
         self.node = node
-        global_parameters = get_parameters_from_other_node["field_length", "field_width"]
-        self.node.declare_parameter(Parameter("field_length", Parameter.Type.DOUBLE, global_parameters["field_length"]))
-        self.node.declare_parameter(Parameter("field_width", Parameter.Type.DOUBLE, global_parameters["field_width"]))
         blackboard = BodyBlackboard(node)
         self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config
 
@@ -79,12 +77,18 @@ class BodyDSD:
         node.create_subscription(Twist, "cmd_vel", blackboard.pathfinding.cmd_vel_cb, qos_profile=1)
 
     def loop(self):
-        self.dsd.update()
-        self.dsd.blackboard.team_data.publish_strategy()
-        self.dsd.blackboard.team_data.publish_time_to_ball()
-        counter = (counter + 1) % self.dsd.blackboard.config['time_to_ball_divider']
-        if counter == 0:
-            self.dsd.blackboard.pathfinding.calculate_time_to_ball()
+        try:
+            self.dsd.update()
+            self.dsd.blackboard.team_data.publish_strategy()
+            self.dsd.blackboard.team_data.publish_time_to_ball()
+            self.counter = (self.counter + 1) % self.dsd.blackboard.config['time_to_ball_divider']
+            if self.counter == 0:
+                self.dsd.blackboard.pathfinding.calculate_time_to_ball()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            self.node.get_logger().error(str(e))
+
 
 
 def main(args=None):

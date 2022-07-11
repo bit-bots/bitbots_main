@@ -28,7 +28,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
 from sensor_msgs.msg import PointCloud2 as pc2
-from bitbots_utils.utils import get_parameter_dict
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 
 
 class GoalRelative:
@@ -94,9 +94,11 @@ class WorldModelCapsule:
         self.goal_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         self.ball_seen = False
         self.ball_seen_teammate = False
-        self.field_length = self._blackboard.node.get_parameter('field_length').get_parameter_value().double_value
-        self.field_width = self._blackboard.node.get_parameter('field_width').get_parameter_value().double_value
-        self.goal_width = self._blackboard.node.get_parameter('goal_width').get_parameter_value().double_value
+        parameters = get_parameters_from_other_node(self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"])
+        self._blackboard.node.get_logger().warning(str(parameters))
+        self.field_length = parameters["field_length"]
+        self.field_width = parameters["field_width"]
+        self.goal_width = parameters["goal_width"]
         self.map_margin = self._blackboard.node.get_parameter(
             'body.map_margin').get_parameter_value().double_value
         self.obstacle_costmap_smoothing_sigma = self._blackboard.node.get_parameter(

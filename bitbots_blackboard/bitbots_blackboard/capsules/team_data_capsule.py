@@ -12,7 +12,7 @@ from rclpy.time import Time
 from humanoid_league_msgs.msg import Strategy, TeamData
 from geometry_msgs.msg import PointStamped
 from bitbots_utils.utils import get_parameters_from_other_node
-
+from std_msgs.msg import Float32
 
 class TeamDataCapsule:
 
@@ -199,7 +199,7 @@ class TeamDataCapsule:
         self.strategy_sender.publish(self.strategy)
 
     def publish_time_to_ball(self):
-        self.time_to_ball_publisher.publish(self.own_time_to_ball)
+        self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
 
     def get_teammate_ball_seen_time(self):
         """Returns the time at which a teammate has seen the ball accurately enough"""
