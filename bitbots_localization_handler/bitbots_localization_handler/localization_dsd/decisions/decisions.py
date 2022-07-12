@@ -318,12 +318,14 @@ class InitialToReady(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(WalkedSinceLastInit, self).__init__(blackboard, dsd, parameters)
+        self.previous_game_state_number = self.blackboard.gamestate.get_gamestate()
 
     def perform(self, reevaluate=False):
+        previous_game_state_number = self.previous_game_state_number
         game_state_number = self.blackboard.gamestate.get_gamestate()
-        previous_game_state_number = self.blackboard.gamestate.get_previous_game_state()
+        self.previous_game_state_number = game_state_number
 
-        if previous_game_state_number == GameState.GAMESTATE_INITAL and game_state_number == GameState.GAMESTATE_PLAYING:
+        if previous_game_state_number == GameState.GAMESTATE_INITAL and game_state_number == GameState.GAMESTATE_READY:
             return "YES"
         else:
             return "NO"
