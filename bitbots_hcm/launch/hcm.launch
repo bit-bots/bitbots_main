@@ -5,7 +5,7 @@
     <arg name="viz" default="false" description="Disables all checks for hardware, since we are in visualization."/>
     <arg name="wolfgang" default="true"/>
 
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 1,2"/>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 1"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <group if="$(var wolfgang)">
