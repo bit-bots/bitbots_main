@@ -191,6 +191,7 @@ class YOEOVision(Node):
             self._run_vision_pipeline(image_msg)
 
     def _image_is_too_old(self, image_msg: Image) -> bool:
+        return False   # Fix for the wm 2022
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
