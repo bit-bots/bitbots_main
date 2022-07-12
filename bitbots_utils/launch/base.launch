@@ -22,6 +22,13 @@
         </include>
     </group>
 
+
+    <group>
+        <include file="$(find-pkg-share bitbots_extrinsic_calibration)/launch/calibration.launch">
+          <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+
     <group>
         <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
           <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
