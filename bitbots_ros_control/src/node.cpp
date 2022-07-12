@@ -46,6 +46,9 @@ int main(int argc, char *argv[]) {
   rclcpp::Rate rate(control_loop_hz);
   rclcpp::Time stop_time;
   bool shut_down_started = false;
+  rclcpp::executors::EventsExecutor exec;
+  exec.add_node(nh);
+
 
   while (!request_shutdown || nh->get_clock()->now().seconds() - stop_time.seconds() < 5) {
     //
@@ -67,7 +70,7 @@ int main(int argc, char *argv[]) {
     // Write
     //
     hw.write(current_time, period);
-    rclcpp::spin_some(nh->get_node_base_interface());
+    exec.spin_some();
     rate.sleep();
 
     //
