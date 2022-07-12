@@ -5,9 +5,8 @@
   <arg name="viz" default="false"/>
   <arg name="robot_type" default="wolfgang"/>
 
-  <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
-  <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
-  <let name="taskset" value=""/><!--todo hack-->
+  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
   <group>
     <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
@@ -42,7 +41,7 @@
       <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml"/>
     </node>
   </group>
-  
+
   <group if="$(var viz)">
     <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--all" />
     <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
@@ -50,7 +49,7 @@
       <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
       <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
       <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
-      <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>      
+      <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
       <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml"/>
     </node>
     <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(find-pkg-share wolfgang_description)/config/wolfgang.rviz" />

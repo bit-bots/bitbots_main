@@ -4,16 +4,10 @@
     <arg name="sim" default="false" description="Disables some checks for hardware, since we are in simulation."/>
     <arg name="viz" default="false" description="Disables all checks for hardware, since we are in visualization."/>
     <arg name="wolfgang" default="true"/>
-    <arg name="use_game_settings" default="false"/>
 
-    <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 2"/>
-    <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
-    <let name="taskset" value=""/><!--todo hack-->
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 1,2"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <!-- 
-            <group if="$(var use_game_settings)">
-                <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
-            </group> TODO-->
     <group if="$(var wolfgang)">
         <node pkg="bitbots_hcm" exec="HCM" args="" output="screen" launch-prefix="$(var taskset)">
             <param name="use_sim_time" value="$(var sim)" />
