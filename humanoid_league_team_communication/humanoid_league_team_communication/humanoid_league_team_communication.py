@@ -15,7 +15,7 @@ from std_msgs.msg import Header, Float32
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped, PoseStamped
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from ament_index_python.packages import get_package_share_directory
 
 from humanoid_league_team_communication import robocup_extension_pb2
@@ -39,10 +39,10 @@ class HumanoidLeagueTeamCommunication:
         self.target_port = self.node.get_parameter('target_port').get_parameter_value().integer_value
         self.receive_port = self.node.get_parameter('receive_port').get_parameter_value().integer_value
         self.rate = self.node.get_parameter('rate').get_parameter_value().integer_value
-        self.lifetime = self.node.get_parameter('life_time').get_parameter_value().integer_value
+        self.lifetime = self.node.get_parameter('lifetime').get_parameter_value().integer_value
         self.avg_walking_speed = self.node.get_parameter('avg_walking_speed').get_parameter_value().double_value
 
-        self.topics = self.node.get_parameters_by_prefix('topics')
+        self.topics = get_parameter_dict(self.node, 'topics')
         self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
 
         if self.target_host == '127.0.0.1':
