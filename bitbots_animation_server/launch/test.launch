@@ -1,7 +1,7 @@
 <launch>
   <arg name="sim" default="false"/>
-    <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 3"/>
-    <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
+  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
   <group unless="$(var sim)">
     <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
