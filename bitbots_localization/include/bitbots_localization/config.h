@@ -65,7 +65,6 @@ class Config {
     double min_motion_angular = 0.0;
     bool filter_only_with_motion = false;
     double measurement_out_of_map_punishment = 0.0;
-    double walking_moved_distance = 0.0;
     // Field secific settings
     double field_x = 0;
     double field_y = 0;

@@ -2,8 +2,8 @@
     <!-- define parameters -->
     <arg name="tf_prefix" default=""/>
     <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
-    <arg unless="$(var sim)" name="fieldname" default="feldraum" description="Loads field settings (feldraum, webots, gazebo)." />
-    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (feldraum, webots, gazebo)." />
+    <arg unless="$(var sim)" name="fieldname" default="bangkok" description="Loads field settings (feldraum, webots, gazebo, bangkok)." />
+    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (feldraum, webots, gazebo, bangkok)." />
 
     <!-- load localization -->
     <node pkg="bitbots_localization" exec="localization" name="bitbots_localization" output="screen">
@@ -20,8 +20,10 @@
     </node>
 
     <node pkg="bitbots_localization_handler" exec="localization_handler" output="screen">
+        <param name="use_sim_time" value="$(var sim)"/>
         <param name="odom_frame" value="$(var tf_prefix)odom"/>
         <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
+        <param name="walking_moved_distance" value="0.5"/>
     </node>
 
     <!-- load the map for rviz-->
@@ -30,5 +32,12 @@
         <param name="topic_name" value="field/map"/>
         <param name="use_sim_time" value="$(var sim)"/>
         <param name="yaml_filename" value="$(find-pkg-share bitbots_localization)/config/fields/$(var fieldname)/map_server.yaml" />
+    </node>
+
+    <!-- life cycle manager for map server -->
+    <node name="lifecycle_manager_navigation" pkg="nav2_lifecycle_manager" exec="lifecycle_manager" output="screen">
+        <param name="autostart" value="true"/>
+        <param name="use_sim_time" value="$(var sim)"/>
+        <param name="node_names" value="[field_map_server]" />
     </node>
 </launch>
