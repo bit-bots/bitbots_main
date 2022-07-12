@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
-    <arg name="use_game_settings" default="true"/>
     <arg name="motion" default="true"/>
     <arg name="behavior" default="true"/>
     <arg name="simple" default="false" description="whether to use the simple behavior" />
@@ -17,14 +16,13 @@
 
     <!-- load the motion -->
     <group if="$(var motion)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/motion.launch">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(var sim)"/>
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
     </group>
 
     <!-- load the highlevel stuff -->
-    <include file="$(find-pkg-share bitbots_utils)/launch/highlevel.launch">
+    <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
         <arg name="behavior" value="$(var behavior)" />
         <arg name="game_controller" value="$(var game_controller)" />
         <arg name="localization" value="$(var localization)" />

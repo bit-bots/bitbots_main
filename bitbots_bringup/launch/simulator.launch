@@ -1,40 +1,22 @@
 <?xml version="1.0"?>
 <launch>
     <!-- set parameters -->
-    <arg name="fake_walk" default="false"/>
     <arg name="headless" default="false"/>
-
-    <param name="/simulation_active" value="true"/>
-    <param name="/use_sim_time" value="true" />
-
-    <!-- remaps necessary for other parts of our software -->
-    <remap from="camera/image_raw" to="camera/image_proc"/>
-    <remap from="camera/camera_info" to="camera_info"/>
 
     <!-- load robot description -->
     <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="true"/>
-        <arg name="fake_walk" default="$(var fake_walk)"/>
     </include>
 
     <!-- launch motion and webots with soccer field -->
-    <group if="$(var fake_walk)">
+    <group>
         <include file="$(find-pkg-share wolfgang_webots_sim)/launch/simulation.launch">
             <arg name="headless" value="$(var headless)" />
         </include>
         <!-- launch the motion without the walking -->
-        <include file="$(find-pkg-share bitbots_utils)/launch/motion.launch">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="true"/>
             <arg name="walking" value="false"/>
-        </include>
-    </group>
-    <group unless="$(var fake_walk)">
-        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/simulation.launch">
-            <arg name="headless" value="$(var headless)" />
-        </include>
-        <!-- launch the motion including the walking -->
-        <include file="$(find-pkg-share bitbots_utils)/launch/motion.launch">
-            <arg name="sim" value="true"/>
         </include>
     </group>
 </launch>

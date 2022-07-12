@@ -3,21 +3,12 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="walking" default="true" description="start the walking" />
-    <arg name="use_game_settings" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
-
-    <!-- load the general game settings -->
-    <!--todo
-    <group if="$(var use_game_settings)">
-        <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
-    </group>
-    -->
 
     <!-- if not in simulation or visualization, launch ros_control -->
     <group unless="$(var sim)">
         <group unless="$(var viz)">
             <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch">
-                <arg name="use_game_settings" value="$(var use_game_settings)"/>
                 <arg name="torqueless_mode" value="$(var torqueless_mode)" />
             </include>
             <node name="set_volume" pkg="bitbots_utils" exec="set_volume.sh" args="100%" />
@@ -25,16 +16,13 @@
     </group>
 
     <!-- launch the animation server -->
-    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
-        <arg name="use_game_settings" value="$(var use_game_settings)"/>
-    </include>
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch" />
 
     <!-- launch the walking -->
     <group if="$(var walking)">
         <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(var sim)"/>
             <arg name="viz" value="$(var viz)"/>
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
         </include>
     </group>
 
@@ -42,7 +30,6 @@
     <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(var sim)"/>
         <arg name="viz" value="$(var viz)"/>
-        <arg name="use_game_settings" value="$(var use_game_settings)"/>
     </include>
 
     <!-- launch the kick -->

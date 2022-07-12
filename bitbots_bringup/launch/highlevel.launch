@@ -7,7 +7,6 @@
     <arg name="simple" default="false" description="Whether to use the simple behavior" />
     <arg name="teamcom" default="false"/>
     <arg name="ipm" default="true"/>
-    <arg name="use_game_settings" default="true"/>
     <arg name="vision" default="true"/>
     <arg name="ball_filter" default="true"/>
     <arg name="vision_debug" default="false" description="activates the debug output of the vision pipeline"/>
@@ -64,7 +63,6 @@
     <!-- launch behavior -->
     <group if="$(var behavior)">
         <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
-            <arg name="use_game_settings" value="$(var use_game_settings)"/>
             <arg name="simple" value="$(var simple)"/>
         </include>
     </group>

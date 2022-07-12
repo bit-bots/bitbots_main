@@ -6,7 +6,6 @@
     <arg name="localization" default="false" description="if the localization should be used" />
     <arg name="motion" default="true" description="if the motion should be started" />
     <arg name="game_controller" default="false" description="if the game controller node should be started" />
-    <arg name="use_game_settings" default="false" description="whether game settings should be used" />
 
     <!-- set visualization parameter -->
     <!--param name="visualization_active" value="true" /-->
@@ -20,7 +19,6 @@
     <!-- launch motion nodes -->
     <include if="$(var motion)" file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
         <arg name="viz" value="true" />
-        <arg name="use_game_settings" value="$(var use_game_settings)" />
     </include>
 
     <!-- launch highlevel nodes, except vision and transformer (we have fake vision instead) -->
@@ -31,7 +29,6 @@
         <arg name="game_controller" value="$(var game_controller)" />
         <arg name="vision" value="false" />
         <arg name="transformer" value="false" />
-        <arg name="use_game_settings" value="$(var use_game_settings)" />
     </include>
 
     <!-- translate joint goals to joint states -->
