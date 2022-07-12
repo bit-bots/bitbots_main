@@ -14,7 +14,7 @@ team_comm:
       - 4004
 
     # Rate of published messages in Hz
-    rate: 65
+    rate: 10
 
     # average walking speed in [m/s]
     avg_walking_speed: 0.2
