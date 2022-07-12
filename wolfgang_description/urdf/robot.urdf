@@ -3721,6 +3721,8 @@
     <parent link="head"/>
     <child link="camera"/>
   </joint>
+  <!--
+  Removed due to extrinsic calibration
   <link name="camera_optical_frame">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -3734,6 +3736,7 @@
     <parent link="head"/>
     <child link="camera_optical_frame"/>
   </joint>
+  -->
   <link name="imu_frame_2">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
