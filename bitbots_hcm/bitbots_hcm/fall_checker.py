@@ -140,23 +140,26 @@ class FallChecker(BaseEstimator):
     def check_fallen(self, quaternion, not_much_smoothed_gyro):
         """Check if the robot has fallen and is lying on the floor. Returns animation to play, if necessary."""
 
+        if numpy.mean(numpy.abs(not_much_smoothed_gyro)) >= 0.2:
+            return None
+
         # Convert quaternion to fused angles
         fused_roll, fused_pitch, _ = self.fused_from_quat(quaternion)
 
         # Decides which side is facing downwards.
-        if fused_pitch > math.radians(45):
+        if fused_pitch > math.radians(60):
             self.node.get_logger().info("FALLEN TO THE FRONT")
             return self.FRONT
 
-        if fused_pitch < math.radians(-45):
+        if fused_pitch < math.radians(-60):
             self.node.get_logger().info("FALLEN TO THE BACK")
             return self.BACK
 
-        if fused_roll > math.radians(45):
+        if fused_roll > math.radians(60):
             self.node.get_logger().info("FALLEN TO THE RIGHT")
             return self.RIGHT
 
-        if fused_roll < math.radians(-45):
+        if fused_roll < math.radians(-60):
             self.node.get_logger().info("FALLEN TO THE LEFT")
             return self.LEFT
 
