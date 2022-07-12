@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <!-- camera driver -->
@@ -20,7 +20,7 @@
             <remap from="image_color" to="/camera/image_raw"/>
             <remap from="image_mono" to="/camera/image_mono"/>
         </composable_node>
-        <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate">
+        <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate" launch-prefix="$(var taskset)">
             <remap from="in/image_raw" to="/camera/image_raw"/>
             <remap from="in/camera_info" to="/pylon_camera_node/camera_info"/>
             <remap from="out/image_raw" to="/camera/image_proc"/>
