@@ -309,3 +309,21 @@ class WalkedSinceLastInit(AbstractDecisionElement):
         The state can change during the game
         """
         return True
+
+
+class InitialToReady(AbstractDecisionElement):
+    """
+    Decides if the ready phase was just started coming from initial
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super(WalkedSinceLastInit, self).__init__(blackboard, dsd, parameters)
+
+    def perform(self, reevaluate=False):
+        game_state_number = self.blackboard.gamestate.get_gamestate()
+        previous_game_state_number = self.blackboard.gamestate.get_previous_game_state()
+
+        if previous_game_state_number == GameState.GAMESTATE_INITAL and game_state_number == GameState.GAMESTATE_PLAYING:
+            return "YES"
+        else:
+            return "NO"

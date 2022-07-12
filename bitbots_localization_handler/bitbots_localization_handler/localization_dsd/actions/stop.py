@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from bitbots_localization.srv import SetPaused
-
+from humanoid_league_msgs.msg import GameState
 
 class AbstractLocalizationPause(AbstractActionElement):
 
@@ -39,3 +39,12 @@ class DoNothing(AbstractActionElement):
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().debug("Doing nothing")
         return
+
+
+class WaitForReady(AbstractActionElement):
+    def perform(self, reevaluate=False):
+        # wait till the gamestate changes to ready
+        self.do_not_reevaluate()
+        game_state_number = self.blackboard.get_gamestate()
+        if game_state_number == GameState.GAMESTATE_INITAL:
+            self.pop()
