@@ -276,6 +276,10 @@ class WalkedSinceLastInit(AbstractDecisionElement):
         self.distance_threshold = parameters.get("dist", 0.5)
 
     def perform(self, reevaluate=False):
+        if not self.blackboard.use_sim_time:
+            # in real life we always have moved and are not teleported
+            return "YES"
+
         if self.blackboard.last_init_odom_transform is None:
             return "YES" # We don't know the last init state so we say that we moved away from it
 

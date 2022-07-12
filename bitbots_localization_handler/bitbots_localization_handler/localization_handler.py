@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import rclpy
-import tf2_ros as tf2
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from ament_index_python import get_package_share_directory
@@ -18,7 +17,6 @@ def init(node: Node):
     node.get_logger().info("Starting localization handler")
 
     global_params_dict = get_parameters_from_other_node(node, "parameter_blackboard", ["field_length", "team_id"])
-    node.get_logger().warn(f"{global_params_dict}")
     global_params = [("field_length", global_params_dict["field_length"]),
                      ("team_id", global_params_dict["team_id"])]
     node.declare_parameters(parameters=global_params, namespace="")

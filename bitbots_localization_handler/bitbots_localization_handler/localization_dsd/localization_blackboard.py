@@ -3,20 +3,22 @@ import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from rclpy.duration import Duration
 from bitbots_localization.srv import ResetFilter, SetPaused
-
+from rclpy.node import Node
 
 class LocalizationBlackboard:
 
-    def __init__(self, node):
+    def __init__(self, node:Node):
         self.node = node
 
         self.shut_down_request = False
         self.last_initialized = None
         self.initialized = False
+        self.use_sim_time = self.node.get_parameter('use_sim_time').value
 
-        # tf stuff
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, node)
+        # we only need tf in simulation. don't use it otherwise to safe performance
+        if self.use_sim_time:
+            self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10))
+            self.tf_listener = tf2.TransformListener(self.tf_buffer, node)
         self.odom_frame = node.get_parameter('odom_frame').get_parameter_value().string_value
         self.base_footprint_frame = node.get_parameter('base_footprint_frame').get_parameter_value().string_value
 

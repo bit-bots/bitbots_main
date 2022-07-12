@@ -15,11 +15,13 @@ class AbstractInitialize(AbstractActionElement):
         if not isinstance(self, RedoLastInit):
             blackboard.last_init_action_type = self.__class__
             try:
-                blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
-                    blackboard.odom_frame,
-                    blackboard.base_footprint_frame,
-                    Time(seconds=0, nanoseconds=0),
-                    Duration(seconds=1.0))  # wait up to 1 second for odom data
+                # only need this in simulation
+                if self.blackboard.use_sim_time:
+                    blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
+                        blackboard.odom_frame,
+                        blackboard.base_footprint_frame,
+                        Time(seconds=0, nanoseconds=0),
+                        Duration(seconds=1.0))  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
                 self.blackboard.node.get_logger().warn(f"Not able to save the odom position due to a tf error: {e}")
             self.blackboard.node.get_logger().info(f"Set last init action type to {blackboard.last_init_action_type}")
