@@ -17,6 +17,7 @@ from humanoid_league_msgs.msg import RobotControlState
 from bitbots_hcm.fall_classifier import FallClassifier
 from ament_index_python import get_package_share_directory
 from std_srvs.srv import SetBool
+from bitbots_msgs.msg import JointCommand
 
 
 class HcmBlackboard():
@@ -105,6 +106,7 @@ class HcmBlackboard():
         self.fall_checker = FallChecker(self.node)
         self.is_stand_up_active = self.node.get_parameter('stand_up_active').get_parameter_value().bool_value
         self.falling_detection_active = self.node.get_parameter('falling_active').get_parameter_value().bool_value
+        self.joint_pub = self.node.create_publisher(JointCommand, "DynamixelController/command", 1)
 
         # kicking
         self.last_kick_feedback = None  # type: rospy.Time

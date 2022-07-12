@@ -32,10 +32,10 @@ $StartHCM
                                 FALLEN_RIGHT --> @CancelGoals, @PlayAnimationStandUpRight, @PlayAnimationDynup + direction:back
                                 FALLEN_LEFT --> @CancelGoals, @PlayAnimationStandUpLeft, @PlayAnimationDynup + direction:back
                                 NOT_FALLEN --> $Falling
-                                    FALLING_LEFT --> @CancelGoals, @PlayAnimationFallingLeft
-                                    FALLING_RIGHT --> @CancelGoals, @PlayAnimationFallingRight
-                                    FALLING_FRONT --> @CancelGoals, @PlayAnimationFallingFront
-                                    FALLING_BACK --> @CancelGoals, @PlayAnimationFallingBack
+                                    FALLING_LEFT --> @CancelGoals, @FallingPoseLeft + duration:0.5
+                                    FALLING_RIGHT --> @CancelGoals, @FallingPoseRight + duration:0.5
+                                    FALLING_FRONT --> @CancelGoals, @FallingPoseFront + duration:0.5
+                                    FALLING_BACK --> @CancelGoals, @FallingPoseBack + duration:0.5
                                     NOT_FALLING --> $Sitting
                                         YES --> @PlayAnimationDynup + direction:rise
                                         NO --> $ExternalAnimation
