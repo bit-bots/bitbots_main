@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="bitbots_buttons" exec="button_node.py" output="screen">
+    <node pkg="bitbots_buttons" exec="button_node" output="screen">
         <param from="$(find-pkg-share bitbots_buttons)/config/buttons.yaml"/>
     </node>
 </launch>

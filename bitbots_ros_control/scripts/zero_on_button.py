@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from requests import request
 import rclpy
 from rclpy.node import Node
 from std_srvs.srv import Empty
@@ -21,9 +22,10 @@ def cb(msg):
     print(not button_prev_state)
     print(node.get_clock().now() - press_time > Duration(seconds=1.0))
     if msg.button3 and not button_prev_state and node.get_clock().now() - press_time > Duration(seconds=1.0):
-        zero_l()
-        zero_r()
-        press_time = node.get_clock()
+        request = Empty.Request()
+        zero_l.call_async(request)
+        zero_r.call_async(request)
+        press_time = node.get_clock().now()
     button_prev_state = msg.button3
 
 

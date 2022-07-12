@@ -52,6 +52,7 @@ enable_bitbots_docs()
 add_executable(node ${SOURCES})
 ament_target_dependencies(node
         ament_cmake
+        backward_ros
         bitbots_buttons
         bitbots_docs
         bitbots_msgs
@@ -74,6 +75,7 @@ ament_target_dependencies(node
 add_executable(pressure_converter src/pressure_converter.cpp)
 ament_target_dependencies(pressure_converter
         ament_cmake
+        backward_ros
         bitbots_buttons
         bitbots_docs
         bitbots_msgs

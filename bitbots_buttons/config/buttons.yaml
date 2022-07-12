@@ -5,3 +5,4 @@ bitbots_buttons:
     speak_active: True
     short_time: 2.0 #[s]
     debounce_time: 0.1 #[s]
+    speak: true
