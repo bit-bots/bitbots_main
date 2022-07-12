@@ -383,7 +383,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     @staticmethod
-    def _select_device() -> tvm.runtime.Device:
+    def _select_device() -> "tvm.runtime.Device":
         if tvm.vulkan().exist:
             return tvm.vulkan()
         else:
