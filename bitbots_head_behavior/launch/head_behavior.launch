@@ -1,13 +1,12 @@
 <launch>
     <arg name="tf_prefix" default=""/>
     <arg name="depends_only" default="false" />
-    <arg name="use_game_settings" default="false"/>
 
-    <!--todo<group if="$(var use_game_settings)">
-        <rosparam command="load" file="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
-    </group>-->
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 10"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <node unless="$(var depends_only)" pkg="bitbots_head_behavior" exec="head_node"  output="screen">
+
+    <node unless="$(var depends_only)" pkg="bitbots_head_behavior" exec="head_node"  output="screen" launch-prefix="$(var taskset)">
         <param from="$(find-pkg-share bitbots_body_behavior)/config/body_behavior.yaml"/>
         <param from="$(find-pkg-share bitbots_head_behavior)/config/head_config.yaml"/>
         <param name="camera_frame" value="$(var tf_prefix)camera"/>

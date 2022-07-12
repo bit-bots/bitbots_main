@@ -1,15 +1,14 @@
 <launch>
     <arg name="tf_prefix" default=""/>
-    <arg name="duty" default="TeamPlayer"/>
-    <arg name="use_game_settings" default="false"/>
-    <!--<group if="$(arg use_game_settings)">
-        <rosparam command="load" file="$(find bitbots_bringup)/config/game_settings.yaml" />
-    </group>-->
-    <node pkg="bitbots_body_behavior" exec="body_behavior" output="screen">
+
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 11"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <node pkg="bitbots_body_behavior" exec="body_behavior" output="screen" launch-prefix="$(var taskset)">
         <param name="actionlib_client_sub_queue_size" value="-1"/>
         <param name="actionlib_server_sub_queue_size" value="-1"/>
         <param from="$(find-pkg-share bitbots_body_behavior)/config/body_behavior.yaml"/>
-        <param from="$(find-pkg-share bitbots_body_behavior)/config/animations.yaml"/>    
+        <param from="$(find-pkg-share bitbots_body_behavior)/config/animations.yaml"/>
         <param name="odom_frame" value="$(var tf_prefix)odom"/>
         <param name="map_frame" value="$(var tf_prefix)map"/>
         <param name="ball_frame" value="$(var tf_prefix)ball"/>

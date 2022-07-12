@@ -497,7 +497,7 @@ class WorldModelCapsule:
             transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame,
                                                         Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(str(e))
             return None
         return transform
 
