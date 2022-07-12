@@ -1,9 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <arg if="$(env IS_ROBOT false)" name="taskset" default="taskset -c 1"/>
-    <arg unless="$(env IS_ROBOT false)" name="taskset" default=""/>
 
-    <node pkg="bitbots_ros_control" exec="pressure_converter"><!-- launch-prefix="$(var taskset)">-->
+    <node pkg="bitbots_ros_control" exec="pressure_converter">
         <param from="$(find-pkg-share bitbots_ros_control)/config/pressure_converter.yaml" />
         <param from="$(find-pkg-share bitbots_ros_control)/config/pressure_$(env ROBOT_NAME nobot).yaml" />
     </node>
