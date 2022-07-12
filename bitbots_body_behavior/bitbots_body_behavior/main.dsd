@@ -153,7 +153,7 @@ $DoOnce
                         THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
 #Init
-@Stand + duration:0.1 + r:false, @PlayAnimationInit + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
+@Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
 
 #NormalBehavior
 $BallSeen
