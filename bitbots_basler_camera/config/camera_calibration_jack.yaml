@@ -1,17 +1,17 @@
 image_width: 2048
 image_height: 1536
-camera_name: jack
+camera_name: narrow_stereo
 camera_matrix:
   rows: 3
   cols: 3
-  data: [1338.64532,    0.     , 1026.12387,
-            0.     , 1337.89746,  748.42213,
+  data: [1924.06561,    0.     , 1030.80485,
+            0.     , 1905.49295,  724.07418,
             0.     ,    0.     ,    1.     ]
 distortion_model: plumb_bob
 distortion_coefficients:
   rows: 1
   cols: 5
-  data: [-0.296788, 0.092555, -0.000154, -0.000361, 0.000000]
+  data: [-0.580557, 0.414393, 0.006190, -0.006739, 0.000000]
 rectification_matrix:
   rows: 3
   cols: 3
@@ -21,6 +21,6 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [1082.11853,    0.     , 1024.68462,    0.     ,
-            0.     , 1193.8877 ,  742.62111,    0.     ,
+  data: [1599.5116 ,    0.     , 1011.64207,    0.     ,
+            0.     , 1715.29272,  722.37978,    0.     ,
             0.     ,    0.     ,    1.     ,    0.     ]
