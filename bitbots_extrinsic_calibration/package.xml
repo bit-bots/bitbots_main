@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package format="3">
+    <name>bitbots_extrinsic_calibration</name>
+    <version>2.1.0</version>
+    <description>Publishes an offset between camera and camera_optical_frame.</description>
+
+    <maintainer email="florian.vahl@uni-hamburg.de">Florian Vahl</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+    <author email="florian.vahl@uni-hamburg.de">Florian Vahl</author>
+
+    <license>MIT</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <depend>bitbots_docs</depend>
+    <depend>std_msgs</depend>
+    <depend>tf2</depend>
+    <depend>tf2_ros</depend>
+    <depend>rot_conv</depend>
+    <depend>backward_ros</depend>
+
+    <export>
+        <bitbots_documentation>
+            <language>c++</language>
+            <status>tested_robot</status>
+        </bitbots_documentation>
+        <rosdoc config="rosdoc.yaml"/>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

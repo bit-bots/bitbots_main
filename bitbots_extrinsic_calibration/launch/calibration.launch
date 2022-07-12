@@ -1,0 +1,8 @@
+<launch>
+    <arg name="sim" default="false"/>
+
+    <node pkg="bitbots_extrinsic_calibration" exec="extrinsic_calibration" name="bitbots_extrinsic_calibration">
+        <param name="use_sim_time" value="$(var sim)"/>
+        <param from="$(find-pkg-share bitbots_extrinsic_calibration)/config/$(env ROBOT_NAME default).yaml" />
+    </node>
+</launch>
