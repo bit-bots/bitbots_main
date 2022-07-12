@@ -108,7 +108,7 @@ def launch_setup(context, *args, **kwargs):
                     # output='screen',
                     parameters=[{
                         'robot_description': robot_description,
-                        'publish_frequency': 1000.0,
+                        'publish_frequency': 100.0,
                         'use_sim_time': sim
                     }],
                     arguments=['--ros-args', '--log-level', 'WARN']
