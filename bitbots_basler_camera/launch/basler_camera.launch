@@ -20,7 +20,7 @@
             <remap from="image_color" to="/camera/image_raw"/>
             <remap from="image_mono" to="/camera/image_mono"/>
         </composable_node>
-        <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate" launch-prefix="$(var taskset)">
+        <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate">
             <remap from="in/image_raw" to="/camera/image_raw"/>
             <remap from="in/camera_info" to="/pylon_camera_node/camera_info"/>
             <remap from="out/image_raw" to="/camera/image_proc"/>
