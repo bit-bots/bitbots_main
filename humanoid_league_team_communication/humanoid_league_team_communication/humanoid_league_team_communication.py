@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import math
 import socket
+import struct
+import threading
 from typing import Optional
+
 
 import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
-import struct
 
 import tf2_ros
 import transforms3d
@@ -109,6 +111,10 @@ class HumanoidLeagueTeamCommunication:
             self.node.get_clock().sleep_for(Duration(seconds=1))
             rclpy.spin_once(self.node)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
+        # Necessary in ROS2, else we are forever stuck receiving messages
+        thread = threading.Thread(target=rclpy.spin, args=(self.node), daemon=True)
+        thread.start()
 
         self.node.create_timer(1 / self.rate, self.send_message)
         self.receive_forever()
@@ -312,8 +318,7 @@ class HumanoidLeagueTeamCommunication:
 
         self.pub_team_data.publish(team_data)
 
-    def send_message(self, event):
-
+    def send_message(self):
         def covariance_ros_to_proto(ros_covariance, fmat3):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             fmat3.x.x = ros_covariance[0]
