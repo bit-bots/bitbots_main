@@ -147,7 +147,6 @@ void CoreHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration 
   // we only need to write something if requested power status and current power status do not match
   if (requested_power_switch_status_ != power_switch_status_.data) {
     driver_->writeRegister(id_, "Power", requested_power_switch_status_);
-    power_switch_status_.data = requested_power_switch_status_;
   }
 }
 }

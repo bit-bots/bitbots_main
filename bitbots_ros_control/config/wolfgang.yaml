@@ -75,7 +75,7 @@ wolfgang_hardware_interface:
       Core:
         id: 42
         model_number: 0xABBA
-        read_rate: 100
+        read_rate: 10
         interface_type: CORE
       LEDs_core:
         id: 42

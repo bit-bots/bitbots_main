@@ -289,6 +289,7 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
     core_interface_->read(t, dt);
     last_power_status_ = current_power_status_;
     current_power_status_ = core_interface_->get_power_status();
+    servo_interface_.read(t, dt);
   }
 }
 
