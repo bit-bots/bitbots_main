@@ -35,7 +35,7 @@ class Pause(object):
             except (ExternalShutdownException, KeyboardInterrupt):
                 exit(0)
 
-    def manual_update(self, req):
+    def manual_update(self, req:ManualPenalize.Request, resp:ManualPenalize.Response):
         if req.penalize == 0:
             # off
             self.penalty_manual = False
@@ -48,7 +48,7 @@ class Pause(object):
         else:
             self.node.get_logger().error("Manual penalize call with unspecified request")
         self.set_pause(self.penalty_manual)
-        return True
+        return resp
 
     def set_pause(self, state):
         self.pause = state
