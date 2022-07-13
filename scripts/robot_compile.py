@@ -54,19 +54,19 @@ def print_debug(msg):
 
 def print_bit_bot():
     print("""\033[1m
-                `/shNMoyymmmmmmmmmmys+NmNs/`                
-              `+mmdddmmmddddddddddddmmmdddmm/               
-              ymdddddddmmmmmmmmmmmmmmdddddddms              
-            .dmdddddddddddmddddddmmddddddddddmy`            
-           .mmdddddddddddmyoooooosddddddddddddms`           
-       .ssshmdddddddddddddmhsooshddddddddddddddmhsss.       
-    -+shysshddddmddddmdddddddddddddddmdhhhhdmdddhssyhs+-    
-   :ddyyyyydddy+/////+shddddddddddddy+//////+sdddyyyyydd:   
-  `mmh/+hdddh///////////sdddddddddd+///++++////hdddh+/hmm`  
-  omdddddmmy///sdNNNmy///omddddddd+//odNMMNmo///hdmdddddmo  
- `dddddddmm+//yMMMMMMMh///hdddmddh//oNMMMMMMNo//smmddddddd` 
- .Nddddddmm+//hMMMMMMMd///hdhNNddh//+NMMMMMMNo//ymmddddddN. 
- .mNNNNNNNdh///yNMMMNd+//sdddddddds//+hmNNmho//oddmmNNNNNm. 
+                `/shNMoyymmmmmmmmmmys+NmNs/`
+              `+mmdddmmmddddddddddddmmmdddmm/
+              ymdddddddmmmmmmmmmmmmmmdddddddms
+            .dmdddddddddddmddddddmmddddddddddmy`
+           .mmdddddddddddmyoooooosddddddddddddms`
+       .ssshmdddddddddddddmhsooshddddddddddddddmhsss.
+    -+shysshddddmddddmdddddddddddddddmdhhhhdmdddhssyhs+-
+   :ddyyyyydddy+/////+shddddddddddddy+//////+sdddyyyyydd:
+  `mmh/+hdddh///////////sdddddddddd+///++++////hdddh+/hmm`
+  omdddddmmy///sdNNNmy///omddddddd+//odNMMNmo///hdmdddddmo
+ `dddddddmm+//yMMMMMMMh///hdddmddh//oNMMMMMMNo//smmddddddd`
+ .Nddddddmm+//hMMMMMMMd///hdhNNddh//+NMMMMMMNo//ymmddddddN.
+ .mNNNNNNNdh///yNMMMNd+//sdddddddds//+hmNNmho//oddmmNNNNNm.
 -ydddmmmmNmdh+///+++////yddddddddddy//////////sddmNmmmmdddy-
 :sddddddymNdddyo+////oyddddddddddddddys++++oyddddddydddddds:
 /hddddddh::Nddddmdddmdddddddddddddddddddmmdddddmm.:hdddddhh/
@@ -81,18 +81,18 @@ dhhss`          +NMNsyNNN`        yNNm+dNNd           `sshhd
 dhdh/.          +NNdyyNNm`        yNNdyhNNd           ./hdhd
 mhssy+          +dddddddm`        ydddddddd           +ysshm
 hy-             +dddddddm`        ydddddddd              -yh
-               `hmmmmmmmm+       -dmmmmmmmm:                
-               `Nddddddddy       :mdddddddm+                
-               `Nddddddddy       :mdddddddm+                
-               `Ndddddddmy       :mdddddddm+                
-               `mddddddddy       :mdddddddd+                
-               `mddddddddy       :mdddddddd+                
-               `mmNmohNNdy       :mmNmohmNm+                
-               `NNmdhdmNmh       /NmmdhddNms                
-              `/mms+-/ymm:        ymho-:odmh/.              
-              yo+hsoooshs         -hsooosys+y:              
-              h+++++++oo+         `ho+++++++s:              
-              dysssssssy+         `dsssssssyh:              
+               `hmmmmmmmm+       -dmmmmmmmm:
+               `Nddddddddy       :mdddddddm+
+               `Nddddddddy       :mdddddddm+
+               `Ndddddddmy       :mdddddddm+
+               `mddddddddy       :mdddddddd+
+               `mddddddddy       :mdddddddd+
+               `mmNmohNNdy       :mmNmohmNm+
+               `NNmdhdmNmh       /NmmdhddNms
+              `/mms+-/ymm:        ymho-:odmh/.
+              yo+hsoooshs         -hsooosys+y:
+              h+++++++oo+         `ho+++++++s:
+              dysssssssy+         `dsssssssyh:
 \033[0m""")
 
 
@@ -361,13 +361,12 @@ def build(target, package='', pre_clean=False):
            "source /opt/ros/rolling/setup.zsh;"
            "source install/setup.zsh;"
            "{cmd_clean}"
-           'ISOLATED_CPUS="$(${get_isolated_cpus_cmd})";'
+           "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d,]+)' /proc/cmdline)\";"
            "chrt -r 1 taskset -c $ISOLATED_CPUS colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
            "sync;").format(
                **{
                    "workspace": target.workspace,
                    "cmd_clean": cmd_clean,
-                   "get_isolated_cpus_cmd": "cat /proc/cmdline | grep -oP 'isolcpus=\K([\d,]+)'",
                    "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
                    "package": '--packages-up-to ' + package if package else '',
                })
