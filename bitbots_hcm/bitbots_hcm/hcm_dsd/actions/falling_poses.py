@@ -155,3 +155,57 @@ class FallingPoseRight(AbstractFallingPose):
             "RShoulderRoll": 0.0
         }
         self.falling_pose = parse_dict_to_msg(joint_dict, self.blackboard.node.get_clock().now().to_msg())
+
+class TurnRightToBack(AbstractFallingPose):
+    def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        joint_dict = {
+            "HeadPan": 0, 
+            "HeadTilt": 0, 
+            "LAnklePitch": -26, 
+            "LAnkleRoll": 4, 
+            "LElbow": 45, 
+            "LHipPitch": 27, 
+            "LHipRoll": 4, 
+            "LHipYaw": -1, 
+            "LKnee": 58,
+            "LShoulderPitch": 0, 
+            "LShoulderRoll": 0, 
+            "RAnklePitch": 26, 
+            "RAnkleRoll": -4, 
+            "RElbow": -45, 
+            "RHipPitch": -27, 
+            "RHipRoll": -4, 
+            "RHipYaw": 43, 
+            "RKnee": -58,
+            "RShoulderPitch": 0, 
+            "RShoulderRoll": 0
+        }
+        self.falling_pose = parse_dict_to_msg(joint_dict, self.blackboard.node.get_clock().now().to_msg())
+
+class TurnLeftToBack(AbstractFallingPose):
+    def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        joint_dict = {
+            "HeadPan": 0, 
+            "HeadTilt": 0, 
+            "LAnklePitch": -26, 
+            "LAnkleRoll": 4, 
+            "LElbow": 45, 
+            "LHipPitch": 27, 
+            "LHipRoll": 4, 
+            "LHipYaw": -43, 
+            "LKnee": 58,
+            "LShoulderPitch": 0, 
+            "LShoulderRoll": 0, 
+            "RAnklePitch": 26, 
+            "RAnkleRoll": -4, 
+            "RElbow": -45, 
+            "RHipPitch": -27, 
+            "RHipRoll": -4, 
+            "RHipYaw": 1, 
+            "RKnee": -58,
+            "RShoulderPitch": 0, 
+            "RShoulderRoll": 0
+        }
+        self.falling_pose = parse_dict_to_msg(joint_dict, self.blackboard.node.get_clock().now().to_msg())
