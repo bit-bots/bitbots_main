@@ -361,11 +361,13 @@ def build(target, package='', pre_clean=False):
            "source /opt/ros/rolling/setup.zsh;"
            "source install/setup.zsh;"
            "{cmd_clean}"
-           "colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
+           'ISOLATED_CPUS="$(${get_isolated_cpus_cmd})";'
+           "chrt -r 1 taskset -c $ISOLATED_CPUS colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
            "sync;").format(
                **{
                    "workspace": target.workspace,
                    "cmd_clean": cmd_clean,
+                   "get_isolated_cpus_cmd": "cat /proc/cmdline | grep -oP 'isolcpus=\K([\d,]+)'",
                    "quiet_option": "> /dev/null" if LOGLEVEL.current < LOGLEVEL.INFO else "",
                    "package": '--packages-up-to ' + package if package else '',
                })
