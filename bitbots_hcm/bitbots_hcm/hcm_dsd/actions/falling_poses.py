@@ -40,6 +40,14 @@ class AbstractFallingPose(AbstractActionElement):
         if self.blackboard.node.get_clock().now() - self.start_time > Duration(seconds=self.duration):
             self.pop()
 
+    def get_side_fall_head_pan(self):
+        head_index = self.blackboard.current_joint_state.name.index("HeadPan")
+        current_head_pan = self.blackboard.current_joint_state.position[head_index]
+        if current_head_pan > 0:
+            return 90
+        else:
+            return -90
+
 
 class FallingPoseFront(AbstractFallingPose):
 
@@ -104,7 +112,7 @@ class FallingPoseLeft(AbstractFallingPose):
     def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         joint_dict = {
-            "HeadPan": 0.0,
+            "HeadPan": self.get_side_fall_head_pan(),
             "HeadTilt": 0.0,
             "LAnklePitch": -26.0,
             "LAnkleRoll": 4.0,
@@ -133,7 +141,7 @@ class FallingPoseRight(AbstractFallingPose):
     def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         joint_dict = {
-            "HeadPan": 0.0,
+            "HeadPan": self.get_side_fall_head_pan(),
             "HeadTilt": 0.0,
             "LAnklePitch": -26.0,
             "LAnkleRoll": 4.0,
@@ -160,25 +168,25 @@ class TurnRightToBack(AbstractFallingPose):
     def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         joint_dict = {
-            "HeadPan": 0, 
-            "HeadTilt": 0, 
-            "LAnklePitch": -26, 
-            "LAnkleRoll": 4, 
-            "LElbow": 45, 
-            "LHipPitch": 27, 
-            "LHipRoll": 4, 
-            "LHipYaw": -1, 
+            "HeadPan": 0,
+            "HeadTilt": 0,
+            "LAnklePitch": -26,
+            "LAnkleRoll": 4,
+            "LElbow": 45,
+            "LHipPitch": 27,
+            "LHipRoll": 4,
+            "LHipYaw": -1,
             "LKnee": 58,
-            "LShoulderPitch": 0, 
-            "LShoulderRoll": 0, 
-            "RAnklePitch": 26, 
-            "RAnkleRoll": -4, 
-            "RElbow": -45, 
-            "RHipPitch": -27, 
-            "RHipRoll": -4, 
-            "RHipYaw": 43, 
+            "LShoulderPitch": 0,
+            "LShoulderRoll": 0,
+            "RAnklePitch": 26,
+            "RAnkleRoll": -4,
+            "RElbow": -45,
+            "RHipPitch": -27,
+            "RHipRoll": -4,
+            "RHipYaw": 43,
             "RKnee": -58,
-            "RShoulderPitch": 0, 
+            "RShoulderPitch": 0,
             "RShoulderRoll": 0
         }
         self.falling_pose = parse_dict_to_msg(joint_dict, self.blackboard.node.get_clock().now().to_msg())
@@ -187,25 +195,25 @@ class TurnLeftToBack(AbstractFallingPose):
     def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         joint_dict = {
-            "HeadPan": 0, 
-            "HeadTilt": 0, 
-            "LAnklePitch": -26, 
-            "LAnkleRoll": 4, 
-            "LElbow": 45, 
-            "LHipPitch": 27, 
-            "LHipRoll": 4, 
-            "LHipYaw": -43, 
+            "HeadPan": 0,
+            "HeadTilt": 0,
+            "LAnklePitch": -26,
+            "LAnkleRoll": 4,
+            "LElbow": 45,
+            "LHipPitch": 27,
+            "LHipRoll": 4,
+            "LHipYaw": -43,
             "LKnee": 58,
-            "LShoulderPitch": 0, 
-            "LShoulderRoll": 0, 
-            "RAnklePitch": 26, 
-            "RAnkleRoll": -4, 
-            "RElbow": -45, 
-            "RHipPitch": -27, 
-            "RHipRoll": -4, 
-            "RHipYaw": 1, 
+            "LShoulderPitch": 0,
+            "LShoulderRoll": 0,
+            "RAnklePitch": 26,
+            "RAnkleRoll": -4,
+            "RElbow": -45,
+            "RHipPitch": -27,
+            "RHipRoll": -4,
+            "RHipYaw": 1,
             "RKnee": -58,
-            "RShoulderPitch": 0, 
+            "RShoulderPitch": 0,
             "RShoulderRoll": 0
         }
         self.falling_pose = parse_dict_to_msg(joint_dict, self.blackboard.node.get_clock().now().to_msg())
