@@ -21,6 +21,8 @@ $CheckPickup
                 YES --> @LocalizationStop, @DoNothing
                 JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
                 NO --> $GameStateDecider
-                    INITIAL --> @InitSide, @DoNothing
+                    READY --> $InitialToReady
+                        YES --> @InitSide, @DoNothing
+                        NO --> @DoNothing
                     SET --> #InitSet
                     ELSE --> @DoNothing

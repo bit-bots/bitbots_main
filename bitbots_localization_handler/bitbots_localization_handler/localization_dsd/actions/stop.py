@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from bitbots_localization.srv import SetPaused
-
+from humanoid_league_msgs.msg import GameState
 
 class AbstractLocalizationPause(AbstractActionElement):
 

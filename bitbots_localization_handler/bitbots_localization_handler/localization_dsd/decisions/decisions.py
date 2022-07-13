@@ -276,6 +276,10 @@ class WalkedSinceLastInit(AbstractDecisionElement):
         self.distance_threshold = parameters.get("dist", 0.5)
 
     def perform(self, reevaluate=False):
+        if not self.blackboard.use_sim_time:
+            # in real life we always have moved and are not teleported
+            return "YES"
+
         if self.blackboard.last_init_odom_transform is None:
             return "YES" # We don't know the last init state so we say that we moved away from it
 
@@ -305,3 +309,23 @@ class WalkedSinceLastInit(AbstractDecisionElement):
         The state can change during the game
         """
         return True
+
+
+class InitialToReady(AbstractDecisionElement):
+    """
+    Decides if the ready phase was just started coming from initial
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.previous_game_state_number = self.blackboard.gamestate.get_gamestate()
+
+    def perform(self, reevaluate=False):
+        previous_game_state_number = self.previous_game_state_number
+        game_state_number = self.blackboard.gamestate.get_gamestate()
+        self.previous_game_state_number = game_state_number
+
+        if previous_game_state_number == GameState.GAMESTATE_INITAL and game_state_number == GameState.GAMESTATE_READY:
+            return "YES"
+        else:
+            return "NO"
