@@ -1,10 +1,15 @@
 <launch>
     <arg name="wolfgang" default="false" />
     <arg name="simple" default="false" />
+    <arg name="sim" default="false" />
 
     <group unless="$(var simple)">
-        <include file="$(find-pkg-share bitbots_body_behavior)/launch/body_behavior.launch" />
+        <include file="$(find-pkg-share bitbots_body_behavior)/launch/body_behavior.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
     </group>
 
-    <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch" />
+    <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch">
+        <arg name="sim" value="$(var sim)" />
+    </include>
 </launch>
