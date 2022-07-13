@@ -64,7 +64,6 @@ void ExtrinsicCalibrationBroadcaster::step() {
   tf.child_frame_id = child_frame_;
   tf.transform = transform_;
   broadcaster_->sendTransform(tf);
-  RCLCPP_ERROR(this->get_logger(), "Send");
 }
 
 int main(int argc, char **argv) {
