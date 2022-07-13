@@ -1,7 +1,7 @@
 <launch>
     <arg name="tf_prefix" default=""/>
 
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 11"/>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 2"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <node pkg="bitbots_body_behavior" exec="body_behavior" output="screen" launch-prefix="$(var taskset)">
