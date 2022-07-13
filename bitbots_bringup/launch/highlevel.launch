@@ -15,6 +15,7 @@
     <!-- launch game controller -->
     <group if="$(var game_controller)">
         <include file="$(find-pkg-share humanoid_league_game_controller)/launch/game_controller.launch">
+            <arg name="sim" value="$(var sim)" />
         </include>
     </group>
 
@@ -41,7 +42,9 @@
 
     <!-- launch ball_filter -->
     <group if="$(var ball_filter)">
-        <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch"/>
+        <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
 
     <!-- launch localization or fake localization -->
@@ -64,6 +67,7 @@
     <group if="$(var behavior)">
         <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
             <arg name="simple" value="$(var simple)"/>
+            <arg name="sim" value="$(var sim)" />
         </include>
     </group>
 </launch>
