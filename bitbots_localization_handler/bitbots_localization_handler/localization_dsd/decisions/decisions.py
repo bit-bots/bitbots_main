@@ -317,7 +317,7 @@ class InitialToReady(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WalkedSinceLastInit, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.previous_game_state_number = self.blackboard.gamestate.get_gamestate()
 
     def perform(self, reevaluate=False):
