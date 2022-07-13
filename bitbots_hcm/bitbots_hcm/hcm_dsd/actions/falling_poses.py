@@ -29,13 +29,10 @@ class AbstractFallingPose(AbstractActionElement):
         self.first_perform = True
         self.start_time = blackboard.node.get_clock().now()
         self.duration = parameters.get('duration', 1.0)
-        self.falling_pose = None
 
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        if self.first_perform:
-            self.first_perform = False
-            self.blackboard.joint_pub.publish(self.falling_pose)
+        self.blackboard.joint_pub.publish(self.falling_pose)
         # wait some time
         if self.blackboard.node.get_clock().now() - self.start_time > Duration(seconds=self.duration):
             self.pop()
