@@ -198,9 +198,9 @@ class PathfindingCapsule:
             return
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.node.get_clock().now()
+        pose_msg.header.stamp = self.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = ball_point[3]
-        pose_msg.pose.position = Point(ball_point[0], ball_point[1], 0)
+        pose_msg.pose.position = Point(x=ball_point[0], y=ball_point[1], z=0.0)
         quaternion = quaternion_from_euler(0, 0, ball_point[2])
         pose_msg.pose.orientation.x = quaternion[0]
         pose_msg.pose.orientation.y = quaternion[1]

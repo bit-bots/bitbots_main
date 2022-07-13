@@ -46,7 +46,7 @@ class GoToDefensePosition(AbstractActionElement):
         our_pose = [robot_x, robot_y]
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         if self.mode == "freekick_first":

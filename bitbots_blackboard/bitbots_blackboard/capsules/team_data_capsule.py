@@ -234,7 +234,7 @@ class TeamDataCapsule:
             robot = teamdata.robot_position
             robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
             stamp = teamdata.header.stamp
-            if self.get_clock().now() - stamp < self.ball_lost_time:
+            if self.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
                     if robot_x_std_dev < self.pose_precision_threshold_x_sdev and \
                             robot_y_std_dev < self.pose_precision_threshold_y_sdev and \

@@ -58,7 +58,7 @@ class KickBallDynamic(AbstractKickAction):
         if not self.blackboard.kick.is_currently_kicking:
             if not self._goal_sent:
                 goal = Kick.Goal()
-                goal.header.stamp = self.blackboard.node.get_clock().now()
+                goal.header.stamp = self.blackboard.node.get_clock().now().to_msg()
 
                 # currently we use a tested left or right kick
                 goal.header.frame_id = self.blackboard.world_model.base_footprint_frame  # the ball position is stated in this frame

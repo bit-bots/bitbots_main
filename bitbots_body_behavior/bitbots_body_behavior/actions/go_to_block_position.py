@@ -34,7 +34,7 @@ class GoToBlockPosition(AbstractActionElement):
         goalie_y = self.block_position_goal_offset * gradient
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = -(self.blackboard.world_model.field_length / 2) + self.block_position_goal_offset

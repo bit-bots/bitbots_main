@@ -129,7 +129,7 @@ class ShowWorldModelObjects:
                 continue
 
             # set stamp and frame_id
-            self.marker_kick_area.header.stamp = self.blackboard.node.get_clock().now()
+            self.marker_kick_area.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             self.marker_kick_area.header.frame_id = self.base_footprint_frame
             # set corners of the two square markers
             point1 = Point()

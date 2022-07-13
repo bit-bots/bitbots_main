@@ -255,14 +255,14 @@ class WorldModelCapsule:
             self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=0.3))
             self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=0.3))
             # Set timestamps to zero to get the newest transform when this is transformed later
-            self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-            self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+            self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_seen_time = self._blackboard.node.get_clock().now()
             self.ball_publisher.publish(self.ball)
             self.ball_seen = True
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(str(e))
 
     def recent_ball_twist_available(self):
         if self.ball_twist_map is None:
@@ -381,8 +381,8 @@ class WorldModelCapsule:
         """
         left = PointStamped(header=self.goal_odom.header, point=self.goal_odom.left_post)
         right = PointStamped(header=self.goal_odom.header, point=self.goal_odom.right_post)
-        left.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-        right.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        left.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        right.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
         try:
             left_bfp = self.tf_buffer.transform(left, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
             right_bfp = self.tf_buffer.transform(right, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
@@ -673,7 +673,7 @@ class WorldModelCapsule:
             return 0.0
 
         point = PointStamped()
-        point.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        point.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
         point.header.frame_id = self.base_footprint_frame
         point.point.x = x
         point.point.y = y
@@ -815,12 +815,13 @@ class WorldModelCapsule:
             return 0.0
 
         pose = PoseStamped()
-        pose.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        pose.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
         pose.header.frame_id = self.base_footprint_frame
-        pose.pose.position.x = x
-        pose.pose.position.y = y
+        pose.pose.position.x = float(x)
+        pose.pose.position.y = float(y)
 
-        pose.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, direction))
+        x, y, z, w = quaternion_from_euler(0, 0, direction)
+        pose.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
         try:
             # Transform point of interest to the map
             pose = self.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))

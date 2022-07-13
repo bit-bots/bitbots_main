@@ -39,7 +39,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
         goal_yaw = 0
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
         pose_msg.pose.position.x = goal_x
         pose_msg.pose.position.y = goal_y

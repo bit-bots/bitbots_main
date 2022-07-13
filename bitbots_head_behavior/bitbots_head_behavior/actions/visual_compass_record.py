@@ -40,7 +40,7 @@ class VisualCompassRecord(AbstractActionElement):
 
     def _notify_visual_compass(self):
         msg = Header()
-        msg.stamp = self.get_clock().now()
+        msg.stamp = self.get_clock().now().to_msg()
         self.blackboard.head_capsule.visual_compass_record_trigger.publish(msg)
         self.blackboard.node.get_logger().info("Notify visual compass")
 

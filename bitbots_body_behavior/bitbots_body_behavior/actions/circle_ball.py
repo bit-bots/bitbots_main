@@ -30,7 +30,7 @@ class CircleBall(AbstractActionElement):
             return
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = ball_frame
 
         # ball position

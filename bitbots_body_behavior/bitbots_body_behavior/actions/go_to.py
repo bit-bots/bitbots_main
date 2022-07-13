@@ -60,7 +60,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.blackboard.node.get_clock().now()
+        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
         pose_msg.pose.position.x = self.point[0]

@@ -47,7 +47,7 @@ if __name__ == "__main__":
         x = float(input('x: '))
         y = float(input('y: '))
         point = PointStamped()
-        point.header.stamp = node.get_clock().now()
+        point.header.stamp = node.get_clock().now().to_msg()
         point.header.frame_id = base_footprint_frame
         point.point.x = x
         point.point.y = y
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         print("Motor positions {}, {}".format(head_pan, head_tilt))
         pos_msg.positions = [head_pan, head_tilt]
-        pos_msg.header.stamp = node.get_clock().now()
+        pos_msg.header.stamp = node.get_clock().now().to_msg()
         publish_motor_goals.publish(pos_msg)
 
         # Sleep 1 to wait for head being at its position
@@ -74,11 +74,11 @@ if __name__ == "__main__":
         # Reverse read position where the robot is looking at
         # Get line of camera
         camera_origin = PointStamped()
-        camera_origin.header.stamp = node.get_clock().now()
+        camera_origin.header.stamp = node.get_clock().now().to_msg()
         camera_origin.header.frame_id = camera_frame
         camera_origin.point = Point(0, 0, 0)
         camera_one = PointStamped()
-        camera_one.header.stamp = node.get_clock().now()
+        camera_one.header.stamp = node.get_clock().now().to_msg()
         camera_one.header.frame_id = camera_frame
         camera_one.point = Point(1, 0, 0)
         camera_origin_bf = tf_buffer.transform(camera_origin, base_footprint_frame, timeout=Duration(seconds=0.3)).point

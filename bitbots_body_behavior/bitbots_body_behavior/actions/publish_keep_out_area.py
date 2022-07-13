@@ -21,7 +21,7 @@ class PublishKeepOutArea(AbstractActionElement):
                            [ball_position[0] - points_distance, ball_position[1] - points_distance, 0]]
 
         dummy_header = Header()
-        dummy_header.stamp = self.blackboard.node.get_clock().now()
+        dummy_header.stamp = self.blackboard.node.get_clock().now().to_msg()
         dummy_header.frame_id = self.blackboard.map_frame
         msg = create_cloud_xyz32(dummy_header, obstacle_points)
         self.blackboard.pathfinding.keep_out_area_pub.publish(msg)
