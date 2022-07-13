@@ -538,9 +538,7 @@ void Localization::publish_debug_rating(
 
 int main(int argc, char * argv[]) {
   rclcpp::init(argc, argv);
-  rclcpp::executors::EventsExecutor exec;
-  exec.add_node(std::make_shared<bitbots_localization::Localization>());
-  exec.spin();
+  rclcpp::spin(std::make_shared<bitbots_localization::Localization>());
   rclcpp::shutdown();
   return 0;
 }
