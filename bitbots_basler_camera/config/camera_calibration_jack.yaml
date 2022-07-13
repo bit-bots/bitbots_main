@@ -1,6 +1,6 @@
 image_width: 2048
 image_height: 1536
-camera_name: narrow_stereo
+camera_name: jack
 camera_matrix:
   rows: 3
   cols: 3
