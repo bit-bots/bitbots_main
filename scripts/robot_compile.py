@@ -52,16 +52,6 @@ def print_debug(msg):
         print(msg)
 
 
-try:
-    from bitbots_utils import game_settings
-except ImportError:
-    bringup_dir = os.path.join(BITBOTS_META, "bitbots_misc", "bitbots_utils")
-    print_info(
-        "Manually adding {} to PATH to import bitbots_utils. If this fails please source ros".format(bringup_dir))
-    sys.path.append(bringup_dir)
-    from bitbots_utils import game_settings
-
-
 def print_bit_bot():
     print("""\033[1m
                 `/shNMoyymmmmmmmmmmys+NmNs/`                
@@ -406,6 +396,12 @@ def check_rosdeps(target):
     print_success("Rosdeps on {} installed successfully".format(target.hostname))
 
 
+def configure_game_settings(target):
+    print_info("Configuring game settings")
+    _execute_on_target(target, "python3 ~/colcon_ws/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py")
+    print_success("Game settings on {} configured".format(target.hostname))
+
+
 def configure_wifi(target):
     """
     Configure default wifi network on given target.
@@ -415,25 +411,24 @@ def configure_wifi(target):
     print_info("Configuring Wifi")
 
     _execute_on_target(target, "nmcli connection show").check_returncode()
-    connection_id = input("UUID of connection which should be enabled [leave unchanged]: ")
+    connection_id = input("UUID or name of connection which should be enabled [leave unchanged]: ")
 
     if connection_id != "":
         # disable all other connections
-        connection_ids = str(_execute_on_target(target, "nmcli --fields UUID connection show", catch_output=True).stdout) \
-                             .split("\n")[1:]
+        connection_ids = str(_execute_on_target(target, "nmcli --fields UUID,TYPE connection show | grep wifi | awk '{print $1}'", catch_output=True).stdout) \
+                             .strip().split("\n")
         for i in connection_ids:
-            _execute_on_target(target, 'nmcli connection down {}'.format(i)).check_returncode()
             _execute_on_target(target,
-                               'nmcli connection modify {} connection.autoconnect FALSE'.format(i)).check_returncode()
+                               'sudo nmcli connection modify {} connection.autoconnect FALSE'.format(i)).check_returncode()
             _execute_on_target(
-                target, 'nmcli connection modify {} connection.autoconnect-priority 0'.format(i)).check_returncode()
+                target, 'sudo nmcli connection modify {} connection.autoconnect-priority 0'.format(i)).check_returncode()
 
-        _execute_on_target(target, "nmcli connection up {}".format(connection_id)).check_returncode()
+        _execute_on_target(target, "sudo nmcli connection up {}".format(connection_id)).check_returncode()
         _execute_on_target(
-            target, "nmcli connection modify {} connection.autoconnect TRUE".format(connection_id)).check_returncode()
+            target, "sudo nmcli connection modify {} connection.autoconnect TRUE".format(connection_id)).check_returncode()
         _execute_on_target(
             target,
-            "nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
+            "sudo nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
 
 
 def main():
@@ -455,16 +450,6 @@ def main():
         else:
             sync(target, args.package, pre_clean=args.clean_src)
 
-        # build
-        if args.sync_only:
-            print_info("Not compiling on {} due to sync-only mode".format(target.hostname))
-        elif args.configure_only:
-            print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
-        else:
-            if args.check_rosdeps:
-                check_rosdeps(target)
-            build(target, args.package, pre_clean=args.clean_build)
-
         # configure
         if args.sync_only:
             print_info("Not configuring {} due to sync-only mode".format(target.hostname))
@@ -474,8 +459,18 @@ def main():
             print_info("Not configuring {} due to missing --configure".format(target.hostname))
         else:
             print_info("Running game-settings script for {}".format(target.hostname))
-            game_settings.main()
+            configure_game_settings(target)
             configure_wifi(target)
+
+        # build
+        if args.sync_only:
+            print_info("Not compiling on {} due to sync-only mode".format(target.hostname))
+        elif args.configure_only:
+            print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
+        else:
+            if args.check_rosdeps:
+                check_rosdeps(target)
+            build(target, args.package, pre_clean=args.clean_build)
 
 
 if __name__ == "__main__":
