@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <group >
-        <node pkg="humanoid_league_game_controller" exec="game_controller" name="humanoid_league_game_controller" output="screen">
-            <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller_settings.yaml" />
-        </node>
-    </group>
+    <arg name="sim" default="false" />
+
+    <node pkg="humanoid_league_game_controller" exec="game_controller" name="humanoid_league_game_controller" output="screen">
+        <param from="$(find-pkg-share humanoid_league_game_controller)/config/game_controller_settings.yaml" />
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
 </launch>
