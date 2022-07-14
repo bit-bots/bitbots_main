@@ -75,15 +75,6 @@ void OdometryFuser::loop() {
 
   // compute the point of rotation (in base_link frame)
   tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
-  // publish rotation point as debug
-  geometry_msgs::msg::TransformStamped rotation_point_msg;
-  rotation_point_msg.header.stamp = fused_time_;
-  rotation_point_msg.header.frame_id = base_link_frame_;
-  rotation_point_msg.child_frame_id = rotation_frame_;
-  geometry_msgs::msg::Transform rotation_point_transform_msg;
-  rotation_point_transform_msg = tf2::toMsg(rotation_point_in_base);
-  rotation_point_msg.transform = rotation_point_transform_msg;
-  br_->sendTransform(rotation_point_msg);
   // get base_link in rotation point frame
   tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
 
@@ -183,7 +174,7 @@ tf2::Transform OdometryFuser::getCurrentRotationPoint() {
   tf2::Transform rotation_point_tf;
 
   char current_support_state = biped_interfaces::msg::Phase::DOUBLE_STANCE;
-  
+
   biped_interfaces::msg::Phase::ConstSharedPtr
       current_support_state_msg = support_state_cache_.getElemBeforeTime(fused_time_);
 
@@ -263,7 +254,7 @@ int main(int argc, char **argv) {
   while(!node->wait_for_tf()){
      exec.spin_some();
   }
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 500.0);
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 100.0);
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->loop();});
 
   exec.spin();
