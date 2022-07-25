@@ -11,7 +11,7 @@ imu (rX, rY)
 
 OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
                                  tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
-                                 tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_)),
+                                 tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
                                  support_state_cache_(100),
                                  imu_sub_(this, "imu/data"),
                                  motion_odom_sub_(this, "motion_odometry"),
