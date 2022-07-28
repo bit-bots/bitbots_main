@@ -19,6 +19,7 @@
     <exec_depend>bitbots_odometry</exec_depend>
     <exec_depend>humanoid_base_footprint</exec_depend>
     <exec_depend>robot_state_publisher</exec_depend>
+    <exec_depend>bitbots_extrinsic_calibration</exec_depend>
     <exec_depend>wolfgang_description</exec_depend>
     <exec_depend>wolfgang_moveit_config</exec_depend>
     <exec_depend>xacro</exec_depend>
