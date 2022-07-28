@@ -103,7 +103,7 @@ namespace bitbots_dynup {
   const std::vector<rclcpp::Parameter> params;
   onSetParameters(params);
 
-  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
 
   robot_model_loader_ =
       std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
@@ -313,7 +313,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
       goal_handle->canceled(result);
       RCLCPP_INFO(this->get_logger(), "Goal canceled");
       return;
-    }    
+    }
     dt = getTimeDelta();
     msg = step(dt);
     auto feedback = std::make_shared<bitbots_msgs::action::Dynup_Feedback>();

@@ -4,7 +4,7 @@ MotionOdometry::MotionOdometry()
     : Node("MotionOdometry"),
       tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
       br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
-      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_)) {
+      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)) {
   this->declare_parameter<bool>("publish_walk_odom_tf", false);
   this->get_parameter("publish_walk_odom_tf", publish_walk_odom_tf_);
   this->declare_parameter<std::string>("base_link_frame", "base_link");
