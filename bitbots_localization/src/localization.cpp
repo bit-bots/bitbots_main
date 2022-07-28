@@ -13,7 +13,7 @@ namespace bitbots_localization {
 Localization::Localization() :
   Node("bitbots_localization", rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(true)),
   tfBuffer(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
-  tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer)),
+  tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer, this)),
   br(std::make_shared<tf2_ros::TransformBroadcaster>(this)){
 
   // Wait for transforms to become available and init them
