@@ -83,11 +83,15 @@
 	path = lib/pylon-ros-camera
 	url = ../../basler/pylon-ros-camera.git
 	branch = galactic
-[submodule "lib/ipm"]
-	path = lib/ipm
-	url = ../../Flova/ipm.git
-	branch = soccer_ipm
 [submodule "lib/ros2_numpy"]
     path = lib/ros2_numpy
     branch = rolling
 	url = ../../Box-Robotics/ros2_numpy.git
+[submodule "lib/ipm"]
+	path = lib/ipm
+	url = ../../ros-sports/ipm.git
+	branch = rolling
+[submodule "lib/soccer_ipm"]
+	path = lib/soccer_ipm
+	url = ../../Flova/soccer_ipm.git
+    branch = add_soccer_ipm
