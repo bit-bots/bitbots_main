@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import os
 
@@ -10,8 +10,8 @@ from ros2param.api import parse_parameter_dict
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
-from rcl_interfaces.srv import GetParameters
-from rclpy.parameter import parameter_value_to_python
+from rcl_interfaces.srv import GetParameters, SetParameters
+from rclpy.parameter import parameter_value_to_python, Parameter
 
 
 def read_urdf(robot_name):
@@ -103,3 +103,29 @@ def get_parameters_from_other_node(own_node: Node,
     for i, param in enumerate(parameter_names):
         results[param] = parameter_value_to_python(response.values[i])
     return results
+
+
+def set_parameters_of_other_node(own_node: Node,
+                                 other_node_name: str,
+                                 parameter_names: List[str],
+                                 parameter_values: List[Any],
+                                 service_timeout_sec: float = 20.0) -> List[bool]:
+    """
+    Used to set parameters of another running node.
+    Returns a list of booleans indicating success or failure.
+    """
+    client = own_node.create_client(SetParameters, f'{other_node_name}/set_parameters')
+    ready = client.wait_for_service(timeout_sec=service_timeout_sec)
+    if not ready:
+        raise RuntimeError(f'Wait for {other_node_name} parameter service timed out')
+    request = SetParameters.Request()
+
+    for name, value in zip(parameter_names, parameter_values):
+        param = Parameter(name=name, value=value)
+        parameter_value_msg = param.to_parameter_msg()
+        request.parameters.append(parameter_value_msg)
+
+    future = client.call_async(request)
+    rclpy.spin_until_future_complete(own_node, future)
+    response = future.result()
+    return [res.success for res in response.results]
