@@ -10,6 +10,20 @@ logger = rclpy.logging.get_logger('yoeo_handler_utils')
 
 @dataclass
 class ImagePreProcessorData:
+    """
+    This dataclass is used to exchange relevant parameters of the applied image preprocessing between instances of type
+    IImagePreProcessor and instances of type ISegmentationPostProcessor and IDetectionPostProcessor, respectively.
+    :param padding_top: applied padding (number of pixels) at the top of the image
+    :type padding_top: int
+    :param padding_bottom: applied padding (number of pixels) at the bottom of the image
+    :type padding_bottom: int
+    :param padding_left: applied padding (number of pixels) at the left-hand side of the image
+    :type padding_left: int
+    :param padding_right: applied padding (number of pixels) at the right-hand side of the image
+    :type padding_right: int
+    :param max_dim: the larger of the two dimensions of the original unprocessed image (number of pixels)
+    :type max_dime: int
+    """
     padding_top: int
     padding_bottom: int
     padding_left: int
@@ -18,61 +32,135 @@ class ImagePreProcessorData:
 
 
 class IImagePreProcessor(ABC):
+    """
+    Interface for YOEO image pre-processors. Implementing classes should take an ordinary image as input and output it
+    in such a way that it can be input into the YOEO network.
+    """
+
     @abstractmethod
     def configure(self, network_input_shape: Tuple[int, int]) -> None:
+        """
+        Allows to (re-) configure the current instance.
+
+        :param network_input_shape: input shape of the YOEO network (height, width)
+        :type network_input_shape: Tuple[int, int]
+        """
         ...
 
     @abstractmethod
     def get_info(self) -> ImagePreProcessorData:
+        """
+        Returns relevant image pre-processing parameters that are needed by the respective image post-processors.
+
+        Invoking this method before an image has been pre-processed returns an ImagePreProcessorData object with
+        default values.
+        """
         ...
 
     @abstractmethod
-    def process(self, image):
+    def process(self, image: np.ndarray) -> np.ndarray:
+        """
+        Run the image pre-processing on the method's argument.
+
+        :param image: the image to pre-process (axis order: height, width, channels)
+        :type image: np.ndarray
+        :return: the pre-processed image  (axis order: channels, height, width)
+        :rtype: np.ndarray
+        """
         ...
 
     @abstractmethod
     def reset(self) -> None:
+        """
+        Resets the instance into a state as if no image has been processed yet.
+        """
         ...
 
 
 class ISegmentationPostProcessor:
+    """
+    Interface for YOEO segmentation post-processors. Implementing classes should take a YOEO segmentation network
+    output as input and output a segmentation with size equal to the original image.
+    """
+
     @abstractmethod
     def configure(self, image_preprocessor: IImagePreProcessor) -> None:
+        """
+        Allows to (re-) configure the current instance.
+
+        :param image_preprocessor: instance of IImagePreProcessor that handles the image pre-processing
+        :type image_preprocessor: IImagePreProcessor
+        """
         ...
 
     @abstractmethod
-    def process(self, segmentation):
+    def process(self, segmentation: np.ndarray) -> np.ndarray:
+        """
+        Run the segmentation post-processing on the method's argument.
+
+        :param segmentation: YOEO segmentation network output (axis order: channels, height, width)
+        :type segmentation: np.ndarray
+        :return: the post-processed segmentation output (axis order: height, width)
+        :rtype: np.ndarray
+        """
         ...
 
 
 class IDetectionPostProcessor:
+    """
+    Interface for YOEO detection post-processors. Implementing classes should take a YOEO detection network
+    output as input, perform non-maximum suppression on it and rescale the bounding boxes to the original image size.
+    """
+
     @abstractmethod
     def configure(self,
                   image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
                   nms_thresh: float) -> None:
+        """
+        Allows to (re-) configure the current instance.
+
+        :param image_preprocessor: instance of IImagePreProcessor that handles the image pre-processing
+        :type image_preprocessor: IImagePreProcessor
+        :param output_img_size: image size (1D) for which the detections are calculated by the YOEO network
+        :type output_img_size: int
+        :param conf_thresh: class confidence threshold used in non-maximum suppression
+        :type conf_thresh: float
+        :param nms_thresh: threshold used in non-maximum suppression
+        :type nms_thresh: float
+        """
         ...
 
     @abstractmethod
-    def process(self, detections):
+    def process(self, detections: np.ndarray) -> np.ndarray:
+        """
+        Run the detection post-processing on the method's argument.
+
+        :param detections: YOEO detection network output (axis layout: 1, number of boxes, boxes),
+                           (boxes layout: x, y, w, h, obj_conf, cond_class_conf_1, cond_class_conf_2, ...)
+        :type detections: np.ndarray
+        :return: the post-processed detection output
+        :rtype: np.ndarray
+        """
         ...
 
 
 class DefaultImagePreProcessor(IImagePreProcessor):
     def __init__(self, network_input_shape):
-        self._network_input_shape_WH: Optional[Tuple[int, int]] = None
+        self._network_input_shape_WH: Optional[Tuple[int, int]] = None  # (width, height)
         self.configure(network_input_shape)
 
         # these attributes change for every image!
-        self._image_dimensions: Tuple[int, int] = (0, 0)  # (height, width)
+        self._image_dimensions_HW: Tuple[int, int] = (0, 0)  # (height, width)
         self._padding_top: int = 0
         self._padding_bottom: int = 0
         self._padding_left: int = 0
         self._padding_right: int = 0
 
     def configure(self, network_input_shape: Tuple[int, int]) -> None:
-        self._network_input_shape_WH = network_input_shape[::-1]  # (height, width) to (width, height)
+        # change layout from (height, width) to (width, height)
+        self._network_input_shape_WH = network_input_shape[::-1]
 
     def get_info(self) -> ImagePreProcessorData:
         return ImagePreProcessorData(
@@ -80,11 +168,11 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             padding_bottom=self._padding_bottom,
             padding_left=self._padding_left,
             padding_right=self._padding_right,
-            max_dim=np.max(self._image_dimensions)
+            max_dim=np.max(self._image_dimensions_HW)
         )
 
-    def process(self, image):
-        self._image_dimensions = image.shape[:2]
+    def process(self, image: np.ndarray) -> np.ndarray:
+        self._image_dimensions_HW = image.shape[:2]
         self._calculate_paddings()
 
         image = self._normalize_image_to_range_0_1(image)
@@ -95,7 +183,7 @@ class DefaultImagePreProcessor(IImagePreProcessor):
         return image
 
     def _calculate_paddings(self) -> None:
-        height, width = self._image_dimensions
+        height, width = self._image_dimensions_HW
 
         total_vertical_padding = max(0, width - height)
         total_horizontal_padding = max(0, height - width)
@@ -106,10 +194,10 @@ class DefaultImagePreProcessor(IImagePreProcessor):
         self._padding_right = total_horizontal_padding - self._padding_left
 
     @staticmethod
-    def _normalize_image_to_range_0_1(image):
+    def _normalize_image_to_range_0_1(image: np.ndarray) -> np.ndarray:
         return image / 255
 
-    def _pad_to_square(self, image):
+    def _pad_to_square(self, image: np.ndarray) -> np.ndarray:
         return cv2.copyMakeBorder(
             src=image,
             top=self._padding_top,
@@ -120,16 +208,16 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             value=0
         )
 
-    def _resize_to_network_input_shape(self, image):
+    def _resize_to_network_input_shape(self, image: np.ndarray) -> np.ndarray:
         return cv2.resize(src=image, dsize=self._network_input_shape_WH)
 
     @staticmethod
-    def _rearrange_axes_from_HWC_to_CHW(image):
+    def _rearrange_axes_from_HWC_to_CHW(image: np.ndarray) -> np.ndarray:
         # Change data layout from HWC to CHW
         return np.moveaxis(image, 2, 0)
 
     def reset(self) -> None:
-        self._image_dimensions = (0, 0)
+        self._image_dimensions_HW = (0, 0)
         self._padding_top = 0
         self._padding_bottom = 0
         self._padding_left = 0
@@ -150,7 +238,7 @@ class DefaultSegmentationPostProcessor(ISegmentationPostProcessor):
     def configure(self, image_preprocessor: IImagePreProcessor) -> None:
         self._image_preprocessor = image_preprocessor
 
-    def process(self, segmentation):
+    def process(self, segmentation: np.ndarray) -> np.ndarray:
         self._get_preprocessor_info()
         segmentation = self._rearrange_axis_from_CHW_to_HWC(segmentation)
         segmentation = self._resize_to_original_padded_size(segmentation)
@@ -167,23 +255,19 @@ class DefaultSegmentationPostProcessor(ISegmentationPostProcessor):
         self._padding_right = preprocessor_info.padding_right
 
     @staticmethod
-    def _change_dtype_from_int64_to_uint8(image):
-        return image.astype(np.uint8)
-
-    @staticmethod
-    def _rearrange_axis_from_CHW_to_HWC(segmentation):
+    def _rearrange_axis_from_CHW_to_HWC(segmentation: np.ndarray) -> np.ndarray:
         # Change data layout from CHW to HWC
         return np.moveaxis(segmentation, 0, -1)
 
-    def _resize_to_original_padded_size(self, segmentation):
+    def _resize_to_original_padded_size(self, segmentation: np.ndarray) -> np.ndarray:
         return cv2.resize(
             src=segmentation,
             dsize=(self._max_dim, self._max_dim),
             interpolation=cv2.INTER_NEAREST_EXACT
         )
 
-    def _unpad(self, segmentation):
-        return segmentation[self._padding_top:self._max_dim - self._padding_bottom,
+    def _unpad(self, segmentation: np.ndarray) -> np.ndarray:
+        return segmentation[self._padding_top:self._max_dim - self._padding_bottom, \
                self._padding_left:self._max_dim - self._padding_right, ...]
 
 
@@ -194,20 +278,20 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
                  conf_thresh: float,
                  nms_thresh: float):
         self._image_preprocessor: IImagePreProcessor = image_preprocessor
+        self._output_img_size: int = output_img_size
         self._conf_thresh: float = conf_thresh
         self._nms_thresh: float = nms_thresh
 
-        self._output_img_size: int = output_img_size
+        self._nms_max_number_of_boxes = 30000
+        self._nms_max_number_of_detections_per_image = 30
+        self._nms_max_width_height_in_pixels = 4096
 
+        # these attributes change for every segmentation!
         self._max_dim: int = 0
         self._padding_top: int = 0
         self._padding_bottom: int = 0
         self._padding_left: int = 0
         self._padding_right: int = 0
-
-        self._nms_max_number_of_boxes = 30000  # maximum number of boxes input into nms
-        self._nms_max_number_of_detections = 30  # maximum number of detections per image
-        self._nms_max_width_height_in_pixels = 4096
 
     def configure(self,
                   image_preprocessor: IImagePreProcessor,
@@ -219,7 +303,7 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         self._conf_thresh = conf_thresh
         self._nms_thresh = nms_thresh
 
-    def process(self, detections):
+    def process(self, detections: np.ndarray) -> np.ndarray:
         self._get_preprocessor_info()
         detections = self._perform_nms(detections[0, ...])
         detections = self._rescale_boxes(detections)
@@ -234,89 +318,78 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         self._padding_left = preprocessor_info.padding_left
         self._padding_right = preprocessor_info.padding_right
 
-    def _perform_nms(self, detections):
-        # shape prediction: (#boxes, >= 6)
-        # (>= 6)er meaning: (x, y, w, h, obj_conf, cond_class_conf_1, cond_class_conf_2, ...)
-
+    def _perform_nms(self, detections: np.ndarray) -> np.ndarray:
         detections = self._preprocess_detections_for_nms(detections)
 
         boxes, scores = self._get_boxes_and_scores_for_nms(detections)
-        indices = cv2.dnn.NMSBoxes(boxes, scores, 0, self._nms_thresh, top_k=self._nms_max_number_of_detections)
+        indices = cv2.dnn.NMSBoxes(bboxes=boxes,
+                                   scores=scores,
+                                   score_threshold=0,
+                                   nms_threshold=self._nms_thresh,
+                                   top_k=self._nms_max_number_of_detections_per_image)
 
         output = self._postprocess_nms_output(detections, indices)
 
         return output
 
-    def _preprocess_detections_for_nms(self, detections):
+    def _preprocess_detections_for_nms(self, detections: np.ndarray) -> np.ndarray:
         detections = self._filter_by_objectness_confidence(detections)
         detections = self._calculate_class_confidence_scores(detections)
         detections = self._pin_down_last_dimension_to_6(detections)
-        # detections = self._filter_by_class_confidence(detections)
 
         return detections
 
-    def _filter_by_objectness_confidence(self, detections):
+    def _filter_by_objectness_confidence(self, detections: np.ndarray) -> np.ndarray:
         return detections[detections[:, 4] > self._conf_thresh]
 
-    def _calculate_class_confidence_scores(self, detections):
+    @staticmethod
+    def _calculate_class_confidence_scores(detections: np.ndarray) -> np.ndarray:
         # class_confidence_score = conditional_class_probability * box_confidence_score (objectness)
         # p(class, object)       = p(class | object)             * p(object)
         detections[:, 5:] *= detections[:, 4:5]
 
         return detections
 
-    def _pin_down_last_dimension_to_6(self, detections):
+    def _pin_down_last_dimension_to_6(self, detections: np.ndarray) -> np.ndarray:
         box_coordinates = detections[:, :4]
         class_confidence_scores = detections[:, 5:]
 
-        if self._is_multilabel_prediction(class_confidence_scores):
-            i, j = (class_confidence_scores > self._conf_thresh).nonzero()
-            x = np.concatenate((box_coordinates[i], class_confidence_scores[i, j, None], j[:, None]), axis=1)
-        else:  # best class only
-            conf = np.max(class_confidence_scores, axis=1)
-            j = np.argmax(class_confidence_scores, axis=1)
-            x = np.concatenate((box_coordinates, conf[:, None], j[:, None]), axis=1)[conf > self._conf_thresh]
+        i, j = (class_confidence_scores > self._conf_thresh).nonzero()
+        x = np.concatenate((box_coordinates[i], class_confidence_scores[i, j, None], j[:, None]), axis=1)
 
         return x
 
-    @staticmethod
-    def _is_multilabel_prediction(class_confidence_scores) -> bool:
-        return class_confidence_scores.shape[1] > 1  # makes absolutely no sense
+    def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> Tuple:
+        class_offsets = detections[:, 5:6] * self._nms_max_width_height_in_pixels
+        box_coords = detections[:, :4].copy()
+        box_coords[:, :2] += class_offsets
 
-    def _filter_by_class_confidence(self, detections):
-        return detections[detections[:, 5] > self._conf_thresh]
+        return box_coords, detections[:, 4]
 
-    def _postprocess_nms_output(self, detections, nms_indices):
+    def _postprocess_nms_output(self, detections: np.ndarray, nms_indices) -> np.ndarray:
         detections = detections[nms_indices]
         detections = self._convert_box_coordinates(detections)
 
         return detections
 
-    def _get_boxes_and_scores_for_nms(self, prediction) -> Tuple:
-        # Batched NMS
-        c = prediction[:, 5:6] * self._nms_max_width_height_in_pixels  # classes
-        # boxes (offset by class), scores
-        box_coords = prediction[:, :4].copy()
-        box_coords[:, :2] += c
-
-        return box_coords, prediction[:, 4]
-
     @staticmethod
-    def _convert_box_coordinates(x):
+    def _convert_box_coordinates(boxes: np.ndarray) -> np.ndarray:
         """
         Transform bounding box coordinates from xywh format (centroid coordinates, width, height) to xyxy format (upper
         left coordinates, lower right coordinates)
-        :param x
-        :rtype
+        :param boxes: boxes with coordinates in xywh format (axis layout: number of boxes, boxes)
+        :type boxes: np.ndarray
+        :return: boxes with coordinates in xyxy format (axis layout: number of boxes, boxes)
+        :rtype: np.ndarray
         """
-        y = np.zeros_like(x[:, :4])
-        y[..., 0] = x[..., 0] - x[..., 2] / 2
-        y[..., 1] = x[..., 1] - x[..., 3] / 2
-        y[..., 2] = x[..., 0] + x[..., 2] / 2
-        y[..., 3] = x[..., 1] + x[..., 3] / 2
-        x[:, :4] = y
+        coordinates_xyxy = np.zeros_like(boxes[:, :4])
+        coordinates_xyxy[..., 0] = boxes[..., 0] - boxes[..., 2] / 2
+        coordinates_xyxy[..., 1] = boxes[..., 1] - boxes[..., 3] / 2
+        coordinates_xyxy[..., 2] = boxes[..., 0] + boxes[..., 2] / 2
+        coordinates_xyxy[..., 3] = boxes[..., 1] + boxes[..., 3] / 2
+        boxes[:, :4] = coordinates_xyxy
 
-        return x
+        return boxes
 
     def _rescale_boxes(self, boxes):
         rescaled_boxes = self._rescale_boxes_to_original_padded_img_size(boxes)
