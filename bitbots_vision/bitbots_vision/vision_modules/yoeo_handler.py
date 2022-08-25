@@ -10,9 +10,8 @@ from typing import List, Dict, Any, Tuple, TYPE_CHECKING, Optional
 import yaml
 import cv2
 
-from .yoeo_handler_utils import OVImagePreProcessor, OVSegmentationPostProcessor, OVDetectionPostProcessor, \
-    ONNXImagePreProcessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor, \
-    TVMImagePreProcessor, TVMSegmentationPostProcessor, TVMDetectionPostProcessor
+from .yoeo_handler_utils import DefaultImagePreProcessor, DefaultSegmentationPostProcessor, \
+    DefaultDetectionPostProcessor
 
 if TYPE_CHECKING:
     from .yoeo_handler_utils import IImagePreProcessor, ISegmentationPostProcessor, IDetectionPostProcessor
@@ -198,13 +197,13 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
         self._input_layer = self._inference_session.get_inputs()[0]
 
-        self._img_preprocessor: IImagePreProcessor = ONNXImagePreProcessor(tuple(self._input_layer.shape[2:]))
-        self._det_postprocessor: IDetectionPostProcessor = ONNXDetectionPostProcessor(
+        self._img_preprocessor: IImagePreProcessor = DefaultImagePreProcessor(tuple(self._input_layer.shape[2:]))
+        self._det_postprocessor: IDetectionPostProcessor = DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = ONNXSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: ISegmentationPostProcessor = DefaultSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -255,13 +254,13 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._output_layer_segmentations = self._compiled_model.outputs[1]
 
         _, _, height, width = self._input_layer.shape
-        self._img_preprocessor: IImagePreProcessor = OVImagePreProcessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
+        self._img_preprocessor: IImagePreProcessor = DefaultImagePreProcessor((height, width))
+        self._det_postprocessor: IDetectionPostProcessor = DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: ISegmentationPostProcessor = DefaultSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -368,13 +367,13 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._input_layer_shape = input_shape_dict.get('InputLayer')
 
         height, width = self._input_layer_shape[2], self._input_layer_shape[3]
-        self._img_preprocessor: IImagePreProcessor = TVMImagePreProcessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = TVMDetectionPostProcessor(
+        self._img_preprocessor: IImagePreProcessor = DefaultImagePreProcessor((height, width))
+        self._det_postprocessor: IDetectionPostProcessor = DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = TVMSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: ISegmentationPostProcessor = DefaultSegmentationPostProcessor(self._img_preprocessor)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
