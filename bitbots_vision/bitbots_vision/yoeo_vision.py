@@ -1,15 +1,14 @@
 #! /usr/bin/env python3
-from typing import Dict, Optional, List
-
-import os
 import numpy as np
+import os
 import rclpy
-from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
-from rcl_interfaces.msg import SetParametersResult
 from copy import deepcopy
 from cv_bridge import CvBridge
+from rclpy.node import Node
+from rcl_interfaces.msg import SetParametersResult
 from sensor_msgs.msg import Image
+from typing import Dict, Optional, List
 from bitbots_vision.vision_modules import yoeo_handler, ros_utils
 from bitbots_vision.vision_modules.yoeo_vision_components import IVisionComponent, CameraCapCheckComponent, \
     YOEOBallDetectionComponent, YOEOObstacleDetectionComponent, YOEOGoalpostDetectionComponent, \
@@ -31,20 +30,18 @@ class YOEOVision(Node):
     """
     The Vision is the main ROS-node for handling all tasks related to image processing.
 
-    This class defines the whole image processing pipeline, which uses the modules from the `vision_modules`.
+    This class defines the whole YOEO image processing pipeline, which uses the modules from the `vision_modules`.
     It also handles the dynamic reconfiguration of the bitbots_vision.
     """
-
     def __init__(self) -> None:
         super().__init__('bitbots_vision')
 
-        self._package_path = get_package_share_directory('bitbots_vision')
-
         logger.info(f"Entering {self.__class__.__name__} constructor")
 
-        self._cv_bridge = CvBridge()
+        self._package_path = get_package_share_directory('bitbots_vision')
 
         self._config: Dict = {}
+        self._cv_bridge = CvBridge()
 
         self._sub_image = None
 
@@ -88,8 +85,8 @@ class YOEOVision(Node):
         yoeo_framework = new_config["yoeo_framework"]
         model_path = self._get_model_path(new_config)
 
-        self._verify_yoeo_framework(yoeo_framework)
-        self._verify_neural_network_files_exist(yoeo_framework, model_path)
+        self._verify_yoeo_framework_parameter(yoeo_framework)
+        self._verify_required_neural_network_files_exist(yoeo_framework, model_path)
 
         self._set_up_yoeo_handler(new_config)
         self._set_up_vision_components(new_config)
@@ -100,11 +97,11 @@ class YOEOVision(Node):
         return os.path.join(self._package_path, 'models', config['yoeo_model_path'])
 
     @staticmethod
-    def _verify_yoeo_framework(yoeo_framework: str) -> None:
+    def _verify_yoeo_framework_parameter(yoeo_framework: str) -> None:
         if yoeo_framework not in {'openvino', 'onnx', 'pytorch', 'tvm'}:
             logger.error(f"Unknown neural network framework '{yoeo_framework}'")
 
-    def _verify_neural_network_files_exist(self, yoeo_framework: str, model_path: str) -> None:
+    def _verify_required_neural_network_files_exist(self, yoeo_framework: str, model_path: str) -> None:
         if not self._model_files_exist(yoeo_framework, model_path):
             logger.error("No matching model file(s) found!")
 
