@@ -465,7 +465,7 @@ class YOEODetectorTemplate(CandidateFinder):
     Abstract base class for YOEO detectors. Actual detectors only need to implement the abstract method get_candidates()
     if they inherit from this template.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__()
 
         self._yoeo_handler = yoeo_handler
@@ -499,7 +499,7 @@ class YOEOBallDetector(YOEODetectorTemplate):
     """
     YOEO Ball Detection class.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__(yoeo_handler)
 
     def get_candidates(self) -> List[Candidate]:
@@ -510,7 +510,7 @@ class YOEOGoalpostDetector(YOEODetectorTemplate):
     """
     YOEO Goalpost Detection class.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__(yoeo_handler)
 
     def get_candidates(self) -> List[Candidate]:
@@ -521,7 +521,7 @@ class YOEORobotDetector(YOEODetectorTemplate):
     """
     YOEO Robot Detection class.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__(yoeo_handler)
 
     def get_candidates(self) -> List[Candidate]:
