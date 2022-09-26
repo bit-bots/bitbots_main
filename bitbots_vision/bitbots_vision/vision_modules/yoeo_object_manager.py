@@ -9,7 +9,7 @@ from . import yoeo_handler, ros_utils
 logger = rclpy.logging.get_logger('bitbots_vision')
 
 
-class ObjectManager:
+class YOEOObjectManager:
     """
     This class manages the creation and update of the YOEO handler instance.
     """
