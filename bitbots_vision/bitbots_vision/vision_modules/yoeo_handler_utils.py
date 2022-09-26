@@ -22,7 +22,7 @@ class ImagePreProcessorData:
     :param padding_right: applied padding (number of pixels) at the right-hand side of the image
     :type padding_right: int
     :param max_dim: the larger of the two dimensions of the original unprocessed image (number of pixels)
-    :type max_dime: int
+    :type max_dim: int
     """
     padding_top: int
     padding_bottom: int
