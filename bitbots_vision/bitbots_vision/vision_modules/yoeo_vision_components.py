@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Dict, Optional, List, Tuple, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from soccer_vision_2d_msgs.msg import Ball, Goalpost
 
@@ -15,8 +16,6 @@ from bitbots_vision.vision_modules import field_boundary, color, debug, \
 
 from . import yoeo_handler
 from .yoeo_object_manager import YOEOObjectManager
-
-
 
 logger = rclpy.logging.get_logger('yoeo_vision_components')
 
@@ -161,6 +160,20 @@ class IVisionComponent(ABC):
     @abstractmethod
     def set_image(self, image: np.ndarray) -> None:
         ...
+
+
+class YOEOComponent(IVisionComponent):
+    def __init__(self):
+        self._yoeo_instance: yoeo_handler.IYOEOHandler = YOEOObjectManager.get()
+
+    def configure(self, config: Dict) -> None:
+        self._yoeo_instance = YOEOObjectManager.get()
+
+    def run(self, image_msg: Image) -> None:
+        self._yoeo_instance.predict()
+
+    def set_image(self, image: np.ndarray) -> None:
+        self._yoeo_instance.set_image(image)
 
 
 class CameraCapCheckComponent(IVisionComponent):
