@@ -10,6 +10,10 @@ logger = rclpy.logging.get_logger('bitbots_vision')
 
 
 class ObjectManager:
+    """
+    This class manages the creation and update of the YOEO handler instance.
+    """
+
     _config: Dict = {}
     _framework: str = ""
     _package_directory: str = ""
@@ -18,18 +22,33 @@ class ObjectManager:
 
     @classmethod
     def set_package_directory(cls, package_directory: str) -> None:
+        """
+        Set the package directory. Required before first use in order to have the correct paths for the models.
+        """
         cls._package_directory = package_directory
         cls._package_directory_set = True
 
     @classmethod
     def get(cls) -> yoeo_handler.IYOEOHandler:
+        """
+        Get the current YOEO handler instance.
+
+        :return: the current YOEO handler instance
+        :rtype: IYOEOHandler
+        """
         if cls._yoeo_instance is None:
             logger.error("No yoeo handler created yet!")
         else:
             return cls._yoeo_instance
 
     @classmethod
-    def getID(cls) -> int:
+    def get_id(cls) -> int:
+        """
+        Get the (Python) ID of the current YOEO handler instance.
+
+        :return: the ID of the current YOEO handler instance
+        :rtype: int
+        """
         if cls._yoeo_instance is None:
             logger.error("No yoeo handler created yet")
         else:

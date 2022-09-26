@@ -69,7 +69,7 @@ class YOEOFieldBoundaryDetectorFactory:
     def _new_field_boundary_detector_has_to_be_created(cls, config: Dict) -> bool:
         return cls._field_boundary_detector is None \
                or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
-               or cls._yoeo_id != ObjectManager.getID()
+               or cls._yoeo_id != ObjectManager.get_id()
 
     @classmethod
     def _create_new_field_boundary_detector(cls, config: Dict) -> None:
@@ -80,7 +80,7 @@ class YOEOFieldBoundaryDetectorFactory:
 
         cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
         cls._field_boundary_detector_search_method = config['field_boundary_detector_search_method']
-        cls._yoeo_id = ObjectManager.getID()
+        cls._yoeo_id = ObjectManager.get_id()
 
 
 class YOEOObstacleDetectorFactory:
@@ -115,12 +115,12 @@ class YOEOObstacleDetectorFactory:
 
     @classmethod
     def _new_robot_detector_has_to_be_created(cls) -> bool:
-        return cls._robot_detector is None or cls._yoeo_id != ObjectManager.getID()
+        return cls._robot_detector is None or cls._yoeo_id != ObjectManager.get_id()
 
     @classmethod
     def _create_new_robot_detector(cls) -> None:
         cls._robot_detector = yoeo_handler.YOEORobotDetector(ObjectManager.get())
-        cls._yoeo_id = ObjectManager.getID()
+        cls._yoeo_id = ObjectManager.get_id()
 
     @classmethod
     def _new_red_color_detector_has_to_be_created(cls, config: Dict) -> bool:
