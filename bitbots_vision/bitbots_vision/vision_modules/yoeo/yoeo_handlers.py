@@ -7,16 +7,11 @@ import rclpy
 import yaml
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import List, Dict, Tuple, TYPE_CHECKING, Optional
+from typing import List, Dict, Tuple, Optional
 
+from . import yoeo_handler_utils as utils
+from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate
 
-from .candidate import CandidateFinder, Candidate
-from .field_boundary import IFieldDetector
-from .yoeo_handler_utils import DefaultImagePreProcessor, DefaultSegmentationPostProcessor, \
-    DefaultDetectionPostProcessor
-
-if TYPE_CHECKING:
-    from .yoeo_handler_utils import IImagePreProcessor, ISegmentationPostProcessor, IDetectionPostProcessor
 
 logger = rclpy.logging.get_logger('vision_yoeo')
 
@@ -242,13 +237,17 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
         self._input_layer = self._inference_session.get_inputs()[0]
 
-        self._img_preprocessor: IImagePreProcessor = DefaultImagePreProcessor(tuple(self._input_layer.shape[2:]))
-        self._det_postprocessor: IDetectionPostProcessor = DefaultDetectionPostProcessor(
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor(
+            tuple(self._input_layer.shape[2:])
+        )
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = DefaultSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+            self._img_preprocessor
+        )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -303,13 +302,15 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._output_layer_segmentations = self._compiled_model.outputs[1]
 
         _, _, height, width = self._input_layer.shape
-        self._img_preprocessor: IImagePreProcessor = DefaultImagePreProcessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = DefaultDetectionPostProcessor(
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor((height, width))
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = DefaultSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+            self._img_preprocessor
+        )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -417,13 +418,15 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._input_layer_shape = input_shape_dict.get('InputLayer')
 
         height, width = self._input_layer_shape[2], self._input_layer_shape[3]
-        self._img_preprocessor: IImagePreProcessor = DefaultImagePreProcessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = DefaultDetectionPostProcessor(
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor((height, width))
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = DefaultSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+            self._img_preprocessor
+        )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -458,171 +461,6 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         segmentation = self._seg_postprocessor.process(self._model.get_output(1).numpy())
 
         return detections, segmentation
-
-
-class YOEODetectorTemplate(CandidateFinder):
-    """
-    Abstract base class for YOEO detectors. Actual detectors only need to implement the abstract method get_candidates()
-    if they inherit from this template.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__()
-
-        self._yoeo_handler = yoeo_handler
-
-    def set_image(self, image: np.ndarray) -> None:
-        """
-        A subsequent call to compute() will run the YOEO network on this image.
-
-        :param image: the image to run the YOEO network on
-        :type image: np.ndarray
-        """
-
-        self._yoeo_handler.set_image(image)
-
-    def compute(self) -> None:
-        """
-        Runs the YOEO network (if necessary) on the current input image.
-        """
-
-        self._yoeo_handler.predict()
-
-    @abstractmethod
-    def get_candidates(self) -> List[Candidate]:
-        """
-        Returns the detection candidates.
-        """
-        ...
-
-
-class YOEOBallDetector(YOEODetectorTemplate):
-    """
-    YOEO Ball Detection class.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("ball")
-
-
-class YOEOGoalpostDetector(YOEODetectorTemplate):
-    """
-    YOEO Goalpost Detection class.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("goalpost")
-
-
-class YOEORobotDetector(YOEODetectorTemplate):
-    """
-    YOEO Robot Detection class.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("robot")
-
-
-class IYOEOSegmentation(ABC):
-    """
-    Interface of YOEO segmentation classes.
-    """
-    @abstractmethod
-    def compute(self) -> None:
-        """
-        Runs the YOEO network (if necessary) on the current input image.
-        """
-        ...
-
-    @abstractmethod
-    def get_mask(self) -> np.ndarray:
-        """
-        Returns binary segmentation mask with values in {0, 1}.
-
-        :return: binary segmentation mask
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        ...
-
-    @abstractmethod
-    def get_mask_image(self) -> np.ndarray:
-        """
-        Returns binary segmentation mask with values in {0, 255}.
-
-        :return: binary segmentation mask
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        ...
-
-    @abstractmethod
-    def set_image(self, image: np.ndarray) -> None:
-        """
-        A subsequent call to compute() will run the YOEO network on this image.
-
-        :param image: the image to run the YOEO network on
-        :type image: np.ndarray
-        """
-        ...
-
-
-class YOEOSegmentationTemplate(IYOEOSegmentation):
-    """
-    Abstract base implementation of the IYOEOSegmentation interface. Actual classes need only implement the abstract
-    method get_mask() if they inherit from this template.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        self._yoeo_handler = yoeo_handler
-
-    def compute(self) -> None:
-        self._yoeo_handler.predict()
-
-    def get_mask_image(self):
-        return self.get_mask() * 255
-
-    def set_image(self, image) -> None:
-        self._yoeo_handler.set_image(image)
-
-    @abstractmethod
-    def get_mask(self):
-        ...
-
-
-class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
-    """
-    YOEO Background Segmentation class.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_mask(self):
-        return self._yoeo_handler.get_segmentation_mask_for("background")
-
-
-class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
-    """
-    YOEO Field Segmentation class.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_mask(self):
-        return self._yoeo_handler.get_segmentation_mask_for("field")
-
-
-class YOEOLineSegmentation(YOEOSegmentationTemplate):
-    """
-    YOEO Line Segmentation class.
-    """
-    def __init__(self, yoeo_handler: IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_mask(self):
-        return self._yoeo_handler.get_segmentation_mask_for("lines")
 
 
 class YOEOPathGetter:

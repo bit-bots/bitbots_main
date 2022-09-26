@@ -3,8 +3,8 @@ import rclpy
 from typing import Optional, Dict
 
 
-from . import yoeo_handler, ros_utils
-
+from bitbots_vision.vision_modules import ros_utils
+from . import yoeo_handlers
 
 logger = rclpy.logging.get_logger('bitbots_vision')
 
@@ -18,7 +18,7 @@ class YOEOObjectManager:
     _framework: str = ""
     _package_directory: str = ""
     _package_directory_set: bool = False
-    _yoeo_instance: Optional[yoeo_handler.IYOEOHandler] = None
+    _yoeo_instance: Optional[yoeo_handlers.IYOEOHandler] = None
 
     @classmethod
     def set_package_directory(cls, package_directory: str) -> None:
@@ -29,7 +29,7 @@ class YOEOObjectManager:
         cls._package_directory_set = True
 
     @classmethod
-    def get(cls) -> yoeo_handler.IYOEOHandler:
+    def get(cls) -> yoeo_handlers.IYOEOHandler:
         """
         Get the current YOEO handler instance.
 
@@ -89,13 +89,13 @@ class YOEOObjectManager:
         exists: bool = False
 
         if framework == "openvino":
-            exists = yoeo_handler.YOEOHandlerOpenVino.model_files_exist(model_path)
+            exists = yoeo_handlers.YOEOHandlerOpenVino.model_files_exist(model_path)
         elif framework == "onnx":
-            exists = yoeo_handler.YOEOHandlerONNX.model_files_exist(model_path)
+            exists = yoeo_handlers.YOEOHandlerONNX.model_files_exist(model_path)
         elif framework == "pytorch":
-            exists = yoeo_handler.YOEOHandlerPytorch.model_files_exist(model_path)
+            exists = yoeo_handlers.YOEOHandlerPytorch.model_files_exist(model_path)
         elif framework == "tvm":
-            exists = yoeo_handler.YOEOHandlerTVM.model_files_exist(model_path)
+            exists = yoeo_handlers.YOEOHandlerTVM.model_files_exist(model_path)
 
         return exists
 
@@ -113,13 +113,13 @@ class YOEOObjectManager:
     @classmethod
     def _instantiate_new_yoeo_handler(cls, config: Dict, framework: str, model_path: str) -> None:
         if framework == "openvino":
-            cls._yoeo_instance = yoeo_handler.YOEOHandlerOpenVino(config, model_path)
+            cls._yoeo_instance = yoeo_handlers.YOEOHandlerOpenVino(config, model_path)
         elif framework == "onnx":
-            cls._yoeo_instance = yoeo_handler.YOEOHandlerONNX(config, model_path)
+            cls._yoeo_instance = yoeo_handlers.YOEOHandlerONNX(config, model_path)
         elif framework == "pytorch":
-            cls._yoeo_instance = yoeo_handler.YOEOHandlerPytorch(config, model_path)
+            cls._yoeo_instance = yoeo_handlers.YOEOHandlerPytorch(config, model_path)
         elif framework == "tvm":
-            cls._yoeo_instance = yoeo_handler.YOEOHandlerTVM(config, model_path)
+            cls._yoeo_instance = yoeo_handlers.YOEOHandlerTVM(config, model_path)
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod

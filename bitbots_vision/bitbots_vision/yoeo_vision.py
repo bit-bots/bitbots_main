@@ -8,9 +8,8 @@ from rclpy.node import Node
 from rcl_interfaces.msg import SetParametersResult
 from sensor_msgs.msg import Image
 from typing import Dict, List
-from bitbots_vision.vision_modules import yoeo_handler, ros_utils
-import bitbots_vision.vision_modules.yoeo_vision_components as yoeo_vc
-import bitbots_vision.vision_modules.yoeo_object_manager as yoeo_om
+from bitbots_vision.vision_modules import ros_utils
+from bitbots_vision.vision_modules import yoeo
 
 from .yoeo_params import gen
 
@@ -38,14 +37,14 @@ class YOEOVision(Node):
 
         self._package_path = get_package_share_directory('bitbots_vision')
 
-        yoeo_om.YOEOObjectManager.set_package_directory(self._package_path)
+        yoeo.YOEOObjectManager.set_package_directory(self._package_path)
 
         self._config: Dict = {}
         self._cv_bridge = CvBridge()
 
         self._sub_image = None
 
-        self._vision_components: List[yoeo_vc.IVisionComponent] = []
+        self._vision_components: List[yoeo.IVisionComponent] = []
 
         # Setup reconfiguration
         gen.declare_params(self)
@@ -81,31 +80,31 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
-        yoeo_om.YOEOObjectManager.configure(new_config)
+        yoeo.YOEOObjectManager.configure(new_config)
 
         self._set_up_vision_components(new_config)
         self._register_subscribers(new_config)
 
     def _set_up_vision_components(self, new_config: Dict) -> None:
         self._vision_components = []
-        self._vision_components.append(yoeo_vc.YOEOComponent())
+        self._vision_components.append(yoeo.YOEOComponent())
 
         if new_config["component_camera_cap_check_active"]:
-            self._vision_components.append(yoeo_vc.CameraCapCheckComponent(self))
+            self._vision_components.append(yoeo.CameraCapCheckComponent(self))
         if new_config["component_ball_detection_active"]:
-            self._vision_components.append(yoeo_vc.YOEOBallDetectionComponent(self))
+            self._vision_components.append(yoeo.YOEOBallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
-            self._vision_components.append(yoeo_vc.YOEOObstacleDetectionComponent(self))
+            self._vision_components.append(yoeo.YOEOObstacleDetectionComponent(self))
         if new_config["component_goalpost_detection_active"]:
-            self._vision_components.append(yoeo_vc.YOEOGoalpostDetectionComponent(self))
+            self._vision_components.append(yoeo.YOEOGoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:
-            self._vision_components.append(yoeo_vc.YOEOLineDetectionComponent(self))
+            self._vision_components.append(yoeo.YOEOLineDetectionComponent(self))
         if new_config["component_field_boundary_detection_active"]:
-            self._vision_components.append(yoeo_vc.YOEOFieldBoundaryDetectionComponent(self))
+            self._vision_components.append(yoeo.YOEOFieldBoundaryDetectionComponent(self))
         if new_config["component_field_detection_active"]:
-            self._vision_components.append(yoeo_vc.YOEOFieldDetectionComponent(self))
+            self._vision_components.append(yoeo.YOEOFieldDetectionComponent(self))
         if new_config["component_debug_image_active"]:
-            self._vision_components.append(yoeo_vc.DebugImageComponent(self))
+            self._vision_components.append(yoeo.DebugImageComponent(self))
 
         for vision_component in self._vision_components:
             vision_component.configure(new_config, new_config["component_debug_image_active"])
