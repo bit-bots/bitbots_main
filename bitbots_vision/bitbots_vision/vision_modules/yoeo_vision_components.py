@@ -14,7 +14,7 @@ from bitbots_vision.vision_modules import field_boundary, color, debug, \
     obstacle, ros_utils, candidate
 
 from . import yoeo_handler
-from .yoeo_object_manager import ObjectManager
+from .yoeo_object_manager import YOEOObjectManager
 
 
 
@@ -69,18 +69,18 @@ class YOEOFieldBoundaryDetectorFactory:
     def _new_field_boundary_detector_has_to_be_created(cls, config: Dict) -> bool:
         return cls._field_boundary_detector is None \
                or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
-               or cls._yoeo_id != ObjectManager.get_id()
+               or cls._yoeo_id != YOEOObjectManager.get_id()
 
     @classmethod
     def _create_new_field_boundary_detector(cls, config: Dict) -> None:
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method']
         )
-        field_detector = yoeo_handler.YOEOFieldSegmentation(ObjectManager.get())
+        field_detector = yoeo_handler.YOEOFieldSegmentation(YOEOObjectManager.get())
 
         cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
         cls._field_boundary_detector_search_method = config['field_boundary_detector_search_method']
-        cls._yoeo_id = ObjectManager.get_id()
+        cls._yoeo_id = YOEOObjectManager.get_id()
 
 
 class YOEOObstacleDetectorFactory:
@@ -115,12 +115,12 @@ class YOEOObstacleDetectorFactory:
 
     @classmethod
     def _new_robot_detector_has_to_be_created(cls) -> bool:
-        return cls._robot_detector is None or cls._yoeo_id != ObjectManager.get_id()
+        return cls._robot_detector is None or cls._yoeo_id != YOEOObjectManager.get_id()
 
     @classmethod
     def _create_new_robot_detector(cls) -> None:
-        cls._robot_detector = yoeo_handler.YOEORobotDetector(ObjectManager.get())
-        cls._yoeo_id = ObjectManager.get_id()
+        cls._robot_detector = yoeo_handler.YOEORobotDetector(YOEOObjectManager.get())
+        cls._yoeo_id = YOEOObjectManager.get_id()
 
     @classmethod
     def _new_red_color_detector_has_to_be_created(cls, config: Dict) -> bool:
@@ -241,7 +241,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict) -> None:
-        self._ball_detector = yoeo_handler.YOEOBallDetector(ObjectManager.get())
+        self._ball_detector = yoeo_handler.YOEOBallDetector(YOEOObjectManager.get())
         self._debug_image = DebugImageFactory.create(config)
         self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config)
 
@@ -325,7 +325,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
     def configure(self, config: Dict) -> None:
         self._debug_image = DebugImageFactory.create(config)
         self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config)
-        self._goalpost_detector = yoeo_handler.YOEOGoalpostDetector(ObjectManager.get())
+        self._goalpost_detector = yoeo_handler.YOEOGoalpostDetector(YOEOObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -454,7 +454,7 @@ class YOEOLineDetectionComponent(IVisionComponent):
 
     def configure(self, config: Dict) -> None:
         self._debug_image = DebugImageFactory.create(config)
-        self._line_detector = yoeo_handler.YOEOLineSegmentation(ObjectManager.get())
+        self._line_detector = yoeo_handler.YOEOLineSegmentation(YOEOObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -502,7 +502,7 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict) -> None:
-        self._field_detector = yoeo_handler.YOEOFieldSegmentation(ObjectManager.get())
+        self._field_detector = yoeo_handler.YOEOFieldSegmentation(YOEOObjectManager.get())
         self._log_status()
 
         self._register_publisher(config)
