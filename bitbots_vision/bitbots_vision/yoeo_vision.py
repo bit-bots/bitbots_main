@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import numpy as np
-import os
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from copy import deepcopy

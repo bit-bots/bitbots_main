@@ -1,8 +1,10 @@
-from typing import Optional, Dict
 import os.path as osp
+import rclpy
+from typing import Optional, Dict
+
+
 from . import yoeo_handler, ros_utils
 
-import rclpy
 
 logger = rclpy.logging.get_logger('bitbots_vision')
 
