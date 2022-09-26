@@ -575,7 +575,7 @@ class YOEOSegmentationTemplate(IYOEOSegmentation):
     Abstract base implementation of the IYOEOSegmentation interface. Actual classes need only implement the abstract
     method get_mask() if they inherit from this template.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         self._yoeo_handler = yoeo_handler
 
     def compute(self) -> None:
@@ -596,7 +596,7 @@ class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
     """
     YOEO Background Segmentation class.
     """
-    def __init__(self, yoeo_handler):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__(yoeo_handler)
 
     def get_mask(self):
@@ -607,7 +607,7 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
     """
     YOEO Field Segmentation class.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__(yoeo_handler)
 
     def get_mask(self):
@@ -618,7 +618,7 @@ class YOEOLineSegmentation(YOEOSegmentationTemplate):
     """
     YOEO Line Segmentation class.
     """
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
+    def __init__(self, yoeo_handler: IYOEOHandler):
         super().__init__(yoeo_handler)
 
     def get_mask(self):
