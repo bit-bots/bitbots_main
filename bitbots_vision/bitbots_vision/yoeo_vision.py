@@ -13,6 +13,7 @@ from bitbots_vision.vision_modules import yoeo_handler, ros_utils
 from bitbots_vision.vision_modules.yoeo_vision_components import IVisionComponent, CameraCapCheckComponent, \
     YOEOBallDetectionComponent, YOEOObstacleDetectionComponent, YOEOGoalpostDetectionComponent, \
     YOEOLineDetectionComponent, YOEOFieldBoundaryDetectionComponent, YOEOFieldDetectionComponent, DebugImageComponent
+from bitbots_vision.vision_modules.yoeo_object_manager import ObjectManager
 
 from .yoeo_params import gen
 
@@ -39,6 +40,8 @@ class YOEOVision(Node):
         logger.info(f"Entering {self.__class__.__name__} constructor")
 
         self._package_path = get_package_share_directory('bitbots_vision')
+
+        ObjectManager.set_package_directory(self._package_path)
 
         self._config: Dict = {}
         self._cv_bridge = CvBridge()
@@ -82,67 +85,11 @@ class YOEOVision(Node):
         return new_config
 
     def _configure_vision(self, new_config: Dict) -> None:
-        yoeo_framework = new_config["yoeo_framework"]
-        model_path = self._get_model_path(new_config)
+        ObjectManager.configure(new_config)
 
-        self._verify_yoeo_framework_parameter(yoeo_framework)
-        self._verify_required_neural_network_files_exist(yoeo_framework, model_path)
-
-        self._set_up_yoeo_handler(new_config)
+        self._yoeo_handler = ObjectManager.get()
         self._set_up_vision_components(new_config)
-
         self._register_subscribers(new_config)
-
-    def _get_model_path(self, config: Dict) -> str:
-        return os.path.join(self._package_path, 'models', config['yoeo_model_path'])
-
-    @staticmethod
-    def _verify_yoeo_framework_parameter(yoeo_framework: str) -> None:
-        if yoeo_framework not in {'openvino', 'onnx', 'pytorch', 'tvm'}:
-            logger.error(f"Unknown neural network framework '{yoeo_framework}'")
-
-    def _verify_required_neural_network_files_exist(self, yoeo_framework: str, model_path: str) -> None:
-        if not self._model_files_exist(yoeo_framework, model_path):
-            logger.error("No matching model file(s) found!")
-
-    @staticmethod
-    def _model_files_exist(yoeo_framework: str, model_path: str) -> bool:
-        exists: bool = False
-        if yoeo_framework == "openvino":
-            exists = yoeo_handler.YOEOHandlerOpenVino.model_files_exist(model_path)
-        elif yoeo_framework == "onnx":
-            exists = yoeo_handler.YOEOHandlerONNX.model_files_exist(model_path)
-        elif yoeo_framework == "pytorch":
-            exists = yoeo_handler.YOEOHandlerPytorch.model_files_exist(model_path)
-        elif yoeo_framework == "tvm":
-            exists = yoeo_handler.YOEOHandlerTVM.model_files_exist(model_path)
-        return exists
-
-    def _set_up_yoeo_handler(self, new_config: Dict) -> None:
-        if self._new_yoeo_handler_is_needed(new_config):
-            self._instantiate_new_yoeo_handler(new_config)
-        elif self._yoeo_parameters_have_changed(new_config):
-            self._yoeo_handler.configure(new_config)
-
-    def _new_yoeo_handler_is_needed(self, new_config: Dict) -> bool:
-        return self._yoeo_handler is None or \
-               ros_utils.config_param_change(self._config, new_config, ['yoeo_framework'])
-
-    def _instantiate_new_yoeo_handler(self, new_config: Dict) -> None:
-        yoeo_framework = new_config["yoeo_framework"]
-        model_path = self._get_model_path(new_config)
-        if yoeo_framework == "openvino":
-            self._yoeo_handler = yoeo_handler.YOEOHandlerOpenVino(new_config, model_path)
-        elif yoeo_framework == "onnx":
-            self._yoeo_handler = yoeo_handler.YOEOHandlerONNX(new_config, model_path)
-        elif yoeo_framework == "pytorch":
-            self._yoeo_handler = yoeo_handler.YOEOHandlerPytorch(new_config, model_path)
-        elif yoeo_framework == "tvm":
-            self._yoeo_handler = yoeo_handler.YOEOHandlerTVM(new_config, model_path)
-        logger.info(f"Using {self._yoeo_handler.__class__.__name__}")
-
-    def _yoeo_parameters_have_changed(self, new_config: Dict) -> bool:
-        return ros_utils.config_param_change(self._config, new_config, r'yoeo_')
 
     def _set_up_vision_components(self, new_config: Dict) -> None:
         self._vision_components = []
