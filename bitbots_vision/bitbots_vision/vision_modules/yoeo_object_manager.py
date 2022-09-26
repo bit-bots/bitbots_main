@@ -29,6 +29,13 @@ class ObjectManager:
             return cls._yoeo_instance
 
     @classmethod
+    def getID(cls) -> int:
+        if cls._yoeo_instance is None:
+            logger.error("No yoeo handler created yet")
+        else:
+            return id(cls._yoeo_instance)
+
+    @classmethod
     def configure(cls, config: Dict) -> None:
         if not cls._package_directory_set:
             logger.error("Package directory not set!")
@@ -75,7 +82,6 @@ class ObjectManager:
 
     @classmethod
     def _configure_yoeo_instance(cls, config: Dict, framework: str, model_path: str) -> None:
-        logger.error(model_path)
         if cls._new_yoeo_handler_is_needed(framework):
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
         elif cls._yoeo_parameters_have_changed(config):

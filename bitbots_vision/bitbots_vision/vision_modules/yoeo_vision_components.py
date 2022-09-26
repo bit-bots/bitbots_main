@@ -5,6 +5,7 @@ if TYPE_CHECKING:
 
 import numpy as np
 import rclpy
+from abc import ABC, abstractmethod
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from humanoid_league_msgs.msg import Audio, GameState
@@ -12,9 +13,10 @@ from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, R
 from bitbots_vision.vision_modules import field_boundary, color, debug, \
     obstacle, ros_utils, candidate
 
-from bitbots_vision.vision_modules import yoeo_handler
+from . import yoeo_handler
+from .yoeo_object_manager import ObjectManager
 
-from abc import ABC, abstractmethod
+
 
 logger = rclpy.logging.get_logger('yoeo_vision_components')
 
@@ -58,27 +60,27 @@ class YOEOFieldBoundaryDetectorFactory:
     _yoeo_id: Optional[int] = None
 
     @classmethod
-    def create(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> field_boundary.FieldBoundaryDetector:
-        if cls._new_field_boundary_detector_has_to_be_created(config, yoeo):
-            cls._create_new_field_boundary_detector(config, yoeo)
+    def create(cls, config: Dict) -> field_boundary.FieldBoundaryDetector:
+        if cls._new_field_boundary_detector_has_to_be_created(config):
+            cls._create_new_field_boundary_detector(config)
         return cls._field_boundary_detector
 
     @classmethod
-    def _new_field_boundary_detector_has_to_be_created(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> bool:
+    def _new_field_boundary_detector_has_to_be_created(cls, config: Dict) -> bool:
         return cls._field_boundary_detector is None \
                or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
-               or cls._yoeo_id != id(yoeo)
+               or cls._yoeo_id != ObjectManager.getID()
 
     @classmethod
-    def _create_new_field_boundary_detector(cls, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def _create_new_field_boundary_detector(cls, config: Dict) -> None:
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method']
         )
-        field_detector = yoeo_handler.YOEOFieldSegmentation(yoeo)
+        field_detector = yoeo_handler.YOEOFieldSegmentation(ObjectManager.get())
 
         cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
         cls._field_boundary_detector_search_method = config['field_boundary_detector_search_method']
-        cls._yoeo_id = id(yoeo)
+        cls._yoeo_id = ObjectManager.getID()
 
 
 class YOEOObstacleDetectorFactory:
@@ -91,12 +93,11 @@ class YOEOObstacleDetectorFactory:
     @classmethod
     def create(cls,
                config: Dict,
-               yoeo: yoeo_handler.IYOEOHandler,
                color: Optional[int] = None,
                subtractors: Optional[List[obstacle.ColorObstacleDetector]] = None) \
             -> obstacle.ColorObstacleDetector:
-        if cls._new_robot_detector_has_to_be_created(yoeo):
-            cls._create_new_robot_detector(yoeo)
+        if cls._new_robot_detector_has_to_be_created():
+            cls._create_new_robot_detector()
 
         if cls._new_red_color_detector_has_to_be_created(config):
             cls._create_new_red_color_detector(config)
@@ -113,13 +114,13 @@ class YOEOObstacleDetectorFactory:
             subtractors=subtractors)
 
     @classmethod
-    def _new_robot_detector_has_to_be_created(cls, yoeo: yoeo_handler.IYOEOHandler) -> bool:
-        return cls._robot_detector is None or cls._yoeo_id != id(yoeo)
+    def _new_robot_detector_has_to_be_created(cls) -> bool:
+        return cls._robot_detector is None or cls._yoeo_id != ObjectManager.getID()
 
     @classmethod
-    def _create_new_robot_detector(cls, yoeo: yoeo_handler.IYOEOHandler) -> None:
-        cls._robot_detector = yoeo_handler.YOEORobotDetector(yoeo)
-        cls._yoeo_id = id(yoeo)
+    def _create_new_robot_detector(cls) -> None:
+        cls._robot_detector = yoeo_handler.YOEORobotDetector(ObjectManager.get())
+        cls._yoeo_id = ObjectManager.getID()
 
     @classmethod
     def _new_red_color_detector_has_to_be_created(cls, config: Dict) -> bool:
@@ -150,7 +151,7 @@ class YOEOObstacleDetectorFactory:
 
 class IVisionComponent(ABC):
     @abstractmethod
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         ...
 
     @abstractmethod
@@ -176,7 +177,7 @@ class CameraCapCheckComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         self._camera_cap_brightness_threshold = config['vision_blind_threshold']
 
         self._register_publisher(config)
@@ -239,10 +240,10 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
-        self._ball_detector = yoeo_handler.YOEOBallDetector(yoeo)
+    def configure(self, config: Dict) -> None:
+        self._ball_detector = yoeo_handler.YOEOBallDetector(ObjectManager.get())
         self._debug_image = DebugImageFactory.create(config)
-        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config, yoeo)
+        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config)
 
         self._register_publisher(config)
         self._config = config
@@ -321,10 +322,10 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         self._debug_image = DebugImageFactory.create(config)
-        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config, yoeo)
-        self._goalpost_detector = yoeo_handler.YOEOGoalpostDetector(yoeo)
+        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config)
+        self._goalpost_detector = yoeo_handler.YOEOGoalpostDetector(ObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -393,9 +394,9 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         self._debug_image = DebugImageFactory.create(config)
-        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config, yoeo)
+        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.create(config)
 
         self._register_publisher(config)
         self._config = config
@@ -451,9 +452,9 @@ class YOEOLineDetectionComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         self._debug_image = DebugImageFactory.create(config)
-        self._line_detector = yoeo_handler.YOEOLineSegmentation(yoeo)
+        self._line_detector = yoeo_handler.YOEOLineSegmentation(ObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -500,8 +501,8 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
-        self._field_detector = yoeo_handler.YOEOFieldSegmentation(yoeo)
+    def configure(self, config: Dict) -> None:
+        self._field_detector = yoeo_handler.YOEOFieldSegmentation(ObjectManager.get())
         self._log_status()
 
         self._register_publisher(config)
@@ -556,23 +557,20 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         own_color, opponent_color = self._determine_team_colors()
         self._team_mates_detector = YOEOObstacleDetectorFactory.create(
             config=config,
-            yoeo=yoeo,
             color=own_color,
             subtractors=None
         )
         self._opponents_detector = YOEOObstacleDetectorFactory.create(
             config=config,
-            yoeo=yoeo,
             color=opponent_color,
             subtractors=[self._team_mates_detector]
         )
         self._misc_obstacles_detector = YOEOObstacleDetectorFactory.create(
             config=config,
-            yoeo=yoeo,
             color=None,
             subtractors=[self._team_mates_detector,
                          self._opponents_detector]
@@ -684,7 +682,7 @@ class DebugImageComponent(IVisionComponent):
         self._debug_image: Optional[debug.DebugImage] = None
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
-    def configure(self, config: Dict, yoeo: yoeo_handler.IYOEOHandler) -> None:
+    def configure(self, config: Dict) -> None:
         self._debug_image = DebugImageFactory.create(config)
         self._log_status()
 
