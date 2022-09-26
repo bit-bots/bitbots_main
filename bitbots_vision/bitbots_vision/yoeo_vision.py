@@ -108,7 +108,7 @@ class YOEOVision(Node):
             self._vision_components.append(yoeo_vc.DebugImageComponent(self))
 
         for vision_component in self._vision_components:
-            vision_component.configure(new_config)
+            vision_component.configure(new_config, new_config["component_debug_image_active"])
 
     def _register_subscribers(self, config: Dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(self,
