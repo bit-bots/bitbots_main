@@ -6,12 +6,11 @@ import yaml
 import rclpy
 from rclpy.node import Node
 from ament_index_python import get_package_share_directory
-from ros2param.api import parse_parameter_dict
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
-from rclpy.parameter import parameter_value_to_python, Parameter
+from rclpy.parameter import parameter_value_to_python, Parameter, PARAMETER_SEPARATOR_STRING, get_parameter_value
 
 
 def read_urdf(robot_name):
@@ -129,3 +128,19 @@ def set_parameters_of_other_node(own_node: Node,
     rclpy.spin_until_future_complete(own_node, future)
     response = future.result()
     return [res.success for res in response.results]
+
+def parse_parameter_dict(*, namespace, parameter_dict):
+    parameters = []
+    for param_name, param_value in parameter_dict.items():
+        full_param_name = namespace + param_name
+        # Unroll nested parameters
+        if type(param_value) == dict:
+            parameters += parse_parameter_dict(
+                    namespace=full_param_name + PARAMETER_SEPARATOR_STRING,
+                    parameter_dict=param_value)
+        else:
+            parameter = ParameterMsg()
+            parameter.name = full_param_name
+            parameter.value = get_parameter_value(string_value=str(param_value))
+            parameters.append(parameter)
+    return parameters
