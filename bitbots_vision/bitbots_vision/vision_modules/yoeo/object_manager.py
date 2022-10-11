@@ -13,6 +13,12 @@ class YOEOObjectManager:
     """
     This class manages the creation and update of the YOEO handler instance.
     """
+    _HANDLERS_BY_NAME = {
+        'openvino': yoeo_handlers.YOEOHandlerOpenVino,
+        'onnx': yoeo_handlers.YOEOHandlerONNX,
+        'pytorch': yoeo_handlers.YOEOHandlerPytorch,
+        'tvm': yoeo_handlers.YOEOHandlerTVM
+    }
 
     _config: Dict = {}
     _framework: str = ""
@@ -84,20 +90,9 @@ class YOEOObjectManager:
         if not cls._model_files_exist(framework, model_path):
             logger.error("No matching model file(s) found!")
 
-    @staticmethod
-    def _model_files_exist(framework: str, model_path: str) -> bool:
-        exists: bool = False
-
-        if framework == "openvino":
-            exists = yoeo_handlers.YOEOHandlerOpenVino.model_files_exist(model_path)
-        elif framework == "onnx":
-            exists = yoeo_handlers.YOEOHandlerONNX.model_files_exist(model_path)
-        elif framework == "pytorch":
-            exists = yoeo_handlers.YOEOHandlerPytorch.model_files_exist(model_path)
-        elif framework == "tvm":
-            exists = yoeo_handlers.YOEOHandlerTVM.model_files_exist(model_path)
-
-        return exists
+    @classmethod
+    def _model_files_exist(cls, framework: str, model_path: str) -> bool:
+        return cls._HANDLERS_BY_NAME[framework].model_files_exist(model_path)
 
     @classmethod
     def _configure_yoeo_instance(cls, config: Dict, framework: str, model_path: str) -> None:
@@ -112,14 +107,7 @@ class YOEOObjectManager:
 
     @classmethod
     def _instantiate_new_yoeo_handler(cls, config: Dict, framework: str, model_path: str) -> None:
-        if framework == "openvino":
-            cls._yoeo_instance = yoeo_handlers.YOEOHandlerOpenVino(config, model_path)
-        elif framework == "onnx":
-            cls._yoeo_instance = yoeo_handlers.YOEOHandlerONNX(config, model_path)
-        elif framework == "pytorch":
-            cls._yoeo_instance = yoeo_handlers.YOEOHandlerPytorch(config, model_path)
-        elif framework == "tvm":
-            cls._yoeo_instance = yoeo_handlers.YOEOHandlerTVM(config, model_path)
+        cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](config, model_path)
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
