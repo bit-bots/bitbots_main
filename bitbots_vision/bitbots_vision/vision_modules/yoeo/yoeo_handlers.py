@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import List, Dict, Tuple, Optional
 
-from . import yoeo_handler_utils as utils
+from . import utils
 from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate
 
 
@@ -225,6 +225,9 @@ class YOEOHandlerTemplate(IYOEOHandler):
 class YOEOHandlerONNX(YOEOHandlerTemplate):
     """
     YOEO handler for the ONNX framework.
+
+    Framework version: 1.12.0
+    see https://onnxruntime.ai/docs/get-started/with-python.html for ONNX documentation
     """
     def __init__(self, config: Dict, model_directory: str):
         super().__init__(config, model_directory)
@@ -278,6 +281,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
     """
     YOEO handler for the OpenVino framework.
 
+    Framework version: OpenVINO 2022.1
     Code is based on https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
     """
     def __init__(self, config: Dict, model_directory: str):
