@@ -1,21 +1,17 @@
-from .candidate import CandidateFinder, Candidate
-from .field_boundary import IFieldDetector
+from __future__ import annotations
 
+import cv2
+import numpy as np
+import os
+import rclpy
+import yaml
 from abc import ABC, abstractmethod
 from collections import defaultdict
-import numpy as np
-import rclpy
-import os
-from typing import List, Dict, Any, Tuple, TYPE_CHECKING, Optional
-import yaml
-import cv2
+from typing import List, Dict, Tuple, Optional
 
-from .yoeo_handler_utils import OVImagePreProcessor, OVSegmentationPostProcessor, OVDetectionPostProcessor, \
-    ONNXImagePreProcessor, ONNXSegmentationPostProcessor, ONNXDetectionPostProcessor, \
-    TVMImagePreProcessor, TVMSegmentationPostProcessor, TVMDetectionPostProcessor
+from . import utils
+from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate
 
-if TYPE_CHECKING:
-    from .yoeo_handler_utils import IImagePreProcessor, ISegmentationPostProcessor, IDetectionPostProcessor
 
 logger = rclpy.logging.get_logger('vision_yoeo')
 
@@ -42,26 +38,44 @@ except ImportError:
 
 
 class IYOEOHandler(ABC):
+    """
+    Interface of the YOEO handlers.
+    """
 
     @abstractmethod
     def configure(self, config: Dict) -> None:
+        """
+        Allows to (re-) configure the YOEO handler.
+        """
         ...
 
     @abstractmethod
     def get_available_detection_class_names(self) -> List[str]:
+        """
+        Returns the names of the classes that are part of the YOEO detection.
+        """
         ...
 
     @abstractmethod
     def get_detection_candidates_for(self, class_name: str) -> List[Candidate]:
+        """
+        Returns the detection candidates for a given class.
+        """
         ...
 
     @abstractmethod
     def get_available_segmentation_class_names(self) -> List[str]:
+        """
+        Returns the names of the classes that are part of the YOEO segmentation.
+        """
         ...
 
     @abstractmethod
-    def get_segmentation_mask_for(self, class_name: str):
+    def get_segmentation_mask_for(self, class_name: str) -> np.ndarray:
         """
+        Returns the segmentation mask for a given class.
+
+        :return: the segmentation mask for class_name
         :rtype: numpy.ndarray(shape=(height, width, 1))
         """
         ...
@@ -69,19 +83,39 @@ class IYOEOHandler(ABC):
     @staticmethod
     @abstractmethod
     def model_files_exist(model_directory: str) -> bool:
+        """
+        Checks whether the necessary model files exists in the model directory.
+
+        :return: true if files exist, false if at least one file ist missing
+        :rtype: bool
+        """
         ...
 
     @abstractmethod
     def predict(self) -> None:
+        """
+        Runs the YOEO network (if necessary) on the current input image.
+        """
         ...
 
     @abstractmethod
-    def set_image(self, img) -> None:
+    def set_image(self, image: np.ndarray) -> None:
+        """
+        A subsequent call to predict() will run the YOEO network on this image.
+
+        :param image: the image to run the YOEO network on
+        :type image: np.ndarray
+        """
         ...
 
 
 class YOEOHandlerTemplate(IYOEOHandler):
-
+    """
+    Abstract base implementation of the IYOEOHandler interface. Actual YOEO handlers need to only implement the
+    following two hook methods if they inherit from this template:
+        - model_files_exist(model_directory: str) -> bool:
+        - _compute_new_prediction_for(self, image) -> Tuple:
+    """
     def __init__(self, config: Dict, model_directory: str):
         logger.debug(f"Entering YOEOHandlerTemplate constructor")
 
@@ -110,9 +144,6 @@ class YOEOHandlerTemplate(IYOEOHandler):
         with open(path, 'r', encoding="utf-8") as fp:
             class_names = yaml.load(fp, Loader=yaml.SafeLoader)
 
-        assert "detection" in class_names.keys(), f"Missing key 'detection' in {path}"
-        assert "segmentation" in class_names.keys(), f"Missing key 'segmentation' in {path}"
-
         self._det_class_names = class_names['detection']
         self._seg_class_names = class_names['segmentation']
 
@@ -131,9 +162,6 @@ class YOEOHandlerTemplate(IYOEOHandler):
         return self._det_candidates[class_name]
 
     def get_segmentation_mask_for(self, class_name: str):
-        """
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
         assert class_name in self._seg_class_names, \
             f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
 
@@ -152,9 +180,9 @@ class YOEOHandlerTemplate(IYOEOHandler):
             self._prediction_is_up_to_date = True
 
     def _prediction_has_to_be_updated(self) -> bool:
-        return not self._use_caching or not self._prediction_is_up_to_date  # not (self._seg_masks or self._det_candidates)
+        return not self._use_caching or not self._prediction_is_up_to_date
 
-    def _create_detection_candidate_lists_from(self, detections) -> None:
+    def _create_detection_candidate_lists_from(self, detections: np.ndarray) -> None:
         for detection in detections:
             c = Candidate.from_x1y1x2y2(*detection[0:4].astype(int), detection[4].astype(float))
             self._det_candidates[self._det_class_names[int(detection[5])]].append(c)
@@ -164,15 +192,15 @@ class YOEOHandlerTemplate(IYOEOHandler):
             seg_mask = (segmentation == i).astype(np.uint8)
             self._seg_masks[class_name] = seg_mask
 
-    def set_image(self, img) -> None:
+    def set_image(self, image: np.ndarray) -> None:
         self._reset()
-        self._update_image(img)
+        self._update_image(image)
 
     def _reset(self) -> None:
         self._det_candidates = defaultdict(list)
         self._seg_masks = dict()
 
-    def _update_image(self, img) -> None:
+    def _update_image(self, img: np.ndarray) -> None:
         self._image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         self._prediction_is_up_to_date = False
 
@@ -182,29 +210,47 @@ class YOEOHandlerTemplate(IYOEOHandler):
         ...
 
     @abstractmethod
-    def _compute_new_prediction_for(self, image) -> Tuple:
+    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Hook method to be implemented by actual YOEO handlers.
+
+        :param image: the image that should be input into the network
+        :type image: np.ndarray
+        :return: post-processed YOEO detections and segmentations (in this order)
+        :rtype: Tuple[np.ndarray, np.ndarray]
+        """
         ...
 
 
 class YOEOHandlerONNX(YOEOHandlerTemplate):
+    """
+    YOEO handler for the ONNX framework.
 
+    Framework version: 1.12.0
+    see https://onnxruntime.ai/docs/get-started/with-python.html for ONNX documentation
+    """
     def __init__(self, config: Dict, model_directory: str):
+        super().__init__(config, model_directory)
+
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
-        super().__init__(config, model_directory)
         onnx_path = YOEOPathGetter.get_onnx_onnx_file_path(model_directory)
 
         logger.debug(f"Loading file...\n\t{onnx_path}")
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
         self._input_layer = self._inference_session.get_inputs()[0]
 
-        self._img_preprocessor: IImagePreProcessor = ONNXImagePreProcessor(tuple(self._input_layer.shape[2:]))
-        self._det_postprocessor: IDetectionPostProcessor = ONNXDetectionPostProcessor(
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor(
+            tuple(self._input_layer.shape[2:])
+        )
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = ONNXSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+            self._img_preprocessor
+        )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -219,7 +265,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
     def model_files_exist(model_directory: str) -> bool:
         return os.path.exists(YOEOPathGetter.get_onnx_onnx_file_path(model_directory))
 
-    def _compute_new_prediction_for(self, image):
+    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         preproccessed_image = self._img_preprocessor.process(image)
 
         network_input = preproccessed_image.reshape(self._input_layer.shape)
@@ -232,15 +278,20 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
 
 class YOEOHandlerOpenVino(YOEOHandlerTemplate):
+    """
+    YOEO handler for the OpenVino framework.
 
+    Framework version: OpenVINO 2022.1
+    Code is based on https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
+    """
     def __init__(self, config: Dict, model_directory: str):
+        super().__init__(config, model_directory)
+
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
-        super().__init__(config, model_directory)
         xml_path = YOEOPathGetter.get_openvino_xml_file_path(model_directory)
         bin_path = YOEOPathGetter.get_openvino_bin_file_path(model_directory)
 
-        # https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
         self._inference_engine = openvino_runtime_Core()
 
         logger.debug(f"Loading files...\n\t{xml_path}\n\t{bin_path}")
@@ -255,13 +306,15 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._output_layer_segmentations = self._compiled_model.outputs[1]
 
         _, _, height, width = self._input_layer.shape
-        self._img_preprocessor: IImagePreProcessor = OVImagePreProcessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = OVDetectionPostProcessor(
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor((height, width))
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = OVSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+            self._img_preprocessor
+        )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -284,7 +337,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         return os.path.exists(YOEOPathGetter.get_openvino_bin_file_path(model_directory)) and \
                os.path.exists(YOEOPathGetter.get_openvino_xml_file_path(model_directory))
 
-    def _compute_new_prediction_for(self, image):
+    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         preproccessed_image = self._img_preprocessor.process(image)
 
         network_input = preproccessed_image.reshape(self._input_layer.shape)
@@ -298,16 +351,15 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
 class YOEOHandlerPytorch(YOEOHandlerTemplate):
     """
-    Using Pytorch to get YOEO predictions
+    YOEO handler for the PyTorch framework
     """
-
     def __init__(self, config, model_directory):
-        logger.debug(f"Entering {self.__class__.__name__} constructor")
-
         super().__init__(config, model_directory)
 
-        config_path = YOEOPathGetter.get_pytorch_cfg_file(model_directory)
-        weights_path = YOEOPathGetter.get_pytorch_pth_file(model_directory)
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
+
+        config_path = YOEOPathGetter.get_pytorch_cfg_file_path(model_directory)
+        weights_path = YOEOPathGetter.get_pytorch_pth_file_path(model_directory)
 
         logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
         self._model = torch_models.load_model(config_path, weights_path)
@@ -324,10 +376,10 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(YOEOPathGetter.get_pytorch_cfg_file(model_directory)) and \
-               os.path.exists(YOEOPathGetter.get_pytorch_pth_file(model_directory))
+        return os.path.exists(YOEOPathGetter.get_pytorch_cfg_file_path(model_directory)) and \
+               os.path.exists(YOEOPathGetter.get_pytorch_pth_file_path(model_directory))
 
-    def _compute_new_prediction_for(self, image):
+    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         detections, segmentation = torch_detect.detect_image(self._model,
                                                              image,
                                                              conf_thres=self._conf_thresh,
@@ -338,16 +390,18 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         return detections, segmentation
 
     @staticmethod
-    def _postprocess_segmentation(segmentations: Any):
+    def _postprocess_segmentation(segmentations: np.ndarray) -> np.ndarray:
         return np.moveaxis(segmentations, 0, -1)
 
 
 class YOEOHandlerTVM(YOEOHandlerTemplate):
-
+    """
+    YOEO handler for the TVM framework.
+    """
     def __init__(self, config: Dict, model_directory: str):
-        logger.debug(f"Entering {self.__class__.__name__} constructor")
-
         super().__init__(config, model_directory)
+
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         json_path = YOEOPathGetter.get_tvm_json_file_path(model_directory)
         params_path = YOEOPathGetter.get_tvm_params_file_path(model_directory)
@@ -368,18 +422,20 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._input_layer_shape = input_shape_dict.get('InputLayer')
 
         height, width = self._input_layer_shape[2], self._input_layer_shape[3]
-        self._img_preprocessor: IImagePreProcessor = TVMImagePreProcessor((height, width))
-        self._det_postprocessor: IDetectionPostProcessor = TVMDetectionPostProcessor(
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor((height, width))
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"])
-        self._seg_postprocessor: ISegmentationPostProcessor = TVMSegmentationPostProcessor(self._img_preprocessor)
+        self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+            self._img_preprocessor
+        )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
     @staticmethod
-    def _select_device() -> "tvm.runtime.Device":
+    def _select_device() -> tvm.runtime.Device:
         if tvm.vulkan().exist:
             return tvm.vulkan()
         else:
@@ -398,7 +454,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
                os.path.exists(YOEOPathGetter.get_tvm_params_file_path(model_directory)) and \
                os.path.exists(YOEOPathGetter.get_tvm_so_file_path(model_directory))
 
-    def _compute_new_prediction_for(self, image):
+    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         preproccessed_image = self._img_preprocessor.process(image)
         network_input = preproccessed_image.reshape(self._input_layer_shape)
 
@@ -411,146 +467,14 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         return detections, segmentation
 
 
-class YOEODetectorTemplate(CandidateFinder):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        super().__init__()
-
-        self._yoeo_handler = yoeo_handler
-
-    def set_image(self, image) -> None:
-        self._yoeo_handler.set_image(image)
-
-    def compute(self) -> None:
-        self._yoeo_handler.predict()
-
-    @abstractmethod
-    def get_candidates(self) -> List[Candidate]:
-        ...
-
-
-class YOEOBallDetector(YOEODetectorTemplate):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("ball")
-
-
-class YOEOGoalpostDetector(YOEODetectorTemplate):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("goalpost")
-
-
-class YOEORobotDetector(YOEODetectorTemplate):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("robot")
-
-
-class IYOEOSegmentation(ABC):
-
-    @abstractmethod
-    def compute(self) -> None:
-        ...
-
-    @abstractmethod
-    def get_mask(self):
-        """
-        Returns binary segmentation mask with values in {0, 1}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        ...
-
-    @abstractmethod
-    def get_mask_image(self):
-        """
-        Returns binary segmentation mask with values in {0, 255}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        ...
-
-    @abstractmethod
-    def set_image(self, image) -> None:
-        ...
-
-
-class YOEOSegmentationTemplate(IYOEOSegmentation):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        self._yoeo_handler = yoeo_handler
-
-    def compute(self) -> None:
-        self._yoeo_handler.predict()
-
-    def get_mask_image(self):
-        """
-        Returns binary segmentation mask with values in {0, 255}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self.get_mask() * 255
-
-    def set_image(self, image) -> None:
-        self._yoeo_handler.set_image(image)
-
-    @abstractmethod
-    def get_mask(self):
-        """
-        Returns binary segmentation mask with values in {0, 1}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        ...
-
-
-class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
-
-    def __init__(self, yoeo_handler):
-        super().__init__(yoeo_handler)
-
-    def get_mask(self):
-        """
-        Returns binary segmentation mask with values in {0, 1}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self._yoeo_handler.get_segmentation_mask_for("background")
-
-
-class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        super().__init__(yoeo_handler)
-
-    def get_mask(self):
-        """
-        Returns binary segmentation mask with values in {0, 1}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self._yoeo_handler.get_segmentation_mask_for("field")
-
-
-class YOEOLineSegmentation(YOEOSegmentationTemplate):
-
-    def __init__(self, yoeo_handler: YOEOHandlerTemplate):
-        super().__init__(yoeo_handler)
-
-    def get_mask(self):
-        """
-        Returns binary segmentation mask with values in {0, 1}
-        :rtype: numpy.ndarray(shape=(height, width, 1))
-        """
-        return self._yoeo_handler.get_segmentation_mask_for("lines")
-
-
 class YOEOPathGetter:
-
+    """
+    PathGetter class for all YOEO handlers. They idea behind this class is to have all path information in one place so
+    that it is easier to change this information if changes to the directory structure should become necessary.
+    Depending on the actual YOEO handler, certain framework specific methods provide the paths to the necessary files.
+    To make it more clear which methods to use, the framework specific methods follow the following naming scheme:
+    "get_'FRAMEWORK-NAME'_'FILE-EXTENSION'_file_path"
+    """
     @classmethod
     def _assemble_full_path(cls, model_directory: str, subdir: Optional[str], filename: str) -> str:
         if subdir is None:
@@ -577,11 +501,11 @@ class YOEOPathGetter:
         return cls._assemble_full_path(model_directory, "openvino", "yoeo.xml")
 
     @classmethod
-    def get_pytorch_cfg_file(cls, model_directory: str) -> str:
+    def get_pytorch_cfg_file_path(cls, model_directory: str) -> str:
         return cls._assemble_full_path(model_directory, "pytorch", "yoeo.cfg")
 
     @classmethod
-    def get_pytorch_pth_file(cls, model_directory: str) -> str:
+    def get_pytorch_pth_file_path(cls, model_directory: str) -> str:
         return cls._assemble_full_path(model_directory, "pytorch", "yoeo.pth")
 
     @classmethod
