@@ -65,7 +65,7 @@
 	url = ../../bit-bots/ros2_python_extension.git
 [submodule "lib/imu_tools"]
 	path = lib/imu_tools
-	branch = eloquent
+	branch = rolling
 	url = ../../ccny-ros-pkg/imu_tools.git
 [submodule "biped_interfaces"]
 	path = biped_interfaces
