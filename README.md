@@ -2,25 +2,47 @@
 This git contains all RoboCup code from the Hamburg Bit-Bots as submodules as well as documentation.
 All code is written as ROS packages and tested for ROS-Melodic.
 
+## Installation
 
-Structure
----------
+To download the Bit-Bots software stack clone this repository.
 
-The actual code is in submodule gits to make it easier for others to use only parts of our code.
-If you want to pull all submodule run
+```bash
+git clone git@github.com:bit-bots/bitbots_meta.git
+```
+
+The meta repository mainly contains references (submodules) to other repositories for the different components of the codebase.
+Download them run the following commands.
+
+```bash
+cd bitbots_meta
+make pull-init
+```
+
+## Update the codebase
+
+If you want to pull all submodules run
 
 ``` bash
 make pull-all
 ```
+
+This will pull all reposiories. Make sure you are on the correct branch and have no uncommited changes in each submodule.
+To check this run
+
+```bash
+make status
+```
+
+## Structure
+
 The naming prefix indicates the scope of the packages.
 
  * bitbots_ : specific RoboCup code of our team which follows interface specification of humanoid_league_msgs
  * humanoid_league_ : packages which are useful for all teams in the RoboCup Humanoid League, e.g. visualization tools and gamecontroller
  * no prefix : packages which are useful in general and usable outside of RoboCup
+ * lib : folder for third party libraries that need to be build from source
 
-
-Documentation
--------------
+## Documentation
 
 Our documentation is WIP but what is already available is hosted on [doku.bit-bots.de](http://doku.bit-bots.de/meta/)
 
