@@ -16,6 +16,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(test_msgs REQUIRED)
+find_package(irobot_events_executor REQUIRED)
 
 add_executable(button_node src/button_node.cpp)
 ament_target_dependencies(button_node
@@ -26,6 +27,7 @@ ament_target_dependencies(button_node
         rclcpp
         std_msgs
         std_srvs
+        irobot_events_executor
         test_msgs)
 
 #enable_bitbots_docs()

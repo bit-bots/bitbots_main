@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/executors/events_executor/events_executor.hpp>
 
 sig_atomic_t volatile request_shutdown = 0;
 
