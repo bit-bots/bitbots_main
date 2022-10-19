@@ -5,6 +5,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2/utils.h>
 #include <rot_conv/rot_conv.h>
+#include <rclcpp/executors/events_executor/events_executor.hpp>
 
 #include <utility>
 using std::placeholders::_1;

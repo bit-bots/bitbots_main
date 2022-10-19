@@ -18,6 +18,7 @@
     <depend>tf2_ros</depend>
     <depend>rot_conv</depend>
     <depend>backward_ros</depend>
+    <depend>irobot_events_executor</depend>
 
     <export>
         <bitbots_documentation>
