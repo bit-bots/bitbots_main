@@ -224,7 +224,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   last_ros_update_time_ = 0;
   start_time_ = this->get_clock()->now().seconds();
   bitbots_dynup::msg::DynupPoses poses = getCurrentPoses();
-  if (!poses.header.stamp.sec == 0) {
+  if (poses.header.stamp.nanosec != 0) {
     DynupRequest request;
     request.direction = goal->direction;
     ik_.setDirection(request.direction);
