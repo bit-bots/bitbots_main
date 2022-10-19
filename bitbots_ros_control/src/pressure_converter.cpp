@@ -81,8 +81,8 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side){
         wrench_frames_.push_back(single_wrench_frame.str());
     }
 
-    scale_service_ = nh_->create_service<bitbots_msgs::srv::FootScale>(topic + "/set_foot_scale", std::bind(&PressureConverter::scaleCallback, this, _1, _2), rmw_qos_profile_services_default);
-    zero_service_ = nh_->create_service<std_srvs::srv::Empty>(topic + "/set_foot_zero", std::bind(&PressureConverter::zeroCallback, this, _1, _2), rmw_qos_profile_services_default);
+    scale_service_ = nh_->create_service<bitbots_msgs::srv::FootScale>(topic + "/set_foot_scale", std::bind(&PressureConverter::scaleCallback, this, _1, _2));
+    zero_service_ = nh_->create_service<std_srvs::srv::Empty>(topic + "/set_foot_zero", std::bind(&PressureConverter::zeroCallback, this, _1, _2));
     rclcpp::SubscriptionOptions options;
     rclcpp::QoS qos(0);
     options.callback_group = sub_cbg_;
