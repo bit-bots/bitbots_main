@@ -95,3 +95,6 @@
 	path = lib/soccer_ipm
 	url = ../../Flova/soccer_ipm.git
     branch = add_soccer_ipm
+[submodule "lib/events-executor"]
+	path = lib/events-executor
+	url = https://github.com/irobot-ros/events-executor
