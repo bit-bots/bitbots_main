@@ -19,6 +19,7 @@
 #include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
+#include <rclcpp/executors/events_executor/events_executor.hpp>
 
 #include "rcl_interfaces/srv/get_parameters.hpp"
 namespace py = pybind11;

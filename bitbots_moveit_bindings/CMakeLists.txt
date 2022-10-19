@@ -24,6 +24,7 @@ find_package(ros2_python_extension)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_kdl REQUIRED)
+find_package(irobot_events_executor REQUIRED)
 
 add_compile_options(-Wall -Wno-unused)
 
@@ -46,6 +47,7 @@ ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
   tf2
   tf2_ros
   tf2_kdl
+  irobot_events_executor
 )
 
 ament_python_install_package(${PROJECT_NAME})
