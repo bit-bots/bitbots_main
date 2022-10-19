@@ -21,6 +21,7 @@
   <depend>bitbots_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>humanoid_league_msgs</depend>
+  <depend>irobots_events_executor</depend>
   <depend>pybind11</depend>
   <depend>Python3</depend>
   <depend>PythonLibs</depend>

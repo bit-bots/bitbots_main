@@ -20,6 +20,7 @@ find_package(tf2_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(irobot_events_executor REQUIRED)
 
 include_directories(include)
 
@@ -42,6 +43,7 @@ ament_target_dependencies(motion_odometry
         sensor_msgs
         tf2_ros
         ament_cmake
+        irobot_events_executor
         rclcpp)
 
 ament_target_dependencies(odometry_fuser
@@ -58,6 +60,7 @@ ament_target_dependencies(odometry_fuser
         tf2_ros
         ament_cmake
         rclcpp
+        irobot_events_executor
         Eigen3)
 
 enable_bitbots_docs()

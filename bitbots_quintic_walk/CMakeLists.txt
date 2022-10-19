@@ -30,6 +30,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(irobot_events_executor REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
@@ -65,6 +66,7 @@ ament_target_dependencies(WalkNode
         control_toolbox
         geometry_msgs
         humanoid_league_msgs
+        irobot_events_executor
         moveit_ros
         moveit_ros_planning_interface
         nav_msgs
@@ -95,6 +97,7 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         control_toolbox
         geometry_msgs
         humanoid_league_msgs
+        irobot_events_executor
         moveit_ros
         moveit_ros_planning_interface
         nav_msgs

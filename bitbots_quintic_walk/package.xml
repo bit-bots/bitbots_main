@@ -31,6 +31,7 @@
     <depend>control_toolbox</depend>
     <depend>geometry_msgs</depend>
     <depend>humanoid_league_msgs</depend>
+    <depend>irobot_events_executor</depend>
     <depend>moveit_core</depend>
     <depend>moveit_ros_move_group</depend>
     <depend>moveit_ros_robot_interaction</depend>

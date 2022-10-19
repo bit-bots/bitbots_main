@@ -29,6 +29,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(irobot_events_executor REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
@@ -63,6 +64,7 @@ ament_target_dependencies(DynupNode
         control_msgs
         control_toolbox
         geometry_msgs
+        irobot_events_executor
         moveit_ros
         moveit_ros_planning_interface
         rclcpp
@@ -92,6 +94,7 @@ ament_target_dependencies(libpy_dynup PUBLIC
         control_msgs
         control_toolbox
         geometry_msgs
+        irobot_events_executor
         moveit_ros
         moveit_ros_planning_interface
         rclcpp

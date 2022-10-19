@@ -22,6 +22,8 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <biped_interfaces/msg/phase.hpp>
 #include <unistd.h>
+#include <rclcpp/executors/events_executor/events_executor.hpp>
+
 using std::placeholders::_1;
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Imu, nav_msgs::msg::Odometry> SyncPolicy;
