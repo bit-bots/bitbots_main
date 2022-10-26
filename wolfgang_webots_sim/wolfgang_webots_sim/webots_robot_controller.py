@@ -195,7 +195,12 @@ class RobotController:
                                       "right_ankle_pitch", "right_ankle_roll", "left_shoulder_pitch [shoulder]",
                                       "left_shoulder_roll", "left_elbow_pitch", "right_shoulder_pitch [shoulder]",
                                       "right_shoulder_roll", "right_elbow_pitch"]
-            self.external_motor_names = self.proto_motor_names
+            self.external_motor_names = ["neck_yaw", "head_pitch", "left_hip_yaw", "left_hip_roll",
+                                      "left_hip_pitch", "left_knee_pitch", "left_ankle_pitch", "left_ankle_roll",
+                                      "right_hip_yaw", "right_hip_roll", "right_hip_pitch", "right_knee_pitch",
+                                      "right_ankle_pitch", "right_ankle_roll", "left_shoulder_pitch",
+                                      "left_shoulder_roll", "left_elbow_pitch", "right_shoulder_pitch",
+                                      "right_shoulder_roll", "right_elbow_pitch"]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
@@ -220,8 +225,13 @@ class RobotController:
                                       "right_leg_motor_5", "left_leg_motor_0", "left_leg_motor_1 [hip]",
                                       "left_leg_motor_2", "left_leg_motor_3", "left_leg_motor_4", "left_leg_motor_5",
                                       "right_arm_motor_0 [shoulder]", "right_arm_motor_1",
-                                      "left_arm_motor_0 [shoulder]", "left_arm_motor_1", ]
-            self.external_motor_names = self.proto_motor_names
+                                      "left_arm_motor_0 [shoulder]", "left_arm_motor_1"]
+            self.external_motor_names = ["head_motor_0", "head_motor_1", "right_leg_motor_0", "right_leg_motor_1",
+                                      "right_leg_motor_2", "right_leg_motor_3", "right_leg_motor_4",
+                                      "right_leg_motor_5", "left_leg_motor_0", "left_leg_motor_1",
+                                      "left_leg_motor_2", "left_leg_motor_3", "left_leg_motor_4", "left_leg_motor_5",
+                                      "right_arm_motor_0", "right_arm_motor_1",
+                                      "left_arm_motor_0", "left_arm_motor_1"]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
@@ -344,7 +354,7 @@ class RobotController:
     def convert_joint_radiant_to_scaled(self, joint_name, pos):
         # helper method to convert to scaled position between [-1,1] for this joint using min max scaling
         lower_limit, upper_limit, mid_position = self.joint_limits[joint_name]
-        return 2 * (pos - mid_position) / (upper_limit - lower_limit)
+        return 2.0 * (pos - mid_position) / (upper_limit - lower_limit)
 
     def convert_joint_scaled_to_radiant(self, joint_name, position):
         # helper method to convert to scaled position for this joint using min max scaling
@@ -357,7 +367,7 @@ class RobotController:
             print(f"Joint {motor} not found. Can not set goal position.")
             return        
         if scaled:
-            goal_position = self.convert_joint_radiant_to_scaled(joint_name, goal_position)
+            goal_position = self.convert_joint_scaled_to_radiant(joint_name, goal_position)
         if relative:
             goal_position = goal_position + self.get_joint_values([joint_name])[0]
         motor.setPosition(goal_position)
