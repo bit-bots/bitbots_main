@@ -9,7 +9,8 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Float32, Bool
 from tf_transformations import euler_from_quaternion
-
+from bitbots_utils.transforms import xyzw2wxyz
+from transforms3d.quaternions import rotate_vector, qinverse
 
 class ROSInterface():
     def __init__(self, node: Node, simulation, namespace='', declare_parameters=True):
@@ -148,9 +149,9 @@ class ROSInterface():
         linear_acc = tuple(map(lambda i, j: i - j, self.last_linear_vel, linear_vel))
         self.last_linear_vel = linear_vel
         # adding gravity to the acceleration
-        r, p, y = euler_from_quaternion(orientation)
-        gravity = [r * 9.81, p * 9.81, y * 9.81]
-        linear_acc = tuple([linear_acc[0] + gravity[0], linear_acc[1] + gravity[1], linear_acc[2] + gravity[2]])
+        gravity_vector = (0, 0, 9.81)
+        gravity_rotated = rotate_vector(gravity_vector, qinverse(xyzw2wxyz(orientation)))
+        linear_acc = tuple([linear_acc[0] + gravity_rotated[0], linear_acc[1] + gravity_rotated[1], linear_acc[2] + gravity_rotated[2]])
         self.imu_msg.linear_acceleration.x = linear_acc[0]
         self.imu_msg.linear_acceleration.y = linear_acc[1]
         self.imu_msg.linear_acceleration.z = linear_acc[2]
