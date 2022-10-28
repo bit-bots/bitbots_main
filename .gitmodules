@@ -98,3 +98,4 @@
 [submodule "lib/events-executor"]
 	path = lib/events-executor
 	url = https://github.com/irobot-ros/events-executor
+	branch = main
