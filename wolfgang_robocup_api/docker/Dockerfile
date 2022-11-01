@@ -2,9 +2,6 @@
 FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-# workaround for a bug during installation https://stackoverflow.com/a/25267015
-#RUN ln -s -f /bin/true /usr/bin/chfn
-
 # Install system dependencies
 RUN apt-get update
 RUN apt install -y wget
@@ -12,7 +9,7 @@ RUN mkdir -p /usr/local/share/keyrings
 RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O /usr/local/share/keyrings/ros-archive-keyring.gpg
 RUN echo "deb [arch=amd64 signed-by=/usr/local/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu jammy main" | tee /etc/apt/sources.list.d/ros2.list
 RUN wget https://packages.bit-bots.de/key.asc -O /usr/local/share/keyrings/bitbots.key
-RUN echo 'deb [signed-by=/usr/local/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main' | tee /etc/apt/sources.list.d/bitbots.list
+RUN echo "deb [signed-by=/usr/local/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main" | tee /etc/apt/sources.list.d/bitbots.list
 RUN apt-get update
 
 # Install a lot of apt packages. They could also be installed with rosdep, but we want them to be cached
@@ -37,15 +34,15 @@ ENV LC_ALL en_US.UTF-8
 
 # Add user
 ARG UID=150
-RUN useradd -M -d /catkin_ws -s /bin/bash -u $UID robot
+RUN useradd -M -d /colcon_ws -s /bin/bash -u $UID robot
 
 # Install sudoers file
 ADD sudoers /etc/sudoers
 
-WORKDIR /catkin_ws
-RUN chown robot:robot /catkin_ws
+WORKDIR /colcon_ws
+RUN chown robot:robot /colcon_ws
 USER robot:robot
-ENV PATH=$PATH:/catkin_ws/.local/bin
+ENV PATH=$PATH:/colcon_ws/.local/bin
 
 RUN . /opt/ros/rolling/setup.sh && \
     mkdir src
@@ -56,7 +53,7 @@ RUN python3 -m pip install -U pip && \
     protobuf psutil pytorchyolo setuptools sklearn transforms3d
 
 # From here on, we don't want to cache anything. That's achieved by adding the current time.
-#ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
+ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
 
 RUN cd src && \
     git clone --recursive https://github.com/Bit-Bots/bitbots_meta.git && \
@@ -79,7 +76,7 @@ RUN cd src/bitbots_meta && \
 RUN sudo apt-get clean && \
     sudo rm -rf /var/lib/apt/lists/*
 
-# Delete some tests (has to happen before catkin build)
+# Delete some tests (has to happen before colcon build)
 RUN cd src/bitbots_meta && \
     rm bitbots_tools/bitbots_test/test/rostests/test_webots_simulator.launch \
        bitbots_navigation/bitbots_localization/test/rostests/test_inital_localization_side.launch \
