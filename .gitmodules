@@ -93,8 +93,8 @@
 	branch = rolling
 [submodule "lib/soccer_ipm"]
 	path = lib/soccer_ipm
-	url = ../../Flova/soccer_ipm.git
-    branch = add_soccer_ipm
+	url = ../../ros-sports/soccer_ipm.git
+    branch = rolling
 [submodule "lib/events-executor"]
 	path = lib/events-executor
 	url = https://github.com/irobot-ros/events-executor
