@@ -54,6 +54,7 @@ include:
         - dynamixel-workbench
         - imu_tools
         - ipm
+        - irobot_events_executor
         - particle_filter
         - pylon-ros-camera
         - robot_controllers
