@@ -52,9 +52,9 @@ include:
         - bio_ik_msgs
         - DynamixelSDK
         - dynamixel-workbench
+        - events_executor
         - imu_tools
         - ipm
-        - irobot_events_executor
         - particle_filter
         - pylon-ros-camera
         - robot_controllers
