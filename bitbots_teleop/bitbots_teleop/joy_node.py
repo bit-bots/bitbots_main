@@ -31,7 +31,7 @@ class JoyNode(Node):
         self.declare_parameter('head', False)
 
         for controller_type in ["noname", "xbox"]:
-            self.declare_parameter(f'{controller_type}.walking.gain_x', 0.0) 
+            self.declare_parameter(f'{controller_type}.walking.gain_x', 0.0)
             self.declare_parameter(f'{controller_type}.walking.stick_x', 0)
             self.declare_parameter(f'{controller_type}.walking.gain_y', 0.0)
             self.declare_parameter(f'{controller_type}.walking.stick_y', 0)
@@ -39,6 +39,7 @@ class JoyNode(Node):
             self.declare_parameter(f'{controller_type}.walking.stick_right', 0)
             self.declare_parameter(f'{controller_type}.walking.duo_turn', False)
             self.declare_parameter(f'{controller_type}.walking.gain_turn', 0.0)
+            self.declare_parameter(f'{controller_type}.walking.btn_full_stop', 0)
             self.declare_parameter(f'{controller_type}.head.gain_tilt', 0.0)
             self.declare_parameter(f'{controller_type}.head.stick_tilt', 0)
             self.declare_parameter(f'{controller_type}.head.gain_pan', 0.0)
@@ -46,6 +47,7 @@ class JoyNode(Node):
             self.declare_parameter(f'{controller_type}.kick.btn_left', 0)
             self.declare_parameter(f'{controller_type}.kick.btn_right', 0)
             self.declare_parameter(f'{controller_type}.misc.btn_cheering', 0)
+            self.declare_parameter(f'{controller_type}.misc.btn_say', 0)
 
         selected_controller_type = self.get_parameter("type").get_parameter_value().string_value
 
@@ -59,6 +61,7 @@ class JoyNode(Node):
             "stick_left": self.get_parameter(f"{selected_controller_type}.walking.stick_left").get_parameter_value().integer_value,
             "duo_turn": self.get_parameter(f"{selected_controller_type}.walking.duo_turn").get_parameter_value().bool_value,
             "gain_turn": self.get_parameter(f"{selected_controller_type}.walking.gain_turn").get_parameter_value().double_value,
+            "btn_full_stop": self.get_parameter(f"{selected_controller_type}.walking.btn_full_stop").get_parameter_value().integer_value,
         }
 
         self.config["head"] = {
@@ -74,6 +77,7 @@ class JoyNode(Node):
 
         self.config["misc"] = {
             "btn_cheering": self.get_parameter(f"{selected_controller_type}.misc.btn_cheering").get_parameter_value().integer_value,
+            "btn_say": self.get_parameter(f"{selected_controller_type}.misc.btn_say").get_parameter_value().integer_value,
         }
 
         print(self.config)
@@ -169,8 +173,22 @@ class JoyNode(Node):
         else:
             self.walk_msg.angular.z = 0.0
 
+        # Perform full stop (finish step but do not move afterwards)
+        if msg.buttons[self.config['walking']["btn_full_stop"]] == 1:
+            self.walk_msg.linear.x = 0.0
+            self.walk_msg.linear.y = 0.0
+            self.walk_msg.linear.z = 0.0
+            self.walk_msg.angular.z = 0.0
+            self.walk_msg.angular.x = -1.0
+            # Publish seperatly as we only want to publish the pressing not the releasing
+            self.walk_publisher.publish(self.walk_msg)
+        else:
+            # Undo full stop
+            self.walk_msg.angular.x = 0.0
+
         # only publish changes
-        if self.walk_msg != self.last_walk_msg:
+        if self.walk_msg.linear != self.last_walk_msg.linear or \
+                self.walk_msg.angular.z != self.last_walk_msg.angular.z:
             self.walk_publisher.publish(self.walk_msg)
         self.last_walk_msg = copy.deepcopy(self.walk_msg)
 
@@ -189,40 +207,14 @@ class JoyNode(Node):
             self.head_msg.positions = [pan_goal, tilt_goal]
             self.head_pub.publish(self.head_msg)
 
-        # kicking with upper shoulder buttons
-        if msg.buttons[4]:
-            # L1
+        if msg.buttons[self.config['kick']["btn_left"]]:
             self.play_animation("kick_left")
-        elif msg.buttons[5]:
-            # R1
+        elif msg.buttons[self.config['kick']["btn_right"]]:
             self.play_animation("kick_right")
-        # animations with right buttons
-        elif msg.buttons[0]:
-            # 1
+        elif msg.buttons[self.config['misc']["btn_cheering"]]:
             self.play_animation("cheering")
-        elif msg.buttons[1]:
-            # 2
-            self.set_head_mode(self.head_modes.BALL_MODE)
-        elif msg.buttons[2]:
-            # 3
-            self.set_head_mode(self.head_modes.FIELD_FEATURES)
-        elif msg.buttons[3]:
-            # 4
-            self.send_text("Button not in use")
-
-        # espeak with left buttons
-        if msg.axes[5] > 0:
-            # up arrow
-            self.send_text("Bit Bots four!")
-        elif msg.axes[5] < 0:
-            # down arrow
-            self.send_text("Yaaaaaaaay!")
-        elif msg.axes[4] > 0:
-            # left arrow
+        elif msg.buttons[self.config['misc']["btn_say"]]:
             self.send_text("Goal!")
-        elif msg.axes[4] < 0:
-            # right arrow
-            self.send_text("Thank you university hamburg for funding.")
 
 def main():
     rclpy.init(args=None)
