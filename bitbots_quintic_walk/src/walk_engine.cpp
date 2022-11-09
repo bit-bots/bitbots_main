@@ -451,10 +451,10 @@ void WalkEngine::saveCurrentRobotState() {
   trunk_orientation_pos_at_last_foot_change_ = tf2::Vector3(roll, pitch, yaw);
 
   // convert the velocities and accelerations in next support foot frame and save
-  trunk_pos_vel_at_foot_change_ = rotation_to_next * trunk_pos_vel;
-  trunk_pos_acc_at_foot_change_ = rotation_to_next * trunk_pos_acc;
-  trunk_orientation_vel_at_last_foot_change_ = rotation_to_next * trunk_axis_vel;
-  trunk_orientation_acc_at_foot_change_ = rotation_to_next * trunk_axis_acc;
+  trunk_pos_vel_at_foot_change_ = rotation_to_next.inverse() * trunk_pos_vel;
+  trunk_pos_acc_at_foot_change_ = rotation_to_next.inverse() * trunk_pos_acc;
+  trunk_orientation_vel_at_last_foot_change_ = rotation_to_next.inverse() * trunk_axis_vel;
+  trunk_orientation_acc_at_foot_change_ = rotation_to_next.inverse() * trunk_axis_acc;
 
   // get last values of foot pose and velocities and accelerations
   tf2::Transform foot_pose = foot_spline_.getTfTransform(period_time);
@@ -470,10 +470,10 @@ void WalkEngine::saveCurrentRobotState() {
   foot_orientation_pos_at_last_foot_change_ = tf2::Vector3(roll, pitch, yaw);
 
   // convert the velocities and accelerations in next support foot frame and save
-  foot_pos_vel_at_foot_change_ = rotation_to_next * foot_pos_vel;
-  foot_pos_acc_at_foot_change_ = rotation_to_next * foot_pos_acc;
-  foot_orientation_vel_at_last_foot_change_ = rotation_to_next * foot_axis_vel;
-  foot_orientation_acc_at_foot_change_ = rotation_to_next * foot_axis_acc;
+  foot_pos_vel_at_foot_change_ = rotation_to_next.inverse() * foot_pos_vel;
+  foot_pos_acc_at_foot_change_ = rotation_to_next.inverse() * foot_pos_acc;
+  foot_orientation_vel_at_last_foot_change_ = rotation_to_next.inverse() * foot_axis_vel;
+  foot_orientation_acc_at_foot_change_ = rotation_to_next.inverse() * foot_axis_acc;
 }
 
 void WalkEngine::buildNormalTrajectories() {
