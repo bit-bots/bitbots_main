@@ -338,10 +338,10 @@ class TeleopKeyboard(Node):
                     self.client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
                 elif key == 'Y':
                     # kick left walk
-                    self.walk_kick_pub.publish(False)
+                    self.walk_kick_pub.publish(Bool(data=False))
                 elif key == 'C':
                     # kick right walk
-                    self.walk_kick_pub.publish(True)
+                    self.walk_kick_pub.publish(Bool(data=True))
                 elif key == 'F':
                     # play walkready animation
                     self.walkready.header.stamp = self.get_clock().now().to_msg()
