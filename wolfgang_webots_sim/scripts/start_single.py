@@ -30,8 +30,8 @@ class RobotNode:
                 time.sleep(2.0)
         webots_pid = future.result().values[0]
 
-        os.environ["WEBOTS_PID"] = str(webots_pid)
-        os.environ["WEBOTS_ROBOT_NAME"] = robot_name
+        #os.environ["WEBOTS_PID"] = str(webots_pid)
+        os.environ["WEBOTS_CONTROLLER_URL"] = f"ipc://6009/{robot_name}"
 
         if void_controller:
             self.node.get_logger().info("Starting void interface for " + robot_name)

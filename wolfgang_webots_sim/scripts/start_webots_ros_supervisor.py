@@ -27,8 +27,8 @@ class SupervisorNode:
                 time.sleep(2.0)
         webots_pid = future.result().values[0]
 
-        os.environ["WEBOTS_PID"] = str(webots_pid)
-        os.environ["WEBOTS_ROBOT_NAME"] = "supervisor_robot"
+        #os.environ["WEBOTS_PID"] = str(webots_pid)
+        os.environ["WEBOTS_CONTROLLER_URL"] = f"ipc://6009/supervisor_robot"
 
         self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node)
         self.node.get_logger().info("started webots ros supervisor")

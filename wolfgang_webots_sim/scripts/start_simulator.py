@@ -48,7 +48,7 @@ class WebotsSim(Node):
             cmd = ["webots"]
 
         # actually start webots
-        cmd_with_args = cmd + list(extra_args) + [f"--mode={mode}", f"{pkg_path}/worlds/{world_name}"]
+        cmd_with_args = cmd + list(extra_args) + [f"--mode={mode}", "--port=6009", f"{pkg_path}/worlds/{world_name}"]
         print(f"running {' '.join(cmd_with_args)}")
         self.sim_proc = subprocess.Popen(cmd_with_args)
 
