@@ -26,7 +26,7 @@ bitbots_vision:
     yoeo_model_path: '2022_10_07_flo_torso21_yoeox'
     yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
-    yoeo_framework: 'tvm'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
+    yoeo_framework: 'pytorch'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
 
     ball_candidate_field_boundary_y_offset: 0 # Threshold in which ball candidates over the field boundary are allowed.
     ball_candidate_rating_threshold: 0.5 # A threshold for the minimum candidate rating
@@ -49,12 +49,12 @@ bitbots_vision:
     blue_color_detector_upper_values_v: 255 # Upper bound for the blue color detector value/brightness
 
     field_boundary_detector_search_method: "iteration" # Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary)
-    field_boundary_detector_vertical_steps: 30 # Number of steps on each scanline
+    field_boundary_detector_vertical_steps: 60 # Number of steps on each scanline
     field_boundary_detector_horizontal_steps: 30 # Number of scanlines
-    field_boundary_detector_roi_height: 2 # Region Of Interest height in which we are looking for green
+    field_boundary_detector_roi_height: 4 # Region Of Interest height in which we are looking for green
     field_boundary_detector_roi_width: 2 # Region Of Interest width in which we are looking for green
     field_boundary_detector_roi_increase: 0.1 # Value that increases the region of interest if it is located lower in the image
-    field_boundary_detector_green_threshold: 30 # Threshold of green in the area covered by the kernel
+    field_boundary_detector_green_threshold: 157 # Threshold of green in the area covered by the kernel
     field_boundary_detector_head_tilt_threshold: 20 # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
 
     obstacle_finder_method: "convex" # Method for the obstacle finder (distance, convex or step)
