@@ -1,13 +1,51 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="full_image" default="false"/>
+    <arg name="markers" default="false"/>
+    <arg name="rviz" default="false"/>
 
-    <node pkg="ipm_image_node" exec="ipm" name="ipm_image" output="screen">
+    <node pkg="ipm_image_node" exec="ipm" name="ipm_line_mask" output="screen">
         <remap to="/camera/camera_info" from="camera_info"/>
-        <remap to="/camera/image_proc" from="input"/>
-        <param name="type" value="rgb_image"/>
-        <param name="scale" value="1.0"/>
+        <remap to="/line_mask_in_image" from="input"/>
+        <remap to="/line_mask_relative_pc" from="projected_point_cloud"/>
+        <param name="type" value="mask"/>
+        <param name="scale" value="0.2"/>
         <param name="output_frame" value="base_footprint"/>
         <param name="use_sim_time" value="$(var sim)"/>
     </node>
+    <node pkg="soccer_ipm" exec="ipm" name="soccer_ipm" output="screen">
+        <remap to="/camera/camera_info" from="camera_info"/>
+        <param from="$(find-pkg-share bitbots_ipm)/config/soccer_ipm.yaml" />
+        <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+
+    <group if="$(var full_image)">
+        <node pkg="ipm_image_node" exec="ipm" name="ipm_image" output="screen">
+            <remap to="/camera/camera_info" from="camera_info"/>
+            <remap to="/camera/image_proc" from="input"/>
+            <remap to="/projected_camera_image" from="projected_point_cloud"/>
+            <param name="type" value="rgb_image"/>
+            <param name="scale" value="1.0"/>
+            <param name="output_frame" value="base_footprint"/>
+            <param name="use_sim_time" value="$(var sim)"/>
+        </node>
+    </group>
+
+    <group if="$(var markers)">
+        <node pkg="soccer_vision_3d_rviz_markers" exec="visualizer" name="soccer_vision_3d_rviz_marker_visualizer" output="screen">
+            <remap to="/field_boundary_relative" from="soccer_vision_3d/field_boundary"/>
+            <remap to="/balls_relative" from="soccer_vision_3d/balls"/>
+            <remap to="/goal_posts_relative" from="soccer_vision_3d/goalposts"/>
+            <remap to="/robots_relative" from="soccer_vision_3d/robots"/>
+            <remap to="/obstacles_relative" from="soccer_vision_3d/obstacles"/>
+            <remap to="/markings_relative" from="soccer_vision_3d/markings"/>
+            <param name="ball_diameter" value="0.153"/>
+            <param name="use_sim_time" value="$(var sim)"/>
+        </node>
+    </group>
+
+    <group if="$(var rviz)">
+        <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_ipm)/config/ipm.rviz"/>
+    </group>
 </launch>
