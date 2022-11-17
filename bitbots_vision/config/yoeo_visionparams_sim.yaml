@@ -1,6 +1,6 @@
 bitbots_vision:
   ros__parameters:
-    # Defining the default vision parameters
+    # Defining the simulation parameters for YOEO vision
     component_ball_detection_active: true # activate the ball detection
     component_camera_cap_check_active: true # activate a one-time check whether the camera cap is still on the camera
     component_debug_image_active: false # activate the debug image
