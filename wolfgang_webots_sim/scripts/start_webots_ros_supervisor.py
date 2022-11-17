@@ -2,33 +2,17 @@
 import os
 import argparse
 import threading
-import time
 
 import rclpy
-from rcl_interfaces.srv import GetParameters
 from rclpy.node import Node
 from wolfgang_webots_sim.webots_supervisor_controller import SupervisorController
 
 
 class SupervisorNode:
-    def __init__(self, pid_param_name):
+    def __init__(self, simulator_port):
         self.node = Node('supervisor_node')
-        blackboard_client = self.node.create_client(GetParameters, '/parameter_blackboard/get_parameters')
-        while not blackboard_client.wait_for_service(timeout_sec=3.0):
-            self.node.get_logger().info('blackboard not available, waiting again...')
-        req = GetParameters.Request(names=[pid_param_name])
-        while True:
-            future = blackboard_client.call_async(req)
-            rclpy.spin_until_future_complete(self.node, future)
-            if future.result() is not None:
-                break
-            else:
-                self.node.get_logger().info("Waiting for parameter " + pid_param_name + " to be set..")
-                time.sleep(2.0)
-        webots_pid = future.result().values[0]
 
-        #os.environ["WEBOTS_PID"] = str(webots_pid)
-        os.environ["WEBOTS_CONTROLLER_URL"] = f"ipc://6009/supervisor_robot"
+        os.environ["WEBOTS_CONTROLLER_URL"] = f"ipc://{simulator_port}/supervisor_robot"
 
         self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node)
         self.node.get_logger().info("started webots ros supervisor")
@@ -40,12 +24,11 @@ class SupervisorNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sim_id', help="identifier of the simulation", default="")
+    parser.add_argument('--sim-port', help="port of the simulation", default="1234")
     args, _ = parser.parse_known_args()
-    pid_param_name = "webots_pid" + args.sim_id
 
     rclpy.init()
-    supervisor = SupervisorNode(pid_param_name)
+    supervisor = SupervisorNode(args.sim_port)
     thread = threading.Thread(target=rclpy.spin, args=(supervisor.node,), daemon=True)
     thread.start()
     supervisor.run()
