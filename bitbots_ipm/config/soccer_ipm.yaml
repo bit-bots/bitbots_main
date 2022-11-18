@@ -1,7 +1,7 @@
 soccer_ipm:
   ros__parameters:
     balls:
-      # Ball diameter for vizuilization is defined in the launch file
+      # Ball diameter for visualization is defined in the launch file
       ball_diameter: 0.153
 
     goalposts:
