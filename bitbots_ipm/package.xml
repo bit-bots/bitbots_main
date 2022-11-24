@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package format="2">
+  <name>bitbots_ipm</name>
+  <version>1.0.0</version>
+  <description>This sets up the inverse perspective mapping nodes</description>
+
+  <maintainer email="florian.vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <license>MIT</license>
+
+  <depend>soccer_ipm</depend>
+  <depend>ipm_image_node</depend>
+  <depend>soccer_vision_3d_rviz_markers</depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

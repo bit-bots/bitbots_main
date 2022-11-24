@@ -27,9 +27,9 @@
         </include>
     </group>
 
-    <!-- launch soccer inverse perspective mapping (ipm) -->
+    <!-- launch inverse perspective mapping (ipm) -->
     <group if="$(var ipm)">
-        <include file="$(find-pkg-share soccer_ipm)/launch/soccer_ipm.launch">
+        <include file="$(find-pkg-share bitbots_ipm)/launch/ipm.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
