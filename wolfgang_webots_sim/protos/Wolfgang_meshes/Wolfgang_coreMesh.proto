@@ -1,15 +1,16 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # tags: hidden
 # Extracted from: wolfgang.urdf
 
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Pcb.proto"
+
 PROTO Wolfgang_coreMesh [
-    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangPlastic {transparency IS transparency}
+    appearance Pcb {}
     geometry DEF core IndexedFaceSet {
       coord Coordinate {
         point [
