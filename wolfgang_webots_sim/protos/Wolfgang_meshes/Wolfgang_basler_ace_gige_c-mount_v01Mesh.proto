@@ -1,15 +1,16 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # tags: hidden
 # Extracted from: wolfgang.urdf
 
+EXTERNPROTO "../Wolfgang_textures/WolfgangMetal.proto"
+
 PROTO Wolfgang_basler_ace_gige_c-mount_v01Mesh [
-    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangMetal {transparency IS transparency}
+    appearance WolfgangMetal {}
     geometry DEF basler_ace_gige_c-mount_v01 IndexedFaceSet {
       coord Coordinate {
         point [

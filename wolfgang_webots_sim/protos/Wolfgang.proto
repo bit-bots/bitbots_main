@@ -1,8 +1,73 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # This is a proto file for Webots for the Wolfgang
 # Extracted from: wolfgang.urdf
+
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_ankleMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_baseplate_odroid_xu4_coreMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_basler_ace_gige_c-mount_v01Mesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_cage_holderMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_cageMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_clipMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_batteryMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_camera_lower_basler_wolfgang_imu_v2_2Mesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_camera_side_basler_wolfgang_v2_2_leftMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_camera_side_basler_wolfgang_v2_2_rightMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_connector_shoulderMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_coreMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_dummy_speakerMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_flex_stollenMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_foot_coverMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_foot_printed_leftMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_foot_printed_rightMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_forcefoot_pcbMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_handMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_hip_u_connectorMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_imu_bottom_coverMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_imu_holderMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_knee_connectorMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_knee_spacerMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_lenseMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_load_cellMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_lower_armMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_lower_legMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_lower_leg_spacerMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_motor_connectorMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_mx-106_bodyMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_mx-64-bodyMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_bottomMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_frontMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_left_backMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_left_frontMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_right_backMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_right_frontMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_mainMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_part_1Mesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_power_regulatorMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_router_holder_leftMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_router_holder_rightMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_sea_connectorMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_sea_ninjaflexMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_shoulder_connectorMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_speaker_holderMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_springholder_bottomMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_spring_holder_lowerMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_springholder_newMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_spring_holder_upperMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_switch_holderMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_thrustbearingholderMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_torso_bottomMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_torso_bumper_leftMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_torso_bumper_rightMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_torso_topMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_upper_armMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_upper_arm_spacerMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_upper_legMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_upper_leg_spacerMesh.proto"
+EXTERNPROTO "Wolfgang_meshes/Wolfgang_xh-540Mesh.proto"
+EXTERNPROTO "Wolfgang_textures/WolfgangMarker.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/joints/protos/HingeJointWithBacklash.proto"
 
 PROTO Wolfgang [
   field  SFVec3f     translation     0 0 0
@@ -17,7 +82,6 @@ PROTO Wolfgang [
   field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
   field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
   field  SFBool      enableFootSensors TRUE         # Is `Robot.enableFootSensors`.
-  field  SFFloat     transparency    0              # Is `Robot.transparency`
   field  SFFloat     cameraFOV       1.04
   field  SFInt32     cameraWidth     800
   field  SFInt32     cameraHeight    600
@@ -76,7 +140,6 @@ PROTO Wolfgang [
         rotation -0.707105 0.000001 0.707108 3.141591
         children [
           Wolfgang_mx-64-bodyMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -85,7 +148,6 @@ PROTO Wolfgang [
         rotation -0.000000 -1.000000 -0.000000 1.570800
         children [
           Wolfgang_mx-64-bodyMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -94,7 +156,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_right_frontMesh {
-           transparency IS transparency
           }
         ]
       }
@@ -103,7 +164,6 @@ PROTO Wolfgang [
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
           Wolfgang_power_regulatorMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -112,7 +172,6 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_torso_bumper_rightMesh {
-           transparency IS transparency
           }
         ]
       }
@@ -121,7 +180,6 @@ PROTO Wolfgang [
         rotation -0.000000 0.000000 -1.000000 1.570800
         children [
           Wolfgang_coreMesh {
-           transparency IS transparency
           }
         ]
       }
@@ -130,7 +188,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 -1.000000 1.570800
         children [
           Wolfgang_batteryMesh {
-           transparency IS transparency
           }
         ]
       }
@@ -139,7 +196,6 @@ PROTO Wolfgang [
         rotation 0.577350 -0.577352 -0.577350 2.094399
         children [
           Wolfgang_mx-106_bodyMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -148,7 +204,6 @@ PROTO Wolfgang [
         rotation -0.577350 0.577352 -0.577350 2.094399
         children [
           Wolfgang_torso_bumper_leftMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -157,7 +212,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_right_backMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -166,7 +220,6 @@ PROTO Wolfgang [
         rotation 0.577350 -0.577352 -0.577350 2.094399
         children [
           Wolfgang_mx-106_bodyMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -175,7 +228,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_battery_clipMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -184,7 +236,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_left_backMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -193,7 +244,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_bottomMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -202,7 +252,6 @@ PROTO Wolfgang [
         rotation -0.707105 0.000001 0.707108 3.141591
         children [
           Wolfgang_imu_holderMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -211,7 +260,6 @@ PROTO Wolfgang [
         rotation 0.000000 -0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_frontMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -220,7 +268,6 @@ PROTO Wolfgang [
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
           Wolfgang_torso_bottomMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -238,7 +285,6 @@ PROTO Wolfgang [
                 %{else}%
                   baseColor  0.0, 0.0, 0.0
                  %{ end }%
-              transparency IS transparency
             }
             geometry Box {
               size 0.15 0.005 0.08
@@ -260,7 +306,6 @@ PROTO Wolfgang [
                 %{else}%
                   baseColor  0.0, 0.0, 0.0
                 %{ end }%
-                transparency IS transparency
               }
             geometry Box {
               size 0.15 0.005 0.08
@@ -273,7 +318,6 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_router_holder_leftMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -282,7 +326,6 @@ PROTO Wolfgang [
         rotation 0.707105 -0.707108 -0.000001 3.141591
         children [
           Wolfgang_imu_bottom_coverMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -291,7 +334,6 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_mx-64-bodyMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -300,7 +342,6 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_torso_bumper_leftMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -309,7 +350,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_speaker_holderMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -318,7 +358,6 @@ PROTO Wolfgang [
         rotation -0.000000 0.000000 -1.000000 1.570800
         children [
           Wolfgang_baseplate_odroid_xu4_coreMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -327,7 +366,6 @@ PROTO Wolfgang [
         rotation -0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_mainMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -336,7 +374,6 @@ PROTO Wolfgang [
         rotation -0.577350 0.577352 -0.577350 2.094399
         children [
           Wolfgang_torso_bumper_rightMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -345,7 +382,6 @@ PROTO Wolfgang [
         rotation 0.577350 0.577352 0.577350 2.094399
         children [
           Wolfgang_switch_holderMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -354,7 +390,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_torso_topMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -363,7 +398,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_dummy_speakerMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -372,7 +406,6 @@ PROTO Wolfgang [
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
           Wolfgang_router_holder_rightMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -381,7 +414,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_battery_cage_holderMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -390,7 +422,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_nuc_holder_left_frontMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -399,7 +430,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_battery_cageMesh {
-            transparency IS transparency
           }
         ]
       }
@@ -503,7 +533,6 @@ PROTO Wolfgang [
               rotation -0.577350 -0.577352 0.577350 2.094399
               children [
                 Wolfgang_sea_connectorMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -512,7 +541,6 @@ PROTO Wolfgang [
               rotation -0.577350 -0.577352 0.577350 2.094399
               children [
                 Wolfgang_sea_ninjaflexMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -521,7 +549,6 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_shoulder_connectorMesh {
-                transparency IS transparency
                 }
               ]
             }
@@ -556,7 +583,6 @@ PROTO Wolfgang [
                     rotation -1.000000 0.000000 -0.000000 1.570800
                     children [
                       Wolfgang_mx-64-bodyMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -565,7 +591,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -582,7 +607,6 @@ PROTO Wolfgang [
                           %{else}%
                             baseColor  0.0, 0.0, 0.0
                           %{ end }%
-                          transparency IS transparency
                         }
                         geometry Box {
                           size 0.07 0.005 0.04
@@ -595,7 +619,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -604,7 +627,6 @@ PROTO Wolfgang [
                     rotation -0.577350 0.577350 0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -613,7 +635,6 @@ PROTO Wolfgang [
                     rotation 0.577350 0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -622,7 +643,6 @@ PROTO Wolfgang [
                     rotation -0.000000 -1.000000 -0.000000 1.570800
                     children [
                       Wolfgang_upper_arm_spacerMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -658,7 +678,6 @@ PROTO Wolfgang [
                           rotation -0.000001 0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_lower_armMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -667,7 +686,6 @@ PROTO Wolfgang [
                           rotation -1.000000 0.000000 0.000000 1.570800
                           children [
                             Wolfgang_mx-64-bodyMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -676,7 +694,6 @@ PROTO Wolfgang [
                           rotation 1.000000 0.000000 -0.000000 1.570800
                           children [
                             Wolfgang_handMesh {
-                            transparency IS transparency
                             }
                           ]
                         }
@@ -685,7 +702,6 @@ PROTO Wolfgang [
                           rotation -0.000001 0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_lower_armMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -701,7 +717,7 @@ PROTO Wolfgang [
                         children [
                           Transform {
                             translation 0.000000 -0.163682 -0.005500
-                            rotation 0.000001 -0.707107 -0.707107 3.141591
+                            rotation -0.707107 -0.707107 0.000001 3.141591
                             children [
                               Cylinder {
                                 radius 0.04
@@ -720,7 +736,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.193682 -0.005500
-                            rotation 0.000001 -0.707107 -0.707107 3.141591
+                            rotation -0.707107 -0.707107 0.000001 3.141591
                             children [
                               Cylinder {
                                 radius 0.032
@@ -757,7 +773,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.163682 -0.023500
-                            rotation -1.000000 0.000000 0.000000 1.570794
+                            rotation 0.000000 0.000000 -1.000000 1.570794
                             children [
                               Cylinder {
                                 radius 0.04
@@ -767,7 +783,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.193682 -0.023500
-                            rotation -1.000000 0.000000 0.000000 1.570794
+                            rotation 0.000000 0.000000 -1.000000 1.570794
                             children [
                               Cylinder {
                                 radius 0.032
@@ -795,7 +811,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.163682 -0.041500
-                            rotation 0.000001 -0.707107 -0.707107 3.141591
+                            rotation -0.707107 -0.707107 0.000001 3.141591
                             children [
                               Cylinder {
                                 radius 0.04
@@ -814,7 +830,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.193682 -0.041500
-                            rotation 0.000001 -0.707107 -0.707107 3.141591
+                            rotation -0.707107 -0.707107 0.000001 3.141591
                             children [
                               Cylinder {
                                 radius 0.032
@@ -872,7 +888,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation 0.025125 -0.144000 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -882,7 +898,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation 0.025125 -0.014000 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -910,7 +926,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation -0.025125 -0.144000 -0.023500
-                      rotation 0.577349 0.577351 -0.577351 2.094397
+                      rotation 0.577351 0.577349 0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -920,7 +936,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation -0.025125 -0.014000 -0.023500
-                      rotation 0.577349 0.577351 -0.577351 2.094397
+                      rotation 0.577351 0.577349 0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -978,7 +994,7 @@ PROTO Wolfgang [
             children [
               Transform {
                 translation -0.028450 0.042000 0.000000
-                rotation -0.000002 -0.000002 1.000000 1.570800
+                rotation -0.000002 1.000000 -0.000002 1.570800
                 children [
                   Cylinder {
                     radius 0.025
@@ -988,7 +1004,7 @@ PROTO Wolfgang [
               }
               Transform {
                 translation -0.021450 0.042000 0.000000
-                rotation -0.000002 -0.000002 1.000000 1.570800
+                rotation -0.000002 1.000000 -0.000002 1.570800
                 children [
                   Cylinder {
                     radius 0.025
@@ -1071,7 +1087,6 @@ PROTO Wolfgang [
               rotation 0.577350 -0.577352 -0.577350 2.094399
               children [
                 Wolfgang_sea_connectorMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -1080,7 +1095,6 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_shoulder_connectorMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -1089,7 +1103,6 @@ PROTO Wolfgang [
               rotation 0.577350 -0.577352 -0.577350 2.094399
               children [
                 Wolfgang_sea_ninjaflexMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -1124,7 +1137,6 @@ PROTO Wolfgang [
                     rotation -1.000000 -0.000000 -0.000000 1.570800
                     children [
                       Wolfgang_mx-64-bodyMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1141,7 +1153,6 @@ PROTO Wolfgang [
                           %{else}%
                             baseColor  0.0, 0.0, 0.0
                           %{ end }%
-                          transparency IS transparency
                         }
                         geometry Box {
                           size 0.07 0.005 0.04
@@ -1155,7 +1166,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1164,7 +1174,6 @@ PROTO Wolfgang [
                     rotation 0.577350 0.577352 0.577350 2.094399
                     children [
                       Wolfgang_connector_shoulderMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1173,7 +1182,6 @@ PROTO Wolfgang [
                     rotation 0.000000 -1.000000 0.000000 1.570800
                     children [
                       Wolfgang_upper_arm_spacerMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1182,7 +1190,6 @@ PROTO Wolfgang [
                     rotation -0.577350 0.577350 0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1191,7 +1198,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_upper_armMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1227,7 +1233,6 @@ PROTO Wolfgang [
                           rotation -1.000000 -0.000000 0.000000 1.570800
                           children [
                             Wolfgang_mx-64-bodyMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1236,7 +1241,6 @@ PROTO Wolfgang [
                           rotation 1.000000 0.000000 0.000000 1.570800
                           children [
                             Wolfgang_lower_armMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1245,7 +1249,6 @@ PROTO Wolfgang [
                           rotation -0.000001 0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_handMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1254,7 +1257,6 @@ PROTO Wolfgang [
                           rotation 1.000000 0.000000 0.000000 1.570800
                           children [
                             Wolfgang_lower_armMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1279,7 +1281,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.163682 -0.041500
-                            rotation -1.000000 -0.000000 0.000000 1.570794
+                            rotation -0.000000 0.000000 -1.000000 1.570794
                             children [
                               Cylinder {
                                 radius 0.04
@@ -1298,7 +1300,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.193682 -0.041500
-                            rotation -1.000000 -0.000000 0.000000 1.570794
+                            rotation -0.000000 0.000000 -1.000000 1.570794
                             children [
                               Cylinder {
                                 radius 0.032
@@ -1326,7 +1328,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.163682 -0.023500
-                            rotation 0.000001 -0.707107 -0.707107 3.141591
+                            rotation -0.707107 -0.707107 0.000001 3.141591
                             children [
                               Cylinder {
                                 radius 0.04
@@ -1336,7 +1338,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.193682 -0.023500
-                            rotation 0.000001 -0.707107 -0.707107 3.141591
+                            rotation -0.707107 -0.707107 0.000001 3.141591
                             children [
                               Cylinder {
                                 radius 0.032
@@ -1364,7 +1366,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.163682 -0.005500
-                            rotation -1.000000 -0.000000 0.000000 1.570794
+                            rotation -0.000000 0.000000 -1.000000 1.570794
                             children [
                               Cylinder {
                                 radius 0.04
@@ -1383,7 +1385,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.193682 -0.005500
-                            rotation -1.000000 -0.000000 0.000000 1.570794
+                            rotation -0.000000 0.000000 -1.000000 1.570794
                             children [
                               Cylinder {
                                 radius 0.032
@@ -1468,7 +1470,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation -0.025125 -0.144000 -0.023500
-                      rotation 0.577349 0.577351 -0.577351 2.094397
+                      rotation 0.577351 0.577349 0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -1478,7 +1480,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation -0.025125 -0.014000 -0.023500
-                      rotation 0.577349 0.577351 -0.577351 2.094397
+                      rotation 0.577351 0.577349 0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -1497,7 +1499,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation 0.025125 -0.144000 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -1507,7 +1509,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation 0.025125 -0.014000 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.02
@@ -1547,7 +1549,7 @@ PROTO Wolfgang [
             children [
               Transform {
                 translation -0.028450 0.042000 -0.000000
-                rotation 0.707105 -0.707108 0.000001 3.141595
+                rotation -0.707108 0.000001 0.707105 3.141595
                 children [
                   Cylinder {
                     radius 0.025
@@ -1584,7 +1586,7 @@ PROTO Wolfgang [
               }
               Transform {
                 translation -0.021450 0.042000 -0.000000
-                rotation 0.707105 -0.707108 0.000001 3.141595
+                rotation -0.707108 0.000001 0.707105 3.141595
                 children [
                   Cylinder {
                     radius 0.025
@@ -1640,7 +1642,6 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_hip_u_connectorMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -1676,7 +1677,6 @@ PROTO Wolfgang [
                     rotation -1.000000 0.000000 -0.000000 1.570800
                     children [
                       Wolfgang_mx-106_bodyMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1685,7 +1685,6 @@ PROTO Wolfgang [
                     rotation -0.707105 -0.707108 0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1694,7 +1693,6 @@ PROTO Wolfgang [
                     rotation 0.000000 -0.000000 -1.000000 3.141590
                     children [
                       Wolfgang_thrustbearingholderMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1703,7 +1701,6 @@ PROTO Wolfgang [
                     rotation -0.707105 0.707108 -0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1712,7 +1709,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_mx-106_bodyMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -1749,7 +1745,6 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_knee_connectorMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1758,7 +1753,6 @@ PROTO Wolfgang [
                           rotation 0.000000 1.000000 0.000000 0.000000
                           children [
                             Wolfgang_upper_legMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1767,7 +1761,6 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_part_1Mesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1776,7 +1769,6 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_xh-540Mesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1785,7 +1777,6 @@ PROTO Wolfgang [
                           rotation 1.000000 -0.000000 0.000000 1.570800
                           children [
                             Wolfgang_spring_holder_upperMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1794,7 +1785,6 @@ PROTO Wolfgang [
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
                             Wolfgang_part_1Mesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1803,7 +1793,6 @@ PROTO Wolfgang [
                           rotation 0.000000 1.000000 0.000000 0.000000
                           children [
                             Wolfgang_upper_legMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1812,7 +1801,6 @@ PROTO Wolfgang [
                           rotation -0.935113 0.250562 0.250563 1.637837
                           children [
                             Wolfgang_knee_connectorMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1821,7 +1809,6 @@ PROTO Wolfgang [
                           rotation -0.092690 0.704064 0.704061 2.956736
                           children [
                             Wolfgang_upper_leg_spacerMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -1857,7 +1844,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1866,7 +1852,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1875,7 +1860,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1884,7 +1868,6 @@ PROTO Wolfgang [
                                 rotation -0.543774 0.593428 0.593425 2.145487
                                 children [
                                   Wolfgang_lower_leg_spacerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1893,7 +1876,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_springholder_newMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1902,7 +1884,6 @@ PROTO Wolfgang [
                                 rotation 0.000001 1.000000 0.000001 3.316126
                                 children [
                                   Wolfgang_spring_holder_lowerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1911,7 +1892,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1920,7 +1900,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_springholder_bottomMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -1957,7 +1936,6 @@ PROTO Wolfgang [
                                       rotation 0.577350 0.577352 0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1966,7 +1944,6 @@ PROTO Wolfgang [
                                       rotation -0.577350 -0.577350 -0.577352 2.094399
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1975,7 +1952,6 @@ PROTO Wolfgang [
                                       rotation -0.577350 0.577352 -0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1984,7 +1960,6 @@ PROTO Wolfgang [
                                       rotation 0.707105 0.000001 -0.707108 3.141591
                                       children [
                                         Wolfgang_thrustbearingholderMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -1993,7 +1968,6 @@ PROTO Wolfgang [
                                       rotation -1.000000 -0.000000 0.000000 1.570800
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -2029,7 +2003,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2038,7 +2011,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_ankleMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2047,7 +2019,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2056,7 +2027,6 @@ PROTO Wolfgang [
                                             rotation 1.000000 0.000000 -0.000000 3.141590
                                             children [
                                               Wolfgang_forcefoot_pcbMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2065,7 +2035,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2074,7 +2043,6 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_printed_rightMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2083,7 +2051,6 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 1.000000 3.141590
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2092,7 +2059,6 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_coverMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -2121,7 +2087,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2135,7 +2100,7 @@ PROTO Wolfgang [
                                             %{if fields.enableBoundingObject.value then}%
                                             boundingObject DEF CLEAT_CAPSULE Transform {
                                               translation 0.000000 0.000000 0.005000
-                                              rotation 1.000000 -0.000000 0.000000 1.570796
+                                              rotation -0.000000 0.000000 1.000000 1.570796
                                               children [
                                                 Capsule {
                                                   radius 0.006
@@ -2171,7 +2136,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2212,7 +2176,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2253,7 +2216,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -2418,7 +2380,7 @@ PROTO Wolfgang [
                               children [
                                 Transform {
                                   translation 0.000000 0.049000 -0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation 0 0.707107 -0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -2428,7 +2390,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 0.051500 -0.170000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -2438,7 +2400,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.000000 0.051500 0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -2448,7 +2410,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.004000 0.051500 -0.165000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -2458,7 +2420,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.004000 0.051500 -0.005000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -2477,7 +2439,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.002500 -0.170000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -2487,7 +2449,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.002500 0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -2497,7 +2459,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.004000 -0.002500 -0.165000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -2507,7 +2469,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.004000 -0.002500 -0.005000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -2535,7 +2497,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.024000 0.000000
-                                  rotation 1.000000 0.000000 0.000000 3.141596
+                                  rotation 0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.0165
@@ -2545,7 +2507,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.014350 0.000000
-                                  rotation 1.000000 0.000000 0.000000 3.141596
+                                  rotation 0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.0105
@@ -2564,7 +2526,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.001500 -0.000000
-                                  rotation 1.000000 0.000000 0.000000 3.141596
+                                  rotation 0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -2574,7 +2536,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.003500 0.001350
-                                  rotation 1.000000 0.000000 0.000000 3.141596
+                                  rotation 0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.015
@@ -2623,7 +2585,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 0.001000 -0.000000
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.018
@@ -2633,7 +2595,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.009329 0.001000 -0.143000
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.01
@@ -2643,7 +2605,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.014840 0.001000 -0.132659
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.02
@@ -2671,7 +2633,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.009329 0.001000 -0.143000
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.01
@@ -2681,7 +2643,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.004010 0.001000 -0.002422
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2691,7 +2653,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.007707 0.001000 -0.006828
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2701,7 +2663,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.010583 0.001000 -0.011810
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2711,7 +2673,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.012551 0.001000 -0.017215
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2721,7 +2683,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.013550 0.001000 -0.022880
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2731,7 +2693,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.013550 0.001000 -0.028633
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2741,7 +2703,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.012551 0.001000 -0.034298
-                            rotation 1.000000 -0.000000 -0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2751,7 +2713,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.052000 -0.000000
-                            rotation 0.258819 -0.000002 0.965926 3.141589
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.018
@@ -2770,7 +2732,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.014000 -0.066000 -0.138000
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.014
@@ -2780,7 +2742,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.001000 -0.000000
-                            rotation 0.258819 -0.000002 0.965926 3.141589
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.018
@@ -2790,7 +2752,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.000000 -0.054000 -0.000000
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.018
@@ -2800,7 +2762,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.009329 -0.054000 -0.143000
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.01
@@ -2810,7 +2772,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.014840 -0.054000 -0.132659
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.02
@@ -2838,7 +2800,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.009329 -0.054000 -0.143000
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.01
@@ -2848,7 +2810,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.004010 -0.054000 -0.002422
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2858,7 +2820,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.007707 -0.054000 -0.006828
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2868,7 +2830,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.010583 -0.054000 -0.011810
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2878,7 +2840,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.012551 -0.054000 -0.017215
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2888,7 +2850,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.013550 -0.054000 -0.022880
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2898,7 +2860,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.013550 -0.054000 -0.028633
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -2908,7 +2870,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.012551 -0.054000 -0.034298
-                            rotation 1.000000 -0.000000 0.000000 3.141596
+                            rotation -0.000000 0.707107 0.707107 3.141596
                             children [
                               Cylinder {
                                 radius 0.017
@@ -3068,7 +3030,7 @@ PROTO Wolfgang [
               }
               Transform {
                 translation 0.0 -0.0006 0.0019999999999999983
-                rotation -5.551115123125783e-17 1.0 5.551115123125783e-17 1.5707963267948966
+                rotation 1.0 0.000000 0.000000 1.5707963267948966
                 children [
                   Cylinder {
                     height 0.004
@@ -3124,7 +3086,6 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_hip_u_connectorMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -3160,7 +3121,6 @@ PROTO Wolfgang [
                     rotation -0.707105 0.707108 -0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -3169,7 +3129,6 @@ PROTO Wolfgang [
                     rotation -1.000000 -0.000000 0.000000 1.570800
                     children [
                       Wolfgang_mx-106_bodyMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -3178,7 +3137,6 @@ PROTO Wolfgang [
                     rotation -0.577350 0.577350 0.577352 2.094399
                     children [
                       Wolfgang_mx-106_bodyMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -3187,7 +3145,6 @@ PROTO Wolfgang [
                     rotation 0.707105 0.707108 0.000001 3.141591
                     children [
                       Wolfgang_motor_connectorMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -3196,7 +3153,6 @@ PROTO Wolfgang [
                     rotation 0.000000 0.000000 -1.000000 3.141590
                     children [
                       Wolfgang_thrustbearingholderMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -3233,7 +3189,6 @@ PROTO Wolfgang [
                           rotation 0.965926 0.258819 0.000000 3.141590
                           children [
                             Wolfgang_knee_connectorMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3242,7 +3197,6 @@ PROTO Wolfgang [
                           rotation -1.000000 0.000000 -0.000000 3.141590
                           children [
                             Wolfgang_part_1Mesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3251,7 +3205,6 @@ PROTO Wolfgang [
                           rotation 0.000000 -0.000000 -1.000000 2.617990
                           children [
                             Wolfgang_knee_connectorMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3260,7 +3213,6 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 -1.000000 2.617990
                           children [
                             Wolfgang_xh-540Mesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3269,7 +3221,6 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 1.000000 2.617990
                           children [
                             Wolfgang_spring_holder_upperMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3278,7 +3229,6 @@ PROTO Wolfgang [
                           rotation 0.000000 1.000000 0.000000 0.000000
                           children [
                             Wolfgang_part_1Mesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3287,7 +3237,6 @@ PROTO Wolfgang [
                           rotation 0.000001 -0.707108 -0.707105 3.141591
                           children [
                             Wolfgang_upper_legMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3296,7 +3245,6 @@ PROTO Wolfgang [
                           rotation 0.000001 0.707108 0.707105 3.141591
                           children [
                             Wolfgang_upper_legMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3305,7 +3253,6 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 -1.000000 0.261799
                           children [
                             Wolfgang_upper_leg_spacerMesh {
-                              transparency IS transparency
                             }
                           ]
                         }
@@ -3341,7 +3288,6 @@ PROTO Wolfgang [
                                 rotation 1.000000 -0.000000 0.000000 3.141590
                                 children [
                                   Wolfgang_springholder_newMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3350,7 +3296,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 -0.000000 -1.000000 3.141590
                                 children [
                                   Wolfgang_spring_holder_lowerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3359,7 +3304,6 @@ PROTO Wolfgang [
                                 rotation -1.000000 0.000000 0.000000 3.141590
                                 children [
                                   Wolfgang_springholder_bottomMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3368,7 +3312,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3377,7 +3320,6 @@ PROTO Wolfgang [
                                 rotation -0.543774 0.593428 0.593425 2.145487
                                 children [
                                   Wolfgang_lower_leg_spacerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3386,7 +3328,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_knee_spacerMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3395,7 +3336,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3404,7 +3344,6 @@ PROTO Wolfgang [
                                 rotation 0.000000 1.000000 0.000000 0.000000
                                 children [
                                   Wolfgang_lower_legMesh {
-                                    transparency IS transparency
                                   }
                                 ]
                               }
@@ -3441,7 +3380,6 @@ PROTO Wolfgang [
                                       rotation 0.577350 -0.577352 -0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3450,7 +3388,6 @@ PROTO Wolfgang [
                                       rotation -0.707105 -0.000001 -0.707108 3.141591
                                       children [
                                         Wolfgang_thrustbearingholderMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3459,7 +3396,6 @@ PROTO Wolfgang [
                                       rotation -0.577350 -0.577352 0.577350 2.094399
                                       children [
                                         Wolfgang_motor_connectorMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3468,7 +3404,6 @@ PROTO Wolfgang [
                                       rotation -1.000000 -0.000000 -0.000000 1.570800
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3477,7 +3412,6 @@ PROTO Wolfgang [
                                       rotation -0.577350 0.577350 0.577352 2.094399
                                       children [
                                         Wolfgang_mx-106_bodyMesh {
-                                          transparency IS transparency
                                         }
                                       ]
                                     }
@@ -3513,7 +3447,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3522,7 +3455,6 @@ PROTO Wolfgang [
                                             rotation -0.000000 0.000000 1.000000 3.141590
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3531,7 +3463,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_printed_leftMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3540,7 +3471,6 @@ PROTO Wolfgang [
                                             rotation 1.000000 -0.000000 0.000000 3.141590
                                             children [
                                               Wolfgang_forcefoot_pcbMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3549,7 +3479,6 @@ PROTO Wolfgang [
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_coverMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3558,7 +3487,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_ankleMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3567,7 +3495,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3576,7 +3503,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                                transparency IS transparency
                                               }
                                             ]
                                           }
@@ -3605,7 +3531,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3646,7 +3571,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3687,7 +3611,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3728,7 +3651,6 @@ PROTO Wolfgang [
                                                 rotation 0.000000 1.000000 0.000000 3.141592653589793
                                                 children [
                                                   Wolfgang_flex_stollenMesh {
-                                                    transparency IS transparency
                                                   }
                                                 ]
                                               }
@@ -3896,7 +3818,7 @@ PROTO Wolfgang [
                               children [
                                 Transform {
                                   translation 0.000000 0.024000 -0.000000
-                                  rotation 0.000000 1.000000 0.000000 0.000004
+                                  rotation 0.000000 0.707107 0.707107 3.141590
                                   children [
                                     Cylinder {
                                       radius 0.0165
@@ -3906,7 +3828,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 0.014350 -0.000000
-                                  rotation 0.000000 1.000000 0.000000 0.000004
+                                  rotation 0.000000 0.707107 0.707107 3.141590
                                   children [
                                     Cylinder {
                                       radius 0.0105
@@ -3925,7 +3847,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 0.003500 -0.001350
-                                  rotation 0.000000 1.000000 0.000000 0.000004
+                                  rotation 0.000000 0.707107 0.707107 3.141590
                                   children [
                                     Cylinder {
                                       radius 0.015
@@ -3935,7 +3857,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.050500 -0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -3954,7 +3876,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.000000 -0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -3964,7 +3886,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 -0.051500 -0.170000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -3974,7 +3896,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.000000 -0.051500 0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -3984,7 +3906,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.004000 -0.051500 -0.165000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -3994,7 +3916,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.004000 -0.051500 -0.005000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -4013,7 +3935,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.000000 0.002500 -0.170000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -4023,7 +3945,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.000000 0.002500 0.000000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.018
@@ -4033,7 +3955,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation -0.004000 0.002500 -0.165000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -4043,7 +3965,7 @@ PROTO Wolfgang [
                                 }
                                 Transform {
                                   translation 0.004000 0.002500 -0.005000
-                                  rotation 1.000000 -0.000000 -0.000000 3.141596
+                                  rotation -0.000000 0.707107 0.707107 3.141596
                                   children [
                                     Cylinder {
                                       radius 0.02
@@ -4101,7 +4023,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.000000 0.050000
-                            rotation -1.000000 0.000000 -0.000000 1.570794
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.018
@@ -4138,7 +4060,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.014000 -0.138000 0.064000
-                            rotation 0.186158 0.694746 0.694746 2.773490
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.014
@@ -4148,7 +4070,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 0.000000 -0.001000
-                            rotation 1.000000 -0.000000 0.000000 1.570796
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.018
@@ -4158,7 +4080,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 -0.000000 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.018
@@ -4168,7 +4090,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.009329 -0.143000 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.01
@@ -4178,7 +4100,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.014840 -0.132659 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.02
@@ -4206,7 +4128,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.009329 -0.143000 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.01
@@ -4216,7 +4138,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.004010 -0.002422 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4226,7 +4148,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.007707 -0.006828 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4236,7 +4158,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.010583 -0.011810 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4246,7 +4168,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.012551 -0.017215 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4256,7 +4178,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.013550 -0.022880 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4266,7 +4188,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.013550 -0.028633 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4276,7 +4198,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.012551 -0.034298 -0.003000
-                            rotation -0.000001 0.707106 -0.707108 3.141591
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4286,7 +4208,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.000000 0.000000 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.018
@@ -4296,7 +4218,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.009329 -0.143000 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.01
@@ -4306,7 +4228,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.014840 -0.132659 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.02
@@ -4334,7 +4256,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation -0.009329 -0.143000 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.01
@@ -4344,7 +4266,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.004010 -0.002422 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4354,7 +4276,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.007707 -0.006828 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4364,7 +4286,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.010583 -0.011810 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4374,7 +4296,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.012551 -0.017215 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4384,7 +4306,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.013550 -0.022880 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4394,7 +4316,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.013550 -0.028633 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4404,7 +4326,7 @@ PROTO Wolfgang [
                           }
                           Transform {
                             translation 0.012551 -0.034298 0.052000
-                            rotation 0.000001 0.707108 -0.707106 3.141595
+                            rotation 0.707107 0.707107 0.000000 3.141590
                             children [
                               Cylinder {
                                 radius 0.017
@@ -4546,7 +4468,7 @@ PROTO Wolfgang [
               }
               Transform {
                 translation 0.0 -0.0006 0.0019999999999999983
-                rotation -5.551115123125783e-17 1.0 5.551115123125783e-17 1.5707963267948966
+                rotation 1.000000 0.000000 0.000000 1.5707963267948966
                 children [
                   Cylinder {
                     height 0.004
@@ -4602,7 +4524,6 @@ PROTO Wolfgang [
               rotation 0.000000 1.000000 0.000000 0.000000
               children [
                 Wolfgang_connector_shoulderMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -4611,7 +4532,6 @@ PROTO Wolfgang [
               rotation 0.707105 -0.000001 0.707108 3.141591
               children [
                 Wolfgang_mx-64-bodyMesh {
-                  transparency IS transparency
                 }
               ]
             }
@@ -4647,7 +4567,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_lenseMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4656,7 +4575,6 @@ PROTO Wolfgang [
                     rotation 0.000000 1.000000 0.000000 0.000000
                     children [
                       Wolfgang_sea_ninjaflexMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4665,7 +4583,6 @@ PROTO Wolfgang [
                     rotation 0.000000 -0.000000 1.000000 3.141590
                     children [
                       Wolfgang_sea_connectorMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4674,7 +4591,6 @@ PROTO Wolfgang [
                     rotation 0.000000 1.000000 0.000000 0.000000
                     children [
                       Wolfgang_camera_side_basler_wolfgang_v2_2_rightMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4683,7 +4599,6 @@ PROTO Wolfgang [
                     rotation 0.000000 1.000000 0.000000 0.000000
                     children [
                       Wolfgang_camera_side_basler_wolfgang_v2_2_leftMesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4692,7 +4607,6 @@ PROTO Wolfgang [
                     rotation -0.577350 -0.577350 -0.577352 2.094399
                     children [
                       Wolfgang_basler_ace_gige_c-mount_v01Mesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4701,7 +4615,6 @@ PROTO Wolfgang [
                     rotation 0.000000 -1.000000 0.000000 1.570800
                     children [
                       Wolfgang_camera_lower_basler_wolfgang_imu_v2_2Mesh {
-                        transparency IS transparency
                       }
                     ]
                   }
@@ -4712,10 +4625,10 @@ PROTO Wolfgang [
                   }
                   DEF camera_optical_frame Solid {
                     translation 0.043200 0.080000 -0.023500
-                    rotation 0.707105 -0.000001 0.707108 3.141591
+                    rotation -0.000001 0.707105 -0.707108 3.141591
                     children [
                       Camera {
-                        rotation 1.0 0.0 0.0 3.141591
+                        rotation 0.0 1.0 0.0 3.141591
                         name "camera"
                         fieldOfView IS cameraFOV
                         width IS cameraWidth
@@ -4799,7 +4712,7 @@ PROTO Wolfgang [
                   children [
                     Transform {
                       translation 0.035100 0.079500 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.0215
@@ -4809,7 +4722,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation 0.021000 0.079500 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.01675
@@ -4819,7 +4732,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation -0.000000 0.000000 0.004500
-                      rotation 1.000000 -0.000000 0.000000 1.570796
+                      rotation 0.000000 0.000000 1.000000 -1.570796
                       children [
                         Cylinder {
                           radius 0.025
@@ -4829,7 +4742,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation -0.000000 -0.000000 0.011500
-                      rotation 0.000001 0.707107 0.707107 3.141591
+                      rotation 0.707107 0.707107 0.000001 3.141591
                       children [
                         Cylinder {
                           radius 0.025
@@ -4866,7 +4779,7 @@ PROTO Wolfgang [
                     }
                     Transform {
                       translation 0.009000 0.079500 -0.023500
-                      rotation 0.577349 -0.577351 0.577351 2.094397
+                      rotation -0.577351 0.577349 -0.577351 2.094397
                       children [
                         Cylinder {
                           radius 0.014

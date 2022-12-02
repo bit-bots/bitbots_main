@@ -1,7 +1,14 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/balls/protos/RobocupSoccerBall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/samples/contests/robocup/protos/RobocupSoccerField.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "../protos/Wolfgang.proto"
+EXTERNPROTO "../protos/hl_supervisor/hl_supervisor.proto"
+
 DEF world_info WorldInfo {
   basicTimeStep 8
-  optimalThreadCount 1
   physicsDisableTime 0.1
   physicsDisableLinearThreshold 0.1
   physicsDisableAngularThreshold 0.1
@@ -29,8 +36,8 @@ DEF world_info WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.2635181128215983 -0.36420919162686427 -0.8932580080522365 1.9916995318039916
-  position -9.204890354327318 3.450845837104254 7.847404655784381
+  orientation 0.13074775069234934 0.15392461377846517 -0.9793938119888453 1.674637090314644
+  position 0.0918799331514291 15.742602735510587 6.669799372347793
 }
 TexturedBackground {
   texture "stadium_dry"

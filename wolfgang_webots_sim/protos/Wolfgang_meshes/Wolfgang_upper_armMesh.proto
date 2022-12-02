@@ -1,15 +1,16 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # tags: hidden
 # Extracted from: wolfgang.urdf
 
+EXTERNPROTO "../Wolfgang_textures/WolfgangCarbonFiberAppearance.proto"
+
 PROTO Wolfgang_upper_armMesh [
-    field SFFloat  transparency 0 # [0, 1]
 ]
 {
   Shape {
-    appearance WolfgangCarbonFiberAppearance {transparency IS transparency}
+    appearance WolfgangCarbonFiberAppearance {}
     geometry DEF upper_arm IndexedFaceSet {
       coord Coordinate {
         point [
