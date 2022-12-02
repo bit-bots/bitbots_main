@@ -1,8 +1,6 @@
 from cmath import phase
 from tracemalloc import start
-from ros2param.api import parse_parameter_dict
 from std_msgs.msg import Int64
-
 from bitbots_moveit_bindings import libbitbots_moveit_bindings
 from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper, initRos
 from bitbots_msgs.msg import JointCommand, FootPressure
@@ -13,6 +11,7 @@ from nav_msgs.msg import Odometry
 from rclpy.serialization import serialize_message, deserialize_message
 from rcl_interfaces.msg import Parameter
 from biped_interfaces.msg import Phase
+from bitbots_utils.utils import parse_parameter_dict
 
 class PyWalk:
     def __init__(self, namespace="", parameters: [Parameter]=[], setForceSmoothStepTransition=False):
