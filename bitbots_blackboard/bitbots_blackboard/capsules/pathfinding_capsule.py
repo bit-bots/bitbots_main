@@ -9,7 +9,7 @@ import tf2_ros
 import numpy as np
 from ros2_numpy import numpify
 from geometry_msgs.msg import PoseStamped, Point, Twist
-from actionlib_msgs.msg import GoalID
+from std_msgs.msg import Empty
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 
@@ -92,7 +92,7 @@ class PathfindingCapsule:
         return self.current_pose
 
     def cancel_goal(self):
-        self.pathfinding_cancel_pub.publish(GoalID())
+        self.pathfinding_cancel_pub.publish(Empty())
 
     def cmd_vel_cb(self, msg: Twist):
         self.current_cmd_vel = msg

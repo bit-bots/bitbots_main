@@ -23,7 +23,7 @@ class GoToRolePosition(AbstractActionElement):
                 generalized_role_position = role_positions[f'offense_{kickoff_type}_{pos_number}']
             else:
                 # players other than the goalie have multiple possible positions
-                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{pos_number}']
+                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{0}']
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 

@@ -35,7 +35,7 @@ class GoToBall(AbstractActionElement):
         color.a = 1.0
         approach_marker.color = color
         approach_marker.lifetime = Duration(seconds=0.5).to_msg()
-        scale = Vector3(0.2, 0.2, 0.2)
+        scale = Vector3(x=0.2, y=0.2, z=0.2)
         approach_marker.scale = scale
         approach_marker.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         approach_marker.header.frame_id = self.blackboard.world_model.base_footprint_frame

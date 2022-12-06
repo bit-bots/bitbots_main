@@ -43,5 +43,5 @@ class DribbleForward(AbstractActionElement):
         cmd_vel = Twist()
         cmd_vel.linear.x = self.current_speed_x
         cmd_vel.linear.y = self.current_speed_y
-        cmd_vel.angular.z = 0
+        cmd_vel.angular.z = 0.0
         self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)

@@ -28,7 +28,7 @@ from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.dsd import DSD
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped, Twist
 from sensor_msgs.msg import PointCloud2
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Empty
 from ament_index_python import get_package_share_directory
 from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -46,7 +46,7 @@ class BodyDSD:
         self.dsd.blackboard.blackboard.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
         self.dsd.blackboard.pathfinding.direct_cmd_vel_pub = node.create_publisher(Twist, 'cmd_vel', 1)
         self.dsd.blackboard.pathfinding.pathfinding_pub = node.create_publisher(PoseStamped, 'goal_pose', 1)
-        self.dsd.blackboard.pathfinding.pathfinding_cancel_pub = node.create_publisher(GoalID, 'move_base/cancel', 1)
+        self.dsd.blackboard.pathfinding.pathfinding_cancel_pub = node.create_publisher(Empty, 'move_base/cancel', 1)
         self.dsd.blackboard.pathfinding.ball_obstacle_active_pub = node.create_publisher(Bool, "ball_obstacle_active", 1)
         self.dsd.blackboard.pathfinding.keep_out_area_pub = node.create_publisher(PointCloud2, "keep_out_area", 1)
         self.dsd.blackboard.pathfinding.approach_marker_pub = node.create_publisher(Marker, "debug/approach_point", 10)

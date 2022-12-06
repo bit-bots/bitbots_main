@@ -296,7 +296,7 @@ class WorldModelCapsule:
                 self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
                 self.ball_twist_map.twist.linear.z = point_b.point.z - point_a.point.z
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self._blackboard.node.get_logger().warn(e)
+                self._blackboard.node.get_logger().warn(str(e))
         else:
             self.ball_twist_map = TwistStamped(header=msg.header, twist=msg.twist.twist)
         if self.ball_twist_map is not None:
