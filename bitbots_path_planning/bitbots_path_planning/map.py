@@ -14,7 +14,7 @@ class Map:
         self.node = node
         self.buffer = buffer
         self.resolution = resolution
-        self.map = np.zeros((np.array(size)*resolution).astype(int), dtype=np.int8)
+        self.map = np.ones((np.array(size)*resolution).astype(int), dtype=np.int8)
         self.frame = frame
         self.ball_buffer = []
         self.robot_buffer = []
@@ -51,7 +51,7 @@ class Map:
             cv2.circle(
                 self.map,
                 self.to_map_space(robot[1].x, robot[1].y)[::-1],
-                round(max(numpify(robot[0].bb.size)[:2]) / 2 * self.resolution), # TODO
+                round(max(numpify(robot[0].bb.size)[:2]) * 1.5 * self.resolution), # TODO
                 50, # TODO
                 -1)
 
@@ -74,11 +74,11 @@ class Map:
         ])
 
     def clear(self) -> None:
-        self.map[...] = 0
+        self.map[...] = 1
 
     def inflate(self) -> None:
         kernel = np.ones((3, 3), np.uint8)
-        idx = self.map == 0
+        idx = self.map == 1
         map = cv2.dilate(self.map.astype(np.uint8), kernel, iterations=2)
         self.map[idx] = cv2.blur(map, (13,13)).astype(np.int8)[idx]
 

@@ -23,6 +23,7 @@ from bitbots_path_planning.map import Map
 from geometry_msgs.msg import PoseStamped
 from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 from nav_msgs.msg import OccupancyGrid, Path
+from std_msgs.msg import Empty
 import soccer_vision_3d_msgs.msg as sv3dm
 from profilehooks import profile
 import tf2_ros as tf2
@@ -39,7 +40,7 @@ class PathPlanning(Node):
 
         # Declare params
         self.declare_parameter('base_footprint_frame', 'base_footprint')
-        self.declare_parameter('rate', 10)
+        self.declare_parameter('rate', 20)
         self.declare_parameter('map.planning_frame', 'map')
         self.declare_parameter('map.size.x', 11.0)
         self.declare_parameter('map.size.y', 8.0)
@@ -63,9 +64,10 @@ class PathPlanning(Node):
 
         # Subscribe
         self.create_subscription(PoseWithCertaintyStamped, 'ball_relative_filtered', self.map.set_ball, 5)
-        self.create_subscription(sv3dm.RobotArray, 'robots_relative', self.map.set_robots, 5)
+        self.create_subscription(sv3dm.RobotArray, 'robots_relative_filtered', self.map.set_robots, 5)
 
         self.create_subscription(PoseStamped, 'goal_pose', self.planner.set_goal, 5)
+        self.create_subscription(Empty, 'move_base/cancel', lambda _: self.planner.cancel, 5)
 
         # Publish cmd_vel
         self.cmd_vel_pub = self.create_publisher(Twist, 'cmd_vel', 1)

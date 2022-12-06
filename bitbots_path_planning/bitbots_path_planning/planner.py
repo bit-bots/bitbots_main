@@ -37,7 +37,7 @@ class Planner:
         goal_pose_stamped = self.buffer.transform(self.goal, self.map.frame)
 
         path = pyastar2d.astar_path(
-            navigation_grid.astype(np.float32) + 1,
+            navigation_grid.astype(np.float32),
             self.map.to_map_space(
                 my_position.x, my_position.y),
             self.map.to_map_space(
