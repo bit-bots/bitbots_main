@@ -96,7 +96,7 @@
 [submodule "lib/pylon-ros-camera"]
 	path = lib/pylon-ros-camera
 	url = ../../basler/pylon-ros-camera.git
-	branch = galactic
+	branch = humble
 [submodule "lib/robot_controllers"]
 	path = lib/robot_controllers
 	url = ../../fetchrobotics/robot_controllers.git
