@@ -1,101 +1,111 @@
+# Main own submodules
+#####################
+[submodule "bitbots_behavior"]
+	path = bitbots_behavior
+	url = ../../bit-bots/bitbots_behavior.git
+[submodule "bitbots_lowlevel"]
+	path = bitbots_lowlevel
+	url = ../../bit-bots/bitbots_lowlevel.git
+[submodule "bitbots_misc"]
+	path = bitbots_misc
+	url = ../../bit-bots/bitbots_misc.git
+[submodule "bitbots_motion"]
+	path = bitbots_motion
+	url = ../../bit-bots/bitbots_motion.git
+[submodule "bitbots_msgs"]
+	path = bitbots_msgs
+	url = ../../bit-bots/bitbots_msgs.git
+[submodule "bitbots_navigation"]
+	path = bitbots_navigation
+	url = ../../bit-bots/bitbots_navigation.git
+[submodule "bitbots_tools"]
+	path = bitbots_tools
+	url = ../../bit-bots/bitbots_tools.git
+[submodule "bitbots_vision"]
+	path = bitbots_vision
+	url = ../../bit-bots/bitbots_vision.git
+[submodule "bitbots_world_model"]
+	path = bitbots_world_model
+	url = ../../bit-bots/bitbots_world_model.git
+[submodule "dynamic_stack_decider"]
+	path = dynamic_stack_decider
+	url = ../../bit-bots/dynamic_stack_decider.git
+[submodule "humanoid_league_misc"]
+	path = humanoid_league_misc
+	url = ../../bit-bots/humanoid_league_misc.git
+[submodule "humanoid_league_msgs"]
+	path = humanoid_league_msgs
+	url = ../../bit-bots/humanoid_league_msgs.git
+[submodule "humanoid_league_visualization"]
+	path = humanoid_league_visualization
+	url = ../../bit-bots/humanoid_league_visualization.git
+[submodule "udp_bridge"]
+	path = udp_bridge
+	url = ../../bit-bots/udp_bridge.git
+[submodule "wolfgang_robot"]
+	path = wolfgang_robot
+	url = ../../bit-bots/wolfgang_robot.git
+
+
+# Own libraries in lib directory
+#################################
+[submodule "lib/bio_ik_msgs"]
+	path = lib/bio_ik_msgs
+	url = ../../bit-bots/bio_ik_msgs.git
+	branch = master
 [submodule "lib/DynamixelSDK"]
 	path = lib/DynamixelSDK
 	url = ../../bit-bots/DynamixelSDK.git
 [submodule "lib/dynamixel-workbench"]
 	path = lib/dynamixel-workbench
 	url = ../../bit-bots/dynamixel-workbench.git
-[submodule "dynamic_stack_decider"]
-	path = dynamic_stack_decider
-	url = ../../bit-bots/dynamic_stack_decider.git
-[submodule "humanoid_base_footprint"]
-	path = humanoid_base_footprint
-	url = ../../ros-sports/humanoid_base_footprint.git
-[submodule "bitbots_lowlevel"]
-	path = bitbots_lowlevel
-	url = ../../bit-bots/bitbots_lowlevel.git
-[submodule "bitbots_navigation"]
-	path = bitbots_navigation
-	url = ../../bit-bots/bitbots_navigation.git
-[submodule "bitbots_motion"]
-	path = bitbots_motion
-	url = ../../bit-bots/bitbots_motion.git
-[submodule "bitbots_behavior"]
-	path = bitbots_behavior
-	url = ../../bit-bots/bitbots_behavior.git
-[submodule "humanoid_league_visualization"]
-	path = humanoid_league_visualization
-	url = ../../bit-bots/humanoid_league_visualization.git
-[submodule "bitbots_misc"]
-	path = bitbots_misc
-	url = ../../bit-bots/bitbots_misc.git
-[submodule "humanoid_league_misc"]
-	path = humanoid_league_misc
-	url = ../../bit-bots/humanoid_league_misc.git
-[submodule "wolfgang_robot"]
-	path = wolfgang_robot
-	url = ../../bit-bots/wolfgang_robot.git
-[submodule "bitbots_vision"]
-	path = bitbots_vision
-	url = ../../bit-bots/bitbots_vision.git
-[submodule "humanoid_league_msgs"]
-	path = humanoid_league_msgs
-	url = ../../bit-bots/humanoid_league_msgs.git
-[submodule "bitbots_msgs"]
-	path = bitbots_msgs
-	url = ../../bit-bots/bitbots_msgs.git
-[submodule "udp_bridge"]
-	path = udp_bridge
-	url = ../../bit-bots/udp_bridge.git
-[submodule "bitbots_tools"]
-	path = bitbots_tools
-	url = ../../bit-bots/bitbots_tools.git
 [submodule "lib/particle_filter"]
 	path = lib/particle_filter
 	url = ../../bit-bots/particle_filter.git
-[submodule "bitbots_world_model"]
-	path = bitbots_world_model
-	url = ../../bit-bots/bitbots_world_model.git
-[submodule "lib/robot_controllers"]
-	path = lib/robot_controllers
-	url = ../../fetchrobotics/robot_controllers.git
-	branch = ros2
 [submodule "lib/ros2_python_extension"]
 	path = lib/ros2_python_extension
-	branch = main
 	url = ../../bit-bots/ros2_python_extension.git
-[submodule "lib/imu_tools"]
-	path = lib/imu_tools
-	branch = rolling
-	url = ../../ccny-ros-pkg/imu_tools.git
-[submodule "biped_interfaces"]
-	path = biped_interfaces
-	branch = rolling
+	branch = main
+
+
+# 3rd party libraries in lib directory
+######################################
+[submodule "lib/biped_interfaces"]
+	path = lib/biped_interfaces
 	url = ../../ros-sports/biped_interfaces
+	branch = rolling
 [submodule "lib/bio_ik"]
 	path = lib/bio_ik
+	url = ../../PickNikRobotics/bio_ik.git
 	branch = ros2
-    url = ../../PickNikRobotics/bio_ik.git
-[submodule "lib/bio_ik_msgs"]
-	path = lib/bio_ik_msgs
-	branch = master
-	url = ../../bit-bots/bio_ik_msgs.git
-[submodule "lib/pylon-ros-camera"]
-	path = lib/pylon-ros-camera
-	url = ../../basler/pylon-ros-camera.git
-	branch = galactic
-[submodule "lib/ros2_numpy"]
-    path = lib/ros2_numpy
-    branch = rolling
-	url = ../../Box-Robotics/ros2_numpy.git
+[submodule "lib/events-executor"]
+	path = lib/events-executor
+	url = ../../irobot-ros/events-executor
+	branch = main
+[submodule "lib/humanoid_base_footprint"]
+	path = lib/humanoid_base_footprint
+	url = ../../ros-sports/humanoid_base_footprint.git
+[submodule "lib/imu_tools"]
+	path = lib/imu_tools
+	url = ../../ccny-ros-pkg/imu_tools.git
+	branch = rolling
 [submodule "lib/ipm"]
 	path = lib/ipm
 	url = ../../ros-sports/ipm.git
 	branch = rolling
+[submodule "lib/pylon-ros-camera"]
+	path = lib/pylon-ros-camera
+	url = ../../basler/pylon-ros-camera.git
+	branch = humble
+[submodule "lib/robot_controllers"]
+	path = lib/robot_controllers
+	url = ../../fetchrobotics/robot_controllers.git
+	branch = ros2
+[submodule "lib/ros2_numpy"]
+	path = lib/ros2_numpy
+	url = ../../Box-Robotics/ros2_numpy.git
+	branch = rolling
 [submodule "lib/soccer_ipm"]
 	path = lib/soccer_ipm
 	url = ../../ros-sports/soccer_ipm.git
-    branch = rolling
-[submodule "lib/events-executor"]
-	path = lib/events-executor
-	url = https://github.com/irobot-ros/events-executor
-	branch = main
+	branch = rolling
