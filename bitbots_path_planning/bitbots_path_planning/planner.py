@@ -1,15 +1,16 @@
-import tf2_ros as tf2
+from typing import Optional
+
 import numpy as np
+import pyastar2d
+import tf2_geometry_msgs   # Is there for tf to recognize geomety_msgs even if it is not used explicitly
+import tf2_ros as tf2
+from bitbots_path_planning.map import Map
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path
 from rclpy.node import Node
 from rclpy.time import Time
-from bitbots_path_planning.map import Map
-from nav_msgs.msg import Path
 from std_msgs.msg import Header
-from geometry_msgs.msg import PoseStamped, Pose, Point
-import pyastar2d
-import tf2_geometry_msgs
-from profilehooks import profile
-from typing import Optional
+
 
 class Planner:
     def __init__(self, node: Node, buffer: tf2.Buffer, map: Map) -> None:
