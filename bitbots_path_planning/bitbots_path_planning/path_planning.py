@@ -36,8 +36,16 @@ class PathPlanning(Node):
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscribe
-        self.create_subscription(PoseWithCertaintyStamped, 'ball_relative_filtered', self.map.set_ball, 5)
-        self.create_subscription(sv3dm.RobotArray, 'robots_relative_filtered', self.map.set_robots, 5)
+        self.create_subscription(
+            PoseWithCertaintyStamped,
+            self.declare_parameter('map.ball_update_topic', 'ball_relative_filtered').value,
+             self.map.set_ball,
+             5)
+        self.create_subscription(
+            sv3dm.RobotArray,
+            self.declare_parameter('map.robot_update_topic', 'robots_relative_filtered').value,
+            self.map.set_robots,
+            5)
 
         self.create_subscription(PoseStamped, 'goal_pose', self.planner.set_goal, 5)
         self.create_subscription(Empty, 'move_base/cancel', lambda _: self.planner.cancel, 5)

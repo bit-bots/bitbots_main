@@ -10,6 +10,7 @@ from rclpy.node import Node
 from ros2_numpy import msgify, numpify
 from tf2_geometry_msgs import PointStamped
 
+OBSTACLE_VALUE = 50
 
 class Map:
     def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
@@ -24,6 +25,9 @@ class Map:
         self.frame = self.node.declare_parameter('map.planning_frame', 'map').value
         self.ball_buffer = []
         self.robot_buffer = []
+        self.config_ball_diameter = self.node.declare_parameter('map.ball_diameter', 0.13).value
+        self.config_inflation_dialation = self.node.declare_parameter('map.inflation.dialte', 3).value
+        self.config_inflation_blur = self.node.declare_parameter('map.inflation.blur', 13).value
 
     def set_ball(self, ball: PoseWithCertaintyStamped):
         point = PointStamped()
@@ -37,8 +41,8 @@ class Map:
             cv2.circle(
                 self.map,
                 self.to_map_space(ball.x, ball.y)[::-1],
-                round(0.13 * self.resolution), # TODO
-                50, # TODO
+                round(self.config_ball_diameter * self.resolution),
+                OBSTACLE_VALUE,
                 -1)
 
     def set_robots(self, robots: sv3dm.RobotArray):
@@ -57,8 +61,8 @@ class Map:
             cv2.circle(
                 self.map,
                 self.to_map_space(robot[1].x, robot[1].y)[::-1],
-                round(max(numpify(robot[0].bb.size)[:2]) * 1.5 * self.resolution), # TODO
-                50, # TODO
+                round(max(numpify(robot[0].bb.size)[:2]) * self.resolution),
+                OBSTACLE_VALUE,
                 -1)
 
     def to_map_space(self, x: float, y: float) -> Tuple[int, int]:
@@ -83,10 +87,17 @@ class Map:
         self.map[...] = 1
 
     def inflate(self) -> None:
-        kernel = np.ones((3, 3), np.uint8)
         idx = self.map == 1
-        map = cv2.dilate(self.map.astype(np.uint8), kernel, iterations=2)
-        self.map[idx] = cv2.blur(map, (13,13)).astype(np.int8)[idx]
+        map = cv2.dilate(
+            self.map.astype(np.uint8),
+            np.ones((
+                self.config_inflation_dialation,
+                self.config_inflation_dialation), np.uint8),
+            iterations=2)
+        self.map[idx] = cv2.blur(
+            map,
+            (self.config_inflation_blur, self.config_inflation_blur)
+        ).astype(np.int8)[idx]
 
     def update(self):
         self.clear()
