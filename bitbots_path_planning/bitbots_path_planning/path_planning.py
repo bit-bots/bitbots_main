@@ -8,7 +8,6 @@ from bitbots_path_planning.planner import Planner
 from geometry_msgs.msg import PoseStamped, Twist
 from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 from nav_msgs.msg import OccupancyGrid, Path
-from profilehooks import profile
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -51,7 +50,6 @@ class PathPlanning(Node):
 
         self.create_timer(1 / self.get_parameter('rate').value, self.step, clock=self.get_clock())
 
-    @profile
     def step(self):
         self.map.update()
         self.debug_costmap_pub.publish(self.map.to_msg())
