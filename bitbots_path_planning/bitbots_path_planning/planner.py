@@ -32,7 +32,10 @@ class Planner:
     def step(self) -> Path:
         navigation_grid = self.map.get_map()
 
-        my_pose = self.buffer.lookup_transform(self.map.frame, "base_footprint", Time()).transform
+        my_pose = self.buffer.lookup_transform(
+            self.map.frame,
+            self.node.get_parameter("base_footprint_frame").value,
+            Time()).transform
         my_position = my_pose.translation
 
         goal_pose_stamped = self.buffer.transform(self.goal, self.map.frame)

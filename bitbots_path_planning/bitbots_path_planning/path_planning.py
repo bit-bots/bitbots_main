@@ -22,36 +22,19 @@ class PathPlanning(Node):
 
         # Declare params
         self.declare_parameter('base_footprint_frame', 'base_footprint')
-        self.declare_parameter('map.planning_frame', 'map')
-        self.declare_parameter('map.resolution', 20)
-        self.declare_parameter('map.size.x', 11.0)
-        self.declare_parameter('map.size.y', 8.0)
-        self.declare_parameter('rate', 20)
-        self.declare_parameter('tf_buffer_duration', 5.0)
+        self.declare_parameter('rate', 20.0)
 
         # We need to create a tf buffer
         self.tf_buffer = tf2.Buffer(
-            cache_time=Duration(seconds=self.get_parameter('tf_buffer_duration').value))
+            cache_time=Duration(seconds=self.declare_parameter('tf_buffer_duration', 5.0).value))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
 
 
-        self.map = Map(
-            node=self,
-            buffer=self.tf_buffer,
-            size=(
-                self.get_parameter('map.size.x').value,
-                self.get_parameter('map.size.y').value),
-            resolution=self.get_parameter('map.resolution').value,
-            frame=self.get_parameter('map.planning_frame').value)
+        self.map = Map(node=self, buffer=self.tf_buffer)
 
-        self.planner = Planner(
-            node=self,
-            buffer=self.tf_buffer,
-            map=self.map)
+        self.planner = Planner(node=self, buffer=self.tf_buffer, map=self.map)
 
-        self.controller = Controller(
-            node=self,
-            buffer=self.tf_buffer)
+        self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscribe
         self.create_subscription(PoseWithCertaintyStamped, 'ball_relative_filtered', self.map.set_ball, 5)

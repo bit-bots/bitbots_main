@@ -14,28 +14,35 @@ class Controller:
         self.node = node
         self.buffer = buffer
 
-        self.config_carrot_distance = 20
-        self.config_rotation_accuracy = 0.1
-        self.config_position_accuracy = 0.05
-        self.config_max_rotation_vel = 0.4
-        self.config_max_vel_x = 0.25
-        self.config_min_vel_x = -0.2
-        self.config_max_vel_y = 0.08
-        self.config_smoothing_k = 0.4
-        self.config_rotation_slow_down_factor = 0.3
-        self.config_translation_slow_down_factor = 0.5
-        self.config_orient_to_goal_distance = 1.0
+        self.config_carrot_distance = self.node.declare_parameter('controller.carrot_distance', 20).value
+        self.config_rotation_accuracy = self.node.declare_parameter('controller.rotation_accuracy', 0.1).value
+        self.config_position_accuracy = self.node.declare_parameter('controller.position_accuracy', 0.05).value
+        self.config_max_rotation_vel = self.node.declare_parameter('controller.max_rotation_vel', 0.4).value
+        self.config_max_vel_x = self.node.declare_parameter('controller.max_vel_x', 0.25).value
+        self.config_min_vel_x = self.node.declare_parameter('controller.min_vel_x', -0.2).value
+        self.config_max_vel_y = self.node.declare_parameter('controller.max_vel_y', 0.08).value
+        self.config_smoothing_k = self.node.declare_parameter('controller.smoothing_k', 0.4).value
+        self.config_rotation_slow_down_factor = self.node.declare_parameter('controller.rotation_slow_down_factor', 0.3).value
+        self.config_translation_slow_down_factor = self.node.declare_parameter('controller.translation_slow_down_factor', 0.5).value
+        self.config_orient_to_goal_distance = self.node.declare_parameter('controller.orient_to_goal_distance', 1.0).value
 
     def _get_yaw(self, pose) -> float:
         return euler_from_quaternion(numpify(pose))[2]
 
     def step(self, path: Path) -> Twist:
+        # Create an default pose in the origin of our base footprint
         pose_geometry_msgs = PoseStamped()
-        pose_geometry_msgs.header.frame_id = "base_footprint"
+        pose_geometry_msgs.header.frame_id = self.node.get_parameter("base_footprint_frame").value
+
+        # We get our pose in respect to the map frame (also frame of the path message)
+        # by transforming the pose above into this frame
         current_pose: Pose = self.buffer.transform(pose_geometry_msgs, path.header.frame_id).pose
 
+        # Starting point for our goal velocity calculation
         cmd_vel = Twist()
 
+        # Select pose for the carrot (goal_pose for this controller) and the end pose of the global plan
+        # End conditions with an empty or shorter than carrot distance path need to be considered
         if len(path.poses) > 0:
             end_pose: Pose = path.poses[-1].pose
             if len(path.poses) > self.config_carrot_distance:
@@ -45,6 +52,7 @@ class Controller:
         else:
             return cmd_vel
 
+        # Calculate the intended walk angle based on the carrot and our position
         walk_angle = math.atan2(
             goal_pose.position.y - current_pose.position.y,
             goal_pose.position.x - current_pose.position.x)
@@ -101,13 +109,7 @@ class Controller:
             cmd_vel.linear.y *= max_y / abs(cmd_vel.linear.y)
             self.node.get_logger().debug("Y LIMIT set x %f".format(cmd_vel.linear.x))
 
-        # Complementary Filter for smooting the outputs
-        #cmd_vel.linear.x = cmd_vel.linear.x * self.config_smoothing_k + robot_vel.pose.position.x * (1.0 - self.config_smoothing_k)
-        #cmd_vel.linear.y = cmd_vel.linear.y *self. config_smoothing_k + robot_vel.pose.position.y * (1.0 - self.config_smoothing_k)
-
         # Apply the desired rotational velocity
         cmd_vel.angular.z = rot_goal_vel
 
         return cmd_vel
-
-        #self.node.get_logger().debug("End vel %f, %f\n".format(math.hypot(cmd_vel.linear.x, cmd_vel.linear.y), current_vel_))

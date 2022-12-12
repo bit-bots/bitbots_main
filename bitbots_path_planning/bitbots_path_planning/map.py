@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple
 
 import cv2
 import numpy as np
@@ -12,12 +12,16 @@ from tf2_geometry_msgs import PointStamped
 
 
 class Map:
-    def __init__(self, node: Node, buffer: tf2.Buffer, size: Tuple[Union[float, int], Union[float, int]], resolution: int, frame: str) -> None:
+    def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
         self.node = node
         self.buffer = buffer
-        self.resolution = resolution
-        self.map = np.ones((np.array(size)*resolution).astype(int), dtype=np.int8)
-        self.frame = frame
+        self.resolution = self.node.declare_parameter('map.resolution', 20).value
+        self.size = (
+            self.node.declare_parameter('map.size.x', 11.0).value,
+            self.node.declare_parameter('map.size.y', 8.0).value
+        )
+        self.map = np.ones((np.array(self.size)*self.resolution).astype(int), dtype=np.int8)
+        self.frame = self.node.declare_parameter('map.planning_frame', 'map').value
         self.ball_buffer = []
         self.robot_buffer = []
 
