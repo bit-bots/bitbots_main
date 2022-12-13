@@ -10,12 +10,15 @@
     </group>
 
     <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
-    </include>
-    
-    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
-        <arg name="sim" value="$(var sim)"/>          
+        <arg name="sim" value="$(var sim)"/>
     </include>
 
-    <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch"/>
+    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
 
 </launch>
