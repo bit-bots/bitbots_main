@@ -52,12 +52,12 @@ class TeamDataCapsule:
         self.ball_max_covariance = self.node.get_parameter("ball_max_covariance").get_parameter_value().double_value
         self.ball_lost_time = Duration(
             seconds=self.node.get_parameter('body.ball_lost_time').get_parameter_value().double_value)
-        self.pose_precision_threshold_x_sdev = self.node.get_parameter(
-            'body.pose_precision_threshold.x_sdev').get_parameter_value().double_value
-        self.pose_precision_threshold_y_sdev = self.node.get_parameter(
-            'body.pose_precision_threshold.y_sdev').get_parameter_value().double_value
-        self.pose_precision_threshold_theta_sdev = self.node.get_parameter(
-            'body.pose_precision_threshold.theta_sdev').get_parameter_value().double_value
+        self.localization_precision_threshold_x_sdev = self.node.get_parameter(
+            'body.localization_precision_threshold.x_sdev').get_parameter_value().double_value
+        self.localization_precision_threshold_y_sdev = self.node.get_parameter(
+            'body.localization_precision_threshold.y_sdev').get_parameter_value().double_value
+        self.localization_precision_threshold_theta_sdev = self.node.get_parameter(
+            'body.localization_precision_threshold.theta_sdev').get_parameter_value().double_value
 
     def is_valid(self, data: TeamData):
         return self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout) \
@@ -236,9 +236,9 @@ class TeamDataCapsule:
             stamp = teamdata.header.stamp
             if self.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
-                    if robot_x_std_dev < self.pose_precision_threshold_x_sdev and \
-                            robot_y_std_dev < self.pose_precision_threshold_y_sdev and \
-                            robot_theta_std_dev < self.pose_precision_threshold_theta_sdev:
+                    if robot_x_std_dev < self.localization_precision_threshold_x_sdev and \
+                            robot_y_std_dev < self.localization_precision_threshold_y_sdev and \
+                            robot_theta_std_dev < self.localization_precision_threshold_theta_sdev:
                         robot_dist = self.get_robot_ball_euclidean_distance(teamdata)
                         if robot_dist < best_robot_dist:
                             best_ball = PointStamped()
