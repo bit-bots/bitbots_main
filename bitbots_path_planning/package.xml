@@ -10,7 +10,6 @@
   <depend>geometry_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>nav_msgs</depend>
-  <depend>pyastar2d</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
   <depend>rclpy</depend>
