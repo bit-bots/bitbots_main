@@ -35,7 +35,7 @@ class KickRunsTestCase(RosNodeTestCase):
         goal.header.frame_id = "base_footprint"
         goal.ball_position.x = 0.2
         goal.kick_direction = Quaternion(0, 0, 0, 1)
-        goal.kick_speed = 1
+        goal.kick_speed = 1.0
         self.single_run(goal)
 
     def test_unstable_kick(self):
@@ -44,7 +44,7 @@ class KickRunsTestCase(RosNodeTestCase):
         goal.header.frame_id = "base_footprint"
         goal.ball_position.x = 0.2
         goal.kick_direction = Quaternion(0, 0, 0, 1)
-        goal.kick_speed = 1
+        goal.kick_speed = 1.0
         goal.unstable = True
         self.single_run(goal)
 
