@@ -94,7 +94,7 @@ def main(args=None):
     rclpy.init(args=None)
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
-    node.create_timer(1/60.0, body_dsd.loop)
+    node.create_timer(1/60.0, body_dsd.loop, callback_group=ReentrantCallbackGroup())
     multi_executor = MultiThreadedExecutor(num_threads=40)
     multi_executor.add_node(node)
 
