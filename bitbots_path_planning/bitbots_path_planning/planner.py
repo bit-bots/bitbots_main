@@ -21,6 +21,7 @@ class Planner:
         self.path = None
 
     def set_goal(self, pose: PoseStamped) -> None:
+        pose.header.stamp = Time().to_msg()
         self.goal = pose
 
     def cancel(self) -> None:
@@ -38,15 +39,17 @@ class Planner:
             Time()).transform
         my_position = my_pose.translation
 
-        goal_pose_stamped = self.buffer.transform(self.goal, self.map.frame)
+        # Transform header to map frame if needed
+        if self.goal.header.frame_id != self.map.frame:
+            self.goal = self.buffer.transform(self.goal, self.map.frame)
 
         path = pyastar2d.astar_path(
             navigation_grid.astype(np.float32),
             self.map.to_map_space(
                 my_position.x, my_position.y),
             self.map.to_map_space(
-                goal_pose_stamped.pose.position.x,
-                goal_pose_stamped.pose.position.y),
+                self.goal.pose.position.x,
+                self.goal.pose.position.y),
             allow_diagonal=False)
         path = self.map.from_map_space_np(path)
 
