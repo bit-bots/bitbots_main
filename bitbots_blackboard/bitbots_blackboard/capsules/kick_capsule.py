@@ -1,22 +1,23 @@
-from rclpy.time import Time
-from rclpy.duration import Duration
+from typing import Optional
+
 from rclpy.action import ActionClient
+from rclpy.duration import Duration
+from rclpy.time import Time
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 from bitbots_msgs.action import Kick
 
 
 class KickCapsule():
-    last_feedback = None  # type: Kick.Feedback
-    last_feedback_received = None  # type: Time
-    last_goal = None  # type: Kick.Goal
-    last_goal_sent = None  # type: Time
-    last_result = None  # type: Kick.Result
-    last_result_received = None  # type: Time
+    last_feedback: Optional[Kick.Feedback] = None
+    last_feedback_received: Optional[Time] = None
+    last_goal: Optional[Kick.Goal] = None
+    last_goal_sent: Optional[Time] = None
 
-    is_currently_kicking = False   # type: bool
+    is_currently_kicking: bool = False
 
-    __connected = False  # type: bool
-    __action_client = None  # type: actionlib.SimpleActionClient
+    __connected: bool = False
+    __action_client: ActionClient = None
 
     def __init__(self, blackboard):
         """
@@ -29,7 +30,7 @@ class KickCapsule():
         topic = self.__blackboard.config["dynamic_kick"]["topic"]
         self.__blackboard.node.get_logger().info("Connecting {}.KickCapsule to bitbots_dynamic_kick ({})"
                       .format(str(self.__blackboard.__class__).split(".")[-1], topic))
-        self.__action_client = ActionClient(self.__blackboard.node, Kick, topic)
+        self.__action_client = ActionClient(self.__blackboard.node, Kick, topic, callback_group=ReentrantCallbackGroup())
         self.__connected = self.__action_client.wait_for_server(
             self.__blackboard.config["dynamic_kick"]["wait_time"])
 
@@ -49,18 +50,17 @@ class KickCapsule():
             if not self.__connected:
                 raise RuntimeError("Not connected to any dynamic_kick server")
 
-        self.__action_client.send_goal_async(goal, self.__done_cb, self.__active_cb, self.__feedback_cb)
+        self.is_currently_kicking = True
+        self.__action_client.send_goal_async(goal, self.__feedback_cb).add_done_callback(
+            lambda future: future.result().get_result_async().add_done_callback(
+                lambda _: self.__done_cb()))
+
         self.last_goal = goal
         self.last_goal_sent = self.__blackboard.node.get_clock().now()
 
-    def __done_cb(self, state, result):
-        self.last_result = Kick.Result(status=state, result=result)
-        self.last_result_received = self.__blackboard.node.get_clock().now()
-        self.is_currently_kicking = False
-
-    def __feedback_cb(self, feedback):
-        self.last_feedback = feedback
+    def __feedback_cb(self, feedback: Kick):
+        self.last_feedback: Kick.Feedback = feedback.feedback
         self.last_feedback_received = self.__blackboard.node.get_clock().now()
 
-    def __active_cb(self):
-        self.is_currently_kicking = True
+    def __done_cb(self):
+        self.is_currently_kicking = False
