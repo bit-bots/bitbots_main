@@ -67,7 +67,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.kick_speed = 6.7
                     goal.ball_position.x = 0.22
                     goal.ball_position.y = 0.0
-                    goal.ball_position.z = 0
+                    goal.ball_position.z = 0.0
                     goal.unstable = True
 
                     # only check 2 directions, left and right
@@ -79,10 +79,10 @@ class KickBallDynamic(AbstractKickAction):
                             self.angular_range)
                 else:
                     ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-                    goal.kick_speed = 1
+                    goal.kick_speed = 1.0
                     goal.ball_position.x = ball_u
                     goal.ball_position.y = ball_v
-                    goal.ball_position.z = 0
+                    goal.ball_position.z = 0.0
                     goal.unstable = False
 
                     kick_direction = self.blackboard.world_model.get_best_kick_direction(
@@ -92,7 +92,9 @@ class KickBallDynamic(AbstractKickAction):
                             self.kick_length,
                             self.angular_range)
 
-                goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
+                goal.kick_direction = Quaternion(**dict(zip(
+                    "xyzw",
+                    quaternion_from_euler(0, 0, kick_direction))))
 
                 self.blackboard.kick.kick(goal)
                 self._goal_sent = True
