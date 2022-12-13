@@ -16,7 +16,9 @@
     </group>
 
     <!-- launch the animation server -->
-    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch" />
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
 
     <!-- launch the walking -->
     <group if="$(var walking)">
