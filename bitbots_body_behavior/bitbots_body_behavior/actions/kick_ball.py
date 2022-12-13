@@ -1,5 +1,3 @@
-import math
-import numpy as np
 from bitbots_msgs.action import Kick
 from geometry_msgs.msg import Quaternion
 from tf_transformations import quaternion_from_euler
@@ -28,8 +26,8 @@ class KickBallStatic(AbstractKickAction):
                 'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.animation.is_animation_busy():
-            self.blackboard.animation.play_animation(self.kick)
+        if not self.blackboard.animation.is_busy():
+            self.blackboard.animation.play_animation(self.kick, False)
 
 
 class KickBallDynamic(AbstractKickAction):
