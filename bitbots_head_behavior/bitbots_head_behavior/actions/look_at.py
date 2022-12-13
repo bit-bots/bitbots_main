@@ -1,11 +1,9 @@
 import math
 
-import rclpy
-from rclpy.node import Node
 from rclpy.duration import Duration
 import tf2_ros as tf2
 from bio_ik_msgs.msg import IKRequest, LookAtGoal
-from geometry_msgs.msg import PointStamped, Point
+from geometry_msgs.msg import Point
 from bitbots_moveit_bindings import get_bioik_ik
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
