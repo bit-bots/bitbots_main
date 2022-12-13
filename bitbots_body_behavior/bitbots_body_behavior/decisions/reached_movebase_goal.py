@@ -18,12 +18,17 @@ class ReachedMovebaseGoalPosition(AbstractDecisionElement):
         :return:
         """
 
-        if self.blackboard.pathfinding.goal is None or self.blackboard.pathfinding.current_pose is None:
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
+        goal_pose = self.blackboard.pathfinding.get_goal()
+
+        if current_pose is None or goal_pose is None:
             return "NO"
 
-        goal = np.array([self.blackboard.pathfinding.goal.pose.position.x, self.blackboard.pathfinding.goal.pose.position.y])
-        position = np.array([self.blackboard.pathfinding.current_pose.pose.position.x, self.blackboard.pathfinding.current_pose.pose.position.y])
-        if np.linalg.norm(goal - position) < self.threshould:
+        goal = np.array([goal_pose.pose.position.x, goal_pose.pose.position.y])
+        position = np.array([current_pose.pose.position.x, current_pose.pose.position.y])
+        distance = np.linalg.norm(goal - position)
+        self.publish_debug_data("distance", distance)
+        if distance < self.threshould:
             return 'YES'
         return 'NO'
 
@@ -42,7 +47,7 @@ class AlignedToMoveBaseGoal(AbstractDecisionElement):
         determined threshold by comparing the current orientation angle of the robot in the map with the one from the
         move_base goal.
         """
-        current_pose = self.blackboard.pathfinding.get_current_pose()
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         current_goal = self.blackboard.pathfinding.get_goal()
         if current_pose is None or current_goal is None:
             # When move_base did not received a goal yet, no current position on the map is known.
