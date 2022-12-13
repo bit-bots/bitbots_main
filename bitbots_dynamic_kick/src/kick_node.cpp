@@ -11,6 +11,7 @@ KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> paramet
     visualizer_(ns + "debug/dynamic_kick", SharedPtr(this)),
     tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
 
+  tf_buffer_->setUsingDedicatedThread(true);
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
   if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
