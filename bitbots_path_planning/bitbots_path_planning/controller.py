@@ -30,16 +30,20 @@ class Controller:
         return euler_from_quaternion(numpify(pose))[2]
 
     def step(self, path: Path) -> Twist:
+        # Starting point for our goal velocity calculation
+        cmd_vel = Twist()
+
         # Create an default pose in the origin of our base footprint
         pose_geometry_msgs = PoseStamped()
         pose_geometry_msgs.header.frame_id = self.node.get_parameter("base_footprint_frame").value
 
         # We get our pose in respect to the map frame (also frame of the path message)
         # by transforming the pose above into this frame
-        current_pose: Pose = self.buffer.transform(pose_geometry_msgs, path.header.frame_id).pose
-
-        # Starting point for our goal velocity calculation
-        cmd_vel = Twist()
+        try:
+            current_pose: Pose = self.buffer.transform(pose_geometry_msgs, path.header.frame_id).pose
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self.node.get_logger().warn('Failed to perform controller step: ' + str(e))
+                return cmd_vel
 
         # Select pose for the carrot (goal_pose for this controller) and the end pose of the global plan
         # End conditions with an empty or shorter than carrot distance path need to be considered

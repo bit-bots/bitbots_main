@@ -33,7 +33,10 @@ class Map:
         point = PointStamped()
         point.header.frame_id = ball.header.frame_id
         point.point = ball.pose.pose.pose.position
-        self.ball_buffer = [self.buffer.transform(point, self.frame).point]
+        try:
+            self.ball_buffer = [self.buffer.transform(point, self.frame).point]
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self.node.get_logger().warn(str(e))
 
     def render_balls(self) -> None:
         ball: sv3dm.Ball
@@ -52,7 +55,10 @@ class Map:
             point = PointStamped()
             point.header.frame_id = robots.header.frame_id
             point.point = robot.bb.center.position
-            new_buffer.append((robot, self.buffer.transform(point, self.frame).point))
+            try:
+                new_buffer.append((robot, self.buffer.transform(point, self.frame).point))
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                    self.node.get_logger().warn(str(e))
         self.robot_buffer = new_buffer
 
     def render_robots(self) -> None:
