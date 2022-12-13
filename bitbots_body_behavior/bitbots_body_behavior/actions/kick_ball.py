@@ -54,7 +54,7 @@ class KickBallDynamic(AbstractKickAction):
         self.never_reevaluate = parameters.get('r', True) and parameters.get('reevaluate', True)
 
     def perform(self, reevaluate=False):
-
+        self.publish_debug_data("Currently Kicking", self.blackboard.kick.is_currently_kicking)
         if not self.blackboard.kick.is_currently_kicking:
             if not self._goal_sent:
                 goal = Kick.Goal()
@@ -100,22 +100,3 @@ class KickBallDynamic(AbstractKickAction):
                 self._goal_sent = True
             else:
                 self.pop()
-
-
-class KickBallVeryHard(AbstractKickAction):
-    def __init__(self, blackboard, dsd, parameters=None):
-        super(KickBallVeryHard, self).__init__(blackboard, dsd, parameters)
-        if 'foot' not in parameters.keys():
-            # usually, we kick with the right foot
-            self.hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
-        elif 'right' == parameters['foot']:
-            self.hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
-        elif 'left' == parameters['foot']:
-            self.hard_kick = 'kick_left'  # TODO get actual name of parameter from some config
-        else:
-            self.blackboard.node.get_logger().error(
-                'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
-
-    def perform(self, reevaluate=False):
-        if not self.blackboard.animation.is_animation_busy():
-            self.blackboard.animation.play_animation(self.hard_kick)
