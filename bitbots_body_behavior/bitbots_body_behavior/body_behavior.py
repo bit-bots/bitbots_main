@@ -14,13 +14,13 @@ import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 from actionlib_msgs.msg import GoalID
 from bitbots_msgs.action import Dynup
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
     RobotControlState, PoseWithCertaintyArray
-#from nav2_msgs.action import NavigateToPose
 from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
 
@@ -62,19 +62,18 @@ class BodyDSD:
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
 
         # TODO: callbacks away from the blackboard!
-        node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered", blackboard.world_model.ball_filtered_callback, qos_profile=1)
-        node.create_subscription(PoseWithCertaintyArray, "goal_posts_relative", blackboard.world_model.goalposts_callback, qos_profile=1)
-        node.create_subscription(GameState, "gamestate", blackboard.gamestate.gamestate_callback, qos_profile=1)
-        node.create_subscription(TeamData, "team_data", blackboard.team_data.team_data_callback, qos_profile=1)
-        node.create_subscription(PoseWithCovarianceStamped, "pose_with_covariance", blackboard.world_model.pose_callback, qos_profile=1)
-        node.create_subscription(PointCloud2, "robot_obstacles", blackboard.world_model.robot_obstacle_callback, qos_profile=1)
-        node.create_subscription(RobotControlState, "robot_state", blackboard.blackboard.robot_state_callback, qos_profile=1)
+        callback_group = ReentrantCallbackGroup()
+        node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered", blackboard.world_model.ball_filtered_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(PoseWithCertaintyArray, "goal_posts_relative", blackboard.world_model.goalposts_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(GameState, "gamestate", blackboard.gamestate.gamestate_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(TeamData, "team_data", blackboard.team_data.team_data_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(PoseWithCovarianceStamped, "pose_with_covariance", blackboard.world_model.pose_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(PointCloud2, "robot_obstacles", blackboard.world_model.robot_obstacle_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(RobotControlState, "robot_state", blackboard.blackboard.robot_state_callback, qos_profile=1, callback_group=callback_group)
         node.create_subscription(TwistWithCovarianceStamped,
             node.get_parameter("body.ball_movement_subscribe_topic").get_parameter_value().string_value,
-            blackboard.world_model.ball_twist_callback, qos_profile=1)
-        #node.create_subscription(MoveBaseActionFeedback, "move_base/feedback", blackboard.pathfinding.feedback_callback, qos_profile=1)
-        #node.create_subscription(MoveBaseActionResult, "move_base/result", blackboard.pathfinding.status_callback, qos_profile=1)
-        node.create_subscription(Twist, "cmd_vel", blackboard.pathfinding.cmd_vel_cb, qos_profile=1)
+            blackboard.world_model.ball_twist_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(Twist, "cmd_vel", blackboard.pathfinding.cmd_vel_cb, qos_profile=1, callback_group=callback_group)
 
     def loop(self):
         try:
@@ -96,7 +95,7 @@ def main(args=None):
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
     node.create_timer(1/60.0, body_dsd.loop)
-    multi_executor = MultiThreadedExecutor()
+    multi_executor = MultiThreadedExecutor(num_threads=40)
     multi_executor.add_node(node)
 
 
