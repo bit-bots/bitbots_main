@@ -30,7 +30,6 @@ class PathfindingCapsule:
         self.keep_out_area_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
-        self.current_pose = None  # type: PoseStamped
         self.status = -1  # Current status of movebase
         self.avoid_ball = True
         self.current_cmd_vel = Twist()
@@ -77,19 +76,11 @@ class PathfindingCapsule:
             msg.pose.position.y = 0.01
         return msg
 
-    def feedback_callback(self, msg):
-        # type: (PoseStamped) -> None
-        self.current_pose = msg.feedback.base_position
-
     def status_callback(self, msg):
         self.status = msg.status.status
 
     def get_goal(self):
-        # type: () -> PoseStamped
         return self.goal
-
-    def get_current_pose(self):
-        return self.current_pose
 
     def cancel_goal(self):
         self.pathfinding_cancel_pub.publish(Empty())
