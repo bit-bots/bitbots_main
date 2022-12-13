@@ -43,13 +43,15 @@ class Planner:
         if self.goal.header.frame_id != self.map.frame:
             self.goal = self.buffer.transform(self.goal, self.map.frame)
 
+        goal = self.goal
+
         path = pyastar2d.astar_path(
             navigation_grid.astype(np.float32),
             self.map.to_map_space(
                 my_position.x, my_position.y),
             self.map.to_map_space(
-                self.goal.pose.position.x,
-                self.goal.pose.position.y),
+                goal.pose.position.x,
+                goal.pose.position.y),
             allow_diagonal=False)
         path = self.map.from_map_space_np(path)
 
@@ -61,7 +63,7 @@ class Planner:
 
         poses = list(map(to_pose_msg, path))
 
-        poses.append(self.goal)
+        poses.append(goal)
         self.path = Path(
             header=Header(
                 frame_id=self.map.get_frame(),
