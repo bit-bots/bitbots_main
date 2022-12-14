@@ -42,7 +42,6 @@ public:
     current_joint_state_ = sensor_msgs::msg::JointState();
     last_walking_time_ = builtin_interfaces::msg::Time();
     record_active_ = false;
-    hcm_anim_finished_ = false;
     external_animation_running_ = false;
     animation_requested_ = false;
     last_animation_goal_time_ = builtin_interfaces::msg::Time();
@@ -115,10 +114,10 @@ public:
     if (msg.last) {
       if (msg.hcm) {
         // This was an animation from the DSD
-        hcm_anim_finished_ = true;
+        // we don't have to do anything, since we must be in the right state
       } else {
         // this is the last frame, we want to tell the DSD that we're finished with the animations
-        hcm_anim_finished_ = false;
+        external_animation_running_ = false;
         if (msg.position.points.size() == 0) {
           // probably this was just to tell us we're finished
           // we don't need to set another position to the motors
@@ -222,7 +221,6 @@ public:
     hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
     hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
     hcm_py_.attr("set_record_active")(record_active_);
-    hcm_py_.attr("set_hcm_animation_finished")(hcm_anim_finished_);
     hcm_py_.attr("set_external_animation_running")(external_animation_running_);
     hcm_py_.attr("set_animation_requested")(animation_requested_);
     hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
@@ -249,7 +247,6 @@ private:
   sensor_msgs::msg::JointState current_joint_state_;
   builtin_interfaces::msg::Time last_walking_time_;
   bool record_active_;
-  bool hcm_anim_finished_;
   bool external_animation_running_;
   bool animation_requested_;
   builtin_interfaces::msg::Time last_animation_goal_time_;

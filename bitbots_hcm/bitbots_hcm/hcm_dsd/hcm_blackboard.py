@@ -1,27 +1,23 @@
-import time
-import numpy
-import rclpy
-from rclpy.node import Node
-from rclpy.time import Time
-import math
 import json
-import rospkg
 import os
 
-from actionlib_msgs.msg import GoalID
-from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
-from std_srvs.srv import Empty
-from bitbots_hcm.fall_checker import FallChecker
-from geometry_msgs.msg import Twist
-from humanoid_league_msgs.msg import RobotControlState
-from bitbots_hcm.fall_classifier import FallClassifier
+import numpy
 from ament_index_python import get_package_share_directory
-from std_srvs.srv import SetBool
+from bitbots_hcm.fall_checker import FallChecker
+from bitbots_hcm.fall_classifier import FallClassifier
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
+from geometry_msgs.msg import Twist
+from rclpy.node import Node
+from rclpy.time import Time
+from std_msgs.msg import Empty as EmptyMsg
+from std_srvs.srv import Empty as EmptySrv, SetBool
+
 from bitbots_msgs.msg import JointCommand
+from humanoid_league_msgs.msg import RobotControlState
 
 
 class HcmBlackboard():
-    def __init__(self, node:Node):
+    def __init__(self, node: Node):
         self.node = node
         self.current_state = RobotControlState.STARTUP
         self.stopped = False
@@ -29,7 +25,7 @@ class HcmBlackboard():
         self.simulation_active = self.node.get_parameter('simulation_active').get_parameter_value().bool_value
         self.visualization_active = self.node.get_parameter('visualization_active').get_parameter_value().bool_value
 
-        # this is used to prevent calling rospy.Time a lot, which takes some time
+        # this is used to prevent calling Time a lot, which takes some time
         # we assume that the time does not change during one update cycle
         self.current_time = self.node.get_clock().now()
         self.start_time = self.current_time
@@ -51,7 +47,7 @@ class HcmBlackboard():
         # initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
         self.pressures = [100] * 8
         foot_zero_service_name = self.node.get_parameter("foot_zero_service").get_parameter_value().string_value
-        self.foot_zero_service = self.node.create_client(Empty, foot_zero_service_name)
+        self.foot_zero_service = self.node.create_client(EmptySrv, foot_zero_service_name)
 
         self.motor_switch_service = self.node.create_client(SetBool, 'core/switch_power')
 
@@ -64,7 +60,6 @@ class HcmBlackboard():
         self.last_animation_goal_time = self.node.get_clock().now()
         self.external_animation_running = False
         self.animation_requested = False
-        self.hcm_animation_finished = False
         self.walkready_animation = self.node.get_parameter("animations.walkready").get_parameter_value().string_value
         if self.simulation_active:
             self.walkready_animation = self.node.get_parameter("animations.walkready_sim").get_parameter_value().string_value
@@ -109,7 +104,7 @@ class HcmBlackboard():
         self.joint_pub = self.node.create_publisher(JointCommand, "DynamixelController/command", 1)
 
         # kicking
-        self.last_kick_feedback = None  # type: rospy.Time
+        self.last_kick_feedback = None
 
         # direct messages for falling classier
         # todo needs refactoring
@@ -125,7 +120,7 @@ class HcmBlackboard():
         self.imu_diag_error = False
         self.pressure_diag_error = False
 
-        self.move_base_cancel_pub = self.node.create_publisher(GoalID, "move_base/cancel", 1)
+        self.move_base_cancel_pub = self.node.create_publisher(EmptyMsg, "move_base/cancel", 1)
 
     def diag_cb(self, msg: DiagnosticArray):
         for status in msg.status:
@@ -143,4 +138,4 @@ class HcmBlackboard():
         self.last_kick_feedback = self.node.get_clock().now()
 
     def cancel_move_base_goal(self):
-        self.move_base_cancel_pub.publish(GoalID())
+        self.move_base_cancel_pub.publish(EmptyMsg())

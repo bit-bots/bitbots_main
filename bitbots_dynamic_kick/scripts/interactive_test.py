@@ -22,10 +22,10 @@ import sys, select, termios, tty
 showing_feedback = False
 
 msg = """
-BitBots Interactive Kick Test                              
+BitBots Interactive Kick Test
 -----------------------------
 Move Robot:            Move Ball:
-    q    w    e              t    
+    q    w    e              t
     a    s    d         f    g    h
 
 SHIFT increases with factor 10
@@ -33,7 +33,7 @@ SHIFT increases with factor 10
 y/Y: set kick y command
 x/X: set kick x command
 c/C: set direction command
-v/V: set speed command 
+v/V: set speed command
 
 <: execute kick
 r: reset robot and ball
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         kick_goal.header.frame_id = frame_prefix + "base_footprint"
         kick_goal.ball_position.x = x
         kick_goal.ball_position.y = y
-        kick_goal.ball_position.z = 0
+        kick_goal.ball_position.z = 0.0
         kick_goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, direction))
         kick_goal.kick_speed = speed
         kick_goal.unstable = unstable

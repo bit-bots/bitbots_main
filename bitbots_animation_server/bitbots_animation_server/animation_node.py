@@ -8,6 +8,8 @@ import numpy as np
 import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 from humanoid_league_msgs.action import PlayAnimation
 from humanoid_league_msgs.msg import Animation as AnimationMsg
@@ -59,11 +61,12 @@ class AnimationNode(Node):
         self.traj_msg = JointTrajectory()
         self.traj_point = JointTrajectoryPoint()
 
-        self.create_subscription(JointState, "joint_states", self.update_current_pose, 1)
-        self.create_subscription(RobotControlState, "robot_state", self.update_hcm_state, 1)
+        callback_group = ReentrantCallbackGroup()
+        self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
+        self.create_subscription(RobotControlState, "robot_state", self.update_hcm_state, 1, callback_group=callback_group)
         self.hcm_publisher = self.create_publisher(AnimationMsg, "animation", 1)
 
-        self._as = ActionServer(self, PlayAnimation, "animation", self.execute_cb)
+        self._as = ActionServer(self, PlayAnimation, "animation", self.execute_cb, callback_group=callback_group)
 
     def on_shutdown_hook(self):
         # we got external shutdown, let's still wait a bit, since we probably want to do a shutdown animation
@@ -82,13 +85,13 @@ class AnimationNode(Node):
             # but we send a request, so that we may can soon
             self.send_animation_request()
             self.get_logger().info("HCM not controllable. Only sent request to make it come controllable.")
-            goal.abborted(text="HCM not controllable. Will now become controllable. Try again later.")
+            goal.aborted(text="HCM not controllable. Will now become controllable. Try again later.")
             return PlayAnimation.Result(successful=False)
 
         animator = self.get_animation_splines(self.current_animation, goal)
 
         while rclpy.ok() and animator:
-            try:            
+            try:
                 last_time = self.get_clock().now()
                 # first check if we have another goal
                 # todo this does not work in ros2
@@ -135,7 +138,6 @@ class AnimationNode(Node):
     def get_animation_splines(self, animation_name, goal):
         if animation_name not in self.animation_cache:
             self.get_logger().error("Animation '%s' not found" % animation_name)
-            #goal.aborted(False, "Animation not found")            
             return
 
         parsed_animation = self.animation_cache[animation_name]
@@ -196,8 +198,10 @@ class AnimationNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    animation = AnimationNode()
-    try:
-        rclpy.spin(animation)
-    except (ExternalShutdownException, KeyboardInterrupt):
-        exit(0)
+    node = AnimationNode()
+    ex = MultiThreadedExecutor(num_threads=10)
+    ex.add_node(node)
+    ex.spin()
+    node.destroy_node()
+    rclpy.shutdown()
+

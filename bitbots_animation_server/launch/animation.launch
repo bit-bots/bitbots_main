@@ -1,6 +1,9 @@
 <launch>
+    <arg name="sim" default="false" description="Disables some checks for hardware, since we are in simulation."/>
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <node pkg="bitbots_animation_server" exec="animation_node"  output="screen" launch-prefix="$(var taskset)" />
+    <node pkg="bitbots_animation_server" exec="animation_node"  output="screen" launch-prefix="$(var taskset)">
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
 </launch>

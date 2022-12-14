@@ -155,9 +155,6 @@ class HardwareControlManager:
     def set_external_animation_running(self, running):
         self.blackboard.external_animation_running = running
 
-    def set_hcm_animation_finished(self, finished):
-        self.blackboard.hcm_animation_finished = finished
-
     def set_record_active(self, active):
         self.blackboard.record_active = active
 
