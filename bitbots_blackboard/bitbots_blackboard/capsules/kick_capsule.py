@@ -1,4 +1,7 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from bitbots_blackboard.blackboard import BodyBlackboard
 
 from rclpy.action import ActionClient
 from rclpy.duration import Duration
@@ -9,6 +12,8 @@ from bitbots_msgs.action import Kick
 
 
 class KickCapsule():
+    __blackboard: "BodyBlackboard"
+
     last_feedback: Optional[Kick.Feedback] = None
     last_feedback_received: Optional[Time] = None
     last_goal: Optional[Kick.Goal] = None
@@ -37,7 +42,7 @@ class KickCapsule():
         if not self.__connected:
             self.__blackboard.node.get_logger().error("No dynamic_kick server running on {}".format(topic))
 
-    def kick(self, goal):
+    def kick(self, goal: Kick.Goal):
         """
         :param goal: Goal to kick to
         :type goal: KickGoal
@@ -58,7 +63,7 @@ class KickCapsule():
         self.last_goal = goal
         self.last_goal_sent = self.__blackboard.node.get_clock().now()
 
-    def __feedback_cb(self, feedback: Kick):
+    def __feedback_cb(self, feedback):
         self.last_feedback: Kick.Feedback = feedback.feedback
         self.last_feedback_received = self.__blackboard.node.get_clock().now()
 

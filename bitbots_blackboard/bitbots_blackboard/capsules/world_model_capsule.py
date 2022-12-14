@@ -5,7 +5,10 @@ WorldModelCapsule
 Provides information about the world model.
 """
 import math
-from typing import TYPE_CHECKING, Optional, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    from bitbots_blackboard.blackboard import BodyBlackboard
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,13 +28,11 @@ from rclpy.time import Time
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
 from sensor_msgs.msg import PointCloud2 as pc2
+from soccer_vision_3d_msgs.msg import RobotArray, Robot
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
-
-if TYPE_CHECKING:
-    from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class WorldModelCapsule:
@@ -65,7 +66,6 @@ class WorldModelCapsule:
         self.ball_twist_precision_threshold = get_parameter_dict(self._blackboard.node, 'body.ball_twist_precision_threshold')
         self.reset_ball_filter = self._blackboard.node.create_client(Trigger, 'ball_filter_reset')
 
-        self.my_data = dict()
         self.counter: int = 0
         self.ball_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         self.ball_seen_time_teammate = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
@@ -105,11 +105,11 @@ class WorldModelCapsule:
     ### Ball ###
     ############
 
-    def ball_seen_self(self):
+    def ball_seen_self(self) -> bool:
         """Returns true if we have seen the ball recently (less than ball_lost_time ago)"""
         return self._blackboard.node.get_clock().now() - self.ball_seen_time < self.ball_lost_time
 
-    def ball_last_seen(self):
+    def ball_last_seen(self) -> Time:
         """
         Returns the time at which the ball was last seen if it is in the threshold or
         the more recent ball from either the teammate or itself if teamcom is available
@@ -120,20 +120,20 @@ class WorldModelCapsule:
         else:
             return self.ball_seen_time
 
-    def ball_has_been_seen(self):
+    def ball_has_been_seen(self) -> bool:
         """Returns true if we or a teammate have seen the ball recently (less than ball_lost_time ago)"""
         return self._blackboard.node.get_clock().now() - self.ball_last_seen() < self.ball_lost_time
 
-    def get_ball_position_xy(self):
+    def get_ball_position_xy(self) -> Tuple[float, float]:
         """Return the ball saved in the map or odom frame"""
         ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
 
-    def get_ball_stamped_relative(self):
+    def get_ball_stamped_relative(self) -> PointStamped:
         """ Returns the ball in the base_footprint frame i.e. relative to the robot projected on the ground"""
         return self.ball
 
-    def get_best_ball_point_stamped(self):
+    def get_best_ball_point_stamped(self) -> PointStamped:
         """
         Returns the best ball, either its own ball has been in the ball_lost_lost time
         or from teammate if the robot itself has lost it and teamcom is available
@@ -175,7 +175,7 @@ class WorldModelCapsule:
             self.used_ball_pub.publish(self.ball_odom)
             return self.ball_odom
 
-    def get_ball_position_uv(self):
+    def get_ball_position_uv(self) -> Tuple[float, float]:
         ball = self.get_best_ball_point_stamped()
         try:
             ball_bfp = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
@@ -185,7 +185,7 @@ class WorldModelCapsule:
             return None
         return ball_bfp.x, ball_bfp.y
 
-    def get_ball_distance(self, filtered=False):
+    def get_ball_distance(self, filtered=False) -> float:
         if filtered:
             u = self.ball_filtered.pose.pose.position.x
             v = self.ball_filtered.pose.pose.position.y
@@ -197,7 +197,7 @@ class WorldModelCapsule:
                 u, v = ball_pos
         return math.sqrt(u ** 2 + v ** 2)
 
-    def get_ball_angle(self):
+    def get_ball_angle(self) -> float:
         ball_pos = self.get_ball_position_uv()
         if ball_pos is None:
             return -math.pi  # worst case (behind robot)
@@ -205,7 +205,7 @@ class WorldModelCapsule:
             u, v = ball_pos
         return math.atan2(v, u)
 
-    def get_ball_speed(self):
+    def get_ball_speed(self) -> TwistStamped:
         raise NotImplementedError
 
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
@@ -234,7 +234,7 @@ class WorldModelCapsule:
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
 
-    def recent_ball_twist_available(self):
+    def recent_ball_twist_available(self) ->  bool:
         if self.ball_twist_map is None:
             return False
         return self._blackboard.node.get_clock().now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
@@ -272,7 +272,7 @@ class WorldModelCapsule:
         if self.ball_twist_map is not None:
             self.ball_twist_publisher.publish(self.ball_twist_map)
 
-    def forget_ball(self, own=True, team=True, reset_ball_filter=True):
+    def forget_ball(self, own: bool = True, team: bool = True, reset_ball_filter: bool = True) -> None:
         """
         Forget that we and the best teammate saw a ball, optionally reset the ball filter
         :param own: Forget the ball recognized by the own robot, defaults to True
@@ -306,14 +306,14 @@ class WorldModelCapsule:
         return self.get_uv_from_xy(x, y)
 
     def get_map_based_opp_goal_center_xy(self):
-        return self.field_length / 2, 0
+        return self.field_length / 2, 0.0
 
     def get_map_based_own_goal_center_uv(self):
         x, y = self.get_map_based_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
     def get_map_based_own_goal_center_xy(self):
-        return -self.field_length / 2, 0
+        return -self.field_length / 2, 0.0
 
     def get_map_based_opp_goal_angle_from_ball(self):
         ball_x, ball_y = self.get_ball_position_xy()
@@ -343,7 +343,7 @@ class WorldModelCapsule:
     def pose_callback(self, pos: PoseWithCovarianceStamped):
         self.pose = pos
 
-    def get_current_position(self):
+    def get_current_position(self) -> Tuple[float, float, float]:
         """
         Returns the current position as determined by the localization
         :returns x,y,theta
@@ -383,7 +383,7 @@ class WorldModelCapsule:
             return None
         return transform
 
-    def get_localization_precision(self):
+    def get_localization_precision(self) -> Tuple[float, float, float]:
         """
         Returns the current localization precision based on the covariance matrix.
         """
@@ -423,7 +423,7 @@ class WorldModelCapsule:
     # Common #
     ##########
 
-    def get_uv_from_xy(self, x, y):
+    def get_uv_from_xy(self, x, y) -> Tuple[float, float]:
         """ Returns the relativ positions of the robot to this absolute position"""
         current_position = self.get_current_position()
         x2 = x - current_position[0]
@@ -450,16 +450,18 @@ class WorldModelCapsule:
     # Obstacle #
     ############
 
-    def robot_obstacle_callback(self, msg):
+    def robot_obstacle_callback(self, msg: RobotArray):
         """
         Callback with new obstacles
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
         # Iterate over all obstacles
-        for p in pc2.read_points(msg, field_names=("x", "y", "z"), skip_nans=True):
+        robot: Robot
+        for robot in msg.robots:
             # Convert position to array index
-            idx_x, idx_y = self.field_2_costmap_coord(p[0], p[1])
+            idx_x, idx_y = self.field_2_costmap_coord(robot.bb.center.position.x, robot.bb.center.position.x)
+            # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = \
                 self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
@@ -496,7 +498,7 @@ class WorldModelCapsule:
         # Publish
         self.costmap_publisher.publish(msg)
 
-    def get_pass_regions(self):
+    def get_pass_regions(self) -> np.ndarray:
         """
         Draws a costmap for the pass regions
         """
@@ -521,7 +523,7 @@ class WorldModelCapsule:
         # Smooth obstacle map
         return gaussian_filter(costmap, pass_smooth)
 
-    def field_2_costmap_coord(self, x, y):
+    def field_2_costmap_coord(self, x: float, y: float) -> Tuple[float, float]:
         """
         Converts a field position to the coresponding indices for the costmap.
 
@@ -546,7 +548,7 @@ class WorldModelCapsule:
         gradient = [np.where(norms == 0, 0, i / norms) for i in gradient]
         self.gradient_map = gradient
 
-    def cost_at_relative_xy(self, x, y):
+    def cost_at_relative_xy(self, x: float, y: float) -> float:
         """
         Returns cost at relative position to the base footprint.
         """
@@ -653,7 +655,7 @@ class WorldModelCapsule:
                 "body.base_costmap_smoothing_sigma").value)
         self.costmap = self.base_costmap.copy()
 
-    def get_gradient_at_field_position(self, x: float, y: float):
+    def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
         """
         Gets the gradient tuple at a given field position
         :param x: Field coordiante in the x direction
@@ -662,7 +664,7 @@ class WorldModelCapsule:
         idx_x, idx_y = self.field_2_costmap_coord(x, y)
         return -self.gradient_map[0][idx_x, idx_y], -self.gradient_map[1][idx_x, idx_y]
 
-    def get_cost_at_field_position(self, x, y):
+    def get_cost_at_field_position(self, x: float, y: float) -> float:
         """
         Gets the costmap value at a given field position
         :param x: Field coordinate in the x direction
@@ -671,26 +673,26 @@ class WorldModelCapsule:
         idx_x, idx_y = self.field_2_costmap_coord(x, y)
         return self.costmap[idx_x, idx_y]
 
-    def get_gradient_direction_at_field_position(self, x, y):
+    def get_gradient_direction_at_field_position(self, x: float, y: float):
         """
         Returns the gradient direction at the given position
         :param x: Field coordiante in the x direction
         :param y: Field coordiante in the y direction
         """
         # for debugging only
-        if False and self.costmap.sum() > 0:
-            # Create Grid
-            grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length * 10j,
-                             0:self.field_width:self.field_width * 10j]
-            plt.imshow(self.costmap.T, origin='lower')
-            plt.show()
-            plt.quiver(grid_x, grid_y, -self.gradient_map[0], -self.gradient_map[1])
-            plt.show()
+        #if False and self.costmap.sum() > 0:
+        #    # Create Grid
+        #    grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length * 10j,
+        #                     0:self.field_width:self.field_width * 10j]
+        #    plt.imshow(self.costmap.T, origin='lower')
+        #    plt.show()
+        #    plt.quiver(grid_x, grid_y, -self.gradient_map[0], -self.gradient_map[1])
+        #    plt.show()
 
         grad = self.get_gradient_at_field_position(x, y)
         return math.atan2(grad[1], grad[0])
 
-    def get_cost_of_kick_relative(self, x, y, direction, kick_length, angular_range):
+    def get_cost_of_kick_relative(self, x: float, y: float, direction: float, kick_length: float, angular_range: float):
         if self.costmap is None:
             return 0.0
 
@@ -713,7 +715,7 @@ class WorldModelCapsule:
             [pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
 
-    def get_cost_of_kick(self, x, y, direction, kick_length, angular_range):
+    def get_cost_of_kick(self, x: float, y: float, direction: float, kick_length: float, angular_range: float) -> float:
 
         # create a mask in the size of the costmap consisting of 8-bit values initialized as 0
         mask = Image.new('L', (self.costmap.shape[1], self.costmap.shape[0]))
@@ -744,10 +746,10 @@ class WorldModelCapsule:
         # This should contribute way less than the max and should have an impact if the max values are similar in all directions.
         return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25
 
-    def get_current_cost_of_kick(self, direction, kick_length, angular_range):
+    def get_current_cost_of_kick(self, direction: float, kick_length: float, angular_range: float):
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
 
-    def get_best_kick_direction(self, min_angle, max_angle, num_kick_angles, kick_length, angular_range):
+    def get_best_kick_direction(self, min_angle: float, max_angle: float, num_kick_angles: int, kick_length: float, angular_range: float) -> float:
         # list of possible kick directions, sorted by absolute value to
         # prefer forward kicks to side kicks if their costs are equal
         kick_directions = sorted(np.linspace(min_angle,

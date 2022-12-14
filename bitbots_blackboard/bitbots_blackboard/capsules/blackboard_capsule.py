@@ -2,9 +2,10 @@
 BehaviourBlackboardCapsule
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 """
+from typing import Optional
 
-import rclpy
 from rclpy.duration import Duration
+from rclpy.publisher import Publisher
 from rclpy.node import Node
 import tf2_ros as tf2
 
@@ -14,10 +15,9 @@ from bitbots_utils.utils import get_parameters_from_other_node
 class BlackboardCapsule:
     def __init__(self, node: Node):
         self.node = node
-        self.my_data = {}
-        self.head_pub = None  # type: rospy.Publisher
-        self.duty = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])['role']
-        self.state = None  # type: RobotControlState
+        self.head_pub: Optional[Publisher] = None
+        self.duty: str = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])['role']
+        self.state: Optional[RobotControlState] = None
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self.node)
@@ -27,7 +27,7 @@ class BlackboardCapsule:
     # ## Tracking Part ##
     #####################
 
-    def set_head_duty(self, head_duty):
+    def set_head_duty(self, head_duty: int):
         head_duty_msg = HeadMode()
         head_duty_msg.head_mode = head_duty
         self.head_pub.publish(head_duty_msg)
@@ -36,11 +36,11 @@ class BlackboardCapsule:
     # ## Robot state ##
     ###################
 
-    def robot_state_callback(self, msg):
+    def robot_state_callback(self, msg: RobotControlState):
         self.state = msg
 
-    def is_currently_walking(self):
-        if self.state:
+    def is_currently_walking(self) -> bool:
+        if self.state is not None:
             return self.state.state == RobotControlState.WALKING
         else:
             return False
@@ -49,7 +49,7 @@ class BlackboardCapsule:
     # ## Timer ##
     #############
 
-    def start_timer(self, timer_name, duration_secs):
+    def start_timer(self, timer_name: str, duration_secs: int):
         """
         Starts a timer
         :param timer_name: Name of the timer
@@ -58,7 +58,7 @@ class BlackboardCapsule:
         """
         self.timers[timer_name] = self.node.get_clock().now() + Duration(seconds=duration_secs)
 
-    def end_timer(self, timer_name):
+    def end_timer(self, timer_name: str):
         """
         Ends a timer
         :param timer_name: Name of the timer
@@ -66,7 +66,7 @@ class BlackboardCapsule:
         """
         self.timers[timer_name] = self.node.get_clock().now()
 
-    def timer_running(self, timer_name):
+    def timer_running(self, timer_name: str) -> bool:
         """
         Returns whether the timer is running
         :param timer_name: Name of the timer
@@ -76,7 +76,7 @@ class BlackboardCapsule:
             return False
         return self.node.get_clock().now() < self.timers[timer_name]
 
-    def timer_remaining(self, timer_name):
+    def timer_remaining(self, timer_name: str) -> int:
         """
         Returns how much seconds are remaining on the Timer
         :param timer_name: Name of the timer
@@ -87,7 +87,7 @@ class BlackboardCapsule:
             return -1
         return (self.timers[timer_name] - self.node.get_clock().now()).to_sec()
 
-    def timer_ended(self, timer_name):
+    def timer_ended(self, timer_name: str) -> bool:
         """
         Returns whether the timer has ended
         :param timer_name: Name of the timer
