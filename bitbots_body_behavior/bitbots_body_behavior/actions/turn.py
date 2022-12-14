@@ -43,6 +43,5 @@ class TurnAround(AbstractActionElement):
         theta = self.blackboard.world_model.get_current_position()[2]
 
         self.blackboard.pathfinding.publish(self.pose_msg)
-        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED] or \
-                (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
+        if (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
             self.pop()

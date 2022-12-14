@@ -37,7 +37,7 @@ class PathfindingCapsule:
         self.orient_to_ball_distance: float = get_parameters_from_other_node(
             self.node,
             'bitbots_path_planning',
-            'controller.orient_to_goal_distance')["controller.orient_to_goal_distance"]
+            ['controller.orient_to_goal_distance'])["controller.orient_to_goal_distance"]
 
     def publish(self, msg: PoseStamped):
         self.goal = msg

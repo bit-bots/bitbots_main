@@ -45,5 +45,5 @@ class GoToBall(AbstractActionElement):
 
         self.blackboard.pathfinding.approach_marker_pub.publish(approach_marker)
 
-        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED] or not self.blocking:
+        if not self.blocking:
             self.pop()

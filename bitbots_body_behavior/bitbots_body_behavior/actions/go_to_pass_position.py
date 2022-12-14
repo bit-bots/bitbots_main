@@ -49,8 +49,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
         pose_msg.pose.orientation.w = quaternion[3]
         self.blackboard.pathfinding.publish(pose_msg)
 
-        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED]:
-            self.pop()
+        self.pop()
 
 
 class GoToPassPreparePosition(AbstractGoToPassPosition):
