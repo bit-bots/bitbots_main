@@ -1,9 +1,13 @@
 import rclpy
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_msgs.action import Dynup
 from action_msgs.msg import GoalStatus
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from bitbots_msgs.action import Dynup
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+
 
 class GetWalkready(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters=None)
         self.direction = 'walkready'

@@ -1,9 +1,11 @@
-import math
+from bitbots_blackboard.blackboard import BodyBlackboard
 
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class DribbleOrKick(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.orient_threshold = self.blackboard.config['dribble_orient_threshold']

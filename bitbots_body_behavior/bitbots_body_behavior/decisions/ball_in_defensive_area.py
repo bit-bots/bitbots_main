@@ -1,7 +1,11 @@
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class BallInDefensiveArea(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallInDefensiveArea, self).__init__(blackboard, dsd, parameters)
         self.defensive_area = self.blackboard.config['defensive_area']
@@ -24,6 +28,7 @@ class BallInDefensiveArea(AbstractDecisionElement):
 
 
 class BallInOwnPercent(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallInOwnPercent, self).__init__(blackboard, dsd, parameters)
         self.percent = parameters["p"]

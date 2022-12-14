@@ -1,8 +1,11 @@
-# -*- coding:utf-8 -*-
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class ClosestToBallNoGoalie(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(ClosestToBallNoGoalie, self).__init__(blackboard, dsd, parameters)
 
@@ -20,6 +23,7 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
 
 
 class ClosestToBall(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(ClosestToBall, self).__init__(blackboard, dsd, parameters)
 
@@ -37,6 +41,7 @@ class ClosestToBall(AbstractDecisionElement):
 
 
 class RankToBallNoGoalie(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 

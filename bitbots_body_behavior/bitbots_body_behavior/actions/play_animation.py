@@ -1,3 +1,5 @@
+from bitbots_blackboard.blackboard import BodyBlackboard
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -8,6 +10,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractPlayAnimation, self).__init__(blackboard, dsd, parameters=None)
+        self.blackboard: BodyBlackboard
 
         self.first_perform = True
         self.finished = False

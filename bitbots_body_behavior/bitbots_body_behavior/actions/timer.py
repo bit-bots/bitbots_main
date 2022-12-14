@@ -1,10 +1,12 @@
+from bitbots_blackboard.blackboard import BodyBlackboard
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from humanoid_league_msgs.msg import HeadMode
 
 
 class StartTimer(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(StartTimer, self).__init__(blackboard, dsd, parameters)
+        self.blackboard: BodyBlackboard
 
         if 'name' not in parameters:
             raise KeyError('StartTimer: Name parameter is missing!')
@@ -21,6 +23,7 @@ class StartTimer(AbstractActionElement):
 class EndTimer(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(EndTimer, self).__init__(blackboard, dsd, parameters)
+        self.blackboard: BodyBlackboard
 
         if 'name' not in parameters:
             raise KeyError('EndTimer: Name parameter is missing!')

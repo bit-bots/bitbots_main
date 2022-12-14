@@ -6,7 +6,8 @@ from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class ChangeAction(AbstractActionElement):
-    def __init__(self, blackboard: BodyBlackboard, dsd, parameters):
+    blackboard: BodyBlackboard
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard = blackboard
 

@@ -1,12 +1,15 @@
-from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Vector3
-from std_msgs.msg import ColorRGBA
 from actionlib_msgs.msg import GoalStatus
+from bitbots_blackboard.blackboard import BodyBlackboard
+from geometry_msgs.msg import Vector3
 from rclpy.duration import Duration
+from std_msgs.msg import ColorRGBA
+from visualization_msgs.msg import Marker
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToBall(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToBall, self).__init__(blackboard, dsd, parameters)
 

@@ -1,11 +1,13 @@
-from bitbots_msgs.action import Kick
+from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Quaternion
 from tf_transformations import quaternion_from_euler
 
+from bitbots_msgs.action import Kick
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AbstractKickAction(AbstractActionElement):
+    blackboard: BodyBlackboard
     def pop(self):
         self.blackboard.world_model.forget_ball(own=True, team=True, reset_ball_filter=True)
         super(AbstractKickAction, self).pop()

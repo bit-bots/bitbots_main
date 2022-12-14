@@ -1,8 +1,13 @@
 import math
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class BallClose(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallClose, self).__init__(blackboard, dsd, parameters)
         self.ball_close_distance = parameters.get("distance", self.blackboard.config['ball_close_distance'])

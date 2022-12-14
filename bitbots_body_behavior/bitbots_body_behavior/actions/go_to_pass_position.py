@@ -1,14 +1,13 @@
-import math
-
 from actionlib_msgs.msg import GoalStatus
+from bitbots_blackboard.blackboard import BodyBlackboard
 from tf2_geometry_msgs import PoseStamped
-from geometry_msgs.msg import Point
+from tf_transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from tf_transformations import quaternion_from_euler
 
 
 class AbstractGoToPassPosition(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, accept, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.max_x = self.blackboard.config["supporter_max_x"]

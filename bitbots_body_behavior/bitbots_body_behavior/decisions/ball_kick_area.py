@@ -1,8 +1,11 @@
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from std_msgs.msg import String
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class BallKickArea(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallKickArea, self).__init__(blackboard, dsd, parameters)
         self.kick_x_enter = self.blackboard.config['kick_x_enter']

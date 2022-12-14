@@ -69,7 +69,6 @@ class WorldModelCapsule:
         self.counter: int = 0
         self.ball_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         self.ball_seen_time_teammate = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-        self.goal_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         self.ball_seen: bool = False
         self.ball_seen_teammate: bool = False
         parameters = get_parameters_from_other_node(
@@ -301,12 +300,6 @@ class WorldModelCapsule:
     ########
     # Goal #
     ########
-
-    def goal_last_seen(self):
-        # We are currently not seeing any goal, we know where they are based
-        # on the localisation. Therefore, any_goal_last_seen returns the time
-        # from the stamp of the last position update
-        return self.goal_seen_time
 
     def get_map_based_opp_goal_center_uv(self):
         x, y = self.get_map_based_opp_goal_center_xy()

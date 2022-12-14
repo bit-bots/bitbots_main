@@ -1,3 +1,8 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from bitbots_blackboard.blackboard import BodyBlackboard
+
 import rclpy
 from rclpy.clock import ClockType
 from rclpy.node import Node
@@ -27,7 +32,6 @@ class PathfindingCapsule:
         self.pathfinding_cancel_pub = None  # type: Publisher
         self.path_to_ball_pub = None  # type: Publisher
         self.ball_obstacle_active_pub = None
-        self.keep_out_area_pub = None
         self.approach_marker_pub = None
         self.goal = None  # type: PoseStamped
         self.status = -1  # Current status of movebase

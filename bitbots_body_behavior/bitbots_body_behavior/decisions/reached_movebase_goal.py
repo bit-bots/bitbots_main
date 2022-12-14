@@ -1,11 +1,15 @@
 import math
+
 import numpy as np
+from bitbots_blackboard.blackboard import BodyBlackboard
 from tf_transformations import euler_from_quaternion
 
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class ReachedMovebaseGoalPosition(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(ReachedMovebaseGoalPosition, self).__init__(blackboard, dsd, parameters)
 
@@ -37,6 +41,7 @@ class ReachedMovebaseGoalPosition(AbstractDecisionElement):
 
 
 class AlignedToMoveBaseGoal(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(AlignedToMoveBaseGoal, self).__init__(blackboard, dsd, parameters)
         self.orientation_threshold = self.blackboard.config['goal_alignment_orientation_threshold']  # [deg]

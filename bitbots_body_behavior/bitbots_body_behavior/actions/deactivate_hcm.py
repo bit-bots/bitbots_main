@@ -1,10 +1,11 @@
-from actionlib_msgs.msg import GoalID
-from dynamic_stack_decider import AbstractActionElement
-from humanoid_league_msgs.msg import Strategy
+from bitbots_blackboard.blackboard import BodyBlackboard
 from std_msgs.msg import Bool
+
+from dynamic_stack_decider import AbstractActionElement
 
 
 class DeactivateHCM(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 

@@ -1,9 +1,13 @@
 import math
 
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class AlignedToGoal(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
         self.goalpost_safety_distance = self.blackboard.config['goalpost_safety_distance']

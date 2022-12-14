@@ -1,12 +1,13 @@
 import random
 
+from bitbots_blackboard.blackboard import BodyBlackboard
 from tf2_geometry_msgs import PoseStamped
-from geometry_msgs.msg import Point
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToRolePosition(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToRolePosition, self).__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config['role_positions']

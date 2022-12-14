@@ -1,8 +1,10 @@
+from bitbots_blackboard.blackboard import BodyBlackboard
+
 from dynamic_stack_decider import AbstractActionElement
-from humanoid_league_msgs.msg import Strategy
 
 
 class ChangeRole(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 

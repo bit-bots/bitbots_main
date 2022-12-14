@@ -1,7 +1,11 @@
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class BallDangerous(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallDangerous, self).__init__(blackboard, dsd, parameters)
         self.goal_radius = parameters.get("radius", self.blackboard.config['ball_dangerous_goal_radius'])
