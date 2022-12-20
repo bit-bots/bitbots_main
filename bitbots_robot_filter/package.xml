@@ -3,9 +3,9 @@
 <package format="3">
   <name>bitbots_robot_filter</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="git@flova.de">florian</maintainer>
-  <license>TODO: License declaration</license>
+  <description>A simple model that keeps track of the robots on the field.</description>
+  <maintainer email="git@flova.de">Florian Vahl</maintainer>
+  <license>MIT</license>
 
   <depend>rclpy</depend>
 

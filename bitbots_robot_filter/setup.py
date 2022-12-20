@@ -1,3 +1,5 @@
+import glob
+
 from setuptools import setup
 
 package_name = 'bitbots_robot_filter'
@@ -10,13 +12,17 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + "/config",
+            glob.glob('config/*.yaml')),
+        ('share/' + package_name + '/launch',
+            glob.glob('launch/*.launch')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='florian',
     maintainer_email='git@flova.de',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='A simple model that keeps track of the robots on the field.',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

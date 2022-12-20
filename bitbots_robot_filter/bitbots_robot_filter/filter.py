@@ -38,21 +38,38 @@ class RobotFilter(Node):
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10.0))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
 
-        self.declare_parameter('map_frame', 'map')
-        self.map_frame = self.get_parameter('map_frame').value
-
-        self.create_subscription(sv3dm.RobotArray, 'robots_relative', self._robot_vision_callback, 5)
-        self.create_subscription(TeamData, 'team_data', self._team_data_callback, 5)
-
-        self.robot_obstacle_publisher = self.create_publisher(sv3dm.RobotArray, "robots_relative_filtered", 1)
+        self.declare_parameter('filter_frame', 'map')
+        self.declare_parameter('robot_dummy_size', 0.4)
+        self.declare_parameter('robot_merge_distance', 0.5)
+        self.declare_parameter('robot_storage_time', 10e9)
 
         self.robots = []
-
         self.team = dict()
 
-        self.robots_storage_time = 10e9
-        self.robot_merge_distance = 0.5
-        self.robot_dummy_size = 0.4
+        self.filter_frame = self.get_parameter('filter_frame').value
+        self.robot_dummy_size = self.get_parameter('robot_dummy_size').value
+        self.robot_merge_distance = self.get_parameter('robot_merge_distance').value
+        self.robot_storage_time = self.get_parameter('robot_storage_time').value
+
+        self.declare_parameter('robot_observation_topic', 'robots_relative')
+        self.create_subscription(
+            sv3dm.RobotArray,
+            self.get_parameter('robot_observation_topic').value,
+            self._robot_vision_callback,
+            5)
+
+        self.declare_parameter('team_data_topic', 'team_data')
+        self.create_subscription(
+            TeamData,
+            self.get_parameter('team_data_topic').value,
+            self._team_data_callback,
+            5)
+
+        self.declare_parameter('robots_publish_topic', 'robots_relative_filtered')
+        self.robot_obstacle_publisher = self.create_publisher(
+            sv3dm.RobotArray,
+            self.get_parameter('robots_publish_topic').value,
+            1)
 
         self.create_timer(1/20, self.publish_obstacles)
 
@@ -60,11 +77,11 @@ class RobotFilter(Node):
         # Set current timespamp and frame
         dummy_header = Header()
         dummy_header.stamp = self.get_clock().now().to_msg()
-        dummy_header.frame_id = self.map_frame
+        dummy_header.frame_id = self.filter_frame
 
         # Cleanup robot obstacles
         self.robots = list(filter(
-            lambda robot: abs((self.get_clock().now() - Time.from_msg(robot[1])).nanoseconds) < self.robots_storage_time,
+            lambda robot: abs((self.get_clock().now() - Time.from_msg(robot[1])).nanoseconds) < self.robot_storage_time,
             self.robots))
 
 
@@ -89,7 +106,7 @@ class RobotFilter(Node):
 
     def _robot_vision_callback(self, msg: sv3dm.RobotArray):
         try:
-            transform = self.tf_buffer.lookup_transform(self.map_frame,
+            transform = self.tf_buffer.lookup_transform(self.filter_frame,
                                                         msg.header.frame_id,
                                                         msg.header.stamp,
                                                         Duration(seconds=1.0))

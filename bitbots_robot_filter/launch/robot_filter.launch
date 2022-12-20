@@ -1,0 +1,8 @@
+<launch>
+    <arg name="sim" default="false"/>
+
+    <node pkg="bitbots_robot_filter" exec="filter" name="bitbots_robot_filter" output="screen">
+        <param from="$(find-pkg-share bitbots_robot_filter)/config/params.yaml"/>
+        <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+</launch>
