@@ -1,7 +1,8 @@
 <launch>
-    <group>
-        <node pkg="humanoid_league_team_communication" exec="team_comm.py" output="screen">
-            <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml"/>
-        </node>
-    </group>
+    <arg name="sim" default="false"/>
+
+    <node pkg="humanoid_league_team_communication" exec="team_comm.py" output="screen">
+        <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml"/>
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
 </launch>
