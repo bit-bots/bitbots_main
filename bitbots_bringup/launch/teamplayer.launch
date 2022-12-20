@@ -3,7 +3,7 @@
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="motion" default="true" description="Whether the motion control system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
-    <arg name="game_controller" default="false" description="Whether the Gamecontroller module should be started" />
+    <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="localization" default="true" description="Whether the localization system should be started" />
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
