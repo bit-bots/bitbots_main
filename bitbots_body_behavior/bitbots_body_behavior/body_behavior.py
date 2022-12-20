@@ -36,6 +36,7 @@ from humanoid_league_msgs.msg import (GameState, HeadMode, RobotControlState,
 class BodyDSD:
     def __init__(self, node:Node):
         self.counter = 0
+        self.step_running = False
         self.node = node
         blackboard = BodyBlackboard(node)
         self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config
@@ -72,6 +73,9 @@ class BodyDSD:
         node.create_subscription(Twist, "cmd_vel", blackboard.pathfinding.cmd_vel_cb, qos_profile=1, callback_group=callback_group)
 
     def loop(self):
+        if self.step_running:
+            return
+        self.step_running = True
         try:
             self.dsd.update()
             self.dsd.blackboard.team_data.publish_strategy()
@@ -83,6 +87,7 @@ class BodyDSD:
             import traceback
             traceback.print_exc()
             self.node.get_logger().error(str(e))
+        self.step_running = False
 
 
 
