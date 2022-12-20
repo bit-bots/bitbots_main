@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="behavior" default="true"/>
-    <arg name="game_controller" default="true" description="Sets whether the Gamecontroller should be started"/>
-    <arg name="localization" default="true"/>
-    <arg name="sim" default="false"/>
-    <arg name="teamcom" default="false"/>
-    <arg name="ipm" default="true"/>
-    <arg name="vision" default="true"/>
-    <arg name="ball_filter" default="true"/>
+    <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
+    <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
+    <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
+    <arg name="localization" default="true" description="Whether the localization system should be started" />
+    <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+    <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
+    <arg name="vision" default="true" description="Whether the vision system should be started" />
+    <arg name="world_model" default="true" description="Whether the world model should be started"/>
 
 
     <!-- launch game controller -->
@@ -38,8 +39,8 @@
         </include>
     </group>
 
-    <!-- launch ball_filter -->
-    <group if="$(var ball_filter)">
+    <!-- launch world model -->
+    <group if="$(var world_model)">
         <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
@@ -58,10 +59,12 @@
         <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
     </group>
 
-    <!-- launch pathplanning -->
-    <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
-        <arg name="sim" value="$(var sim)"/>
-    </include>
+    <!-- launch path planning -->
+    <group if="$(var path_planning)">
+        <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
 
     <!-- launch behavior -->
     <group if="$(var behavior)">
