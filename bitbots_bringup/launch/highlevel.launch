@@ -44,8 +44,11 @@
         <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
+        <include file="$(find-pkg-share bitbots_robot_filter)/launch/robot_filter.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
-
+    
     <!-- launch localization or fake localization -->
     <group if="$(var localization)">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
