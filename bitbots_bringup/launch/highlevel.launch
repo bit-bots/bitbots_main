@@ -4,12 +4,10 @@
     <arg name="game_controller" default="true" description="Sets whether the Gamecontroller should be started"/>
     <arg name="localization" default="true"/>
     <arg name="sim" default="false"/>
-    <arg name="simple" default="false" description="Whether to use the simple behavior" />
     <arg name="teamcom" default="false"/>
     <arg name="ipm" default="true"/>
     <arg name="vision" default="true"/>
     <arg name="ball_filter" default="true"/>
-    <arg name="vision_debug" default="false" description="activates the debug output of the vision pipeline"/>
 
 
     <!-- launch game controller -->
@@ -23,7 +21,6 @@
     <group if="$(var vision)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/vision_standalone.launch">
             <arg name="sim" value="$(var sim)" />
-            <arg name="debug" value="$(var vision_debug)" />
         </include>
     </group>
 
@@ -37,6 +34,7 @@
     <!-- launch teamcom -->
     <group if="$(var teamcom)">
         <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm.launch">
+            <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
 
@@ -61,12 +59,13 @@
     </group>
 
     <!-- launch pathplanning -->
-    <include file="$(find-pkg-share bitbots_nav2)/launch/pathfinding_nav2.launch" />
+    <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
 
     <!-- launch behavior -->
     <group if="$(var behavior)">
         <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
-            <arg name="simple" value="$(var simple)"/>
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>

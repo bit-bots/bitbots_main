@@ -1,14 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="sim" default="false"/>
-    <arg name="motion" default="true"/>
-    <arg name="behavior" default="true"/>
-    <arg name="simple" default="false" description="whether to use the simple behavior" />
-    <arg name="game_controller" default="true" description="Sets whether the Gamecontroller should be started"/>
-    <arg name="localization" default="true"/>
-    <arg name="teamcom" default="false"/>
-    <arg name="vision" default="true"/>
-
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+    <arg name="motion" default="true" description="Whether the motion control system should be started" />
+    <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
+    <arg name="game_controller" default="false" description="Whether the Gamecontroller module should be started" />
+    <arg name="localization" default="true" description="Whether the localization system should be started" />
+    <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
+    <arg name="vision" default="true" description="Whether the vision system should be started" />
     <!-- load the robot description -->
     <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
         <arg name="sim" value="$(var sim)" />
@@ -27,7 +25,6 @@
         <arg name="game_controller" value="$(var game_controller)" />
         <arg name="localization" value="$(var localization)" />
         <arg name="sim" value="$(var sim)" />
-        <arg name="simple" value="$(var simple)" />
         <arg name="teamcom" value="$(var teamcom)" />
         <arg name="vision" value="$(var vision)" />
     </include>
