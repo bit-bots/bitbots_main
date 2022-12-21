@@ -96,7 +96,7 @@ class Controller:
         cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose)) * walk_vel
         cmd_vel.linear.y = math.sin(walk_angle - self._get_yaw(current_pose)) * walk_vel
 
-        # Scale command accordingly if a limit is acceded
+        # Scale command accordingly if a limit is exceded
         if cmd_vel.linear.x > self.config_max_vel_x:
             self.node.get_logger().debug("X LIMIT reached: %f > %f, with y %f".format(cmd_vel.linear.y, self.config_max_vel_x, cmd_vel.linear.y));
             cmd_vel.linear.y *= self.config_max_vel_x / cmd_vel.linear.x
