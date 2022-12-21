@@ -41,9 +41,9 @@ class PathPlanning(Node):
         self.create_subscription(
             PoseWithCertaintyStamped,
             self.declare_parameter('map.ball_update_topic', 'ball_relative_filtered').value,
-             self.map.set_ball,
-             5,
-             callback_group=callback_group)
+            self.map.set_ball,
+            5,
+            callback_group=callback_group)
         self.create_subscription(
             sv3dm.RobotArray,
             self.declare_parameter('map.robot_update_topic', 'robots_relative_filtered').value,
