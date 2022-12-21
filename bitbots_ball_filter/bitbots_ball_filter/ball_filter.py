@@ -1,24 +1,24 @@
 #! /usr/bin/env python3
-from typing import Union, Tuple
-
 import math
-import numpy as np
+from copy import deepcopy
+from typing import Tuple, Union
 
+import numpy as np
 import rclpy
 import tf2_ros as tf2
-
-from copy import deepcopy
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-
+from geometry_msgs.msg import (Point, PoseWithCovarianceStamped,
+                               TwistWithCovarianceStamped)
+from rcl_interfaces.msg import SetParametersResult
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from rcl_interfaces.msg import SetParametersResult
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from tf2_geometry_msgs import PointStamped
+
 from humanoid_league_msgs.msg import PoseWithCertaintyStamped
-from soccer_vision_3d_msgs.msg import BallArray, Ball
 
 
 class BallWrapper():
@@ -32,7 +32,7 @@ class BallWrapper():
 
     def get_position(self):
         return self.position
-    
+
     def get_confidence(self):
         return self.confidence
 
@@ -132,7 +132,7 @@ class BallFilter(Node):
                 ball_msg = self._get_closest_ball_to_previous_prediction(msg)
             else:  # Select ball with highest confidence
                 ball_msg = sorted(msg.balls, key=lambda ball: ball.confidence.confidence)[-1]
-            
+
             # A ball measurement was selected, now we save it for the next filter step
             position = self._get_transform(msg.header, ball_msg.center)
             if position is not None:
@@ -296,8 +296,8 @@ class BallFilter(Node):
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = BallFilter()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        node.destroy_node()
-        rclpy.shutdown()
+    ex = MultiThreadedExecutor(num_threads=4)
+    ex.add_node(node)
+    ex.spin()
+    node.destroy_node()
+    rclpy.shutdown()

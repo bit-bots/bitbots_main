@@ -1,15 +1,13 @@
 import glob
-import os
 
-from setuptools import find_packages
 from setuptools import setup
 
-package_name = 'bitbots_ball_filter'
-
+package_name = 'bitbots_robot_filter'
 
 setup(
     name=package_name,
-    packages=find_packages(exclude=['test']),
+    version='0.0.0',
+    packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -17,22 +15,18 @@ setup(
         ('share/' + package_name + "/config",
             glob.glob('config/*.yaml')),
         ('share/' + package_name + '/launch',
-            glob.glob('launch/*.launch'))
+            glob.glob('launch/*.launch')),
     ],
-    install_requires=[
-        'launch',
-        'setuptools',
-    ],
+    install_requires=['setuptools'],
     zip_safe=True,
-    keywords=['ROS'],
+    maintainer='florian',
+    maintainer_email='git@flova.de',
+    description='A simple model that keeps track of the robots on the field.',
     license='MIT',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'ball_filter = bitbots_ball_filter.ball_filter:main',
-            'ball_sim = bitbots_ball_filter.ball_sim:main',
+            'filter = bitbots_robot_filter.filter:main',
         ],
-    }
+    },
 )
-
-#https://roboticsbackend.com/ros2-rclpy-parameter-callback/
-
