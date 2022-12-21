@@ -19,20 +19,21 @@ dynup:
 
     # Back
     arms_angle_back: 113.75
-    arm_side_offset_back: 0.22
+    arm_side_offset_back: 0.148
     com_shift_1: 0.1
     com_shift_2: 0.066
     foot_angle: 67.97
-    hands_behind_back_x: 0.08
-    hands_behind_back_z: 0.241
-    leg_min_length_back: 0.297
-    time_foot_ground_back: 0.064
-    time_full_squat_hands: 0.128
-    time_full_squat_legs: 0.096
-    time_legs_close: 0.064
-    trunk_height_back: 0.17
-    trunk_overshoot_angle_back: 6.72
-    wait_in_squat_back: 0.096
+    hands_behind_back_x: 0.162
+    hands_behind_back_z: 0.183
+    leg_min_length_back: 0.253
+    time_foot_ground_back: 0.536
+    time_full_squat_hands: 0.172
+    time_full_squat_legs: 0.236
+    time_legs_close: 0.068
+    trunk_height_back: 0.179
+    trunk_overshoot_angle_back: 5.95
+    wait_in_squat_back: 1.0
+
 
 
     # Front
