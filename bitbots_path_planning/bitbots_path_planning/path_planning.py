@@ -16,7 +16,9 @@ from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 
 
 class PathPlanning(Node):
-
+    """
+    A minimal python path planning.
+    """
     def __init__(self) -> None:
         super().__init__('bitbots_path_planning')
 
@@ -29,11 +31,9 @@ class PathPlanning(Node):
             cache_time=Duration(seconds=self.declare_parameter('tf_buffer_duration', 5.0).value))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
 
-
+        # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)
-
         self.planner = Planner(node=self, buffer=self.tf_buffer, map=self.map)
-
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscribe
@@ -50,7 +50,6 @@ class PathPlanning(Node):
             self.map.set_robots,
             5,
             callback_group=callback_group)
-
         self.create_subscription(
             PoseStamped,
             'goal_pose',
@@ -64,21 +63,24 @@ class PathPlanning(Node):
             5,
             callback_group=callback_group)
 
-        # Publish cmd_vel
+        # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, 'cmd_vel', 1)
+        self.costmap_pub = self.create_publisher(OccupancyGrid, 'costmap', 1)
+        self.path_pub = self.create_publisher(Path, 'path', 1)
 
-        self.debug_costmap_pub = self.create_publisher(OccupancyGrid, 'costmap', 1)
-        self.debug_path_pub = self.create_publisher(Path, 'path', 1)
-
+        # Timer that updates the path and command velocity at a given rate
         self.create_timer(1 / self.get_parameter('rate').value, self.step, clock=self.get_clock())
 
-    def step(self):
+    def step(self) -> None:
+        """
+        Performs a single step of the path planning
+        """
         self.map.update()
-        self.debug_costmap_pub.publish(self.map.to_msg())
+        self.costmap_pub.publish(self.map.to_msg())
 
         if self.planner.active():
             path = self.planner.step()
-            self.debug_path_pub.publish(path)
+            self.path_pub.publish(path)
 
             cmd_vel = self.controller.step(path)
             self.cmd_vel_pub.publish(cmd_vel)

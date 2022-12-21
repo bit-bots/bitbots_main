@@ -5,7 +5,7 @@ bitbots_path_planning:
     rate: 20.0
     map:
       planning_frame: map
-      resolution: 20
+      resolution: 20  # Pixel per meter
       size:
         x: 11.0
         y: 8.0

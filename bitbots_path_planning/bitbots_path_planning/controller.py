@@ -10,32 +10,36 @@ from tf_transformations import euler_from_quaternion
 
 
 class Controller:
+    """
+    A simple follow the carrot controller which controls the robots command velocity to stay on a given path.
+    """
     def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
         self.node = node
         self.buffer = buffer
 
-        self.config_carrot_distance = self.node.declare_parameter('controller.carrot_distance', 20).value
-        self.config_rotation_accuracy = self.node.declare_parameter('controller.rotation_accuracy', 0.1).value
-        self.config_position_accuracy = self.node.declare_parameter('controller.position_accuracy', 0.05).value
-        self.config_max_rotation_vel = self.node.declare_parameter('controller.max_rotation_vel', 0.4).value
-        self.config_max_vel_x = self.node.declare_parameter('controller.max_vel_x', 0.25).value
-        self.config_min_vel_x = self.node.declare_parameter('controller.min_vel_x', -0.2).value
-        self.config_max_vel_y = self.node.declare_parameter('controller.max_vel_y', 0.08).value
-        self.config_smoothing_k = self.node.declare_parameter('controller.smoothing_k', 0.4).value
-        self.config_rotation_slow_down_factor = self.node.declare_parameter('controller.rotation_slow_down_factor', 0.3).value
-        self.config_translation_slow_down_factor = self.node.declare_parameter('controller.translation_slow_down_factor', 0.5).value
-        self.config_orient_to_goal_distance = self.node.declare_parameter('controller.orient_to_goal_distance', 1.0).value
-
-    def _get_yaw(self, pose) -> float:
-        return euler_from_quaternion(numpify(pose))[2]
+        self.config_base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
+        self.config_carrot_distance: int = self.node.declare_parameter('controller.carrot_distance', 20).value
+        self.config_max_rotation_vel: float = self.node.declare_parameter('controller.max_rotation_vel', 0.4).value
+        self.config_max_vel_x: float = self.node.declare_parameter('controller.max_vel_x', 0.25).value
+        self.config_max_vel_y: float = self.node.declare_parameter('controller.max_vel_y', 0.08).value
+        self.config_min_vel_x: float = self.node.declare_parameter('controller.min_vel_x', -0.2).value
+        self.config_orient_to_goal_distance: float = self.node.declare_parameter('controller.orient_to_goal_distance', 1.0).value
+        self.config_position_accuracy: float = self.node.declare_parameter('controller.position_accuracy', 0.05).value
+        self.config_rotation_accuracy: float = self.node.declare_parameter('controller.rotation_accuracy', 0.1).value
+        self.config_rotation_slow_down_factor: float = self.node.declare_parameter('controller.rotation_slow_down_factor', 0.3).value
+        self.config_smoothing_k: float = self.node.declare_parameter('controller.smoothing_k', 0.4).value
+        self.config_translation_slow_down_factor: float = self.node.declare_parameter('controller.translation_slow_down_factor', 0.5).value
 
     def step(self, path: Path) -> Twist:
+        """
+        Calculates a command velocity based on a given path
+        """
         # Starting point for our goal velocity calculation
         cmd_vel = Twist()
 
         # Create an default pose in the origin of our base footprint
         pose_geometry_msgs = PoseStamped()
-        pose_geometry_msgs.header.frame_id = self.node.get_parameter("base_footprint_frame").value
+        pose_geometry_msgs.header.frame_id = self.config_base_footprint_frame
 
         # We get our pose in respect to the map frame (also frame of the path message)
         # by transforming the pose above into this frame
@@ -78,10 +82,10 @@ class Controller:
         diff = 0
         if distance > self.config_orient_to_goal_distance:
             # Calculate the difference between our current heading and the heading towards the final position of the global plan
-            diff = final_walk_angle - self._get_yaw(current_pose.orientation)
+            diff = final_walk_angle - self._get_yaw(current_pose)
         else:
             # Calculate the difference between our current heading and the heading of the final position of the global plan
-            diff = self._get_yaw(end_pose.orientation) - self._get_yaw(current_pose.orientation)
+            diff = self._get_yaw(end_pose) - self._get_yaw(current_pose)
 
         # Get the min angle of the difference
         min_angle = math.remainder(diff, math.tau)
@@ -89,8 +93,8 @@ class Controller:
         rot_goal_vel = min(max(self.config_rotation_slow_down_factor * min_angle, -self.config_max_rotation_vel), self.config_max_rotation_vel)
 
         # Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
-        cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose.orientation)) * walk_vel
-        cmd_vel.linear.y = math.sin(walk_angle - self._get_yaw(current_pose.orientation)) * walk_vel
+        cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose)) * walk_vel
+        cmd_vel.linear.y = math.sin(walk_angle - self._get_yaw(current_pose)) * walk_vel
 
         # Scale command accordingly if a limit is acceded
         if cmd_vel.linear.x > self.config_max_vel_x:
@@ -117,3 +121,9 @@ class Controller:
         cmd_vel.angular.z = rot_goal_vel
 
         return cmd_vel
+
+    def _get_yaw(self, pose: Pose) -> float:
+        """
+        Returns the yaw angle of a given pose
+        """
+        return euler_from_quaternion(numpify(pose.orientation))[2]
