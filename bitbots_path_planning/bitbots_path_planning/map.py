@@ -12,7 +12,6 @@ from tf2_geometry_msgs import PointStamped
 
 from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 
-OBSTACLE_VALUE = 50
 
 class Map:
     """
@@ -33,8 +32,9 @@ class Map:
         self.ball_buffer: List[Point] = []
         self.robot_buffer: List[sv3dm.Robot] = []
         self.config_ball_diameter: float = self.node.declare_parameter('map.ball_diameter', 0.13).value
-        self.config_inflation_dialation: int = self.node.declare_parameter('map.inflation.dialte', 3).value
         self.config_inflation_blur: int = self.node.declare_parameter('map.inflation.blur', 13).value
+        self.config_inflation_dialation: int = self.node.declare_parameter('map.inflation.dialte', 3).value
+        self.config_obstacle_value: int = self.node.declare_parameter('map.obstacle_value', 50).value
 
     def set_ball(self, ball: PoseWithCertaintyStamped) -> None:
         """
@@ -58,7 +58,7 @@ class Map:
                 self.map,
                 self.to_map_space(ball.x, ball.y)[::-1],
                 round(self.config_ball_diameter * self.resolution),
-                OBSTACLE_VALUE,
+                self.config_obstacle_value,
                 -1)
 
     def set_robots(self, robots: sv3dm.RobotArray):
@@ -88,7 +88,7 @@ class Map:
                 self.map,
                 self.to_map_space(robot[1].x, robot[1].y)[::-1],
                 round(max(numpify(robot[0].bb.size)[:2]) * self.resolution),
-                OBSTACLE_VALUE,
+                self.config_obstacle_value,
                 -1)
 
     def to_map_space(self, x: float, y: float) -> Tuple[int, int]:

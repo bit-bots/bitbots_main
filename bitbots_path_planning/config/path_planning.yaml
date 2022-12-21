@@ -12,6 +12,7 @@ bitbots_path_planning:
       ball_update_topic: ball_relative_filtered
       robot_update_topic: robots_relative_filtered
       ball_diameter: 0.13
+      obstacle_value: 50
       inflation:
         dialte: 3
         blur: 13
