@@ -40,10 +40,7 @@ class BlackboardCapsule:
         self.state = msg
 
     def is_currently_walking(self) -> bool:
-        if self.state is not None:
-            return self.state.state == RobotControlState.WALKING
-        else:
-            return False
+        return self.state is not None and self.state.state == RobotControlState.WALKING
 
     #############
     # ## Timer ##
