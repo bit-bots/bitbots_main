@@ -2,7 +2,7 @@ from typing import Optional
 
 import numpy as np
 import pyastar2d
-import tf2_geometry_msgs  # Is there for tf to recognize geomety_msgs even if it is not used explicitly
+import tf2_geometry_msgs  # Is there for tf to recognize geometry_msgs even if it is not used explicitly
 import tf2_ros as tf2
 from bitbots_path_planning.map import Map
 from geometry_msgs.msg import PoseStamped
