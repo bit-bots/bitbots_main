@@ -1,0 +1,30 @@
+bitbots_path_planning:
+  ros__parameters:
+    base_footprint_frame: base_footprint
+    tf_buffer_duration: 5.0
+    rate: 20.0
+    map:
+      planning_frame: map
+      resolution: 20  # Pixel per meter
+      size:
+        x: 11.0
+        y: 8.0
+      ball_update_topic: ball_relative_filtered
+      robot_update_topic: robots_relative_filtered
+      ball_diameter: 0.13
+      obstacle_value: 50
+      inflation:
+        dialte: 3
+        blur: 13
+    controller:
+      carrot_distance: 20
+      rotation_accuracy: 0.1
+      position_accuracy: 0.05
+      max_rotation_vel: 0.4
+      max_vel_x: 0.25
+      min_vel_x: -0.2
+      max_vel_y: 0.08
+      smoothing_k: 0.4
+      rotation_slow_down_factor: 0.3
+      translation_slow_down_factor: 0.5
+      orient_to_goal_distance: 1.0
