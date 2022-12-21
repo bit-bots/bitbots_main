@@ -1,22 +1,30 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- set parameters -->
-    <arg name="behavior" description="start the behavior" default="true"/>
-    <arg name="ball_filter" description="start the ball filter" default="true"/>
-    <arg name="localization" description="start the localization, if false publish ground truth" default="true" />
-    <arg name="game_controller" description="start the game controller" default="true"/>
-    <arg name="vision_debug" default="false" description="activates the debug output of the vision pipeline"/>
 
-    <!-- load the general simulator and motion -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/simulator.launch" />
+    <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
+    <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
+    <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
+    <arg name="localization" default="true" description="Whether the localization system should be started" />
+    <arg name="motion" default="true" description="Whether the motion control system should be started" />
+    <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
+    <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
+    <arg name="vision" default="true" description="Whether the vision system should be started" />
+    <arg name="world_model" default="true" description="Whether the world model should be started"/>
 
-    <!-- load highlevel stuff -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
+    <!-- load the general simulator -->
+    <include file="$(find-pkg-share wolfgang_webots_sim)/launch/simulation.launch" />
+
+    <!-- load teamplayer software stack -->
+    <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
         <arg name="behavior" value="$(var behavior)" />
         <arg name="game_controller" value="$(var game_controller)"/>
+        <arg name="ipm" value="$(var ipm)" />
         <arg name="localization" value="$(var localization)" />
+        <arg name="motion" value="$(var motion)" />
         <arg name="sim" value="true" />
-        <arg name="vision_debug" value="$(var vision_debug)"/>
-        <arg name="ball_filter" value="$(var ball_filter)"/>
+        <arg name="path_planning" value="$(var path_planning)" />
+        <arg name="teamcom" value="$(var teamcom)" />
+        <arg name="vision" value="$(var vision)"/>
+        <arg name="world_model" value="$(var world_model)"/>
     </include>
 </launch>
