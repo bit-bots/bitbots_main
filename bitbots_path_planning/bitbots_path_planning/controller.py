@@ -98,24 +98,22 @@ class Controller:
 
         # Scale command accordingly if a limit is exceded
         if cmd_vel.linear.x > self.config_max_vel_x:
-            self.node.get_logger().debug("X LIMIT reached: %f > %f, with y %f".format(cmd_vel.linear.y, self.config_max_vel_x, cmd_vel.linear.y));
+            self.node.get_logger().debug(f"X LIMIT reached: {cmd_vel.linear.x} > {self.config_max_vel_x}, with Y being {cmd_vel.linear.y}");
             cmd_vel.linear.y *= self.config_max_vel_x / cmd_vel.linear.x
             cmd_vel.linear.x = self.config_max_vel_x
-            self.node.get_logger().debug("X LIMIT set y %f".format(cmd_vel.linear.y))
+            self.node.get_logger().debug(f"X LIMIT reached: set Y to {cmd_vel.linear.y}")
 
         if cmd_vel.linear.x < self.config_min_vel_x:
-            self.node.get_logger().debug("X LIMIT reached: %f < %f, with y %f".format(cmd_vel.linear.x, self.config_min_vel_x, cmd_vel.linear.y))
+            self.node.get_logger().debug(f"X LIMIT reached: {cmd_vel.linear.x} < {self.config_min_vel_x}, with Y being {cmd_vel.linear.y}")
             cmd_vel.linear.y *= self.config_min_vel_x / cmd_vel.linear.x
             cmd_vel.linear.x = self.config_min_vel_x
-            self.node.get_logger().debug("X LIMIT set y %f".format(cmd_vel.linear.y))
+            self.node.get_logger().debug(f"X LIMIT reached: set Y to {cmd_vel.linear.y}")
 
-        max_y = self.config_max_vel_y
-
-        if abs(cmd_vel.linear.y) > max_y:
-            self.node.get_logger().debug("Y LIMIT reached: %f > %f, with x %f".format(cmd_vel.linear.y, max_y, cmd_vel.linear.x))
-            cmd_vel.linear.x *= max_y / abs(cmd_vel.linear.y)
-            cmd_vel.linear.y *= max_y / abs(cmd_vel.linear.y)
-            self.node.get_logger().debug("Y LIMIT set x %f".format(cmd_vel.linear.x))
+        if abs(cmd_vel.linear.y) > self.config_max_vel_y:
+            self.node.get_logger().debug(f"Y LIMIT reached: {cmd_vel.linear.y} > {self.config_max_vel_y}, with X being {cmd_vel.linear.x}")
+            cmd_vel.linear.x *= self.config_max_vel_y / abs(cmd_vel.linear.y)
+            cmd_vel.linear.y *= self.config_max_vel_y / abs(cmd_vel.linear.y)
+            self.node.get_logger().debug(f"Y LIMIT reached: set X to {cmd_vel.linear.x}")
 
         # Apply the desired rotational velocity
         cmd_vel.angular.z = rot_goal_vel
