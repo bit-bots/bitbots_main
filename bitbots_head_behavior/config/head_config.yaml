@@ -92,9 +92,9 @@
         tilt_speed: 3.0
         pan_speed: 3.0
         pan_max: [ 0.0, 0.0 ]
-        tilt_max: [ -10.0, -60.0 ]
+        tilt_max: [ -10.0, -70.0 ]
         scan_lines: 2
-        reduce_last_scanline: 0.2
+        reduce_last_scanline: 0.0
 
       # Values for the visual compass record pattern
       record_pattern_scan_lines: 2

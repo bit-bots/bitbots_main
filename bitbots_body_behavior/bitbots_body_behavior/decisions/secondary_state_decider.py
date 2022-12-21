@@ -1,5 +1,7 @@
-# -*- coding:utf-8 -*-
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 from humanoid_league_msgs.msg import GameState
 
 
@@ -8,7 +10,7 @@ class SecondaryStateDecider(AbstractDecisionElement):
     Decides in which secondary state the game is currently in. The mode of the secondary state is handled in the
     game controller receiver, so the behavior does ont need to deal with this.
     """
-
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateDecider, self).__init__(blackboard, dsd, parameters)
         self.secondary_game_states = {
@@ -59,7 +61,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
     """
     Decides if our team or the other team is allowed to execute the secondary state.
     """
-
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
         self.team_id = self.blackboard.gamestate.get_team_id()
@@ -87,7 +89,7 @@ class SecondaryStateModeDecider(AbstractDecisionElement):
     """
     Decides which mode in the secondary state we are.
     """
-
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(SecondaryStateModeDecider, self).__init__(blackboard, dsd)
         self.modes = {

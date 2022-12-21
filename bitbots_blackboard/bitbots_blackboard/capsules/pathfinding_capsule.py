@@ -1,98 +1,53 @@
-import rclpy
-from rclpy.clock import ClockType
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from bitbots_blackboard.blackboard import BodyBlackboard
+
+import math
+
+import numpy as np
+import tf2_ros
+from geometry_msgs.msg import Point, PoseStamped, Twist
+from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-from rclpy.time import Time
-import math
-from rclpy.duration import Duration
-import tf2_ros
-import numpy as np
 from ros2_numpy import numpify
-from geometry_msgs.msg import PoseStamped, Point, Twist
-from actionlib_msgs.msg import GoalID
+from std_msgs.msg import Empty
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from bitbots_utils.utils import get_parameters_from_other_node
 
 
 class PathfindingCapsule:
     def __init__(self, blackboard: "BodyBlackboard", node: Node):
         self.node = node
-        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
-        # Thresholds to determine whether the transmitted goal is a new one
+        self._blackboard = blackboard
+        self.map_frame: str = self.node.get_parameter('map_frame').value
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=2))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
-        self.position_threshold = self.node.get_parameter('body.pathfinding_position_threshold').get_parameter_value().double_value
-        self.orientation_threshold = self.node.get_parameter('body.pathfinding_orientation_threshold').get_parameter_value().double_value
-        self.direct_cmd_vel_pub = None  # type: Publisher
-        self.pathfinding_pub = None  # type: Publisher
-        self.pathfinding_cancel_pub = None  # type: Publisher
-        self.path_to_ball_pub = None  # type: Publisher
-        self.ball_obstacle_active_pub = None
-        self.keep_out_area_pub = None
-        self.approach_marker_pub = None
-        self.goal = None  # type: PoseStamped
-        self.current_pose = None  # type: PoseStamped
-        self.status = -1  # Current status of movebase
-        self.avoid_ball = True
+        self.position_threshold: str = self.node.get_parameter('body.pathfinding_position_threshold').value
+        self.orientation_threshold: str = self.node.get_parameter('body.pathfinding_orientation_threshold').value
+        self.direct_cmd_vel_pub: Optional[Publisher] = None
+        self.pathfinding_pub: Optional[Publisher] = None
+        self.pathfinding_cancel_pub: Optional[Publisher] = None
+        self.ball_obstacle_active_pub: Optional[Publisher] = None
+        self.approach_marker_pub: Optional[Publisher] = None
+        self.goal: Optional[PoseStamped] = None
+        self.avoid_ball: bool = True
         self.current_cmd_vel = Twist()
-        self._blackboard = blackboard
-        #self.orient_to_ball_distance = self.node.get_parameter("move_base.BBPlanner.orient_to_goal_distance").get_parameter_value().double_value
-        self.orient_to_ball_distance = 0.5  # TODO: fill in new value once the planner is ported
+        self.orient_to_ball_distance: float = get_parameters_from_other_node(
+            self.node,
+            'bitbots_path_planning',
+            ['controller.orient_to_goal_distance'])["controller.orient_to_goal_distance"]
 
-    def publish(self, msg):
-        # type: (PoseStamped) -> None
-        self.status = -1
-        map_goal = self.transform_goal_to_map(msg)
-        if map_goal:
-            self.goal = map_goal
-            self.pathfinding_pub.publish(self.fix_rotation(map_goal))
+    def publish(self, msg: PoseStamped):
+        self.goal = msg
+        self.pathfinding_pub.publish(msg)
 
-    def transform_goal_to_map(self, msg):
-        # type: (PoseStamped) -> PoseStamped
-        # transform local goal to goal in map frame
-        if msg.header.frame_id == self.map_frame:
-            return msg
-        else:
-            try:
-                msg.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg() #TODO: maybe weird
-                map_goal = self.tf_buffer.transform(msg, self.map_frame, timeout=Duration(seconds=0.5))
-                e = euler_from_quaternion((map_goal.pose.orientation.x, map_goal.pose.orientation.y,
-                                           map_goal.pose.orientation.z, map_goal.pose.orientation.w))
-                q = quaternion_from_euler(0, 0, e[2])
-                map_goal.pose.orientation.x = q[0]
-                map_goal.pose.orientation.y = q[1]
-                map_goal.pose.orientation.z = q[2]
-                map_goal.pose.orientation.w = q[3]
-                map_goal.pose.position.z = 0.0
-                return map_goal
-            except Exception as e:
-                self.node.get_logger().warn(e)
-                return
-
-    def fix_rotation(self, msg):
-        # type: (PoseStamped) -> PoseStamped
-        # this adds translatory movement to a rotation to fix a pathfinding issue
-        if (msg.pose.position.x == 0 and msg.pose.position.y == 0 and
-                not (msg.pose.orientation.x == 0 and msg.pose.orientation.y == 0 and msg.pose.orientation.z == 0)):
-            msg.pose.position.x = 0.01
-            msg.pose.position.y = 0.01
-        return msg
-
-    def feedback_callback(self, msg):
-        # type: (PoseStamped) -> None
-        self.current_pose = msg.feedback.base_position
-
-    def status_callback(self, msg):
-        self.status = msg.status.status
-
-    def get_goal(self):
-        # type: () -> PoseStamped
+    def get_goal(self) -> PoseStamped:
         return self.goal
 
-    def get_current_pose(self):
-        return self.current_pose
-
     def cancel_goal(self):
-        self.pathfinding_cancel_pub.publish(GoalID())
+        self.pathfinding_cancel_pub.publish(Empty())
 
     def cmd_vel_cb(self, msg: Twist):
         self.current_cmd_vel = msg
@@ -114,9 +69,8 @@ class PathfindingCapsule:
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
             self._blackboard.team_data.own_time_to_ball = 9999.0
-            return None
 
-    def time_to_ball_from_poses(self, own_pose: PoseStamped, goal_pose: PoseStamped):
+    def time_to_ball_from_poses(self, own_pose: PoseStamped, goal_pose: PoseStamped) -> float:
         # calculate length of path
         start_point = own_pose.pose.position
         end_point = goal_pose.pose.position
@@ -143,7 +97,7 @@ class PathfindingCapsule:
                          start_theta_cost + goal_theta_cost
         return total_cost
 
-    def get_ball_goal(self, target, distance):
+    def get_ball_goal(self, target: str, distance: float) -> PoseStamped:
 
         if 'gradient_goal' == target:
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()

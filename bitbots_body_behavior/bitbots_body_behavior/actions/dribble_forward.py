@@ -1,13 +1,12 @@
 import numpy as np
-import tf2_ros as tf2
-from tf2_geometry_msgs import PoseStamped
-from geometry_msgs.msg import Point, Quaternion, Twist
-from tf_transformations import quaternion_from_euler
+from bitbots_blackboard.blackboard import BodyBlackboard
+from geometry_msgs.msg import Twist
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class DribbleForward(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.max_speed_x = self.blackboard.config['dribble_max_speed_x']
@@ -43,5 +42,5 @@ class DribbleForward(AbstractActionElement):
         cmd_vel = Twist()
         cmd_vel.linear.x = self.current_speed_x
         cmd_vel.linear.y = self.current_speed_y
-        cmd_vel.angular.z = 0
+        cmd_vel.angular.z = 0.0
         self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)

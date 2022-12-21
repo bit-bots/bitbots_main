@@ -1,12 +1,13 @@
 import random
 
+from bitbots_blackboard.blackboard import BodyBlackboard
 from tf2_geometry_msgs import PoseStamped
-from geometry_msgs.msg import Point
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToRolePosition(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToRolePosition, self).__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config['role_positions']
@@ -23,7 +24,7 @@ class GoToRolePosition(AbstractActionElement):
                 generalized_role_position = role_positions[f'offense_{kickoff_type}_{pos_number}']
             else:
                 # players other than the goalie have multiple possible positions
-                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{pos_number}']
+                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{0}']
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 

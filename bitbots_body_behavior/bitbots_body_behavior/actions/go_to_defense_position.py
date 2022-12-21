@@ -1,13 +1,16 @@
 import math
 
 import numpy as np
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
 from tf_transformations import quaternion_from_euler
 
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+
 
 class GoToDefensePosition(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToDefensePosition, self).__init__(blackboard, dsd, parameters)
 

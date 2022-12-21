@@ -1,8 +1,5 @@
-from rclpy.duration import Duration
-import rclpy
-import humanoid_league_msgs.msg
-from humanoid_league_msgs.action import PlayAnimation
-from actionlib_msgs.msg import GoalStatus
+from bitbots_blackboard.blackboard import BodyBlackboard
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -13,9 +10,11 @@ class AbstractPlayAnimation(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super(AbstractPlayAnimation, self).__init__(blackboard, dsd, parameters=None)
+        self.blackboard: BodyBlackboard
 
         self.first_perform = True
         self.finished = False
+        self.from_hcm = parameters.get("from_hcm", False)
 
     def perform(self, reevaluate=False):
         # we never want to leave the action when we play an animation
@@ -24,10 +23,10 @@ class AbstractPlayAnimation(AbstractActionElement):
         if self.first_perform:
             # get the animation that should be played
             # defined by implementations of this abstract class
-            anim = self.chose_animation()
+            anim = self.get_animation_name()
 
             # try to start animation
-            success = self.start_animation(anim)
+            success = self.blackboard.animation.play_animation(anim, self.from_hcm)
             # if we fail, we need to abort this action
             if not success:
                 self.blackboard.node.get_logger().error("Could not start animation. Will abort play animation action!")
@@ -36,80 +35,43 @@ class AbstractPlayAnimation(AbstractActionElement):
             self.first_perform = False
             return
 
-        if self.finished:
+        if not self.blackboard.animation.is_busy():
             # we are finished playing this animation
             return self.pop()
 
-    def chose_animation(self):
+    def get_animation_name(self) -> str:
         # this is what has to be implemented returning the animation to play
         raise NotImplementedError
 
-    def start_animation(self, anim):
-        """
-        This will NOT wait by itself. You have to check
-        animation_finished()
-        by yourself.
-        :param anim: animation to play
-        :return:
-        """
-        self.finished = False
-        self.blackboard.node.get_logger().info("Playing animation " + anim)
-        if anim is None or anim == "":
-            self.blackboard.node.get_logger().warning("Tried to play an animation with an empty name!")
-            return False
-        first_try = self.blackboard.animation_action_client.wait_for_server(
-            Duration(seconds=1))
-        if not first_try:
-            server_running = False
-            while not server_running and not rclpy.ok():
-                self.blackboard.node.get_logger().error_throttle(5.0,
-                                      "Animation Action Server not running! Motion can not work without animation action server. "
-                                      "Will now wait until server is accessible!")
-                server_running = self.blackboard.animation_action_client.wait_for_server(Duration(seconds=1))
-            if server_running:
-                self.blackboard.node.get_logger().warning("Animation server now running, hcm will go on.")
-            else:
-                self.blackboard.node.get_logger().warning("Animation server did not start.")
-                return False
-        goal = PlayAnimation.Goal()
-        goal.animation = anim
-        goal.hcm = True  # the animation is from the hcm
-        future = self.blackboard.animation_action_client.send_goal_async(goal)
-        future.add_done_callback(self.done_cb)
-        return True
-
-    def done_cb(self, future):
-        self.finished = True
-
 
 class PlayAnimationGoalieArms(AbstractPlayAnimation):
-    def chose_animation(self):
+    def get_animation_name(self):
         return self.blackboard.goalie_arms_animation
 
 
 class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
-    def chose_animation(self):
+    def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING RIGHT ANIMATION")
         return self.blackboard.goalie_falling_right_animation
 
 
 class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
-    def chose_animation(self):
+    def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING LEFT ANIMATION")
         return self.blackboard.goalie_falling_left_animation
 
 class PlayAnimationGoalieFallCenter(AbstractPlayAnimation):
-    def chose_animation(self):
+    def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING CENTER ANIMATION")
         return self.blackboard.goalie_falling_center_animation
 
 
 class PlayAnimationCheering(AbstractPlayAnimation):
-    def chose_animation(self):
+    def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING CHEERING ANIMATION")
         return self.blackboard.cheering_animation
 
 
 class PlayAnimationInit(AbstractPlayAnimation):
-    def chose_animation(self):
+    def get_animation_name(self):
         return self.blackboard.init_animation

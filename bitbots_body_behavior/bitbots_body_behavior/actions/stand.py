@@ -1,7 +1,7 @@
 import random
 
+from bitbots_blackboard.blackboard import BodyBlackboard
 from rclpy.duration import Duration
-from tf2_geometry_msgs import PoseStamped
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -10,6 +10,7 @@ class CancelPathplanning(AbstractActionElement):
     """Only cancel the pathplanning goal without completly stopping the walking"""
 
     def perform(self, reevaluate=False):
+        self.blackboard: BodyBlackboard
         self.blackboard.pathfinding.cancel_goal()
         self.pop()
 
@@ -19,6 +20,7 @@ class WalkInPlace(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: BodyBlackboard
         self.duration = parameters.get('duration', None)
 
         self.start_time = self.blackboard.node.get_clock().now()

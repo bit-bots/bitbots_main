@@ -1,8 +1,11 @@
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
 from tf2_geometry_msgs import PoseStamped
+
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToBlockPosition(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToBlockPosition, self).__init__(blackboard, dsd, parameters)
         self.block_position_goal_offset = self.blackboard.config['block_position_goal_offset']

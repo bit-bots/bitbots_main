@@ -1,23 +1,16 @@
-# -*- encoding:utf-8 -*-
-"""
-GoTo
-^^^^
-
-.. moduleauthor: Timon Engelke <7engelke@informatik.uni-hamburg.de>
-
-Goes to a position or an object
-"""
-
 import math
-import tf2_ros as tf2
-from tf_transformations import quaternion_from_euler
-from tf2_geometry_msgs import PoseStamped
+
+from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Quaternion
+from tf2_geometry_msgs import PoseStamped
+from tf_transformations import quaternion_from_euler
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToRelativePosition(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    blackboard: BodyBlackboard
+    def __init__(self, blackboard, dsd, parameters: dict = None):
         """Go to a position relative to the robot
         :param dsd:
 
@@ -50,6 +43,7 @@ class GoToRelativePosition(AbstractActionElement):
 
 
 class GoToAbsolutePosition(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         """Go to an absolute position on the field
         :param dsd:
@@ -79,10 +73,11 @@ class GoToOwnGoal(GoToAbsolutePosition):
         :param dsd:
 
         """
-        point = (blackboard.world_model.get_map_based_own_goal_center_xy()[0],
-                 blackboard.world_model.get_map_based_own_goal_center_xy()[1],
-                 parameters)
-        super(GoToOwnGoal, self).__init__(blackboard, dsd, point)
+        super(GoToOwnGoal, self).__init__(blackboard, dsd, parameters)
+        self.point = (
+            self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
+            self.blackboard.world_model.get_map_based_own_goal_center_xy()[1],
+            parameters)
 
 
 class GoToEnemyGoal(GoToAbsolutePosition):
@@ -91,10 +86,11 @@ class GoToEnemyGoal(GoToAbsolutePosition):
         :param dsd:
 
         """
-        point = (blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
-                 blackboard.world_model.get_map_based_opp_goal_center_xy()[1],
-                 parameters)
-        super(GoToEnemyGoal, self).__init__(blackboard, dsd, point)
+        super(GoToEnemyGoal, self).__init__(blackboard, dsd, parameters)
+        self.point = (
+            self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
+            self.blackboard.world_model.get_map_based_opp_goal_center_xy()[1],
+            parameters)
 
 
 class GoToCenterpoint(GoToAbsolutePosition):
@@ -102,6 +98,6 @@ class GoToCenterpoint(GoToAbsolutePosition):
         """Go to the center of the field and look towards the enemy goal
         :param dsd:
         """
-        point = 0, 0, 0
-        super(GoToCenterpoint, self).__init__(blackboard, dsd, point)
+        super(GoToCenterpoint, self).__init__(blackboard, dsd, parameters)
+        self.point = 0, 0, 0
 

@@ -1,7 +1,11 @@
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class LocalizationAvailable(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(LocalizationAvailable, self).__init__(blackboard, dsd, parameters)
         self.use_localization = blackboard.config['use_localization']  # type: bool
@@ -21,6 +25,7 @@ class LocalizationAvailable(AbstractDecisionElement):
 
 
 class LocalizationPrecision(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(LocalizationPrecision, self).__init__(blackboard, dsd, parameters)
 

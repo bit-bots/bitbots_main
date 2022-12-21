@@ -1,8 +1,12 @@
+from bitbots_blackboard.blackboard import BodyBlackboard
 from rclpy.duration import Duration
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class BallSeen(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(BallSeen, self).__init__(blackboard, dsd, parameters)
         self.ball_lost_time = Duration(seconds=self.blackboard.config['ball_lost_time'])

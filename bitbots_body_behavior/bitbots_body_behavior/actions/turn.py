@@ -1,16 +1,17 @@
 import math
+
 from actionlib_msgs.msg import GoalStatus
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from humanoid_league_msgs.msg import HeadMode
+from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import PoseStamped
 from tf_transformations import quaternion_from_euler
 
-
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class TurnAround(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(TurnAround, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard: BodyBlackboard
 
         self.orientation_thresh = parameters.get('thresh', 0.5)
         pose = self.blackboard.world_model.get_current_position()
@@ -42,34 +43,5 @@ class TurnAround(AbstractActionElement):
         theta = self.blackboard.world_model.get_current_position()[2]
 
         self.blackboard.pathfinding.publish(self.pose_msg)
-        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED] or \
-                (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
+        if (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
             self.pop()
-
-
-class TurnZero(TurnAround):
-    def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
-
-        self.orientation_thresh = parameters.get('thresh', 0.5)
-        pose = self.blackboard.world_model.get_current_position()
-        if pose is None:
-            self.pop()
-            return
-        x, y, _ = pose
-        self.theta = 0
-        self.pose_msg = create_pose_msg(self.blackboard.map_frame, x, y, self.theta)
-
-
-class TurnToOwnSide(TurnAround):
-    def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters)
-
-        self.orientation_thresh = parameters.get('thresh', 0.5)
-        pose = self.blackboard.world_model.get_current_position()
-        if pose is None:
-            self.pop()
-            return
-        x, y, _ = pose
-        self.theta = math.pi
-        self.pose_msg = create_pose_msg(self.blackboard.map_frame, x, y, self.theta)

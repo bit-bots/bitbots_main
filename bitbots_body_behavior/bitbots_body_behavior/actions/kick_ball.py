@@ -1,13 +1,13 @@
-import math
-import numpy as np
-from bitbots_msgs.action import Kick
+from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Quaternion
 from tf_transformations import quaternion_from_euler
 
+from bitbots_msgs.action import Kick
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AbstractKickAction(AbstractActionElement):
+    blackboard: BodyBlackboard
     def pop(self):
         self.blackboard.world_model.forget_ball(own=True, team=True, reset_ball_filter=True)
         super(AbstractKickAction, self).pop()
@@ -28,8 +28,8 @@ class KickBallStatic(AbstractKickAction):
                 'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.animation.is_animation_busy():
-            self.blackboard.animation.play_animation(self.kick)
+        if not self.blackboard.animation.is_busy():
+            self.blackboard.animation.play_animation(self.kick, False)
 
 
 class KickBallDynamic(AbstractKickAction):
@@ -54,7 +54,7 @@ class KickBallDynamic(AbstractKickAction):
         self.never_reevaluate = parameters.get('r', True) and parameters.get('reevaluate', True)
 
     def perform(self, reevaluate=False):
-
+        self.publish_debug_data("Currently Kicking", self.blackboard.kick.is_currently_kicking)
         if not self.blackboard.kick.is_currently_kicking:
             if not self._goal_sent:
                 goal = Kick.Goal()
@@ -67,7 +67,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.kick_speed = 6.7
                     goal.ball_position.x = 0.22
                     goal.ball_position.y = 0.0
-                    goal.ball_position.z = 0
+                    goal.ball_position.z = 0.0
                     goal.unstable = True
 
                     # only check 2 directions, left and right
@@ -79,10 +79,10 @@ class KickBallDynamic(AbstractKickAction):
                             self.angular_range)
                 else:
                     ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-                    goal.kick_speed = 1
+                    goal.kick_speed = 1.0
                     goal.ball_position.x = ball_u
                     goal.ball_position.y = ball_v
-                    goal.ball_position.z = 0
+                    goal.ball_position.z = 0.0
                     goal.unstable = False
 
                     kick_direction = self.blackboard.world_model.get_best_kick_direction(
@@ -92,28 +92,11 @@ class KickBallDynamic(AbstractKickAction):
                             self.kick_length,
                             self.angular_range)
 
-                goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, kick_direction))
+                goal.kick_direction = Quaternion(**dict(zip(
+                    "xyzw",
+                    quaternion_from_euler(0, 0, kick_direction))))
 
                 self.blackboard.kick.kick(goal)
                 self._goal_sent = True
             else:
                 self.pop()
-
-
-class KickBallVeryHard(AbstractKickAction):
-    def __init__(self, blackboard, dsd, parameters=None):
-        super(KickBallVeryHard, self).__init__(blackboard, dsd, parameters)
-        if 'foot' not in parameters.keys():
-            # usually, we kick with the right foot
-            self.hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
-        elif 'right' == parameters['foot']:
-            self.hard_kick = 'kick_right'  # TODO get actual name of parameter from some config
-        elif 'left' == parameters['foot']:
-            self.hard_kick = 'kick_left'  # TODO get actual name of parameter from some config
-        else:
-            self.blackboard.node.get_logger().error(
-                'The parameter \'{}\' could not be used to decide which foot should kick'.format(parameters['foot']))
-
-    def perform(self, reevaluate=False):
-        if not self.blackboard.animation.is_animation_busy():
-            self.blackboard.animation.play_animation(self.hard_kick)

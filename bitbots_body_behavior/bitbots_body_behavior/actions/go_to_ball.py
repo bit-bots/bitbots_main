@@ -1,12 +1,15 @@
-from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Vector3
-from std_msgs.msg import ColorRGBA
 from actionlib_msgs.msg import GoalStatus
+from bitbots_blackboard.blackboard import BodyBlackboard
+from geometry_msgs.msg import Vector3
 from rclpy.duration import Duration
+from std_msgs.msg import ColorRGBA
+from visualization_msgs.msg import Marker
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class GoToBall(AbstractActionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToBall, self).__init__(blackboard, dsd, parameters)
 
@@ -35,12 +38,12 @@ class GoToBall(AbstractActionElement):
         color.a = 1.0
         approach_marker.color = color
         approach_marker.lifetime = Duration(seconds=0.5).to_msg()
-        scale = Vector3(0.2, 0.2, 0.2)
+        scale = Vector3(x=0.2, y=0.2, z=0.2)
         approach_marker.scale = scale
         approach_marker.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         approach_marker.header.frame_id = self.blackboard.world_model.base_footprint_frame
 
         self.blackboard.pathfinding.approach_marker_pub.publish(approach_marker)
 
-        if self.blackboard.pathfinding.status in [GoalStatus.SUCCEEDED, GoalStatus.ABORTED] or not self.blocking:
+        if not self.blocking:
             self.pop()

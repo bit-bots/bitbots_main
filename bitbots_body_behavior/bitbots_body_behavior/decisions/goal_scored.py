@@ -1,7 +1,11 @@
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
 
 
 class GoalScoreRecently(AbstractDecisionElement):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoalScoreRecently, self).__init__(blackboard, dsd, parameters)
         self.time = parameters.get('time', 2)
@@ -21,6 +25,7 @@ class GoalScoreRecently(AbstractDecisionElement):
         return True
 
 class AnyGoalScoreRecently(GoalScoreRecently):
+    blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 

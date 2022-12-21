@@ -119,7 +119,7 @@
         topic: "dynamic_kick"
 
       # the maximal allowed standard deviation of the localization pose.
-      pose_precision_threshold:
+      localization_precision_threshold:
         x_sdev: 0.5
         y_sdev: 0.5
         theta_sdev: 0.6
