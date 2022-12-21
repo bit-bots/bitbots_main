@@ -106,7 +106,7 @@ class Controller:
         if cmd_vel.linear.x < self.config_min_vel_x:
             self.node.get_logger().debug("X LIMIT reached: %f < %f, with y %f".format(cmd_vel.linear.x, self.config_min_vel_x, cmd_vel.linear.y))
             cmd_vel.linear.y *= self.config_min_vel_x / cmd_vel.linear.x
-            cmd_vel.linear.x =self. config_min_vel_x
+            cmd_vel.linear.x = self.config_min_vel_x
             self.node.get_logger().debug("X LIMIT set y %f".format(cmd_vel.linear.y))
 
         max_y = self.config_max_vel_y
