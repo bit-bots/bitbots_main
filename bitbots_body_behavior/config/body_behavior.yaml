@@ -246,6 +246,4 @@
       time_to_ball_remember_time: 1.0
 
 
-    role: "goalie"
-
     goal_width: 2.6
