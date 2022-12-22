@@ -13,7 +13,66 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
 - Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
-- Install some ROS tools: ``sudo apt install python3-rosdep python3-colcon-common-extensions python-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor``
+- Install additional dependencies:
+
+.. code-block:: bash
+
+  sudo apt install \
+    espeak \
+    ffmpeg \
+    libespeak-dev \
+    libfmt-dev \
+    librange-v3-dev \
+    librostest-dev \
+    libtf-conversions-dev \
+    liburdfdom-dev \
+    libyaml-cpp-dev \
+    llvm \
+    protobuf-compiler \
+    python3-colcon-common-extensions \
+    python3-colcon-ed \
+    python3-construct \
+    python3-pip \
+    python3-protobuf \
+    python3-pybind11 \
+    python3-rosdep \
+    radeontop \
+    ros-rolling-ament-cmake-nose \
+    ros-rolling-backward-ros \
+    ros-rolling-behaviortree-cpp-v3 \
+    ros-rolling-bondcpp \
+    ros-rolling-camera-calibration \
+    ros-rolling-camera-info-manager \
+    ros-rolling-controller-interface \
+    ros-rolling-controller-manager \
+    ros-rolling-desktop \
+    ros-rolling-diagnostic-aggregator \
+    ros-rolling-effort-controllers \
+    ros-rolling-gazebo-msgs \
+    ros-rolling-image-proc \
+    ros-rolling-joint-state-broadcaster \
+    ros-rolling-joint-state-publisher-gui \
+    ros-rolling-joint-trajectory-controller \
+    ros-rolling-joy-linux \
+    ros-rolling-moveit-planners-ompl \
+    ros-rolling-moveit-ros \
+    ros-rolling-moveit-simple-controller-manager \
+    ros-rolling-nav2-bringup \
+    ros-rolling-plotjuggler-ros \
+    ros-rolling-position-controllers \
+    ros-rolling-rmw-cyclonedds-cpp \
+    ros-rolling-robot-localization \
+    ros-rolling-rot-conv \
+    ros-rolling-rqt-robot-monitor \
+    ros-rolling-soccer-vision-2d-msgs \
+    ros-rolling-soccer-vision-3d-msgs \
+    ros-rolling-soccer-vision-3d-rviz-markers \
+    ros-rolling-test-msgs \
+    ros-rolling-tf-transformations \
+    ros-rolling-transmission-interface \
+    ros-rolling-velocity-controllers \
+    ros-rolling-vision-msgs \
+    ros-rolling-xacro
 
 **2. Install webots**
 
@@ -46,6 +105,7 @@ with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep install --f
 We also need to install some python packages using ``pip``, the python package manager.
 
 - Upgrade python package manager: ``pip3 install pip -U``
+- Optionally if you want you can setup a local venv with: ``python -m venv venv-bitbots && source venv-bitbots/bin/activate``
 - Install required python packages: ``pip3 install --user -r requirements.txt``
 
 **5. Setup colcon workspace**
@@ -70,7 +130,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export PATH=\$PATH:\$HOME/.local/bin
   export COLCON_WS="\$HOME/colcon_ws"
   export COLCON_LOG_LEVEL=30
-  export RCUTILS_COLORIZED_OUTPUT=1 
+  export RCUTILS_COLORIZED_OUTPUT=1
   export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
   source /opt/ros/rolling/setup.bash
   eval "\$(register-python-argcomplete3 ros2)"
