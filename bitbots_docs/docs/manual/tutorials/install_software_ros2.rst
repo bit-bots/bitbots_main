@@ -87,12 +87,11 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
   alias cdc='cd \$COLCON_WS'
 
-  alias cba='cdc && colcon build --symlink-install'
-  alias cbn='cdc && colcon build --symlink-install --packages-select'
-  alias cb='cdc && colcon build --symlink-install --packages-up-to'
+  alias cba='cdc && colcon build --symlink-install --continue-on-error'
+  alias cbn='cdc && colcon build --symlink-install --continue-on-error --packages-select'
+  alias cb='cdc && colcon build --symlink-install --continue-on-error --packages-up-to'
   alias cc='cdc && colcon clean packages --packages-select'
   alias cca='cdc && colcon clean packages'
-  alias cbv='cdc && colcon build --symlink-install --packages-up-to bitbots_vision'
 
   alias sr='source /opt/ros/rolling/setup.bash'
   alias sc='source \$COLCON_WS/install/setup.bash'
