@@ -19,12 +19,11 @@ RUN apt-get install -y build-essential git sudo python3-pip python3-rospkg \
     python3-opencv ros-rolling-gazebo-msgs ros-rolling-imu-complementary-filter xvfb \
     ros-rolling-map-msgs ros-rolling-navigation2 ros-rolling-moveit-core \
     ros-rolling-moveit-ros-planning ros-rolling-moveit-ros-planning-interface ros-rolling-robot-state-publisher \
-    python3-sphinx-rtd-theme ros-rolling-image-transport \
+    python3-sphinx-rtd-theme ros-rolling-image-transport ros-rolling-vision-msgs ros-rolling-test-msgs \
     python3-protobuf espeak ros-rolling-xacro ros-rolling-cv-bridge ros-rolling-moveit-ros-robot-interaction \
     ros-rolling-control-toolbox libprotobuf-dev protobuf-compiler libprotoc-dev \
-    python3-psutil python3-hypothesis ros-rolling-ament-cmake-nose ros-rolling-vision-msgs \
-    ros-rolling-rot-conv ros-rolling-camera-info-manager ros-rolling-image-geometry ros-rolling-soccer-vision-3d-msgs \
-    ros-rolling-moveit-ros ros-rolling-test-msgs
+    python3-psutil python3-hypothesis ros-rolling-ament-cmake-nose ros-rolling-rot-conv \
+    ros-rolling-camera-info-manager ros-rolling-image-geometry ros-rolling-soccer-vision-3d-msgs
 
 # Set up locale
 RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8
@@ -66,10 +65,11 @@ RUN cd src && \
 RUN cd src/bitbots_meta && \
     rm -rf bitbots_tools/bitbots_jenkins_library udp_bridge bitbots_tools/containers \
     humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
-    wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
-    lib/dynamixel_workbench_msgs lib/events-executor/events_executor_examples \
-    lib/events-executor/irobot_lock_free_events_queue bitbots_misc/bitbots_live_tool_rqt \
-    bitbots_motion/bitbots_recordui_rqt lib/pylon-ros-camera && \
+    wolfgang_robot/wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
+    lib/events-executor/events_executor_examples lib/events-executor/irobot_lock_free_events_queue \
+    bitbots_misc/bitbots_live_tool_rqt  bitbots_motion/bitbots_recordui_rqt bitbots_misc/bitbots_basler_camera \
+    lib/pylon-ros-camera bitbots_misc/bitbots_extrinsic_calibration && \
+    sed -i '/\bmoveit_ros\b/d' bitbots_motion/*/CMakeLists.txt && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
     sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml
 
@@ -84,8 +84,7 @@ RUN cd src/bitbots_meta && \
 
 RUN . /opt/ros/rolling/setup.sh && colcon build
 
-# Execute tests
-#RUN . install/setup.sh && catkin run_tests && catkin_test_results
+# TODO execute tests
 
 RUN cd src/bitbots_meta && make vision-files
 RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
