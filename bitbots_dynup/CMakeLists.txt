@@ -16,7 +16,6 @@ find_package(bitbots_splines REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(moveit_ros REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -65,7 +64,6 @@ ament_target_dependencies(DynupNode
         control_toolbox
         geometry_msgs
         irobot_events_executor
-        moveit_ros
         moveit_ros_planning_interface
         rclcpp
         ros2_python_extension
@@ -95,7 +93,6 @@ ament_target_dependencies(libpy_dynup PUBLIC
         control_toolbox
         geometry_msgs
         irobot_events_executor
-        moveit_ros
         moveit_ros_planning_interface
         rclcpp
         ros2_python_extension
