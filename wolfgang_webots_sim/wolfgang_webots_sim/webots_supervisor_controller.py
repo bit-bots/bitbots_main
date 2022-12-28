@@ -112,11 +112,13 @@ class SupervisorController:
             if name == "":
                 self.ros_node.get_logger().warn("Proto has link without name", once=True)
             link_dict[name] = node
-        if node.getType() == Node.HINGE_JOINT:
+        if node.getType() in [Node.HINGE_JOINT, Node.HINGE_2_JOINT]:
             name = node.getDef()
             if name == "":
                 self.ros_node.get_logger().warn("Proto has joint without name", once=True)
             # substract the "Joint" keyword due to naming convention
+            if name[-5:] != "Joint":
+                self.ros_node.get_logger().warn(f"Joint names are expected to end with \"Joint\". {name} does not.", once=True)
             name = name[:-5]
             joint_dict[name] = node
             # the joints dont have children but an "endpoint" that we need to search through
@@ -293,6 +295,7 @@ class SupervisorController:
     def get_link_pose(self, link, name="amy"):
         link_node = self.robot_nodes[name].getFromProtoDef(link)
         if not link_node:
+            self.ros_node.get_logger().warn(f"Could not find link \"{link}\"")
             return None
         link_position = link_node.getPosition()
         mat = link_node.getOrientation()
