@@ -54,7 +54,7 @@ fi
 
 UTILS_DIR=$(colcon list --paths-only --packages-select bitbots_utils)
 
-if [[ -z "$BRINGUP_DIR" ]]; then
+if [[ -z "$UTILS_DIR" ]]; then
     echo "Could not find bitbots_utils! Did you source ROS?"
     exit 2
 fi
