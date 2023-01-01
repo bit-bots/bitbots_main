@@ -17,7 +17,6 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
-find_package(moveit_ros REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(ros2_python_extension)
@@ -42,7 +41,6 @@ ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
   moveit_msgs
   moveit_ros_planning_interface
   moveit_ros_planning
-  moveit_ros
   ros2_python_extension
   tf2
   tf2_ros
