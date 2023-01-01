@@ -18,14 +18,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>rclpyü</depend>
-  <depend>std_msgs</depend>
-  <depend>nav_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>rosgraph_msgs</depend>
-  <depend>python3-protobuf</depend>
+  <depend>wolfgang_webots_sim</depend>
 
   <export>
     <build_type>ament_python</build_type>
