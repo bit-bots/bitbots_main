@@ -25,6 +25,7 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
+            f'command_proxy = {package_name}.command_proxy:main',
         ],
     },
 )

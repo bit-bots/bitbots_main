@@ -18,6 +18,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>bitbots_msgs</depend>
+  <depend>hlvs_player</depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
   <depend>wolfgang_webots_sim</depend>
 
   <export>
