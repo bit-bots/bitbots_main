@@ -139,8 +139,6 @@ def parse_parameter_dict(*, namespace, parameter_dict):
                     namespace=full_param_name + PARAMETER_SEPARATOR_STRING,
                     parameter_dict=param_value)
         else:
-            parameter = ParameterMsg()
-            parameter.name = full_param_name
-            parameter.value = get_parameter_value(string_value=str(param_value))
-            parameters.append(parameter)
+            parameter = Parameter(name=full_param_name, value=param_value)
+            parameters.append(parameter.to_parameter_msg())
     return parameters
