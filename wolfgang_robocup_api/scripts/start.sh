@@ -52,21 +52,14 @@ if [[ -z "$ROBOCUP_MIRROR_SERVER_IP" ]]; then
     exit 2
 fi
 
-BRINGUP_DIR=$(rospack find bitbots_bringup)
+UTILS_DIR=$(colcon list --paths-only --packages-select bitbots_utils)
 
-if [[ -z "$BRINGUP_DIR" ]]; then
-    echo "Could not find bitbots_bringup! Did you source ROS?"
+if [[ -z "$UTILS_DIR" ]]; then
+    echo "Could not find bitbots_utils! Did you source ROS?"
     exit 2
 fi
 
-GAME_CONTROLLER_DIR=$(rospack find humanoid_league_game_controller)
-
-if [[ -z "$GAME_CONTROLLER_DIR" ]]; then
-    echo "Could not find humanoid_league_game_controller!"
-    exit 2
-fi
-
-TEAM_COMM_DIR=$(rospack find humanoid_league_team_communication)
+TEAM_COMM_DIR=$(colcon list --paths-only --packages-select humanoid_league_team_communication)
 
 if [[ -z "$TEAM_COMM_DIR" ]]; then
     echo "Could not find humanoid_league_team_communication!"
@@ -120,23 +113,20 @@ done
 # Write configuration files #
 #############################
 
-cat > $BRINGUP_DIR/config/game_settings.yaml << EOF
-behavior/body/role_positions/pos_number: $POSITION
-bot_id: $ROBOCUP_ROBOT_ID
-role: $ROLE
-team_color: $ROBOCUP_TEAM_COLOR
-team_id: $TEAM_ID
+cat > $UTILS_DIR/config/game_settings.yaml << EOF
+parameter_blackboard:
+  ros__parameters:
+    bot_id: $ROBOCUP_ROBOT_ID
+    position_number: $POSITION
+    role: $ROLE
+    team_color: $ROBOCUP_TEAM_COLOR
+    team_id: $TEAM_ID
 EOF
 
-cat > $GAME_CONTROLLER_DIR/config/game_controller.yaml << EOF
-team_id: $TEAM_ID
-bot_id: $ROBOCUP_ROBOT_ID
-EOF
-
-sed -i "/^target_host:/s/^.*$/target_host: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM_COMM_DIR/config/team_communication_config.yaml
+sed -i "/^    target_host:/s/^.*$/    target_host: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM_COMM_DIR/config/team_communication_config.yaml
 
 #############
 # Start ROS #
 #############
 
-exec roslaunch wolfgang_robocup_api robocup_teamplayer.launch record:=$RECORD
+exec ros2 launch wolfgang_robocup_api robocup_teamplayer.lanuch record:=$RECORD
