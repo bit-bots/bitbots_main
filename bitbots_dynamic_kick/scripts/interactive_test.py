@@ -157,7 +157,8 @@ if __name__ == "__main__":
         kick_goal.ball_position.x = x
         kick_goal.ball_position.y = y
         kick_goal.ball_position.z = 0.0
-        kick_goal.kick_direction = Quaternion(*quaternion_from_euler(0, 0, direction))
+        x, y, z, w = quaternion_from_euler(0, 0, direction)
+        kick_goal.kick_direction = Quaternion(x=x, y=y, z=z, w=w)
         kick_goal.kick_speed = speed
         kick_goal.unstable = unstable
         return kick_goal
@@ -184,7 +185,9 @@ if __name__ == "__main__":
         request.pose.position.x = robot_x
         request.pose.position.y = robot_y
         request.pose.position.z = 0.40
-        request.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, robot_yaw))
+        x, y, z, w = quaternion_from_euler(0, 0, robot_yaw)
+        request.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
+        #request.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, robot_yaw))
         response = set_robot_pose_service(request)
 
 
