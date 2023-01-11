@@ -187,7 +187,6 @@ if __name__ == "__main__":
         request.pose.position.z = 0.40
         x, y, z, w = quaternion_from_euler(0, 0, robot_yaw)
         request.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
-        #request.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, robot_yaw))
         response = set_robot_pose_service(request)
 
 
