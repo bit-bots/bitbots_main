@@ -10,5 +10,5 @@ class DeactivateHCM(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        self.blackboard.hcm_deactivate_pub.publish(Bool(True))
+        self.blackboard.hcm_deactivate_pub.publish(Bool(data=True))
         self.pop()
