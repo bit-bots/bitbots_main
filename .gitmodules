@@ -82,6 +82,10 @@
 	path = lib/events-executor
 	url = ../../irobot-ros/events-executor
 	branch = main
+[submodule "lib/hlvs_player"]
+	path = lib/hlvs_player
+	url = ../../ros-sports/hlvs_player
+	branch = main
 [submodule "lib/humanoid_base_footprint"]
 	path = lib/humanoid_base_footprint
 	url = ../../ros-sports/humanoid_base_footprint.git
