@@ -19,7 +19,7 @@ class GoToDefensePosition(AbstractActionElement):
         self.position_number = role_positions['pos_number']
         try:
             generalized_role_position = \
-                role_positions['defense'][self.position_number]
+                role_positions[f'defense_{self.position_number}']
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
@@ -59,7 +59,8 @@ class GoToDefensePosition(AbstractActionElement):
             pose_msg.pose.position.x = defense_pos[0]
             pose_msg.pose.position.y = defense_pos[1]
             yaw = math.atan(-vector_ball_to_goal[1] / -vector_ball_to_goal[0])
-            pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
+            x, y, z, w = quaternion_from_euler(0, 0, yaw)
+            pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
         elif self.mode == "freekick_second":
             vector_ball_to_goal = np.array(goal_position) - np.array(ball_position)
             # pos between ball and goal but 1.5m away from ball and 1m to the side which is closer to us
@@ -78,7 +79,8 @@ class GoToDefensePosition(AbstractActionElement):
             else:
                 pose_msg.pose.position.x = pos_2[0]
                 pose_msg.pose.position.y = pos_2[1]
-            pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
+            x, y, z, w = quaternion_from_euler(0, 0, yaw)
+            pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
         else:
             # center point between ball and own goal
             pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
