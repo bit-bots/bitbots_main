@@ -21,7 +21,8 @@ Here is an example code snippet for using the IK:
     request.ik_request.group_name = "LeftLeg"
     request.ik_request.ik_link_name = "l_sole"
     request.ik_request.pose_stamped.pose.position = Point(0,0,-0.35)
-    request.ik_request.pose_stamped.pose.orientation = Quaternion(*quaternion_from_euler(0,0,0))
+    x, y, z, w = quaternion_from_euler(0, 0, 0)
+    request.ik_request.pose_stamped.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
 
     # call the IK
     ik_result = get_position_ik(request, approximate=False)
