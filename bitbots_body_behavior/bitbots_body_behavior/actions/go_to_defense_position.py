@@ -81,7 +81,6 @@ class GoToDefensePosition(AbstractActionElement):
                 pose_msg.pose.position.y = pos_2[1]
             x, y, z, w = quaternion_from_euler(0, 0, yaw)
             pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
-            #pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
         else:
             # center point between ball and own goal
             pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
