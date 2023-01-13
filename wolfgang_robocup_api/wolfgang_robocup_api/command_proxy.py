@@ -11,7 +11,7 @@ class CommandProxy(Node):
 
     def listener_callback(self, msg: JointCommand):
         joint_states = JointState()
-        joint_states.header.stamp = self.get_clock().now().to_msg()
+        joint_states.header.stamp = msg.header.stamp
         joint_states.name = msg.joint_names
         joint_states.position = msg.positions
         self.publisher.publish(joint_states)
