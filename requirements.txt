@@ -19,7 +19,6 @@ rosdep
 rospkg
 setuptools
 scikit-learn==0.24.0
-sklearn
 transforms3d
 git+https://github.com/SammyRamone/stable-baselines3.git
 git+https://github.com/bit-bots/deep_quintic.git
