@@ -52,17 +52,26 @@ if [[ -z "$ROBOCUP_MIRROR_SERVER_IP" ]]; then
     exit 2
 fi
 
-UTILS_DIR=$(colcon list --paths-only --packages-select bitbots_utils)
+UTILS_DIR=$COLCON_PREFIX_PATH/bitbots_utils/share/bitbots_utils
 
-if [[ -z "$UTILS_DIR" ]]; then
+if [[ ! -d "$UTILS_DIR" ]]; then
     echo "Could not find bitbots_utils! Did you source ROS?"
     exit 2
 fi
 
-TEAM_COMM_DIR=$(colcon list --paths-only --packages-select humanoid_league_team_communication)
+TEAM_COMM_DIR=$COLCON_PREFIX_PATH/humanoid_league_team_communication/share/humanoid_league_team_communication
 
-if [[ -z "$TEAM_COMM_DIR" ]]; then
+if [[ ! -d "$TEAM_COMM_DIR" ]]; then
     echo "Could not find humanoid_league_team_communication!"
+    exit 2
+fi
+
+if [[ "$ROBOCUP_TEAM_COLOR" == "blue" ]]; then
+    TEAM_COLOR_ID=0
+elif [[ "$ROBOCUP_TEAM_COLOR" == "red" ]]; then
+    TEAM_COLOR_ID=1
+else
+    echo "Invalid team color: \"$ROBOCUP_TEAM_COLOR\". Use \"red\" or \"blue\". Exiting."
     exit 2
 fi
 
@@ -119,7 +128,7 @@ parameter_blackboard:
     bot_id: $ROBOCUP_ROBOT_ID
     position_number: $POSITION
     role: $ROLE
-    team_color: $ROBOCUP_TEAM_COLOR
+    team_color: $TEAM_COLOR_ID
     team_id: $TEAM_ID
 EOF
 
@@ -129,4 +138,4 @@ sed -i "/^    target_host:/s/^.*$/    target_host: $ROBOCUP_MIRROR_SERVER_IP/" $
 # Start ROS #
 #############
 
-exec ros2 launch wolfgang_robocup_api robocup_teamplayer.lanuch record:=$RECORD
+exec ros2 launch wolfgang_robocup_api robocup_teamplayer.launch record:=$RECORD
