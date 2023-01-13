@@ -46,7 +46,7 @@ KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> paramet
   this->get_parameter("spline_smoothness", viz_params.spline_smoothness);
   visualizer_.setParams(viz_params);
   this->get_parameter("engine_rate", engine_rate_);
-  bool use_center_of_pressure;
+  bool use_center_of_pressure = false;
   this->get_parameter("use_center_of_pressure", use_center_of_pressure);
   stabilizer_.useCop(use_center_of_pressure);
 
