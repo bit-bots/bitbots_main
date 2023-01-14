@@ -1,4 +1,3 @@
-from turtle import pos
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from rclpy.duration import Duration
