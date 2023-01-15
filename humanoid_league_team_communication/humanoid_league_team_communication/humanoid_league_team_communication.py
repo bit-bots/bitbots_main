@@ -4,7 +4,8 @@ import math
 import socket
 import struct
 import threading
-from typing import Optional
+from numpy import double
+from typing import List, Optional, Tuple
 
 import rclpy
 from rclpy.duration import Duration
@@ -14,14 +15,14 @@ import tf2_ros
 import transforms3d
 from rclpy.time import Time
 from std_msgs.msg import Header, Float32
-from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovariance, PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy
 from tf2_geometry_msgs import PointStamped, PoseStamped
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from ament_index_python.packages import get_package_share_directory
 
-from humanoid_league_team_communication import robocup_extension_pb2
 from humanoid_league_team_communication.communication import SocketCommunication
+from humanoid_league_team_communication.robocup_extension_pb2 import *
 
 
 class HumanoidLeagueTeamCommunication:
@@ -49,61 +50,65 @@ class HumanoidLeagueTeamCommunication:
         self.create_publishers()
         self.create_subscribers()
 
-        self.gamestate = None  # type: GameState
-        self.pose = None  # type: PoseWithCovarianceStamped
-        self.cmd_vel = None  # type: Twist
-        self.cmd_vel_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
-        self.ball = None  # type: Optional[PointStamped]
-        self.ball_vel = (0, 0, 0)
-        self.ball_covariance = None
-        self.strategy = None  # type: Strategy
-        self.strategy_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
-        self.time_to_ball = None
-        self.time_to_ball_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
-        self.obstacles = None  # type: ObstacleRelativeArray
-        self.move_base_goal = None  # type: PoseStamped
+        self.set_state_defaults()
 
         # Protobuf <-> ROS Message mappings
-        self.team_mapping = ((robocup_extension_pb2.Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
-                             (robocup_extension_pb2.Team.BLUE, ObstacleRelative.ROBOT_CYAN),
-                             (robocup_extension_pb2.Team.RED, ObstacleRelative.ROBOT_MAGENTA))
+        self.team_mapping = ((Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
+                             (Team.BLUE, ObstacleRelative.ROBOT_CYAN), (Team.RED, ObstacleRelative.ROBOT_MAGENTA))
         self.role_mapping = (
-            (robocup_extension_pb2.Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
-            (robocup_extension_pb2.Role.ROLE_IDLING, Strategy.ROLE_IDLING),
-            (robocup_extension_pb2.Role.ROLE_OTHER, Strategy.ROLE_OTHER),
-            (robocup_extension_pb2.Role.ROLE_STRIKER, Strategy.ROLE_STRIKER),
-            (robocup_extension_pb2.Role.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
-            (robocup_extension_pb2.Role.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
-            (robocup_extension_pb2.Role.ROLE_GOALIE, Strategy.ROLE_GOALIE),
+            (Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
+            (Role.ROLE_IDLING, Strategy.ROLE_IDLING),
+            (Role.ROLE_OTHER, Strategy.ROLE_OTHER),
+            (Role.ROLE_STRIKER, Strategy.ROLE_STRIKER),
+            (Role.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
+            (Role.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
+            (Role.ROLE_GOALIE, Strategy.ROLE_GOALIE),
         )
         self.action_mapping = (
-            (robocup_extension_pb2.Action.ACTION_UNDEFINED, Strategy.ACTION_UNDEFINED),
-            (robocup_extension_pb2.Action.ACTION_POSITIONING, Strategy.ACTION_POSITIONING),
-            (robocup_extension_pb2.Action.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
-            (robocup_extension_pb2.Action.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
-            (robocup_extension_pb2.Action.ACTION_WAITING, Strategy.ACTION_WAITING),
-            (robocup_extension_pb2.Action.ACTION_KICKING, Strategy.ACTION_KICKING),
-            (robocup_extension_pb2.Action.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
-            (robocup_extension_pb2.Action.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
+            (Action.ACTION_UNDEFINED, Strategy.ACTION_UNDEFINED),
+            (Action.ACTION_POSITIONING, Strategy.ACTION_POSITIONING),
+            (Action.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
+            (Action.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
+            (Action.ACTION_WAITING, Strategy.ACTION_WAITING),
+            (Action.ACTION_KICKING, Strategy.ACTION_KICKING),
+            (Action.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
+            (Action.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
         )
         self.side_mapping = (
-            (robocup_extension_pb2.OffensiveSide.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
-            (robocup_extension_pb2.OffensiveSide.SIDE_LEFT, Strategy.SIDE_LEFT),
-            (robocup_extension_pb2.OffensiveSide.SIDE_MIDDLE, Strategy.SIDE_MIDDLE),
-            (robocup_extension_pb2.OffensiveSide.SIDE_RIGHT, Strategy.SIDE_RIGHT),
+            (OffensiveSide.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
+            (OffensiveSide.SIDE_LEFT, Strategy.SIDE_LEFT),
+            (OffensiveSide.SIDE_MIDDLE, Strategy.SIDE_MIDDLE),
+            (OffensiveSide.SIDE_RIGHT, Strategy.SIDE_RIGHT),
         )
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
 
         self.try_to_establish_connection()
+        self.run_spin_in_thread()
 
+        self.node.create_timer(1 / self.rate, self.send_message)
+        self.receive_forever()
+
+    def run_spin_in_thread(self):
         # Necessary in ROS2, else we are forever stuck receiving messages
         thread = threading.Thread(target=rclpy.spin, args=[self.node], daemon=True)
         thread.start()
 
-        self.node.create_timer(1 / self.rate, self.send_message)
-        self.receive_forever()
+    def set_state_defaults(self):
+        self.gamestate: GameState = None
+        self.pose: PoseWithCovarianceStamped = None
+        self.cmd_vel: Twist = None
+        self.cmd_vel_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.ball: Optional[PointStamped] = None
+        self.ball_velocity: Tuple[float, float, float] = (0, 0, 0)
+        self.ball_covariance: List[double] = None
+        self.strategy: Strategy = None
+        self.strategy_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.time_to_ball: float = None
+        self.time_to_ball_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.obstacles: ObstacleRelativeArray = None
+        self.move_base_goal: PoseStamped = None
 
     def try_to_establish_connection(self):
         # we will try multiple times till we manage to get a connection
@@ -113,68 +118,70 @@ class HumanoidLeagueTeamCommunication:
             rclpy.spin_once(self.node)
 
     def create_publishers(self):
-        self.pub_team_data = self.node.create_publisher(TeamData, self.topics['team_data_topic'], 1)
+        self.team_data_publisher = self.node.create_publisher(TeamData, self.topics['team_data_topic'], 1)
 
     def create_subscribers(self):
         self.node.create_subscription(GameState, self.topics['gamestate_topic'], self.gamestate_cb, 1)
         self.node.create_subscription(PoseWithCovarianceStamped, self.topics['pose_topic'], self.pose_cb, 1)
         self.node.create_subscription(Twist, self.topics['cmd_vel_topic'], self.cmd_vel_cb, 1)
         self.node.create_subscription(PoseWithCovarianceStamped, self.topics['ball_topic'], self.ball_cb, 1)
-        self.node.create_subscription(TwistWithCovarianceStamped, self.topics['ball_velocity_topic'], self.ball_vel_cb,
-                                      1)
+        self.node.create_subscription(TwistWithCovarianceStamped, self.topics['ball_velocity_topic'],
+                                      self.ball_velocity_cb, 1)
         self.node.create_subscription(Strategy, self.topics['strategy_topic'], self.strategy_cb, 1)
         self.node.create_subscription(Float32, self.topics['time_to_ball_topic'], self.time_to_ball_cb, 1)
         self.node.create_subscription(ObstacleRelativeArray, self.topics['obstacle_topic'], self.obstacle_cb, 1)
         self.node.create_subscription(PoseStamped, self.topics['move_base_goal_topic'], self.move_base_goal_cb, 1)
 
-    def gamestate_cb(self, msg):
+    def gamestate_cb(self, msg: GameState):
         self.gamestate = msg
 
-    def pose_cb(self, msg):
+    def pose_cb(self, msg: PoseWithCovarianceStamped):
         self.pose = msg
 
-    def cmd_vel_cb(self, msg):
+    def cmd_vel_cb(self, msg: Twist):
         self.cmd_vel = msg
-        self.cmd_vel_time = self.node.get_clock().now()
+        self.cmd_vel_time = self.get_current_time()
 
-    def strategy_cb(self, msg):
+    def strategy_cb(self, msg: Strategy):
         self.strategy = msg
-        self.strategy_time = self.node.get_clock().now()
+        self.strategy_time = self.get_current_time()
 
-    def time_to_ball_cb(self, msg):
+    def time_to_ball_cb(self, msg: float):
         self.time_to_ball = msg.data
-        self.time_to_ball_time = self.node.get_clock().now()
+        self.time_to_ball_time = self.get_current_time()
 
-    def move_base_goal_cb(self, msg):
+    def move_base_goal_cb(self, msg: PoseStamped):
         self.move_base_goal = msg
 
-    def obstacle_cb(self, msg):
-        self.obstacles = ObstacleRelativeArray(header=msg.header)
-        self.obstacles.header.frame_id = self.map_frame
-        for obstacle in msg.obstacles:
-            # Transform to map
-            obstacle_pose = PoseStamped(msg.header, obstacle.pose.pose.pose)
+    def obstacle_cb(self, msg: ObstacleRelativeArray):
+
+        def transform_to_map(obstacle: ObstacleRelative):
+            obstacle_pose = PoseStamped(header=msg.header, pose=obstacle.pose.pose.pose)
             try:
-                obstacle_map = self.tf_buffer.transform(obstacle_pose,
-                                                        self.map_frame,
-                                                        timeout=Duration(nanoseconds=0.3e9))
+                obstacle_map = self.tf_transform(obstacle_pose)
                 obstacle.pose.pose.pose = obstacle_map.pose
-                self.obstacles.obstacles.append(obstacle)
+                return obstacle
             except tf2_ros.TransformException:
                 self.logger.error("TeamComm: Could not transform obstacle to map frame")
 
+        self.obstacles = ObstacleRelativeArray(header=msg.header)
+        self.obstacles.header.frame_id = self.map_frame
+        self.obstacles.obstacles = list(map(transform_to_map, msg.obstacles))
+
     def ball_cb(self, msg: PoseWithCovarianceStamped):
-        # Transform to map
-        ball_point = PointStamped(msg.header, msg.pose.pose.position)
+        ball_point = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
-            self.ball = self.tf_buffer.transform(ball_point, self.map_frame, timeout=Duration(nanoseconds=0.3e9))
+            self.ball = self.tf_transform(ball_point)
             self.ball_covariance = msg.pose.covariance
         except tf2_ros.TransformException:
             self.logger.error("TeamComm: Could not transform ball to map frame")
             self.ball = None
 
-    def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
-        self.ball_vel = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
+    def ball_velocity_cb(self, msg: TwistWithCovarianceStamped):
+        self.ball_velocity = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
+
+    def tf_transform(self, field, timeout_in_ns=0.3e9):
+        return self.tf_buffer.transform(field, self.map_frame, timeout=Duration(nanoseconds=timeout_in_ns))
 
     def receive_forever(self):
         while rclpy.ok():
@@ -186,9 +193,9 @@ class HumanoidLeagueTeamCommunication:
             if message:
                 self.handle_message(message)
 
-    def handle_message(self, string_message):
+    def handle_message(self, string_message: bytes):
 
-        def covariance_proto_to_ros(fmat3, ros_covariance):
+        def covariance_proto_to_ros(fmat3: fmat3, ros_covariance: List[double]):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             ros_covariance[0] = fmat3.x.x
             ros_covariance[1] = fmat3.y.x
@@ -200,7 +207,7 @@ class HumanoidLeagueTeamCommunication:
             ros_covariance[31] = fmat3.y.z
             ros_covariance[35] = fmat3.z.z
 
-        def pose_proto_to_ros(robot, pose):
+        def pose_proto_to_ros(robot: Robot, pose: PoseWithCovariance):
             pose.pose.position.x = robot.position.x
             pose.pose.position.y = robot.position.y
 
@@ -213,21 +220,17 @@ class HumanoidLeagueTeamCommunication:
             if pose.covariance:
                 covariance_proto_to_ros(robot.covariance, pose.covariance)
 
-        message = robocup_extension_pb2.Message()
+        message = Message()
         message.ParseFromString(string_message)
 
-        player_id = message.current_pose.player_id
-        team_id = message.current_pose.team
-
-        if player_id == self.player_id or team_id != self.team_id:
-            # Skip information from ourselves or from the other team
+        if self.should_message_be_discarded(message):
             return
 
         team_data = TeamData()
 
         header = Header()
         # The robots' times can differ, therefore use our own time here
-        header.stamp = self.node.get_clock().now()
+        header.stamp = self.get_current_time()
         header.frame_id = self.map_frame
 
         # Handle timestamp
@@ -236,7 +239,7 @@ class HumanoidLeagueTeamCommunication:
 
         # Handle robot ID
         #################
-        team_data.robot_id = player_id
+        team_data.robot_id = message.current_pose.player_id
 
         # Handle state
         ##############
@@ -292,11 +295,11 @@ class HumanoidLeagueTeamCommunication:
             offensive_side_mapping = dict(self.side_mapping)
             team_data.strategy.offensive_side = offensive_side_mapping[message.offensive_side]
 
-        self.pub_team_data.publish(team_data)
+        self.team_data_publisher.publish(team_data)
 
     def send_message(self):
 
-        def covariance_ros_to_proto(ros_covariance, fmat3):
+        def covariance_ros_to_proto(ros_covariance: List[double], fmat3: fmat3):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             fmat3.x.x = ros_covariance[0]
             fmat3.y.x = ros_covariance[1]
@@ -308,8 +311,8 @@ class HumanoidLeagueTeamCommunication:
             fmat3.y.z = ros_covariance[31]
             fmat3.z.z = ros_covariance[35]
 
-        message = robocup_extension_pb2.Message()
-        now = self.node.get_clock().now()
+        message = Message()
+        now = self.get_current_time()
         message.timestamp.seconds = now.seconds_nanoseconds()[0]
         message.timestamp.nanos = now.seconds_nanoseconds()[1]
 
@@ -321,9 +324,9 @@ class HumanoidLeagueTeamCommunication:
                 # If we are penalized, we are not allowed to send team communication
                 return
             else:
-                message.state = robocup_extension_pb2.State.UNPENALISED
+                message.state = State.UNPENALISED
         else:
-            message.state = robocup_extension_pb2.State.UNKNOWN_STATE
+            message.state = State.UNKNOWN_STATE
 
         if self.pose and now - self.pose.header.stamp < Duration(seconds=self.lifetime):
             message.current_pose.position.x = self.pose.pose.pose.position.x
@@ -364,10 +367,11 @@ class HumanoidLeagueTeamCommunication:
             message.ball.covariance.z.z = 100
 
         if self.obstacles and now - self.obstacles.header.stamp < Duration(seconds=self.lifetime):
-            for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
+            for obstacle in self.obstacles.obstacles:
+                obstacle: ObstacleRelative
                 if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
                                      ObstacleRelative.ROBOT_UNDEFINED):
-                    robot = robocup_extension_pb2.Robot()
+                    robot = Robot()
                     robot.player_id = obstacle.playerNumber
                     robot.position.x = obstacle.pose.pose.pose.position.x
                     robot.position.y = obstacle.pose.pose.pose.position.y
@@ -400,6 +404,21 @@ class HumanoidLeagueTeamCommunication:
             message.time_to_ball = 9999.0
 
         self.socket_communication.send_message(message.SerializeToString())
+
+    def should_message_be_discarded(self, message: Message) -> bool:
+        player_id = message.current_pose.player_id
+        team_id = message.current_pose.team
+
+        isOwnMessage = player_id == self.player_id
+        isMessageFromOpositeTeam = team_id != self.team_id
+
+        return isOwnMessage or isMessageFromOpositeTeam
+
+    def is_robot_allowed_to_send_message(self) -> bool:
+        return self.gamestate and not self.gamestate.penalized
+
+    def get_current_time(self) -> Time:
+        return self.node.get_clock().now()
 
 
 def main():
