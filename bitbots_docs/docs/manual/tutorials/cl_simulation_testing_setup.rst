@@ -43,10 +43,15 @@ If while testing you are changing code or updating ``bitbots_meta`` via ``make p
 this step needs to be done again.
 For compilation of the whole meta repository run ``cba``, which is an alias for:
   ``cd $COLCON_WS; colcon build --symlink-install --continue-on-error``
+After a successful run, before we are able to use any ros commands we now need to source colcon built sources
+with ``sa``, which is an alias for:
+``source "/opt/ros/rolling/setup.$SHELL" && source "$COLCON_WS/install/setup.$SHELL"``
 
 **3. Run Webots Simulation**
 
-Now if the packages have compiled succesffully, we can now run the Webots simulator with the following command:
+If everything worked so far, we now have to set some required environment variables for the simulator by
+running the script: ``$COLCON_WS/src/bitbots_meta/wolfgang_robot/wolfgang_webots_sim/scripts/setenvs.sh``
+Afterwards we can start the Webots simulator with the following command:
 ``rl bitbots_bringup simulator_teamplayer.launch game_controller:=false``
 This should start the simulation environment and the Webots simulator, where we should see a field with a single
 robot.
