@@ -29,11 +29,10 @@ As such you can lookup the some of the needed requirements there.
 
 .. code-block:: bash
 
-  cd "/srv/ssd_nvm/$USER/colcon_ws"
+  cd "/srv/ssd_nvm/$USER"
   python -m virtualenv env
   source env/bin/activate
-  pip install -r bitbots_meta/requirements.txt
-  pip install git+https://github.com/bit-bots/YOEO
+  pip install -r colcon_ws/src/bitbots_meta/requirements.txt
 
 - set PATH and COLCON_WS (see `section 5 <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_),
   but in this case ``COLCON_WS="/srv/ssd_nvm/$USER/colcon_ws"`` as we are not working in our ``$HOME``
