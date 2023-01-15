@@ -115,7 +115,7 @@ class HumanoidLeagueTeamCommunication:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         # Necessary in ROS2, else we are forever stuck receiving messages
-        thread = threading.Thread(target=rclpy.spin, args=(self.node), daemon=True)
+        thread = threading.Thread(target=rclpy.spin, args=[self.node], daemon=True)
         thread.start()
 
         self.node.create_timer(1 / self.rate, self.send_message)
