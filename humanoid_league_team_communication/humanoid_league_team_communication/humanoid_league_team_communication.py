@@ -21,13 +21,13 @@ from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_no
 from ament_index_python.packages import get_package_share_directory
 
 from humanoid_league_team_communication import robocup_extension_pb2
+from humanoid_league_team_communication.communication import SocketCommunication
 
 
 class HumanoidLeagueTeamCommunication:
 
     def __init__(self):
         self._package_path = get_package_share_directory("humanoid_league_team_communication")
-        self.socket = None
         self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
         self.logger = self.node.get_logger()
 
@@ -37,25 +37,14 @@ class HumanoidLeagueTeamCommunication:
         self.player_id = params_blackboard['bot_id']
         self.team_id = params_blackboard['team_id']
 
-        self.target_host = self.node.get_parameter('target_host').get_parameter_value().string_value
-        self.local_target_ports = self.node.get_parameter(
-            'local_target_ports').get_parameter_value().integer_array_value
-        self.target_port = self.node.get_parameter('target_port').get_parameter_value().integer_value
-        self.receive_port = self.node.get_parameter('receive_port').get_parameter_value().integer_value
+        self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
+
         self.rate = self.node.get_parameter('rate').get_parameter_value().integer_value
         self.lifetime = self.node.get_parameter('lifetime').get_parameter_value().integer_value
         self.avg_walking_speed = self.node.get_parameter('avg_walking_speed').get_parameter_value().double_value
 
         self.topics = get_parameter_dict(self.node, 'topics')
         self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
-
-        if self.target_host == '127.0.0.1':
-            # local mode, bind to port depending on bot id and team id
-            self.target_ports = [port + 10 * self.team_id for port in self.local_target_ports]
-            self.receive_port = self.target_ports[self.player_id - 1]
-        else:
-            self.target_ports = [self.target_port]
-            self.receive_port = self.receive_port
 
         self.create_publishers()
         self.create_subscribers()
@@ -107,12 +96,7 @@ class HumanoidLeagueTeamCommunication:
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
 
-        # we will try multiple times till we manage to get a connection
-        while rclpy.ok() and self.socket is None:
-            self.socket = self.get_connection()
-            self.node.get_clock().sleep_for(Duration(seconds=1))
-            rclpy.spin_once(self.node)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.try_to_establish_connection()
 
         # Necessary in ROS2, else we are forever stuck receiving messages
         thread = threading.Thread(target=rclpy.spin, args=[self.node], daemon=True)
@@ -120,6 +104,13 @@ class HumanoidLeagueTeamCommunication:
 
         self.node.create_timer(1 / self.rate, self.send_message)
         self.receive_forever()
+
+    def try_to_establish_connection(self):
+        # we will try multiple times till we manage to get a connection
+        while rclpy.ok() and not self.socket_communication.is_setup():
+            self.socket_communication.establish_connection()
+            self.node.get_clock().sleep_for(Duration(seconds=1))
+            rclpy.spin_once(self.node)
 
     def create_publishers(self):
         self.pub_team_data = self.node.create_publisher(TeamData, self.topics['team_data_topic'], 1)
@@ -135,20 +126,6 @@ class HumanoidLeagueTeamCommunication:
         self.node.create_subscription(Float32, self.topics['time_to_ball_topic'], self.time_to_ball_cb, 1)
         self.node.create_subscription(ObstacleRelativeArray, self.topics['obstacle_topic'], self.obstacle_cb, 1)
         self.node.create_subscription(PoseStamped, self.topics['move_base_goal_topic'], self.move_base_goal_cb, 1)
-
-    def get_connection(self):
-        self.logger.info(f"Binding to port {self.receive_port}")
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        sock.bind(('0.0.0.0', self.receive_port))
-        return sock
-
-    def close_connection(self):
-        if self.socket:
-            self.socket.close()
-            self.logger.info("Connection closed.")
-
-    def receive_msg(self):
-        return self.socket.recv(1024)
 
     def gamestate_cb(self, msg):
         self.gamestate = msg
@@ -199,20 +176,17 @@ class HumanoidLeagueTeamCommunication:
     def ball_vel_cb(self, msg: TwistWithCovarianceStamped):
         self.ball_vel = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
 
-    def __del__(self):
-        self.close_connection()
-
     def receive_forever(self):
         while rclpy.ok():
             try:
-                msg = self.receive_msg()
+                message = self.socket_communication.receive_message()
             except (struct.error, socket.timeout):
                 continue
 
-            if msg:  # Not handle empty messages or None
-                self.handle_message(msg)
+            if message:
+                self.handle_message(message)
 
-    def handle_message(self, msg):
+    def handle_message(self, string_message):
 
         def covariance_proto_to_ros(fmat3, ros_covariance):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
@@ -240,7 +214,7 @@ class HumanoidLeagueTeamCommunication:
                 covariance_proto_to_ros(robot.covariance, pose.covariance)
 
         message = robocup_extension_pb2.Message()
-        message.ParseFromString(msg)
+        message.ParseFromString(string_message)
 
         player_id = message.current_pose.player_id
         team_id = message.current_pose.team
@@ -425,10 +399,7 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.time_to_ball = 9999.0
 
-        msg = message.SerializeToString()
-        for port in self.target_ports:
-            self.logger.debug(f'Sending to {port} on {self.target_host}')
-            self.socket.sendto(msg, (self.target_host, port))
+        self.socket_communication.send_message(message.SerializeToString())
 
 
 def main():
