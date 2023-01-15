@@ -29,6 +29,7 @@ OBSTACLE_DIAMETER = 0.2
 
 
 class TeamCommMarker:
+
     def __init__(self, server):
         self.server = server
         self.pose = Pose()
@@ -97,6 +98,7 @@ class TeamCommMarker:
 
 
 class RobotMarker(TeamCommMarker):  # todo change color based on active
+
     def __init__(self, server):
         self.marker_name = "team_robot"
         self.interaction_mode = InteractiveMarkerControl.MOVE_ROTATE
@@ -141,6 +143,7 @@ class RobotMarker(TeamCommMarker):  # todo change color based on active
 
 
 class BallMarker(TeamCommMarker):
+
     def __init__(self, server, id):
         self.marker_name = f"team_ball_{id}"
         self.interaction_mode = InteractiveMarkerControl.MOVE_PLANE
@@ -163,6 +166,7 @@ class BallMarker(TeamCommMarker):
 
 
 class TeamMessage:
+
     def __init__(self, robot, node):
         self.robot = robot
         self.node = node
@@ -175,12 +179,12 @@ class TeamMessage:
             msg.header.frame_id = "map"
             msg.robot_id = self.robot.robot_id
             msg.robot_position.pose = self.robot.pose
-            msg.robot_position.covariance = [float(self.robot.covariance), 0.0, 0.0, 0.0, 0.0, 0.0,
-                                             0.0, float(self.robot.covariance), 0.0, 0.0, 0.0, 0.0,
-                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                             0.0, 0.0, 0.0, 0.0, 0.0, float(self.robot.covariance)]
+            msg.robot_position.covariance = [
+                float(self.robot.covariance), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                float(self.robot.covariance), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                float(self.robot.covariance)
+            ]
 
             if self.robot.ball.active:
                 try:
@@ -194,8 +198,7 @@ class TeamMessage:
                     ball_xyzw = self.robot.ball.pose.orientation
                     mat_in_world = quat2mat((ball_xyzw.w, ball_xyzw.x, ball_xyzw.y, ball_xyzw.z))
                     trans_in_world = compose((self.robot.ball.pose.position.x, self.robot.ball.pose.position.y,
-                                              self.robot.ball.pose.position.z),
-                                             mat_in_world, [1, 1, 1])
+                                              self.robot.ball.pose.position.z), mat_in_world, [1, 1, 1])
                     trans_in_robot = np.matmul(world_trans_in_robot, trans_in_world)
                     pos_in_robot, mat_in_robot, _, _ = decompose(trans_in_robot)
 
@@ -205,16 +208,15 @@ class TeamMessage:
                     ball_absolute = PoseWithCovariance()
                     ball_absolute.pose.position = self.robot.ball.pose.position
                     ball_absolute.pose.orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
-                    ball_absolute.covariance = [float(self.robot.ball.covariance), 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                0.0, float(self.robot.ball.covariance), 0.0, 0.0, 0.0, 0.0,
-                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                0.0, 0.0, 0.0, 0.0, 0.0, float(self.robot.ball.covariance)]
+                    ball_absolute.covariance = [
+                        float(self.robot.ball.covariance), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                        float(self.robot.ball.covariance), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                        float(self.robot.ball.covariance)
+                    ]
                     msg.ball_absolute = ball_absolute
 
-                    cartesian_distance = math.sqrt(
-                        ball_relative.pose.position.x ** 2 + ball_relative.pose.position.y ** 2)
+                    cartesian_distance = math.sqrt(ball_relative.pose.position.x**2 + ball_relative.pose.position.y**2)
                     msg.time_to_position_at_ball = cartesian_distance / ROBOT_SPEED
                 except tf2_ros.LookupException as ex:
                     self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0)

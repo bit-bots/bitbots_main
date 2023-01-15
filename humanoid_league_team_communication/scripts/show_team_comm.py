@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import sys
 
 import rclpy
@@ -34,7 +35,9 @@ Robot 1
         SIDE: UNDEFINED
 """
 
+
 class TeamCommPrinter(Node):
+
     def __init__(self):
         super().__init__("show_team_comm")
         self.subscriber = self.create_subscription(TeamData, "team_data", self.data_cb, 1)
@@ -42,28 +45,36 @@ class TeamCommPrinter(Node):
         for i in range(1, 5):
             self.team_data[i] = TeamData()
             self.team_data[i].robot_id = i
-        self.states = {TeamData.STATE_UNKNOWN: "Unknown",
-                       TeamData.STATE_PENALIZED: "Penalized",
-                       TeamData.STATE_UNPENALIZED: "Unpenalized"}
-        self.roles = {Strategy.ROLE_UNDEFINED: "Undefined",
-                      Strategy.ROLE_GOALIE: "Goalie",
-                      Strategy.ROLE_STRIKER: "Striker",
-                      Strategy.ROLE_OTHER: "Other",
-                      Strategy.ROLE_IDLING: "Idle",
-                      Strategy.ROLE_DEFENDER: "Defender",
-                      Strategy.ROLE_SUPPORTER: "Supporter"}
-        self.actions = {Strategy.ACTION_KICKING: "Kicking",
-                        Strategy.ACTION_SEARCHING: "Searching",
-                        Strategy.ACTION_LOCALIZING: "Localizing",
-                        Strategy.ACTION_GOING_TO_BALL: "Going To Ball",
-                        Strategy.ACTION_WAITING: "Waiting",
-                        Strategy.ACTION_POSITIONING: "Positioning",
-                        Strategy.ACTION_TRYING_TO_SCORE: "Trying to score",
-                        Strategy.ACTION_UNDEFINED: "Undefined"}
-        self.sides = {Strategy.SIDE_LEFT: "Left",
-                      Strategy.SIDE_RIGHT: "Right",
-                      Strategy.SIDE_MIDDLE: "Middle",
-                      Strategy.SIDE_UNDEFINED: "Undefined"}
+        self.states = {
+            TeamData.STATE_UNKNOWN: "Unknown",
+            TeamData.STATE_PENALIZED: "Penalized",
+            TeamData.STATE_UNPENALIZED: "Unpenalized"
+        }
+        self.roles = {
+            Strategy.ROLE_UNDEFINED: "Undefined",
+            Strategy.ROLE_GOALIE: "Goalie",
+            Strategy.ROLE_STRIKER: "Striker",
+            Strategy.ROLE_OTHER: "Other",
+            Strategy.ROLE_IDLING: "Idle",
+            Strategy.ROLE_DEFENDER: "Defender",
+            Strategy.ROLE_SUPPORTER: "Supporter"
+        }
+        self.actions = {
+            Strategy.ACTION_KICKING: "Kicking",
+            Strategy.ACTION_SEARCHING: "Searching",
+            Strategy.ACTION_LOCALIZING: "Localizing",
+            Strategy.ACTION_GOING_TO_BALL: "Going To Ball",
+            Strategy.ACTION_WAITING: "Waiting",
+            Strategy.ACTION_POSITIONING: "Positioning",
+            Strategy.ACTION_TRYING_TO_SCORE: "Trying to score",
+            Strategy.ACTION_UNDEFINED: "Undefined"
+        }
+        self.sides = {
+            Strategy.SIDE_LEFT: "Left",
+            Strategy.SIDE_RIGHT: "Right",
+            Strategy.SIDE_MIDDLE: "Middle",
+            Strategy.SIDE_UNDEFINED: "Undefined"
+        }
 
     def data_cb(self, msg: TeamData):
         self.team_data[msg.robot_id] = msg
@@ -118,6 +129,7 @@ class TeamCommPrinter(Node):
                     line = line + prints[j][i] + (max_line_length - len(prints[j][i])) * " "
                 print(f"{line}")
             rate.sleep()
+
 
 if __name__ == '__main__':
     rclpy.init(args=None)

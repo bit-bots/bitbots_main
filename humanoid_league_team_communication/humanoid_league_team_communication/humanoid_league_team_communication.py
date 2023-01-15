@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+
 import math
 import socket
 import struct
 import threading
 from typing import Optional
-
 
 import rclpy
 from rclpy.duration import Duration
@@ -22,7 +22,9 @@ from ament_index_python.packages import get_package_share_directory
 
 from humanoid_league_team_communication import robocup_extension_pb2
 
+
 class HumanoidLeagueTeamCommunication:
+
     def __init__(self):
         self._package_path = get_package_share_directory("humanoid_league_team_communication")
         self.socket = None
@@ -319,6 +321,7 @@ class HumanoidLeagueTeamCommunication:
         self.pub_team_data.publish(team_data)
 
     def send_message(self):
+
         def covariance_ros_to_proto(ros_covariance, fmat3):
             # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
             fmat3.x.x = ros_covariance[0]
@@ -339,8 +342,7 @@ class HumanoidLeagueTeamCommunication:
         message.current_pose.player_id = self.player_id
         message.current_pose.team = self.team_id
 
-        if self.gamestate and now - self.gamestate.header.stamp < Duration(
-                seconds=self.lifetime):
+        if self.gamestate and now - self.gamestate.header.stamp < Duration(seconds=self.lifetime):
             if self.gamestate.penalized:
                 # If we are penalized, we are not allowed to send team communication
                 return
@@ -367,8 +369,7 @@ class HumanoidLeagueTeamCommunication:
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        if self.move_base_goal and now - self.move_base_goal.header.stamp < Duration(
-                seconds=self.lifetime):
+        if self.move_base_goal and now - self.move_base_goal.header.stamp < Duration(seconds=self.lifetime):
             message.target_pose.position.x = self.move_base_goal.pose.position.x
             message.target_pose.position.y = self.move_base_goal.pose.position.y
             q = self.move_base_goal.pose.orientation
@@ -388,8 +389,7 @@ class HumanoidLeagueTeamCommunication:
             message.ball.covariance.y.y = 100
             message.ball.covariance.z.z = 100
 
-        if self.obstacles and now - self.obstacles.header.stamp < Duration(
-                seconds=self.lifetime):
+        if self.obstacles and now - self.obstacles.header.stamp < Duration(seconds=self.lifetime):
             for obstacle in self.obstacles.obstacles:  # type: ObstacleRelative
                 if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
                                      ObstacleRelative.ROBOT_UNDEFINED):
@@ -404,10 +404,10 @@ class HumanoidLeagueTeamCommunication:
                     message.others.append(robot)
                     message.other_robot_confidence.append(obstacle.pose.confidence)
 
-        if (self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime) and
-                self.pose and now - self.pose.header.stamp < Duration(seconds=self.lifetime)):
-            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x) ** 2 +
-                                      (self.ball.point.y - self.pose.pose.pose.position.y) ** 2)
+        if (self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime) and self.pose and
+                now - self.pose.header.stamp < Duration(seconds=self.lifetime)):
+            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x)**2 +
+                                      (self.ball.point.y - self.pose.pose.pose.position.y)**2)
             message.time_to_ball = ball_distance / self.avg_walking_speed
 
         if self.strategy and now - self.strategy_time < Duration(seconds=self.lifetime):
@@ -430,9 +430,11 @@ class HumanoidLeagueTeamCommunication:
             self.logger.debug(f'Sending to {port} on {self.target_host}')
             self.socket.sendto(msg, (self.target_host, port))
 
+
 def main():
     rclpy.init(args=None)
     HumanoidLeagueTeamCommunication()
+
 
 if __name__ == '__main__':
     main()

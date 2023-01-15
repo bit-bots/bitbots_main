@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 This script publishes dummy values for ball, goalpost, position and obstacles for testing the team communication.
 """
