@@ -230,7 +230,7 @@ class HumanoidLeagueTeamCommunication:
 
         header = Header()
         # The robots' times can differ, therefore use our own time here
-        header.stamp = self.get_current_time()
+        header.stamp = self.get_current_time().to_msg()
         header.frame_id = self.map_frame
 
         # Handle timestamp
@@ -319,7 +319,7 @@ class HumanoidLeagueTeamCommunication:
         message.current_pose.player_id = self.player_id
         message.current_pose.team = self.team_id
 
-        if self.gamestate and now - self.gamestate.header.stamp < Duration(seconds=self.lifetime):
+        if self.gamestate and now - Time.from_msg(self.gamestate.header.stamp) < Duration(seconds=self.lifetime):
             if self.gamestate.penalized:
                 # If we are penalized, we are not allowed to send team communication
                 return
@@ -328,7 +328,7 @@ class HumanoidLeagueTeamCommunication:
         else:
             message.state = State.UNKNOWN_STATE
 
-        if self.pose and now - self.pose.header.stamp < Duration(seconds=self.lifetime):
+        if self.pose and now - Time(self.pose.header.stamp) < Duration(seconds=self.lifetime):
             message.current_pose.position.x = self.pose.pose.pose.position.x
             message.current_pose.position.y = self.pose.pose.pose.position.y
             q = self.pose.pose.pose.orientation
@@ -346,13 +346,14 @@ class HumanoidLeagueTeamCommunication:
             message.walk_command.y = self.cmd_vel.linear.y
             message.walk_command.z = self.cmd_vel.angular.z
 
-        if self.move_base_goal and now - self.move_base_goal.header.stamp < Duration(seconds=self.lifetime):
+        if self.move_base_goal and now - Time.from_msg(self.move_base_goal.header.stamp) < Duration(
+                seconds=self.lifetime):
             message.target_pose.position.x = self.move_base_goal.pose.position.x
             message.target_pose.position.y = self.move_base_goal.pose.position.y
             q = self.move_base_goal.pose.orientation
             message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
 
-        if self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime):
+        if self.ball and now - Time.from_msg(self.ball.header.stamp) < Duration(seconds=self.lifetime):
             message.ball.position.x = self.ball.point.x
             message.ball.position.y = self.ball.point.y
             message.ball.position.z = self.ball.point.z
@@ -366,13 +367,13 @@ class HumanoidLeagueTeamCommunication:
             message.ball.covariance.y.y = 100
             message.ball.covariance.z.z = 100
 
-        if self.obstacles and now - self.obstacles.header.stamp < Duration(seconds=self.lifetime):
+        if self.obstacles and now - Time.from_msg(self.obstacles.header.stamp) < Duration(seconds=self.lifetime):
             for obstacle in self.obstacles.obstacles:
                 obstacle: ObstacleRelative
                 if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
                                      ObstacleRelative.ROBOT_UNDEFINED):
                     robot = Robot()
-                    robot.player_id = obstacle.playerNumber
+                    robot.player_id = obstacle.player_number
                     robot.position.x = obstacle.pose.pose.pose.position.x
                     robot.position.y = obstacle.pose.pose.pose.position.y
                     q = obstacle.pose.pose.pose.orientation
@@ -382,8 +383,8 @@ class HumanoidLeagueTeamCommunication:
                     message.others.append(robot)
                     message.other_robot_confidence.append(obstacle.pose.confidence)
 
-        if (self.ball and now - self.ball.header.stamp < Duration(seconds=self.lifetime) and self.pose and
-                now - self.pose.header.stamp < Duration(seconds=self.lifetime)):
+        if (self.ball and now - Time.from_msg(self.ball.header.stamp) < Duration(seconds=self.lifetime) and
+                self.pose and now - Time.from_msg(self.pose.header.stamp) < Duration(seconds=self.lifetime)):
             ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x)**2 +
                                       (self.ball.point.y - self.pose.pose.pose.position.y)**2)
             message.time_to_ball = ball_distance / self.avg_walking_speed
