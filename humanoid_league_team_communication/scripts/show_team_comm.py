@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import sys
+import threading
 
 import rclpy
 from rclpy.node import Node
-from rclpy.time import Time
+from rclpy.time import Time, Duration
 from rclpy.constants import S_TO_NS
 from humanoid_league_msgs.msg import TeamData, Strategy
 from transforms3d.euler import quat2euler
@@ -41,10 +42,12 @@ class TeamCommPrinter(Node):
     def __init__(self):
         super().__init__("show_team_comm")
         self.subscriber = self.create_subscription(TeamData, "team_data", self.data_cb, 1)
+
         self.team_data = {}
         for i in range(1, 5):
             self.team_data[i] = TeamData()
             self.team_data[i].robot_id = i
+
         self.states = {
             TeamData.STATE_UNKNOWN: "Unknown",
             TeamData.STATE_PENALIZED: "Penalized",
@@ -75,6 +78,8 @@ class TeamCommPrinter(Node):
             Strategy.SIDE_MIDDLE: "Middle",
             Strategy.SIDE_UNDEFINED: "Undefined"
         }
+
+        self.run_spin_in_thread()
 
     def data_cb(self, msg: TeamData):
         self.team_data[msg.robot_id] = msg
@@ -108,7 +113,6 @@ class TeamCommPrinter(Node):
         return lines
 
     def run(self):
-        rate = self.create_rate(1)
         first = True
         while rclpy.ok():
             prints = []
@@ -128,8 +132,13 @@ class TeamCommPrinter(Node):
                     # append line with additional space to keep same length
                     line = line + prints[j][i] + (max_line_length - len(prints[j][i])) * " "
                 print(f"{line}")
-            rate.sleep()
 
+            self.get_clock().sleep_for(Duration(seconds=1))
+
+    def run_spin_in_thread(self):
+        # Necessary in ROS2, else we are forever stuck
+        thread = threading.Thread(target=rclpy.spin, args=[self], daemon=True)
+        thread.start()
 
 if __name__ == '__main__':
     rclpy.init(args=None)
