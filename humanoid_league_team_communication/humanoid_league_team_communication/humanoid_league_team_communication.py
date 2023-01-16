@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import math
 import socket
 import struct
 import threading
@@ -8,21 +7,21 @@ from numpy import double
 from typing import List, Optional, Tuple
 
 import rclpy
+import tf2_ros
+from ament_index_python.packages import get_package_share_directory
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
+from humanoid_league_msgs.msg import GameState, ObstacleRelative, ObstacleRelativeArray, Strategy, TeamData
+from numpy import double
 from rclpy.duration import Duration
 from rclpy.node import Node
-
-import tf2_ros
-import transforms3d
 from rclpy.time import Time
-from std_msgs.msg import Header, Float32
-from geometry_msgs.msg import PoseWithCovariance, PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
-from humanoid_league_msgs.msg import GameState, TeamData, ObstacleRelativeArray, ObstacleRelative, Strategy
+from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
-from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
-from ament_index_python.packages import get_package_share_directory
 
 from humanoid_league_team_communication.communication import SocketCommunication
-from humanoid_league_team_communication.robocup_extension_pb2 import *
+from humanoid_league_team_communication.robocup_extension_pb2 import Message
+from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter
 
 
 class HumanoidLeagueTeamCommunication:
@@ -31,6 +30,7 @@ class HumanoidLeagueTeamCommunication:
         self._package_path = get_package_share_directory("humanoid_league_team_communication")
         self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
         self.logger = self.node.get_logger()
+        self.protocol_converter = RobocupProtocolConverter()
 
         self.logger.info("Initializing humanoid_league_team_communication...")
 
@@ -51,35 +51,6 @@ class HumanoidLeagueTeamCommunication:
         self.create_subscribers()
 
         self.set_state_defaults()
-
-        # Protobuf <-> ROS Message mappings
-        self.team_mapping = ((Team.UNKNOWN_TEAM, ObstacleRelative.ROBOT_UNDEFINED),
-                             (Team.BLUE, ObstacleRelative.ROBOT_CYAN), (Team.RED, ObstacleRelative.ROBOT_MAGENTA))
-        self.role_mapping = (
-            (Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
-            (Role.ROLE_IDLING, Strategy.ROLE_IDLING),
-            (Role.ROLE_OTHER, Strategy.ROLE_OTHER),
-            (Role.ROLE_STRIKER, Strategy.ROLE_STRIKER),
-            (Role.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
-            (Role.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
-            (Role.ROLE_GOALIE, Strategy.ROLE_GOALIE),
-        )
-        self.action_mapping = (
-            (Action.ACTION_UNDEFINED, Strategy.ACTION_UNDEFINED),
-            (Action.ACTION_POSITIONING, Strategy.ACTION_POSITIONING),
-            (Action.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
-            (Action.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
-            (Action.ACTION_WAITING, Strategy.ACTION_WAITING),
-            (Action.ACTION_KICKING, Strategy.ACTION_KICKING),
-            (Action.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
-            (Action.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
-        )
-        self.side_mapping = (
-            (OffensiveSide.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
-            (OffensiveSide.SIDE_LEFT, Strategy.SIDE_LEFT),
-            (OffensiveSide.SIDE_MIDDLE, Strategy.SIDE_MIDDLE),
-            (OffensiveSide.SIDE_RIGHT, Strategy.SIDE_RIGHT),
-        )
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
@@ -140,15 +111,15 @@ class HumanoidLeagueTeamCommunication:
 
     def cmd_vel_cb(self, msg: Twist):
         self.cmd_vel = msg
-        self.cmd_vel_time = self.get_current_time()
+        self.cmd_vel_time = self.get_current_time().to_msg()
 
     def strategy_cb(self, msg: Strategy):
         self.strategy = msg
-        self.strategy_time = self.get_current_time()
+        self.strategy_time = self.get_current_time().to_msg()
 
     def time_to_ball_cb(self, msg: float):
         self.time_to_ball = msg.data
-        self.time_to_ball_time = self.get_current_time()
+        self.time_to_ball_time = self.get_current_time().to_msg()
 
     def move_base_goal_cb(self, msg: PoseStamped):
         self.move_base_goal = msg
@@ -194,217 +165,41 @@ class HumanoidLeagueTeamCommunication:
                 self.handle_message(message)
 
     def handle_message(self, string_message: bytes):
-
-        def covariance_proto_to_ros(fmat3: fmat3, ros_covariance: List[double]):
-            # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
-            ros_covariance[0] = fmat3.x.x
-            ros_covariance[1] = fmat3.y.x
-            ros_covariance[5] = fmat3.z.x
-            ros_covariance[6] = fmat3.x.y
-            ros_covariance[7] = fmat3.y.y
-            ros_covariance[11] = fmat3.z.y
-            ros_covariance[30] = fmat3.x.z
-            ros_covariance[31] = fmat3.y.z
-            ros_covariance[35] = fmat3.z.z
-
-        def pose_proto_to_ros(robot: Robot, pose: PoseWithCovariance):
-            pose.pose.position.x = robot.position.x
-            pose.pose.position.y = robot.position.y
-
-            quat = transforms3d.euler.euler2quat(0.0, 0.0, robot.position.z)  # wxyz -> ros: xyzw
-            pose.pose.orientation.x = quat[1]
-            pose.pose.orientation.y = quat[2]
-            pose.pose.orientation.z = quat[3]
-            pose.pose.orientation.w = quat[0]
-
-            if pose.covariance:
-                covariance_proto_to_ros(robot.covariance, pose.covariance)
-
         message = Message()
         message.ParseFromString(string_message)
 
         if self.should_message_be_discarded(message):
+            self.logger.info("Discarding msg by player {} in team {} at {}".format(message.current_pose.player_id,
+                                                                                   message.current_pose.team,
+                                                                                   message.timestamp.seconds))
             return
 
-        team_data = TeamData()
-
-        header = Header()
-        # The robots' times can differ, therefore use our own time here
-        header.stamp = self.get_current_time().to_msg()
-        header.frame_id = self.map_frame
-
-        # Handle timestamp
-        ##################
-        team_data.header = header
-
-        # Handle robot ID
-        #################
-        team_data.robot_id = message.current_pose.player_id
-
-        # Handle state
-        ##############
-        team_data.state = message.state
-
-        # Handle pose of current player
-        ###############################
-        pose_proto_to_ros(message.current_pose, team_data.robot_position)
-
-        # Handle ball
-        #############
-        team_data.ball_absolute.pose.position.x = message.ball.position.x
-        team_data.ball_absolute.pose.position.y = message.ball.position.y
-        team_data.ball_absolute.pose.position.z = message.ball.position.z
-
-        if message.ball.covariance:
-            covariance_proto_to_ros(message.ball.covariance, team_data.ball_absolute.covariance)
-
-        # Handle obstacles
-        ##################
-        obstacle_relative_array = ObstacleRelativeArray()
-        obstacle_relative_array.header = header
-
-        for index, robot in enumerate(message.others):
-            obstacle = ObstacleRelative()
-
-            # Obstacle type
-            team_to_obstacle_type = dict(self.team_mapping)
-            obstacle.type = team_to_obstacle_type[robot.team]
-
-            obstacle.playerNumber = robot.player_id
-
-            pose_proto_to_ros(robot, obstacle.pose.pose)
-            if hasattr(message, "other_robot_confidence") and index < len(message.other_robot_confidence):
-                obstacle.pose.confidence = message.other_robot_confidence[index]
-
-            team_data.obstacles.obstacles.append(obstacle)
-
-        # Handle time to position at ball
-        #################################
-        if hasattr(message, "time_to_ball"):
-            team_data.time_to_position_at_ball = message.time_to_ball
-
-        # Handle strategy
-        #################
-        if hasattr(message, "role"):
-            role_mapping = dict(self.role_mapping)
-            team_data.strategy.role = role_mapping[message.role]
-        if hasattr(message, "action"):
-            action_mapping = dict(self.action_mapping)
-            team_data.strategy.action = action_mapping[message.action]
-        if hasattr(message, "offensive_side"):
-            offensive_side_mapping = dict(self.side_mapping)
-            team_data.strategy.offensive_side = offensive_side_mapping[message.offensive_side]
-
+        team_data = self.protocol_converter.convert_from_message(message, self.create_team_data())
         self.team_data_publisher.publish(team_data)
 
     def send_message(self):
+        if not self.is_robot_allowed_to_send_message():
+            self.logger.info("Not allowed to send message")
+            return
 
-        def covariance_ros_to_proto(ros_covariance: List[double], fmat3: fmat3):
-            # ROS covariance is row-major 36 x float, protobuf covariance is column-major 9 x float [x, y, θ]
-            fmat3.x.x = ros_covariance[0]
-            fmat3.y.x = ros_covariance[1]
-            fmat3.z.x = ros_covariance[5]
-            fmat3.x.y = ros_covariance[6]
-            fmat3.y.y = ros_covariance[7]
-            fmat3.z.y = ros_covariance[11]
-            fmat3.x.z = ros_covariance[30]
-            fmat3.y.z = ros_covariance[31]
-            fmat3.z.z = ros_covariance[35]
-
-        message = Message()
         now = self.get_current_time()
-        message.timestamp.seconds = now.seconds_nanoseconds()[0]
-        message.timestamp.nanos = now.seconds_nanoseconds()[1]
-
-        message.current_pose.player_id = self.player_id
-        message.current_pose.team = self.team_id
-
-        if self.gamestate and now - Time.from_msg(self.gamestate.header.stamp) < Duration(seconds=self.lifetime):
-            if self.gamestate.penalized:
-                # If we are penalized, we are not allowed to send team communication
-                return
-            else:
-                message.state = State.UNPENALISED
-        else:
-            message.state = State.UNKNOWN_STATE
-
-        if self.pose and now - Time(self.pose.header.stamp) < Duration(seconds=self.lifetime):
-            message.current_pose.position.x = self.pose.pose.pose.position.x
-            message.current_pose.position.y = self.pose.pose.pose.position.y
-            q = self.pose.pose.pose.orientation
-            # z is theta
-            message.current_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-            covariance_ros_to_proto(self.pose.pose.covariance, message.current_pose.covariance)
-        else:
-            # set high covariance to show that we have no clue
-            message.current_pose.covariance.x.x = 100
-            message.current_pose.covariance.y.y = 100
-            message.current_pose.covariance.z.z = 100
-
-        if self.cmd_vel and now - self.cmd_vel_time < Duration(seconds=self.lifetime):
-            message.walk_command.x = self.cmd_vel.linear.x
-            message.walk_command.y = self.cmd_vel.linear.y
-            message.walk_command.z = self.cmd_vel.angular.z
-
-        if self.move_base_goal and now - Time.from_msg(self.move_base_goal.header.stamp) < Duration(
-                seconds=self.lifetime):
-            message.target_pose.position.x = self.move_base_goal.pose.position.x
-            message.target_pose.position.y = self.move_base_goal.pose.position.y
-            q = self.move_base_goal.pose.orientation
-            message.target_pose.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-
-        if self.ball and now - Time.from_msg(self.ball.header.stamp) < Duration(seconds=self.lifetime):
-            message.ball.position.x = self.ball.point.x
-            message.ball.position.y = self.ball.point.y
-            message.ball.position.z = self.ball.point.z
-            message.ball.velocity.x = self.ball_vel[0]
-            message.ball.velocity.y = self.ball_vel[1]
-            message.ball.velocity.z = self.ball_vel[2]
-            covariance_ros_to_proto(self.ball_covariance, message.ball.covariance)
-        else:
-            # set high covariance to show that we have no clue
-            message.ball.covariance.x.x = 100
-            message.ball.covariance.y.y = 100
-            message.ball.covariance.z.z = 100
-
-        if self.obstacles and now - Time.from_msg(self.obstacles.header.stamp) < Duration(seconds=self.lifetime):
-            for obstacle in self.obstacles.obstacles:
-                obstacle: ObstacleRelative
-                if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
-                                     ObstacleRelative.ROBOT_UNDEFINED):
-                    robot = Robot()
-                    robot.player_id = obstacle.player_number
-                    robot.position.x = obstacle.pose.pose.pose.position.x
-                    robot.position.y = obstacle.pose.pose.pose.position.y
-                    q = obstacle.pose.pose.pose.orientation
-                    robot.position.z = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])[2]
-                    team_mapping = dict(((b, a) for a, b in self.team_mapping))
-                    robot.team = team_mapping[obstacle.type]
-                    message.others.append(robot)
-                    message.other_robot_confidence.append(obstacle.pose.confidence)
-
-        if (self.ball and now - Time.from_msg(self.ball.header.stamp) < Duration(seconds=self.lifetime) and
-                self.pose and now - Time.from_msg(self.pose.header.stamp) < Duration(seconds=self.lifetime)):
-            ball_distance = math.sqrt((self.ball.point.x - self.pose.pose.pose.position.x)**2 +
-                                      (self.ball.point.y - self.pose.pose.pose.position.y)**2)
-            message.time_to_ball = ball_distance / self.avg_walking_speed
-
-        if self.strategy and now - self.strategy_time < Duration(seconds=self.lifetime):
-            role_mapping = dict(((b, a) for a, b in self.role_mapping))
-            message.role = role_mapping[self.strategy.role]
-
-            action_mapping = dict(((b, a) for a, b in self.action_mapping))
-            message.action = action_mapping[self.strategy.action]
-
-            side_mapping = dict(((b, a) for a, b in self.side_mapping))
-            message.offensive_side = side_mapping[self.strategy.offensive_side]
-
-        if self.time_to_ball and now - self.time_to_ball_time < Duration(seconds=self.lifetime):
-            message.time_to_ball = self.time_to_ball
-        else:
-            message.time_to_ball = 9999.0
-
+        msg = self.create_empty_message(now)
+        is_still_valid = lambda time: now - Time.from_msg(time) < Duration(seconds=self.lifetime)
+        message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         self.socket_communication.send_message(message.SerializeToString())
+
+    def create_empty_message(self, now: Time) -> Message:
+        message = Message()
+        seconds, nanoseconds = now.seconds_nanoseconds()
+        message.timestamp.seconds = seconds
+        message.timestamp.nanos = nanoseconds
+        return message
+
+    def create_team_data(self) -> TeamData:
+        return TeamData(header=self.create_header_with_own_time())
+
+    def create_header_with_own_time(self) -> Header:
+        return Header(stamp=self.get_current_time().to_msg(), frame_id=self.map_frame)
 
     def should_message_be_discarded(self, message: Message) -> bool:
         player_id = message.current_pose.player_id
