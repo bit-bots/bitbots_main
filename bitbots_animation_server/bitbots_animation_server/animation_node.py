@@ -85,7 +85,7 @@ class AnimationNode(Node):
             # but we send a request, so that we may can soon
             self.send_animation_request()
             self.get_logger().info("HCM not controllable. Only sent request to make it come controllable.")
-            goal.aborted(text="HCM not controllable. Will now become controllable. Try again later.")
+            goal.abort()
             return PlayAnimation.Result(successful=False)
 
         animator = self.get_animation_splines(self.current_animation, goal)
