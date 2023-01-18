@@ -5,7 +5,7 @@
     # Extracted from: wolfgang.urdf
 
     PROTO WolfgangMarker [
-    field MFString textureUrl "Wolfgang_textures/number_0.png"
+    field MFString textureUrl "number_0.png"
     field SFColor  baseColor   0.0 0.0 0.0
     ]
 {
