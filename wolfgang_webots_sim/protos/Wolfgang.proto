@@ -135,10 +135,7 @@ PROTO Wolfgang [
       Group {
         children IS externalCamera
       }
-      DEF base_link Transform {
-        translation 0.0 0.0 0.0
-        rotation 0.0 0.0 0.0 0.0
-      }
+      DEF base_link Transform {}
       Transform {
         translation -0.001500 0.053000 0.203500
         rotation -0.707105 0.000001 0.707108 3.141591
@@ -714,10 +711,7 @@ PROTO Wolfgang [
                           rotation 0.577350 -0.577352 -0.577350 2.094399
                           name "r_wrist [hand]"
                           children [
-                            DEF r_gripper Transform {
-                              translation 0.0 0.0 0.0
-                              rotation 0.0 0.0 0.0 0.0
-                            }
+                            DEF r_gripper Transform {}
                           ]
                         }
                       ]
@@ -1275,10 +1269,7 @@ PROTO Wolfgang [
                           rotation -0.577350 0.577352 -0.577350 2.094399
                           name "l_wrist [hand]"
                           children [
-                            DEF l_gripper Transform {
-                              translation 0.0 0.0 0.0
-                              rotation 0.0 0.0 0.0 0.0
-                            }
+                            DEF l_gripper Transform {}
                           ]
                         }
                       ]
@@ -4650,10 +4641,7 @@ PROTO Wolfgang [
                         width IS cameraWidth
                         height IS cameraHeight
                       }
-                      DEF camera_frame Transform {
-                        translation 0.0 0.0 0.0
-                        rotation 0.0 0.0 0.0 0.0
-                      }
+                      DEF camera_frame Transform {}
                     ]
                     name "camera_optical_frame"
                   }
