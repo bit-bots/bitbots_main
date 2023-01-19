@@ -2,9 +2,9 @@ from typing import List, Tuple
 
 import transforms3d
 from geometry_msgs.msg import PoseWithCovariance
-from humanoid_league_team_communication.robocup_extension_pb2 import Ball, Message, Robot, fmat3
 from numpy import double
 
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 from humanoid_league_msgs.msg import ObstacleRelative, ObstacleRelativeArray, TeamData
 
 
@@ -16,25 +16,26 @@ class MessageToTeamDataConverter:
         self.action_mapping = action_mapping
         self.side_mapping = side_mapping
 
-    def convert(self, message: Message, team_data: TeamData) -> TeamData:
+    def convert(self, message: Proto.Message, team_data: TeamData) -> TeamData:
         team_data.robot_id = message.current_pose.player_id
         team_data.state = message.state
 
         team_data.robot_position = self.convert_robot_pose(message.current_pose)
         team_data.ball_absolute = self.convert_ball_pose(message.ball)
 
+        # @TODO: change TeamData field/type to robots
         team_data.obstacles = self.convert_robots_to_obstacles(message.others, message.other_robot_confidence)
         team_data.obstacles.header = team_data.header
 
         return self.convert_optional_fields(message, team_data)
 
-    def convert_optional_fields(self, message: Message, team_data: TeamData) -> TeamData:
+    def convert_optional_fields(self, message: Proto.Message, team_data: TeamData) -> TeamData:
         if hasattr(message, "time_to_ball"):
             team_data.time_to_position_at_ball = message.time_to_ball
 
         return self.convert_strategy(message, team_data)
 
-    def convert_strategy(self, message: Message, team_data: TeamData) -> TeamData:
+    def convert_strategy(self, message: Proto.Message, team_data: TeamData) -> TeamData:
         if hasattr(message, "role"):
             team_data.strategy.role = self.role_mapping[message.role]
         if hasattr(message, "action"):
@@ -44,7 +45,7 @@ class MessageToTeamDataConverter:
 
         return team_data
 
-    def convert_robots_to_obstacles(self, message_robots: List[Robot],
+    def convert_robots_to_obstacles(self, message_robots: List[Proto.Robot],
                                     message_robot_confidence: List[float]) -> ObstacleRelativeArray:
         relative_obstacles = ObstacleRelativeArray()
 
@@ -60,7 +61,7 @@ class MessageToTeamDataConverter:
 
         return relative_obstacles
 
-    def convert_ball_pose(self, message_ball_pose: Ball) -> PoseWithCovariance:
+    def convert_ball_pose(self, message_ball_pose: Proto.Ball) -> PoseWithCovariance:
         ball = PoseWithCovariance()
         ball.pose.position.x = message_ball_pose.position.x
         ball.pose.position.y = message_ball_pose.position.y
@@ -71,7 +72,7 @@ class MessageToTeamDataConverter:
 
         return ball
 
-    def convert_robot_pose(self, message_robot_pose: Robot) -> PoseWithCovariance:
+    def convert_robot_pose(self, message_robot_pose: Proto.Robot) -> PoseWithCovariance:
         robot = PoseWithCovariance()
         robot.pose.position.x = message_robot_pose.position.x
         robot.pose.position.y = message_robot_pose.position.y
@@ -89,7 +90,7 @@ class MessageToTeamDataConverter:
     def convert_to_quat(self, euler_angles: Tuple[float, float, float]):
         return transforms3d.euler.euler2quat(*euler_angles)
 
-    def convert_to_row_major_covariance(self, row_major_covariance: List[double], covariance_matrix: fmat3):
+    def convert_to_row_major_covariance(self, row_major_covariance: List[double], covariance_matrix: Proto.fmat3):
         # ROS covariance is row-major 36 x float, while protobuf covariance
         # is column-major 9 x float [x, y, θ]
         row_major_covariance[0] = covariance_matrix.x.x

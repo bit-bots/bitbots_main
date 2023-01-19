@@ -6,7 +6,9 @@ This script publishes dummy values for ball, goalpost, position and obstacles fo
 import rclpy
 import numpy
 from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion
-from humanoid_league_msgs.msg import GameState, ObstacleRelativeArray, ObstacleRelative, Strategy
+from humanoid_league_msgs.msg import GameState, Strategy
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
+from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 
 
 def pose_with_covariance(x, y, z=0.0):
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     strategy_pub = node.create_publisher(Strategy, "strategy", 1)
     ball_pub = node.create_publisher(PoseWithCovarianceStamped, "ball_position_relative_filtered", 1)
     position_pub = node.create_publisher(PoseWithCovarianceStamped, "pose_with_covariance", 1)
-    obstacle_pub = node.create_publisher(ObstacleRelativeArray, "obstacles_relative", 1)
+    robots_pub = node.create_publisher(RobotArray, "robots_relative", 1)
 
     gamestate_msg = GameState(penalized=False)
     strategy_msg = Strategy(role=Strategy.ROLE_DEFENDER,
@@ -49,33 +51,35 @@ if __name__ == '__main__':
                             offensive_side=Strategy.SIDE_LEFT)
     position_msg = pose_with_covariance(x=2.0, y=3.0)
     ball_msg = pose_with_covariance(x=8.0, y=9.0)
-    obstacle_msg = ObstacleRelativeArray()
+    robots_msg = RobotArray()
 
-    obstacle = ObstacleRelative()
-    obstacle.pose.pose.pose.position.x = 4.0
-    obstacle.pose.pose.pose.position.y = 5.0
-    obstacle.type = ObstacleRelative.ROBOT_CYAN
-    obstacle_msg.obstacles.append(obstacle)
+    robot = Robot()
+    robot.attributes.team = RobotAttributes.TEAM_OWN
+    robot.attributes.player_number = 2
+    robot.bb.center.position.x = 4.0
+    robot.bb.center.position.y = 5.0
+    robots_msg.robots.append(robot)
 
-    obstacle2 = ObstacleRelative()
-    obstacle2.pose.pose.pose.position.x = 1.0
-    obstacle2.pose.pose.pose.position.y = 2.0
-    obstacle2.type = ObstacleRelative.ROBOT_MAGENTA
-    obstacle_msg.obstacles.append(obstacle2)
+    robot2 = Robot()
+    robot2.attributes.team = RobotAttributes.TEAM_OPPONENT
+    robot2.attributes.player_number = 3
+    robot2.bb.center.position.x = 1.0
+    robot2.bb.center.position.y = 2.0
+    robots_msg.robots.append(robot2)
 
     while rclpy.ok():
         now = node.get_clock().now().to_msg()
         gamestate_msg.header.stamp = now
         position_msg.header.stamp = now
-        obstacle_msg.header.stamp = now
+        robots_msg.header.stamp = now
         ball_msg.header.stamp = now
 
         # @TODO: check if we should use another map frame
         ball_msg.header.frame_id = "map"
-        obstacle_msg.header.frame_id = "map"
+        robots_msg.header.frame_id = "map"
 
         gamestate_pub.publish(gamestate_msg)
         strategy_pub.publish(strategy_msg)
         position_pub.publish(position_msg)
         ball_pub.publish(ball_msg)
-        obstacle_pub.publish(obstacle_msg)
+        robots_pub.publish(robots_msg)

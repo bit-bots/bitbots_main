@@ -92,7 +92,7 @@
   
   '''
 # ---
-# name: test_convert_obstacles_to_robots
+# name: test_convert_seen_robots
   '''
   [player_id: 2
   position {
@@ -117,7 +117,7 @@
   ]
   '''
 # ---
-# name: test_convert_obstacles_to_robots.1
+# name: test_convert_seen_robots.1
   list([
     0.800000011920929,
     0.800000011920929,

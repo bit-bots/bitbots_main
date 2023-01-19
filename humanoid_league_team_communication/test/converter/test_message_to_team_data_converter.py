@@ -1,11 +1,12 @@
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 import pytest
-from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter
-from humanoid_league_team_communication.robocup_extension_pb2 import *
+from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from std_msgs.msg import Header
 
 from humanoid_league_msgs.msg import ObstacleRelative, Strategy, TeamData
 
 own_team_id = 1
+own_team_color = TeamColor(own_team_id)
 
 
 def test_convert_empty_message(snapshot, message):
@@ -53,21 +54,21 @@ def test_convert_strategy(message_with_strategy):
     assert team_data.strategy.offensive_side == Strategy.SIDE_RIGHT
 
 
-def convert_from_message(message: Message, team_data=TeamData()):
-    return RobocupProtocolConverter().convert_from_message(message, team_data)
+def convert_from_message(message: Proto.Message, team_data=TeamData()):
+    return RobocupProtocolConverter(own_team_color).convert_from_message(message, team_data)
 
 
 @pytest.fixture
-def message_with_strategy(message) -> Message:
-    message.role = Role.ROLE_STRIKER
-    message.action = Action.ACTION_KICKING
-    message.offensive_side = OffensiveSide.SIDE_RIGHT
+def message_with_strategy(message) -> Proto.Message:
+    message.role = Proto.Role.ROLE_STRIKER
+    message.action = Proto.Action.ACTION_KICKING
+    message.offensive_side = Proto.OffensiveSide.SIDE_RIGHT
 
     return message
 
 
 @pytest.fixture
-def message_with_other_robots(message) -> Message:
+def message_with_other_robots(message) -> Proto.Message:
     message.others.append(robot_message(player_id=4, is_own_team=True))
     message.others.append(robot_message(player_id=2, is_own_team=False))
 
@@ -75,7 +76,7 @@ def message_with_other_robots(message) -> Message:
 
 
 @pytest.fixture
-def message_with_ball(message) -> Message:
+def message_with_ball(message) -> Proto.Message:
     set_position(message.ball.position)
     set_covariance_matrix(message.ball.covariance)
 
@@ -83,7 +84,7 @@ def message_with_ball(message) -> Message:
 
 
 @pytest.fixture
-def message_with_current_pose(message) -> Message:
+def message_with_current_pose(message) -> Proto.Message:
     message.current_pose.player_id = 3
     message.current_pose.team = own_team_id
 
@@ -103,12 +104,12 @@ def team_data_with_header() -> TeamData:
 
 
 @pytest.fixture
-def message() -> Message:
-    return Message()
+def message() -> Proto.Message:
+    return Proto.Message()
 
 
 def robot_message(player_id, is_own_team):
-    robot = Robot()
+    robot = Proto.Robot()
     robot.player_id = player_id
     robot.team = own_team_id
     if not is_own_team:
@@ -120,13 +121,13 @@ def robot_message(player_id, is_own_team):
     return robot
 
 
-def set_position(position: fvec3):
+def set_position(position: Proto.fvec3):
     position.x = 3.6
     position.y = 1.8
     position.z = 1.9
 
 
-def set_covariance_matrix(covariance: fmat3):
+def set_covariance_matrix(covariance: Proto.fmat3):
     covariance.x.x = 1.2
     covariance.x.y = 2.2
     covariance.x.z = 3.2

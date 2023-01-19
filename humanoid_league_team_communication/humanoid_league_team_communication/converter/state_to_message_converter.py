@@ -5,9 +5,10 @@ from typing import Callable, List, Tuple
 
 from rclpy.time import Time
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
-from humanoid_league_msgs.msg import GameState, ObstacleRelative, ObstacleRelativeArray, Strategy
+from humanoid_league_msgs.msg import GameState, Strategy
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
-from humanoid_league_team_communication.robocup_extension_pb2 import *
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 
 
 class StateToMessageConverter:
@@ -18,17 +19,17 @@ class StateToMessageConverter:
         self.action_mapping = action_mapping
         self.side_mapping = side_mapping
 
-    def convert(self, state, message: Message, is_still_valid_checker: Callable[[Time], bool]) -> Message:
+    def convert(self, state, message: Proto.Message, is_still_valid_checker: Callable[[Time], bool]) -> Proto.Message:
 
-        def convert_gamestate(gamestate: GameState, message: Message):
+        def convert_gamestate(gamestate: GameState, message: Proto.Message):
             if gamestate and is_still_valid_checker(gamestate.header.stamp):
-                message.state = State.PENALISED if gamestate.penalized else State.UNPENALISED
+                message.state = Proto.State.PENALISED if gamestate.penalized else Proto.State.UNPENALISED
             else:
-                message.state = State.UNKNOWN_STATE
+                message.state = Proto.State.UNKNOWN_STATE
 
             return message
 
-        def convert_current_pose(current_pose: PoseWithCovarianceStamped, message: Message):
+        def convert_current_pose(current_pose: PoseWithCovarianceStamped, message: Proto.Message):
             if current_pose and is_still_valid_checker(current_pose.header.stamp):
                 pose_with_covariance = current_pose.pose
                 pose = pose_with_covariance.pose
@@ -43,7 +44,7 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_walk_command(walk_command: Twist, walk_command_time: Time, message: Message):
+        def convert_walk_command(walk_command: Twist, walk_command_time: Time, message: Proto.Message):
             if walk_command and is_still_valid_checker(walk_command_time):
                 message.walk_command.x = walk_command.linear.x
                 message.walk_command.y = walk_command.linear.y
@@ -77,28 +78,26 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_obstacles_to_robots(relative_obstacles: ObstacleRelativeArray, message: Message):
+        def convert_seen_robots(seen_robots: RobotArray, message: Proto.Message):
             # @TODO: should confidence be decreased in else case?
-            if relative_obstacles and is_still_valid_checker(relative_obstacles.header.stamp):
-                obstacle: ObstacleRelative
-                for obstacle in relative_obstacles.obstacles:
-                    if obstacle.type in (ObstacleRelative.ROBOT_CYAN, ObstacleRelative.ROBOT_MAGENTA,
-                                         ObstacleRelative.ROBOT_UNDEFINED):
-                        robot = Robot()
-                        robot.player_id = obstacle.player_number
+            if seen_robots and is_still_valid_checker(seen_robots.header.stamp):
+                seen_robot: Robot
+                for seen_robot in seen_robots.robots:
+                    robot = Proto.Robot()
+                    robot.player_id = seen_robot.attributes.player_number
 
-                        pose = obstacle.pose.pose.pose
-                        robot.team = self.team_mapping[obstacle.type]
-                        robot.position.x = pose.position.x
-                        robot.position.y = pose.position.y
-                        robot.position.z = self.extract_orientation_rotation_angle(pose.orientation)
+                    pose = seen_robot.bb.center
+                    robot.team = self.team_mapping[seen_robot.attributes.team]
+                    robot.position.x = pose.position.x
+                    robot.position.y = pose.position.y
+                    robot.position.z = self.extract_orientation_rotation_angle(pose.orientation)
 
-                        message.others.append(robot)
-                        message.other_robot_confidence.append(obstacle.pose.confidence)
+                    message.others.append(robot)
+                    message.other_robot_confidence.append(seen_robot.confidence.confidence)
 
             return message
 
-        def convert_strategy(strategy: Strategy, strategy_time: Time, message: Message):
+        def convert_strategy(strategy: Strategy, strategy_time: Time, message: Proto.Message):
             if strategy and is_still_valid_checker(strategy_time):
                 message.role = self.role_mapping[strategy.role]
                 message.action = self.action_mapping[strategy.action]
@@ -120,7 +119,7 @@ class StateToMessageConverter:
             return ball_distance / walking_speed
 
         def convert_time_to_ball(time_to_ball: float, time_to_ball_time: Time, ball_position: PointStamped,
-                                 current_pose: PoseWithCovarianceStamped, walking_speed: float, message: Message):
+                                 current_pose: PoseWithCovarianceStamped, walking_speed: float, message: Proto.Message):
             if time_to_ball and is_still_valid_checker(time_to_ball_time):
                 message.time_to_ball = time_to_ball
             elif are_robot_and_ball_position_valid(current_pose, ball_position):
@@ -138,7 +137,7 @@ class StateToMessageConverter:
         message = convert_walk_command(state.cmd_vel, state.cmd_vel_time, message)
         message = convert_target_position(state.move_base_goal, message)
         message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)
-        message = convert_obstacles_to_robots(state.obstacles, message)
+        message = convert_seen_robots(state.seen_robots, message)
         message = convert_strategy(state.strategy, state.strategy_time, message)
         message = convert_time_to_ball(state.time_to_ball, state.time_to_ball_time, state.ball, state.pose,
                                        state.avg_walking_speed, message)
@@ -159,7 +158,7 @@ class StateToMessageConverter:
     def convert_to_euler(self, quaternion: Quaternion):
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
 
-    def convert_to_covariance_matrix(self, covariance_matrix: fmat3, row_major_covariance: List[double]):
+    def convert_to_covariance_matrix(self, covariance_matrix: Proto.fmat3, row_major_covariance: List[double]):
         # ROS covariance is row-major 36 x float, while protobuf covariance
         # is column-major 9 x float [x, y, θ]
         covariance_matrix.x.x = row_major_covariance[0]

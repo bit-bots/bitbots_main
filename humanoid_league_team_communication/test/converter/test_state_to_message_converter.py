@@ -1,20 +1,24 @@
 from unittest.mock import Mock
 
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 import numpy
 import pytest
-from std_msgs.msg import Header
 from geometry_msgs.msg import (Point, PointStamped, Pose, PoseStamped, PoseWithCovariance, PoseWithCovarianceStamped,
                                Quaternion, Twist, Vector3)
-from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter
+from humanoid_league_team_communication.converter.robocup_protocol_converter import TeamColor, RobocupProtocolConverter
 from humanoid_league_team_communication.humanoid_league_team_communication import HumanoidLeagueTeamCommunication
-from humanoid_league_team_communication.robocup_extension_pb2 import *
 from rclpy.time import Time
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
+from soccer_vision_attribute_msgs.msg import Confidence, Robot as RobotAttributes
+from std_msgs.msg import Header
 
-from humanoid_league_msgs.msg import GameState, ObstacleRelative, ObstacleRelativeArray, PoseWithCertainty, Strategy
+from humanoid_league_msgs.msg import GameState, Strategy
 
 own_team_id = 1
+own_team_color = TeamColor(own_team_id)
 validity_checker_valid = Mock(return_value=True)
 validity_checker_expired = Mock(return_value=False)
+
 
 def test_convert_empty_state(snapshot, state):
     result = convert_to_message(state)
@@ -29,23 +33,23 @@ def test_convert_gamestate(state_with_gamestate):
 
     gamestate.penalized = False
     result = convert_to_message(state_with_gamestate)
-    assert result.state == State.UNPENALISED
+    assert result.state == Proto.State.UNPENALISED
 
     gamestate.penalized = True
     result = convert_to_message(state_with_gamestate)
-    assert result.state == State.PENALISED
+    assert result.state == Proto.State.PENALISED
 
     assert validity_checker_valid.call_count == 2
     validity_checker_valid.assert_called_with(gamestate.header.stamp)
 
 
 def test_convert_gamestate_expired_headers(state_with_gamestate):
-    message = Message()
-    message.state = State.UNPENALISED
+    message = Proto.Message()
+    message.state = Proto.State.UNPENALISED
 
     result = convert_to_message(state_with_gamestate, message, is_state_expired=True)
 
-    assert result.state == State.UNKNOWN_STATE
+    assert result.state == Proto.State.UNKNOWN_STATE
 
 
 def test_convert_current_pose(snapshot, state_with_current_pose):
@@ -58,7 +62,7 @@ def test_convert_current_pose(snapshot, state_with_current_pose):
 
 
 def test_convert_current_pose_expired_headers(state_with_current_pose):
-    message = Message()
+    message = Proto.Message()
     message.current_pose.position.x = 3.0
 
     result = convert_to_message(state_with_current_pose, message, is_state_expired=True)
@@ -80,7 +84,7 @@ def test_convert_walk_command(state_with_walk_command):
 
 
 def test_convert_walk_command_expired_headers(state_with_walk_command):
-    message = Message()
+    message = Proto.Message()
     message.walk_command.x = 3.0
 
     result = convert_to_message(state_with_walk_command, message, is_state_expired=True)
@@ -99,7 +103,7 @@ def test_convert_target_pose(snapshot, state_with_target_pose):
 
 
 def test_convert_target_pose_expired_headers(state_with_target_pose):
-    message = Message()
+    message = Proto.Message()
     message.target_pose.position.x = 3.0
 
     result = convert_to_message(state_with_target_pose, message, is_state_expired=True)
@@ -125,22 +129,22 @@ def test_convert_ball_position_expired_headers(state_with_ball_pose):
     assert result.ball.covariance.z.z == 100
 
 
-def test_convert_obstacles_to_robots(snapshot, state_with_obstacles):
-    result = convert_to_message(state_with_obstacles)
+def test_convert_seen_robots(snapshot, state_with_seen_robots):
+    result = convert_to_message(state_with_seen_robots)
 
     assert str(result.others) == snapshot
     assert result.other_robot_confidence == snapshot
 
-    validity_checker_valid.assert_called_with(state_with_obstacles.obstacles.header.stamp)
+    validity_checker_valid.assert_called_with(state_with_seen_robots.seen_robots.header.stamp)
 
 
-def test_convert_obstacles_to_robots_expired_headers(state_with_obstacles):
-    robot = Robot()
+def test_convert_obstacles_to_robots_expired_headers(state_with_seen_robots):
+    robot = Proto.Robot()
     robot.player_id = 2
-    message = Message()
+    message = Proto.Message()
     message.others.append(robot)
 
-    result = convert_to_message(state_with_obstacles, message, is_state_expired=True)
+    result = convert_to_message(state_with_seen_robots, message, is_state_expired=True)
 
     assert result.others[0].player_id == robot.player_id
     assert len(result.others) == 1
@@ -149,22 +153,22 @@ def test_convert_obstacles_to_robots_expired_headers(state_with_obstacles):
 def test_convert_strategy(state_with_strategy):
     result = convert_to_message(state_with_strategy)
 
-    assert result.role == Role.ROLE_STRIKER
-    assert result.action == Action.ACTION_KICKING
-    assert result.offensive_side == OffensiveSide.SIDE_RIGHT
+    assert result.role == Proto.Role.ROLE_STRIKER
+    assert result.action == Proto.Action.ACTION_KICKING
+    assert result.offensive_side == Proto.OffensiveSide.SIDE_RIGHT
 
     validity_checker_valid.assert_called_with(state_with_strategy.strategy_time)
 
 
 def test_convert_strategy_expired_headers(state_with_strategy):
-    message = Message()
-    message.role = Role.ROLE_DEFENDER
+    message = Proto.Message()
+    message.role = Proto.Role.ROLE_DEFENDER
 
     result = convert_to_message(state_with_strategy, message, is_state_expired=True)
 
-    assert result.role == Role.ROLE_DEFENDER
-    assert result.action == Action.ACTION_UNDEFINED
-    assert result.offensive_side == OffensiveSide.SIDE_UNDEFINED
+    assert result.role == Proto.Role.ROLE_DEFENDER
+    assert result.action == Proto.Action.ACTION_UNDEFINED
+    assert result.offensive_side == Proto.OffensiveSide.SIDE_UNDEFINED
 
 
 def test_convert_time_to_ball(state_with_time_to_ball):
@@ -185,7 +189,7 @@ def test_convert_time_to_ball_calculated(snapshot, state_with_ball_and_robot_pos
 
 
 def test_convert_time_to_ball_expired_headers(state_with_time_to_ball):
-    message = Message()
+    message = Proto.Message()
     message.time_to_ball = 16.5
 
     result = convert_to_message(state_with_time_to_ball, message, is_state_expired=True)
@@ -193,10 +197,10 @@ def test_convert_time_to_ball_expired_headers(state_with_time_to_ball):
     assert pytest.approx(result.time_to_ball) == 9999.0
 
 
-def convert_to_message(team_data_state, message: Message = None, is_state_expired=False):
-    message = message if message else Message()
+def convert_to_message(team_data_state, message: Proto.Message = None, is_state_expired=False):
+    message = message if message else Proto.Message()
     validity_checker = validity_checker_expired if is_state_expired else validity_checker_valid
-    return RobocupProtocolConverter().convert_to_message(team_data_state, message, validity_checker)
+    return RobocupProtocolConverter(own_team_color).convert_to_message(team_data_state, message, validity_checker)
 
 
 @pytest.fixture
@@ -225,15 +229,13 @@ def state_with_strategy(state):
 
 
 @pytest.fixture
-def state_with_obstacles(state):
-    state.obstacles = Mock(ObstacleRelativeArray)
-    state.obstacles.header = Header()
-    state.obstacles.obstacles = [
-        relative_obstacle(ObstacleRelative.ROBOT_CYAN, 2),
-        relative_obstacle(ObstacleRelative.ROBOT_MAGENTA, 3),
-        relative_obstacle(ObstacleRelative.ROBOT_UNDEFINED, 4),
-        relative_obstacle(ObstacleRelative.HUMAN),
-        relative_obstacle(ObstacleRelative.POLE),
+def state_with_seen_robots(state):
+    state.seen_robots = Mock(RobotArray)
+    state.seen_robots.header = Header()
+    state.seen_robots.robots = [
+        relative_robot(RobotAttributes.TEAM_OPPONENT, 2),
+        relative_robot(RobotAttributes.TEAM_OWN, 3),
+        relative_robot(RobotAttributes.TEAM_UNKNOWN, 4),
     ]
 
     return state
@@ -303,7 +305,7 @@ def state():
     state.ball = None
     state.ball_velocity = None
     state.ball_covariance = None
-    state.obstacles = None
+    state.seen_robots = None
     state.strategy = None
     state.strategy_time = None
     state.time_to_ball = None
@@ -313,22 +315,28 @@ def state():
     return state
 
 
-def relative_obstacle(obstacle_type, player_number=None):
-    obstacle = Mock(ObstacleRelative)
-    obstacle.type = obstacle_type
-    obstacle.player_number = player_number
-    obstacle.pose = PoseWithCertainty(pose=pose_with_covariance(), confidence=0.8)
+def relative_robot(team, player_number) -> Robot:
+    robot = Robot()
+    robot.attributes.team = team
+    robot.attributes.player_number = player_number
+    robot.bb.center = base_pose()
+    robot.confidence = Confidence(confidence=0.8)
 
-    return obstacle
+    return robot
 
 
-def pose_with_covariance():
-    point = Point(x=3.6, y=1.8, z=1.9)
-    quat = Quaternion(x=0.2, y=0.3, z=0.5, w=0.8)
-    pose = PoseWithCovariance(pose=Pose(position=point, orientation=quat))
+def pose_with_covariance() -> PoseWithCovariance:
+    pose = PoseWithCovariance(pose=base_pose())
     pose.covariance = covariance_list()
 
     return pose
+
+
+def base_pose() -> Pose:
+    point = Point(x=3.6, y=1.8, z=1.9)
+    quat = Quaternion(x=0.2, y=0.3, z=0.5, w=0.8)
+
+    return Pose(position=point, orientation=quat)
 
 
 def covariance_list():
