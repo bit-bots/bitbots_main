@@ -187,8 +187,17 @@ class WorldModelCapsule:
 
     def get_ball_distance(self, filtered=False) -> float:
         if filtered:
-            u = self.ball_filtered.pose.pose.position.x
-            v = self.ball_filtered.pose.pose.position.y
+            try:
+                ball_filtered_point_stamped = PointStamped()
+                ball_filtered_point_stamped.header = self.ball_filtered.header
+                ball_filtered_point_stamped.point = self.ball_filtered.pose.point
+                ball_bfp = self.tf_buffer.transform(self.ball_filtered_point_stamped, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
+            except (tf2.ExtrapolationException) as e:
+                self._blackboard.node.get_logger().warn(e)
+                self._blackboard.node.get_logger().error('Severe transformation problem concerning the ball!')
+                return None
+            u = ball_bfp.pose.pose.position.x
+            v = ball_bfp.pose.pose.position.y
         else:
             ball_pos = self.get_ball_position_uv()
             if ball_pos is None:
