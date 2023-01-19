@@ -44,8 +44,6 @@ class CostmapCapsule:
 
         self.base_footprint_frame: str = self._blackboard.node.get_parameter('base_footprint_frame').value
 
-        self.ball_twist_map: Optional[TwistStamped] = None
-
         parameters = get_parameters_from_other_node(
             self._blackboard.node,
             "/parameter_blackboard",
@@ -58,8 +56,6 @@ class CostmapCapsule:
             'body.obstacle_costmap_smoothing_sigma').value
         self.obstacle_cost: float = self._blackboard.node.get_parameter('body.obstacle_cost').value
 
-        self.localization_precision_threshold: Dict[str, float] = get_parameter_dict(
-            self._blackboard.node, 'body.localization_precision_threshold')
 
         # Publisher for visualization in RViZ
         self.costmap_publisher = self._blackboard.node.create_publisher(OccupancyGrid, 'debug/costmap', 1)
