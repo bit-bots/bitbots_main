@@ -35,7 +35,7 @@ from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 class CostmapCapsule:
     def __init__(self, blackboard: "BodyBlackboard"):
-        self.blackboard = blackboard
+        self._blackboard = blackboard
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
 
 
