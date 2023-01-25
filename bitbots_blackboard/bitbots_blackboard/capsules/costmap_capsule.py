@@ -68,11 +68,7 @@ class CostmapCapsule:
         self.calc_gradients()
 
 
-    ############
-    # Obstacle #
-    ############
-
-    def robot_obstacle_callback(self, msg: RobotArray):
+    def robot_callback(self, msg: RobotArray):
         """
         Callback with new obstacles
         """
@@ -92,11 +88,11 @@ class CostmapCapsule:
         # Get pass offsets
         self.pass_map = self.get_pass_regions()
         # Merge costmaps
-        self.costmap = self.base_costmap.copy() + obstacle_map - self.pass_map
+        self.costmap = self.base_costmap + obstacle_map - self.pass_map
         # Publish debug costmap
-        self.costmap_debug_draw()
+        self.publish_costmap()
 
-    def costmap_debug_draw(self):
+    def publish_costmap(self):
         """
         Publishes the costmap for rviz
         """
@@ -198,18 +194,12 @@ class CostmapCapsule:
         This costmap includes a gradient towards the enemy goal and high costs outside the playable area
         """
         # Get parameters
-        goalpost_safety_distance: float = self._blackboard.node.get_parameter(
-            "body.goalpost_safety_distance").value  # offset in y direction from the goalpost
-        keep_out_border: float = self._blackboard.node.get_parameter(
-            "body.keep_out_border").value  # dangerous border area
-        in_field_value_our_side: float = self._blackboard.node.get_parameter(
-            "body.in_field_value_our_side").value  # start value on our side
-        corner_value: float = self._blackboard.node.get_parameter(
-            "body.corner_value").value  # cost in a corner
-        goalpost_value: float = self._blackboard.node.get_parameter(
-            "body.goalpost_value").value  # cost at a goalpost
-        goal_value: float = self._blackboard.node.get_parameter(
-            "body.goal_value").value  # cost in the goal
+        goalpost_safety_distance: float = self.body_config["goalpost_safety_distance"] # offset in y direction from the goalpost
+        keep_out_border: float = self.body_config[".keep_out_border"] # dangerous border area
+        in_field_value_our_side: float = self.body_config["in_field_value_our_side"] # start value on our side
+        corner_value: float = self.body_config["corner_value"] # cost in a corner
+        goalpost_value: float = self.body_config["goalpost_value"] # cost at a goalpost
+        goal_value: float = self.body_config["goal_value"] # cost in the goal
 
         # Create Grid
         grid_x, grid_y = np.mgrid[
@@ -273,8 +263,7 @@ class CostmapCapsule:
         # Smooth the costmap to get more continus gradients
         self.base_costmap = gaussian_filter(
             interpolated,
-            self._blackboard.node.get_parameter(
-                "body.base_costmap_smoothing_sigma").value)
+            self.body_config["base_costmap_smoothing_sigma"])
         self.costmap = self.base_costmap.copy()
 
     def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
