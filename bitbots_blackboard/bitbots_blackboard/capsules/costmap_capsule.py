@@ -51,10 +51,9 @@ class CostmapCapsule:
         self.field_length: float = parameters["field_length"]
         self.field_width: float = parameters["field_width"]
         self.goal_width: float = parameters["goal_width"]
-        self.map_margin: float = self._blackboard.node.get_parameter('body.map_margin').value
-        self.obstacle_costmap_smoothing_sigma: float = self._blackboard.node.get_parameter(
-            'body.obstacle_costmap_smoothing_sigma').value
-        self.obstacle_cost: float = self._blackboard.node.get_parameter('body.obstacle_cost').value
+        self.map_margin: float = self.body_config['map_margin']
+        self.obstacle_costmap_smoothing_sigma: float = self.body_config['obstacle_costmap_smoothing_sigma']
+        self.obstacle_cost: float = self.body_config['obstacle_cost']
 
 
         # Publisher for visualization in RViZ
