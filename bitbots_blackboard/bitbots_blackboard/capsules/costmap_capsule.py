@@ -304,6 +304,13 @@ class CostmapCapsule:
         return math.atan2(grad[1], grad[0])
 
     def get_cost_of_kick_relative(self, x: float, y: float, direction: float, kick_length: float, angular_range: float):
+        """
+        Returns the cost of a kick at the given position and direction relative to the robot
+        :param x: Field coordiante in the x direction
+        :param y: Field coordiante in the y direction
+        :param direction: The direction of the kick
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick"""
         if self.costmap is None:
             return 0.0
 
@@ -327,6 +334,14 @@ class CostmapCapsule:
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
 
     def get_cost_of_kick(self, x: float, y: float, direction: float, kick_length: float, angular_range: float) -> float:
+        """
+        Returns the cost of the kick at the given position
+        :param x: Field coordiante in the x direction
+        :param y: Field coordiante in the y direction
+        :param direction: The direction of the kick
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick
+        """
 
         # create a mask in the size of the costmap consisting of 8-bit values initialized as 0
         mask = Image.new('L', (self.costmap.shape[1], self.costmap.shape[0]))
@@ -358,9 +373,23 @@ class CostmapCapsule:
         return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25
 
     def get_current_cost_of_kick(self, direction: float, kick_length: float, angular_range: float):
+        """
+        Returns the cost of the kick at the current position
+        :param direction: The direction of the kick
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick
+        """
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
 
     def get_best_kick_direction(self, min_angle: float, max_angle: float, num_kick_angles: int, kick_length: float, angular_range: float) -> float:
+        """
+        Returns the best kick direction in the given range
+        :param min_angle: The minimum angle of the kick
+        :param max_angle: The maximum angle of the kick
+        :param num_kick_angles: The number of angles to check
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick
+        """
         # list of possible kick directions, sorted by absolute value to
         # prefer forward kicks to side kicks if their costs are equal
         kick_directions = sorted(np.linspace(min_angle,
