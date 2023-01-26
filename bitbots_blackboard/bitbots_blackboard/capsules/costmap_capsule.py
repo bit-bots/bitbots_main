@@ -38,6 +38,7 @@ class CostmapCapsule:
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self._blackboard.node)
 
+        self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
         self.base_footprint_frame: str = self._blackboard.node.get_parameter('base_footprint_frame').value
 
         parameters = get_parameters_from_other_node(

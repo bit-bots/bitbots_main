@@ -31,7 +31,7 @@ class DribbleOrKick(AbstractDecisionElement):
         self.publish_debug_data(f"Orientation to goal (needs <{self.orient_threshold})", goal_angle)
 
         # no other robots should be in front of the ball. this means the kick with angle 0 would be the best
-        best_kick_direction = self.blackboard.world_model.get_best_kick_direction(-self.max_kick_angle,
+        best_kick_direction = self.blackboard.costmap.get_best_kick_direction(-self.max_kick_angle,
                                                                                   self.max_kick_angle,
                                                                                   self.num_kick_angles,
                                                                                   self.kick_length,
