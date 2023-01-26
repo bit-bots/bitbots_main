@@ -5,7 +5,7 @@ CostmapCapsule
 Provides information about the cost of different positions and moves.
 """
 import math
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
@@ -16,10 +16,7 @@ import ros2_numpy
 import tf2_ros as tf2
 from bitbots_utils.utils import (get_parameter_dict,
                                  get_parameters_from_other_node)
-from geometry_msgs.msg import (Point, Pose, PoseStamped,
-                               PoseWithCovarianceStamped, Quaternion,
-                               TransformStamped, TwistStamped,
-                               TwistWithCovarianceStamped)
+from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from PIL import Image, ImageDraw
 from rclpy.clock import ClockType
@@ -27,11 +24,10 @@ from rclpy.duration import Duration
 from rclpy.time import Time
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
-from soccer_vision_3d_msgs.msg import RobotArray, Robot
-from std_msgs.msg import Header
-from std_srvs.srv import Trigger
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
+
 
 class CostmapCapsule:
     def __init__(self, blackboard: "BodyBlackboard"):
