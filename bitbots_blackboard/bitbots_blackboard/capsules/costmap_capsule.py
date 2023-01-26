@@ -195,7 +195,7 @@ class CostmapCapsule:
         """
         # Get parameters
         goalpost_safety_distance: float = self.body_config["goalpost_safety_distance"] # offset in y direction from the goalpost
-        keep_out_border: float = self.body_config[".keep_out_border"] # dangerous border area
+        keep_out_border: float = self.body_config["keep_out_border"] # dangerous border area
         in_field_value_our_side: float = self.body_config["in_field_value_our_side"] # start value on our side
         corner_value: float = self.body_config["corner_value"] # cost in a corner
         goalpost_value: float = self.body_config["goalpost_value"] # cost at a goalpost
