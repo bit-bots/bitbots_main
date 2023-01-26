@@ -150,7 +150,7 @@ class Behavior(object):
             x, y = self.get_ball_position_uv(ball_obj)
             self.ball_position = (float(x), float(y))
             # Set ball distance
-            self.ball_distance = math.sqrt(float(self.ball_position[0])**2 + float(self.ball_position[1])**2)
+            self.ball_distance = math.hypot(float(self.ball_position[0]), float(self.ball_position[1]))
             # Calculate the angle in which we are facing the ball
             self.ball_angle = math.atan2(float(self.ball_position[1]),float(self.ball_position[0]))
             # Set the refresh time

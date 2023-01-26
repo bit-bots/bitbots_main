@@ -105,9 +105,9 @@ class SearchRecentBall(AbstractLookAt):
             self.index += 1
         else:
             # Distance between the current and the goal position
-            distance = math.sqrt(
-                (current_head_pan - head_motor_goal_pan) ** 2 +
-                (current_head_tilt - head_motor_goal_tilt) ** 2)
+            distance = math.hypot(
+                (current_head_pan - head_motor_goal_pan),
+                (current_head_tilt - head_motor_goal_tilt))
 
             # Increment index when position is reached
             if distance < math.radians(self._threshold):
