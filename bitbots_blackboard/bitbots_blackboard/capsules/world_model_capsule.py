@@ -185,16 +185,12 @@ class WorldModelCapsule:
             return None
         return ball_bfp.x, ball_bfp.y
 
-    def get_ball_distance(self, filtered=False) -> float:
-        if filtered:
-            u = self.ball_filtered.pose.pose.position.x
-            v = self.ball_filtered.pose.pose.position.y
+    def get_ball_distance(self) -> float:
+        ball_pos = self.get_ball_position_uv()
+        if ball_pos is None:
+            return np.inf  # worst case (very far away)
         else:
-            ball_pos = self.get_ball_position_uv()
-            if ball_pos is None:
-                return np.inf  # worst case (very far away)
-            else:
-                u, v = ball_pos
+            u, v = ball_pos
         return math.sqrt(u ** 2 + v ** 2)
 
     def get_ball_angle(self) -> float:
