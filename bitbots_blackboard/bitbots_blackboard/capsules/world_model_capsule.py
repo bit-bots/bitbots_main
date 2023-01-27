@@ -174,7 +174,8 @@ class WorldModelCapsule:
             return np.inf  # worst case (very far away)
         else:
             u, v = ball_pos
-        return math.sqrt(u ** 2 + v ** 2)
+
+        return math.hypot(u, v)
 
     def get_ball_angle(self) -> float:
         ball_pos = self.get_ball_position_uv()
@@ -416,13 +417,13 @@ class WorldModelCapsule:
         """ Returns the absolute position from the given relative position to the robot"""
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
-        hypotenuse = math.sqrt(u ** 2 + v ** 2)
+        hypotenuse = math.hypot(u, v)
         return pos_x + math.sin(angle) * hypotenuse, pos_y + math.cos(angle) * hypotenuse
 
     def get_distance_to_xy(self, x, y):
         """ Returns distance from robot to given position """
         u, v = self.get_uv_from_xy(x, y)
-        dist = math.sqrt(u ** 2 + v ** 2)
+        dist = math.hypot(u, v)
         return dist
 
 

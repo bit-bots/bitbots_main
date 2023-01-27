@@ -84,7 +84,7 @@ class TeamDataCapsule:
         """
         goalie_ball_position = self.get_goalie_ball_position()
         if goalie_ball_position is not None:
-            return math.sqrt(goalie_ball_position[0]**2 + goalie_ball_position[1]**2)
+            return math.hypot(goalie_ball_position[0],goalie_ball_position[1])
         else:
             return None
 
@@ -137,7 +137,7 @@ class TeamDataCapsule:
     def get_robot_ball_euclidean_distance(self, robot_teamdata: TeamData):
         ball_rel_x = robot_teamdata.ball_absolute.pose.position.x - robot_teamdata.robot_position.pose.position.x
         ball_rel_y = robot_teamdata.ball_absolute.pose.position.y - robot_teamdata.robot_position.pose.position.y
-        dist = math.sqrt(ball_rel_x**2 + ball_rel_y**2)
+        dist = math.hypot(ball_rel_x, ball_rel_y)
         return dist
 
     def set_role(self, role: int):
