@@ -67,7 +67,7 @@ class AbstractSearchPattern(AbstractActionElement):
             point_pan = math.radians(point[0])
             point_tilt = math.radians(point[1])
             # Calc the distance
-            distance = math.sqrt((pan - math.radians(point_pan)) ** 2 + (tilt - math.radians(point_tilt)) ** 2)
+            distance = math.hypot((pan - math.radians(point_pan)), (tilt - math.radians(point_tilt)))
             # Check if distance is smaller than the previous distance
             if distance < min_distance_point[0]:
                 # Reset the distance
@@ -108,7 +108,7 @@ class AbstractSearchPattern(AbstractActionElement):
             # Try the next pattern position
             self.index += 1
         else:
-            distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
+            distance = math.hypot((current_head_pan - head_pan), (current_head_tilt - head_tilt))
 
             # Increment index when position is reached
             if distance < math.radians(self.threshold):
