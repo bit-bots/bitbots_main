@@ -69,13 +69,15 @@ class CostmapCapsule:
         """
         Callback with new obstacles
         """
+        self._blackboard.node.get_logger().warn("entering method")
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
         # Iterate over all obstacles
         robot: Robot
         for robot in msg.robots:
+            self._blackboard.node.get_logger().warn(str(robot))
             # Convert position to array index
-            idx_x, idx_y = self.field_2_costmap_coord(robot.bb.center.position.x, robot.bb.center.position.x)
+            idx_x, idx_y = self.field_2_costmap_coord(robot.bb.center.position.x, robot.bb.center.position.y)
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = \
@@ -88,6 +90,8 @@ class CostmapCapsule:
         self.costmap = self.base_costmap + obstacle_map - self.pass_map
         # Publish debug costmap
         self.publish_costmap()
+        self._blackboard.node.get_logger().warn("leaving method")
+
 
     def publish_costmap(self):
         """
