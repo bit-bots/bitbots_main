@@ -8,6 +8,7 @@ from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
+from bitbots_blackboard.capsules.costmap_capsule import CostmapCapsule
 from bitbots_utils.utils import get_parameter_dict
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -26,6 +27,7 @@ class BodyBlackboard:
         self.animation = AnimationCapsule(node)
         self.kick = KickCapsule(self)
         self.world_model = WorldModelCapsule(self)
+        self.costmap = CostmapCapsule(self)
         self.pathfinding = PathfindingCapsule(self, node)
         self.team_data = TeamDataCapsule(node)
         self.goalie_arms_animation: str = self.node.get_parameter("Animations.Goalie.goalieArms").value
@@ -46,3 +48,4 @@ class HeadBlackboard:
         self.config = get_parameter_dict(node, "head")
         self.head_capsule = HeadCapsule(self)
         self.world_model = WorldModelCapsule(self)
+        self.costmap = CostmapCapsule(self)

@@ -102,7 +102,7 @@ class PathfindingCapsule:
         if 'gradient_goal' == target:
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
-            goal_angle = self._blackboard.world_model.get_gradient_direction_at_field_position(ball_x, ball_y)
+            goal_angle = self._blackboard.costmap.get_gradient_direction_at_field_position(ball_x, ball_y)
 
             goal_x = ball_x - math.cos(goal_angle) * distance
             goal_y = ball_y - math.sin(goal_angle) * distance

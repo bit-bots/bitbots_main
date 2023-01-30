@@ -71,7 +71,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.unstable = True
 
                     # only check 2 directions, left and right
-                    kick_direction = self.blackboard.world_model.get_best_kick_direction(
+                    kick_direction = self.blackboard.costmap.get_best_kick_direction(
                             -self.penalty_kick_angle,
                             self.penalty_kick_angle,
                             2,
@@ -85,7 +85,7 @@ class KickBallDynamic(AbstractKickAction):
                     goal.ball_position.z = 0.0
                     goal.unstable = False
 
-                    kick_direction = self.blackboard.world_model.get_best_kick_direction(
+                    kick_direction = self.blackboard.costmap.get_best_kick_direction(
                             -self.max_kick_angle,
                             self.max_kick_angle,
                             self.num_kick_angles,

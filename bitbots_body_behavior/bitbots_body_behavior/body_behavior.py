@@ -65,7 +65,7 @@ class BodyDSD:
         node.create_subscription(GameState, "gamestate", blackboard.gamestate.gamestate_callback, qos_profile=1, callback_group=callback_group)
         node.create_subscription(TeamData, "team_data", blackboard.team_data.team_data_callback, qos_profile=1, callback_group=callback_group)
         node.create_subscription(PoseWithCovarianceStamped, "pose_with_covariance", blackboard.world_model.pose_callback, qos_profile=1, callback_group=callback_group)
-        node.create_subscription(RobotArray, "robot_obstacles", blackboard.world_model.robot_obstacle_callback, qos_profile=1, callback_group=callback_group)
+        node.create_subscription(RobotArray, "robots_relative_filtered", blackboard.costmap.robot_callback, qos_profile=1, callback_group=callback_group)
         node.create_subscription(RobotControlState, "robot_state", blackboard.blackboard.robot_state_callback, qos_profile=1, callback_group=callback_group)
         node.create_subscription(TwistWithCovarianceStamped,
             node.get_parameter("body.ball_movement_subscribe_topic").get_parameter_value().string_value,
