@@ -59,7 +59,7 @@ class VisualCompassRecord(AbstractActionElement):
         self.blackboard.head_capsule.send_motor_goals(head_pan, head_tilt, pan_speed=self.pan_speed, tilt_speed=self.tilt_speed)
 
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
-        distance = math.sqrt((current_head_pan - head_pan) ** 2 + (current_head_tilt - head_tilt) ** 2)
+        distance = math.hypot((current_head_pan - head_pan), (current_head_tilt - head_tilt))
 
         # Increment index when position is reached
         if distance < math.radians(self.threshold):

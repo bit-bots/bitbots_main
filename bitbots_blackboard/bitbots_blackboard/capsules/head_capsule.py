@@ -128,7 +128,7 @@ class HeadCapsule:
             return False
 
         # Calculate distante in the joint space
-        distance = math.sqrt((goal_pan - current_pan)**2 + (goal_tilt - current_tilt)**2)
+        distance = math.hypot(goal_pan - current_pan, goal_tilt - current_tilt)
 
         # Caculate step size
         step_count = int(distance / math.radians(3))

@@ -5,34 +5,25 @@ WorldModelCapsule
 Provides information about the world model.
 """
 import math
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
 
-import matplotlib.pyplot as plt
 import numpy as np
-import ros2_numpy
 import tf2_ros as tf2
 from bitbots_utils.utils import (get_parameter_dict,
                                  get_parameters_from_other_node)
-from geometry_msgs.msg import (Point, Pose, PoseStamped,
-                               PoseWithCovarianceStamped, Quaternion,
+from geometry_msgs.msg import (PoseStamped, PoseWithCovarianceStamped,
                                TransformStamped, TwistStamped,
                                TwistWithCovarianceStamped)
-from nav_msgs.msg import MapMetaData, OccupancyGrid
-from PIL import Image, ImageDraw
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
-from scipy.interpolate import griddata
-from scipy.ndimage import gaussian_filter
-from sensor_msgs.msg import PointCloud2 as pc2
-from soccer_vision_3d_msgs.msg import RobotArray, Robot
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
-from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from tf_transformations import euler_from_quaternion
 
 
 class WorldModelCapsule:
@@ -177,26 +168,14 @@ class WorldModelCapsule:
             return None
         return ball_bfp.x, ball_bfp.y
 
-    def get_ball_distance(self, filtered=False) -> float:
-        if filtered:
-            try:
-                ball_filtered_point_stamped = PointStamped()
-                ball_filtered_point_stamped.header = self.ball_filtered.header
-                ball_filtered_point_stamped.point = self.ball_filtered.pose.point
-                ball_bfp = self.tf_buffer.transform(self.ball_filtered_point_stamped, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
-            except (tf2.ExtrapolationException) as e:
-                self._blackboard.node.get_logger().warn(e)
-                self._blackboard.node.get_logger().error('Severe transformation problem concerning the ball!')
-                return None
-            u = ball_bfp.pose.pose.position.x
-            v = ball_bfp.pose.pose.position.y
+    def get_ball_distance(self) -> float:
+        ball_pos = self.get_ball_position_uv()
+        if ball_pos is None:
+            return np.inf  # worst case (very far away)
         else:
-            ball_pos = self.get_ball_position_uv()
-            if ball_pos is None:
-                return np.inf  # worst case (very far away)
-            else:
-                u, v = ball_pos
-        return math.sqrt(u ** 2 + v ** 2)
+            u, v = ball_pos
+
+        return math.hypot(u, v)
 
     def get_ball_angle(self) -> float:
         ball_pos = self.get_ball_position_uv()
@@ -438,13 +417,13 @@ class WorldModelCapsule:
         """ Returns the absolute position from the given relative position to the robot"""
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
-        hypotenuse = math.sqrt(u ** 2 + v ** 2)
+        hypotenuse = math.hypot(u, v)
         return pos_x + math.sin(angle) * hypotenuse, pos_y + math.cos(angle) * hypotenuse
 
     def get_distance_to_xy(self, x, y):
         """ Returns distance from robot to given position """
         u, v = self.get_uv_from_xy(x, y)
-        dist = math.sqrt(u ** 2 + v ** 2)
+        dist = math.hypot(u, v)
         return dist
 
 

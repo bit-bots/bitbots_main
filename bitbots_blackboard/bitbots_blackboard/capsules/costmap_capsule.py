@@ -5,7 +5,7 @@ CostmapCapsule
 Provides information about the cost of different positions and moves.
 """
 import math
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
@@ -16,10 +16,7 @@ import ros2_numpy
 import tf2_ros as tf2
 from bitbots_utils.utils import (get_parameter_dict,
                                  get_parameters_from_other_node)
-from geometry_msgs.msg import (Point, Pose, PoseStamped,
-                               PoseWithCovarianceStamped, Quaternion,
-                               TransformStamped, TwistStamped,
-                               TwistWithCovarianceStamped)
+from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from PIL import Image, ImageDraw
 from rclpy.clock import ClockType
@@ -27,21 +24,21 @@ from rclpy.duration import Duration
 from rclpy.time import Time
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
-from soccer_vision_3d_msgs.msg import RobotArray, Robot
-from std_msgs.msg import Header
-from std_srvs.srv import Trigger
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
+
 class CostmapCapsule:
     def __init__(self, blackboard: "BodyBlackboard"):
-        self.blackboard = blackboard
+        self._blackboard = blackboard
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
 
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self._blackboard.node)
 
+        self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
         self.base_footprint_frame: str = self._blackboard.node.get_parameter('base_footprint_frame').value
 
         parameters = get_parameters_from_other_node(
@@ -51,10 +48,9 @@ class CostmapCapsule:
         self.field_length: float = parameters["field_length"]
         self.field_width: float = parameters["field_width"]
         self.goal_width: float = parameters["goal_width"]
-        self.map_margin: float = self._blackboard.node.get_parameter('body.map_margin').value
-        self.obstacle_costmap_smoothing_sigma: float = self._blackboard.node.get_parameter(
-            'body.obstacle_costmap_smoothing_sigma').value
-        self.obstacle_cost: float = self._blackboard.node.get_parameter('body.obstacle_cost').value
+        self.map_margin: float = self.body_config['map_margin']
+        self.obstacle_costmap_smoothing_sigma: float = self.body_config['obstacle_costmap_smoothing_sigma']
+        self.obstacle_cost: float = self.body_config['obstacle_cost']
 
 
         # Publisher for visualization in RViZ
@@ -69,11 +65,7 @@ class CostmapCapsule:
         self.calc_gradients()
 
 
-    ############
-    # Obstacle #
-    ############
-
-    def robot_obstacle_callback(self, msg: RobotArray):
+    def robot_callback(self, msg: RobotArray):
         """
         Callback with new obstacles
         """
@@ -83,7 +75,7 @@ class CostmapCapsule:
         robot: Robot
         for robot in msg.robots:
             # Convert position to array index
-            idx_x, idx_y = self.field_2_costmap_coord(robot.bb.center.position.x, robot.bb.center.position.x)
+            idx_x, idx_y = self.field_2_costmap_coord(robot.bb.center.position.x, robot.bb.center.position.y)
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = \
@@ -93,11 +85,11 @@ class CostmapCapsule:
         # Get pass offsets
         self.pass_map = self.get_pass_regions()
         # Merge costmaps
-        self.costmap = self.base_costmap.copy() + obstacle_map - self.pass_map
+        self.costmap = self.base_costmap + obstacle_map - self.pass_map
         # Publish debug costmap
-        self.costmap_debug_draw()
+        self.publish_costmap()
 
-    def costmap_debug_draw(self):
+    def publish_costmap(self):
         """
         Publishes the costmap for rviz
         """
@@ -199,18 +191,12 @@ class CostmapCapsule:
         This costmap includes a gradient towards the enemy goal and high costs outside the playable area
         """
         # Get parameters
-        goalpost_safety_distance: float = self._blackboard.node.get_parameter(
-            "body.goalpost_safety_distance").value  # offset in y direction from the goalpost
-        keep_out_border: float = self._blackboard.node.get_parameter(
-            "body.keep_out_border").value  # dangerous border area
-        in_field_value_our_side: float = self._blackboard.node.get_parameter(
-            "body.in_field_value_our_side").value  # start value on our side
-        corner_value: float = self._blackboard.node.get_parameter(
-            "body.corner_value").value  # cost in a corner
-        goalpost_value: float = self._blackboard.node.get_parameter(
-            "body.goalpost_value").value  # cost at a goalpost
-        goal_value: float = self._blackboard.node.get_parameter(
-            "body.goal_value").value  # cost in the goal
+        goalpost_safety_distance: float = self.body_config["goalpost_safety_distance"] # offset in y direction from the goalpost
+        keep_out_border: float = self.body_config["keep_out_border"] # dangerous border area
+        in_field_value_our_side: float = self.body_config["in_field_value_our_side"] # start value on our side
+        corner_value: float = self.body_config["corner_value"] # cost in a corner
+        goalpost_value: float = self.body_config["goalpost_value"] # cost at a goalpost
+        goal_value: float = self.body_config["goal_value"] # cost in the goal
 
         # Create Grid
         grid_x, grid_y = np.mgrid[
@@ -274,8 +260,7 @@ class CostmapCapsule:
         # Smooth the costmap to get more continus gradients
         self.base_costmap = gaussian_filter(
             interpolated,
-            self._blackboard.node.get_parameter(
-                "body.base_costmap_smoothing_sigma").value)
+            self.body_config["base_costmap_smoothing_sigma"])
         self.costmap = self.base_costmap.copy()
 
     def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
@@ -316,6 +301,13 @@ class CostmapCapsule:
         return math.atan2(grad[1], grad[0])
 
     def get_cost_of_kick_relative(self, x: float, y: float, direction: float, kick_length: float, angular_range: float):
+        """
+        Returns the cost of a kick at the given position and direction in base footprint frame
+        :param x: Field coordiante in the x direction
+        :param y: Field coordiante in the y direction
+        :param direction: The direction of the kick
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick"""
         if self.costmap is None:
             return 0.0
 
@@ -339,6 +331,14 @@ class CostmapCapsule:
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
 
     def get_cost_of_kick(self, x: float, y: float, direction: float, kick_length: float, angular_range: float) -> float:
+        """
+        Returns the cost of the kick at the given position
+        :param x: Field coordiante in the x direction
+        :param y: Field coordiante in the y direction
+        :param direction: The direction of the kick
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick
+        """
 
         # create a mask in the size of the costmap consisting of 8-bit values initialized as 0
         mask = Image.new('L', (self.costmap.shape[1], self.costmap.shape[0]))
@@ -370,9 +370,23 @@ class CostmapCapsule:
         return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25
 
     def get_current_cost_of_kick(self, direction: float, kick_length: float, angular_range: float):
+        """
+        Returns the cost of the kick at the current position
+        :param direction: The direction of the kick
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick
+        """
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
 
     def get_best_kick_direction(self, min_angle: float, max_angle: float, num_kick_angles: int, kick_length: float, angular_range: float) -> float:
+        """
+        Returns the best kick direction in the given range
+        :param min_angle: The minimum angle of the kick
+        :param max_angle: The maximum angle of the kick
+        :param num_kick_angles: The number of angles to check
+        :param kick_length: The length of the kick
+        :param angular_range: The angular range of the kick
+        """
         # list of possible kick directions, sorted by absolute value to
         # prefer forward kicks to side kicks if their costs are equal
         kick_directions = sorted(np.linspace(min_angle,
