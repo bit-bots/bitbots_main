@@ -306,7 +306,7 @@ class CostmapCapsule:
 
     def get_cost_of_kick_relative(self, x: float, y: float, direction: float, kick_length: float, angular_range: float):
         """
-        Returns the cost of a kick at the given position and direction relative to the robot
+        Returns the cost of a kick at the given position and direction in base footprint frame
         :param x: Field coordiante in the x direction
         :param y: Field coordiante in the y direction
         :param direction: The direction of the kick
