@@ -24,6 +24,7 @@ import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 from humanoid_league_team_communication.communication import SocketCommunication
 from humanoid_league_team_communication.converter.robocup_protocol_converter import TeamColor, RobocupProtocolConverter
 
+
 class HumanoidLeagueTeamCommunication:
 
     def __init__(self):
@@ -43,12 +44,12 @@ class HumanoidLeagueTeamCommunication:
         self.logger.info(f"Starting for {self.player_id} in team {self.team_id}...")
         self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
 
-        self.rate = self.node.get_parameter('rate').get_parameter_value().integer_value
-        self.lifetime = self.node.get_parameter('lifetime').get_parameter_value().integer_value
-        self.avg_walking_speed = self.node.get_parameter('avg_walking_speed').get_parameter_value().double_value
+        self.rate: int = self.node.get_parameter('rate').value
+        self.lifetime: int = self.node.get_parameter('lifetime').value
+        self.avg_walking_speed: float = self.node.get_parameter('avg_walking_speed').value
 
         self.topics = get_parameter_dict(self.node, 'topics')
-        self.map_frame = self.node.get_parameter('map_frame').get_parameter_value().string_value
+        self.map_frame: str = self.node.get_parameter('map_frame').value
 
         self.create_publishers()
         self.create_subscribers()
@@ -70,19 +71,19 @@ class HumanoidLeagueTeamCommunication:
         thread.start()
 
     def set_state_defaults(self):
-        self.gamestate: GameState = None
-        self.pose: PoseWithCovarianceStamped = None
-        self.cmd_vel: Twist = None
+        self.gamestate: Optional[GameState] = None
+        self.pose: Optional[PoseWithCovarianceStamped] = None
+        self.cmd_vel: Optional[Twist] = None
         self.cmd_vel_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
         self.ball: Optional[PointStamped] = None
         self.ball_velocity: Tuple[float, float, float] = (0, 0, 0)
-        self.ball_covariance: List[double] = None
-        self.strategy: Strategy = None
+        self.ball_covariance: List[double] = []
+        self.strategy: Optional[Strategy] = None
         self.strategy_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
-        self.time_to_ball: float = None
+        self.time_to_ball: Optional[float] = None
         self.time_to_ball_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
-        self.seen_robots: RobotArray = None
-        self.move_base_goal: PoseStamped = None
+        self.seen_robots: Optional[RobotArray] = None
+        self.move_base_goal: Optional[PoseStamped] = None
 
     def try_to_establish_connection(self):
         # we will try multiple times till we manage to get a connection
@@ -172,9 +173,8 @@ class HumanoidLeagueTeamCommunication:
         message.ParseFromString(string_message)
 
         if self.should_message_be_discarded(message):
-            self.logger.info("Discarding msg by player {} in team {} at {}".format(message.current_pose.player_id,
-                                                                                   message.current_pose.team,
-                                                                                   message.timestamp.seconds))
+            self.logger.debug(f"Discarding msg by player {message.current_pose.player_id} " +
+                              f"in team {message.current_pose.team} at {message.timestamp.seconds}")
             return
 
         team_data = self.protocol_converter.convert_from_message(message, self.create_team_data())
@@ -182,7 +182,7 @@ class HumanoidLeagueTeamCommunication:
 
     def send_message(self):
         if not self.is_robot_allowed_to_send_message():
-            self.logger.info("Not allowed to send message")
+            self.logger.debug("Not allowed to send message")
             return
 
         now = self.get_current_time()
@@ -214,7 +214,7 @@ class HumanoidLeagueTeamCommunication:
         return isOwnMessage or isMessageFromOpositeTeam
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        return self.gamestate and not self.gamestate.penalized
+        return self.gamestate is not None and not self.gamestate.penalized
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()

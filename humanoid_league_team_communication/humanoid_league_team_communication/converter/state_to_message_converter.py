@@ -1,7 +1,7 @@
 import math
 import transforms3d
 from numpy import double
-from typing import Callable, List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from rclpy.time import Time
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
@@ -21,22 +21,22 @@ class StateToMessageConverter:
 
     def convert(self, state, message: Proto.Message, is_still_valid_checker: Callable[[Time], bool]) -> Proto.Message:
 
-        def convert_gamestate(gamestate: GameState, message: Proto.Message):
-            if gamestate and is_still_valid_checker(gamestate.header.stamp):
+        def convert_gamestate(gamestate: Optional[GameState], message: Proto.Message):
+            if gamestate is not None and is_still_valid_checker(gamestate.header.stamp):
                 message.state = Proto.State.PENALISED if gamestate.penalized else Proto.State.UNPENALISED
             else:
                 message.state = Proto.State.UNKNOWN_STATE
 
             return message
 
-        def convert_current_pose(current_pose: PoseWithCovarianceStamped, message: Proto.Message):
-            if current_pose and is_still_valid_checker(current_pose.header.stamp):
+        def convert_current_pose(current_pose: Optional[PoseWithCovarianceStamped], message: Proto.Message):
+            if current_pose is not None and is_still_valid_checker(current_pose.header.stamp):
                 pose_with_covariance = current_pose.pose
                 pose = pose_with_covariance.pose
 
                 message.current_pose.position.x = pose.position.x
                 message.current_pose.position.y = pose.position.y
-                message.current_pose.position.z = self.extract_orientation_rotation_angle(pose.orientation)
+                message.current_pose.position.z = self.extract_orientation_yaw_angle(pose.orientation)
 
                 self.convert_to_covariance_matrix(message.current_pose.covariance, pose_with_covariance.covariance)
             else:
@@ -44,26 +44,26 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_walk_command(walk_command: Twist, walk_command_time: Time, message: Proto.Message):
-            if walk_command and is_still_valid_checker(walk_command_time):
+        def convert_walk_command(walk_command: Optional[Twist], walk_command_time: Time, message: Proto.Message):
+            if walk_command is not None and is_still_valid_checker(walk_command_time):
                 message.walk_command.x = walk_command.linear.x
                 message.walk_command.y = walk_command.linear.y
                 message.walk_command.z = walk_command.angular.z
 
             return message
 
-        def convert_target_position(target_position: PoseStamped, message):
-            if target_position and is_still_valid_checker(target_position.header.stamp):
+        def convert_target_position(target_position: Optional[PoseStamped], message):
+            if target_position is not None and is_still_valid_checker(target_position.header.stamp):
                 pose = target_position.pose
                 message.target_pose.position.x = pose.position.x
                 message.target_pose.position.y = pose.position.y
-                message.target_pose.position.z = self.extract_orientation_rotation_angle(pose.orientation)
+                message.target_pose.position.z = self.extract_orientation_yaw_angle(pose.orientation)
 
             return message
 
-        def convert_ball_position(ball_position: PointStamped, ball_velocity: Tuple[float, float, float],
+        def convert_ball_position(ball_position: Optional[PointStamped], ball_velocity: Tuple[float, float, float],
                                   ball_covariance: List[double], message):
-            if ball_position and is_still_valid_checker(ball_position.header.stamp):
+            if ball_position is not None and is_still_valid_checker(ball_position.header.stamp):
                 message.ball.position.x = ball_position.point.x
                 message.ball.position.y = ball_position.point.y
                 message.ball.position.z = ball_position.point.z
@@ -78,9 +78,8 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_seen_robots(seen_robots: RobotArray, message: Proto.Message):
-            # @TODO: should confidence be decreased in else case?
-            if seen_robots and is_still_valid_checker(seen_robots.header.stamp):
+        def convert_seen_robots(seen_robots: Optional[RobotArray], message: Proto.Message):
+            if seen_robots is not None and is_still_valid_checker(seen_robots.header.stamp):
                 seen_robot: Robot
                 for seen_robot in seen_robots.robots:
                     robot = Proto.Robot()
@@ -90,25 +89,25 @@ class StateToMessageConverter:
                     robot.team = self.team_mapping[seen_robot.attributes.team]
                     robot.position.x = pose.position.x
                     robot.position.y = pose.position.y
-                    robot.position.z = self.extract_orientation_rotation_angle(pose.orientation)
+                    robot.position.z = self.extract_orientation_yaw_angle(pose.orientation)
 
                     message.others.append(robot)
                     message.other_robot_confidence.append(seen_robot.confidence.confidence)
 
             return message
 
-        def convert_strategy(strategy: Strategy, strategy_time: Time, message: Proto.Message):
-            if strategy and is_still_valid_checker(strategy_time):
+        def convert_strategy(strategy: Optional[Strategy], strategy_time: Time, message: Proto.Message):
+            if strategy is not None and is_still_valid_checker(strategy_time):
                 message.role = self.role_mapping[strategy.role]
                 message.action = self.action_mapping[strategy.action]
                 message.offensive_side = self.side_mapping[strategy.offensive_side]
 
             return message
 
-        def are_robot_and_ball_position_valid(current_pose: PoseWithCovarianceStamped,
-                                              ball_position: PointStamped) -> bool:
-            return (ball_position and is_still_valid_checker(ball_position.header.stamp) and current_pose and
-                    is_still_valid_checker(current_pose.header.stamp))
+        def are_robot_and_ball_position_valid(current_pose: Optional[PoseWithCovarianceStamped],
+                                              ball_position: Optional[PointStamped]) -> bool:
+            return (ball_position is not None and is_still_valid_checker(ball_position.header.stamp) and
+                    current_pose is not None and is_still_valid_checker(current_pose.header.stamp))
 
         def calculate_time_to_ball(current_pose: PoseWithCovarianceStamped, ball_position: PointStamped,
                                    walking_speed: float) -> float:
@@ -118,9 +117,9 @@ class StateToMessageConverter:
 
             return ball_distance / walking_speed
 
-        def convert_time_to_ball(time_to_ball: float, time_to_ball_time: Time, ball_position: PointStamped,
+        def convert_time_to_ball(time_to_ball: Optional[float], time_to_ball_time: Time, ball_position: PointStamped,
                                  current_pose: PoseWithCovarianceStamped, walking_speed: float, message: Proto.Message):
-            if time_to_ball and is_still_valid_checker(time_to_ball_time):
+            if time_to_ball is not None and is_still_valid_checker(time_to_ball_time):
                 message.time_to_ball = time_to_ball
             elif are_robot_and_ball_position_valid(current_pose, ball_position):
                 message.time_to_ball = calculate_time_to_ball(current_pose, ball_position, walking_speed)
@@ -150,7 +149,7 @@ class StateToMessageConverter:
         message_property.covariance.y.y = value
         message_property.covariance.z.z = value
 
-    def extract_orientation_rotation_angle(self, quaternion: Quaternion):
+    def extract_orientation_yaw_angle(self, quaternion: Quaternion):
         angles = self.convert_to_euler(quaternion)
         theta = angles[2]
         return theta

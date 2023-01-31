@@ -48,7 +48,6 @@ class MessageToTeamDataConverter:
     def convert_robots_to_obstacles(self, message_robots: List[Proto.Robot],
                                     message_robot_confidence: List[float]) -> ObstacleRelativeArray:
         relative_obstacles = ObstacleRelativeArray()
-
         for index, robot in enumerate(message_robots):
             obstacle = ObstacleRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])
             obstacle.pose.pose = self.convert_robot_pose(robot)
