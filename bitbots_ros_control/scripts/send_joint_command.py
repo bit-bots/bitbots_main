@@ -4,6 +4,7 @@ import argparse
 
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
 
 from bitbots_msgs.msg import JointCommand
 
@@ -90,23 +91,22 @@ def main():
     joint_command = PredefinedCommands.__dict__[args.command]
 
     rclpy.init(args=None)
-    pub = self.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
+    node = Node("send_joint_command")
+    pub = node.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
     while pub.get_subscription_count() < 1:
-        pub.unregister()
-        pub = self.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 10)
-        self.get_logger().info("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC), once=True)
-        self.get_clock().sleep_for(Duration(seconds=0.5)
+        node.get_logger().info("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC), once=True)
+        node.get_clock().sleep_for(Duration(seconds=0.5))
     # just to make sure
-    self.get_clock().sleep_for(Duration(seconds=1)
+    node.get_clock().sleep_for(Duration(seconds=1))
 
-    self.get_logger().info("Sending controller commands of type {} now.".format(args.command))
+    node.get_logger().info("Sending controller commands of type {} now.".format(args.command))
     print(joint_command)
 
     while rclpy.ok():
-        joint_command.header.stamp = self.get_clock().now()
+        joint_command.header.stamp = node.get_clock().now().to_msg()
         pub.publish(joint_command)
-        self.get_clock().sleep_for(Duration(seconds=0.5)
+        node.get_clock().sleep_for(Duration(seconds=0.5))
 
         if args.once:
             return
