@@ -50,8 +50,8 @@ set(SOURCES
 
 enable_bitbots_docs()
 
-add_executable(node ${SOURCES})
-ament_target_dependencies(node
+add_executable(ros_control ${SOURCES})
+ament_target_dependencies(ros_control
         ament_cmake
         backward_ros
         bitbots_buttons
@@ -113,7 +113,7 @@ ament_export_dependencies(std_msgs)
 ament_export_dependencies(tf2_ros)
 ament_export_dependencies(transmission_interface)
 
-install(TARGETS node
+install(TARGETS ros_control
         DESTINATION lib/${PROJECT_NAME})
 install(TARGETS pressure_converter
         DESTINATION lib/${PROJECT_NAME})
