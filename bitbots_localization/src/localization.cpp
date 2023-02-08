@@ -63,7 +63,7 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   fieldboundary_ratings_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("field_boundary_ratings", 1);
 
   // Get field name
-  std::string field = "webots"; // TODO get via param
+  auto field = this->get_parameter("fieldname").as_string();
 
   // Check if mesurement type is used and load the correct map for that
   if(config_->lines_factor) {
