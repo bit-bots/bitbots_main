@@ -299,7 +299,7 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
 }
 
 void Localization::updateMeasurements() {
-  // Sets the measurements in the oservation model
+  // Sets the measurements in the observation model
   if (line_pointcloud_relative_.header.stamp != last_stamp_lines_pc && config_->lines_factor) {
     robot_pose_observation_model_->set_measurement_lines_pc(line_pointcloud_relative_);
   }
@@ -314,6 +314,8 @@ void Localization::updateMeasurements() {
   last_stamp_lines_pc = line_pointcloud_relative_.header.stamp;
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
+  // Maximum time stamp of the last measurements
+  last_stamp_all_measurments = std::max(std::max(last_stamp_lines_pc, last_stamp_goals), last_stamp_fb_points);
 }
 
 void Localization::getMotion() {
@@ -361,50 +363,77 @@ void Localization::getMotion() {
 void Localization::publish_transforms() {
 
   //get estimate and covariance
-  estimate_ = robot_pf_->getBestXPercentEstimate(config_->percentage_best_particles);
-  estimate_cov_ = robot_pf_->getCovariance(config_->percentage_best_particles);
+  auto estimate = robot_pf_->getBestXPercentEstimate(config_->percentage_best_particles);
 
-  //calculate quaternion
+  // Convert to tf2
+  tf2::Transform filter_transform;
+  filter_transform.setOrigin(tf2::Vector3(estimate.getXPos() , estimate.getYPos(), 0.0));
   tf2::Quaternion q;
-  q.setRPY(0, 0, estimate_.getTheta());
-  q.normalize();
+  q.setRPY(0, 0, estimate.getTheta());
+  filter_transform.setRotation(q);
+
+  // Get the transform from the last measurement timestamp until now
+  geometry_msgs::msg::TransformStamped odomDuringMeasurement, odomNow;
+  try {
+   odomDuringMeasurement = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, last_stamp_all_measurments);
+   odomNow = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0));
+  }
+  catch (const tf2::TransformException &ex) {
+    RCLCPP_WARN(this->get_logger(),"Could not aquire odom transforms: %s", ex.what());
+  }
+
+  // Calculate difference between the two transforms
+  tf2::Transform odomDuringMeasurement_tf2, odomNow_tf2;
+  tf2::fromMsg(odomDuringMeasurement.transform, odomDuringMeasurement_tf2);
+  tf2::fromMsg(odomNow.transform, odomNow_tf2);
+  tf2::Transform odom_diff = odomNow_tf2 * odomDuringMeasurement_tf2.inverse();
+
+  // Apply the transform from the last measurement timestamp until now to the current estimate
+  filter_transform = odom_diff * filter_transform;
+
+  // Update estimate_ with the new estimate
+  estimate_.setXPos(filter_transform.getOrigin().x());
+  estimate_.setYPos(filter_transform.getOrigin().y());
+  estimate_.setTheta(tf2::getYaw(filter_transform.getRotation()));
+  estimate_cov_ = robot_pf_->getCovariance(config_->percentage_best_particles);
 
   //////////////////////
   //publish transforms//
   //////////////////////
 
   try{
-    geometry_msgs::msg::TransformStamped odom_transform = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0));
-
-    //publish localization tf, not the odom offset
+    // Publish localization tf, not the odom offset
     geometry_msgs::msg::TransformStamped localization_transform;
-    localization_transform.header.stamp = odom_transform.header.stamp;
+    localization_transform.header.stamp = odomNow.header.stamp;
     localization_transform.header.frame_id = map_frame_;
     localization_transform.child_frame_id = publishing_frame_;
     localization_transform.transform.translation.x = estimate_.getXPos();
     localization_transform.transform.translation.y = estimate_.getYPos();
     localization_transform.transform.translation.z = 0.0;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, estimate_.getTheta());
+    q.normalize();
     localization_transform.transform.rotation.x = q.x();
     localization_transform.transform.rotation.y = q.y();
     localization_transform.transform.rotation.z = q.z();
     localization_transform.transform.rotation.w = q.w();
 
     if (localization_tf_last_published_time_ != localization_transform.header.stamp) {
-      // do not resend a transform for the same timestamp
+      // Do not resend a transform for the same timestamp
       localization_tf_last_published_time_ = localization_transform.header.stamp;
       br->sendTransform(localization_transform);
     }
 
-    //publish odom localisation offset
+    // Publish odom localisation offset
     geometry_msgs::msg::TransformStamped map_odom_transform;
 
     map_odom_transform.header.stamp = this->get_clock()->now();
     map_odom_transform.header.frame_id = map_frame_;
     map_odom_transform.child_frame_id = odom_frame_;
 
-    //calculate odom offset
+    // Calculate odom offset
     tf2::Transform odom_transform_tf, localization_transform_tf, map_tf;
-    tf2::fromMsg(odom_transform.transform, odom_transform_tf);
+    tf2::fromMsg(odomNow.transform, odom_transform_tf);
     tf2::fromMsg(localization_transform.transform, localization_transform_tf);
     map_tf = localization_transform_tf * odom_transform_tf.inverse();
 
@@ -413,7 +442,7 @@ void Localization::publish_transforms() {
     RCLCPP_DEBUG(this->get_logger(),"Transform %s", geometry_msgs::msg::to_yaml(map_odom_transform).c_str());
 
     if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
-       // do not resend a transform for the same timestamp
+       // Do not resend a transform for the same timestamp
       map_odom_tf_last_published_time_ = map_odom_transform.header.stamp;
       br->sendTransform(map_odom_transform);
     }
@@ -424,7 +453,7 @@ void Localization::publish_transforms() {
 }
 
 void Localization::publish_pose_with_covariance() {
-  //calculate quaternion
+  // Calculate quaternion
   tf2::Quaternion q;
   q.setRPY(0, 0, estimate_.getTheta());
   q.normalize();
@@ -444,7 +473,7 @@ void Localization::publish_pose_with_covariance() {
     estimateMsg.pose.covariance[i] = estimate_cov_[i];
   }
 
-  estimateMsg.header.frame_id = publishing_frame_;
+  estimateMsg.header.frame_id = map_frame_;
 
   pose_with_covariance_publisher_->publish(estimateMsg);
 }
