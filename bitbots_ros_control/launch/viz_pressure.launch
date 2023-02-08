@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="only_pressure" default="true"/>
-    <node pkg="rviz" exec="rviz" args="-d $(find-pkg-share bitbots_ros_control)/config/rviz_pressure.rviz" name="imu_rviz"/>
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_ros_control)/config/rviz_pressure.rviz" name="imu_rviz"/>
 
     <group if="$(var only_pressure)">
-        <node exec="static_transform_publisher" pkg="tf" name="foot_to_foot" args="0 0.25 0 0 0 0 r_foot l_foot 50"/>
+        <node exec="motor_goals_viz_helper.py" pkg="bitbots_utils" name="motor_goals_helper" />
     </group>
 </launch>
