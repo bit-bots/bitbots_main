@@ -11,6 +11,7 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
     <build_depend>python3-sphinx-rtd-theme</build_depend>
+    <depend>python3-breathe</depend>
 	 
 
     <export>
