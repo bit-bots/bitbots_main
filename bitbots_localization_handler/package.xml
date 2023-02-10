@@ -10,8 +10,6 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
-
   <depend>bitbots_blackboard</depend>
   <depend>bitbots_localization</depend>
   <depend>dynamic_stack_decider</depend>
