@@ -12,7 +12,7 @@ PROTO Wolfgang_ankleMesh [
   Shape {
     appearance WolfgangPaintedMetal {}
     geometry Mesh {
-        url ["ankle.stl"]
+      url ["ankle.stl"]
     }
   }
 }
