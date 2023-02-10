@@ -365,15 +365,6 @@
       </material>
     </visual>
     <visual>
-      <origin rpy="0.0 -0.0 1.5708" xyz="-0.004 -0.0377 0.043"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/battery_cage_holder.stl"/>
-      </geometry>
-      <material name="battery_cage_holder_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.01485 0.036 0.149"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/nuc_holder_left_front.stl"/>
