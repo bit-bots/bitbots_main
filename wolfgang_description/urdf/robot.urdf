@@ -218,15 +218,6 @@
       </geometry>
     </collision>
     <visual>
-      <origin rpy="3.14159 5.34761e-17 -1.5708" xyz="-0.037 -0.0478 0.2141"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/imu_bottom_cover.stl"/>
-      </geometry>
-      <material name="imu_bottom_cover_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
       <origin rpy="-1.5708 -0.0 1.5708" xyz="-0.0095 2.94903e-16 0.211"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
