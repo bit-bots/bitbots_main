@@ -80,8 +80,8 @@
 	branch = ros2
 [submodule "lib/events-executor"]
 	path = lib/events-executor
-	url = ../../irobot-ros/events-executor
-	branch = main
+	url = ../../timonegk/events-executor
+	branch = patch-1
 [submodule "lib/hlvs_player"]
 	path = lib/hlvs_player
 	url = ../../ros-sports/hlvs_player
