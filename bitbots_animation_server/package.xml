@@ -13,11 +13,8 @@
 
   <license>MIT</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <depend>rospy</depend>
+  <depend>rclpy</depend>
   <depend>std_msgs</depend>
-  <depend>actionlib</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_splines</depend>
   <depend>bitbots_docs</depend>
