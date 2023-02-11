@@ -13,7 +13,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
 - Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
-- Install some more basic ROS packages: ``sudo apt install python3-rosdep python3-colcon-common-extensions python-colcon-clean``
+- Install some ROS tools: ``sudo apt install python3-rosdep python3-colcon-common-extensions python-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor``
 
 **2. Install webots**
 
