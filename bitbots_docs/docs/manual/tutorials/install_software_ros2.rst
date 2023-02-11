@@ -6,14 +6,14 @@ In this tutorial, we will learn how to install ROS2 Rolling Ridley on Ubuntu 22.
 **0. Use Ubuntu 22.04**
 
 As ROS works best on Ubuntu, we are using this distribution.
-Currently, ROS 2 Rolling runs on Ubuntu 22.04.
-If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS 2 docker (https://github.com/timonegk/rosdocked)
+Currently, ROS2 Rolling runs on Ubuntu 22.04.
+If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS2 docker (https://github.com/timonegk/rosdocked)
 
 **1. Setup and Install ROS 2**
 
-- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended `ros-rolling-desktop`: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
+- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
 - Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
-- Install additional dependencies: ``sudo apt install espeak ffmpeg libfmt-dev librange-v3-dev librostest-dev libtf-conversions-dev liburdfdom-dev libyaml-cpp-dev protobuf-compiler python3-colcon-common-extensions python3-pybind11 python3-rosdep ros-rolling-ament-cmake-nose ros-rolling-backward-ros ros-rolling-behaviortree-cpp-v3 ros-rolling-bondcpp ros-rolling-camera-info-manager ros-rolling-control-msgs ros-rolling-control-toolbox ros-rolling-controller-interface ros-rolling-controller-manager ros-rolling-desktop ros-rolling-diagnostic-aggregator ros-rolling-diagnostic-updater ros-rolling-effort-controllers ros-rolling-gazebo-msgs ros-rolling-image-proc ros-rolling-joint-state-broadcaster ros-rolling-joint-state-publisher-gui ros-rolling-joint-trajectory-controller ros-rolling-joy ros-rolling-joy-linux ros-rolling-moveit-core ros-rolling-moveit-planners-ompl ros-rolling-moveit-ros ros-rolling-moveit-ros-move-group ros-rolling-moveit-ros-occupancy-map-monitor ros-rolling-moveit-ros-planning ros-rolling-moveit-ros-planning-interface ros-rolling-moveit-ros-robot-interaction ros-rolling-moveit-simple-controller-manager ros-rolling-nav2-bringup ros-rolling-plotjuggler-ros ros-rolling-position-controllers ros-rolling-robot-localization ros-rolling-rot-conv ros-rolling-soccer-vision-2d-msgs ros-rolling-soccer-vision-3d-msgs ros-rolling-test-msgs ros-rolling-tf-transformations ros-rolling-transmission-interface ros-rolling-velocity-controllers ros-rolling-vision-msgs ros-rolling-xacro``
+- Install some more basic ROS packages: ``sudo apt install python3-rosdep python3-colcon-common-extensions python-colcon-clean``
 
 **2. Install webots**
 
@@ -22,13 +22,13 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 **2. Download our software**
 
-- Create a GitHub and Mafiasi-account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
+- Create a GitHub and Mafiasi account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
   Those services host our Git software repositories.
 - Add your SSH key to GitHub and Gitea to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
     - Go to your account settings and add your SSH key (the ``.pub`` file) for `GitHub <https://github.com/settings/keys>`_ AND `Gitea <https://git.mafiasi.de/user/settings/keys>`_
 - Now, you can clone (download) our main code repository (repo) called `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_:
-    - Open a terminal and go to the directory where you want to download our code (typically `~/git/bitbots/`)
+    - Open a terminal and go to the directory where you want to download our code (typically ``~/git/bitbots/``)
         - Create the directory with: ``mkdir -p ~/git/bitbots``
           This is were your source code will live and grow.
         - Move to this directory with: ``cd ~/git/bitbots``
@@ -40,7 +40,10 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 **3. Install additional dependencies**
 
-We need to install additional python packages using ``pip``, the python package manager.
+We need to install the requirements of our software. Most of these can be automatically installed
+with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep install --from-paths . --ignore-src -y``.
+
+We also need to install some python packages using ``pip``, the python package manager.
 
 - Upgrade python package manager: ``pip3 install pip -U``
 - Install required python packages: ``pip3 install --user -r requirements.txt``
