@@ -21,7 +21,6 @@
   <depend>bitbots_docs</depend>
   <depend>irobot_events_executor</depend>
 
-  <exec_depend>message_runtime</exec_depend>
   <export>
       <bitbots_documentation>
       <language>python3</language>
