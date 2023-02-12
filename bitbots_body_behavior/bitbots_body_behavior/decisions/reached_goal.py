@@ -17,7 +17,7 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         """
-        Determines whether we are near the goal
+        Determines whether we are near the path planning goal
         :param reevaluate:
         :return:
         """
@@ -40,21 +40,22 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         return True
 
 
-class AlignedToGoal(AbstractDecisionElement):
+class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
+        super(AlignedToPathPlanningGoal, self).__init__(blackboard, dsd, parameters)
         self.orientation_threshold = self.blackboard.config['goal_alignment_orientation_threshold']  # [deg]
 
     def perform(self, reevaluate=False):
         """
-        It is determined if the robot is correctly aligned to the orientation of the goal within a
+        It is determined if the robot is correctly aligned to the orientation of the path planning goal within a
         determined threshold by comparing the current orientation angle of the robot in the map with the one from the
         goal.
         """
         current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         current_goal = self.blackboard.pathfinding.get_goal()
         if current_pose is None or current_goal is None:
+            # When the path planning did not received a goal yet, no current position on the map is known.
             # If it is not known if the robot is aligned correctly to, e.g., the goal the robot
             # should not be allowed to kick the ball.
             return 'NO'

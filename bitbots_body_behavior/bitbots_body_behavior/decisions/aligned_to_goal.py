@@ -6,10 +6,10 @@ from dynamic_stack_decider.abstract_decision_element import \
     AbstractDecisionElement
 
 
-class AlignedToGoal(AbstractDecisionElement):
+class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
+        super(AlignedToPathPlanningGoal, self).__init__(blackboard, dsd, parameters)
         self.goalpost_safety_distance = self.blackboard.config['goalpost_safety_distance']
         self.field_length = self.blackboard.world_model.field_length
         self.goal_width = self.blackboard.world_model.goal_width

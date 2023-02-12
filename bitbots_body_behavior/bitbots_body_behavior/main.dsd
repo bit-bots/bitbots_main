@@ -28,13 +28,13 @@ $AvoidBall
 $DribbleOrKick
     DRIBBLE --> @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
     KICK --> $BallKickArea
-        NEAR --> $AlignedToGoal
+        NEAR --> $AlignedToPathPlanningGoal
             YES --> #PerformKick
             NO --> #KickBallWithAvoidance
         ELSE --> #KickBallWithAvoidance
 
 #GoAndKickBallDetectionGoal
-$AlignedToGoal
+$AlignedToPathPlanningGoal
     YES --> $BallKickArea
         NEAR --> @ChangeAction + action:kicking + r:false, @Stand + duration:0.1 + r:false, @LookForward + r:false, @KickBallDynamic + r:false
         FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
@@ -79,7 +79,7 @@ $ConfigRole
 $ClosestToBall + use_time_to_ball:true
     NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
     YES --> $BallKickArea // TODO: refactor dribble or kick subtree
-        NEAR --> $AlignedToGoal
+        NEAR --> $AlignedToPathPlanningGoal
             YES --> #PerformKick
             NO --> #KickBallWithAvoidance
         ELSE --> #KickBallWithAvoidance
