@@ -58,7 +58,7 @@ class PathPlanning(Node):
             callback_group=callback_group)
         self.create_subscription(
             Empty,
-            'move_base/cancel',
+            'pathfinding/cancel',
             lambda _: self.planner.cancel(),
             5,
             callback_group=callback_group)
