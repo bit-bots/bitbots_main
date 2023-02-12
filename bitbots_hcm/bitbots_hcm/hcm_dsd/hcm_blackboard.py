@@ -120,7 +120,7 @@ class HcmBlackboard():
         self.imu_diag_error = False
         self.pressure_diag_error = False
 
-        self.move_base_cancel_pub = self.node.create_publisher(EmptyMsg, "move_base/cancel", 1)
+        self.move_base_cancel_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
 
     def diag_cb(self, msg: DiagnosticArray):
         for status in msg.status:
