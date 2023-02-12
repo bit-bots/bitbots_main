@@ -18,10 +18,7 @@
 
     <license>MIT</license>
 
-    <buildtool_depend>ament_cmake</buildtool_depend>
-
-    <depend>rospy</depend>
-
+    <depend>rclpy</depend>
     <build_depend>bitbots_docs</build_depend>
     <exec_depend>std_msgs</exec_depend>
     <exec_depend>std_srvs</exec_depend>
@@ -33,6 +30,8 @@
     <exec_depend>humanoid_league_msgs</exec_depend>
     <exec_depend>soccer_vision_3d_msgs</exec_depend>
     <exec_depend>bitbots_msgs</exec_depend>
+    <depend>tf_transformations</depend>
+    <depend>python3-numpy</depend>
 
     <export>
         <bitbots_documentation>

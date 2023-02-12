@@ -14,8 +14,6 @@
 
   <license>MIT</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
-
   <depend>rclpy</depend>
   <exec_depend>bitbots_blackboard</exec_depend>
   <exec_depend>bitbots_convenience_frames</exec_depend>
@@ -25,7 +23,8 @@
   <exec_depend>ros2_numpy</exec_depend>
   <exec_depend>soccer_vision_3d_msgs</exec_depend>
   <exec_depend>tf2</exec_depend>
-  <!--<test_depend>bitbots_test</test_depend>-->
+  <depend>tf_transformations</depend>
+  <depend>python3-numpy</depend>
 
 
   <export>
