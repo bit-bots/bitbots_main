@@ -23,6 +23,9 @@
     <exec_depend>wolfgang_description</exec_depend>
     <exec_depend>wolfgang_moveit_config</exec_depend>
     <exec_depend>xacro</exec_depend>
+    <depend>python3-yaml</depend>
+    <depend>python3-transforms3d</depend>
+    <depend>python3-numpy</depend>
 
     <export>
         <bitbots_documentation>
