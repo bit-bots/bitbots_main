@@ -80,8 +80,8 @@
 	branch = ros2
 [submodule "lib/events-executor"]
 	path = lib/events-executor
-	url = ../../irobot-ros/events-executor
-	branch = main
+	url = ../../timonegk/events-executor
+	branch = patch-1
 [submodule "lib/hlvs_player"]
 	path = lib/hlvs_player
 	url = ../../ros-sports/hlvs_player
@@ -108,7 +108,7 @@
 [submodule "lib/ros2_numpy"]
 	path = lib/ros2_numpy
 	url = ../../Box-Robotics/ros2_numpy.git
-	branch = rolling
+	branch = humble
 [submodule "lib/soccer_ipm"]
 	path = lib/soccer_ipm
 	url = ../../ros-sports/soccer_ipm.git

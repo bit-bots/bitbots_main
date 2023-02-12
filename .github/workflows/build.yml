@@ -1,0 +1,41 @@
+name: Test if all packages build
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:jammy
+
+    steps:
+      - name: Set up ROS ecosystem
+        uses: ros-tooling/setup-ros@v0.3
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Configure git to trust repository
+        run: git config --global --add safe.directory /__w/bitbots_meta/bitbots_meta
+      - name: Pull our software
+        run: make pull-init
+      - name: Set up packages.bit-bots.de
+        run: |
+          sudo wget https://packages.bit-bots.de/key.asc -O /usr/share/keyrings/bitbots.key
+          echo 'deb [signed-by=/usr/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main' | sudo tee /etc/apt/sources.list.d/bitbots.list
+          sudo apt update
+      - name: Install packages via rosdep
+        run: |
+          rosdep update
+          rosdep install -y --from-paths . --ignore-src --rosdistro rolling
+      - name: Ignore pylon camera because of proprietary drivers
+        run: touch lib/pylon-ros-camera/AMENT_IGNORE
+      - name: Set up colcon workspace
+        run: |
+          mkdir -p /colcon_ws/src
+          ln -s $(realpath .) /colcon_ws/src/bitbots_meta
+      - name: Build packages
+        run: |
+          . /opt/ros/rolling/setup.sh
+          colcon build --symlink-install
+        working-directory: /colcon_ws
