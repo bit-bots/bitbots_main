@@ -23,6 +23,7 @@
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
   <depend>wolfgang_webots_sim</depend>
+  <depend>protobuf-dev</depend>
 
   <export>
     <build_type>ament_python</build_type>

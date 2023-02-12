@@ -23,8 +23,9 @@
   <depend>bitbots_docs</depend>
   <depend>gazebo_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>transforms3d</depend>
+  <depend>python3-transforms3d</depend>
   <depend>python3-numpy</depend>
+  <depend>python3-psutil</depend>
   <depend>std_srvs</depend>
   
 
