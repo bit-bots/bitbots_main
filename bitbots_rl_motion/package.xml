@@ -14,10 +14,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>rospy</depend>
+  <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>bitbots_docs</depend>
-  <depend>diagnostic-aggregator</depend>
+  <depend>diagnostic_aggregator</depend>
 
   <export>
     <bitbots_documentation>
