@@ -20,7 +20,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 - Navigate to https://github.com/cyberbotics/webots/releases and download the ``.deb`` file of **Webots2022b**.
 - Install it using the command ``sudo apt install ~/Downloads/webots_2022b_amd64.deb`` or similar, depending on your system setup.
 
-**2. Download our software**
+**3. Download our software**
 
 - Create a GitHub and Mafiasi account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
   Those services host our Git software repositories.
@@ -38,7 +38,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
     - Clone all sub-repositories and other files by running: ``make pull-init``
 - If you want to run the robot's cameras on your system, also run the following command: ``make basler`` Confirm the host key by typing ``yes``, if asked.
 
-**3. Install additional dependencies**
+**4. Install additional dependencies**
 
 We need to install the requirements of our software. Most of these can be automatically installed
 with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep install --from-paths . --ignore-src -y``.
@@ -48,7 +48,7 @@ We also need to install some python packages using ``pip``, the python package m
 - Upgrade python package manager: ``pip3 install pip -U``
 - Install required python packages: ``pip3 install --user -r requirements.txt``
 
-**4. Setup colcon workspace**
+**5. Setup colcon workspace**
 
 `Colcon <https://docs.ros.org/en/rolling/Tutorials/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
 The colcon workspace is where your source code gets build and where we use colcon.
@@ -57,7 +57,7 @@ The colcon workspace is where your source code gets build and where we use colco
     - Create directory with: ``mkdir -p ~/colcon_ws/src``
     - Link our software contained in the bitbots_meta repo to the newly created ``src`` directory with: ``ln -s ~/git/bitbots/bitbots_meta/ ~/colcon_ws/src/bitbots_meta``
 
-**5. Final touches**
+**6. Final touches**
 
 To let your system know where it should find all the ROS 2 dependencies and packages and to add coloured output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
 In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
