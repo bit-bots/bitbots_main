@@ -26,6 +26,7 @@
   <depend>bitbots_utils</depend>
   <depend>bitbots_docs</depend>
   <depend>python3-protobuf</depend>
+  <depend>python3-transforms3d</depend>
 
   <export>
     <bitbots_documentation>
