@@ -134,3 +134,13 @@ Sensors
 * sensor_1 = P3
 * sensor_2 = P2
 * sensor_3 = P1
+
+.. figure:: img/bitfoot.jpeg
+   :scale: 20%
+
+   The figure shows the circuit board of the BitFoot. The sensors P1-P4 can be seen.
+
+.. figure:: img/bitfoot_mounted.jpeg
+   :scale: 20%
+
+   Mounted BitFoot on a robot
