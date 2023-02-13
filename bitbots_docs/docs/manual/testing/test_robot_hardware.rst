@@ -53,5 +53,5 @@ Manual procedure
     turn motor power on and ``ros2 launch bitbots_ros_control ros_control_standalone.launch``
         - it should start without any errors
         - servos should be half stiff, but still moveable
-        - start on your laptop ``ros2 launch bitbots_ros_control viz_servos.launch`` you should see the the robot and the TF tree
+        - start on your laptop ``ros2 launch bitbots_ros_control viz_servos.launch`` you should see the robot and the TF tree
             - run ``ros2 run bitbots_ros_control send_joint_command.py``, the robot should go into init pose and be completly stiff
