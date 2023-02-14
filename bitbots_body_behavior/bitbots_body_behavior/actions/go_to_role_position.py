@@ -13,7 +13,7 @@ class GoToRolePosition(AbstractActionElement):
         role_positions = self.blackboard.config['role_positions']
         try:
             if self.blackboard.blackboard.duty == 'goalie':
-                generalized_role_position = role_positions['goalie']
+                generalized_role_position = role_positions[self.blackboard.blackboard.duty]
             elif self.blackboard.blackboard.duty == 'offense':
                 kickoff_type = 'active' if self.blackboard.gamestate.has_kickoff() else 'passive'
                 if role_positions['pos_number'] == 0:
