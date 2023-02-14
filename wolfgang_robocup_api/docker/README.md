@@ -18,6 +18,8 @@ The `<url>` is provided by the TC and looks like `123456789.dkr.ecr.us-east-1.am
 docker build -t <url> .
 ```
 
+If you are in the lab network, you can speed up the download of apt packages by adding `--add-host apt-proxy:192.168.0.1`.
+
 # Push
 ```
 docker push <url>
