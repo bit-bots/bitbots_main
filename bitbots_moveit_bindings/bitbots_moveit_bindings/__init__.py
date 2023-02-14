@@ -3,6 +3,7 @@ from bitbots_moveit_bindings.libbitbots_moveit_bindings import BitbotsMoveitBind
 from rclpy.serialization import serialize_message, deserialize_message
 from rcl_interfaces.msg import Parameter
 from bio_ik_msgs.srv import GetIK
+from bio_ik_msgs.msg import IKRequest
 from sensor_msgs.msg import JointState
 
 # this state is only used for IK and FK calls and does not listen to current joint_states
@@ -45,17 +46,17 @@ def get_position_fk(request: GetPositionFK.Request):
     result_str = ik_fk_state.getPositionFK(serialize_message(request))
     return deserialize_message(result_str, GetPositionFK.Response)
 
-def get_bioik_ik():
+def get_bioik_ik(request: IKRequest):
     global ik_fk_state
     if ik_fk_state is None:
         ik_fk_state = BitbotsMoveitBindings([])
-    result_str = ik_fk_state.getBioIKIK()
+    result_str = ik_fk_state.getBioIKIK(serialize_message(request))
     return deserialize_message(result_str, GetIK.Response)
 
 def check_collision(joint_state):
     global collision_state
     if collision_state is None:
         collision_state = BitbotsMoveitBindings([])
-    set_joint_states(serialize_message(joint_state))
+    collision_state.set_joint_states(serialize_message(joint_state))
     collision = collision_state.check_collision()
     return collision
