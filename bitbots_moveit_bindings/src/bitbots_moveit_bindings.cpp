@@ -363,6 +363,7 @@ PYBIND11_MODULE(libbitbots_moveit_bindings, m) {
       .def(py::init<std::vector<py::bytes>>())
       .def("getPositionIK", &BitbotsMoveitBindings::getPositionIK)
       .def("getPositionFK", &BitbotsMoveitBindings::getPositionFK)
+      .def("getBioIKIK", &BitbotsMoveitBindings::getBioIKIK)
       .def("set_head_motors", &BitbotsMoveitBindings::setHeadMotors,
            "Set the current pan and tilt joint values [radian]", py::arg("pan"), py::arg("tilt"))
       .def("set_joint_states", &BitbotsMoveitBindings::setJointStates, "Set the current joint states")
