@@ -21,10 +21,11 @@ class GoToRolePosition(AbstractActionElement):
                 else:
                     # chose position randomly between left and right
                     pos_number = random.randint(1, 2)
-                generalized_role_position = role_positions[f'offense_{kickoff_type}_{pos_number}']
+                generalized_role_position = role_positions[self.blackboard.blackboard.duty][f'{kickoff_type}_{pos_number}']
             else:
                 # players other than the goalie have multiple possible positions
-                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{0}']
+                pos_number = role_positions['pos_number']
+                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{pos_number}']
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
