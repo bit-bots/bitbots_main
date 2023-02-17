@@ -112,6 +112,14 @@ wolfgang_hardware_interface:
         model_number: 311
         mounting_offset: 0.0
         joint_offset: 0.0
+      LeftFoot:
+        id: 102
+        topic: /foot_pressure_left/raw
+        model_number: 0
+      RightFoot:
+        id: 101
+        topic: /foot_pressure_right/raw
+        model_number: 0
       LShoulderPitch:
         id: 2
         model_number: 311
