@@ -52,7 +52,6 @@ include:
         - DynamixelSDK
         - dynamixel-workbench
         - events-executor
-        - hlvs_player
         - humanoid_base_footprint
         - imu_tools
         - ipm
