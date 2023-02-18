@@ -117,7 +117,7 @@ class Target:
         davros = ["davros"]
 
     class IPs:
-        __prefix__ = "192.168.1."
+        __prefix__ = "172.20.1."
         nuc1 = __prefix__ + "11"
         nuc2 = __prefix__ + "12"
         nuc3 = __prefix__ + "13"
