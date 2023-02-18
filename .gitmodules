@@ -75,8 +75,9 @@
 	url = ../../ros-sports/biped_interfaces
 	branch = rolling
 [submodule "lib/bio_ik"]
+# change back to picknik when picknikrobotics/bio_ik#17 is merged
 	path = lib/bio_ik
-	url = ../../PickNikRobotics/bio_ik.git
+	url = ../../bit-bots/bio_ik.git
 	branch = ros2
 [submodule "lib/events-executor"]
 	path = lib/events-executor
