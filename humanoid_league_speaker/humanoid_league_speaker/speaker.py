@@ -53,9 +53,17 @@ class Speaker(Node):
         self.robot_voice_mapping = {
             "amy": "en_US/vctk_low",
             "donna": "en_US/vctk_low",
-            "jack": "en_US/vctk_low",
+            "jack": "en_UK/apope_low",
             "melody": "en_US/vctk_low",
-            "rory": "en_US/vctk_low"
+            "rory": "en_UK/apope_low"
+        }
+
+        self.robot_speed_mapping = {
+            "amy": 2.2,
+            "donna": 2.2,
+            "jack": 1.0,
+            "melody": 2.2,
+            "rory": 1.0
         }
 
         # Start processing the queue
@@ -88,10 +96,12 @@ class Speaker(Node):
         """ Speak this specific text. """
         # Get the voice name from the environment variable ROBOT_NAME or use the default voice if it's not set
         voice = self.robot_voice_mapping.get(os.getenv('ROBOT_NAME'), "en_US/vctk_low")
+        # Get the speed for the given robot or use the default speed if no robot name is set
+        speed = self.robot_speed_mapping.get(os.getenv('ROBOT_NAME'), 2.2)
         try:
             # Generate the speech with mimic
             mimic_subprocess = subprocess.Popen(
-                ('mimic3', '--remote', '--voice', voice, '--length-scale', '2', text), 
+                ('mimic3', '--remote', '--voice', voice, '--length-scale', str(speed), text), 
                 stdout=subprocess.PIPE)
             # Play the audio from the previous process with aplay
             aplay_subprocess = subprocess.Popen(
