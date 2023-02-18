@@ -1,6 +1,5 @@
 include:
     - basler_drivers
-    - biped_interfaces
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior
@@ -13,6 +12,7 @@ include:
         - bitbots_bringup
         - bitbots_convenience_frames
         - bitbots_extrinsic_calibration
+        - bitbots_ipm
         - bitbots_teleop
         - bitbots_utils
         - system_monitor
@@ -29,30 +29,30 @@ include:
     - bitbots_navigation:
         - bitbots_localization
         - bitbots_localization_handler
-        - bitbots_local_planner
-        - bitbots_nav2
+        - bitbots_path_planning
     - bitbots_tools:
         - bitbots_docs
         - bitbots_test
     - bitbots_vision:
         - bitbots_vision
-        - white_balancer
     - bitbots_world_model:
         - bitbots_ball_filter
+        - bitbots_robot_filter
     - dynamic_stack_decider
-    - humanoid_base_footprint
     - humanoid_league_misc:
         - humanoid_league_game_controller
         - humanoid_league_map_generator
-        - humanoid_league_team_communication
         - humanoid_league_speaker
+        - humanoid_league_team_communication
     - humanoid_league_msgs
     - lib:
         - bio_ik
         - bio_ik_msgs
+        - biped_interfaces
         - DynamixelSDK
         - dynamixel-workbench
         - events-executor
+        - humanoid_base_footprint
         - imu_tools
         - ipm
         - particle_filter
@@ -60,6 +60,7 @@ include:
         - robot_controllers
         - ros2_numpy
         - ros2_python_extension
+        - soccer_ipm
     - scripts
     - udp_bridge
     - wolfgang_robot:
