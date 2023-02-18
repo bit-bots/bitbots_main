@@ -3,13 +3,15 @@
 
 import os
 import subprocess
+import time
 import traceback
 from typing import List, Tuple
 
 import rclpy
+import requests
+from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-from rcl_interfaces.msg import Parameter, SetParametersResult
 
 from humanoid_league_msgs.msg import Audio
 
@@ -66,10 +68,22 @@ class Speaker(Node):
             "rory": 1.0
         }
 
-        # Start processing the queue
-        self.create_timer(0.1, self.run_speaker)
         # Subscribe to the speak topic
         self.create_subscription(Audio, "speak", self.speak_cb, 10)
+
+        # Wait for the mimic server to start
+        while True:
+            try:
+                requests.get("http://localhost:59125")
+                break
+            except requests.exceptions.ConnectionError:
+                # log once per second that the server is not yet available
+                self.get_logger().info("Waiting for mimic server to start...", throttle_duration_sec=2.0)
+                time.sleep(0.5)
+                pass
+
+        # Start processing the queue
+        self.create_timer(0.1, self.run_speaker)
 
     def on_set_parameters(self, parameters: List[Parameter]) -> SetParametersResult:
         """ Callback for parameter changes. """
