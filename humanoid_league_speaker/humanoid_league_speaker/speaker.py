@@ -90,9 +90,14 @@ class Speaker(Node):
         voice = self.robot_voice_mapping.get(os.getenv('ROBOT_NAME'), "en_US/vctk_low")
         try:
             # Generate the speech with mimic
-            mimic_subprocess = subprocess.Popen(('mimic3', '--remote', '--voice', voice, text), stdout=subprocess.PIPE)
+            mimic_subprocess = subprocess.Popen(
+                ('mimic3', '--remote', '--voice', voice, '--length-scale', '2', text), 
+                stdout=subprocess.PIPE)
             # Play the audio from the previous process with aplay
-            aplay_subprocess = subprocess.Popen(('aplay', '-'), stdin=mimic_subprocess.stdout, stdout=subprocess.PIPE)
+            aplay_subprocess = subprocess.Popen(
+                ('aplay', '-'), 
+                stdin=mimic_subprocess.stdout, 
+                stdout=subprocess.PIPE)
             # Wait for the process to finish
             aplay_subprocess.wait()
         except OSError:
