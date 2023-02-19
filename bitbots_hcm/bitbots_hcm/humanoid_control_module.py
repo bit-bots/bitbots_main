@@ -82,7 +82,7 @@ class HardwareControlManager:
 
         # important to make sure the connection to the speaker is established, for next line
         self.node.get_clock().sleep_for(Duration(seconds=0.1))
-        speak("Starting hcm", self.blackboard.speak_publisher, priority=50)
+        speak("Starting HCM", self.blackboard.speak_publisher, priority=50)
         self.node.create_subscription(Bool, "pause", self.pause, 1)
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
