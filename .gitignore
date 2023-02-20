@@ -191,8 +191,3 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# auto-generated documentation
-**/doc
-**/docs/_build
-**/docs/_out
-**/docs/conf.py
