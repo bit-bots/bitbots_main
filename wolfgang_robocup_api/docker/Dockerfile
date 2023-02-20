@@ -24,7 +24,8 @@ RUN apt install -y libjsoncpp-dev build-essential git sudo python3-pip python3-r
     python3-protobuf espeak ros-rolling-xacro ros-rolling-cv-bridge ros-rolling-moveit-ros-robot-interaction \
     ros-rolling-control-toolbox libprotobuf-dev protobuf-compiler libprotoc-dev ros-rolling-topic-tools \
     python3-psutil python3-hypothesis ros-rolling-ament-cmake-nose ros-rolling-rot-conv ros-rolling-moveit-planners-ompl \
-    ros-rolling-camera-info-manager ros-rolling-image-geometry ros-rolling-soccer-vision-3d-msgs && \
+    ros-rolling-camera-info-manager ros-rolling-image-geometry ros-rolling-soccer-vision-3d-msgs \
+    python3-transforms3d python3-sklearn python3-numpy ros-rolling-tf-transformations python3-construct && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -58,7 +59,8 @@ RUN . /opt/ros/rolling/setup.sh && \
 ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_meta/master/requirements.txt src/requirements.txt
 
 RUN sed -i -e /pydot/d -e /silx/d -e /pyopencl/d src/requirements.txt && \
-    pip3 install -U -r src/requirements.txt --no-cache-dir
+    pip3 install -U -r src/requirements.txt --no-cache-dir && \
+    pip3 uninstall -y numpy
 
 RUN cd src && \
     git clone https://github.com/Bit-Bots/bitbots_meta.git && \
