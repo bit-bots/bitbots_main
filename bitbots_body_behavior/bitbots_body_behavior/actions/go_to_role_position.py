@@ -11,21 +11,14 @@ class GoToRolePosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToRolePosition, self).__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config['role_positions']
+        self.blackboard.node.get_logger().info(f"{role_positions=}")
+        kickoff_type = 'active' if self.blackboard.gamestate.has_kickoff() else 'passive'
         try:
             if self.blackboard.blackboard.duty == 'goalie':
                 generalized_role_position = role_positions[self.blackboard.blackboard.duty]
-            elif self.blackboard.blackboard.duty == 'offense':
-                kickoff_type = 'active' if self.blackboard.gamestate.has_kickoff() else 'passive'
-                if role_positions['pos_number'] == 0:
-                    pos_number = 0
-                else:
-                    # chose position randomly between left and right
-                    pos_number = random.randint(1, 2)
-                generalized_role_position = role_positions[self.blackboard.blackboard.duty][f'{kickoff_type}_{pos_number}']
             else:
                 # players other than the goalie have multiple possible positions
-                pos_number = role_positions['pos_number']
-                generalized_role_position = role_positions[f'{self.blackboard.blackboard.duty}_{pos_number}']
+                generalized_role_position = role_positions[self.blackboard.blackboard.duty][kickoff_type][self.blackboard.blackboard.position_number]
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 

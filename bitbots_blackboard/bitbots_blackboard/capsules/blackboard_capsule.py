@@ -16,7 +16,9 @@ class BlackboardCapsule:
     def __init__(self, node: Node):
         self.node = node
         self.head_pub: Optional[Publisher] = None
-        self.duty: str = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])['role']
+        gamestate_settings = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role', 'position_number'])
+        self.duty: str = gamestate_settings['role']
+        self.position_number: int = gamestate_settings['position_number']
         self.state: Optional[RobotControlState] = None
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
