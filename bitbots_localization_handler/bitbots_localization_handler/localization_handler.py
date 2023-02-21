@@ -10,16 +10,9 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 
 from dynamic_stack_decider.dsd import DSD
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
-from bitbots_utils.utils import get_parameters_from_other_node
-from rclpy.parameter import Parameter
 
 def init(node: Node):
     node.get_logger().info("Starting localization handler")
-
-    global_params_dict = get_parameters_from_other_node(node, "parameter_blackboard", ["field_length", "team_id"])
-    global_params = [("field_length", global_params_dict["field_length"]),
-                     ("team_id", global_params_dict["team_id"])]
-    node.declare_parameters(parameters=global_params, namespace="")
 
     blackboard = LocalizationBlackboard(node)
 
