@@ -7,7 +7,6 @@ from numpy import double
 from typing import List, Optional, Tuple
 
 import rclpy
-import tf2_ros
 from ament_index_python.packages import get_package_share_directory
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
@@ -19,6 +18,7 @@ from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
+from tf2_ros import Buffer, TransformListener, TransformException
 
 import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 from humanoid_league_team_communication.communication import SocketCommunication
@@ -56,8 +56,8 @@ class HumanoidLeagueTeamCommunication:
 
         self.set_state_defaults()
 
-        self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self.node)
 
         self.try_to_establish_connection()
         self.run_spin_in_thread()
@@ -131,31 +131,31 @@ class HumanoidLeagueTeamCommunication:
     def robots_cb(self, msg: RobotArray):
 
         def transform_to_map(robot_relative: Robot):
+            # @TODO: check if this is not handled by the transform itself
             robot_pose = PoseStamped(header=msg.header, pose=robot_relative.bb.center)
             try:
-                robot_map = self.tf_transform(robot_pose)
-                robot_relative.bb.center = robot_map.pose
+                robot_on_map = self.transform_to_map_frame(robot_pose)
+                robot_relative.bb.center = robot_on_map.pose
                 return robot_relative
-            except tf2_ros.TransformException:
-                self.logger.error("TeamComm: Could not transform robot to map frame")
+            except TransformException as err:
+                self.logger.error(f"Could not transform robot to map frame: {err}")
 
-        robots_on_map = list(map(transform_to_map, msg.robots))
+        robots_on_map = list(filter(None, map(transform_to_map, msg.robots)))
         self.seen_robots = RobotArray(header=msg.header, robots=robots_on_map)
         self.seen_robots.header.frame_id = self.map_frame
 
     def ball_cb(self, msg: PoseWithCovarianceStamped):
         ball_point = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
-            self.ball = self.tf_transform(ball_point)
+            self.ball = self.transform_to_map_frame(ball_point)
             self.ball_covariance = msg.pose.covariance
-        except tf2_ros.TransformException:
-            self.logger.error("TeamComm: Could not transform ball to map frame")
-            self.ball = None
+        except TransformException as err:
+            self.logger.error(f"Could not transform ball to map frame: {err}")
 
     def ball_velocity_cb(self, msg: TwistWithCovarianceStamped):
         self.ball_velocity = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
 
-    def tf_transform(self, field, timeout_in_ns=0.3e9):
+    def transform_to_map_frame(self, field, timeout_in_ns=0.3e9):
         return self.tf_buffer.transform(field, self.map_frame, timeout=Duration(nanoseconds=timeout_in_ns))
 
     def receive_forever(self):

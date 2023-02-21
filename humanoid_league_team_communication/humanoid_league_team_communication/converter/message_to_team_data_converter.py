@@ -52,7 +52,6 @@ class MessageToTeamDataConverter:
             obstacle = ObstacleRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])
             obstacle.pose.pose = self.convert_robot_pose(robot)
 
-            # @TODO: are lists in python/protobuf always sorted and can confidences be empty?
             if index < len(message_robot_confidence):
                 obstacle.pose.confidence = message_robot_confidence[index]
 

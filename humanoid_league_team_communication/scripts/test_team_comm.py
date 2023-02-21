@@ -5,10 +5,11 @@ This script publishes dummy values for ball, goalpost, position and obstacles fo
 
 import rclpy
 import numpy
-from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion
+from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion, TransformStamped
 from humanoid_league_msgs.msg import GameState, Strategy
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
+from tf2_ros import StaticTransformBroadcaster
 
 
 def pose_with_covariance(x, y, z=0.0):
@@ -35,9 +36,18 @@ def covariance_list():
     return covariance
 
 
+def base_footprint_transform():
+    transform = TransformStamped()
+    transform.header.frame_id = 'base_footprint'
+    transform.child_frame_id = 'map'
+
+    return transform
+
+
 if __name__ == '__main__':
     rclpy.init(args=None)
     node = rclpy.create_node("test_team_comm")
+    tf_static_broadcaster = StaticTransformBroadcaster(node)
 
     gamestate_pub = node.create_publisher(GameState, "gamestate", 1)
     strategy_pub = node.create_publisher(Strategy, "strategy", 1)
@@ -45,6 +55,7 @@ if __name__ == '__main__':
     position_pub = node.create_publisher(PoseWithCovarianceStamped, "pose_with_covariance", 1)
     robots_pub = node.create_publisher(RobotArray, "robots_relative", 1)
 
+    transform = base_footprint_transform()
     gamestate_msg = GameState(penalized=False)
     strategy_msg = Strategy(role=Strategy.ROLE_DEFENDER,
                             action=Strategy.ACTION_GOING_TO_BALL,
@@ -69,15 +80,16 @@ if __name__ == '__main__':
 
     while rclpy.ok():
         now = node.get_clock().now().to_msg()
+        transform.header.stamp = now
         gamestate_msg.header.stamp = now
         position_msg.header.stamp = now
         robots_msg.header.stamp = now
         ball_msg.header.stamp = now
 
-        # @TODO: check if we should use another map frame
-        ball_msg.header.frame_id = "map"
-        robots_msg.header.frame_id = "map"
+        ball_msg.header.frame_id = "base_footprint"
+        robots_msg.header.frame_id = "base_footprint"
 
+        tf_static_broadcaster.sendTransform(transform)
         gamestate_pub.publish(gamestate_msg)
         strategy_pub.publish(strategy_msg)
         position_pub.publish(position_msg)

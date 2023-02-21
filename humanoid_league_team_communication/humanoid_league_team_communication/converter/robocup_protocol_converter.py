@@ -48,7 +48,6 @@ class RobocupProtocolConverter:
             Proto.Team.BLUE: ObstacleRelative.ROBOT_CYAN,
             Proto.Team.RED: ObstacleRelative.ROBOT_MAGENTA
         }
-        # @TODO: check if RobotAttributes.TEAM_OWN is based on the robot seen or robot running
         self.state_to_proto_team_mapping = {
             RobotAttributes.TEAM_OWN: Proto.Team.RED if own_team_color == TeamColor.RED else Proto.Team.BLUE,
             RobotAttributes.TEAM_OPPONENT: Proto.Team.BLUE if own_team_color == TeamColor.RED else Proto.Team.RED,
