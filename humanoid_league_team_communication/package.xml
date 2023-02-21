@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <package format="2">
   <name>humanoid_league_team_communication</name>
-  <version>2.0.0</version>
+  <version>3.0.0</version>
   <description>The humanoid_league_team_communication package provides a ROS wrapper for the Protobuf RoboCup protocol.
     This is the standard communication protocol developed by the NUbots. </description>
 
+  <maintainer email="joern.griepenburg@studium.uni-hamburg.de">Joern Griepenburg</maintainer>
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
