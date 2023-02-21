@@ -53,8 +53,7 @@ CTRL-C to quit
         super().__init__("sim_gamestate")
         self.logger = self.get_logger()
 
-        params = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id', 'bot_id'])
-        self.team_id = params['team_id']
+        self.team_id = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id'])['team_id']
 
         self.settings = termios.tcgetattr(sys.stdin)
 
