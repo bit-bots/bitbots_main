@@ -11,7 +11,6 @@ class GoToRolePosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(GoToRolePosition, self).__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config['role_positions']
-        self.blackboard.node.get_logger().info(f"{role_positions=}")
         kickoff_type = 'active' if self.blackboard.gamestate.has_kickoff() else 'passive'
         try:
             if self.blackboard.blackboard.duty == 'goalie':
