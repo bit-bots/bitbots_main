@@ -106,6 +106,7 @@ We also need to install some python packages using ``pip``, the python package m
 
 - Upgrade python package manager: ``pip3 install pip -U``
 - Optionally if you want you can setup a local venv with: ``python -m venv venv-bitbots && source venv-bitbots/bin/activate``
+  **HINT**: the sourcing of the ``venv`` is requrired in every newly opened terminal!
 - Install required python packages: ``pip3 install --user -r requirements.txt``
 
 **5. Setup colcon workspace**

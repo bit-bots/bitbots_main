@@ -4,7 +4,7 @@ User CL Simulation Testing Setup
 This setup is very similar to the tutorial on setting up a local environment for
 development documented in our `documentation <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_.
 
-As such you can lookup the some of the needed requirements there.
+As such you can lookup some of the needed requirements there.
 
 **0. Requirements**
 
@@ -14,15 +14,15 @@ As such you can lookup the some of the needed requirements there.
 
 **1. Setup and download our software**
 
-- SSH into the ``CL0*`` with your mafiasi user
+- SSH into the ``cl0*`` with your mafiasi user
 - setup bitbots_meta on nvme nas share
 
 .. code-block:: bash
 
   cd /srv/ssd_nvm/
   mkdir -p "$USER/colcon_ws/src"
-  cd "$user/colcon_ws/src"
-  git clone git@github:bit-bots/bitbots_meta.git && cd bitbots_meta
+  cd "$USER/colcon_ws/src"
+  git clone git@github.com:bit-bots/bitbots_meta.git && cd bitbots_meta
   make pull-init
 
 - setup a python virtualenv on the nvme share for faster ``pip`` package installation
@@ -53,8 +53,9 @@ If everything worked so far, we now have to set some required environment variab
 running the script: ``$COLCON_WS/src/bitbots_meta/wolfgang_robot/wolfgang_webots_sim/scripts/setenvs.sh``
 Afterwards we can start the Webots simulator with the following command:
 ``rl bitbots_bringup simulator_teamplayer.launch game_controller:=false``
-This should start the simulation environment and the Webots simulator, where we should see a field with a single
-robot.
+This should start the simulation environment in the Webots simulator, while also starting all necessary
+nodes of the robot software (walking, vision, etc.).
+In the simulator we should see a field with a single robot.
 
 With ``game_controller:=false`` we ensure, that the game_controller_listener is not started as well, but instead
 we will simulate the current gamestate by our own script (in another terminal):
@@ -70,6 +71,6 @@ If there are issues with the robots behavior, they most likely have to do with D
 paralellism handling in ROS 2.
 To be able to visualize the current DSD execution, we can start ``rqt`` and in the ``Plugins`` menu select
 ``RoboCup -> DSD-Visualization``. This will show us the current DSD execution and can help in finding deadlocks
-or behaior execution logic issues.
+or behavior execution logic issues.
 
 TODO: extend this section
