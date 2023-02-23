@@ -58,7 +58,8 @@ class SocketCommunication:
             return msg
 
     def handle_truncated_message(self):
-        self.logger.warn(f"recvmsg flag {socket.MSG_TRUNC} signaling a packet larger than buffer size {self.buffer_size}")
+        self.logger.warn(
+            f"recvmsg flag {socket.MSG_TRUNC} signaling a packet larger than buffer size {self.buffer_size}")
         self.buffer_size *= 2
         self.logger.info(f"doubled buffer size to {self.buffer_size}")
 

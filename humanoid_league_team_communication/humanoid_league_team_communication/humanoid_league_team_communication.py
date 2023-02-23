@@ -34,22 +34,22 @@ class HumanoidLeagueTeamCommunication:
 
         self.logger.info("Initializing humanoid_league_team_communication...")
         params_blackboard = get_parameters_from_other_node(self.node, "parameter_blackboard",
-                                                           ['bot_id', 'team_id', 'team_color'])
-        self.player_id = params_blackboard['bot_id']
-        self.team_id = params_blackboard['team_id']
-        self.team_color_id = params_blackboard['team_color']
+                                                           ["bot_id", "team_id", "team_color"])
+        self.player_id = params_blackboard["bot_id"]
+        self.team_id = params_blackboard["team_id"]
+        self.team_color_id = params_blackboard["team_color"]
 
         self.protocol_converter = RobocupProtocolConverter(TeamColor(self.team_color_id))
 
         self.logger.info(f"Starting for {self.player_id} in team {self.team_id}...")
         self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
 
-        self.rate: int = self.node.get_parameter('rate').value
-        self.lifetime: int = self.node.get_parameter('lifetime').value
-        self.avg_walking_speed: float = self.node.get_parameter('avg_walking_speed').value
+        self.rate: int = self.node.get_parameter("rate").value
+        self.lifetime: int = self.node.get_parameter("lifetime").value
+        self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
 
-        self.topics = get_parameter_dict(self.node, 'topics')
-        self.map_frame: str = self.node.get_parameter('map_frame').value
+        self.topics = get_parameter_dict(self.node, "topics")
+        self.map_frame: str = self.node.get_parameter("map_frame").value
 
         self.create_publishers()
         self.create_subscribers()
@@ -93,19 +93,23 @@ class HumanoidLeagueTeamCommunication:
             rclpy.spin_once(self.node)
 
     def create_publishers(self):
-        self.team_data_publisher = self.node.create_publisher(TeamData, self.topics['team_data_topic'], 1)
+        self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], 1)
 
     def create_subscribers(self):
-        self.node.create_subscription(GameState, self.topics['gamestate_topic'], self.gamestate_cb, 1)
-        self.node.create_subscription(PoseWithCovarianceStamped, self.topics['pose_topic'], self.pose_cb, 1)
-        self.node.create_subscription(Twist, self.topics['cmd_vel_topic'], self.cmd_vel_cb, 1)
-        self.node.create_subscription(PoseWithCovarianceStamped, self.topics['ball_topic'], self.ball_cb, 1)
-        self.node.create_subscription(TwistWithCovarianceStamped, self.topics['ball_velocity_topic'],
-                                      self.ball_velocity_cb, 1)
-        self.node.create_subscription(Strategy, self.topics['strategy_topic'], self.strategy_cb, 1)
-        self.node.create_subscription(Float32, self.topics['time_to_ball_topic'], self.time_to_ball_cb, 1)
-        self.node.create_subscription(RobotArray, self.topics['robots_topic'], self.robots_cb, 1)
-        self.node.create_subscription(PoseStamped, self.topics['move_base_goal_topic'], self.move_base_goal_cb, 1)
+        self.node.create_subscription(GameState, self.topics["gamestate_topic"], self.gamestate_cb, 1)
+        self.node.create_subscription(PoseWithCovarianceStamped, self.topics["pose_topic"], self.pose_cb, 1)
+        self.node.create_subscription(Twist, self.topics["cmd_vel_topic"], self.cmd_vel_cb, 1)
+        self.node.create_subscription(PoseWithCovarianceStamped, self.topics["ball_topic"], self.ball_cb, 1)
+        self.node.create_subscription(
+            TwistWithCovarianceStamped,
+            self.topics["ball_velocity_topic"],
+            self.ball_velocity_cb,
+            1,
+        )
+        self.node.create_subscription(Strategy, self.topics["strategy_topic"], self.strategy_cb, 1)
+        self.node.create_subscription(Float32, self.topics["time_to_ball_topic"], self.time_to_ball_cb, 1)
+        self.node.create_subscription(RobotArray, self.topics["robots_topic"], self.robots_cb, 1)
+        self.node.create_subscription(PoseStamped, self.topics["move_base_goal_topic"], self.move_base_goal_cb, 1)
 
     def gamestate_cb(self, msg: GameState):
         self.gamestate = msg
@@ -153,7 +157,11 @@ class HumanoidLeagueTeamCommunication:
             self.logger.error(f"Could not transform ball to map frame: {err}")
 
     def ball_velocity_cb(self, msg: TwistWithCovarianceStamped):
-        self.ball_velocity = (msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z)
+        self.ball_velocity = (
+            msg.twist.twist.linear.x,
+            msg.twist.twist.linear.y,
+            msg.twist.twist.angular.z,
+        )
 
     def transform_to_map_frame(self, field, timeout_in_ns=0.3e9):
         return self.tf_buffer.transform(field, self.map_frame, timeout=Duration(nanoseconds=timeout_in_ns))
@@ -225,5 +233,5 @@ def main():
     HumanoidLeagueTeamCommunication()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -24,6 +24,7 @@ class MessageToTeamDataConverter:
         team_data.ball_absolute = self.convert_ball_pose(message.ball)
 
         # @TODO: change TeamData field/type to robots
+        # see: https://github.com/bit-bots/humanoid_league_misc/issues/125
         team_data.obstacles = self.convert_robots_to_obstacles(message.others, message.other_robot_confidence)
         team_data.obstacles.header = team_data.header
 
