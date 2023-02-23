@@ -29,6 +29,8 @@
   <depend>python3-protobuf</depend>
   <depend>python3-transforms3d</depend>
 
+  <test_depend>python3-pytest</test_depend>
+
   <export>
     <bitbots_documentation>
       <status>unknown</status>
