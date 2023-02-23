@@ -13,8 +13,6 @@ class GoToCornerKickPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
-        self.position_number = self.blackboard.config['role_positions']['pos_number']
-
         # optional parameter which goes into the block position at a certain distance to the ball
         self.mode = parameters.get('mode', None)
         if self.mode is None or self.mode not in ("striker", "supporter", "others"):
@@ -74,7 +72,7 @@ class GoToCornerKickPosition(AbstractActionElement):
                 x_from_goal_line = 0.5
             else:
                 # offense players further away based on their position number
-                x_from_goal_line = 1.5 + self.position_number
+                x_from_goal_line = 1.5 + self.blackboard.blackboard.position_number
             x = x_from_goal_line - (field_length / 2)
             # 1 m away on the side line
             y = sign * ((field_width / 2) - 1)

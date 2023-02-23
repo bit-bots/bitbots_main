@@ -1,6 +1,5 @@
 /**:
   ros__parameters:
-    team_id: 27
     # Data older than this is seen as non existent
     team_data_timeout: 2
     # minimal confidence to regard a ball of a team mate as valid
@@ -31,22 +30,27 @@
       #                         0
       # To be useful for different field sizes, use values in [-1, 1] for x and y
 
-      # TODO: For four robots we need four initial positions
       role_positions:
         goalie: [ -0.95, 0.0 ]
-        defense_0: [ -0.5, 0.0 ]
-        defense_1: [ -0.45, 0.5 ]
-        defense_2: [ -0.45, -0.5 ]
+        defense:
+          passive: # passive: opponent has kickoff, active: we have kickoff
+            # position number 0 = center, 1 = left, 2 = right
+            0: [ -0.5, 0.0 ]
+            1: [ -0.45, 0.5 ]
+            2: [ -0.45, -0.5 ]
+          active:
+            0: [ -0.5, 0.0 ]
+            1: [ -0.45, 0.5 ]
+            2: [ -0.45, -0.5 ]
         offense:
-          # passive: opponent has kickoff, active: we have kickoff
-          passive_0: [ -0.27, 0.0 ]
-          passive_1: [ -0.2, 0.33 ]
-          passive_2: [ -0.2, -0.33 ]
-          active_0: [ -0.1, 0.0 ]
-          active_1: [ -0.085, 0.33 ]
-          active_2: [ -0.085, -0.33 ]
-        # position number 0 = center, 1 = left, 2 = right
-        pos_number: 0 #this is currently handled more dynamically for offense players
+          passive:
+            0: [ -0.27, 0.0 ]
+            1: [ -0.2, 0.33 ]
+            2: [ -0.2, -0.33 ]
+          active:
+            0: [ -0.1, 0.0 ]
+            1: [ -0.085, 0.33 ]
+            2: [ -0.085, -0.33 ]
 
       # Time to wait in ready state before moving to role position to give the localization time to converge.
       ready_wait_time: 4.0

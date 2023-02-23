@@ -16,10 +16,9 @@ class GoToDefensePosition(AbstractActionElement):
 
         # Also apply offset from the ready positions to the defense positions
         role_positions = self.blackboard.config['role_positions']
-        self.position_number = role_positions['pos_number']
         try:
             generalized_role_position = \
-                role_positions[f'defense_{self.position_number}']
+                role_positions[self.blackboard.blackboard.duty]["active"][str(self.blackboard.blackboard.position_number)]
         except KeyError:
             raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
 
