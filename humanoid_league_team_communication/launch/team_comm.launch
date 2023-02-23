@@ -1,5 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <arg name="sim" default="false"/>
+    <!-- Get launch params-->
+    <arg name="sim" default="false" description="true: activates simulation time" />
+
+    <!-- load the robot description -->
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
 
     <node pkg="humanoid_league_team_communication" exec="team_comm.py" output="screen">
         <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml"/>
