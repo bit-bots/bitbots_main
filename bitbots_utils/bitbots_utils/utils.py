@@ -10,7 +10,7 @@ from rcl_interfaces.msg import Parameter as ParameterMsg
 from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
-from rclpy.parameter import parameter_value_to_python, Parameter, PARAMETER_SEPARATOR_STRING, get_parameter_value
+from rclpy.parameter import parameter_value_to_python, Parameter, PARAMETER_SEPARATOR_STRING
 
 
 def read_urdf(robot_name):
@@ -66,17 +66,38 @@ def get_parameters_from_plain_yaml(parameter_file, namespace=''):
         return parse_parameter_dict(namespace=namespace, parameter_dict=param_dict)
 
 
-def get_parameter_dict(node, prefix):
-    parameter_config = node.get_parameters_by_prefix(prefix)
-    config = {}
+def get_parameter_dict(node: Node, prefix: str) -> Dict:
+    """
+    Get a dictionary of parameters from a node.
+
+    :param node: Node to get parameters from
+    :type node: Node
+    :param prefix: Prefix for the nesting of the parameter query (e.g. 'body.nice_param.index' could have the prefix 'body')
+    :type prefix: str
+    :return: Dictionary of parameters without prefix nesting
+    :rtype: Dict
+    """
+    parameter_config: Dict[str, Parameter] = node.get_parameters_by_prefix(prefix)
+    config = dict()
     for param in parameter_config.values():
-        if "." in param.name[len(prefix) + 1:]:
-            # this is a nested dict with sub values
-            subparameter_name = param.name.split(".")[1]
-            config[subparameter_name] = get_parameter_dict(node, prefix + "." + subparameter_name)
-        else:
-            # just a normal single parameter
-            config[param.name[len(prefix) + 1:]] = param.value
+        # Split separated keys into nested dicts
+        param_nests = param.name[len(prefix):].split(PARAMETER_SEPARATOR_STRING)
+        # Remove empty first element from split (because of possible leading separator)
+        if param_nests[0] == '':
+            param_nests.pop(0)
+        # Traverse nested dicts and create them if they don't exist
+        param_dict = config
+        # Iterate all nests
+        for i, nest in enumerate(param_nests):
+            # If last nest, set value
+            if i == len(param_nests) - 1:
+                param_dict[nest] = param.value
+            else:
+                # If nest doesn't exist, create it
+                if nest not in param_dict:
+                    # Create nested dict if nest is not last
+                    param_dict[nest] = dict()
+                param_dict = param_dict[nest]
     return config
 
 
