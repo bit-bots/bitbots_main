@@ -5,6 +5,8 @@ from rclpy.duration import Duration
 from bitbots_localization.srv import ResetFilter, SetPaused
 from rclpy.node import Node
 
+from bitbots_utils.utils import get_parameters_from_other_node
+
 class LocalizationBlackboard:
 
     def __init__(self, node:Node):
@@ -22,7 +24,7 @@ class LocalizationBlackboard:
         self.odom_frame = node.get_parameter('odom_frame').get_parameter_value().string_value
         self.base_footprint_frame = node.get_parameter('base_footprint_frame').get_parameter_value().string_value
 
-        self.field_length = node.get_parameter('field_length').get_parameter_value().double_value
+        self.field_length = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['field_length'])['field_length']
 
         # services
         self.reset_filter_proxy = node.create_client(ResetFilter, 'reset_localization')
