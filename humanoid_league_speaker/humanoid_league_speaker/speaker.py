@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-import rclpy
-from rcl_interfaces.msg import Parameter, SetParametersResult, ParameterDescriptor
-from rclpy.node import Node
-import subprocess
+
 import os
+import subprocess
+import time
 import traceback
+from typing import List, Tuple
+
+import rclpy
+import requests
+from rcl_interfaces.msg import Parameter, SetParametersResult
+from rclpy.node import Node
+from rclpy.publisher import Publisher
 
 from humanoid_league_msgs.msg import Audio
 
 
-def speak(text, publisher, priority=20, speaking_active=True):
+def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: bool = True) -> None:
     """ Utility method which can be used by other classes to easily publish a message."""
     if speaking_active:
         msg = Audio()
@@ -19,45 +25,68 @@ def speak(text, publisher, priority=20, speaking_active=True):
         publisher.publish(msg)
 
 
-class Speaker:
-    """ Uses espeak to say messages from the speak topic.
+class Speaker(Node):
+    """ 
+    Uses tts to say messages from the speak topic.
     """
 
-    # todo make also a service for demo proposes, which is blocking while talking
+    def __init__(self) -> None:
+        """ Initializes the node and the parameters. """
+        super().__init__("tts_speaker")
 
-    def __init__(self):
-        rclpy.init(args=None)
-        self.node = rclpy.create_node("speaker")
-        self.node.get_logger().info("Starting speaker")
-
-        # --- Class Variables ---
-        self.low_prio_queue = []
-        self.mid_prio_queue = []
-        self.high_prio_queue = []
-        # if you want to change standard startup, do it in the config yaml
+        # Class Variables
+        self.prio_queue: List[Tuple[str, int]] = []
         self.speak_enabled = None
         self.print_say = None
         self.message_level = None
-        self.amplitude = None
-        self.node.declare_parameter("print", True)
-        self.node.declare_parameter("talk", True)
-        self.node.declare_parameter("msg_level", 0)
-        self.node.declare_parameter("amplitude", 7)
-        self.print_say = self.node.get_parameter("print").get_parameter_value().bool_value
-        self.speak_enabled = self.node.get_parameter("talk").get_parameter_value().bool_value
-        self.message_level = self.node.get_parameter("msg_level").get_parameter_value().integer_value
-        self.amplitude = self.node.get_parameter("amplitude").get_parameter_value().integer_value
-        self.node.add_on_set_parameters_callback(self.on_set_parameters)
+        
+        # Initialize Parameters
+        self.declare_parameter("print", True)
+        self.declare_parameter("talk", True)
+        self.declare_parameter("msg_level", 0)
+        self.print_say: bool = self.get_parameter("print").value
+        self.speak_enabled: bool = self.get_parameter("talk").value
+        self.message_level: int = self.get_parameter("msg_level").value
 
-        self.female_robots = ["donna", "amy"]
+        # Callback for parameter changes
+        self.add_on_set_parameters_callback(self.on_set_parameters)
 
-        # --- Initialize Topics ---
-        self.node.create_subscription(Audio, "speak", self.speak_cb, 10)
+        # Mapping from robot name to voice name
+        self.robot_voice_mapping = {
+            "amy": "en_US/vctk_low",
+            "donna": "en_US/vctk_low",
+            "jack": "en_UK/apope_low",
+            "melody": "en_US/vctk_low",
+            "rory": "en_UK/apope_low"
+        }
 
-        # --- Start loop ---
-        self.run_speaker()
+        self.robot_speed_mapping = {
+            "amy": 2.2,
+            "donna": 2.2,
+            "jack": 1.0,
+            "melody": 2.2,
+            "rory": 1.0
+        }
 
-    def on_set_parameters(self, parameters: [Parameter]):
+        # Subscribe to the speak topic
+        self.create_subscription(Audio, "speak", self.speak_cb, 10)
+
+        # Wait for the mimic server to start
+        while True:
+            try:
+                requests.get("http://localhost:59125")
+                break
+            except requests.exceptions.ConnectionError:
+                # log once per second that the server is not yet available
+                self.get_logger().info("Waiting for mimic server to start...", throttle_duration_sec=2.0)
+                time.sleep(0.5)
+                pass
+
+        # Start processing the queue
+        self.create_timer(0.1, self.run_speaker)
+
+    def on_set_parameters(self, parameters: List[Parameter]) -> SetParametersResult:
+        """ Callback for parameter changes. """
         for parameter in parameters:
             if parameter.name == "print":
                 self.print_say = parameter.value.bool_value
@@ -65,116 +94,65 @@ class Speaker:
                 self.speak_enabled = parameter.value.bool_value
             elif parameter.name == "msg_level":
                 self.message_level = parameter.value.int_value
-            elif parameter.name == "amplitude":
-                self.amplitude = parameter.value.int_value
             else:
-                self.node.get_logger().info("Unknown parameter: " + parameter.name)
+                self.get_logger().info("Unknown parameter: " + parameter.name)
         return SetParametersResult(successful=True)
 
-    def run_speaker(self):
-        """ Runs continuously to wait for messages and speaks them."""
-        rate = self.node.create_rate(20)
-        while rclpy.ok():
-            # test if espeak is already running and speak is enabled
-            if not "espeak " in os.popen("ps xa").read() and self.speak_enabled:
-                # take the highest priority message first
-                if len(self.high_prio_queue) > 0:
-                    text, is_file = self.high_prio_queue.pop(0)
-                    self.say(text, is_file)
-                elif len(self.mid_prio_queue) > 0 and self.message_level <= 1:
-                    text, is_file = self.mid_prio_queue.pop(0)
-                    self.say(text, is_file)
-                elif len(self.low_prio_queue) > 0 and self.message_level == 0:
-                    text, is_file = self.low_prio_queue.pop(0)
-                    self.say(text)
-            # wait a bit to eat not all the performance
-            rclpy.spin_once(self.node)
-            #rate.sleep()
+    def run_speaker(self) -> None:
+        """ Continously checks the queue and speaks the next message. """
+        # Check if there is a message in the queue
+        if len(self.prio_queue) > 0:
+            # Get the next message and speak it
+            text, _ = self.prio_queue.pop(0)
+            self.say(text)
 
-    def say(self, text, file=False):
-        """ Speak this specific text"""
-        # todo make volume adjustable, some how like this
-        #        command = ("espeak", "-a", self.amplitude, text)
-        arguments = []
-        if os.getenv('ROBOT_NAME') in self.female_robots:
-            arguments.append("-p 99")
-        arguments.append(f"-a {self.amplitude}")
-        command = ("espeak", *arguments, text)
+    def say(self, text: str) -> None:
+        """ Speak this specific text. """
+        # Get the voice name from the environment variable ROBOT_NAME or use the default voice if it's not set
+        voice = self.robot_voice_mapping.get(os.getenv('ROBOT_NAME'), "en_US/vctk_low")
+        # Get the speed for the given robot or use the default speed if no robot name is set
+        speed = self.robot_speed_mapping.get(os.getenv('ROBOT_NAME'), 2.2)
         try:
-            # we start a new process for espeak, so this node can recieve more text while speaking
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            try:
-                process.communicate()
-            finally:
-                try:
-                    process.terminate()
-                except Exception:  # pylint: disable=W0703
-                    print(traceback.format_exc())
+            # Generate the speech with mimic
+            mimic_subprocess = subprocess.Popen(
+                ('mimic3', '--remote', '--voice', voice, '--length-scale', str(speed), text), 
+                stdout=subprocess.PIPE)
+            # Play the audio from the previous process with aplay
+            aplay_subprocess = subprocess.Popen(
+                ('aplay', '-'), 
+                stdin=mimic_subprocess.stdout, 
+                stdout=subprocess.PIPE)
+            # Wait for the process to finish
+            aplay_subprocess.wait()
         except OSError:
-            print(traceback.format_exc())
+            self.get_logger().error(str(traceback.format_exc()))
 
-    def speak_cb(self, msg):
-        """ Handles incoming msg on speak topic."""
-        # first decide if it's a file or a text
-        is_file = False
+    def speak_cb(self, msg: Audio) -> None:
+        """ Handles incoming msg on speak topic. """
+        # First decide if it's a file or a text
         text = msg.text
         if text is None:
-            text = msg.filename
-            is_file = True
-            if text is None:
-                # message has no content at all
-                self.node.get_logger().warn("Speaker got message without content.")
-                return
+            self.get_logger().warn("Speaker got message without content.")
         prio = msg.priority
-        new = True
 
-        # if printing is enabled and it's a text, print it
-        if self.print_say and not is_file:
-            self.node.get_logger().info("Said: " + text)
-
-        if not self.speak_enabled:
-            # don't accept new messages
-            return
-
-        if prio == 0 and self.message_level == 0:
-            for queued_text in self.low_prio_queue:
-                if queued_text == (text, is_file):
-                    new = False
-                    break
-            if new:
-                self.low_prio_queue.append((text, is_file))
-        elif prio == 1 and self.message_level <= 1:
-            for queued_text in self.mid_prio_queue:
-                if queued_text == (text, is_file):
-                    new = False
-                    break
-            if new:
-                self.mid_prio_queue.append((text, is_file))
-        else:
-            for queued_text in self.high_prio_queue:
-                if queued_text == (text, is_file):
-                    new = False
-                    break
-            if new:
-                self.high_prio_queue.append((text, is_file))
+        # If printing is enabled and it's a text, print it
+        if self.print_say:
+            self.get_logger().info("Said: " + text)
+        
+        # Check if the message is already in the queue or if it's priority is high enough to be added 
+        if self.speak_enabled and prio >= self.message_level and (text, prio) not in self.prio_queue:
+            self.prio_queue.append((text, prio))
+            self.prio_queue.sort(key=lambda x: x[1], reverse=True)
 
 
-# todo integrate reading of files
-
-""""
-    def speak_file(self, filename, blocking=False, callback=noop):
-        ""
-        Ausgabe der Datei filename mittels espeak
-
-        :see: :func:`say`
-        ""
-        cal = (("espeak", "-m", "-f", filename), callback, random.random())
-        self._to_saylog(cal, blocking)
-"""
-
-
-def main():
-    Speaker()
+def main(args=None):
+    rclpy.init(args=args)
+    node = Speaker()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    node.destroy_node()
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 <launch>
+    <executable cmd="mimic3-server --preload-voice en_US/vctk_low" name="mimic3-server" output="screen"/>
     <node name="speaker" pkg="humanoid_league_speaker" exec="speaker">
         <param from="$(find-pkg-share humanoid_league_speaker)/config/speaker_config.yaml"/>
     </node>

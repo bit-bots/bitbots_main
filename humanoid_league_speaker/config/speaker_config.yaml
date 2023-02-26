@@ -6,5 +6,3 @@ speaker:
     talk: true
     # minimum priority for beeing accepted
     msg_level: 0
-    # amplitude of espeak
-    amplitude: 100
