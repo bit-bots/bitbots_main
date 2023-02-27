@@ -58,7 +58,7 @@ RUN . /opt/ros/rolling/setup.sh && \
 
 ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_meta/master/requirements.txt src/requirements.txt
 
-RUN sed -i -e /pydot/d -e /silx/d -e /pyopencl/d src/requirements.txt && \
+RUN sed -i -e /mycroft-mimic3-tts/d -e /pydot/d -e /pyopencl/d -e /pyttsx3/d src/requirements.txt && \
     pip3 install -U -r src/requirements.txt --no-cache-dir && \
     pip3 uninstall -y numpy
 
