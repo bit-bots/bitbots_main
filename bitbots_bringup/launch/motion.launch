@@ -11,7 +11,7 @@
             <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch">
                 <arg name="torqueless_mode" value="$(var torqueless_mode)" />
             </include>
-            <node name="set_volume" pkg="bitbots_utils" exec="set_volume.sh" args="100%" />
+            <node name="set_volume" pkg="bitbots_utils" exec="set_volume.sh" args="75%" />
         </group>
     </group>
 
