@@ -2,6 +2,8 @@
 This git contains all RoboCup code from the Hamburg Bit-Bots as submodules as well as documentation.
 All code is written as ROS packages and tested for ROS-Melodic.
 
+[![Test if all packages build](https://github.com/bit-bots/bitbots_meta/actions/workflows/build.yml/badge.svg)](https://github.com/bit-bots/bitbots_meta/actions/workflows/build.yml)
+
 ## Installation
 
 To download the Bit-Bots software stack clone this repository.
