@@ -4,9 +4,26 @@ Bitbots IMU DXL Module
 
 `Github repository <https://github.com/bit-bots/bitbots_imu_dxl>`_
 
+.. list-table::
 
-<TODO picture>
 
+    * - .. figure:: img/imu_front_empty.jpg
+           :scale: 40%
+
+      - .. figure:: img/imu_back.jpg
+           :scale: 40%
+
+      - .. figure:: img/imu_mounted.jpg
+           :scale: 40%
+
+    * - | IMU without buttons
+        | and LEDs (top side)
+      - | IMU in 3d printed case
+        | with RS485 connectors
+        | (bottom side)
+      - | IMU in 3d printed case
+        | with buttons and LEDs
+        | (top side)
 
 Features
 ========
