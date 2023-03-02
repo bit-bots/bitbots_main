@@ -315,7 +315,7 @@ void Localization::updateMeasurements() {
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
   // Maximum time stamp of the last measurements
-  last_stamp_all_measurments = std::max(std::max(last_stamp_lines_pc, last_stamp_goals), last_stamp_fb_points);
+  last_stamp_all_measurments = std::max({last_stamp_lines_pc, last_stamp_goals, last_stamp_fb_points});
 }
 
 void Localization::getMotion() {
