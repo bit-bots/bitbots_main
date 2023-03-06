@@ -1,0 +1,46 @@
+#VRML_SIM R2022b utf8
+# template language: javascript
+PROTO RoboCupTopLight [
+  field SFString{"stadium_dry", "shanghai_riverside", "ulmer_muenster", "sunset_jhbcentral", "sepulchral_chapel_rotunda","paul_lobe_haus", "kiara_1_dawn"}
+                 texture      "stadium_dry"
+  field SFFloat luminosity 1.0
+]
+{
+    %<
+
+    let direction = [0.0, 0.0, -1.0];
+    let color = [1.0, 1.0, 1.0];
+    let intensity = 1.0;
+    const luminosity = fields.luminosity.value > 0.0 ? fields.luminosity.value : 0.0;
+
+    if (fields.texture.value === 'stadium_dry') {
+      color = [0.95, 0.95, 1];
+      intensity = 1.0;
+    } else if (fields.texture.value === 'shanghai_riverside') {
+      color = [1.0, 1.0, 1.0];
+      intensity = 1.5;
+    } else if (fields.texture.value === 'ulmer_muenster') {
+      color = [0.95, 0.95, 1];
+      intensity = 0.5;
+    } else if (fields.texture.value === 'sunset_jhbcentral') {
+      color = [1.0, 1.0, 1.0];
+      intensity = 1.5;
+    } else if (fields.texture.value === 'sepulchral_chapel_rotunda') {
+      color = [0.95, 0.95, 1.0];
+      intensity = 1.75;
+    } else if (fields.texture.value === 'paul_lobe_haus') {
+      color = [0.9, 0.9, 1.0];
+      intensity = 1.5;
+    } else if (fields.texture.value === 'kiara_1_dawn') {
+      color = [1.0, 0.6, 0.8];
+      intensity = 1.0;
+    }
+    
+    >%
+  DirectionalLight {
+    direction %<= direction[0] >% %<= direction[1] >% %<= direction[2] >%
+    color %<= color[0] >% %<= color[1] >% %<= color[2] >%
+    intensity %<= luminosity * intensity >%
+    castShadows TRUE
+  }
+}

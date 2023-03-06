@@ -1,0 +1,60 @@
+#VRML_SIM R2022b utf8
+# license: Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+# license url: https://cyberbotics.com/webots_assets_license
+# A textured soccer ball with customizable radius and mass.
+# This object is physics-enabled so it will roll or bounce when hit.
+# template language: javascript
+PROTO RobocupTexturedSoccerBall [
+  field SFVec3f    translation  0 0 0
+  field SFRotation rotation     0 0 1 0
+  field SFString   name         "robocup soccer ball"
+  field SFInt32{1,2,3,4,5}      size 1 # Defines the ball size and mass according to FIFA standards.
+  field SFString{"telstar","teamgeist","europass", "jabulani", "tango"}            texture "telstar"
+]
+{
+  %<
+    const size = fields.size.value;
+    const radius_array = {1: 0.07, 2: 0.085, 3: 0.095, 4: 0.1025, 5: 0.1125};
+    const mass_array = {1: 0.205, 2: 0.250, 3: 0.310, 4: 0.370, 5: 0.430};
+    const radius = radius_array[size];
+    const mass = mass_array[size];
+    const scale = radius * 10.4;
+  >%
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    scale %<= scale >% %<= scale >% %<= scale >%
+    children [
+      DEF BALL_SHAPE Shape {
+        appearance PBRAppearance {
+          baseColor 0.8 0.8 0.8
+          roughness 0.5
+          metalness 0.1
+          baseColorMap ImageTexture{
+			      url [ %<= '"ball_textures/' + fields.texture.value + '.jpg"'>% ]
+          }
+        }
+        geometry Sphere {
+          radius %<= radius / scale >%
+          subdivision 3
+        }
+      }
+    ]
+    name IS name
+    model "soccer ball"
+    contactMaterial "robocup soccer ball"
+    boundingObject Sphere {
+      radius %<= radius / scale >%
+      subdivision 3
+    }
+    physics Physics {
+      mass %<= mass >%
+      density -1
+      centerOfMass [ 0 0 0.0001 ]  # to introduce some randomness in motion
+      damping Damping {
+        linear 0.77
+        angular 0.77
+      }
+    }
+  }
+}
