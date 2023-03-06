@@ -5,9 +5,7 @@
 # Extracted from: wolfgang.urdf
 
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_ankleMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_baseplate_odroid_xu4_coreMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_basler_ace_gige_c-mount_v01Mesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_cage_holderMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_cageMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_clipMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_batteryMesh.proto"
@@ -21,10 +19,8 @@ EXTERNPROTO "Wolfgang_meshes/Wolfgang_flex_stollenMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_foot_coverMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_foot_printed_leftMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_foot_printed_rightMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_forcefoot_pcbMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_handMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_hip_u_connectorMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_imu_bottom_coverMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_imu_holderMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_knee_connectorMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_knee_spacerMesh.proto"
@@ -36,17 +32,11 @@ EXTERNPROTO "Wolfgang_meshes/Wolfgang_lower_leg_spacerMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_motor_connectorMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_mx-106_bodyMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_mx-64-bodyMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_bottomMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_frontMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_left_backMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_left_frontMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_right_backMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_holder_right_frontMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_nuc_mainMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_part_1Mesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_power_regulatorMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_router_holder_leftMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_router_holder_rightMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_sea_connectorMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_sea_ninjaflexMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_shoulder_connectorMesh.proto"
@@ -55,7 +45,6 @@ EXTERNPROTO "Wolfgang_meshes/Wolfgang_springholder_bottomMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_spring_holder_lowerMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_springholder_newMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_spring_holder_upperMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_switch_holderMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_thrustbearingholderMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_torso_bottomMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_torso_bumper_leftMesh.proto"
@@ -161,14 +150,6 @@ PROTO Wolfgang [
         ]
       }
       Transform {
-        translation -0.049000 -0.000000 0.095000
-        rotation 0.000000 1.000000 0.000000 0.000000
-        children [
-          Wolfgang_power_regulatorMesh {
-          }
-        ]
-      }
-      Transform {
         translation -0.057000 0.077000 0.213915
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
@@ -241,26 +222,10 @@ PROTO Wolfgang [
         ]
       }
       Transform {
-        translation -0.002000 -0.011500 0.152000
-        rotation 0.000000 0.000000 1.000000 1.570800
-        children [
-          Wolfgang_nuc_bottomMesh {
-          }
-        ]
-      }
-      Transform {
         translation -0.001500 -0.036000 0.203500
         rotation -0.707105 0.000001 0.707108 3.141591
         children [
           Wolfgang_imu_holderMesh {
-          }
-        ]
-      }
-      Transform {
-        translation -0.002000 -0.011500 0.152000
-        rotation 0.000000 -0.000000 1.000000 1.570800
-        children [
-          Wolfgang_nuc_frontMesh {
           }
         ]
       }
@@ -315,22 +280,6 @@ PROTO Wolfgang [
         ]
       }
       Transform {
-        translation 0.000000 0.055000 0.043000
-        rotation -0.577350 -0.577352 0.577350 2.094399
-        children [
-          Wolfgang_router_holder_leftMesh {
-          }
-        ]
-      }
-      Transform {
-        translation -0.037000 -0.047800 0.214100
-        rotation 0.707105 -0.707108 -0.000001 3.141591
-        children [
-          Wolfgang_imu_bottom_coverMesh {
-          }
-        ]
-      }
-      Transform {
         translation -0.009500 0.000000 0.211000
         rotation -0.577350 -0.577352 0.577350 2.094399
         children [
@@ -355,14 +304,6 @@ PROTO Wolfgang [
         ]
       }
       Transform {
-        translation -0.002000 -0.000000 0.088000
-        rotation -0.000000 0.000000 -1.000000 1.570800
-        children [
-          Wolfgang_baseplate_odroid_xu4_coreMesh {
-          }
-        ]
-      }
-      Transform {
         translation -0.002000 -0.011500 0.152000
         rotation -0.000000 0.000000 1.000000 1.570800
         children [
@@ -379,14 +320,6 @@ PROTO Wolfgang [
         ]
       }
       Transform {
-        translation 0.015000 0.000250 0.077500
-        rotation 0.577350 0.577352 0.577350 2.094399
-        children [
-          Wolfgang_switch_holderMesh {
-          }
-        ]
-      }
-      Transform {
         translation -0.077000 -0.075000 0.083000
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
@@ -399,22 +332,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_dummy_speakerMesh {
-          }
-        ]
-      }
-      Transform {
-        translation 0.000000 -0.055000 0.043000
-        rotation -0.577350 -0.577352 0.577350 2.094399
-        children [
-          Wolfgang_router_holder_rightMesh {
-          }
-        ]
-      }
-      Transform {
-        translation -0.004000 -0.037700 0.043000
-        rotation 0.000000 0.000000 1.000000 1.570800
-        children [
-          Wolfgang_battery_cage_holderMesh {
           }
         ]
       }
@@ -1764,14 +1681,6 @@ PROTO Wolfgang [
                           ]
                         }
                         Transform {
-                          translation -0.003923 -0.053000 -0.169043
-                          rotation 0.186156 -0.694748 0.694745 2.773490
-                          children [
-                            Wolfgang_part_1Mesh {
-                            }
-                          ]
-                        }
-                        Transform {
                           translation -0.003923 -0.026500 -0.169043
                           rotation 0.186156 -0.694748 0.694745 2.773490
                           children [
@@ -1784,14 +1693,6 @@ PROTO Wolfgang [
                           rotation 1.000000 -0.000000 0.000000 1.570800
                           children [
                             Wolfgang_spring_holder_upperMesh {
-                            }
-                          ]
-                        }
-                        Transform {
-                          translation -0.003923 -0.002000 -0.169043
-                          rotation 0.186156 -0.694748 0.694745 2.773490
-                          children [
-                            Wolfgang_part_1Mesh {
                             }
                           ]
                         }
@@ -2026,14 +1927,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 1.000000 0.000000 0.000000
                                             children [
                                               Wolfgang_load_cellMesh {
-                                              }
-                                            ]
-                                          }
-                                          Transform {
-                                            translation 0.038000 0.160000 -0.032400
-                                            rotation 1.000000 0.000000 -0.000000 3.141590
-                                            children [
-                                              Wolfgang_forcefoot_pcbMesh {
                                               }
                                             ]
                                           }
@@ -3200,14 +3093,6 @@ PROTO Wolfgang [
                           ]
                         }
                         Transform {
-                          translation -0.081124 -0.148357 0.049000
-                          rotation -1.000000 0.000000 -0.000000 3.141590
-                          children [
-                            Wolfgang_part_1Mesh {
-                            }
-                          ]
-                        }
-                        Transform {
                           translation -0.017802 -0.129914 0.020653
                           rotation 0.000000 -0.000000 -1.000000 2.617990
                           children [
@@ -3228,14 +3113,6 @@ PROTO Wolfgang [
                           rotation -0.000000 -0.000000 1.000000 2.617990
                           children [
                             Wolfgang_spring_holder_upperMesh {
-                            }
-                          ]
-                        }
-                        Transform {
-                          translation -0.081124 0.148357 -0.000000
-                          rotation 0.000000 1.000000 0.000000 0.000000
-                          children [
-                            Wolfgang_part_1Mesh {
                             }
                           ]
                         }
@@ -3470,14 +3347,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_printed_leftMesh {
-                                              }
-                                            ]
-                                          }
-                                          Transform {
-                                            translation 0.022000 0.160000 -0.032400
-                                            rotation 1.000000 -0.000000 0.000000 3.141590
-                                            children [
-                                              Wolfgang_forcefoot_pcbMesh {
                                               }
                                             ]
                                           }

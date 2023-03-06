@@ -58,15 +58,6 @@
       </material>
     </visual>
     <visual>
-      <origin rpy="5.55112e-17 5.55112e-17 -2.96059e-16" xyz="-0.049 -7.21645e-16 0.095"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/power_regulator.stl"/>
-      </geometry>
-      <material name="power_regulator_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
       <origin rpy="-1.5708 6.08341e-17 1.5708" xyz="-0.057 0.077 0.213915"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
@@ -201,39 +192,13 @@
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
-    <visual>
-      <origin rpy="1.11022e-16 1.0261e-16 1.5708" xyz="-0.002 -0.0115 0.152"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_bottom.stl"/>
-      </geometry>
-      <material name="nuc_bottom_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
+  
     <visual>
       <origin rpy="-3.14159 1.5708 0.0" xyz="-0.0015 -0.036 0.2035"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/imu_holder.stl"/>
       </geometry>
       <material name="imu_holder_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
-      <origin rpy="1.66533e-16 -1.9123e-16 1.5708" xyz="-0.002 -0.0115 0.152"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_front.stl"/>
-      </geometry>
-      <material name="nuc_front_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
-      <origin rpy="-3.14159 4.78845e-16 1.5708" xyz="0.028 7.07884e-17 0.108"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/odroid_xu4.stl"/>
-      </geometry>
-      <material name="odroid_xu4_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
@@ -252,24 +217,6 @@
         <box size="0.12 0.15 0.08"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="-1.5708 -6.84228e-49 1.5708" xyz="3.51759e-15 0.055 0.043"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/router_holder_left.stl"/>
-      </geometry>
-      <material name="router_holder_left_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
-      <origin rpy="3.14159 5.34761e-17 -1.5708" xyz="-0.037 -0.0478 0.2141"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/imu_bottom_cover.stl"/>
-      </geometry>
-      <material name="imu_bottom_cover_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
     <visual>
       <origin rpy="-1.5708 -0.0 1.5708" xyz="-0.0095 2.94903e-16 0.211"/>
       <geometry>
@@ -322,15 +269,6 @@
       </material>
     </visual>
     <visual>
-      <origin rpy="-5.55112e-17 -1.64346e-32 -1.5708" xyz="-0.002 -3.19189e-16 0.088"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/baseplate_odroid_xu4_core.stl"/>
-      </geometry>
-      <material name="baseplate_odroid_xu4_core_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
       <origin rpy="1.11022e-16 2.83582e-16 1.5708" xyz="-0.002 -0.0115 0.152"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/nuc_main.stl"/>
@@ -367,20 +305,20 @@
       </geometry>
     </collision>
     <visual>
-      <origin rpy="1.5708 1.92593e-32 1.5708" xyz="0.015 0.00025 0.0775"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/switch_holder.stl"/>
-      </geometry>
-      <material name="switch_holder_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.077 -0.075 0.083"/>
       <geometry>
         <mesh filename="package://wolfgang_description/urdf/torso_top.stl"/>
       </geometry>
       <material name="torso_top_material">
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
+      </material>
+    </visual>
+    <visual>
+      <origin rpy="-5.55112e-17 -1.64346e-32 -1.5708" xyz="-0.002 -3.19189e-16 0.088"/>
+      <geometry>
+        <mesh filename="package://wolfgang_description/urdf/baseplate_odroid_xu4_core.stl"/>
+      </geometry>
+      <material name="baseplate_odroid_xu4_core_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
@@ -414,24 +352,6 @@
         <mesh filename="package://wolfgang_description/urdf/dummy_speaker.stl"/>
       </geometry>
       <material name="dummy_speaker_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
-      <origin rpy="-1.5708 -0.0 1.5708" xyz="3.58047e-15 -0.055 0.043"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/router_holder_right.stl"/>
-      </geometry>
-      <material name="router_holder_right_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
-    <visual>
-      <origin rpy="0.0 -0.0 1.5708" xyz="-0.004 -0.0377 0.043"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/battery_cage_holder.stl"/>
-      </geometry>
-      <material name="battery_cage_holder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
@@ -1419,15 +1339,6 @@
         <cylinder length="0.002" radius="0.017"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="-1.5708 -0.523599 3.14159" xyz="-0.00392295 -0.053 -0.169043"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-      </geometry>
-      <material name="part_1_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
     <collision>
       <origin rpy="-1.5708 -0.523599 3.14159" xyz="-2.3657e-07 -0.052 -3.21056e-07"/>
       <geometry>
@@ -1464,15 +1375,6 @@
         <cylinder length="0.022" radius="0.014"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="-1.5708 -0.523599 3.14159" xyz="-0.00392295 -0.002 -0.169043"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-      </geometry>
-      <material name="part_1_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
     <collision>
       <origin rpy="-1.5708 -0.523599 3.14159" xyz="-2.3657e-07 -0.001 -3.21056e-07"/>
       <geometry>
@@ -1971,15 +1873,6 @@
         <box size="0.008 0.04 0.004"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="3.14159 5.27419e-16 1.68145e-16" xyz="0.038 0.16 -0.0324"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
-      </geometry>
-      <material name="forcefoot_pcb_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
-      </material>
-    </visual>
     <visual>
       <origin rpy="-2.92213e-15 1.32096e-19 -1.13088e-17" xyz="-0.03 0.1635 -0.034"/>
       <geometry>
@@ -2508,15 +2401,6 @@
         <box size="0.034 0.0248125 0.004"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="-3.14159 -5.23638e-16 -9.5356e-16" xyz="-0.0811244 -0.148357 0.049"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-      </geometry>
-      <material name="part_1_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
     <collision>
       <origin rpy="-3.14159 -5.23638e-16 -9.5356e-16" xyz="4.4347e-08 -3.96328e-07 0.05"/>
       <geometry>
@@ -2574,15 +2458,6 @@
         <cylinder length="0.022" radius="0.014"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="0.0 -9.66999e-33 0.0" xyz="-0.0811244 0.148357 -2.00465e-14"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/part_1.stl"/>
-      </geometry>
-      <material name="part_1_material">
-        <color rgba="0.647059 0.647059 0.647059 1.0"/>
-      </material>
-    </visual>
     <collision>
       <origin rpy="0.0 -9.66999e-33 0.0" xyz="4.4347e-08 3.96328e-07 -0.001"/>
       <geometry>
@@ -3135,15 +3010,6 @@
         <box size="0.02 0.044 0.007"/>
       </geometry>
     </collision>
-    <visual>
-      <origin rpy="3.14159 -5.03639e-15 -8.17408e-17" xyz="0.022 0.16 -0.0324"/>
-      <geometry>
-        <mesh filename="package://wolfgang_description/urdf/forcefoot_pcb.stl"/>
-      </geometry>
-      <material name="forcefoot_pcb_material">
-        <color rgba="0.717647 0.717647 0.717647 1.0"/>
-      </material>
-    </visual>
     <visual>
       <origin rpy="1.29452e-15 -3.52385e-15 -1.5708" xyz="-0.00654316 0.0618337 -0.0463905"/>
       <geometry>
