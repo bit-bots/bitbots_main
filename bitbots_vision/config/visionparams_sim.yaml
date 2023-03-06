@@ -44,19 +44,21 @@ bitbots_vision:
     white_color_detector_upper_values_s: 255  # Upper bound for the white color detector saturation
     white_color_detector_upper_values_v: 255  # Upper bound for the white color detector value/brightness
 
-    red_color_detector_lower_values_h: 139 # Lower bound for the red color detector hue
-    red_color_detector_lower_values_s: 50 # Lower bound for the red color detector saturation
-    red_color_detector_lower_values_v: 0 # Lower bound for the red color detector value/brightness
-    red_color_detector_upper_values_h: 255 # Upper bound for the red color detector hue
-    red_color_detector_upper_values_s: 255 # Upper bound for the red color detector saturation
-    red_color_detector_upper_values_v: 255 # Upper bound for the red color detector value/brightness
+    red_color_detector_h_zero_crossing: true # The red color interval contains the hue zero-crossing
+    red_color_detector_lower_values_h: 10 # Lower bound for the red color detector hue
+    red_color_detector_lower_values_s: 160 # Lower bound for the red color detector saturation
+    red_color_detector_lower_values_v: 20 # Lower bound for the red color detector value/brightness
+    red_color_detector_upper_values_h: 146 # Upper bound for the red color detector hue
+    red_color_detector_upper_values_s: 215 # Upper bound for the red color detector saturation
+    red_color_detector_upper_values_v: 220 # Upper bound for the red color detector value/brightness
 
+    blue_color_detector_h_zero_crossing: false # The blue color interval does not contain the hue zero-crossing
     blue_color_detector_lower_values_h: 90 # Lower bound for the blue color detector hue
-    blue_color_detector_lower_values_s: 197 # Lower bound for the blue color detector saturation
-    blue_color_detector_lower_values_v: 134 # Lower bound for the blue color detector value/brightness
-    blue_color_detector_upper_values_h: 116 # Upper bound for the blue color detector hue
-    blue_color_detector_upper_values_s: 255 # Upper bound for the blue color detector saturation
-    blue_color_detector_upper_values_v: 255 # Upper bound for the blue color detector value/brightness
+    blue_color_detector_lower_values_s: 140 # Lower bound for the blue color detector saturation
+    blue_color_detector_lower_values_v: 60 # Lower bound for the blue color detector value/brightness
+    blue_color_detector_upper_values_h: 100 # Upper bound for the blue color detector hue
+    blue_color_detector_upper_values_s: 170 # Upper bound for the blue color detector saturation
+    blue_color_detector_upper_values_v: 225 # Upper bound for the blue color detector value/brightness
 
     field_color_detector_lower_values_h: 30  # Lower bound for the field color detector hue
     field_color_detector_lower_values_s: 8  # Lower bound for the field color detector saturation
@@ -82,7 +84,7 @@ bitbots_vision:
 
     obstacle_active: false # Enables the obstacle detection
     obstacle_finder_method: "convex" # Method for the obstacle finder (distance, convex or step)
-    obstacle_color_threshold: 10 # An obstacle is defined as blue/red if it contains more blue or red than this threshold
+    obstacle_color_threshold: 4 # An obstacle is defined as blue/red if it contains more blue or red than this threshold (amount of pixels in per mille)
     obstacle_white_threshold: 12 # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach
     obstacle_field_boundary_diff_threshold: 20 # Minimal distance between detected and convex field boundary to accept it as obstacle
     obstacle_candidate_field_boundary_offset: 30 # Fixed height of obstacles above the field boundary

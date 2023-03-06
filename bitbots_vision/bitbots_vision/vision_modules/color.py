@@ -9,7 +9,6 @@ from rclpy import logging
 from cv_bridge import CvBridge
 from bitbots_vision.vision_modules import ros_utils
 
-
 logger = logging.get_logger('bitbots_vision')
 
 
@@ -19,6 +18,7 @@ class ColorDetector:
     It is used e.g. to check, if a pixel's color matches the defined color lookup table or to create masked binary images.
     As many of the modules rely on the color classification of pixels to generate their output, the color detector module matches their color to a given color lookup table.
     """
+
     def __init__(self, config):
         # type: (dict) -> None
         """
@@ -189,6 +189,7 @@ class HsvSpaceColorDetector(ColorDetector):
     e.g. the white of the lines and goal or the team colors of the enemy team respectively.
     This is necessary as teams may have different tones of red or blue as their marker color.
     """
+
     def __init__(self, config, color_str):
         # type: (dict, str) -> None
         """
@@ -199,6 +200,21 @@ class HsvSpaceColorDetector(ColorDetector):
         :return: None
         """
         self._detector_name = f"{color_str}_color_detector"
+
+        # Hue channels span from 0 to 180 with a wrap around from 180 to 0. self._zero_crossing should be true, if the
+        # used interval contains the zero-crossing and, hence, the wrap around at 180 to 0. Otherwise, false.
+        try:
+            self._zero_crossing = config[self._detector_name + "_h_zero_crossing"]
+        except KeyError:
+            logger.error(f"Undefined hsv detector values for '{self._detector_name}'. Check config values.")
+            raise
+
+        self._min_vals = None
+        self._min_vals_A = None
+        self._min_vals_B = None
+        self._max_vals = None
+        self._max_vals_A = None
+        self._max_vals_B = None
 
         # Initialization of parent ColorDetector.
         super(HsvSpaceColorDetector, self).__init__(config)
@@ -215,16 +231,47 @@ class HsvSpaceColorDetector(ColorDetector):
         super(HsvSpaceColorDetector, self).update_config(config)
 
         try:
-            self._min_vals = np.array([
-                        config[self._detector_name + '_lower_values_h'],
-                        config[self._detector_name + '_lower_values_s'],
-                        config[self._detector_name + '_lower_values_v']
+            self._zero_crossing = config[self._detector_name + "_h_zero_crossing"]
+            if self._zero_crossing:
+                # If the zero-crossing lies in the interval, the interval is split into two intervals [0, x] and
+                # [y, 180] with x, y in [0, 180]. A-values are for the [0, x] interval, B-values for the [y, 180]
+                # interval.
+                self._min_vals_A = np.array([
+                    0,
+                    config[self._detector_name + '_lower_values_s'],
+                    config[self._detector_name + '_lower_values_v']
                 ])
 
-            self._max_vals = np.array([
-                        config[self._detector_name + '_upper_values_h'],
-                        config[self._detector_name + '_upper_values_s'],
-                        config[self._detector_name + '_upper_values_v']
+                self._max_vals_A = np.array([
+                    config[self._detector_name + '_lower_values_h'],
+                    config[self._detector_name + '_upper_values_s'],
+                    config[self._detector_name + '_upper_values_v']
+                ])
+
+                self._min_vals_B = np.array([
+                    config[self._detector_name + '_upper_values_h'],
+                    config[self._detector_name + '_lower_values_s'],
+                    config[self._detector_name + '_lower_values_v']
+                ])
+
+                self._max_vals_B = np.array([
+                    180,
+                    config[self._detector_name + '_upper_values_s'],
+                    config[self._detector_name + '_upper_values_v']
+                ])
+            else:
+                # If the zero-crossing is not in the interval, it is not decomposed and only one set of min and max
+                # values is used.
+                self._min_vals = np.array([
+                    config[self._detector_name + '_lower_values_h'],
+                    config[self._detector_name + '_lower_values_s'],
+                    config[self._detector_name + '_lower_values_v']
+                ])
+
+                self._max_vals = np.array([
+                    config[self._detector_name + '_upper_values_h'],
+                    config[self._detector_name + '_upper_values_s'],
+                    config[self._detector_name + '_upper_values_v']
                 ])
         except KeyError:
             logger.error(f"Undefined hsv color values for '{self._detector_name}'. Check config values.")
@@ -239,9 +286,22 @@ class HsvSpaceColorDetector(ColorDetector):
         :return bool: whether pixel is in color lookup table or not
         """
         pixel = self.pixel_bgr2hsv(pixel)
-        return (self._max_vals[0] >= pixel[0] >= self._min_vals[0]) and \
-               (self._max_vals[1] >= pixel[1] >= self._min_vals[1]) and \
-               (self._max_vals[2] >= pixel[2] >= self._min_vals[2])
+
+        if self._zero_crossing:
+            interval_A = (self._max_vals_A[0] >= pixel[0] >= self._min_vals_A[0]) and \
+                         (self._max_vals_A[1] >= pixel[1] >= self._min_vals_A[1]) and \
+                         (self._max_vals_A[2] >= pixel[2] >= self._min_vals_A[2])
+
+            interval_B = (self._max_vals_B[0] >= pixel[0] >= self._min_vals_B[0]) and \
+                         (self._max_vals_B[1] >= pixel[1] >= self._min_vals_B[1]) and \
+                         (self._max_vals_B[2] >= pixel[2] >= self._min_vals_B[2])
+
+            return interval_A or interval_B
+
+        else:
+            return (self._max_vals[0] >= pixel[0] >= self._min_vals[0]) and \
+                (self._max_vals[1] >= pixel[1] >= self._min_vals[1]) and \
+                (self._max_vals[2] >= pixel[2] >= self._min_vals[2])
 
     def _mask_image(self, image):
         # type: (np.array) -> np.array
@@ -253,7 +313,13 @@ class HsvSpaceColorDetector(ColorDetector):
         :return np.array: masked image
         """
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        return cv2.inRange(hsv_image, self._min_vals, self._max_vals)
+
+        if self._zero_crossing:
+            interval_A = cv2.inRange(hsv_image, self._min_vals_A, self._max_vals_A)
+            interval_B = cv2.inRange(hsv_image, self._min_vals_B, self._max_vals_B)
+            return np.clip(interval_A + interval_B, 0, 255)
+        else:
+            return cv2.inRange(hsv_image, self._min_vals, self._max_vals)
 
 
 class PixelListColorDetector(ColorDetector):
@@ -351,17 +417,17 @@ class PixelListColorDetector(ColorDetector):
             color_lookup_table = self._color_lookup_table
 
         # Reshape image to an one-dimensional list of pixels with r g and b values
-        image_reshape = image.reshape(-1,3).transpose()
+        image_reshape = image.reshape(-1, 3).transpose()
         # Query the corresponding look up table value for each pixel in the list using numpys fancy array index
         # The r g and b values are used as the index in the lookup table for each pixel resulting in a new array with the
         # same number of values as the original image pixels.
         # Instead of the rgb values this array includes 255, if the given pixel is contained in the LUT or 0, if not.
         # This array is then reshaped to match the two dimensional shape of the original image, resulting in a lut mask.
         mask = color_lookup_table[
-                image_reshape[0],
-                image_reshape[1],
-                image_reshape[2],
-            ].reshape(
-                image.shape[0],
-                image.shape[1])
+            image_reshape[0],
+            image_reshape[1],
+            image_reshape[2],
+        ].reshape(
+            image.shape[0],
+            image.shape[1])
         return mask
