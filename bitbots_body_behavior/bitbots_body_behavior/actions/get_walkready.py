@@ -12,6 +12,7 @@ class GetWalkready(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters=None)
         self.direction = 'walkready'
         self.first_perform = True
+        self.active = False
 
     def perform(self, reevaluate=False):
         # deactivate falling since it will be wrongly detected
@@ -34,17 +35,15 @@ class GetWalkready(AbstractActionElement):
             # we are finished playing this animation
             return self.pop()
 
-    def start_animation(self):
+    def start_animation(self) -> bool:
         """
         This will NOT wait by itself. You have to check
-        animation_finished()
-        by yourself.
-        :return:
-        """
+        animation_finished() by yourself.
 
-        first_try = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1.0)
-        if not first_try:
-            server_running = False
+        :return: True if the animation was started, False if not
+        """
+        server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1.0)
+        if not server_running:
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
                                       "Dynup Action Server not running! Dynup cannot work without dynup server!"
@@ -52,15 +51,28 @@ class GetWalkready(AbstractActionElement):
                                       throttle_duration_sec=10.0)
                 server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)
             if server_running:
-                self.blackboard.node.get_logger().warn("Dynup server now running, hcm will go on.")
+                self.blackboard.node.get_logger().warn("Dynup server now running, 'get_walkready' action will go on.")
             else:
                 self.blackboard.node.get_logger().warn("Dynup server did not start.")
                 return False
+
+        # Dynup action server is running, we can start the walkready action
         goal = Dynup.Goal()
         goal.direction = self.direction
+        self.active = True
         self.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(goal)
+        self.dynup_action_current_goal.add_done_callback(
+            lambda future: future.result().get_result_async().add_done_callback(
+                lambda result_future: self.__done_cb(result_future)))
         return True
 
-    def animation_finished(self):
-        return (self.dynup_action_current_goal.done() and self.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \
-                or self.dynup_action_current_goal.cancelled()
+    def __done_cb(self, result_future):
+        self.active = False
+
+    def animation_finished(self) -> bool:
+        """
+        Checks if the animation is finished.
+
+        :return: True if the animation is finished, False if not
+        """
+        return not self.active

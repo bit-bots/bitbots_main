@@ -26,7 +26,7 @@ class AnimationCapsule:
 
         :param animation: Name of the animation which shall be played
         :param from_hcm: Marks the action call as a call from the hcm
-        :returns: True if the animation was succesfully depatched
+        :returns: True if the animation was successfully dispatched
         """
         if self.active:
             return False
