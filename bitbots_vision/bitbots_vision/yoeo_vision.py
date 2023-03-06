@@ -53,10 +53,10 @@ class YOEOVision(Node):
         # Add general params
         ros_utils.set_general_parameters(["caching"])
 
-        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
-
         # Update team color
         ros_utils.update_own_team_color(self)
+
+        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
