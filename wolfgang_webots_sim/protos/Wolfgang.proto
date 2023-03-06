@@ -5,7 +5,6 @@
 # Extracted from: wolfgang.urdf
 
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_ankleMesh.proto"
-EXTERNPROTO "Wolfgang_meshes/Wolfgang_baseplate_odroid_xu4_coreMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_basler_ace_gige_c-mount_v01Mesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_cageMesh.proto"
 EXTERNPROTO "Wolfgang_meshes/Wolfgang_battery_clipMesh.proto"
@@ -301,14 +300,6 @@ PROTO Wolfgang [
         rotation 0.000000 0.000000 1.000000 1.570800
         children [
           Wolfgang_speaker_holderMesh {
-          }
-        ]
-      }
-      Transform {
-        translation -0.002000 -0.000000 0.088000
-        rotation -0.000000 0.000000 -1.000000 1.570800
-        children [
-          Wolfgang_baseplate_odroid_xu4_coreMesh {
           }
         ]
       }
