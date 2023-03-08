@@ -82,9 +82,9 @@ class MotorVizHelper(Node):
         self.joint_command_msg.joint_names = self.joint_names
         self.joint_command_msg.positions = [float(0)] * 20
         self.joint_command_msg.velocities = [float(-1)] * 20
+        self.update_time = self.get_clock().now()
 
     def loop(self):
-        self.update_time = self.get_clock().now()
         self.update_joint_states(self.joint_command_msg)
         self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
         if self.args.gazebo:
