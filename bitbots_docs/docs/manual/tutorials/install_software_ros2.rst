@@ -13,7 +13,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
 - Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
-- Install some ROS tools: ``sudo apt install python3-rosdep python3-colcon-common-extensions python-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor``
+- Install some ROS tools: ``sudo apt install python3-rosdep python3-colcon-common-extensions python3-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor``
 
 **2. Install webots**
 
@@ -41,7 +41,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **4. Install additional dependencies**
 
 We need to install the requirements of our software. Most of these can be automatically installed
-with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep install --from-paths . --ignore-src -y``.
+with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep update`` followed by ``rosdep install --from-paths . --ignore-src -y``.
 
 We also need to install some python packages using ``pip``, the python package manager.
 
