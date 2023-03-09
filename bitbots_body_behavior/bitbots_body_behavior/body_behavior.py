@@ -14,7 +14,6 @@ import rclpy
 from actionlib_msgs.msg import GoalID
 from ament_index_python import get_package_share_directory
 from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from geometry_msgs.msg import (PoseWithCovarianceStamped, Twist,
                                TwistWithCovarianceStamped)
 from rclpy.action import ActionClient

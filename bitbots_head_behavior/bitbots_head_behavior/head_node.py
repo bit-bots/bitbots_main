@@ -19,7 +19,6 @@ from bitbots_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from ament_index_python import get_package_share_directory
 
 def init(node: Node):
@@ -71,8 +70,6 @@ def init(node: Node):
 
 def main(args=None):
     rclpy.init(args=None)
-    #needed to init rclcpp ros for moveit_bindings
-    initRos()
     node = Node("head_node", automatically_declare_parameters_from_overrides=True)
     dsd = init(node)
     node.create_timer(1 / 60.0, dsd.update)
