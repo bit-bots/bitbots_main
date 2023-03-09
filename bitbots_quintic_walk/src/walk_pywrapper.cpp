@@ -5,6 +5,11 @@ void PyWalkWrapper::spin_some() {
 }
 
 PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs, bool force_smooth_step_transition) {
+  // initialize rclcpp if not already done
+  if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
+    rclcpp::init(0, nullptr);
+  }
+
   // create parameters from serialized messages
   std::vector<rclcpp::Parameter> cpp_parameters = {};
   for (auto &parameter_msg: parameter_msgs) {
@@ -229,8 +234,6 @@ bool PyWalkWrapper::reset_and_test_if_speed_possible(py::bytes cmd_vel, double p
 
 PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
-
-  m.def("initRos", &ros2_python_extension::initRos);
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
       .def(py::init<std::string, std::vector<py::bytes>, bool>())
