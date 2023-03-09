@@ -2,7 +2,6 @@
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # This is a proto file for Webots for the Wolfgang
-# Extracted from: wolfgang_new.urdf
 
 PROTO hl_supervisor [
   field  SFVec3f     translation     0 0 0

@@ -1,13 +1,21 @@
 #VRML_SIM R2022b utf8
 
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/balls/protos/RobocupSoccerBall.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/samples/contests/robocup/protos/RobocupSoccerField.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
-EXTERNPROTO "../protos/Wolfgang.proto"
+EXTERNPROTO "../protos/RoboCupBackground.proto"
+EXTERNPROTO "../protos/RobocupSoccerField.proto"
+EXTERNPROTO "../protos/RobocupTexturedSoccerBall.proto"
+EXTERNPROTO "../protos/lighting/RoboCupMainLight.proto"
+EXTERNPROTO "../protos/lighting/RoboCupOffLight.proto"
+EXTERNPROTO "../protos/lighting/RoboCupTopLight.proto"
+
+EXTERNPROTO "../protos/robots/Wolfgang/Wolfgang.proto"
 EXTERNPROTO "../protos/hl_supervisor/hl_supervisor.proto"
 
-DEF world_info WorldInfo {
+WorldInfo {
+    info [
+    "Description: Bit-Bots Robocup Virtual Humanoid League (kid size) field including one Wolfgang robot"
+    "Version 0.1"
+  ]
+  title "Bit-Bots Field One Robot"
   basicTimeStep 8
   physicsDisableTime 0.1
   physicsDisableLinearThreshold 0.1
@@ -39,23 +47,42 @@ Viewpoint {
   orientation 0.13074775069234934 0.15392461377846517 -0.9793938119888453 1.674637090314644
   position 0.0918799331514291 15.742602735510587 6.669799372347793
 }
-TexturedBackground {
+
+DEF robocup_background RoboCupBackground {
   texture "stadium_dry"
+  luminosity 1.0
 }
-TexturedBackgroundLight {
+
+DEF robocup_main_light RoboCupMainLight {
   texture "stadium_dry"
+  luminosity 1.0
 }
+
+DEF robocup_off_light RoboCupOffLight {
+  texture "stadium_dry"
+  luminosity 1.0
+}
+
+DEF robocup_top_light RoboCupTopLight {
+  texture "stadium_dry"
+  luminosity 1.0
+}
+
+DEF robocup_soccer_field RobocupSoccerField {
+  size "kid"
+}
+
+DEF BALL RobocupTexturedSoccerBall {
+  translation 0.0 0.0 0.07
+  size 1
+  texture "telstar"
+}
+
 DEF amy Wolfgang {
-  translation -0.9968797400586715 3.221102788692946 0.4274542359577024
+  translation -1.0 3.14 0.4274
   rotation 0.0 0.0 -1.0 1.5869763401625028
   name "amy"
   controller "<extern>"
-}
-DEF ball RobocupSoccerBall {
-  translation 0 0 0.08
-}
-RobocupSoccerField {
-  size "kid"
 }
 DEF supervisor_robot hl_supervisor {
   name "supervisor_robot"
