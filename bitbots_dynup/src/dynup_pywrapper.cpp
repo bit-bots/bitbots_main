@@ -1,6 +1,12 @@
 #include "bitbots_dynup/dynup_pywrapper.h"
 
-PyDynupWrapper::PyDynupWrapper(const std::string ns) : dynup_node_(std::make_shared<bitbots_dynup::DynupNode>(ns)){
+PyDynupWrapper::PyDynupWrapper(const std::string ns) {
+  // initialize rclcpp if not already done
+  if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
+    rclcpp::init(0, nullptr);
+  }
+
+  dynup_node_ = std::make_shared<bitbots_dynup::DynupNode>(ns);
 }
 
 void PyDynupWrapper::spin_some() {
@@ -73,8 +79,6 @@ void PyDynupWrapper::set_parameter(py::bytes parameter_msg) {
 PYBIND11_MODULE(libpy_dynup, m)
     {
         using namespace bitbots_dynup;
-
-        m.def("initRos", &ros2_python_extension::initRos);
 
         py::class_<PyDynupWrapper, std::shared_ptr<PyDynupWrapper>>(m, "PyDynupWrapper")
         .def(py::init<std::string>())

@@ -1,8 +1,7 @@
 from cmath import phase
 from tracemalloc import start
 from std_msgs.msg import Int64
-from bitbots_moveit_bindings import libbitbots_moveit_bindings
-from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper, initRos
+from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose, PoseArray
 from sensor_msgs.msg import Imu, JointState

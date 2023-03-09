@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int64
 
-from bitbots_dynup.py_dynup import PyDynupWrapper, init_ros, spin_once
+from bitbots_dynup.py_dynup import PyDynupWrapper, spin_once
 from bitbots_dynup.msg import DynupPoses
 from bitbots_msgs.msg import JointCommand, FootPressure
 from geometry_msgs.msg import Twist, Pose, PoseArray
@@ -17,7 +17,6 @@ class PyDynup(object):
     def __init__(self, namespace=""):
         if namespace != "" and namespace[-1] != '/':
             namespace = namespace + '/'
-        init_ros(namespace)
         self.py_dynup_wrapper = PyDynupWrapper(namespace)
 
     def spin_once(self):

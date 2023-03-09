@@ -13,7 +13,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
-#include <ros2_python_extension/init.hpp>
 #include <ros2_python_extension/serialization.hpp>
 #include <cmath>
 

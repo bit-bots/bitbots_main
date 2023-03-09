@@ -2,7 +2,6 @@
 
 from ament_index_python import get_package_share_directory
 from bitbots_moveit_bindings import set_moveit_parameters
-from bitbots_moveit_bindings.libbitbots_moveit_bindings import initRos
 from bitbots_utils.utils import load_moveit_parameter, get_parameters_from_ros_yaml
 from numpy import random
 from deep_quintic.engine import WalkEngine
@@ -26,7 +25,6 @@ cmd_vel_current_bounds = [(-0.5, 0.5), (-0.2, 0.2), (-2, 2)]
 experiment_number = 1000
 threshold = 0.0001
 
-initRos()
 walk_parameters = get_parameters_from_ros_yaml("walking",
                                                 f"{get_package_share_directory('bitbots_quintic_walk')}/config/deep_quintic_{sim_name}_{robot_type}.yaml",
                                                 use_wildcard=True)
