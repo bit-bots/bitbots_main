@@ -9,11 +9,24 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(math REQUIRED)
+find_package(humanoid_league_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 add_executable(move_head src/move_head.cpp)
-ament_target_dependencies(move_head rclcpp bitbots_msgs)
+add_executable(move_head src/head_capsule.cpp)
+ament_target_dependencies(move_head 
+rclcpp 
+bitbots_msgs 
+head_capsule
+tf2_ros
+math
+humanoid_league_msgs
+sensor_msgs
+)
 
 install(TARGETS
   move_head
