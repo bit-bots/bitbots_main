@@ -25,7 +25,8 @@ RUN apt install -y libjsoncpp-dev build-essential git sudo python3-pip python3-r
     ros-rolling-control-toolbox libprotobuf-dev protobuf-compiler libprotoc-dev ros-rolling-topic-tools \
     python3-psutil python3-hypothesis ros-rolling-ament-cmake-nose ros-rolling-rot-conv ros-rolling-moveit-planners-ompl \
     ros-rolling-camera-info-manager ros-rolling-image-geometry ros-rolling-soccer-vision-3d-msgs \
-    python3-transforms3d python3-sklearn python3-numpy ros-rolling-tf-transformations python3-construct && \
+    python3-transforms3d python3-sklearn python3-numpy ros-rolling-tf-transformations python3-construct \
+    ros-rolling-rmw-cyclonedds-cpp && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -94,6 +95,7 @@ VOLUME /robocup-logs
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
 ENV ROS_LOCALHOST_ONLY=1
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 COPY entrypoint.sh /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 CMD ["bash"]
