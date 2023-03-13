@@ -42,9 +42,9 @@ class Config {
     double starting_diffusion = 0.0;
     int starting_steps_with_higher_diffusion = 0;
     double drift_distance_to_direction = 0.0;
-    double drift_roation_to_direction = 0.0;
+    double drift_rotation_to_direction = 0.0;
     double drift_distance_to_distance = 0.0;
-    double drift_roation_to_distance = 0.0;
+    double drift_rotation_to_distance = 0.0;
     double drift_distance_to_rotation = 0.0;
     double drift_rotation_to_rotation = 0.0;
     double max_rotation = 0.0;

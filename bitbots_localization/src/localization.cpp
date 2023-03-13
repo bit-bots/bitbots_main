@@ -1,7 +1,3 @@
-//
-// Created by judith on 08.03.19.
-//
-
 #include "bitbots_localization/localization.h"
 
 #include <chrono>
@@ -65,7 +61,7 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   // Get field name
   auto field = this->get_parameter("fieldname").as_string();
 
-  // Check if mesurement type is used and load the correct map for that
+  // Check if measurement type is used and load the correct map for that
   if(config_->lines_factor) {
     lines_.reset(new Map(field, "lines.png", -10.0));  // TODO real parameter
   }
@@ -89,8 +85,8 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   drift_cov <<
     // Standard dev of applied drift related to
     // distance, rotation
-    config_->drift_distance_to_direction, config_->drift_roation_to_direction,
-    config_->drift_distance_to_distance,  config_->drift_roation_to_distance,
+    config_->drift_distance_to_direction, config_->drift_rotation_to_direction,
+    config_->drift_distance_to_distance,  config_->drift_rotation_to_distance,
     config_->drift_distance_to_rotation,  config_->drift_rotation_to_rotation;
 
   // Scale drift form drift per second to drift per filter iteration
@@ -191,7 +187,7 @@ void Localization::run_filter_one_step() {
     robot_pf_->diffuse();
   }
 
-  // Apply ratings corresponding to the observations compared with each partice position
+  // Apply ratings corresponding to the observations compared with each particle position
   robot_pf_->measure();
 
   // Check if its resampling time!
@@ -315,7 +311,7 @@ void Localization::updateMeasurements() {
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
   // Maximum time stamp of the last measurements
-  last_stamp_all_measurments = std::max({last_stamp_lines_pc, last_stamp_goals, last_stamp_fb_points});
+  last_stamp_all_measurements = std::max({last_stamp_lines_pc, last_stamp_goals, last_stamp_fb_points});
 }
 
 void Localization::getMotion() {
@@ -356,7 +352,7 @@ void Localization::getMotion() {
     previousOdomTransform_ = transformStampedNow;
   }
   catch (const tf2::TransformException &ex) {
-    RCLCPP_WARN(this->get_logger(),"Could not aquire motion for odom transforms: %s", ex.what());
+    RCLCPP_WARN(this->get_logger(),"Could not acquire motion for odom transforms: %s", ex.what());
   }
 }
 
@@ -375,11 +371,11 @@ void Localization::publish_transforms() {
   // Get the transform from the last measurement timestamp until now
   geometry_msgs::msg::TransformStamped odomDuringMeasurement, odomNow;
   try {
-   odomDuringMeasurement = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, last_stamp_all_measurments);
+   odomDuringMeasurement = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, last_stamp_all_measurements);
    odomNow = tfBuffer->lookupTransform(odom_frame_, base_footprint_frame_, rclcpp::Time(0));
   }
   catch (const tf2::TransformException &ex) {
-    RCLCPP_WARN(this->get_logger(),"Could not aquire odom transforms: %s", ex.what());
+    RCLCPP_WARN(this->get_logger(),"Could not acquire odom transforms: %s", ex.what());
   }
 
   // Calculate difference between the two transforms
@@ -424,7 +420,7 @@ void Localization::publish_transforms() {
       br->sendTransform(localization_transform);
     }
 
-    // Publish odom localisation offset
+    // Publish odom localization offset
     geometry_msgs::msg::TransformStamped map_odom_transform;
 
     map_odom_transform.header.stamp = this->get_clock()->now();
@@ -479,7 +475,7 @@ void Localization::publish_pose_with_covariance() {
 }
 
 void Localization::publish_debug() {
-  // Show a marker for each partikle
+  // Show a marker for each particle
   publish_particle_markers();
   // Show ratings for each used class
   publish_ratings();

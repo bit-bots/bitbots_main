@@ -70,14 +70,14 @@ namespace bitbots_localization
         case hash("drift_distance_to_direction"):
           this->drift_distance_to_direction = param.as_double();
           break;
-        case hash("drift_roation_to_direction"):
-          this->drift_roation_to_direction = param.as_double();
+        case hash("drift_rotation_to_direction"):
+          this->drift_rotation_to_direction = param.as_double();
           break;
         case hash("drift_distance_to_distance"):
           this->drift_distance_to_distance = param.as_double();
           break;
-        case hash("drift_roation_to_distance"):
-          this->drift_roation_to_distance = param.as_double();
+        case hash("drift_rotation_to_distance"):
+          this->drift_rotation_to_distance = param.as_double();
           break;
         case hash("drift_distance_to_rotation"):
           this->drift_distance_to_rotation = param.as_double();
