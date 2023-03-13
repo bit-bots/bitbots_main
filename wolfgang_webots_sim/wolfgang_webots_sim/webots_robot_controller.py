@@ -365,7 +365,7 @@ class RobotController:
         motor = self.motors_dict[joint_name]
         if motor is None:
             print(f"Joint {motor} not found. Can not set goal position.")
-            return        
+            return
         if scaled:
             goal_position = self.convert_joint_scaled_to_radiant(joint_name, goal_position)
         if relative:
