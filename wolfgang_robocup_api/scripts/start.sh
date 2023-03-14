@@ -132,7 +132,7 @@ parameter_blackboard:
     team_id: $TEAM_ID
 EOF
 
-sed -i "/^    target_host:/s/^.*$/    target_host: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM_COMM_DIR/config/team_communication_config.yaml
+sed -i "/^    target_host:/s/^.*$/    target_ip: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM_COMM_DIR/config/team_communication_config.yaml
 
 #############
 # Start ROS #
