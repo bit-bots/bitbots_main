@@ -14,7 +14,7 @@
 <depend>bitbots_msgs</depend>
 <depend>sensor_msgs</depend>
 <depend>tf2_ros</depend>
-<depend>math</depend>
+<depend>cmath</depend>
 <depend>humanoid_league_msgs</depend>
 
 

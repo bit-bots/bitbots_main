@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(math REQUIRED)
+find_package(cmath REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 # uncomment the following section in order to fill in
@@ -23,7 +23,7 @@ rclcpp
 bitbots_msgs 
 head_capsule
 tf2_ros
-math
+cmath
 humanoid_league_msgs
 sensor_msgs
 )
