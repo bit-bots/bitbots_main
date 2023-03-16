@@ -7,6 +7,7 @@ from numpy import double
 from typing import List, Optional, Tuple
 
 import rclpy
+from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
@@ -59,15 +60,20 @@ class HumanoidLeagueTeamCommunication:
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self.node)
 
-        self.try_to_establish_connection()
         self.run_spin_in_thread()
+        self.try_to_establish_connection()
 
         self.node.create_timer(1 / self.rate, self.send_message)
         self.receive_forever()
 
+    def spin(self):
+        multi_executor = MultiThreadedExecutor(num_threads=10)
+        multi_executor.add_node(self.node)
+        multi_executor.spin()
+
     def run_spin_in_thread(self):
         # Necessary in ROS2, else we are forever stuck receiving messages
-        thread = threading.Thread(target=rclpy.spin, args=[self.node], daemon=True)
+        thread = threading.Thread(target=self.spin, daemon=True)
         thread.start()
 
     def set_state_defaults(self):
@@ -90,7 +96,6 @@ class HumanoidLeagueTeamCommunication:
         while rclpy.ok() and not self.socket_communication.is_setup():
             self.socket_communication.establish_connection()
             self.node.get_clock().sleep_for(Duration(seconds=1))
-            rclpy.spin_once(self.node)
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], 1)
@@ -125,7 +130,7 @@ class HumanoidLeagueTeamCommunication:
         self.strategy = msg
         self.strategy_time = self.get_current_time().to_msg()
 
-    def time_to_ball_cb(self, msg: float):
+    def time_to_ball_cb(self, msg: Float32):
         self.time_to_ball = msg.data
         self.time_to_ball_time = self.get_current_time().to_msg()
 
@@ -190,7 +195,7 @@ class HumanoidLeagueTeamCommunication:
 
     def send_message(self):
         if not self.is_robot_allowed_to_send_message():
-            self.logger.debug("Not allowed to send message")
+            self.logger.debug("Robot is not allowed to send message")
             return
 
         now = self.get_current_time()
