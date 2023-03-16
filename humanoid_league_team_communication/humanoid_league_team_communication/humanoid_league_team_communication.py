@@ -130,7 +130,7 @@ class HumanoidLeagueTeamCommunication:
         self.strategy = msg
         self.strategy_time = self.get_current_time().to_msg()
 
-    def time_to_ball_cb(self, msg: float):
+    def time_to_ball_cb(self, msg: Float32):
         self.time_to_ball = msg.data
         self.time_to_ball_time = self.get_current_time().to_msg()
 
@@ -195,7 +195,7 @@ class HumanoidLeagueTeamCommunication:
 
     def send_message(self):
         if not self.is_robot_allowed_to_send_message():
-            self.logger.debug("Not allowed to send message")
+            self.logger.debug("Robot is not allowed to send message")
             return
 
         now = self.get_current_time()
