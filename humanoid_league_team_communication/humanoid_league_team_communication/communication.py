@@ -50,8 +50,8 @@ class SocketCommunication:
     def receive_message(self) -> Optional[bytes]:
         self.assert_is_setup()
         msg, _, flags, _ = self.socket.recvmsg(self.buffer_size)
-        is_message_trucated = flags & socket.MSG_TRUNC
-        if is_message_trucated:
+        is_message_truncated = flags & socket.MSG_TRUNC
+        if is_message_truncated:
             self.handle_truncated_message()
             return None
         else:
