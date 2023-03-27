@@ -41,7 +41,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **4. Install additional dependencies**
 
 We need to install the requirements of our software. Most of these can be automatically installed
-with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep update`` followed by ``rosdep install --from-paths . --ignore-src -y``.
+with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init`` followed by ``rosdep update`` and ``rosdep install --from-paths . --ignore-src -y``.
 
 We also need to install some python packages using ``pip``, the python package manager.
 
