@@ -40,9 +40,9 @@ class GoToBlockPosition(AbstractActionElement):
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
 
-        pose_msg.pose.position.x = -(self.blackboard.world_model.field_length / 2) + self.block_position_goal_offset
-        pose_msg.pose.position.y = self._stay_in_front_of_goal(goalie_y)
-        pose_msg.pose.orientation.w = 1
+        pose_msg.pose.position.x = float(-(self.blackboard.world_model.field_length / 2) + self.block_position_goal_offset)
+        pose_msg.pose.position.y = float(self._stay_in_front_of_goal(goalie_y))
+        pose_msg.pose.orientation.w = 1.0
 
         self.blackboard.pathfinding.publish(pose_msg)
 
