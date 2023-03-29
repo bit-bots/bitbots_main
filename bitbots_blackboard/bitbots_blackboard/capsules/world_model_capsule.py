@@ -207,7 +207,7 @@ class WorldModelCapsule:
             # Set timestamps to zero to get the newest transform when this is transformed later
             self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
-            self.ball_seen_time = self._blackboard.node.get_clock().now()
+            self.ball_seen_time = Time.from_msg(msg.header.stamp)
             self.ball_publisher.publish(self.ball)
             self.ball_seen = True
 
