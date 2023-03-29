@@ -208,7 +208,7 @@ class TeamDataCapsule:
         """Returns the time at which a teammate has seen the ball accurately enough"""
         teammate_ball = self.get_teammate_ball()
         if teammate_ball is not None:
-            return teammate_ball.header.stamp
+            return Time.from_msg(teammate_ball.header.stamp)
         else:
             return Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
 
