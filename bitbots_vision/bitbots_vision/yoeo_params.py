@@ -134,5 +134,5 @@ gen.add("obstacle_candidate_min_width", int, description="Minimum width of an ob
 gen.add("obstacle_candidate_max_width", int, description="Maximum width of an obstacle", min=1, max=640)
 gen.add("obstacle_finder_step_length", int, description="Length of an object detection step along the field boundary", min=1, max=640)
 gen.add("obstacle_finder_value_increase", float, description="Factor of the impact of the height of the field boundary on the distance threshold", min=0, max=10.0)
-
+gen.add("obstacle_team_color_detection:", str, description="Method used to classify robots as teammates, opponents, or unknown ['hsv', 'yoeo']")
 gen.add("caching", bool, description="Used to deactivate caching for profiling reasons")
