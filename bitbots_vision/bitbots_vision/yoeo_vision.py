@@ -30,6 +30,7 @@ class YOEOVision(Node):
     This class defines the whole YOEO image processing pipeline, which uses the modules from the `vision_modules`.
     It also handles the dynamic reconfiguration of the bitbots_vision.
     """
+
     def __init__(self) -> None:
         super().__init__('bitbots_vision')
 
@@ -94,7 +95,13 @@ class YOEOVision(Node):
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.YOEOBallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
-            self._vision_components.append(yoeo.YOEOObstacleDetectionComponent(self))
+            method = new_config["obstacle_team_color_detection"]
+            if method == "hsv":
+                self._vision_components.append(yoeo.YOEOObstacleDetectionComponentHSV(self))
+            elif method == "yoeo":
+                self._vision_components.append(yoeo.YOEOObstacleDetectionComponent(self))
+            else:
+                logger.error(f"Unknown parameter '{method}' for 'obstacle_team_color_detection'")
         if new_config["component_goalpost_detection_active"]:
             self._vision_components.append(yoeo.YOEOGoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:
@@ -130,7 +137,7 @@ class YOEOVision(Node):
             self._run_vision_pipeline(image_msg)
 
     def _image_is_too_old(self, image_msg: Image) -> bool:
-        return False   # Fix for the wm 2022
+        return False  # Fix for the wm 2022
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
