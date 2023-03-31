@@ -23,6 +23,7 @@ jobs:
         run: |
           sudo wget https://packages.bit-bots.de/key.asc -O /usr/share/keyrings/bitbots.key
           echo 'deb [signed-by=/usr/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main' | sudo tee /etc/apt/sources.list.d/bitbots.list
+          echo 'Package: *\nPin: origin "packages.bit-bots.de"\nPin-Priority: 1000' | sudo tee /etc/apt/preferences.d/package-bit-bots.pref
           sudo apt update
       - name: Install packages via rosdep
         run: |
