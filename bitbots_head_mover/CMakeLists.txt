@@ -10,26 +10,26 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(cmath REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-add_executable(move_head src/move_head.cpp)
-add_executable(move_head src/head_capsule.cpp)
-ament_target_dependencies(move_head 
+#add_executable(move_head src/move_head.cpp)
+add_executable(head_capsule src/head_capsule.cpp)
+ament_target_dependencies(
+  #move_head 
+head_capsule
 rclcpp 
 bitbots_msgs 
-head_capsule
 tf2_ros
-cmath
 humanoid_league_msgs
 sensor_msgs
 )
 
 install(TARGETS
-  move_head
+  #move_head
+  head_capsule
   DESTINATION lib/${PROJECT_NAME}) 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
