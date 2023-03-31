@@ -70,7 +70,7 @@ class YOEOVision(Node):
         new_config = self._get_updated_config_with(params)
         self._configure_vision(new_config)
         self._config = new_config
-        self._first_dynamic_reconfigure_callback = True
+        #self._first_dynamic_reconfigure_callback = True  # does not appear to be used
 
         return SetParametersResult(successful=True)
 
@@ -100,8 +100,6 @@ class YOEOVision(Node):
                 self._vision_components.append(yoeo.YOEOObstacleDetectionComponentHSV(self))
             elif method == "yoeo":
                 self._vision_components.append(yoeo.YOEOObstacleDetectionComponent(self))
-            else:
-                logger.error(f"Unknown parameter '{method}' for 'obstacle_team_color_detection'")
         if new_config["component_goalpost_detection_active"]:
             self._vision_components.append(yoeo.YOEOGoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:
