@@ -93,21 +93,21 @@ class YOEOVision(Node):
         if new_config["component_camera_cap_check_active"]:
             self._vision_components.append(yoeo.CameraCapCheckComponent(self))
         if new_config["component_ball_detection_active"]:
-            self._vision_components.append(yoeo.YOEOBallDetectionComponent(self))
+            self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
             method = new_config["obstacle_team_color_detection"]
             if method == "hsv":
-                self._vision_components.append(yoeo.YOEOObstacleDetectionComponentHSV(self))
+                self._vision_components.append(yoeo.HSVObstacleDetectionComponent(self))
             elif method == "yoeo":
-                self._vision_components.append(yoeo.YOEOObstacleDetectionComponent(self))
+                self._vision_components.append(yoeo.ObstacleDetectionComponent(self))
         if new_config["component_goalpost_detection_active"]:
-            self._vision_components.append(yoeo.YOEOGoalpostDetectionComponent(self))
+            self._vision_components.append(yoeo.GoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:
-            self._vision_components.append(yoeo.YOEOLineDetectionComponent(self))
+            self._vision_components.append(yoeo.LineDetectionComponent(self))
         if new_config["component_field_boundary_detection_active"]:
-            self._vision_components.append(yoeo.YOEOFieldBoundaryDetectionComponent(self))
+            self._vision_components.append(yoeo.FieldBoundaryDetectionComponent(self))
         if new_config["component_field_detection_active"]:
-            self._vision_components.append(yoeo.YOEOFieldDetectionComponent(self))
+            self._vision_components.append(yoeo.FieldDetectionComponent(self))
         if new_config["component_debug_image_active"]:
             self._vision_components.append(yoeo.DebugImageComponent(self))
 
