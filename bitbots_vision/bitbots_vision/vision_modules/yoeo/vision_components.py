@@ -262,7 +262,7 @@ class CameraCapCheckComponent(IVisionComponent):
             self._image = None  # to allow for garbage collection of first image
 
 
-class YOEOBallDetectionComponent(IVisionComponent):
+class BallDetectionComponent(IVisionComponent):
     """
     This component carries out the ball detection using YOEO.
     """
@@ -338,7 +338,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-class YOEOGoalpostDetectionComponent(IVisionComponent):
+class GoalpostDetectionComponent(IVisionComponent):
     """
     This component carries out the goalpost detection using YOEO.
     """
@@ -405,7 +405,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
+class FieldBoundaryDetectionComponent(IVisionComponent):
     """
     This component carries out the field boundary detection using YOEO.
     """
@@ -465,7 +465,7 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-class YOEOLineDetectionComponent(IVisionComponent):
+class LineDetectionComponent(IVisionComponent):
     """
     This component carries out the line detection using YOEO.
     """
@@ -514,7 +514,7 @@ class YOEOLineDetectionComponent(IVisionComponent):
         pass  # Nothing should happen here
 
 
-class YOEOFieldDetectionComponent(IVisionComponent):
+class FieldDetectionComponent(IVisionComponent):
     """
     This component carries out the field detection using YOEO.
     """
@@ -557,7 +557,7 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         pass  # Nothing should happen here
 
 
-class YOEOObstacleDetectionComponent(IVisionComponent):
+class ObstacleDetectionComponent(IVisionComponent):
     """
     This component carries out the obstacle detection using YOEO with team color detection done by YOEO.
     """
@@ -690,7 +690,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         self._misc_obstacles_detector.set_image(image)
 
 
-class YOEOObstacleDetectionComponentHSV(IVisionComponent):
+class HSVObstacleDetectionComponent(IVisionComponent):
     """
     This component carries out the obstacle detection using YOEO with team color detection based on HSV detectors.
     """
