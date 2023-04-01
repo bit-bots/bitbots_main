@@ -13,7 +13,6 @@ from bitbots_vision.vision_modules import field_boundary, color, debug, \
 
 from . import detectors, object_manager, yoeo_handlers
 
-
 logger = rclpy.logging.get_logger('yoeo_vision_components')
 
 
@@ -36,7 +35,7 @@ class DebugImageFactory:
     @classmethod
     def _new_debug_image_has_to_be_created(cls, config: Dict) -> bool:
         return cls._debug_image is None \
-               or ros_utils.config_param_change(cls._config, config, 'component_debug_image_active')
+            or ros_utils.config_param_change(cls._config, config, 'component_debug_image_active')
 
     @classmethod
     def _create_new_debug_image(cls, config: Dict) -> None:
@@ -65,15 +64,15 @@ class YOEOFieldBoundaryDetectorFactory:
     @classmethod
     def _new_field_boundary_detector_has_to_be_created(cls, config: Dict) -> bool:
         return cls._field_boundary_detector is None \
-               or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
-               or cls._yoeo_id != object_manager.YOEOObjectManager.get_id()
+            or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
+            or cls._yoeo_id != object_manager.YOEOObjectManager.get_id()
 
     @classmethod
     def _create_new_field_boundary_detector(cls, config: Dict) -> None:
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method']
         )
-        field_detector = detectors.YOEOFieldSegmentation(object_manager.YOEOObjectManager.get())
+        field_detector = detectors.FieldSegmentation(object_manager.YOEOObjectManager.get())
 
         cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
         cls._field_boundary_detector_search_method = config['field_boundary_detector_search_method']
@@ -123,7 +122,7 @@ class YOEOObstacleDetectorFactory:
 
     @classmethod
     def _create_new_robot_detector(cls) -> None:
-        cls._robot_detector = detectors.YOEORobotDetector(object_manager.YOEOObjectManager.get())
+        cls._robot_detector = detectors.RobotDetector(object_manager.YOEOObjectManager.get())
         cls._yoeo_id = object_manager.YOEOObjectManager.get_id()
 
     @classmethod
@@ -157,6 +156,7 @@ class IVisionComponent(ABC):
     """
     Interface for the YOEO vision components.
     """
+
     @abstractmethod
     def configure(self, config: Dict, debug_mode: bool) -> None:
         """
@@ -184,6 +184,7 @@ class YOEOComponent(IVisionComponent):
     """
     This component runs the YOEO network. It is MANDATORY and must be run BEFORE any of the other components.
     """
+
     def __init__(self):
         self._yoeo_instance: Optional[yoeo_handlers.IYOEOHandler] = None
 
@@ -268,7 +269,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._ball_detector: Optional[detectors.YOEOBallDetector] = None
+        self._ball_detector: Optional[detectors.BallDetector] = None
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
         self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
@@ -276,7 +277,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
-        self._ball_detector = detectors.YOEOBallDetector(object_manager.YOEOObjectManager.get())
+        self._ball_detector = detectors.BallDetector(object_manager.YOEOObjectManager.get())
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
         self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
@@ -347,7 +348,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
         self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
-        self._goalpost_detector: Optional[detectors.YOEOGoalpostDetector] = None
+        self._goalpost_detector: Optional[detectors.GoalpostDetector] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
@@ -355,7 +356,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
         self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
-        self._goalpost_detector = detectors.YOEOGoalpostDetector(object_manager.YOEOObjectManager.get())
+        self._goalpost_detector = detectors.GoalpostDetector(object_manager.YOEOObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -473,14 +474,14 @@ class YOEOLineDetectionComponent(IVisionComponent):
         self._config: Dict = {}
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
-        self._line_detector: Optional[detectors.IYOEOSegmentation] = None
+        self._line_detector: Optional[detectors.ISegmentation] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
-        self._line_detector = detectors.YOEOLineSegmentation(object_manager.YOEOObjectManager.get())
+        self._line_detector = detectors.LineSegmentation(object_manager.YOEOObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -520,12 +521,12 @@ class YOEOFieldDetectionComponent(IVisionComponent):
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._field_detector: Optional[detectors.IYOEOSegmentation] = None
+        self._field_detector: Optional[detectors.ISegmentation] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
-        self._field_detector = detectors.YOEOFieldSegmentation(object_manager.YOEOObjectManager.get())
+        self._field_detector = detectors.FieldSegmentation(object_manager.YOEOObjectManager.get())
         logger.info('Field mask WILL BE published')
 
         self._register_publisher(config)
@@ -558,7 +559,140 @@ class YOEOFieldDetectionComponent(IVisionComponent):
 
 class YOEOObstacleDetectionComponent(IVisionComponent):
     """
-    This component carries out the obstacle detection using YOEO.
+    This component carries out the obstacle detection using YOEO with team color detection done by YOEO.
+    """
+
+    def __init__(self, node: Node):
+        self._config: Dict = {}
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._debug_mode: bool = False
+
+        self._line_detector = detectors.LineSegmentation(object_manager.YOEOObjectManager.get())
+
+        self._misc_obstacles_detector: Optional[detectors.UnknownRobotDetector] = None
+        self._opponents_detector: Optional[detectors.DetectorTemplate] = None
+        self._team_mates_detector: Optional[detectors.DetectorTemplate] = None
+
+        self._node: Node = node
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
+
+    def configure(self, config: Dict, debug_mode: bool) -> None:
+        own_color, opponent_color = self._determine_team_colors()
+
+        self._team_mates_detector = self._select_detector_based_on(own_color)
+        self._opponents_detector = self._select_detector_based_on(opponent_color)
+        self._misc_obstacles_detector = self._select_detector_based_on(None)
+
+        self._debug_image = DebugImageFactory.get(config)
+        self._debug_mode = debug_mode
+
+        self._register_publisher(config)
+        self._config = config
+
+    @staticmethod
+    def _determine_team_colors() -> Tuple[Optional[int], Optional[int]]:
+        own_color = ros_utils.get_robot_color_for_team(Robot().attributes.TEAM_OWN)
+        opponent_color = ros_utils.get_robot_color_for_team(Robot().attributes.TEAM_OPPONENT)
+        return own_color, opponent_color
+
+    @classmethod
+    def _select_detector_based_on(cls, team_color: Optional[int]):
+        if team_color == GameState.BLUE:
+            color_detector = detectors.BlueRobotDetector(object_manager.YOEOObjectManager.get())
+        elif team_color == GameState.RED:
+            color_detector = detectors.RedRobotDetector(object_manager.YOEOObjectManager.get())
+        else:
+            color_detector = detectors.UnknownRobotDetector(object_manager.YOEOObjectManager.get())
+        return color_detector
+
+    def _register_publisher(self, new_config: Dict) -> None:
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_obstacle_msg_topic',
+            RobotArray
+        )
+
+    def run(self, image_msg: Image) -> None:
+        obstacle_msgs: List[Robot] = []
+        self._add_team_mates_to(obstacle_msgs)
+        self._add_opponents_to(obstacle_msgs)
+        self._add_remaining_obstacles_to(obstacle_msgs)
+
+        self._publish_obstacles_message(image_msg, obstacle_msgs)
+
+        if self._debug_mode:
+            self._add_obstacles_to_debug_image()
+
+    def _add_team_mates_to(self, obstacle_msgs: List[Robot]) -> None:
+        team_mate_candidates = self._team_mates_detector.get_candidates()
+        team_mate_candidate_messages = self._create_obstacle_messages(Robot().attributes.TEAM_OWN, team_mate_candidates)
+        obstacle_msgs.extend(team_mate_candidate_messages)
+
+    @staticmethod
+    def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
+        return [ros_utils.build_robot_msg(obstacle_candidate, obstacle_type) for obstacle_candidate in candidates]
+
+    def _add_opponents_to(self, obstacle_msgs: List[Robot]) -> None:
+        opponent_candidates = self._opponents_detector.get_candidates()
+        opponent_candidate_messages = self._create_obstacle_messages(
+            Robot().attributes.TEAM_OPPONENT,
+            opponent_candidates
+        )
+        obstacle_msgs.extend(opponent_candidate_messages)
+
+    def _add_remaining_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
+        remaining_candidates = self._misc_obstacles_detector.get_candidates()
+        remaining_candidate_messages = self._create_obstacle_messages(
+            Robot().attributes.TEAM_UNKNOWN,
+            remaining_candidates
+        )
+        obstacle_msgs.extend(remaining_candidate_messages)
+
+    def _publish_obstacles_message(self, image_msg: Image, obstacle_msgs: List[Robot]) -> None:
+        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, obstacle_msgs)
+        self._publisher.publish(obstacles_msg)
+
+    def _add_obstacles_to_debug_image(self) -> None:
+        self._add_team_mates_to_debug_image()
+        self._add_opponents_to_debug_image()
+        self._add_remaining_objects_to_debug_image()
+
+    def _add_team_mates_to_debug_image(self) -> None:
+        team_mate_candidates = self._team_mates_detector.get_candidates()
+        self._debug_image.draw_obstacle_candidates(
+            team_mate_candidates,
+            DebugImageComponent.Colors.team_mates,
+            thickness=3
+        )
+
+    def _add_opponents_to_debug_image(self) -> None:
+        opponent_candidates = self._opponents_detector.get_candidates()
+        self._debug_image.draw_obstacle_candidates(
+            opponent_candidates,
+            DebugImageComponent.Colors.opponents,
+            thickness=3
+        )
+
+    def _add_remaining_objects_to_debug_image(self) -> None:
+        remaining_candidates = self._misc_obstacles_detector.get_candidates()
+        self._debug_image.draw_obstacle_candidates(
+            remaining_candidates,
+            DebugImageComponent.Colors.misc_obstacles,
+            thickness=3
+        )
+
+    def set_image(self, image: np.ndarray) -> None:
+        self._team_mates_detector.set_image(image)
+        self._opponents_detector.set_image(image)
+        self._misc_obstacles_detector.set_image(image)
+
+
+class YOEOObstacleDetectionComponentHSV(IVisionComponent):
+    """
+    This component carries out the obstacle detection using YOEO with team color detection based on HSV detectors.
     """
 
     def __init__(self, node: Node):
@@ -593,7 +727,7 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         )
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
-        
+
         self._register_publisher(config)
         self._config = config
 
