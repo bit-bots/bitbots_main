@@ -85,7 +85,7 @@ bitbots_vision:
     obstacle_active: false # Enables the obstacle detection
     obstacle_finder_method: "convex" # Method for the obstacle finder (distance, convex or step)
     obstacle_color_threshold: 4 # An obstacle is defined as blue/red if it contains more blue or red than this threshold (amount of pixels in per mille)
-    obstacle_white_threshold: 12 # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach
+    obstacle_white_threshold: 47 # An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach (amount of pixels in per mille)
     obstacle_field_boundary_diff_threshold: 20 # Minimal distance between detected and convex field boundary to accept it as obstacle
     obstacle_candidate_field_boundary_offset: 30 # Fixed height of obstacles above the field boundary
     obstacle_candidate_min_width: 15 # Minimum width of an obstacle
