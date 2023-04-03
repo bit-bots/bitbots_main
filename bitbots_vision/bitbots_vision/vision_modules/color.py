@@ -317,7 +317,7 @@ class HsvSpaceColorDetector(ColorDetector):
         if self._zero_crossing:
             interval_A = cv2.inRange(hsv_image, self._min_vals_A, self._max_vals_A)
             interval_B = cv2.inRange(hsv_image, self._min_vals_B, self._max_vals_B)
-            return np.clip(interval_A + interval_B, 0, 255)
+            return interval_A | interval_B
         else:
             return cv2.inRange(hsv_image, self._min_vals, self._max_vals)
 
