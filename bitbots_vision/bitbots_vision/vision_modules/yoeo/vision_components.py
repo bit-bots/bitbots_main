@@ -567,8 +567,6 @@ class ObstacleDetectionComponent(IVisionComponent):
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
 
-        self._line_detector = detectors.LineSegmentation(object_manager.YOEOObjectManager.get())
-
         self._misc_obstacles_detector: Optional[detectors.UnknownRobotDetector] = None
         self._opponents_detector: Optional[detectors.DetectorTemplate] = None
         self._team_mates_detector: Optional[detectors.DetectorTemplate] = None
