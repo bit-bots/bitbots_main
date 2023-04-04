@@ -65,6 +65,6 @@ bitbots_vision:
     obstacle_candidate_max_width: 150 # Maximum width of an obstacle
     obstacle_finder_step_length: 5 # Length of an object detection step along the field boundary
     obstacle_finder_value_increase: 2.0 # Factor of the impact of the height of the field boundary on the distance threshold
-    obstacle_team_color_detection: "yoeo"  # Method used to classify robots as teammates, opponents, or unknown ['hsv', 'yoeo']
+    obstacle_team_color_detection: "hsv"  # Method used to classify robots as teammates, opponents, or unknown ['hsv', 'yoeo']
 
     caching: true # Used to deactivate caching for profiling reasons
