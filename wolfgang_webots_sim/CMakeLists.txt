@@ -58,7 +58,6 @@ install(PROGRAMS
   scripts/fix_urdf_for_webots.py
   scripts/imu_lut_gen.py
   scripts/localization_faker.py
-  scripts/setenvs.sh
   scripts/start_simulator.py
   scripts/start_single.py
   scripts/start_webots_ros_supervisor.py
