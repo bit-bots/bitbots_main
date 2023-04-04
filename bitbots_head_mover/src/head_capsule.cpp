@@ -14,22 +14,26 @@
 class HeadCapsule : public rclcpp::Node
 {
 public:
-  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr publisher_; // here I need to check what message type si sent
-                                                                            // rclcpp::Publisher<visual_compass stuff>;
+
+  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr position_publisher_;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-  uint8_t head_mode; // this should be head_mode message type ?
-  sensor_msgs::msg::JointState::SharedPtr current_joint_state;
+  uint8_t head_mode_;
+  sensor_msgs::msg::JointState current_joint_state_;
   robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
-  planning_scene::PlanningScene *planning_scene;
+
+  bitbots_msgs::msg::JointCommand pos_msg_;
+  double DEG_TO_RAD = M_PI / 180;
   HeadCapsule()
       : Node("head_capsule")
   {
+
+
      std::string robot_description = "robot_description";
     // get the robot description from the blackboard
     loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
@@ -52,23 +56,47 @@ public:
     }
   planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description); 
   planning_scene_ = planning_scene_monitor_->getPlanningScene();
+
+  // prepare the pos_msg
+  pos_msg_.joint_names = {"HeadPan", "HeadTilt"};
+  pos_msg_.positions = {0, 0};
+  pos_msg_.velocities = {0, 0};
+  pos_msg_.accelerations = {0, 0};
+  pos_msg_.max_currents = {0, 0};
+
+  // apparently tf_listener is necessary but unused
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
+
+  // prepare joint state msg
+  current_joint_state_ = sensor_msgs::msg::JointState();
+  current_joint_state_.name = {"HeadPan", "HeadTilt"};
+  current_joint_state_.position = {0, 0};
+  current_joint_state_.velocity = {0, 0};
+  current_joint_state_.effort = {0, 0};
   }
 
   void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg)
   {
-    head_mode = msg->head_mode; // do I want this to be msg?
+    /**
+     *ROS Subscriber callback for /head_mode message.
+        Saves the messages head mode on the blackboard
+     * 
+     */
+    head_mode_ = msg->head_mode; 
   }
-  void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
+  void joint_state_callback(const sensor_msgs::msg::JointState msg)
   {
-    current_joint_state = msg;
+    current_joint_state_ = msg;
   }
 
-  float DEG_TO_RAD = 3.141592653 / 180; // make this a macro later
-  bitbots_msgs::msg::JointCommand pos_msg;
 
-  float calculate_lower_speed(float delta_fast_joint, float delta_my_joint, float speed)
+/*
+ HEAD POSITION
+*/
+  double calculate_lower_speed(double delta_fast_joint, double delta_my_joint, double speed)
   {
-    float estimated_time = delta_fast_joint / speed;
+    double estimated_time = delta_fast_joint / speed;
     if (estimated_time != 0)
       {
 
@@ -81,7 +109,7 @@ public:
     }
   };
 
-  bool send_motor_goals(auto pan_position, auto tilt_position, float pan_speed = 1.5, float tilt_speed = 1.5, auto current_pan_position = NULL, auto current_tilt_position = NULL, bool clip = true, bool resolve_collision = true)
+  bool send_motor_goals(double pan_position, double tilt_position, double pan_speed = 1.5, double tilt_speed = 1.5, double current_pan_position = NULL, double current_tilt_position = NULL, bool clip = true, bool resolve_collision = true)
   {
     RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position <<"/" << tilt_position);
     if (clip)
@@ -109,22 +137,22 @@ public:
       }
     else
     {
-      pos_msg.positions = {pan_position, tilt_position};
-      pos_msg.velocities = {pan_speed, tilt_speed};
-      pos_msg.header.stamp = this->get_clock()->now();
-      publisher_->publish(pos_msg);
+      pos_msg_.positions = {pan_position, tilt_position};
+      pos_msg_.velocities = {pan_speed, tilt_speed};
+      pos_msg_.header.stamp = this->get_clock()->now();
+      position_publisher_->publish(pos_msg_);
       return true;
     }
   };
 
-  bool avoid_collision_on_path(auto goal_pan, auto goal_tilt, auto current_pan, auto current_tilt, auto pan_speed, auto tilt_speed, int max_depth = 4, int depth = 0)
+  bool avoid_collision_on_path(double goal_pan, double goal_tilt, double current_pan, double current_tilt, double pan_speed, double tilt_speed, int max_depth = 4, int depth = 0)
   {
     if (depth > max_depth)
       {
         move_head_to_position_with_speed_adjustment(0.0, 0.0, current_pan, current_tilt, pan_speed, tilt_speed);
         return false;
       }
-    float distance = sqrt(pow(goal_pan - current_pan, 2) - pow(goal_tilt - current_tilt, 2));
+    double distance = sqrt(pow(goal_pan - current_pan, 2) - pow(goal_tilt - current_tilt, 2));
 
     int step_count = distance / 3 * DEG_TO_RAD;
 
@@ -136,10 +164,6 @@ public:
       pan_and_tilt_steps[i][1] = current_tilt + (goal_tilt - current_tilt) / step_count * i;
     }
     // checks if we have collisions on our path
-    if (check_head_collision(goal_pan, goal_tilt))
-    {
-      return avoid_collision_on_path(goal_pan, goal_tilt + 10 * DEG_TO_RAD, current_pan, current_tilt, pan_speed, tilt_speed, max_depth, depth + 1);
-    }
     for (int i = 0; i < step_count; i++)
     {
       if (check_head_collision(pan_and_tilt_steps[i][0], pan_and_tilt_steps[i][1]))
@@ -151,21 +175,21 @@ public:
     return true;
   };
 
-  bool check_head_collision(auto head_joints)
+  bool check_head_collision(double pan, double tilt)
   {
-    sensor_msgs::msg::JointState joint_state = new sensor_msgs::msg::JointState();
+    sensor_msgs::msg::JointState joint_state = sensor_msgs::msg::JointState();
     joint_state.name = {"HeadPan", "HeadTilt"};
-    joint_state.position = head_joints; // looked at bitbots_move_it_bindings, but where import collision_detection?
+    joint_state.position = {pan, tilt}; // looked at bitbots_move_it_bindings, but where import collision_detection?
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
     collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
     planning_scene_->checkCollision(req, res, *robot_state_, acm);
     return res.collision;
   }
-  void move_head_to_position_with_speed_adjustment(auto goal_pan, auto goal_tilt, auto current_pan, auto current_tilt, auto pan_speed, auto tilt_speed)
+  void move_head_to_position_with_speed_adjustment(float goal_pan, float goal_tilt, float current_pan, float current_tilt, float pan_speed, float tilt_speed)
   {
-    float delta_pan = std::abs(goal_pan - current_pan);
-    float delta_tilt = std::abs(goal_tilt - current_tilt);
+    double delta_pan = std::abs(goal_pan - current_pan);
+    double delta_tilt = std::abs(goal_tilt - current_tilt);
     if (delta_pan > 0)
       {
         tilt_speed = calculate_lower_speed(delta_pan, delta_tilt, pan_speed);
@@ -174,26 +198,34 @@ public:
     {
       pan_speed = calculate_lower_speed(delta_tilt, delta_pan, tilt_speed);
     }
-    pos_msg.positions = {goal_pan, goal_tilt};
-    pos_msg.velocities = {pan_speed, tilt_speed};
-    pos_msg.header.stamp = rclcpp::Clock().now();
-    publisher_->publish(pos_msg);
+    pos_msg_.positions = {goal_pan, goal_tilt};
+    pos_msg_.velocities = {pan_speed, tilt_speed};
+    pos_msg_.header.stamp = rclcpp::Clock().now();
+    position_publisher_->publish(pos_msg_);
   }
-  float get_head_position()
+
+  /*
+  GET HEAD POSITION
+  */
+  std::pair<double, double> get_head_position()
   {
-    float head_pan = current_joint_state->position[0];  // is this "HeadPan"?
-    float head_tilt = current_joint_state->position[1]; // is this "HeadTilt"?
-    return head_pan, head_tilt; // only head_pan is returned
+    double head_pan = current_joint_state_.position[0];  // is this "HeadPan"?
+    double head_tilt = current_joint_state_.position[1]; // is this "HeadTilt"?
+    return {head_pan, head_tilt}; 
   }
-  float lineAngle(auto line, auto line_count, auto min_angle, auto max_angle)
+
+  /*
+  PATTERN GENERATOR
+  */
+  double lineAngle(int line, int line_count, double min_angle, double max_angle)
   {
-    float delta = std::abs(max_angle - min_angle);
-    float steps = delta / (line_count - 1);
-    float value = steps * line + min_angle;
+    double delta = std::abs(max_angle - min_angle);
+    int steps = delta / (line_count - 1);
+    double value = steps * line + min_angle;
     return value;
   }
 
-  float calculateHorizonAngle(auto is_right, auto angle_right, auto angle_left)
+  double calculateHorizonAngle(auto is_right, auto angle_right, auto angle_left)
   {
     if (is_right)
     {
@@ -207,15 +239,15 @@ public:
     }
   }
 
-  // int* interpolatedSteps(int steps, float tilt, float min_pan, float max_pan)
+  // int* interpolatedSteps(int steps, double tilt, double min_pan, double max_pan)
   // {
   //   if (steps == 0)
   //   {
   //     return 0;
   //   }
   //   steps += 1.0;
-  //   float delta = std::abs(max_pan - min_pan);
-  //   float step_size = delta / steps;
+  //   double delta = std::abs(max_pan - min_pan);
+  //   double step_size = delta / steps;
   //   static int output_points[steps][2]; // do we need to cast steps to int?
   //   for (int i = 0; i < steps; i++)
   //   {
