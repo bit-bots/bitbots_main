@@ -557,9 +557,9 @@ class FieldDetectionComponent(IVisionComponent):
         pass  # Nothing should happen here
 
 
-class ObstacleDetectionComponent(IVisionComponent):
+class RobotDetectionComponent(IVisionComponent):
     """
-    This component carries out the obstacle detection using YOEO with team color detection done by YOEO.
+    This component carries out the robot detection using YOEO with team color detection done by YOEO.
     """
 
     def __init__(self, node: Node):
@@ -688,9 +688,9 @@ class ObstacleDetectionComponent(IVisionComponent):
         self._misc_obstacles_detector.set_image(image)
 
 
-class HSVObstacleDetectionComponent(IVisionComponent):
+class HSVRobotDetectionComponent(IVisionComponent):
     """
-    This component carries out the obstacle detection using YOEO with team color detection based on HSV detectors.
+    This component carries out the robot detection using YOEO with team color detection based on HSV detectors.
     """
 
     def __init__(self, node: Node):
