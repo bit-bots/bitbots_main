@@ -70,7 +70,6 @@ class YOEOVision(Node):
         new_config = self._get_updated_config_with(params)
         self._configure_vision(new_config)
         self._config = new_config
-        #self._first_dynamic_reconfigure_callback = True  # does not appear to be used
 
         return SetParametersResult(successful=True)
 
