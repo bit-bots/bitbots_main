@@ -94,10 +94,9 @@ class YOEOVision(Node):
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
-            method = new_config["obstacle_team_color_detection"]
-            if method == "hsv":
+            if new_config["obstacle_team_color_detection"] == "hsv":
                 self._vision_components.append(yoeo.HSVRobotDetectionComponent(self))
-            elif method == "yoeo":
+            elif new_config["obstacle_team_color_detection"] == "yoeo":
                 self._vision_components.append(yoeo.RobotDetectionComponent(self))
         if new_config["component_goalpost_detection_active"]:
             self._vision_components.append(yoeo.GoalpostDetectionComponent(self))
