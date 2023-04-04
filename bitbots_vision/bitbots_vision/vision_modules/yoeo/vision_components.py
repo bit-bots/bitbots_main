@@ -559,7 +559,8 @@ class FieldDetectionComponent(IVisionComponent):
 
 class RobotDetectionComponentTemplate(IVisionComponent):
     """
-        This component carries out the robot detection using YOEO with team color detection done by YOEO.
+        This template carries out the robot detection using YOEO. Abstract method "_configure_detectors" needs to be
+        implemented.
         """
 
     def __init__(self, node: Node):
