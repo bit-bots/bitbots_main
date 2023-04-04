@@ -41,6 +41,7 @@ j: STATE_THROW_IN = 9
 p:     toggle penalized
 t:     toggle secondary state team
 m:     toggle secondary state mode
+k:     toggle kick off
 
 CTRL-C to quit
 
@@ -54,6 +55,7 @@ CTRL-C to quit
         self.logger = self.get_logger()
 
         self.team_id = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id'])['team_id']
+        self.has_kick_off = True
 
         self.settings = termios.tcgetattr(sys.stdin)
 
@@ -89,6 +91,9 @@ CTRL-C to quit
                         game_state_msg.secondary_state_team = self.team_id + 1
                     else:
                         game_state_msg.secondary_state_team = self.team_id
+                elif key == 'k':
+                    self.has_kick_off = not self.has_kick_off
+                game_state_msg.has_kick_off = self.has_kick_off
 
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
@@ -102,7 +107,8 @@ f"""Penalized:            {game_state_msg.penalized}
 Secondary State Team: {game_state_msg.secondary_state_team}
 Secondary State Mode: {game_state_msg.secondary_state_mode}
 Secondary State:      {game_state_msg.secondary_state}
-Gamestate:            {game_state_msg.game_state}""")
+Gamestate:            {game_state_msg.game_state}
+Has Kick Off:         {game_state_msg.has_kick_off}""")
 
         except Exception as e:
             print(e)
