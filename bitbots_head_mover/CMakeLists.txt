@@ -12,6 +12,11 @@ find_package(bitbots_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(moveit_core REQUIRED)
+find_package(moveit_msgs REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
+find_package(moveit_ros_planning REQUIRED)
+find_package(moveit_ros REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -25,6 +30,11 @@ bitbots_msgs
 tf2_ros
 humanoid_league_msgs
 sensor_msgs
+moveit_core
+moveit_msgs
+moveit_ros_planning_interface
+moveit_ros_planning
+moveit_ros
 )
 
 install(TARGETS

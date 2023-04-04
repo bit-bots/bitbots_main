@@ -1,43 +1,70 @@
 #include <cmath>
 #include <rclcpp/rclcpp.hpp>
-#include "tf2_ros/transform_listener.h"
-#include "tf2_ros/buffer.h"
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <vector>
 
 #include <humanoid_league_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-// #include <bitbots_moveit_bindings/check_collision.hpp> use moveit directly
-
-
+#include <moveit/planning_scene/planning_scene.h>
+#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
 class HeadCapsule : public rclcpp::Node
 {
 public:
-  HeadCapsule()
-      : Node("head_capsule") // maybe use a node given as parameter and not inherit from node
-  {
-  }
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr publisher_; // here I need to check what message type si sent
                                                                             // rclcpp::Publisher<visual_compass stuff>;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  uint8_t head_mode; // this should be head_mode message type ?
+  sensor_msgs::msg::JointState::SharedPtr current_joint_state;
+  robot_model_loader::RobotModelLoaderPtr loader_;
+  moveit::core::RobotModelPtr robot_model_;
+  moveit::core::RobotStatePtr robot_state_;
+  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
+  planning_scene::PlanningScenePtr planning_scene_;
+  planning_scene::PlanningScene *planning_scene;
+  HeadCapsule()
+      : Node("head_capsule")
+  {
+     std::string robot_description = "robot_description";
+    // get the robot description from the blackboard
+    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
+      robot_model_loader::RobotModelLoader(SharedPtr(this), robot_description, true));
+    robot_model_ = loader_->getModel();
+    if (!robot_model_) {
+      RCLCPP_ERROR(this->get_logger(),
+                   "failed to load robot model %s. Did you start the "
+                   "blackboard (bitbots_bringup base.launch)?",
+                   robot_description.c_str());
+    }
+    robot_state_.reset(new moveit::core::RobotState(robot_model_));
+    robot_state_->setToDefaultValues();
+
+    // get planning scene for collision checking
+    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description);
+    planning_scene_ = planning_scene_monitor_->getPlanningScene();
+    if (!planning_scene_) {
+      RCLCPP_ERROR_ONCE(this->get_logger(), "failed to connect to planning scene");
+    }
+  planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description); 
+  planning_scene_ = planning_scene_monitor_->getPlanningScene();
+  }
 
   void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg)
   {
-    head_mode_ = msg->head_mode;
+    head_mode = msg->head_mode; // do I want this to be msg?
   }
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
   {
     current_joint_state = msg;
   }
 
-private:
-  int head_mode_;
   float DEG_TO_RAD = 3.141592653 / 180; // make this a macro later
   bitbots_msgs::msg::JointCommand pos_msg;
-  sensor_msgs::msg::JointState::SharedPtr current_joint_state;
 
   float calculate_lower_speed(float delta_fast_joint, float delta_my_joint, float speed)
   {
@@ -126,15 +153,14 @@ private:
 
   bool check_head_collision(auto head_joints)
   {
-    // sensor_msgs::msg::JointState joint_state = new sensor_msgs::msg::JointState();
-    // joint_state.name = {"HeadPan", "HeadTilt"};
-    // joint_state.position = head_joints; // looked at bitbots_move_it_bindings, but where import collision_detection?
-    // collision_detection::CollisionRequest req;
-    // collision_detection::CollisionResult res;
-    // collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
-    // planning_scene_->checkCollision(req, res, *joint_state, acm);
-    // return res.collision;
-    return false;
+    sensor_msgs::msg::JointState joint_state = new sensor_msgs::msg::JointState();
+    joint_state.name = {"HeadPan", "HeadTilt"};
+    joint_state.position = head_joints; // looked at bitbots_move_it_bindings, but where import collision_detection?
+    collision_detection::CollisionRequest req;
+    collision_detection::CollisionResult res;
+    collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
+    planning_scene_->checkCollision(req, res, *robot_state_, acm);
+    return res.collision;
   }
   void move_head_to_position_with_speed_adjustment(auto goal_pan, auto goal_tilt, auto current_pan, auto current_tilt, auto pan_speed, auto tilt_speed)
   {
