@@ -109,7 +109,7 @@ public:
     }
   };
 
-  bool send_motor_goals(double pan_position, double tilt_position, double pan_speed = 1.5, double tilt_speed = 1.5, double current_pan_position = NULL, double current_tilt_position = NULL, bool clip = true, bool resolve_collision = true)
+  bool send_motor_goals(double pan_position, double tilt_position, double pan_speed = 1.5, double tilt_speed = 1.5, double current_pan_position = 0.0, double current_tilt_position = 0.0, bool clip = true, bool resolve_collision = true) //TODO: make 2 methods
   {
     RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position <<"/" << tilt_position);
     if (clip)
@@ -118,8 +118,6 @@ public:
       tilt_position = std::min(std::max(tilt_position, -0.5), 0.5);
     }
 
-    if (current_pan_position != NULL and current_tilt_position != NULL)
-      {
         if (resolve_collision)
         {
           bool success = avoid_collision_on_path(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed);
@@ -134,16 +132,27 @@ public:
           move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position, current_tilt_position, pan_speed, tilt_speed);
           return true;
         }
-      }
-    else
+
+  };
+
+    bool send_motor_goals(double pan_position, double tilt_position, double pan_speed = 1.5, double tilt_speed = 1.5, bool clip = true)
+  {
+    RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position <<"/" << tilt_position);
+    if (clip)
     {
+      pan_position = std::min(std::max(pan_position, -1.5), 1.5); // TODO: use config instead of -1.5 and 1.5, that is what pre_clip does
+      tilt_position = std::min(std::max(tilt_position, -0.5), 0.5);
+    }
+
+
       pos_msg_.positions = {pan_position, tilt_position};
       pos_msg_.velocities = {pan_speed, tilt_speed};
       pos_msg_.header.stamp = this->get_clock()->now();
       position_publisher_->publish(pos_msg_);
       return true;
-    }
+    
   };
+
 
   bool avoid_collision_on_path(double goal_pan, double goal_tilt, double current_pan, double current_tilt, double pan_speed, double tilt_speed, int max_depth = 4, int depth = 0)
   {
@@ -157,16 +166,16 @@ public:
     int step_count = distance / 3 * DEG_TO_RAD;
 
     // calculate path
-    double pan_and_tilt_steps[step_count][2];
+    std::vector<std::pair<double, double>> pan_and_tilt_steps;
     for (int i = 0; i < step_count; i++)
     {
-      pan_and_tilt_steps[i][0] = current_pan + (goal_pan - current_pan) / step_count * i;
-      pan_and_tilt_steps[i][1] = current_tilt + (goal_tilt - current_tilt) / step_count * i;
+      pan_and_tilt_steps[i].first = current_pan + (goal_pan - current_pan) / step_count * i;
+      pan_and_tilt_steps[i].second = current_tilt + (goal_tilt - current_tilt) / step_count * i;
     }
     // checks if we have collisions on our path
     for (int i = 0; i < step_count; i++)
     {
-      if (check_head_collision(pan_and_tilt_steps[i][0], pan_and_tilt_steps[i][1]))
+      if (check_head_collision(pan_and_tilt_steps[i].first, pan_and_tilt_steps[i].second))
       {
         return avoid_collision_on_path(goal_pan, goal_tilt + 10 * DEG_TO_RAD, current_pan, current_tilt, pan_speed, tilt_speed, max_depth, depth + 1);
       }
@@ -225,7 +234,7 @@ public:
     return value;
   }
 
-  double calculateHorizonAngle(auto is_right, auto angle_right, auto angle_left)
+  double calculateHorizonAngle(bool is_right, bool angle_right, bool angle_left)
   {
     if (is_right)
     {
@@ -238,24 +247,72 @@ public:
       return angle_left;
     }
   }
+  std::vector<std::pair<double, double>> interpolatedSteps(int steps, double tilt, double min_pan, double max_pan)
+  {
+    if(steps==0)
+    {
+      return {};
+    }
+    steps += 1;
+    std::vector<std::pair<double, double>> output_points;
+    double delta = std::abs(max_pan - min_pan);
+    double step_size = delta / (steps);
+    for (int i = 0; i < steps; i++)
+    {
+      double pan = min_pan + step_size * i;
+      output_points.push_back({pan, tilt});
+    }
+    return output_points;
+  }
+  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up, double max_vertical_angle_down, int reduce_last_scanline=1, int interpolation_steps=0)
+  {
+    std::vector<std::pair<double, double>> keyframes;
+    bool down_direction = false;
+    bool right_side = false;
+    bool right_direction = true;
+    int line = line_count -1;
+    for (int i = 0; i < line_count*2 -2; i++)
+    {
+      std::pair<double, double> current_point = {calculateHorizonAngle(right_side, max_horizontal_angle_right, max_horizontal_angle_left), lineAngle(line, line_count, max_vertical_angle_down, max_vertical_angle_up)};
+      keyframes.push_back(current_point);
 
-  // int* interpolatedSteps(int steps, double tilt, double min_pan, double max_pan)
-  // {
-  //   if (steps == 0)
-  //   {
-  //     return 0;
-  //   }
-  //   steps += 1.0;
-  //   double delta = std::abs(max_pan - min_pan);
-  //   double step_size = delta / steps;
-  //   static int output_points[steps][2]; // do we need to cast steps to int?
-  //   for (int i = 0; i < steps; i++)
-  //   {
-  //     output_points[i][0] = int(min_pan + step_size * i); // to int aswell
-  //     output_points[i][1] = int(tilt);
-  //   }
-  //   return output_points;
-  // }
+      if (right_side != right_direction)
+      {
+        std::vector<std::pair<double, double>> interpolated_points = interpolatedSteps(interpolation_steps, current_point.second, max_horizontal_angle_right, max_horizontal_angle_left);
+        if (right_direction)
+        {
+          std::reverse(interpolated_points.begin(), interpolated_points.end());
+        }
+        keyframes.insert(keyframes.end(), interpolated_points.begin(), interpolated_points.end());
+        right_side = right_direction;
+        
+      }
+      else
+      {
+        right_side = !right_direction;
+        if (0 <= line && line <= line_count - 1)
+        {
+          down_direction = !down_direction;
+        }
+        if (down_direction)
+        {
+          line -= 1;
+        }
+        else
+        {
+          line += 1;
+        }
+      }
+    }
+    for (int i = 0; i < keyframes.size(); i++)
+    {
+      if (keyframes[i].second == max_vertical_angle_down)
+      {
+        keyframes[i] = {keyframes[i].first*reduce_last_scanline, max_vertical_angle_down};
+      }
+    }
+    return keyframes;
+  }
 };
 
 int main(int argc, char *argv[])
