@@ -13,9 +13,21 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
 - Follow the instructions on https://packages.bit-bots.de/
-- Install some ROS tools: ``sudo apt install python3-pip python3-rosdep python3-colcon-common-extensions python3-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor ros-rolling-rmw-cyclonedds-cpp``
+- Install additional dependencies:
 
-**2. Install webots**
+.. code-block:: bash
+
+  sudo apt install \
+  python3-colcon-clean \
+  python3-colcon-common-extensions \
+  python3-pip \
+  python3-rosdep \
+  ros-rolling-plotjuggler-ros \
+  ros-rolling-rmw-cyclonedds-cpp \
+  ros-rolling-rqt-robot-monitor \
+  ros-rolling-rqt-runtime-monitor
+
+**2. Install Webots**
 
 - Navigate to https://github.com/cyberbotics/webots/releases and download the ``.deb`` file of **Webots2022b**.
 - Install it using the command ``sudo apt install ~/Downloads/webots_2022b_amd64.deb`` or similar, depending on your system setup.
@@ -46,6 +58,8 @@ with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init``
 We also need to install some python packages using ``pip``, the python package manager.
 
 - Upgrade python package manager: ``pip3 install pip -U``
+- Optionally if you want you can setup a local venv with: ``python -m venv venv-bitbots && source venv-bitbots/bin/activate``
+  **HINT**: the sourcing of the ``venv`` is required in every newly opened terminal!
 - Install required python packages: ``pip3 install --user -r requirements.txt``
 
 **5. Setup colcon workspace**
@@ -59,7 +73,7 @@ The colcon workspace is where your source code gets build and where we use colco
 
 **6. Final touches**
 
-To let your system know where it should find all the ROS 2 dependencies and packages and to add coloured output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
+To let your system know where it should find all the ROS 2 dependencies and packages and to add colored output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
 In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
 
 - Run the following command:
@@ -70,7 +84,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export PATH=\$PATH:\$HOME/.local/bin
   export COLCON_WS="\$HOME/colcon_ws"
   export COLCON_LOG_LEVEL=30
-  export RCUTILS_COLORIZED_OUTPUT=1 
+  export RCUTILS_COLORIZED_OUTPUT=1
   export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
   export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
   source /opt/ros/rolling/setup.bash
