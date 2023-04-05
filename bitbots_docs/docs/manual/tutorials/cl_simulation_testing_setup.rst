@@ -49,9 +49,7 @@ with ``sa``, which is an alias for:
 
 **3. Run Webots Simulation**
 
-If everything worked so far, we now have to set some required environment variables for the simulator by
-running the script: ``$COLCON_WS/src/bitbots_meta/wolfgang_robot/wolfgang_webots_sim/scripts/setenvs.sh``
-Afterwards we can start the Webots simulator with the following command:
+We can start the Webots simulator with the following command:
 ``rl bitbots_bringup simulator_teamplayer.launch game_controller:=false``
 This should start the simulation environment in the Webots simulator, while also starting all necessary
 nodes of the robot software (walking, vision, etc.).
@@ -68,7 +66,7 @@ Now everything is ready for some simulation testing.
 
 By changing the simulated gamestate and seeing how the robot reacts, we can test our behavior.
 If there are issues with the robots behavior, they most likely have to do with DSD configuration or different
-paralellism handling in ROS 2.
+parallelism handling in ROS 2.
 To be able to visualize the current DSD execution, we can start ``rqt`` and in the ``Plugins`` menu select
 ``RoboCup -> DSD-Visualization``. This will show us the current DSD execution and can help in finding deadlocks
 or behavior execution logic issues.
