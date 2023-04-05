@@ -44,7 +44,7 @@ def get_position_fk(request: GetPositionFK.Request):
     result_str = ik_fk_state.getPositionFK(serialize_message(request))
     return deserialize_message(result_str, GetPositionFK.Response)
 
-def get_bioik_ik(request: IKRequest):
+def get_bioik_ik(request: IKRequest) -> GetIK.Response:
     global ik_fk_state
     if ik_fk_state is None:
         ik_fk_state = BitbotsMoveitBindings("moveit_bindings_ik", [])
