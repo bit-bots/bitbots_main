@@ -12,69 +12,22 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **1. Setup and Install ROS 2**
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
-- Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
+- Follow the instructions on https://packages.bit-bots.de/
 - Install additional dependencies:
 
 .. code-block:: bash
 
   sudo apt install \
-    espeak \
-    ffmpeg \
-    libespeak-dev \
-    libfmt-dev \
-    librange-v3-dev \
-    librostest-dev \
-    libtf-conversions-dev \
-    liburdfdom-dev \
-    libyaml-cpp-dev \
-    llvm \
-    protobuf-compiler \
-    python3-colcon-common-extensions \
-    python3-colcon-ed \
-    python3-construct \
-    python3-pip \
-    python3-protobuf \
-    python3-pybind11 \
-    python3-rosdep \
-    radeontop \
-    ros-rolling-ament-cmake-nose \
-    ros-rolling-backward-ros \
-    ros-rolling-behaviortree-cpp-v3 \
-    ros-rolling-bondcpp \
-    ros-rolling-camera-calibration \
-    ros-rolling-camera-info-manager \
-    ros-rolling-controller-interface \
-    ros-rolling-controller-manager \
-    ros-rolling-desktop \
-    ros-rolling-diagnostic-aggregator \
-    ros-rolling-effort-controllers \
-    ros-rolling-gazebo-msgs \
-    ros-rolling-image-proc \
-    ros-rolling-joint-state-broadcaster \
-    ros-rolling-joint-state-publisher-gui \
-    ros-rolling-joint-trajectory-controller \
-    ros-rolling-joy-linux \
-    ros-rolling-moveit-planners-ompl \
-    ros-rolling-moveit-ros \
-    ros-rolling-moveit-simple-controller-manager \
-    ros-rolling-nav2-bringup \
-    ros-rolling-plotjuggler-ros \
-    ros-rolling-position-controllers \
-    ros-rolling-rmw-cyclonedds-cpp \
-    ros-rolling-robot-localization \
-    ros-rolling-rot-conv \
-    ros-rolling-rqt-robot-monitor \
-    ros-rolling-soccer-vision-2d-msgs \
-    ros-rolling-soccer-vision-3d-msgs \
-    ros-rolling-soccer-vision-3d-rviz-markers \
-    ros-rolling-test-msgs \
-    ros-rolling-tf-transformations \
-    ros-rolling-transmission-interface \
-    ros-rolling-velocity-controllers \
-    ros-rolling-vision-msgs \
-    ros-rolling-xacro
+  python3-colcon-clean \
+  python3-colcon-common-extensions \
+  python3-pip \
+  python3-rosdep \
+  ros-rolling-plotjuggler-ros \
+  ros-rolling-rmw-cyclonedds-cpp \
+  ros-rolling-rqt-robot-monitor \
+  ros-rolling-rqt-runtime-monitor
 
-**2. Install webots**
+**2. Install Webots**
 
 - Navigate to https://github.com/cyberbotics/webots/releases and download the ``.deb`` file of **Webots2022b**.
 - Install it using the command ``sudo apt install ~/Downloads/webots_2022b_amd64.deb`` or similar, depending on your system setup.
@@ -100,13 +53,13 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **4. Install additional dependencies**
 
 We need to install the requirements of our software. Most of these can be automatically installed
-with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``rosdep install --from-paths . --ignore-src -y``.
+with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init`` followed by ``rosdep update`` and ``rosdep install --rosdistro=rolling --from-paths . --ignore-src -y``.
 
 We also need to install some python packages using ``pip``, the python package manager.
 
 - Upgrade python package manager: ``pip3 install pip -U``
 - Optionally if you want you can setup a local venv with: ``python -m venv venv-bitbots && source venv-bitbots/bin/activate``
-  **HINT**: the sourcing of the ``venv`` is requrired in every newly opened terminal!
+  **HINT**: the sourcing of the ``venv`` is required in every newly opened terminal!
 - Install required python packages: ``pip3 install --user -r requirements.txt``
 
 **5. Setup colcon workspace**
@@ -120,7 +73,7 @@ The colcon workspace is where your source code gets build and where we use colco
 
 **6. Final touches**
 
-To let your system know where it should find all the ROS 2 dependencies and packages and to add coloured output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
+To let your system know where it should find all the ROS 2 dependencies and packages and to add colored output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
 In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
 
 - Run the following command:
@@ -133,6 +86,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export COLCON_LOG_LEVEL=30
   export RCUTILS_COLORIZED_OUTPUT=1
   export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
+  export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
   source /opt/ros/rolling/setup.bash
   eval "\$(register-python-argcomplete3 ros2)"
   eval "\$(register-python-argcomplete3 colcon)"
