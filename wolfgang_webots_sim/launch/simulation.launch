@@ -15,6 +15,12 @@
     <let name="gui_flag" value="$(eval '\'\' if \'$(var gui)\'==\'true\' else \'--nogui\'')"/>
     <let name="headless_flag" value="$(eval '\'--headless\' if \'$(var headless)\'==\'true\' else \'\'')"/>
 
+    <!-- source nessessary files for webots -->
+    <set_env name="WEBOTS_HOME" value="$(env WEBOTS_HOME /usr/local/webots)"/>
+    <set_env name="LD_LIBRARY_PATH" value="$(env LD_LIBRARY_PATH):$(env WEBOTS_HOME)/lib/controller"/>
+    <!-- Change the python version here if you want to use a different version of python -->
+    <set_env name="PYTHONPATH" value="$(env PYTHONPATH):$(env WEBOTS_HOME)/lib/controller/python310"/>
+
     <!-- start simulation and supervisor either with or without gui -->
     <node pkg="wolfgang_webots_sim" exec="start_simulator.py" name="webots_sim"
           output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag) --sim-port $(var sim_port) --robot-type $(var robot_type)"/>
