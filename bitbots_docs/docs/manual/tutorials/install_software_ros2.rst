@@ -12,8 +12,8 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **1. Setup and Install ROS 2**
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
-- Follow the instructions (only the first two blocks) on https://packages.bit-bots.de/
-- Install some ROS tools: ``sudo apt install python3-rosdep python3-colcon-common-extensions python3-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor``
+- Follow the instructions on https://packages.bit-bots.de/
+- Install some ROS tools: ``sudo apt install python3-pip python3-rosdep python3-colcon-common-extensions python3-colcon-clean ros-rolling-plotjuggler-ros ros-rolling-rqt-runtime-monitor ros-rolling-rqt-robot-monitor ros-rolling-rmw-cyclonedds-cpp``
 
 **2. Install webots**
 
@@ -41,7 +41,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **4. Install additional dependencies**
 
 We need to install the requirements of our software. Most of these can be automatically installed
-with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init`` followed by ``rosdep update`` and ``rosdep install --from-paths . --ignore-src -y``.
+with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init`` followed by ``rosdep update`` and ``rosdep install --rosdistro=rolling --from-paths . --ignore-src -y``.
 
 We also need to install some python packages using ``pip``, the python package manager.
 
@@ -72,6 +72,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export COLCON_LOG_LEVEL=30
   export RCUTILS_COLORIZED_OUTPUT=1 
   export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
+  export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
   source /opt/ros/rolling/setup.bash
   eval "\$(register-python-argcomplete3 ros2)"
   eval "\$(register-python-argcomplete3 colcon)"
