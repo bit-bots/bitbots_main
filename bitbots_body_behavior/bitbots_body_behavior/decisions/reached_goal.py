@@ -40,10 +40,10 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         return True
 
 
-class AlignedToPathPlanningGoal(AbstractDecisionElement):
+class AlignedToGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AlignedToPathPlanningGoal, self).__init__(blackboard, dsd, parameters)
+        super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
         self.orientation_threshold = self.blackboard.config['goal_alignment_orientation_threshold']  # [deg]
 
     def perform(self, reevaluate=False):
