@@ -10,7 +10,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple, Optional
 
 from . import utils
-from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate
+from bitbots_vision.vision_modules.candidate import Candidate
 
 
 logger = rclpy.logging.get_logger('vision_yoeo')

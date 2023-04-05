@@ -9,11 +9,12 @@ from bitbots_vision.vision_modules.field_boundary import IFieldDetector
 from . import yoeo_handlers
 
 
-class YOEODetectorTemplate(CandidateFinder):
+class DetectorTemplate(CandidateFinder):
     """
     Abstract base class for YOEO detectors. Actual detectors only need to implement the abstract method get_candidates()
     if they inherit from this template.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__()
 
@@ -44,10 +45,11 @@ class YOEODetectorTemplate(CandidateFinder):
         ...
 
 
-class YOEOBallDetector(YOEODetectorTemplate):
+class BallDetector(DetectorTemplate):
     """
     YOEO Ball Detection class.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
@@ -55,10 +57,11 @@ class YOEOBallDetector(YOEODetectorTemplate):
         return self._yoeo_handler.get_detection_candidates_for("ball")
 
 
-class YOEOGoalpostDetector(YOEODetectorTemplate):
+class GoalpostDetector(DetectorTemplate):
     """
     YOEO Goalpost Detection class.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
@@ -66,10 +69,11 @@ class YOEOGoalpostDetector(YOEODetectorTemplate):
         return self._yoeo_handler.get_detection_candidates_for("goalpost")
 
 
-class YOEORobotDetector(YOEODetectorTemplate):
+class RobotDetector(DetectorTemplate):
     """
     YOEO Robot Detection class.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
@@ -77,10 +81,47 @@ class YOEORobotDetector(YOEODetectorTemplate):
         return self._yoeo_handler.get_detection_candidates_for("robot")
 
 
-class IYOEOSegmentation(ABC):
+class BlueRobotDetector(DetectorTemplate):
+    """
+    YOEO Robot Detection class for blue robots.
+    """
+
+    def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
+        super().__init__(yoeo_handler)
+
+    def get_candidates(self) -> List[Candidate]:
+        return self._yoeo_handler.get_detection_candidates_for("robot_blue")
+
+
+class RedRobotDetector(DetectorTemplate):
+    """
+    YOEO Robot Detection class for red robots.
+    """
+
+    def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
+        super().__init__(yoeo_handler)
+
+    def get_candidates(self) -> List[Candidate]:
+        return self._yoeo_handler.get_detection_candidates_for("robot_red")
+
+
+class UnknownRobotDetector(DetectorTemplate):
+    """
+    YOEO Robot Detection class for unknown robots.
+    """
+
+    def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
+        super().__init__(yoeo_handler)
+
+    def get_candidates(self) -> List[Candidate]:
+        return self._yoeo_handler.get_detection_candidates_for("robot_unknown")
+
+
+class ISegmentation(ABC):
     """
     Interface of YOEO segmentation classes.
     """
+
     @abstractmethod
     def compute(self) -> None:
         """
@@ -119,11 +160,12 @@ class IYOEOSegmentation(ABC):
         ...
 
 
-class YOEOSegmentationTemplate(IYOEOSegmentation):
+class SegmentationTemplate(ISegmentation):
     """
     Abstract base implementation of the IYOEOSegmentation interface. Actual classes need only implement the abstract
     method get_mask() if they inherit from this template.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         self._yoeo_handler = yoeo_handler
 
@@ -141,10 +183,11 @@ class YOEOSegmentationTemplate(IYOEOSegmentation):
         ...
 
 
-class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
+class BackgroundSegmentation(SegmentationTemplate):
     """
     YOEO Background Segmentation class.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
@@ -152,10 +195,11 @@ class YOEOBackgroundSegmentation(YOEOSegmentationTemplate):
         return self._yoeo_handler.get_segmentation_mask_for("background")
 
 
-class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
+class FieldSegmentation(SegmentationTemplate, IFieldDetector):
     """
     YOEO Field Segmentation class.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
@@ -163,10 +207,11 @@ class YOEOFieldSegmentation(YOEOSegmentationTemplate, IFieldDetector):
         return self._yoeo_handler.get_segmentation_mask_for("field")
 
 
-class YOEOLineSegmentation(YOEOSegmentationTemplate):
+class LineSegmentation(SegmentationTemplate):
     """
     YOEO Line Segmentation class.
     """
+
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 

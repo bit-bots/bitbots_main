@@ -30,6 +30,7 @@ class YOEOVision(Node):
     This class defines the whole YOEO image processing pipeline, which uses the modules from the `vision_modules`.
     It also handles the dynamic reconfiguration of the bitbots_vision.
     """
+
     def __init__(self) -> None:
         super().__init__('bitbots_vision')
 
@@ -69,7 +70,6 @@ class YOEOVision(Node):
         new_config = self._get_updated_config_with(params)
         self._configure_vision(new_config)
         self._config = new_config
-        self._first_dynamic_reconfigure_callback = True
 
         return SetParametersResult(successful=True)
 
@@ -92,17 +92,20 @@ class YOEOVision(Node):
         if new_config["component_camera_cap_check_active"]:
             self._vision_components.append(yoeo.CameraCapCheckComponent(self))
         if new_config["component_ball_detection_active"]:
-            self._vision_components.append(yoeo.YOEOBallDetectionComponent(self))
+            self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
-            self._vision_components.append(yoeo.YOEOObstacleDetectionComponent(self))
+            if new_config["obstacle_team_color_detection"] == "hsv":
+                self._vision_components.append(yoeo.HSVRobotDetectionComponent(self))
+            elif new_config["obstacle_team_color_detection"] == "yoeo":
+                self._vision_components.append(yoeo.RobotDetectionComponent(self))
         if new_config["component_goalpost_detection_active"]:
-            self._vision_components.append(yoeo.YOEOGoalpostDetectionComponent(self))
+            self._vision_components.append(yoeo.GoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:
-            self._vision_components.append(yoeo.YOEOLineDetectionComponent(self))
+            self._vision_components.append(yoeo.LineDetectionComponent(self))
         if new_config["component_field_boundary_detection_active"]:
-            self._vision_components.append(yoeo.YOEOFieldBoundaryDetectionComponent(self))
+            self._vision_components.append(yoeo.FieldBoundaryDetectionComponent(self))
         if new_config["component_field_detection_active"]:
-            self._vision_components.append(yoeo.YOEOFieldDetectionComponent(self))
+            self._vision_components.append(yoeo.FieldDetectionComponent(self))
         if new_config["component_debug_image_active"]:
             self._vision_components.append(yoeo.DebugImageComponent(self))
 
@@ -130,7 +133,7 @@ class YOEOVision(Node):
             self._run_vision_pipeline(image_msg)
 
     def _image_is_too_old(self, image_msg: Image) -> bool:
-        return False   # Fix for the wm 2022
+        return False  # Fix for the wm 2022
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(

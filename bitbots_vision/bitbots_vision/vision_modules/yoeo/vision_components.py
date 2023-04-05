@@ -13,7 +13,6 @@ from bitbots_vision.vision_modules import field_boundary, color, debug, \
 
 from . import detectors, object_manager, yoeo_handlers
 
-
 logger = rclpy.logging.get_logger('yoeo_vision_components')
 
 
@@ -36,7 +35,7 @@ class DebugImageFactory:
     @classmethod
     def _new_debug_image_has_to_be_created(cls, config: Dict) -> bool:
         return cls._debug_image is None \
-               or ros_utils.config_param_change(cls._config, config, 'component_debug_image_active')
+            or ros_utils.config_param_change(cls._config, config, 'component_debug_image_active')
 
     @classmethod
     def _create_new_debug_image(cls, config: Dict) -> None:
@@ -65,15 +64,15 @@ class YOEOFieldBoundaryDetectorFactory:
     @classmethod
     def _new_field_boundary_detector_has_to_be_created(cls, config: Dict) -> bool:
         return cls._field_boundary_detector is None \
-               or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
-               or cls._yoeo_id != object_manager.YOEOObjectManager.get_id()
+            or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
+            or cls._yoeo_id != object_manager.YOEOObjectManager.get_id()
 
     @classmethod
     def _create_new_field_boundary_detector(cls, config: Dict) -> None:
         field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
             config['field_boundary_detector_search_method']
         )
-        field_detector = detectors.YOEOFieldSegmentation(object_manager.YOEOObjectManager.get())
+        field_detector = detectors.FieldSegmentation(object_manager.YOEOObjectManager.get())
 
         cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
         cls._field_boundary_detector_search_method = config['field_boundary_detector_search_method']
@@ -123,7 +122,7 @@ class YOEOObstacleDetectorFactory:
 
     @classmethod
     def _create_new_robot_detector(cls) -> None:
-        cls._robot_detector = detectors.YOEORobotDetector(object_manager.YOEOObjectManager.get())
+        cls._robot_detector = detectors.RobotDetector(object_manager.YOEOObjectManager.get())
         cls._yoeo_id = object_manager.YOEOObjectManager.get_id()
 
     @classmethod
@@ -157,6 +156,7 @@ class IVisionComponent(ABC):
     """
     Interface for the YOEO vision components.
     """
+
     @abstractmethod
     def configure(self, config: Dict, debug_mode: bool) -> None:
         """
@@ -184,6 +184,7 @@ class YOEOComponent(IVisionComponent):
     """
     This component runs the YOEO network. It is MANDATORY and must be run BEFORE any of the other components.
     """
+
     def __init__(self):
         self._yoeo_instance: Optional[yoeo_handlers.IYOEOHandler] = None
 
@@ -261,14 +262,14 @@ class CameraCapCheckComponent(IVisionComponent):
             self._image = None  # to allow for garbage collection of first image
 
 
-class YOEOBallDetectionComponent(IVisionComponent):
+class BallDetectionComponent(IVisionComponent):
     """
     This component carries out the ball detection using YOEO.
     """
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._ball_detector: Optional[detectors.YOEOBallDetector] = None
+        self._ball_detector: Optional[detectors.BallDetector] = None
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
         self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
@@ -276,7 +277,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
-        self._ball_detector = detectors.YOEOBallDetector(object_manager.YOEOObjectManager.get())
+        self._ball_detector = detectors.BallDetector(object_manager.YOEOObjectManager.get())
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
         self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
@@ -337,7 +338,7 @@ class YOEOBallDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-class YOEOGoalpostDetectionComponent(IVisionComponent):
+class GoalpostDetectionComponent(IVisionComponent):
     """
     This component carries out the goalpost detection using YOEO.
     """
@@ -347,7 +348,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
         self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
-        self._goalpost_detector: Optional[detectors.YOEOGoalpostDetector] = None
+        self._goalpost_detector: Optional[detectors.GoalpostDetector] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
@@ -355,7 +356,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
         self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
-        self._goalpost_detector = detectors.YOEOGoalpostDetector(object_manager.YOEOObjectManager.get())
+        self._goalpost_detector = detectors.GoalpostDetector(object_manager.YOEOObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -404,7 +405,7 @@ class YOEOGoalpostDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
+class FieldBoundaryDetectionComponent(IVisionComponent):
     """
     This component carries out the field boundary detection using YOEO.
     """
@@ -464,7 +465,7 @@ class YOEOFieldBoundaryDetectionComponent(IVisionComponent):
         self._field_boundary_detector.set_image(image)
 
 
-class YOEOLineDetectionComponent(IVisionComponent):
+class LineDetectionComponent(IVisionComponent):
     """
     This component carries out the line detection using YOEO.
     """
@@ -473,14 +474,14 @@ class YOEOLineDetectionComponent(IVisionComponent):
         self._config: Dict = {}
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
-        self._line_detector: Optional[detectors.IYOEOSegmentation] = None
+        self._line_detector: Optional[detectors.ISegmentation] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
-        self._line_detector = detectors.YOEOLineSegmentation(object_manager.YOEOObjectManager.get())
+        self._line_detector = detectors.LineSegmentation(object_manager.YOEOObjectManager.get())
 
         self._register_publisher(config)
         self._config = config
@@ -513,19 +514,19 @@ class YOEOLineDetectionComponent(IVisionComponent):
         pass  # Nothing should happen here
 
 
-class YOEOFieldDetectionComponent(IVisionComponent):
+class FieldDetectionComponent(IVisionComponent):
     """
     This component carries out the field detection using YOEO.
     """
 
     def __init__(self, node: Node):
         self._config: Dict = {}
-        self._field_detector: Optional[detectors.IYOEOSegmentation] = None
+        self._field_detector: Optional[detectors.ISegmentation] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
-        self._field_detector = detectors.YOEOFieldSegmentation(object_manager.YOEOObjectManager.get())
+        self._field_detector = detectors.FieldSegmentation(object_manager.YOEOObjectManager.get())
         logger.info('Field mask WILL BE published')
 
         self._register_publisher(config)
@@ -556,44 +557,32 @@ class YOEOFieldDetectionComponent(IVisionComponent):
         pass  # Nothing should happen here
 
 
-class YOEOObstacleDetectionComponent(IVisionComponent):
+class RobotDetectionComponentTemplate(IVisionComponent):
     """
-    This component carries out the obstacle detection using YOEO.
-    """
+        This template carries out the robot detection using YOEO. Abstract method "_configure_detectors" needs to be
+        implemented.
+        """
 
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
 
-        self._misc_obstacles_detector: Optional[obstacle.ColorObstacleDetector] = None
-        self._opponents_detector: Optional[obstacle.ColorObstacleDetector] = None
-        self._team_mates_detector: Optional[obstacle.ColorObstacleDetector] = None
+        self._misc_obstacles_detector: Optional[obstacle.CandidateFinder] = None
+        self._opponents_detector: Optional[obstacle.CandidateFinder] = None
+        self._team_mates_detector: Optional[obstacle.CandidateFinder] = None
 
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
     def configure(self, config: Dict, debug_mode: bool) -> None:
         own_color, opponent_color = self._determine_team_colors()
-        self._team_mates_detector = YOEOObstacleDetectorFactory.get(
-            config=config,
-            color=own_color,
-            subtractors=None
-        )
-        self._opponents_detector = YOEOObstacleDetectorFactory.get(
-            config=config,
-            color=opponent_color,
-            subtractors=[self._team_mates_detector]
-        )
-        self._misc_obstacles_detector = YOEOObstacleDetectorFactory.get(
-            config=config,
-            color=None,
-            subtractors=[self._team_mates_detector,
-                         self._opponents_detector]
-        )
+
+        self._configure_detectors(config, own_color, opponent_color)
+
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
-        
+
         self._register_publisher(config)
         self._config = config
 
@@ -686,6 +675,64 @@ class YOEOObstacleDetectionComponent(IVisionComponent):
         self._team_mates_detector.set_image(image)
         self._opponents_detector.set_image(image)
         self._misc_obstacles_detector.set_image(image)
+
+    @abstractmethod
+    def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
+        """
+        Template method to be implemented. Instantiate and configure detectors.
+        """
+        ...
+
+
+class RobotDetectionComponent(RobotDetectionComponentTemplate):
+    """
+    This component carries out the robot detection using YOEO with team color detection done by YOEO.
+    """
+
+    def __int__(self, node: Node):
+        super().__init__(node)
+
+    def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
+        self._team_mates_detector = self._select_detector_based_on(own_color)
+        self._opponents_detector = self._select_detector_based_on(opponent_color)
+        self._misc_obstacles_detector = self._select_detector_based_on(None)
+
+    @classmethod
+    def _select_detector_based_on(cls, team_color: Optional[int]):
+        if team_color == GameState.BLUE:
+            color_detector = detectors.BlueRobotDetector(object_manager.YOEOObjectManager.get())
+        elif team_color == GameState.RED:
+            color_detector = detectors.RedRobotDetector(object_manager.YOEOObjectManager.get())
+        else:
+            color_detector = detectors.UnknownRobotDetector(object_manager.YOEOObjectManager.get())
+        return color_detector
+
+
+class HSVRobotDetectionComponent(RobotDetectionComponentTemplate):
+    """
+    This component carries out the robot detection using YOEO with team color detection based on HSV detectors.
+    """
+
+    def __init__(self, node: Node):
+        super().__init__(node)
+
+    def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
+        self._team_mates_detector = YOEOObstacleDetectorFactory.get(
+            config=config,
+            color=own_color,
+            subtractors=None
+        )
+        self._opponents_detector = YOEOObstacleDetectorFactory.get(
+            config=config,
+            color=opponent_color,
+            subtractors=[self._team_mates_detector]
+        )
+        self._misc_obstacles_detector = YOEOObstacleDetectorFactory.get(
+            config=config,
+            color=None,
+            subtractors=[self._team_mates_detector,
+                         self._opponents_detector]
+        )
 
 
 class DebugImageComponent(IVisionComponent):
