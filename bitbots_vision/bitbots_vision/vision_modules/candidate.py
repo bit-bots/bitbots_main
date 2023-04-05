@@ -1,9 +1,15 @@
+from __future__ import annotations
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy as np
+
 import abc
 import rclpy
 from rclpy import logging
 
-
 logger = logging.get_logger('vision_candidate')
+
 
 class Candidate:
     """
@@ -12,6 +18,7 @@ class Candidate:
 
     This class provides several getters for different properties of the candidate.
     """
+
     def __init__(self, x1=0, y1=0, width=0, height=0, rating=None):
         """
         Initialization of :class:`.Candidate`.
@@ -158,9 +165,9 @@ class Candidate:
                 <= point[0]
                 <= self.get_upper_left_x() + self.get_width()) \
             and (
-                self.get_upper_left_y()
-                <= point[1]
-                <= self.get_upper_left_y() + self.get_height())
+                    self.get_upper_left_y()
+                    <= point[1]
+                    <= self.get_upper_left_y() + self.get_height())
 
     def set_in_mask(self, mask, value=0, grow=1):
         """
@@ -174,8 +181,8 @@ class Candidate:
         width = int(self.get_width() * grow * 0.5)
         height = int(self.get_height() * grow * 0.5)
         mask[
-            max(self.get_center_y() - height, 0) : min(self.get_center_y() + height, mask.shape[0]),
-            max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = value
+        max(self.get_center_y() - height, 0): min(self.get_center_y() + height, mask.shape[0]),
+        max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = value
         return mask
 
     @staticmethod
@@ -187,7 +194,7 @@ class Candidate:
         :param [Candidate] candidatelist: List of candidates
         :return: List of candidates sorted by rating, in descending order
         """
-        return sorted(candidatelist, key = lambda candidate: candidate.get_rating(), reverse=True)
+        return sorted(candidatelist, key=lambda candidate: candidate.get_rating(), reverse=True)
 
     @staticmethod
     def select_top_candidate(candidatelist):
@@ -227,22 +234,24 @@ class Candidate:
         height = abs(y1 - y2)
         return cls(min(x1, x2), min(y1, y2), width, height, rating)
 
+
 class CandidateFinder(object):
     """
     The abstract class :class:`.CandidateFinder` requires its subclasses to implement the methods
-    :meth:`.get_candidates` and :meth:`.compute`.
+    :meth:`.get_candidates`,  :meth:`.compute` and :meth:`set_image`.
 
-    Examples of such subclasses are :class:`bitbots_vision.vision_modules.obstcle.ObstacleDetector` and
-    :class:`bibtots_vision.vision_modules.yolo_handler.YoloBallDetector`.
+    Examples of such subclasses are :class:`bitbots_vision.vision_modules.obstacle.ObstacleDetector` and
+    :class:`bitbots_vision.vision_modules.yolo_handler.YoloBallDetector`.
     They produce a set of so called *Candidates* which are instances of the class :class:`bitbots_vision.vision_modules.candidate.Candidate`.
     """
+
     def __init__(self):
         """
         Initialization of :class:`.CandidateFinder`.
         """
         super(CandidateFinder, self).__init__()
 
-    def get_top_candidates(self, count=1):
+    def get_top_candidates(self, count: int = 1) -> List[Candidate]:
         """
         Returns the count highest rated candidates.
 
@@ -253,7 +262,7 @@ class CandidateFinder(object):
         candidates = Candidate.sort_candidates(candidates)
         return candidates[:count]
 
-    def get_top_candidate(self):
+    def get_top_candidate(self) -> Candidate:
         """
         Returns the highest rated candidate.
 
@@ -262,7 +271,7 @@ class CandidateFinder(object):
         return Candidate.select_top_candidate(self.get_candidates())
 
     @abc.abstractmethod
-    def get_candidates(self):
+    def get_candidates(self) -> List[Candidate]:
         """
         Returns a list of all candidates.
 
@@ -271,10 +280,18 @@ class CandidateFinder(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def compute(self):
+    def compute(self) -> None:
         """
         Runs the most intense calculation without returning any output and caches the result.
         """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def set_image(self, image: np.ndarray) -> None:
+        """
+        Set the image which is going to be processed by calling :meth:`.compute.
+        """
+
         raise NotImplementedError
 
 
@@ -283,6 +300,7 @@ class DummyCandidateFinder(CandidateFinder):
     Dummy candidate detector that is used to run the vision pipeline without a neural network e.g. to save computation time for debugging.
     This implementation returns an empty set of candidates and thus replaces the ordinary detection.
     """
+
     def __init__(self):
         """
         Initialization of :class:`.DummyCandidateFinder`.
@@ -291,7 +309,7 @@ class DummyCandidateFinder(CandidateFinder):
         self._sorted_candidates = []
         self._top_candidate = None
 
-    def set_image(self, image):
+    def set_image(self, image: np.ndarray) -> None:
         """
         Method to satisfy the interface.
         Actually does nothing.
@@ -300,14 +318,14 @@ class DummyCandidateFinder(CandidateFinder):
         """
         pass
 
-    def compute(self):
+    def compute(self) -> None:
         """
         Method to satisfy the interface.
         Actually does nothing, except the extrem complicated command 'pass'.
         """
         pass
 
-    def get_candidates(self):
+    def get_candidates(self) -> List[Candidate]:
         """
         Method to satisfy the interface.
         Actually does something. It returns an empty list.
@@ -316,7 +334,7 @@ class DummyCandidateFinder(CandidateFinder):
         """
         return self._detected_candidates
 
-    def get_top_candidates(self, count=1):
+    def get_top_candidates(self, count: int = 1) -> List[Candidate]:
         """
         Method to satisfy the interface.
         It returns an empty list.

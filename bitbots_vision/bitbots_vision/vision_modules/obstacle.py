@@ -11,6 +11,7 @@ from .field_boundary import FieldBoundaryDetector
 
 logger = logging.get_logger('vision_obstacle')
 
+
 class ObstacleDetector(CandidateFinder):
     """
     The obstacle detection module is a :class:`bitbots_vision.vision_modules.candidate.CandidateFinder` that finds obstructions, e.g. robots.
@@ -53,7 +54,7 @@ class ObstacleDetector(CandidateFinder):
         self._distance_value_increase = config['obstacle_finder_value_increase']
         self.active = config['obstacle_active']
 
-    def set_image(self, image):
+    def set_image(self, image: np.ndarray) -> None:
         """
         Set a image for the obstacle detector. This also resets the caches.
 
@@ -287,6 +288,7 @@ class ObstacleDetector(CandidateFinder):
         """
         self.get_candidates()
 
+
 class ColorObstacleDetector(CandidateFinder):
     """
     Wraps an obstacle detector to return only obstacles of a certain color.
@@ -317,8 +319,7 @@ class ColorObstacleDetector(CandidateFinder):
 
         self._color_threshold = threshold
 
-    def set_image(self, image):
-        # type: (np.ndarray) -> None
+    def set_image(self, image: np.ndarray) -> None:
         """
         Set the current vision image.
 

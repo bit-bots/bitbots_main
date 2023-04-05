@@ -517,7 +517,7 @@ class YoloDetector(CandidateFinder):
         self._config = config
         self._yolo = yolo
 
-    def set_image(self, image):
+    def set_image(self, image: np.ndarray) -> None:
         """
         Set a image for yolo. This is cached.
 
