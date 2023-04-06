@@ -35,6 +35,7 @@ bitbots_vision:
     field_color_detector_path: "basler_f031.pickle" # Color lookup table for the field color detector
     field_color_detector_use_hsv: false
 
+    white_color_detector_h_zero_crossing: false # Whether the white color detector interval includes the hue zero-crossing
     white_color_detector_color_lookup_table_path: "basler_f031_lines.pickle" # Color lookup table for the line detector
     white_color_detector_use_color_lookup_table: true # Should the white color detector use a color lookup table or a HSV range
     white_color_detector_lower_values_h: 101 # Lower bound for the white color detector hue
@@ -44,7 +45,7 @@ bitbots_vision:
     white_color_detector_upper_values_s: 255 # Upper bound for the white color detector saturation
     white_color_detector_upper_values_v: 255 # Upper bound for the white color detector value/brightness
 
-    red_color_detector_h_zero_crossing: true # The red color interval contains the hue zero-crossing
+    red_color_detector_h_zero_crossing: true # Whether the red color detector interval includes the hue zero-crossing
     red_color_detector_lower_values_h: 10 # Lower bound for the red color detector hue
     red_color_detector_lower_values_s: 160 # Lower bound for the red color detector saturation
     red_color_detector_lower_values_v: 20 # Lower bound for the red color detector value/brightness
@@ -52,7 +53,7 @@ bitbots_vision:
     red_color_detector_upper_values_s: 215 # Upper bound for the red color detector saturation
     red_color_detector_upper_values_v: 220 # Upper bound for the red color detector value/brightness
 
-    blue_color_detector_h_zero_crossing: false # The blue color interval does not contain the hue zero-crossing
+    blue_color_detector_h_zero_crossing: false # Whether the blue color detector interval includes the hue zero-crossing
     blue_color_detector_lower_values_h: 90 # Lower bound for the blue color detector hue
     blue_color_detector_lower_values_s: 140 # Lower bound for the blue color detector saturation
     blue_color_detector_lower_values_v: 60 # Lower bound for the blue color detector value/brightness

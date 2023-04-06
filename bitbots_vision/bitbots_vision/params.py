@@ -111,6 +111,7 @@ gen.add("field_color_detector_upper_values_h", int, description="Upper bound for
 gen.add("field_color_detector_upper_values_s", int, description="Upper bound for the field color detector saturation", min=0, max=255)
 gen.add("field_color_detector_upper_values_v", int, description="Upper bound for the field color detector value/brightness", min=0, max=255)
 
+gen.add("white_color_detector_h_zero_crossing", bool, description="Whether the white color detector interval includes the hue zero-crossing")
 gen.add("white_color_detector_lower_values_h", int, description="Lower bound for the white color detector hue", min=0, max=255)
 gen.add("white_color_detector_lower_values_s", int, description="Lower bound for the white color detector saturation", min=0, max=255)
 gen.add("white_color_detector_lower_values_v", int, description="Lower bound for the white color detector value/brightness", min=0, max=255)
@@ -120,7 +121,7 @@ gen.add("white_color_detector_upper_values_v", int, description="Upper bound for
 gen.add("white_color_detector_use_color_lookup_table", bool, description="Should the white color detector use a color lookup table or a HSV range")
 gen.add("white_color_detector_color_lookup_table_path", str, description="Color lookup table for the line color detector")
 
-gen.add("red_color_detector_h_zero_crossing", bool, description="Whether or not the red color detector interval includes the hue zero-crossing")
+gen.add("red_color_detector_h_zero_crossing", bool, description="Whether the red color detector interval includes the hue zero-crossing")
 gen.add("red_color_detector_lower_values_h", int, description="Lower bound for the red color detector hue", min=0, max=255)
 gen.add("red_color_detector_lower_values_s", int, description="Lower bound for the red color detector saturation", min=0, max=255)
 gen.add("red_color_detector_lower_values_v", int, description="Lower bound for the red color detector value/brightness", min=0, max=255)
@@ -128,7 +129,7 @@ gen.add("red_color_detector_upper_values_h", int, description="Upper bound for t
 gen.add("red_color_detector_upper_values_s", int, description="Upper bound for the red color detector saturation", min=0, max=255)
 gen.add("red_color_detector_upper_values_v", int, description="Upper bound for the red color detector value/brightness", min=0, max=255)
 
-gen.add("blue_color_detector_h_zero_crossing", bool, description="Whether or not the blue color detector interval includes the hue zero-crossing")
+gen.add("blue_color_detector_h_zero_crossing", bool, description="Whether the blue color detector interval includes the hue zero-crossing")
 gen.add("blue_color_detector_lower_values_h", int, description="Lower bound for the blue color detector hue", min=0, max=255)
 gen.add("blue_color_detector_lower_values_s", int, description="Lower bound for the blue color detector saturation", min=0, max=255)
 gen.add("blue_color_detector_lower_values_v", int, description="Lower bound for the blue color detector value/brightness", min=0, max=255)
