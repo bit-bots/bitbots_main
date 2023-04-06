@@ -276,11 +276,18 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
                  image_preprocessor: IImagePreProcessor,
                  output_img_size: int,
                  conf_thresh: float,
-                 nms_thresh: float):
+                 nms_thresh: float,
+                 robot_class_id_low: int,
+                 robot_class_id_high: int):
         self._image_preprocessor: IImagePreProcessor = image_preprocessor
         self._output_img_size: int = output_img_size
         self._conf_thresh: float = conf_thresh
         self._nms_thresh: float = nms_thresh
+
+        # these values are needed in order to perform a proper nms if multiple robot classes exist, i. e. if nms shall
+        # be performed across all robot classes and not per robot class
+        self._robot_class_id_low = robot_class_id_low
+        self._robot_class_id_high = robot_class_id_high
 
         self._nms_max_number_of_boxes = 30000
         self._nms_max_number_of_detections_per_image = 30
@@ -360,11 +367,17 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         return x
 
     def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> Tuple:
-        class_offsets = detections[:, 5:6] * self._nms_max_width_height_in_pixels
+        class_offsets = np.where(self._detection_is_robot_class(detections),
+                                 self._robot_class_id_low,
+                                 detections[:, 5:6])
+        class_offsets *= self._nms_max_width_height_in_pixels
         box_coords = detections[:, :4].copy()
         box_coords[:, :2] += class_offsets
 
         return box_coords, detections[:, 4]
+
+    def _detection_is_robot_class(self, detections: np.ndarray) -> np.ndarray:
+        return (self._robot_class_id_low <= detections[:, 5:6]) & (detections[:, 5:6] <= self._robot_class_id_high)
 
     def _postprocess_nms_output(self, detections: np.ndarray, nms_indices) -> np.ndarray:
         detections = detections[nms_indices]

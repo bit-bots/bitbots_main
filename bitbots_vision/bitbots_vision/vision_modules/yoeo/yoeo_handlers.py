@@ -161,6 +161,16 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
         return self._det_candidates[class_name]
 
+    def get_robot_class_id_low(self) -> int:
+        for i, c in enumerate(self._det_class_names):
+            if c.startswith("robot"):
+                return i
+
+    def get_robot_class_id_high(self) -> int:
+        for i, c in enumerate(reversed(self._det_class_names)):
+            if c.startswith("robot"):
+                return i + len(self._det_class_names)
+
     def get_segmentation_mask_for(self, class_name: str):
         assert class_name in self._seg_class_names, \
             f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
@@ -247,7 +257,10 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"])
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_id_low=self.get_robot_class_id_low(),
+            robot_class_id_high=self.get_robot_class_id_high()
+        )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
         )
@@ -311,7 +324,10 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"])
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_id_low=self.get_robot_class_id_low(),
+            robot_class_id_high=self.get_robot_class_id_high()
+        )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
         )
@@ -427,7 +443,10 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
-            nms_thresh=config["yoeo_nms_threshold"])
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_id_low=self.get_robot_class_id_low(),
+            robot_class_id_high=self.get_robot_class_id_high()
+        )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
         )
