@@ -111,6 +111,7 @@ gen.add("field_color_detector_upper_values_h", int, description="Upper bound for
 gen.add("field_color_detector_upper_values_s", int, description="Upper bound for the field color detector saturation", min=0, max=255)
 gen.add("field_color_detector_upper_values_v", int, description="Upper bound for the field color detector value/brightness", min=0, max=255)
 
+gen.add("white_color_detector_h_zero_crossing", bool, description="Whether the white color detector interval includes the hue zero-crossing")
 gen.add("white_color_detector_lower_values_h", int, description="Lower bound for the white color detector hue", min=0, max=255)
 gen.add("white_color_detector_lower_values_s", int, description="Lower bound for the white color detector saturation", min=0, max=255)
 gen.add("white_color_detector_lower_values_v", int, description="Lower bound for the white color detector value/brightness", min=0, max=255)
@@ -120,7 +121,7 @@ gen.add("white_color_detector_upper_values_v", int, description="Upper bound for
 gen.add("white_color_detector_use_color_lookup_table", bool, description="Should the white color detector use a color lookup table or a HSV range")
 gen.add("white_color_detector_color_lookup_table_path", str, description="Color lookup table for the line color detector")
 
-
+gen.add("red_color_detector_h_zero_crossing", bool, description="Whether the red color detector interval includes the hue zero-crossing")
 gen.add("red_color_detector_lower_values_h", int, description="Lower bound for the red color detector hue", min=0, max=255)
 gen.add("red_color_detector_lower_values_s", int, description="Lower bound for the red color detector saturation", min=0, max=255)
 gen.add("red_color_detector_lower_values_v", int, description="Lower bound for the red color detector value/brightness", min=0, max=255)
@@ -128,6 +129,7 @@ gen.add("red_color_detector_upper_values_h", int, description="Upper bound for t
 gen.add("red_color_detector_upper_values_s", int, description="Upper bound for the red color detector saturation", min=0, max=255)
 gen.add("red_color_detector_upper_values_v", int, description="Upper bound for the red color detector value/brightness", min=0, max=255)
 
+gen.add("blue_color_detector_h_zero_crossing", bool, description="Whether the blue color detector interval includes the hue zero-crossing")
 gen.add("blue_color_detector_lower_values_h", int, description="Lower bound for the blue color detector hue", min=0, max=255)
 gen.add("blue_color_detector_lower_values_s", int, description="Lower bound for the blue color detector saturation", min=0, max=255)
 gen.add("blue_color_detector_lower_values_v", int, description="Lower bound for the blue color detector value/brightness", min=0, max=255)
@@ -151,8 +153,9 @@ gen.add("line_detector_object_remove_grow", float, description="Makes objects li
 
 gen.add("obstacle_active", bool, description="Enables the obstacle detection")
 gen.add("obstacle_finder_method", str, description="Method for the obstacle finder (distance, convex or step)")
-gen.add("obstacle_color_threshold", int, description="An obstacle is defined as blue/red if it contains more blue or red than this threshold", min=0, max=255)
-gen.add("obstacle_white_threshold", int, description="An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach", min=0, max=255)
+gen.add("obstacle_color_threshold", int, description="An obstacle is defined as blue/red if it contains more blue or red than this threshold (amount of pixels in per mille)", min=0, max=255)
+gen.add("obstacle_white_threshold", int, description="An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach (amount of pixels in per mille)", min=0, max=255)
+gen.add("obstacle_white_threshold", int, description="An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach (amount of pixels in per mille)", min=0, max=255)
 gen.add("obstacle_field_boundary_diff_threshold", int, description="Minimal distance between detected and convex field boundary to accept it as obstacle", min=0, max=200)
 gen.add("obstacle_candidate_field_boundary_offset", int, description="Fixed height of obstacles above the field boundary", min=0, max=500)
 gen.add("obstacle_candidate_min_width", int, description="Minimum width of an obstacle", min=1, max=640)

@@ -355,7 +355,11 @@ class ColorObstacleDetector(CandidateFinder):
                             obstacle.get_upper_left_x():obstacle.get_lower_right_x()
                         ]
                     )
-                    # Add obstacles over the threshold to the output list
+
+                    # Normalize colorness to per mille
+                    colorness = colorness * 1000 / 255
+
+                    # Add obstacles above the threshold to the output list
                     if colorness > self._color_threshold:
                         obstacles.append(obstacle)
 
