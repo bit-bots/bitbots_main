@@ -165,11 +165,13 @@ class YOEOHandlerTemplate(IYOEOHandler):
         for i, c in enumerate(self._det_class_names):
             if c.startswith("robot"):
                 return i
+        return -1
 
     def get_robot_class_id_high(self) -> int:
         for i, c in enumerate(reversed(self._det_class_names)):
             if c.startswith("robot"):
                 return i + len(self._det_class_names)
+        return -1
 
     def get_segmentation_mask_for(self, class_name: str):
         assert class_name in self._seg_class_names, \
