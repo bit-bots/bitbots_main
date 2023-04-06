@@ -27,8 +27,11 @@ class Controller:
         self.config_position_accuracy: float = self.node.declare_parameter('controller.position_accuracy', 0.05).value
         self.config_rotation_accuracy: float = self.node.declare_parameter('controller.rotation_accuracy', 0.1).value
         self.config_rotation_slow_down_factor: float = self.node.declare_parameter('controller.rotation_slow_down_factor', 0.3).value
-        self.config_smoothing_k: float = self.node.declare_parameter('controller.smoothing_k', 0.4).value
+        self.config_smoothing_k: float = self.node.declare_parameter('controller.smoothing_k', 0.2).value
         self.config_translation_slow_down_factor: float = self.node.declare_parameter('controller.translation_slow_down_factor', 0.5).value
+
+        # Last command velocity
+        self.last_cmd_vel = Twist()
 
     def step(self, path: Path) -> Twist:
         """
@@ -117,6 +120,14 @@ class Controller:
 
         # Apply the desired rotational velocity
         cmd_vel.angular.z = rot_goal_vel
+
+        # Filter the command velocity to avoid sudden changes
+        cmd_vel.linear.x = self.config_smoothing_k * cmd_vel.linear.x + (1 - self.config_smoothing_k) * self.last_cmd_vel.linear.x
+        cmd_vel.linear.y = self.config_smoothing_k * cmd_vel.linear.y + (1 - self.config_smoothing_k) * self.last_cmd_vel.linear.y
+        cmd_vel.angular.z = self.config_smoothing_k * cmd_vel.angular.z + (1 - self.config_smoothing_k) * self.last_cmd_vel.angular.z
+
+        # Store the last command velocity
+        self.last_cmd_vel = cmd_vel
 
         return cmd_vel
 
