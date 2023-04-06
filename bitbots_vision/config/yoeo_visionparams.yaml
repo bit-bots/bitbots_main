@@ -27,6 +27,7 @@ bitbots_vision:
     yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
     yoeo_framework: 'tvm'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
+    yoeo_team_colors_provided: false  # Must be true if YOEO provides team color predictions, otherwise false
 
     ball_candidate_field_boundary_y_offset: 0 # Threshold in which ball candidates over the field boundary are allowed.
     ball_candidate_rating_threshold: 0.5 # A threshold for the minimum candidate rating
@@ -67,6 +68,5 @@ bitbots_vision:
     obstacle_candidate_max_width: 150 # Maximum width of an obstacle
     obstacle_finder_step_length: 5 # Length of an object detection step along the field boundary
     obstacle_finder_value_increase: 2.0 # Factor of the impact of the height of the field boundary on the distance threshold
-    obstacle_team_color_detection: "hsv"  # Method used to classify robots as teammates, opponents, or unknown ['hsv', 'yoeo']
 
     caching: true # Used to deactivate caching for profiling reasons
