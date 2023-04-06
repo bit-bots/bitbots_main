@@ -243,13 +243,13 @@ class HsvSpaceColorDetector(ColorDetector):
                 ])
 
                 self._max_vals_A = np.array([
-                    config[self._detector_name + '_lower_values_h'],
+                    config[self._detector_name + '_upper_values_h'],
                     config[self._detector_name + '_upper_values_s'],
                     config[self._detector_name + '_upper_values_v']
                 ])
 
                 self._min_vals_B = np.array([
-                    config[self._detector_name + '_upper_values_h'],
+                    config[self._detector_name + '_lower_values_h'],
                     config[self._detector_name + '_lower_values_s'],
                     config[self._detector_name + '_lower_values_v']
                 ])

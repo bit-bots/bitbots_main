@@ -34,11 +34,11 @@ bitbots_vision:
 
     goal_post_field_boundary_y_offset: 10 # Maximum distance between field boundary and goal post
 
-    red_color_detector_h_zero_crossing: true # The red color interval contains the hue zero-crossing
-    red_color_detector_lower_values_h: 10 # Lower bound for the red color detector hue
+    red_color_detector_h_zero_crossing: true # Whether the red color detector interval includes the hue zero-crossing
+    red_color_detector_lower_values_h: 146 # Lower bound for the red color detector hue
     red_color_detector_lower_values_s: 160 # Lower bound for the red color detector saturation
     red_color_detector_lower_values_v: 20 # Lower bound for the red color detector value/brightness
-    red_color_detector_upper_values_h: 146 # Upper bound for the red color detector hue
+    red_color_detector_upper_values_h: 10 # Upper bound for the red color detector hue
     red_color_detector_upper_values_s: 215 # Upper bound for the red color detector saturation
     red_color_detector_upper_values_v: 220 # Upper bound for the red color detector value/brightness
 
