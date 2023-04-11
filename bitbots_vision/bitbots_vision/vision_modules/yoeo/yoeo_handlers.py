@@ -161,16 +161,10 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
         return self._det_candidates[class_name]
 
-    def get_robot_class_id_low(self) -> int:
+    def get_first_robot_class_id(self) -> int:
         for i, c in enumerate(self._det_class_names):
             if c.startswith("robot"):
                 return i
-        return -1
-
-    def get_robot_class_id_high(self) -> int:
-        for i, c in enumerate(reversed(self._det_class_names)):
-            if c.startswith("robot"):
-                return i + len(self._det_class_names)
         return -1
 
     def get_segmentation_mask_for(self, class_name: str):
@@ -260,8 +254,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            robot_class_id_low=self.get_robot_class_id_low(),
-            robot_class_id_high=self.get_robot_class_id_high()
+            first_robot_class_id=self.get_first_robot_class_id()
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -327,8 +320,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            robot_class_id_low=self.get_robot_class_id_low(),
-            robot_class_id_high=self.get_robot_class_id_high()
+            first_robot_class_id=self.get_first_robot_class_id()
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -446,8 +438,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            robot_class_id_low=self.get_robot_class_id_low(),
-            robot_class_id_high=self.get_robot_class_id_high()
+            first_robot_class_id=self.get_first_robot_class_id()
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
