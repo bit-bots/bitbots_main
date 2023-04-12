@@ -5,9 +5,9 @@
     <arg name="max_image_frequency" default="1.0" description="Max frequency [hz] for recording images" />
     <arg name="max_pointcloud_frequency" default="1.0" description="Max frequency [hz] for recording pointclouds" />
 
-    <node name="record_rosbag_drop_images" pkg="topic_tools" type="throttle"
+    <node name="record_rosbag_drop_images" pkg="topic_tools" exec="throttle"
         args="/camera/image_proc $(arg max_image_frequency) /camera/image_to_record" />
-    <node name="record_rosbag_drop_pointclouds" pkg="topic_tools" type="throttle"
+    <node name="record_rosbag_drop_pointclouds" pkg="topic_tools" exec="throttle"
         args="/line_mask_relative_pc $(arg max_pointcloud_frequency) /line_mask_relative_pc_to_record" />
 
     <executable cmd="ros2 bag record -o $(var out_dir)/ID_$(env ROBOCUP_ROBOT_ID)_$(env RANDOM) \
