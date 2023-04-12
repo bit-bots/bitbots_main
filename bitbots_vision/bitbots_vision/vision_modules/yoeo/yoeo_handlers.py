@@ -161,11 +161,12 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
         return self._det_candidates[class_name]
 
-    def get_first_robot_class_id(self) -> int:
+    def get_robot_class_ids(self) -> List[int]:
+        ids = []
         for i, c in enumerate(self._det_class_names):
-            if c.startswith("robot"):
-                return i
-        return -1
+            if "robot" in c:
+                ids.append(i)
+        return ids
 
     def get_segmentation_mask_for(self, class_name: str):
         assert class_name in self._seg_class_names, \
@@ -254,7 +255,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            first_robot_class_id=self.get_first_robot_class_id()
+            robot_class_ids=self.get_robot_class_ids()
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -267,7 +268,8 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
                                           output_img_size=self._input_layer.shape[2],
                                           conf_thresh=config["yoeo_conf_threshold"],
-                                          nms_thresh=config["yoeo_nms_threshold"])
+                                          nms_thresh=config["yoeo_nms_threshold"],
+                                          robot_class_ids=self.get_robot_class_ids())
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
@@ -320,7 +322,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            first_robot_class_id=self.get_first_robot_class_id()
+            robot_class_ids=self.get_robot_class_ids()
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -340,7 +342,8 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
                                           output_img_size=self._input_layer.shape[2],
                                           conf_thresh=config["yoeo_conf_threshold"],
-                                          nms_thresh=config["yoeo_nms_threshold"])
+                                          nms_thresh=config["yoeo_nms_threshold"],
+                                          robot_class_ids=self.get_robot_class_ids())
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
@@ -438,7 +441,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            first_robot_class_id=self.get_first_robot_class_id()
+            robot_class_ids=self.get_robot_class_ids()
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -458,7 +461,8 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
                                           output_img_size=self._input_layer_shape[2],
                                           conf_thresh=config["yoeo_conf_threshold"],
-                                          nms_thresh=config["yoeo_nms_threshold"])
+                                          nms_thresh=config["yoeo_nms_threshold"],
+                                          robot_class_ids=self.get_robot_class_ids())
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:

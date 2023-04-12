@@ -3,7 +3,7 @@ import numpy as np
 import rclpy
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 logger = rclpy.logging.get_logger('yoeo_handler_utils')
 
@@ -117,7 +117,8 @@ class IDetectionPostProcessor:
                   image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
-                  nms_thresh: float) -> None:
+                  nms_thresh: float,
+                  robot_class_ids: List[int]) -> None:
         """
         Allows to (re-) configure the current instance.
 
@@ -129,6 +130,8 @@ class IDetectionPostProcessor:
         :type conf_thresh: float
         :param nms_thresh: threshold used in non-maximum suppression
         :type nms_thresh: float
+        :param robot_class_ids: class ids of robot classes (required for nms across all robot classes)
+        :type robot_class_ids: List[int]
         """
         ...
 
@@ -277,15 +280,15 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
                  output_img_size: int,
                  conf_thresh: float,
                  nms_thresh: float,
-                 first_robot_class_id: int):
+                 robot_class_ids: List[int]):
         self._image_preprocessor: IImagePreProcessor = image_preprocessor
         self._output_img_size: int = output_img_size
         self._conf_thresh: float = conf_thresh
         self._nms_thresh: float = nms_thresh
 
-        # this value are needed in order to perform a proper nms if multiple robot classes exist, i. e. if nms shall
+        # These values are needed in order to perform a proper nms if multiple robot classes exist, i. e. if nms shall
         # be performed across all robot classes and not per robot class
-        self._first_robot_class_id = first_robot_class_id
+        self._robot_class_ids = robot_class_ids
 
         self._nms_max_number_of_boxes = 30000
         self._nms_max_number_of_detections_per_image = 30
@@ -302,11 +305,13 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
                   image_preprocessor: IImagePreProcessor,
                   output_img_size: int,
                   conf_thresh: float,
-                  nms_thresh: float) -> None:
+                  nms_thresh: float,
+                  robot_class_ids: List[int]) -> None:
         self._image_preprocessor = image_preprocessor
         self._output_img_size = output_img_size
         self._conf_thresh = conf_thresh
         self._nms_thresh = nms_thresh
+        self._robot_class_ids = robot_class_ids
 
     def process(self, detections: np.ndarray) -> np.ndarray:
         self._get_preprocessor_info()
@@ -365,10 +370,10 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         return x
 
     def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> Tuple:
-        class_offsets = detections[:, 5:6].copy()
-
-        # any class having a class ID greater than first_robot_class_id is treated as a robot class
-        class_offsets[self._detection_is_robot_class(detections)] = self._first_robot_class_id
+        if self._robot_class_ids:
+            class_offsets = np.where(self._is_robot_class(detections), self._robot_class_id(), detections[:, 5:6])
+        else:
+            class_offsets = detections[:, 5:6].copy()
 
         class_offsets *= self._nms_max_width_height_in_pixels
 
@@ -377,8 +382,11 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
 
         return box_coords, detections[:, 4]
 
-    def _detection_is_robot_class(self, detections: np.ndarray) -> np.ndarray:
-        return self._first_robot_class_id <= detections[:, 5:6]
+    def _is_robot_class(self, detections: np.ndarray) -> np.ndarray:
+        return np.isin(detections[:, 5:6], self._robot_class_ids)
+
+    def _robot_class_id(self) -> int:
+        return self._robot_class_ids[0]
 
     def _postprocess_nms_output(self, detections: np.ndarray, nms_indices) -> np.ndarray:
         detections = detections[nms_indices]
