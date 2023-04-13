@@ -371,7 +371,11 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
 
     def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> Tuple:
         if self._robot_class_ids:
-            class_offsets = np.where(self._is_robot_class(detections), self._robot_class_id(), detections[:, 5:6])
+            class_offsets = np.where(
+                self._is_robot_class(detections[:, 5:6]),
+                self._robot_class_ids[0],
+                detections[:, 5:6]
+            )
         else:
             class_offsets = detections[:, 5:6].copy()
 
@@ -383,10 +387,7 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         return box_coords, detections[:, 4]
 
     def _is_robot_class(self, detections: np.ndarray) -> np.ndarray:
-        return np.isin(detections[:, 5:6], self._robot_class_ids)
-
-    def _robot_class_id(self) -> int:
-        return self._robot_class_ids[0]
+        return np.isin(detections, self._robot_class_ids)
 
     def _postprocess_nms_output(self, detections: np.ndarray, nms_indices) -> np.ndarray:
         detections = detections[nms_indices]
