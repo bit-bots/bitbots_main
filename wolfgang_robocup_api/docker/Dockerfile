@@ -11,25 +11,13 @@ RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O /usr/
 RUN echo "deb [arch=amd64 signed-by=/usr/local/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu jammy main" | tee /etc/apt/sources.list.d/ros2.list
 RUN wget https://packages.bit-bots.de/key.asc -O /usr/local/share/keyrings/bitbots.key
 RUN echo "deb [signed-by=/usr/local/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main" | tee /etc/apt/sources.list.d/bitbots.list
+RUN echo 'Package: *\nPin: origin "packages.bit-bots.de"\nPin-Priority: 1000' | tee /etc/apt/preferences.d/package-bit-bots.pref
 RUN apt update
 
 # Install a lot of apt packages. They could also be installed with rosdep, but we want them to be cached
-RUN apt install -y libjsoncpp-dev build-essential git sudo python3-pip python3-rospkg \
-    ros-rolling-ros-base locales wget python3-colcon-core python3-colcon-common-extensions \
-    ros-rolling-urdf ros-rolling-tf2 ros-rolling-tf2-sensor-msgs ros-rolling-demo-nodes-cpp \
-    python3-opencv ros-rolling-gazebo-msgs ros-rolling-imu-complementary-filter xvfb ros-rolling-moveit-simple-controller-manager \
-    ros-rolling-map-msgs ros-rolling-navigation2 ros-rolling-moveit-core ros-rolling-soccer-vision-2d-msgs \
-    ros-rolling-moveit-ros-planning ros-rolling-moveit-ros-planning-interface ros-rolling-robot-state-publisher \
-    python3-sphinx-rtd-theme ros-rolling-image-transport ros-rolling-vision-msgs ros-rolling-test-msgs \
-    python3-protobuf espeak ros-rolling-xacro ros-rolling-cv-bridge ros-rolling-moveit-ros-robot-interaction \
-    ros-rolling-control-toolbox libprotobuf-dev protobuf-compiler libprotoc-dev ros-rolling-topic-tools \
-    python3-psutil python3-hypothesis ros-rolling-ament-cmake-nose ros-rolling-rot-conv ros-rolling-moveit-planners-ompl \
-    ros-rolling-camera-info-manager ros-rolling-image-geometry ros-rolling-soccer-vision-3d-msgs \
-    python3-transforms3d python3-sklearn python3-numpy ros-rolling-tf-transformations python3-construct \
-    ros-rolling-rmw-cyclonedds-cpp && \
+RUN apt install -y build-essential espeak git libjsoncpp-dev libprotobuf-dev libprotoc-dev locales protobuf-compiler python3-colcon-common-extensions python3-colcon-core python3-construct python3-hypothesis python3-numpy python3-opencv python3-pip python3-protobuf python3-psutil python3-rosdep python3-rospkg python3-sklearn python3-sphinx-rtd-theme python3-transforms3d ros-rolling-rmw-cyclonedds-cpp sudo wget xvfb && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
-
 
 # Set up locale
 RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8
@@ -64,7 +52,7 @@ RUN sed -i -e /mycroft-mimic3-tts/d -e /pydot/d -e /pyopencl/d -e /pyttsx3/d src
     pip3 uninstall -y numpy
 
 RUN cd src && \
-    git clone https://github.com/Bit-Bots/bitbots_meta.git && \
+    git clone https://github.com/bit-bots/bitbots_meta.git && \
     cd bitbots_meta && \
     make pull-init
 
@@ -78,12 +66,22 @@ RUN cd src/bitbots_meta && \
     wolfgang_robot/wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
     lib/events-executor/events_executor_examples lib/events-executor/irobot_lock_free_events_queue \
     bitbots_misc/bitbots_live_tool_rqt  bitbots_motion/bitbots_recordui_rqt bitbots_misc/bitbots_basler_camera \
-    lib/pylon-ros-camera && \
+    lib/pylon-ros-camera lib/imu_tools/rviz_imu_plugin && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
     sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml && \
-    git -C lib/ros2_numpy switch humble
+    git -C lib/ros2_numpy switch humble && \
+    git -C wolfgang_robot switch fix/add_missing_dependency && \
+    git -C bitbots_misc switch fix/add_missing_dependency
+# TODO remove branch switches when merged
 
-RUN . /opt/ros/rolling/setup.sh && colcon build
+# Install ros dependencies with rosdep
+RUN sudo apt update && sudo rosdep init && rosdep update
+RUN cd src/bitbots_meta && rosdep install --rosdistro=rolling --from-paths . --ignore-src -r -y
+
+# TODO remove this when availabe through rosdep
+RUN sudo apt update && sudo apt install -y ros-rolling-nav2-map-server ros-rolling-nav2-lifecycle-manager
+
+RUN . /opt/ros/rolling/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
 
 # TODO execute tests
 
