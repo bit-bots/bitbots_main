@@ -286,8 +286,8 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         self._conf_thresh: float = conf_thresh
         self._nms_thresh: float = nms_thresh
 
-        # These values are needed in order to perform a proper nms if multiple robot classes exist, i. e. if nms shall
-        # be performed across all robot classes and not per robot class
+        # These values are needed in order to perform a proper nms if multiple robot classes exist,
+        # i. e. if nms shall be performed across all robot classes and not per robot class
         self._robot_class_ids = robot_class_ids
 
         self._nms_max_number_of_boxes = 30000
