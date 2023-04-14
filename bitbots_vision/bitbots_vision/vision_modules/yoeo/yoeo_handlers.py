@@ -396,7 +396,8 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         detections, segmentation = torch_detect.detect_image(self._model,
                                                              image,
                                                              conf_thres=self._conf_thresh,
-                                                             nms_thres=self._nms_thresh)
+                                                             nms_thres=self._nms_thresh,
+                                                             robot_class_ids=self.get_robot_class_ids())
 
         segmentation = self._postprocess_segmentation(segmentation)
 
