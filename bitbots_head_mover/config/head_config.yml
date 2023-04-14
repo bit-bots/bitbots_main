@@ -1,4 +1,7 @@
-head_mover:
+move_head:
   look_at:
-      tilt_speed: 6.0
-      pan_speed: 6.0
+      pan_speed: {
+      type: double,
+      default_value: 6.0
+    }
+

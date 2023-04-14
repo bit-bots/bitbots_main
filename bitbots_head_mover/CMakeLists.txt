@@ -16,11 +16,23 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
+find_package(generate_parameter_library REQUIRED)
+
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+generate_parameter_library(
+  head_parameters # cmake target name for the parameter library
+  config/head_config.yml)
+
 add_executable(move_head src/move_head.cpp)
-#add_executable(head_capsule src/head_capsule.cpp)
+target_link_libraries(move_head 
+  rclcpp::rclcpp
+  head_parameters
+)
+
+
 ament_target_dependencies(
   move_head 
 #head_capsule
@@ -33,6 +45,7 @@ moveit_core
 moveit_msgs
 moveit_ros_planning_interface
 moveit_ros_planning
+generate_parameter_library
 )
 
 install(TARGETS
