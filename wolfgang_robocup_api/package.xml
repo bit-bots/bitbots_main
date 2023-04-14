@@ -25,6 +25,7 @@
   <depend>wolfgang_webots_sim</depend>
   <depend>protobuf-dev</depend>
   <depend>urdfdom_py</depend>
+  <depend>topic_tools</depend>
 
   <export>
     <build_type>ament_python</build_type>
