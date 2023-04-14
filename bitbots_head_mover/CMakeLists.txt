@@ -16,15 +16,14 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
-find_package(moveit_ros REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-#add_executable(move_head src/move_head.cpp)
-add_executable(head_capsule src/head_capsule.cpp)
+add_executable(move_head src/move_head.cpp)
+#add_executable(head_capsule src/head_capsule.cpp)
 ament_target_dependencies(
-  #move_head 
-head_capsule
+  move_head 
+#head_capsule
 rclcpp 
 bitbots_msgs 
 tf2_ros
@@ -34,12 +33,11 @@ moveit_core
 moveit_msgs
 moveit_ros_planning_interface
 moveit_ros_planning
-moveit_ros
 )
 
 install(TARGETS
-  #move_head
-  head_capsule
+  move_head
+  #head_capsule
   DESTINATION lib/${PROJECT_NAME}) 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
