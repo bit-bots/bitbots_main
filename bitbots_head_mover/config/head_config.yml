@@ -1,0 +1,4 @@
+head_mover:
+  look_at:
+      tilt_speed: 6.0
+      pan_speed: 6.0
