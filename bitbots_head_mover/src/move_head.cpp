@@ -18,16 +18,12 @@
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
+
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
- * member function as a callback from the timer. */
-
 class HeadMover : public rclcpp::Node
 {
-  //declare publisher and timer
-  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr publisher_;
 
  //declare subscriber
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
@@ -52,7 +48,7 @@ public:
   HeadMover()
   : Node("head_mover")
   {
-    publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10); 
+    position_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10); 
     subscription_ = this->create_subscription<std_msgs::msg::String>( // here we want to call world_model.ball_filtered_callback
       "head_mode", 10, std::bind(&HeadMover::head_mode_callback_test, this, _1)); // should be callback group 1
       std::cout << "Hello World" << std::endl;
@@ -348,13 +344,13 @@ public:
   }
 
 private:
-//write head_mode_callback
+
 void head_mode_callback_test(const std_msgs::msg::String::SharedPtr msg)
 {
   head_mode_decision_ = msg->data.c_str();
   std::cout << "I heard: [" << head_mode_decision_ << "]" << std::endl;
 }
-//write timer_callback
+
 
 void head_behavior()
 {
