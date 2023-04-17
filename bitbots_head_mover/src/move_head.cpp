@@ -45,8 +45,10 @@ class HeadMover : public rclcpp::Node
 
  //declare subscriber
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+  //rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ball_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
   std::string head_mode_decision_;
-
+  
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr position_publisher_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
@@ -69,6 +71,11 @@ public:
     position_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10); 
     subscription_ = this->create_subscription<std_msgs::msg::String>( // here we want to call world_model.ball_filtered_callback
       "head_mode", 10, std::bind(&HeadMover::head_mode_callback_test, this, _1)); // should be callback group 1
+    //ball_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    //  "ball_position_relative_filtered", 10, std::bind(&HeadMover::ball_filtered_callback, this, _1)); // should be callback group 1
+      joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
+      "joint_states", 10, std::bind(&HeadMover::joint_state_callback, this, _1)); // should be callback group 1
+
       // load parameters from config
        auto param_listener = std::make_shared<move_head::ParamListener>(rclcpp::Node::make_shared("head_mover")); //is this a problem?
        auto params = param_listener->get_params();
@@ -132,9 +139,11 @@ public:
      */
     head_mode_ = msg->head_mode; 
   }
-  void joint_state_callback(const sensor_msgs::msg::JointState msg)
+  void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
   {
-    current_joint_state_ = msg;
+    current_joint_state_ = *msg;
+    position_publisher_->publish(pos_msg_);
+    
   }
 
 
