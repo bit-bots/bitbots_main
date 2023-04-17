@@ -20,6 +20,9 @@
   <depend>moveit_ros_planning</depend>
   <depend>moveit_ros_planning_interface</depend>
 <depend>generate_parameter_library</depend>
+<depend>tf2_geometry_msgs</depend>
+<depend>backward_ros</depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -17,6 +17,11 @@ find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(generate_parameter_library REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(backward_ros REQUIRED)
+
+
 
 
 # uncomment the following section in order to fill in
@@ -46,6 +51,11 @@ moveit_msgs
 moveit_ros_planning_interface
 moveit_ros_planning
 generate_parameter_library
+std_msgs
+tf2_geometry_msgs
+backward_ros
+
+
 )
 
 install(TARGETS

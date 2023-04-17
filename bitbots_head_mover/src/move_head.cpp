@@ -19,6 +19,24 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+
+#include "rclcpp/clock.hpp"
+#include <rclcpp/duration.hpp>
+
+
+#include <std_msgs/msg/header.hpp>
+#include <std_srvs/srv/trigger.hpp>
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+//#include <tf_transformations/euler_from_quaternion.h>
+
+
+
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
@@ -30,8 +48,8 @@ class HeadMover : public rclcpp::Node
   std::string head_mode_decision_;
 
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr position_publisher_;
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   uint8_t head_mode_;
   sensor_msgs::msg::JointState current_joint_state_;
@@ -43,7 +61,7 @@ class HeadMover : public rclcpp::Node
     bitbots_msgs::msg::JointCommand pos_msg_;
   double DEG_TO_RAD = M_PI / 180;
 
-
+  geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
 public:
   HeadMover()
   : Node("head_mover")
@@ -51,7 +69,6 @@ public:
     position_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10); 
     subscription_ = this->create_subscription<std_msgs::msg::String>( // here we want to call world_model.ball_filtered_callback
       "head_mode", 10, std::bind(&HeadMover::head_mode_callback_test, this, _1)); // should be callback group 1
-      std::cout << "Hello World" << std::endl;
       // load parameters from config
        auto param_listener = std::make_shared<move_head::ParamListener>(rclcpp::Node::make_shared("head_mover")); //is this a problem?
        auto params = param_listener->get_params();
@@ -69,20 +86,19 @@ public:
     if (!robot_model_) {
       RCLCPP_ERROR(this->get_logger(),
                    "failed to load robot model %s. Did you start the "
-                   "blackboard (bitbots_bringup base.launch)?",
+                   "blackboard (bitbots_utils base.launch)?",
                    robot_description.c_str());
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
     robot_state_->setToDefaultValues();
-
+  RCLCPP_INFO(this->get_logger(), "robot model loaded");
     // get planning scene for collision checking
     planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description);
     planning_scene_ = planning_scene_monitor_->getPlanningScene();
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(this->get_logger(), "failed to connect to planning scene");
     }
-  planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description); 
-  planning_scene_ = planning_scene_monitor_->getPlanningScene();
+
 
   // prepare the pos_msg
   pos_msg_.joint_names = {"HeadPan", "HeadTilt"};
@@ -91,9 +107,11 @@ public:
   pos_msg_.accelerations = {0, 0};
   pos_msg_.max_currents = {0, 0};
 
+
   // apparently tf_listener is necessary but unused
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-  br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
+  br_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
   // prepare joint state msg
   current_joint_state_ = sensor_msgs::msg::JointState();
@@ -101,6 +119,7 @@ public:
   current_joint_state_.position = {0, 0};
   current_joint_state_.velocity = {0, 0};
   current_joint_state_.effort = {0, 0};
+
   
   }
 
