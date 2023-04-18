@@ -108,8 +108,8 @@
 	branch = ros2
 [submodule "lib/ros2_numpy"]
 	path = lib/ros2_numpy
-	url = ../../Box-Robotics/ros2_numpy.git
-	branch = humble
+	url = ../../Bit-Bots/ros2_numpy.git
+	branch = rolling
 [submodule "lib/soccer_ipm"]
 	path = lib/soccer_ipm
 	url = ../../ros-sports/soccer_ipm.git
