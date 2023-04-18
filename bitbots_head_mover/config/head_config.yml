@@ -4,4 +4,8 @@ move_head:
       type: double,
       default_value: 6.0
     }
+      tilt_speed: {
+      type: double,
+      default_value: 6.0
+    }
 

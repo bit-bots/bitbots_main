@@ -93,17 +93,27 @@ class HeadMover : public rclcpp::Node
  //declare some more params
   std::string odom_frame_ = "odom";
   std::string map_frame_ = "map";
+  std::string head_tf_frame_ = "base_link";
 
   //declare params
 move_head::Params params_;
+double pan_speed_;
+double tilt_speed_;
 
 std::shared_ptr<rclcpp::executors::EventsExecutor> exec_;
 std::thread t_;
 
+rclcpp::TimerBase::SharedPtr timer_;
+
 public:
   HeadMover()
   : Node("head_mover")
-  {
+  
+  {      
+    RCLCPP_INFO(this->get_logger(), "Hello World 1");
+    timer_ = this->create_wall_timer(
+      500ms, std::bind(&HeadMover::behave, this));
+RCLCPP_INFO(this->get_logger(), "Hello World 1");
     position_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10); 
     head_mode_subscriber_ = this->create_subscription<humanoid_league_msgs::msg::HeadMode>( // here we want to call world_model.ball_filtered_callback
       "head_mode", 10, std::bind(&HeadMover::head_mode_callback, this, _1)); // should be callback group 1
@@ -115,12 +125,9 @@ public:
       // load parameters from config
        auto param_listener = std::make_shared<move_head::ParamListener>(rclcpp::Node::make_shared("head_mover")); //is this a problem?
        params_ = param_listener->get_params();
-       auto pan_speed = params_.look_at.pan_speed;
+       pan_speed_ = params_.look_at.pan_speed;
+       tilt_speed_ = params_.look_at.tilt_speed;
 
-      //print the param value
-      std::cout << "Head pan max speed is: " << pan_speed << std::endl;
-
-      ///////////////////////////
        std::string robot_description = "robot_description";
     // get the robot description from the blackboard
     loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
@@ -174,9 +181,10 @@ public:
   ball_teammate_ = geometry_msgs::msg::PointStamped();
   ball_teammate_.header.frame_id = map_frame_;
   ball_teammate_.header.stamp = this->now();
+RCLCPP_INFO(this->get_logger(), "Hello World 1.5");
 
-  exec_ = std::make_shared<rclcpp::executors::EventsExecutor>();
-    exec_->add_node(SharedPtr(this));
+
+    RCLCPP_INFO(this->get_logger(), "Hello World 2");
   }
  static tf2::Vector3 p(const geometry_msgs::msg::Point& p) {
     return tf2::Vector3(p.x, p.y, p.z);
@@ -229,8 +237,8 @@ public:
       return 0;
     }
   };
-
-  bool send_motor_goals(double pan_position, double tilt_position, double pan_speed = 1.5, double tilt_speed = 1.5, double current_pan_position = 0.0, double current_tilt_position = 0.0, bool clip = true, bool resolve_collision = true) //TODO: make 2 methods
+ // if not given, resolve_collison is true
+  bool send_motor_goals(double pan_position, double tilt_position, bool resolve_collision, double pan_speed = 1.5, double tilt_speed = 1.5, double current_pan_position = 0.0, double current_tilt_position = 0.0, bool clip = true) //TODO: make 2 methods
   {
     RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position <<"/" << tilt_position);
     if (clip)
@@ -444,8 +452,32 @@ std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point p
   target.y = point.y;
   target.z = point.z;
   // use bio ik
-  std::pair<double, double> return_vl = {0.0, 0.0};
-  return return_vl;
+  bio_ik_msgs::msg::IKRequest::SharedPtr request = std::make_shared<bio_ik_msgs::msg::IKRequest>();
+  request->group_name = "Head";
+  request->timeout.sec = 1;
+  request->approximate = true;
+  // append look_at_goals
+  bio_ik_msgs::msg::LookAtGoal goal;
+  goal.target = target;
+  goal.weight = 1.0;
+  goal.axis.x = 1.0;
+  goal.link_name = "camera";
+
+  request->look_at_goals.push_back(goal);
+
+  bio_ik_msgs::msg::IKResponse response = getBioIKIK(request);
+  if (response.error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS)
+  {
+    std::pair<double, double> states = {response.solution.joint_state.position[0], response.solution.joint_state.position[1]};
+    return states;
+  }
+else
+{
+  std::cout << "BioIK failed with error code: " << response.error_code.val << std::endl;
+    std::pair<double, double> states = {0.0, 0.0};
+  return states;
+}
+
 }
 
 bio_ik_msgs::msg::IKResponse getBioIKIK(bio_ik_msgs::msg::IKRequest::SharedPtr msg) {
@@ -465,6 +497,8 @@ bio_ik_msgs::msg::IKResponse getBioIKIK(bio_ik_msgs::msg::IKRequest::SharedPtr m
       exit(1);
     }
     auto joint_model_group = robot_model_->getJointModelGroup(request.group_name);
+    //print joint model group
+    std::cout << "Joint model group: " << request.group_name << std::endl;
     if (!joint_model_group) {
       std::cout << "Group name in IK call not specified";
       exit(1);
@@ -556,6 +590,60 @@ bio_ik_msgs::msg::IKResponse getBioIKIK(bio_ik_msgs::msg::IKRequest::SharedPtr m
       ik_options.goals.emplace_back(new bio_ik::ConeGoal(m.link_name, p(m.position), w(m.position_weight), p(m.axis),
                                                          p(m.direction), m.angle, w(m.weight)));
     }
+  }
+
+  void look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta=0.0, double min_tilt_delta=0.0)
+  {
+    try
+    {
+      geometry_msgs::msg::Transform transform = tf_buffer_->lookupTransform(point.header.frame_id, head_tf_frame_,this->get_clock()->now(), tf2::durationFromSec(0.9)).transform;
+    
+    std::function transform2pose =  [](geometry_msgs::msg::Transform transform, geometry_msgs::msg::Point point) {
+      geometry_msgs::msg::Pose new_pose;
+      new_pose.position.x = point.x + transform.translation.x;
+      new_pose.position.y = point.y + transform.translation.y;
+      new_pose.position.z = point.z + transform.translation.z;
+      new_pose.orientation = transform.rotation; // this is probabyl wrong
+      return new_pose;
+    };
+    geometry_msgs::msg::PoseStamped new_point;
+    new_point.header = point.header;
+    new_point.pose = transform2pose(transform, point.point); // i dont know if the direction is correct
+
+    std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.pose.position);
+    std::pair<double, double> current_pan_tilt = get_head_position();
+    if(std::abs(pan_tilt.first - current_pan_tilt.first) > min_pan_delta || std::abs(pan_tilt.second - current_pan_tilt.second) > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
+    {
+      send_motor_goals(pan_tilt.first, pan_tilt.second, true); // watch that it takes the correct one
+                                                          // tilt_speed=self.tilt_speed,
+                                                          // current_pan_position=current_head_pan,
+                                                          // current_tilt_position=current_head_tilt,
+                                                          // resolve_collision=True);
+    }
+    }
+    catch(const std::exception& e)
+    {
+      std::cerr << e.what() << '\n';
+    }
+    
+    catch(const std::exception& e)
+    {
+      std::cerr << e.what() << '\n';
+    }
+    
+  }
+
+  void behave()
+  {
+    geometry_msgs::msg::PointStamped point;
+    // print hello world
+    RCLCPP_INFO(this->get_logger(), "Hello World");
+    point.header.frame_id = "base_link";
+    point.point.x = 1.0;
+    point.point.y = 0.0;
+    point.point.z = 0.0;
+
+    look_at(point);
   }
 ;
 };
