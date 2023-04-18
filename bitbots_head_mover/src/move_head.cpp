@@ -36,50 +36,86 @@
 //#include <tf_transformations/euler_from_quaternion.h>
 
 
+#include <bio_ik/bio_ik.h>
+#include <moveit/robot_state/conversions.h>
+#include <tf2/convert.h>
 
+#include <bio_ik_msgs/msg/ik_request.hpp>
+#include <bio_ik_msgs/msg/ik_response.hpp>
+#include <moveit_msgs/msg/move_it_error_codes.hpp>
+#include <moveit_msgs/msg/robot_state.hpp>
+#include <moveit_msgs/srv/get_position_fk.hpp>
+#include <moveit_msgs/srv/get_position_ik.hpp>
+#include <rclcpp/logger.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
+#include <rclcpp/executors/events_executor/events_executor.hpp>
+
+#include "rcl_interfaces/srv/get_parameters.hpp"
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 class HeadMover : public rclcpp::Node
 {
 
- //declare subscriber
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
-  //rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ball_subscriber_;
+ //declare subscriber and publisher
+  rclcpp::Subscription<humanoid_league_msgs::msg::HeadMode>::SharedPtr head_mode_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
-  std::string head_mode_decision_;
-  
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ball_subscriber_;
+
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr position_publisher_;
+
+
+  // declare tf
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-  uint8_t head_mode_;
+
+  //declare variables
+  humanoid_league_msgs::msg::HeadMode head_mode_;
   sensor_msgs::msg::JointState current_joint_state_;
+  bitbots_msgs::msg::JointCommand pos_msg_;
+  double DEG_TO_RAD = M_PI / 180;
+  geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
+
+  //declare robotmodel and planning scene
   robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
-    bitbots_msgs::msg::JointCommand pos_msg_;
-  double DEG_TO_RAD = M_PI / 180;
 
-  geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
+  //declare world model variables
+  geometry_msgs::msg::PointStamped ball_; //help: in python its from tf2_geometry msgs
+  geometry_msgs::msg::PointStamped ball_odom_; // same her
+  geometry_msgs::msg::PointStamped ball_map_;
+  geometry_msgs::msg::PointStamped ball_teammate_;
+
+ //declare some more params
+  std::string odom_frame_ = "odom";
+  std::string map_frame_ = "map";
+
+  //declare params
+move_head::Params params_;
+
+std::shared_ptr<rclcpp::executors::EventsExecutor> exec_;
+std::thread t_;
+
 public:
   HeadMover()
   : Node("head_mover")
   {
     position_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10); 
-    subscription_ = this->create_subscription<std_msgs::msg::String>( // here we want to call world_model.ball_filtered_callback
-      "head_mode", 10, std::bind(&HeadMover::head_mode_callback_test, this, _1)); // should be callback group 1
-    //ball_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    //  "ball_position_relative_filtered", 10, std::bind(&HeadMover::ball_filtered_callback, this, _1)); // should be callback group 1
+    head_mode_subscriber_ = this->create_subscription<humanoid_league_msgs::msg::HeadMode>( // here we want to call world_model.ball_filtered_callback
+      "head_mode", 10, std::bind(&HeadMover::head_mode_callback, this, _1)); // should be callback group 1
+    // ball_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    //  "ball_position_relative_filtered", 10, std::bind(&HeadMover::ball_filtered_callback, this, _1)); // Do I even need this? where do I use the ball?
       joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "joint_states", 10, std::bind(&HeadMover::joint_state_callback, this, _1)); // should be callback group 1
 
       // load parameters from config
        auto param_listener = std::make_shared<move_head::ParamListener>(rclcpp::Node::make_shared("head_mover")); //is this a problem?
-       auto params = param_listener->get_params();
-       auto pan_speed = params.look_at.pan_speed;
+       params_ = param_listener->get_params();
+       auto pan_speed = params_.look_at.pan_speed;
 
       //print the param value
       std::cout << "Head pan max speed is: " << pan_speed << std::endl;
@@ -98,7 +134,7 @@ public:
     }
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
     robot_state_->setToDefaultValues();
-  RCLCPP_INFO(this->get_logger(), "robot model loaded");
+
     // get planning scene for collision checking
     planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description);
     planning_scene_ = planning_scene_monitor_->getPlanningScene();
@@ -127,9 +163,38 @@ public:
   current_joint_state_.velocity = {0, 0};
   current_joint_state_.effort = {0, 0};
 
-  
+  // prepare world model msgs
+  ball_ = geometry_msgs::msg::PointStamped();
+  ball_odom_ = geometry_msgs::msg::PointStamped();
+  ball_odom_.header.frame_id = odom_frame_; // todo: make this param later
+  ball_odom_.header.stamp = this->now(); 
+  ball_map_ = geometry_msgs::msg::PointStamped();
+  ball_map_.header.frame_id = map_frame_; // todo: make this param later
+  ball_map_.header.stamp = this->now();
+  ball_teammate_ = geometry_msgs::msg::PointStamped();
+  ball_teammate_.header.frame_id = map_frame_;
+  ball_teammate_.header.stamp = this->now();
+
+  exec_ = std::make_shared<rclcpp::executors::EventsExecutor>();
+    exec_->add_node(SharedPtr(this));
+  }
+ static tf2::Vector3 p(const geometry_msgs::msg::Point& p) {
+    return tf2::Vector3(p.x, p.y, p.z);
   }
 
+  static tf2::Vector3 p(const geometry_msgs::msg::Vector3& p) {
+    return tf2::Vector3(p.x, p.y, p.z);
+  }
+
+  static tf2::Quaternion q(const geometry_msgs::msg::Quaternion& q) {
+    return tf2::Quaternion(q.x, q.y, q.z, q.w);
+  }
+
+  static double w(double w, double def = 1.0) {
+    if (w == 0 || !std::isfinite(w))
+      w = def;
+    return w;
+  }
  void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg)
   {
     /**
@@ -137,7 +202,7 @@ public:
         Saves the messages head mode on the blackboard
      * 
      */
-    head_mode_ = msg->head_mode; 
+    head_mode_ = *msg; 
   }
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
   {
@@ -371,23 +436,128 @@ public:
     return keyframes;
   }
 
-private:
-
-void head_mode_callback_test(const std_msgs::msg::String::SharedPtr msg)
+// LookAt
+std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point)
 {
-  head_mode_decision_ = msg->data.c_str();
-  std::cout << "I heard: [" << head_mode_decision_ << "]" << std::endl;
+  geometry_msgs::msg::Point target;
+  target.x = point.x;
+  target.y = point.y;
+  target.z = point.z;
+  // use bio ik
+  std::pair<double, double> return_vl = {0.0, 0.0};
+  return return_vl;
 }
 
+bio_ik_msgs::msg::IKResponse getBioIKIK(bio_ik_msgs::msg::IKRequest::SharedPtr msg) {
+    // extra method to use BioIK specific goals
+    bio_ik_msgs::msg::IKRequest request = *msg;
 
-void head_behavior()
-{
-//print head_mode_decision_
-std::cout << "Head mode is: " << head_mode_decision_ << std::endl;
-if (head_mode_decision_ == "LOOK_UP")
-{
+    bio_ik::BioIKKinematicsQueryOptions ik_options;
+    ik_options.return_approximate_solution = request.approximate;
+    ik_options.fixed_joints = request.fixed_joints;
+    ik_options.replace = true;
 
-}};
+    convertGoals(request, ik_options);
+
+    moveit::core::GroupStateValidityCallbackFn callback;
+    if (request.avoid_collisions) {
+      std::cout << "Avoid collisions not implemented in bitbots_moveit_bindings";
+      exit(1);
+    }
+    auto joint_model_group = robot_model_->getJointModelGroup(request.group_name);
+    if (!joint_model_group) {
+      std::cout << "Group name in IK call not specified";
+      exit(1);
+    }
+
+    float timeout_seconds = request.timeout.sec + request.timeout.nanosec * 1e9;
+    bool success = robot_state_->setFromIK(joint_model_group, EigenSTL::vector_Isometry3d(), std::vector<std::string>(),
+                                           timeout_seconds, callback, ik_options);
+
+    robot_state_->update();
+
+    bio_ik_msgs::msg::IKResponse response;
+    moveit::core::robotStateToRobotStateMsg(*robot_state_, response.solution);
+    response.solution_fitness = ik_options.solution_fitness;
+    if (success) {
+      response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+    } else {
+      response.error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
+    }
+    return response;
+  }
+
+    static void convertGoals(const bio_ik_msgs::msg::IKRequest& ik_request,
+                           bio_ik::BioIKKinematicsQueryOptions& ik_options) {
+    for (auto& m : ik_request.position_goals) {
+      ik_options.goals.emplace_back(new bio_ik::PositionGoal(m.link_name, p(m.position), w(m.weight)));
+    }
+
+    for (auto& m : ik_request.orientation_goals) {
+      ik_options.goals.emplace_back(new bio_ik::OrientationGoal(m.link_name, q(m.orientation), w(m.weight)));
+    }
+
+    for (auto& m : ik_request.pose_goals) {
+      auto* g = new bio_ik::PoseGoal(m.link_name, p(m.pose.position), q(m.pose.orientation), w(m.weight));
+      g->setRotationScale(w(m.rotation_scale, 0.5));
+      ik_options.goals.emplace_back(g);
+    }
+
+    for (auto& m : ik_request.look_at_goals) {
+      ik_options.goals.emplace_back(new bio_ik::LookAtGoal(m.link_name, p(m.axis), p(m.target), w(m.weight)));
+    }
+
+    for (auto& m : ik_request.min_distance_goals) {
+      ik_options.goals.emplace_back(new bio_ik::MinDistanceGoal(m.link_name, p(m.target), m.distance, w(m.weight)));
+    }
+
+    for (auto& m : ik_request.max_distance_goals) {
+      ik_options.goals.emplace_back(new bio_ik::MaxDistanceGoal(m.link_name, p(m.target), m.distance, w(m.weight)));
+    }
+
+    for (auto& m : ik_request.line_goals) {
+      ik_options.goals.emplace_back(new bio_ik::LineGoal(m.link_name, p(m.position), p(m.direction), w(m.weight)));
+    }
+
+    for (auto& m : ik_request.avoid_joint_limits_goals) {
+      ik_options.goals.emplace_back(new bio_ik::AvoidJointLimitsGoal(w(m.weight), !m.primary));
+    }
+
+    for (auto& m : ik_request.minimal_displacement_goals) {
+      ik_options.goals.emplace_back(new bio_ik::MinimalDisplacementGoal(w(m.weight), !m.primary));
+    }
+
+    for (auto& m : ik_request.center_joints_goals) {
+      ik_options.goals.emplace_back(new bio_ik::CenterJointsGoal(w(m.weight), !m.primary));
+    }
+
+    for (auto& m : ik_request.joint_variable_goals) {
+      ik_options.goals.emplace_back(
+          new bio_ik::JointVariableGoal(m.variable_name, m.variable_position, w(m.weight), m.secondary));
+    }
+
+    for (auto& m : ik_request.balance_goals) {
+      auto* g = new bio_ik::BalanceGoal(p(m.target), w(m.weight));
+      if (m.axis.x || m.axis.y || m.axis.z) {
+        g->setAxis(p(m.axis));
+      }
+      ik_options.goals.emplace_back(g);
+    }
+
+    for (auto& m : ik_request.side_goals) {
+      ik_options.goals.emplace_back(new bio_ik::SideGoal(m.link_name, p(m.axis), p(m.direction), w(m.weight)));
+    }
+
+    for (auto& m : ik_request.direction_goals) {
+      ik_options.goals.emplace_back(new bio_ik::DirectionGoal(m.link_name, p(m.axis), p(m.direction), w(m.weight)));
+    }
+
+    for (auto& m : ik_request.cone_goals) {
+      ik_options.goals.emplace_back(new bio_ik::ConeGoal(m.link_name, p(m.position), w(m.position_weight), p(m.axis),
+                                                         p(m.direction), m.angle, w(m.weight)));
+    }
+  }
+;
 };
 
 int main(int argc, char * argv[])
