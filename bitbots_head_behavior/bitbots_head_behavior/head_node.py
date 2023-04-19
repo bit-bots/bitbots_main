@@ -4,12 +4,11 @@ This is the ROS-Node which contains the head behavior, starts the appropriate DS
 and subscribes to head_behavior specific ROS-Topics.
 """
 import os
-import threading
 
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
-from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 from bitbots_blackboard.blackboard import HeadBlackboard
 from dynamic_stack_decider.dsd import DSD
@@ -30,26 +29,24 @@ def init(node: Node):
     # It is used to correctly initialize roscpp which is used in the collision checker module
     blackboard = HeadBlackboard(node)
 
-    callback_group = ReentrantCallbackGroup()
-
     node.create_subscription(
         HeadModeMsg,
         'head_mode',
         blackboard.head_capsule.head_mode_callback,
         1,
-        callback_group=callback_group)
+        callback_group=MutuallyExclusiveCallbackGroup())
     node.create_subscription(
         PoseWithCovarianceStamped,
         "ball_position_relative_filtered",
         blackboard.world_model.ball_filtered_callback,
         1,
-        callback_group=callback_group)
+        callback_group=MutuallyExclusiveCallbackGroup())
     node.create_subscription(
         JointState,
         "joint_states",
         blackboard.head_capsule.joint_state_callback,
         1,
-        callback_group=callback_group)
+        callback_group=MutuallyExclusiveCallbackGroup())
     blackboard.head_capsule.position_publisher = node.create_publisher(
         JointCommand,
         "head_motor_goals",
@@ -72,8 +69,10 @@ def main(args=None):
     rclpy.init(args=None)
     node = Node("head_node", automatically_declare_parameters_from_overrides=True)
     dsd = init(node)
-    node.create_timer(1 / 60.0, dsd.update)
-    multi_executor = MultiThreadedExecutor(num_threads=10)
+
+    node.create_timer(1 / 60.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup()) 
+    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    multi_executor = MultiThreadedExecutor(num_threads=7)
     multi_executor.add_node(node)
 
 
