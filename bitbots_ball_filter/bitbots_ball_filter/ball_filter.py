@@ -12,6 +12,7 @@ from geometry_msgs.msg import (Point, PoseWithCovarianceStamped,
                                TwistWithCovarianceStamped)
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
@@ -106,13 +107,15 @@ class BallFilter(Node):
             BallArray,
             config['ball_subscribe_topic'],
             self.ball_callback,
-            1
+            1,
+            callback_group=MutuallyExclusiveCallbackGroup()
         )
 
         self.reset_service = self.create_service(
             Trigger,
             config['ball_filter_reset_service_name'],
-            self.reset_filter_cb
+            self.reset_filter_cb,
+            callback_group=MutuallyExclusiveCallbackGroup()
         )
 
         self.config = config
@@ -296,6 +299,7 @@ class BallFilter(Node):
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = BallFilter()
+    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
     ex = MultiThreadedExecutor(num_threads=4)
     ex.add_node(node)
     ex.spin()
