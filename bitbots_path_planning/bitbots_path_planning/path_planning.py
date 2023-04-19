@@ -36,32 +36,27 @@ class PathPlanning(Node):
         self.planner = Planner(node=self, buffer=self.tf_buffer, map=self.map)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
-        # Subscribe
-        callback_group = ReentrantCallbackGroup()
+        # Subscriber
         self.create_subscription(
             PoseWithCertaintyStamped,
             self.declare_parameter('map.ball_update_topic', 'ball_relative_filtered').value,
             self.map.set_ball,
-            5,
-            callback_group=callback_group)
+            5)
         self.create_subscription(
             sv3dm.RobotArray,
             self.declare_parameter('map.robot_update_topic', 'robots_relative_filtered').value,
             self.map.set_robots,
-            5,
-            callback_group=callback_group)
+            5)
         self.create_subscription(
             PoseStamped,
             'goal_pose',
             self.planner.set_goal,
-            5,
-            callback_group=callback_group)
+            5)
         self.create_subscription(
             Empty,
             'move_base/cancel',
             lambda _: self.planner.cancel(),
-            5,
-            callback_group=callback_group)
+            5)
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, 'cmd_vel', 1)
@@ -75,15 +70,18 @@ class PathPlanning(Node):
         """
         Performs a single step of the path planning
         """
-        self.map.update()
-        self.costmap_pub.publish(self.map.to_msg())
+        try:
+            self.map.update()
+            self.costmap_pub.publish(self.map.to_msg())
 
-        if self.planner.active():
-            path = self.planner.step()
-            self.path_pub.publish(path)
+            if self.planner.active():
+                path = self.planner.step()
+                self.path_pub.publish(path)
 
-            cmd_vel = self.controller.step(path)
-            self.cmd_vel_pub.publish(cmd_vel)
+                cmd_vel = self.controller.step(path)
+                self.cmd_vel_pub.publish(cmd_vel)
+        except Exception as e:
+            self.get_logger().error(f'Cought exception during calculation of path planning step: {e}')
 
 
 def main(args=None):
