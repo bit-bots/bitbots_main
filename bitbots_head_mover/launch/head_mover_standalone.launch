@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="depends_only" default="false" />
+    
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
+        <arg name="depends_only" value="$(var depends_only)"/>
+    </include>
+
+</launch>

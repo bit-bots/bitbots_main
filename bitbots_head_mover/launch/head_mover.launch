@@ -1,0 +1,13 @@
+<launch>
+    <arg name="tf_prefix" default=""/>
+    <arg name="depends_only" default="false" />
+    <arg name="sim" default="false" />
+
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 10"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <node unless="$(var depends_only)" pkg="bitbots_head_mover" exec="head_mover"  output="screen" launch-prefix="$(var taskset)">
+        <param from="$(find-pkg-share bitbots_head_mover)/config/head_config.yaml"/>
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
+</launch>

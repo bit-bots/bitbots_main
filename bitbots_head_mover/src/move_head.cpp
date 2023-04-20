@@ -107,9 +107,9 @@ rclcpp::TimerBase::SharedPtr timer_;
 
 public:
   HeadMover()
-  : Node("head_mover")
-  
-  {      
+  : Node("head_mover", rclcpp::NodeOptions().allow_undeclared_parameters(true))
+  {
+
     RCLCPP_INFO(this->get_logger(), "Hello World 1");
     timer_ = this->create_wall_timer(
       500ms, std::bind(&HeadMover::behave, this));
@@ -128,7 +128,23 @@ RCLCPP_INFO(this->get_logger(), "Hello World 1");
        pan_speed_ = params_.look_at.pan_speed;
        tilt_speed_ = params_.look_at.tilt_speed;
 
-       std::string robot_description = "robot_description";
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+    while (!parameters_client->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        return;
+      }
+      RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+    }
+
+    rcl_interfaces::msg::ListParametersResult parameter_list =
+        parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+
+    // set the parameters to our node
+    set_parameters(copied_parameters);
+
+    std::string robot_description = "robot_description";
     // get the robot description from the blackboard
     loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
       robot_model_loader::RobotModelLoader(SharedPtr(this), robot_description, true));
@@ -596,21 +612,9 @@ bio_ik_msgs::msg::IKResponse getBioIKIK(bio_ik_msgs::msg::IKRequest::SharedPtr m
   {
     try
     {
-      geometry_msgs::msg::Transform transform = tf_buffer_->lookupTransform(point.header.frame_id, head_tf_frame_,this->get_clock()->now(), tf2::durationFromSec(0.9)).transform;
-    
-    std::function transform2pose =  [](geometry_msgs::msg::Transform transform, geometry_msgs::msg::Point point) {
-      geometry_msgs::msg::Pose new_pose;
-      new_pose.position.x = point.x + transform.translation.x;
-      new_pose.position.y = point.y + transform.translation.y;
-      new_pose.position.z = point.z + transform.translation.z;
-      new_pose.orientation = transform.rotation; // this is probabyl wrong
-      return new_pose;
-    };
-    geometry_msgs::msg::PoseStamped new_point;
-    new_point.header = point.header;
-    new_point.pose = transform2pose(transform, point.point); // i dont know if the direction is correct
+      geometry_msgs::msg::PointStamped new_point = tf_buffer_->transform(point, head_tf_frame_, tf2::durationFromSec(0.9));
 
-    std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.pose.position);
+    std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
     std::pair<double, double> current_pan_tilt = get_head_position();
     if(std::abs(pan_tilt.first - current_pan_tilt.first) > min_pan_delta || std::abs(pan_tilt.second - current_pan_tilt.second) > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
     {
@@ -625,12 +629,6 @@ bio_ik_msgs::msg::IKResponse getBioIKIK(bio_ik_msgs::msg::IKRequest::SharedPtr m
     {
       std::cerr << e.what() << '\n';
     }
-    
-    catch(const std::exception& e)
-    {
-      std::cerr << e.what() << '\n';
-    }
-    
   }
 
   void behave()

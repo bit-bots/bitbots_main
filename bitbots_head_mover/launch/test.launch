@@ -1,0 +1,38 @@
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="viz" default="false"/>
+    <arg name="depends_only" default="false" />
+    <arg name="tf_prefix" default=""/>
+
+    <group unless="$(var sim)">
+        <group unless="$(var viz)">
+            <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+        </group>
+    </group>
+  
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>  
+
+    <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch" />
+
+    <group if="$(var viz)">
+        <!-- translate joint goals to joint states -->
+        <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--head"/>
+        <!-- fake IMU needed for odometry-->
+        <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+        <!-- add some visualization tools -->
+        <include file="$(find-pkg-share humanoid_league_interactive_marker)/launch/interactive_marker.launch" />
+        <!-- create fake tf from map to robot -->
+        <node pkg="tf2_ros" exec="static_transform_publisher" name="static_map2odom_tf" args="--x -0.0 --y -0.0 --z 0.0 --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id map --child-frame-id odom" />
+    </group>
+
+    <group unless="$(var viz)">
+        <include file="$(find-pkg-share bitbots_vision)/launch/vision_startup.launch" />
+        <include file="$(find-pkg-share soccer_ipm)/launch/transformer.launch" />
+    </group>
+    
+    <group unless="$(var depends_only)">
+        <node pkg="bitbots_head_mover" exec="move_head" output="screen" />
+    </group>
+</launch>
