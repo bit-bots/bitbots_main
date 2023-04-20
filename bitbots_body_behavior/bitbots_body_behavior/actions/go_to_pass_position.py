@@ -1,4 +1,3 @@
-from actionlib_msgs.msg import GoalStatus
 from bitbots_blackboard.blackboard import BodyBlackboard
 from tf2_geometry_msgs import PoseStamped
 from tf_transformations import quaternion_from_euler
