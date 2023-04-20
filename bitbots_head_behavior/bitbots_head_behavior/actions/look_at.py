@@ -16,7 +16,6 @@ class AbstractLookAt(AbstractActionElement):
 
         self.head_tf_frame = self.blackboard.node.get_parameter('base_link_frame').value  # base_link is required by bio_ik
         self.camera_frame = self.blackboard.node.get_parameter('camera_frame').value
-        self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
         self.request = IKRequest()

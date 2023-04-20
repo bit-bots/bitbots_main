@@ -1,4 +1,3 @@
-from actionlib_msgs.msg import GoalStatus
 from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Vector3
 from rclpy.duration import Duration
