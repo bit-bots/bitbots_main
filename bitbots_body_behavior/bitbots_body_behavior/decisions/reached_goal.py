@@ -8,16 +8,16 @@ from dynamic_stack_decider.abstract_decision_element import \
     AbstractDecisionElement
 
 
-class ReachedMovebaseGoalPosition(AbstractDecisionElement):
+class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        super(ReachedMovebaseGoalPosition, self).__init__(blackboard, dsd, parameters)
+        super(ReachedPathPlanningGoalPosition, self).__init__(blackboard, dsd, parameters)
 
         self.threshould = parameters['thres']
 
     def perform(self, reevaluate=False):
         """
-        Determines whether we are near the movebase goal
+        Determines whether we are near the path planning goal
         :param reevaluate:
         :return:
         """
@@ -40,23 +40,23 @@ class ReachedMovebaseGoalPosition(AbstractDecisionElement):
         return True
 
 
-class AlignedToMoveBaseGoal(AbstractDecisionElement):
+class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AlignedToMoveBaseGoal, self).__init__(blackboard, dsd, parameters)
+        super(AlignedToPathPlanningGoal, self).__init__(blackboard, dsd, parameters)
         self.orientation_threshold = self.blackboard.config['goal_alignment_orientation_threshold']  # [deg]
 
     def perform(self, reevaluate=False):
         """
-        It is determined if the robot is correctly aligned to the orientation of the move_base goal within a
+        It is determined if the robot is correctly aligned to the orientation of the path planning goal within a
         determined threshold by comparing the current orientation angle of the robot in the map with the one from the
-        move_base goal.
+        path planning goal.
         """
         current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         current_goal = self.blackboard.pathfinding.get_goal()
         if current_pose is None or current_goal is None:
-            # When move_base did not received a goal yet, no current position on the map is known.
-            # In this case it is not know if the robot is aligned correctly to, e.g., the goal and therefore the robot
+            # When the path planning did not received a goal yet, no current position on the map is known.
+            # If it is not known if the robot is aligned correctly to, e.g., the goal the robot
             # should not be allowed to kick the ball.
             return 'NO'
         current_orientation = current_pose.pose.orientation

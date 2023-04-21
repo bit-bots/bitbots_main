@@ -135,7 +135,7 @@
       # Duration for which the robot pauses between reorientation runs.
       reorientation_pause_duration: 30.0
 
-      # minimal difference between the current and the last movebase goal to actually send a new goal.
+      # minimal difference between the current and the last path planning goal to actually send a new goal.
       pathfinding_position_threshold: 0.3
       pathfinding_orientation_threshold: 10.0
 
