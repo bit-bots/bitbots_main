@@ -23,6 +23,7 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include "rclcpp/clock.hpp"
+#include "rclcpp/time.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
@@ -34,6 +35,7 @@
 #include <bio_ik_msgs/msg/ik_response.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/executors/events_executor/events_executor.hpp>
+
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -168,17 +170,6 @@ class HeadMover : public rclcpp::Node {
     current_joint_state_.velocity = {0, 0};
     current_joint_state_.effort = {0, 0};
 
-    // prepare world model msgs
-    ball_ = geometry_msgs::msg::PointStamped();
-    ball_odom_ = geometry_msgs::msg::PointStamped();
-    ball_odom_.header.frame_id = odom_frame_; // todo: make this param later
-    ball_odom_.header.stamp = this->now();
-    ball_map_ = geometry_msgs::msg::PointStamped();
-    ball_map_.header.frame_id = map_frame_; // todo: make this param later
-    ball_map_.header.stamp = this->now();
-    ball_teammate_ = geometry_msgs::msg::PointStamped();
-    ball_teammate_.header.frame_id = map_frame_;
-    ball_teammate_.header.stamp = this->now();
   }
 
   void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
@@ -464,6 +455,7 @@ class HeadMover : public rclcpp::Node {
 
   }
 
+// covers look_<direction>, but a direction needs to be specified
   void look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.0, double min_tilt_delta = 0.0) {
     try {
       geometry_msgs::msg::PointStamped
@@ -487,6 +479,20 @@ class HeadMover : public rclcpp::Node {
     }
   }
 
+  // ball_seen decision
+  // bool ball_seen() {
+
+  //   bool ball_seen;
+
+
+  //   if (ball_last_seen != rclcpp::Time::Time(0,
+	// 	RCL_SYSTEM_TIME ) && this->get_clock()->now() - ball_last_seen < params_.ball_lost_time) { // clock needs to be Clocktype.ROS_TIME?
+  //     return true;
+  //   }
+  //   return false;
+
+  // }
+
   void behave() {
     geometry_msgs::msg::PointStamped point;
     point.header.frame_id = "base_link";
@@ -494,9 +500,18 @@ class HeadMover : public rclcpp::Node {
     point.point.y = 0.0;
     point.point.z = 0.0;
 
+  uint curr_head_mode = head_mode_.head_mode;
+  // use this instead of $HEAD_MODE_DECISION
+  switch (curr_head_mode) {
+    case head_mode_.BALL_MODE:
+    case head_mode_.LOOK_DOWN:
     look_at(point);
+    break;
+    case head_mode_.WAIT:
+    // why the math in og wait?
+    break;
   };
-};
+}};
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
