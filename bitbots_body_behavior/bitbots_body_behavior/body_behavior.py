@@ -10,6 +10,7 @@ Starts the body behavior
 
 import os
 
+import tf2_ros as tf2
 import rclpy
 from actionlib_msgs.msg import GoalID
 from ament_index_python import get_package_share_directory
@@ -18,6 +19,7 @@ from geometry_msgs.msg import (PoseWithCovarianceStamped, Twist,
                                TwistWithCovarianceStamped)
 from rclpy.action import ActionClient
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
@@ -36,7 +38,11 @@ class BodyDSD:
         self.counter = 0
         self.step_running = False
         self.node = node
-        blackboard = BodyBlackboard(node)
+
+        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
+        self.tf_listener = tf2.TransformListener(self.tf_buffer, node)
+
+        blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config
 
         self.dsd.blackboard.team_data.strategy_sender = node.create_publisher(Strategy, "strategy", 2)
@@ -59,34 +65,34 @@ class BodyDSD:
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
 
         node.create_subscription(
-            PoseWithCovarianceStamped, 
-            "ball_position_relative_filtered", 
-            blackboard.world_model.ball_filtered_callback, 
-            qos_profile=1, 
+            PoseWithCovarianceStamped,
+            "ball_position_relative_filtered",
+            blackboard.world_model.ball_filtered_callback,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(
-            GameState, 
-            "gamestate", 
-            blackboard.gamestate.gamestate_callback, 
-            qos_profile=1, 
+            GameState,
+            "gamestate",
+            blackboard.gamestate.gamestate_callback,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(
-            TeamData, 
-            "team_data", 
-            blackboard.team_data.team_data_callback, 
-            qos_profile=1, 
+            TeamData,
+            "team_data",
+            blackboard.team_data.team_data_callback,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(
-            PoseWithCovarianceStamped, 
-            "pose_with_covariance", 
-            blackboard.world_model.pose_callback, 
-            qos_profile=1, 
+            PoseWithCovarianceStamped,
+            "pose_with_covariance",
+            blackboard.world_model.pose_callback,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(
-            RobotArray, 
-            "robots_relative_filtered", 
-            blackboard.costmap.robot_callback, 
-            qos_profile=1, 
+            RobotArray,
+            "robots_relative_filtered",
+            blackboard.costmap.robot_callback,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(
             RobotControlState,
@@ -96,14 +102,14 @@ class BodyDSD:
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(TwistWithCovarianceStamped,
             node.get_parameter("body.ball_movement_subscribe_topic").get_parameter_value().string_value,
-            blackboard.world_model.ball_twist_callback, 
-            qos_profile=1, 
+            blackboard.world_model.ball_twist_callback,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
         node.create_subscription(
-            Twist, 
-            "cmd_vel", 
-            blackboard.pathfinding.cmd_vel_cb, 
-            qos_profile=1, 
+            Twist,
+            "cmd_vel",
+            blackboard.pathfinding.cmd_vel_cb,
+            qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup())
 
     def loop(self):

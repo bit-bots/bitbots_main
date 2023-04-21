@@ -7,7 +7,6 @@ from typing import Optional
 from rclpy.duration import Duration
 from rclpy.publisher import Publisher
 from rclpy.node import Node
-import tf2_ros as tf2
 
 from humanoid_league_msgs.msg import HeadMode, RobotControlState
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -20,9 +19,6 @@ class BlackboardCapsule:
         self.duty: str = gamestate_settings['role']
         self.position_number: int = gamestate_settings['position_number']
         self.state: Optional[RobotControlState] = None
-
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self.node)
         self.timers = dict()
 
     #####################

@@ -5,29 +5,32 @@ and subscribes to head_behavior specific ROS-Topics.
 """
 import os
 
-import rclpy
-from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-
+import tf2_ros as tf2
+from ament_index_python import get_package_share_directory
 from bitbots_blackboard.blackboard import HeadBlackboard
-from dynamic_stack_decider.dsd import DSD
-
-from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
-from bitbots_msgs.msg import JointCommand
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from rclpy.duration import Duration
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
-from geometry_msgs.msg import PoseWithCovarianceStamped
-from ament_index_python import get_package_share_directory
+
+import rclpy
+from bitbots_msgs.msg import JointCommand
+from dynamic_stack_decider.dsd import DSD
+from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
+
 
 def init(node: Node):
     """
     Initialize new components needed for head_behavior:
     blackboard, dsd, rostopic subscriber
     """
-    # This is a general purpose initialization function provided by moved
-    # It is used to correctly initialize roscpp which is used in the collision checker module
-    blackboard = HeadBlackboard(node)
+    tf2_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
+    tf2_listener = tf2.TransformListener(tf2_buffer, node)
+
+    blackboard = HeadBlackboard(node, tf2_buffer)
 
     node.create_subscription(
         HeadModeMsg,
@@ -70,7 +73,7 @@ def main(args=None):
     node = Node("head_node", automatically_declare_parameters_from_overrides=True)
     dsd = init(node)
 
-    node.create_timer(1 / 60.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup()) 
+    node.create_timer(1 / 60.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup())
     # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
     multi_executor = MultiThreadedExecutor(num_threads=7)
     multi_executor.add_node(node)

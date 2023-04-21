@@ -1,9 +1,6 @@
 import math
 import numpy as np
 from rclpy.publisher import Publisher
-from rclpy.duration import Duration
-from rclpy.node import Node
-import tf2_ros as tf2
 
 from humanoid_league_msgs.msg import HeadMode
 from bitbots_moveit_bindings import check_collision
@@ -29,10 +26,6 @@ class HeadCapsule:
 
         self.position_publisher = None  # type: Publisher
         self.visual_compass_record_trigger = None  # type: Publisher
-
-        self.tf_buffer = tf2.Buffer(Duration(seconds=5))
-        # tf_listener is necessary, even though unused!
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self.blackboard.node)
 
         self.current_joint_state = JointState()
         self.current_joint_state.name = ["HeadPan", "HeadTilt"]
