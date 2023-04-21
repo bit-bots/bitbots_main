@@ -50,7 +50,7 @@ class BodyDSD:
         self.dsd.blackboard.blackboard.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
         self.dsd.blackboard.pathfinding.direct_cmd_vel_pub = node.create_publisher(Twist, 'cmd_vel', 1)
         self.dsd.blackboard.pathfinding.pathfinding_pub = node.create_publisher(PoseStamped, 'goal_pose', 1)
-        self.dsd.blackboard.pathfinding.pathfinding_cancel_pub = node.create_publisher(Empty, 'move_base/cancel', 1)
+        self.dsd.blackboard.pathfinding.pathfinding_cancel_pub = node.create_publisher(Empty, 'pathfinding/cancel', 1)
         self.dsd.blackboard.pathfinding.ball_obstacle_active_pub = node.create_publisher(Bool, "ball_obstacle_active", 1)
         self.dsd.blackboard.pathfinding.approach_marker_pub = node.create_publisher(Marker, "debug/approach_point", 10)
         self.dsd.blackboard.dynup_cancel_pub = node.create_publisher(GoalID, 'dynup/cancel', 1)
@@ -130,7 +130,7 @@ def main(args=None):
     rclpy.init(args=None)
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
-    node.create_timer(1/60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup())
+    node.create_timer(1/60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
     # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
     multi_executor = MultiThreadedExecutor(num_threads=12)
     multi_executor.add_node(node)
