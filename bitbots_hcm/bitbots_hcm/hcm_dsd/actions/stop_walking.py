@@ -19,6 +19,7 @@ class StopWalking(AbstractActionElement):
             msg.linear.x = 0.0
             msg.linear.y = 0.0
             msg.angular.z = 0.0
+            msg.angular.x = -1.0
             self.blackboard.walk_pub.publish(msg)
         else:
             self.pop()
@@ -37,6 +38,7 @@ class ForceStopWalking(AbstractActionElement):
         msg.linear.x = 0.0
         msg.linear.y = 0.0
         msg.angular.z = 0.0
+        msg.angular.x = -1.0
         self.blackboard.walk_pub.publish(msg)
         self.blackboard.current_state = RobotControlState.PENALTY
         # We can pop immediately because the state is PENALTY on no walking messages will be passed
