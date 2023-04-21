@@ -50,7 +50,7 @@ class AlignedToPathPlanningGoal(AbstractDecisionElement):
         """
         It is determined if the robot is correctly aligned to the orientation of the path planning goal within a
         determined threshold by comparing the current orientation angle of the robot in the map with the one from the
-        goal.
+        path planning goal.
         """
         current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         current_goal = self.blackboard.pathfinding.get_goal()
