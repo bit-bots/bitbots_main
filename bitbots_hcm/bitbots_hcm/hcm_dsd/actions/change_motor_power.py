@@ -1,5 +1,7 @@
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from std_srvs.srv import SetBool
+
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AbstractChangeMotorPower(AbstractActionElement):
@@ -8,7 +10,8 @@ class AbstractChangeMotorPower(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             # In visualization and simulation, we cannot disable motors

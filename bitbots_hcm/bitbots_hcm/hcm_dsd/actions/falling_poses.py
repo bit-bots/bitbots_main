@@ -1,8 +1,10 @@
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from math import radians
+
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from rclpy.duration import Duration
+
 from bitbots_msgs.msg import JointCommand
-from math import radians
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 def parse_dict_to_msg(joint_dict: dict, time_stamp):
@@ -23,8 +25,9 @@ def parse_dict_to_msg(joint_dict: dict, time_stamp):
 
 class AbstractFallingPose(AbstractActionElement):
 
-    def __init__(self, blackboard: HcmBlackboard, dsd, parameters=None):
+    def __init__(self, blackboard: HcmBlackboard, dsd, parameters: dict = None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
         self.first_perform = True
         self.start_time = blackboard.node.get_clock().now()
         self.duration = parameters.get('duration', 1.0)

@@ -1,14 +1,24 @@
-import rclpy
-from rclpy.node import Node
 import math
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from humanoid_league_msgs.msg import RobotControlState
+
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from humanoid_league_speaker.speaker import speak
-from humanoid_league_msgs.msg import Audio
-from rclpy.time import Time, Duration
+from rclpy.time import Duration, Time
+
+from dynamic_stack_decider.abstract_decision_element import \
+    AbstractDecisionElement
+from humanoid_league_msgs.msg import RobotControlState
 
 
-class StartHCM(AbstractDecisionElement):
+class AbstractHCMDecisionElement(AbstractDecisionElement):
+    """
+    AbstractHCMDecisionElement with a hcm blackboard as its blackboard
+    """
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
+
+
+class StartHCM(AbstractHCMDecisionElement):
     """
     Initializes HCM.
     """
@@ -50,7 +60,7 @@ class StartHCM(AbstractDecisionElement):
         return True
 
 
-class Stop(AbstractDecisionElement):
+class Stop(AbstractHCMDecisionElement):
     """
     Handles manual stops
     """
@@ -66,7 +76,7 @@ class Stop(AbstractDecisionElement):
         return True
 
 
-class Record(AbstractDecisionElement):
+class Record(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently recording animations
     """
@@ -84,7 +94,7 @@ class Record(AbstractDecisionElement):
         return True
 
 
-class CheckMotors(AbstractDecisionElement):
+class CheckMotors(AbstractHCMDecisionElement):
     """
     Checks if we are getting information from the motors.
     Since the HCM is not able to work without motor connection, we will stop if there are no values.
@@ -162,7 +172,7 @@ class CheckMotors(AbstractDecisionElement):
         return True
 
 
-class CheckIMU(AbstractDecisionElement):
+class CheckIMU(AbstractHCMDecisionElement):
     """
     Checks if we are getting information from the IMU.
     Since the HCM can not detect falls without it, we will shut everything down if we dont have an imu.
@@ -214,7 +224,7 @@ class CheckIMU(AbstractDecisionElement):
         return True
 
 
-class CheckPressureSensor(AbstractDecisionElement):
+class CheckPressureSensor(AbstractHCMDecisionElement):
     """
     Checks connection to pressure sensors.
     """
@@ -257,7 +267,7 @@ class CheckPressureSensor(AbstractDecisionElement):
         return True
 
 
-class PickedUp(AbstractDecisionElement):
+class PickedUp(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently picked up
     """
@@ -284,7 +294,7 @@ class PickedUp(AbstractDecisionElement):
         return True
 
 
-class Falling(AbstractDecisionElement):
+class Falling(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently falling and has to act on this
     """
@@ -310,7 +320,7 @@ class Falling(AbstractDecisionElement):
         return True
 
 
-class FallingClassifier(AbstractDecisionElement):
+class FallingClassifier(AbstractHCMDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.falling_detection_active:
@@ -337,7 +347,7 @@ class FallingClassifier(AbstractDecisionElement):
         return True
 
 
-class Sitting(AbstractDecisionElement):
+class Sitting(AbstractHCMDecisionElement):
     """
     Decides if the robot is sitting (due to sitting down earlier).
     """
@@ -369,7 +379,7 @@ class Sitting(AbstractDecisionElement):
         return False
 
 
-class Fallen(AbstractDecisionElement):
+class Fallen(AbstractHCMDecisionElement):
     """
     Decides if the robot is fallen and lying on the ground
     """
@@ -397,7 +407,7 @@ class Fallen(AbstractDecisionElement):
         return True
 
 
-class ExternalAnimation(AbstractDecisionElement):
+class ExternalAnimation(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently wants to play an animation comming from the behavior
     """
@@ -413,7 +423,7 @@ class ExternalAnimation(AbstractDecisionElement):
         return True
 
 
-class Walking(AbstractDecisionElement):
+class Walking(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently walking
     """
@@ -435,7 +445,7 @@ class Walking(AbstractDecisionElement):
         return True
 
 
-class Kicking(AbstractDecisionElement):
+class Kicking(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently kicking
     """

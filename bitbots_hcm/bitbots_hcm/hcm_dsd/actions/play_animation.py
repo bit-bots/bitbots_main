@@ -1,12 +1,10 @@
-import rclpy
-from rclpy.duration import Duration
-from humanoid_league_msgs.action import PlayAnimation
-from bitbots_msgs.action import Dynup
-from actionlib_msgs.msg import GoalStatus
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from time import sleep
 from action_msgs.msg import GoalStatus
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 
+import rclpy
+from bitbots_msgs.action import Dynup
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from humanoid_league_msgs.action import PlayAnimation
 from humanoid_league_msgs.msg import RobotControlState
 
 
@@ -16,7 +14,8 @@ class AbstractPlayAnimation(AbstractActionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
         self.first_perform = True
 
     def perform(self, reevaluate=False):
@@ -157,7 +156,8 @@ class PlayAnimationMotorOff(AbstractPlayAnimation):
 
 class PlayAnimationDynup(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
         self.direction = parameters.get('direction')
         self.first_perform = True
 
