@@ -280,10 +280,18 @@ int main(int argc, char** argv) {
   exec->add_node(node);
   std::thread thread_obj(thread_spin, exec);
 
-  rclcpp::Rate rate = rclcpp::Rate(500.0);
+  auto last_time = node->get_clock()->now();
+  rclcpp::Rate rate = rclcpp::Rate(125.0);
   while (rclcpp::ok()) {
-    node->loop();
-    rate.sleep();
+    // Check if time progressed
+    auto current_time = node->get_clock()->now();
+    if (current_time > last_time) {
+      last_time = current_time;
+      node->loop();
+      rate.sleep();
+    }
+    // really short sleep to not waste cpu time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
   rclcpp::shutdown();
