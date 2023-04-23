@@ -390,9 +390,8 @@ class WorldModelCapsule:
         """
         # if we can do this, we should be able to transform the ball
         # (unless the localization dies in the next 0.2 seconds)
-        return True
         try:
-            t = self._blackboard.node.get_clock().now() - Duration(seconds=0.3)
+            t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
         except TypeError as e:
             self._blackboard.node.get_logger().error(e)
             t = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
