@@ -49,6 +49,7 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/abstract_ik.h"
 #include "bitbots_quintic_walk/walk_visualizer.h"
 #include <control_toolbox/pid_ros.hpp>
+#include "bitbots_quintic_walk_parameters.hpp"
 
 namespace bitbots_quintic_walk {
 
@@ -134,36 +135,17 @@ class WalkNode : public rclcpp::Node {
 
   double getTimeDelta();
 
+  // Declare parameter listener and struct from the generate_parameter_library
+  walking::ParamListener param_listener_;
+  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
+  walking::Params config_;
+
   std::string odom_frame_, base_link_frame_, l_sole_frame_, r_sole_frame_;
 
   WalkRequest current_request_;
 
-  bool debug_active_;
-  bool simulation_active_;
-
   bool first_run_;
 
-  double engine_frequency_;
-
-  bool pressure_phase_reset_active_;
-  bool effort_phase_reset_active_;
-  double phase_reset_phase_;
-  double ground_min_pressure_;
-  double joint_min_effort_;
-  bool cop_stop_active_;
-  double cop_x_threshold_;
-  double cop_y_threshold_;
-  bool pressure_stop_active_;
-  double io_pressure_threshold_;
-  double fb_pressure_threshold_;
-
-  bool imu_active_;
-  double imu_pitch_threshold_;
-  double imu_roll_threshold_;
-  double imu_pitch_vel_threshold_;
-  double imu_roll_vel_threshold_;
-
-  int odom_pub_factor_;
   double last_ros_update_time_;
 
   int robot_state_;
@@ -182,21 +164,10 @@ class WalkNode : public rclcpp::Node {
    * Is used to limit _currentOrders to sane values
    */
   Eigen::Vector3d max_step_linear_;
-  double max_step_angular_;
 
-  /**
-   * Measures how much distance we can traverse in X and Y direction combined
-   */
-  double max_step_xy_;
   bitbots_quintic_walk::WalkEngine walk_engine_;
 
-  double x_speed_multiplier_;
-  double y_speed_multiplier_;
-  double yaw_speed_multiplier_;
-
-  bitbots_msgs::msg::JointCommand command_msg_;
   nav_msgs::msg::Odometry odom_msg_;
-  geometry_msgs::msg::TransformStamped odom_trans_;
 
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
