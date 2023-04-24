@@ -35,10 +35,3 @@ class Wait(AbstractActionElement):
         if self.time < float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0] \
                              + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9):
             self.pop()
-
-class WaitNoReevaluate(Wait):
-    def perform(self, reevaluate=False):
-        self._dsd.set_do_not_reevaluate()
-        if self.time < float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0] \
-                              + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9):
-            self.pop()
