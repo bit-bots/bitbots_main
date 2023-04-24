@@ -389,7 +389,7 @@ class WorldModelCapsule:
         Returns whether we can transform into and from the map frame.
         """
         # if we can do this, we should be able to transform the ball
-        # (unless the localization dies in the next 0.2 seconds)
+        # (unless the localization died during the last 1.0 seconds)
         try:
             t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
         except TypeError as e:
