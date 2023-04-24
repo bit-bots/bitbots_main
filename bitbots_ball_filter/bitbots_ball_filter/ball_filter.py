@@ -299,7 +299,7 @@ class BallFilter(Node):
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = BallFilter()
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
     ex = MultiThreadedExecutor(num_threads=4)
     ex.add_node(node)
     ex.spin()
