@@ -74,7 +74,7 @@ def main(args=None):
     dsd = init(node)
 
     node.create_timer(1 / 60.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup())
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
     multi_executor = MultiThreadedExecutor(num_threads=7)
     multi_executor.add_node(node)
 

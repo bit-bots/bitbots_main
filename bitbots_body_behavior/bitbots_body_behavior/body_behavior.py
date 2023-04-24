@@ -131,7 +131,7 @@ def main(args=None):
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
     node.create_timer(1/60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
     multi_executor = MultiThreadedExecutor(num_threads=12)
     multi_executor.add_node(node)
 
