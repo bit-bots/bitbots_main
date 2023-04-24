@@ -29,21 +29,22 @@
     <depend>bitbots_splines</depend>
     <depend>bitbots_utils</depend>
     <depend>control_toolbox</depend>
+    <depend>generate_parameter_library</depend>
     <depend>geometry_msgs</depend>
     <depend>humanoid_league_msgs</depend>
     <depend>irobot_events_executor</depend>
     <depend>moveit_core</depend>
     <depend>moveit_ros_move_group</depend>
-    <depend>moveit_ros_robot_interaction</depend>
     <depend>moveit_ros_planning_interface</depend>
+    <depend>moveit_ros_robot_interaction</depend>
     <depend>rclcpp</depend>
     <depend>ros2_python_extension</depend>
     <depend>rot_conv</depend>
     <depend>std_msgs</depend>
-    <depend>tf2</depend>
     <depend>tf2_eigen</depend>
     <depend>tf2_geometry_msgs</depend>
     <depend>tf2_ros</depend>
+    <depend>tf2</depend>
 
     <exec_depend>bitbots_moveit_bindings</exec_depend>
     <exec_depend>bitbots_teleop</exec_depend>
