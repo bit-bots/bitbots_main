@@ -73,7 +73,7 @@ $ConfigRole
         NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @Stand
 
 #ReorientationPause
-@ChangeAction + action:localizing, @LookAtFieldFeatures, @Stand
+@ChangeAction + action:localizing + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:1.5 + r:false
 
 #GoalieBehavior
 $ClosestToBall + use_time_to_ball:true

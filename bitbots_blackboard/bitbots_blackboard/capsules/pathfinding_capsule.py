@@ -6,9 +6,7 @@ if TYPE_CHECKING:
 import math
 
 import numpy as np
-import tf2_ros
 from geometry_msgs.msg import Point, PoseStamped, Twist
-from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 from ros2_numpy import numpify
@@ -22,8 +20,6 @@ class PathfindingCapsule:
         self.node = node
         self._blackboard = blackboard
         self.map_frame: str = self.node.get_parameter('map_frame').value
-        self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=2))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
         self.position_threshold: str = self.node.get_parameter('body.pathfinding_position_threshold').value
         self.orientation_threshold: str = self.node.get_parameter('body.pathfinding_orientation_threshold').value
         self.direct_cmd_vel_pub: Optional[Publisher] = None

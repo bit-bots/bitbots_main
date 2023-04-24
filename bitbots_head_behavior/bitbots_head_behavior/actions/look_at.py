@@ -53,7 +53,7 @@ class AbstractLookAt(AbstractActionElement):
         """
         # transform the points reference frame to be the head
         try:
-            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
+            point = self.blackboard.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
         except tf2.LookupException as e:
             self.blackboard.node.get_logger().warn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return

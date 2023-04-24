@@ -12,12 +12,14 @@ from bitbots_blackboard.capsules.costmap_capsule import CostmapCapsule
 from bitbots_utils.utils import get_parameter_dict
 from rclpy.action import ActionClient
 from rclpy.node import Node
+import tf2_ros as tf2
 from rclpy.publisher import Publisher
 
 
 class BodyBlackboard:
-    def __init__(self, node: Node):
+    def __init__(self, node: Node, tf_buffer: tf2.Buffer):
         self.node = node
+        self.tf_buffer = tf_buffer
 
         self.config = get_parameter_dict(node, "body")
         self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
@@ -43,8 +45,9 @@ class BodyBlackboard:
 
 
 class HeadBlackboard:
-    def __init__(self, node: Node):
+    def __init__(self, node: Node, tf_buffer: tf2.Buffer):
         self.node = node
+        self.tf_buffer = tf_buffer
         self.config = get_parameter_dict(node, "head")
         self.head_capsule = HeadCapsule(self)
         self.world_model = WorldModelCapsule(self)

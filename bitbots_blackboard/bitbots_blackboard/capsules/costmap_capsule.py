@@ -32,11 +32,8 @@ from tf_transformations import euler_from_quaternion, quaternion_from_euler
 class CostmapCapsule:
     def __init__(self, blackboard: "BodyBlackboard"):
         self._blackboard = blackboard
+        self._node = blackboard.node
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
-
-
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self._blackboard.node)
 
         self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
         self.base_footprint_frame: str = self._blackboard.node.get_parameter('base_footprint_frame').value
@@ -178,7 +175,7 @@ class CostmapCapsule:
 
         try:
             # Transform point of interest to the map
-            point = self.tf_buffer.transform(point, self.map_frame, timeout=Duration(seconds=0.3))
+            point = self._blackboard.tf_buffer.transform(point, self.map_frame, timeout=Duration(seconds=0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(e)
             return 0.0
@@ -321,7 +318,7 @@ class CostmapCapsule:
         pose.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
         try:
             # Transform point of interest to the map
-            pose = self.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))
+            pose = self._blackboard.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(e)
@@ -401,4 +398,4 @@ class CostmapCapsule:
         return kick_direction
 
 
-        
+

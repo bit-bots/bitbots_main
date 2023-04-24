@@ -9,7 +9,7 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 class GetWalkready(AbstractActionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters)
         self.direction = 'walkready'
         self.first_perform = True
         self.active = False
