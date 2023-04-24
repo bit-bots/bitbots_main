@@ -1,10 +1,6 @@
 /**:
   ros__parameters:
-    #IMU
-    imu_timeout_duration: 0.1 # time without messages from the IMU till error is produced [s]
-
     #Pressure sensors
-    pressure_timeout_duration: 0.1 # time without messages from the foot pressure sensors till error is produced [s]
     pressure_sensors_installed: False
     foot_zero_service: "set_foot_zero"
 

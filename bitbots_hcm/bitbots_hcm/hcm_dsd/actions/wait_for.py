@@ -1,9 +1,6 @@
-import rclpy
-from rclpy.node import Node
-import rclpy.logging
-import humanoid_league_msgs.msg
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-import bitbots_hcm.hcm_dsd.hcm_blackboard
 
 
 class WaitForIMUStartup(AbstractActionElement):
@@ -13,6 +10,7 @@ class WaitForIMUStartup(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
         pass
@@ -25,6 +23,7 @@ class WaitForIMU(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().warn("HCM gets no IMU data. Waiting for IMU to connect.", throttle_duration_sec=10)
@@ -37,6 +36,7 @@ class WaitForPressureStartup(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
         pass
@@ -49,6 +49,7 @@ class WaitForPressure(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().warn(
@@ -67,6 +68,7 @@ class WaitForMotorStartup(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
         pass
@@ -79,6 +81,7 @@ class WaitForMotors(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().warn(

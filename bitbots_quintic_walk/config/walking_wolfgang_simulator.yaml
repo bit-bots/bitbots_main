@@ -37,7 +37,7 @@ walking:
 
     node:
       # update frequency of the engine
-      engine_freq: 500.0
+      engine_freq: 125.0
 
       # parameters for bioIK
       ik_timeout: 0.01

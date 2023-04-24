@@ -7,8 +7,7 @@ Wait
 
 Just waits for something (i.e. that preconditions will be fullfilled)
 """
-import rclpy
-from rclpy.node import Node
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -23,18 +22,16 @@ class Wait(AbstractActionElement):
         :param parameters['time']: Time to wait in seconds
         """
         super().__init__(blackboard, dsd)
-        self.time = float(self.blackboard.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9) + float(parameters['time'])
+        self.blackboard: HcmBlackboard
+        self.time = float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0]  \
+                           + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9) \
+                            + float(parameters['time'])
 
     def perform(self, reevaluate=False):
         """
         Only pop when the wait-time has elapsed
         """
 
-        if self.time < float(self.blackboard.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9):
-            self.pop()
-
-class WaitNoReevaluate(Wait):
-    def perform(self, reevaluate=False):
-        self._dsd.set_do_not_reevaluate()
-        if self.time < float(self.blackboard.get_clock().now().seconds_nanoseconds()[0] + self.get_clock().now().seconds_nanoseconds()[1]/1e9):
+        if self.time < float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0] \
+                             + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9):
             self.pop()
