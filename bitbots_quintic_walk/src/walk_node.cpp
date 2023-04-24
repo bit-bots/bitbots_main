@@ -1,7 +1,6 @@
 #define M_TAU M_PI * 2
 
 #include "bitbots_quintic_walk/walk_node.h"
-#include "bitbots_quintic_walk_parameters.hpp"
 
 #include <memory>
 #include <iostream>
@@ -140,6 +139,8 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
 void WalkNode::run() {
   // Get up to date parameters
   config_ = param_listener_.get_params();
+  // Copy engine params to walk engine
+  walk_engine_.config_ = config_.engine;
   // Phase reset can only work if one phase resetting method is active and this might have changed due to parameter changes
   walk_engine_.setPhaseRest(config_.node.effort_phase_reset_active || config_.node.pressure_phase_reset_active);
   // Pass params to other components
