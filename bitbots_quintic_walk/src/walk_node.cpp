@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> parameters) :
-    Node(ns + "walking", rclcpp::NodeOptions().parameter_overrides(parameters)),
+    Node(ns + "walking", rclcpp::NodeOptions()),
     param_listener_(get_node_parameters_interface()),
     config_(param_listener_.get_params()),
     walk_engine_ (SharedPtr(this)),
@@ -26,14 +26,26 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   // Create dummy node for moveit
   auto moveit_node = std::make_shared<rclcpp::Node>(ns + "walking_moveit_node");
 
+  // when called from python, parameters are given to the constructor
+  for (auto parameter: parameters) {
+    if (this->has_parameter(parameter.get_name())) {
+      // this is the case for walk engine params set via python
+      this->set_parameter(parameter);
+    } else {
+      // parameter is not for the walking, set on moveit node
+      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
+      moveit_node->set_parameter(parameter);
+    }
+  }
+
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
-  if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
+  if (!moveit_node->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
     while (!parameters_client->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        rclcpp::shutdown();
+        break;
       }
       RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10*1e9, "Can't copy parameters from move_group node. Service not available, waiting again...");
     }
