@@ -9,7 +9,7 @@ walking:
       type: double,
       description: "Full walking cycle frequency in Hz",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 5.0 ],
       }
     }
     double_support_ratio: {
@@ -23,7 +23,7 @@ walking:
       type: double,
       description: "Swing factor for the first step",
       validation: {
-        gt_eq<>: [ 0.0 ],
+        bounds<>: [ 0.0, 10.0],
       }
     }
     first_step_trunk_phase: {
@@ -37,28 +37,28 @@ walking:
       type: double,
       description: "Lateral distance between the feet center (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1.0],
       }
     }
     foot_rise: {
       type: double,
       description: "Maximum flying foot height (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1.0 ],
       }
     }
     trunk_swing: {
       type: double,
       description: "Trunk lateral oscillation amplitude ratio",
       validation: {
-        gt_eq<>: [ 0.0 ],
+        bounds<>: [ 0.0, 2.0 ],
       }
     }
     trunk_height: {
       type: double,
       description: "Height of the trunk from ground (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1.0 ],
       }
     }
     trunk_pitch: {
@@ -100,7 +100,7 @@ walking:
       type: double,
       description: "Let the foot's downward trajectory end above the ground this is helpful if the support leg bends, (in meters)",
       validation: {
-        gt_eq<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1.0 ],
       }
     }
     foot_put_down_phase: {
@@ -121,7 +121,7 @@ walking:
       type: double,
       description: "Foot X/Y overshoot in ratio of step length(ratio)",
       validation: {
-        gt_eq<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1.0 ],
       }
     }
     foot_overshoot_phase: {
@@ -184,14 +184,14 @@ walking:
       type: double,
       description: "Length of kick movement (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1.0],
       }
     }
     kick_vel: {
       type: double,
       description: "Velocity of kick movement (in meters/s)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100.0 ],
       }
     }
     kick_phase: {
@@ -206,14 +206,14 @@ walking:
       type: double,
       description: "Control loop frequency in Hz",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 1000.0 ],
       }
     }
     ik_timeout: {
       type: double,
       description: "Inverse kinematics timeout in seconds",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 10.0 ],
       }
     }
     ik_reset: {
@@ -228,56 +228,56 @@ walking:
       type: double,
       description: "Maximum step length in X direction (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100000.0 ],
       }
     }
     max_step_y: {
       type: double,
       description: "Maximum step length in Y direction (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100000.0 ],
       }
     }
     max_step_xy: {
       type: double,
       description: "Maximum step length in XY direction (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100000.0 ],
       }
     }
     max_step_z: {
       type: double,
       description: "Maximum step length in Z direction (in meters)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100000.0 ],
       }
     }
     max_step_angular: {
       type: double,
       description: "Maximum step length angular (in radians)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100000.0 ],
       }
     }
     x_speed_multiplier: {
       type: double,
       description: "Speed multiplier for X direction to calibrate the cmd_vel input",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 5.0 ],
       }
     }
     y_speed_multiplier: {
       type: double,
       description: "Speed multiplier for Y direction to calibrate the cmd_vel input",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 5.0 ],
       }
     }
     yaw_speed_multiplier: {
       type: double,
       description: "Speed multiplier for yaw direction to calibrate the cmd_vel input",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 5.0 ],
       }
     }
     imu_active: {
@@ -288,35 +288,35 @@ walking:
       type: double,
       description: "Pitch threshold used for IMU stability stop (in radians)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 2.0 ],
       }
     }
     imu_roll_threshold: {
       type: double,
       description: "Roll threshold used for IMU stability stop (in radians)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 2.0 ],
       }
     }
     imu_pitch_vel_threshold: {
       type: double,
       description: "Pitch velocity threshold used for IMU stability stop (in radians/s)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 10.0 ],
       }
     }
     imu_roll_vel_threshold: {
       type: double,
       description: "Roll velocity threshold used for IMU stability stop (in radians/s)",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 10.0 ],
       }
     }
     pause_duration: {
       type: double,
       description: "Pause duration for the stability stop (in seconds)",
       validation: {
-        gt_eq<>: [ 0.0 ],
+        bounds<>: [ 0.0, 5.0 ],
       }
     }
     pressure_phase_reset_active: {
@@ -327,7 +327,7 @@ walking:
       type: double,
       description: "Minimum pressure value for the ground contact detection",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100.0 ],
       }
     }
     phase_reset_phase: {
@@ -345,6 +345,6 @@ walking:
       type: double,
       description: "Minimum effort value for the joint effort based phase reset",
       validation: {
-        gt<>: [ 0.0 ],
+        bounds<>: [ 0.0, 100.0 ],
       }
     }
