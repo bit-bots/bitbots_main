@@ -9,6 +9,7 @@ from rclpy.time import Time
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from geometry_msgs.msg import Pose
 import soccer_vision_3d_msgs.msg as sv3dm
 import soccer_vision_attribute_msgs.msg as svam
@@ -35,20 +36,22 @@ class RobotFilter(Node):
             sv3dm.RobotArray,
             self.declare_parameter('robot_observation_topic', 'robots_relative').value,
             self._robot_vision_callback,
-            5)
+            5,
+            callback_group=MutuallyExclusiveCallbackGroup())
 
         self.create_subscription(
             TeamData,
             self.declare_parameter('team_data_topic', 'team_data').value,
             self._team_data_callback,
-            5)
+            5,
+            callback_group=MutuallyExclusiveCallbackGroup())
 
         self.robot_obstacle_publisher = self.create_publisher(
             sv3dm.RobotArray,
             self.declare_parameter('robots_publish_topic', 'robots_relative_filtered').value,
             1)
 
-        self.create_timer(1/20, self.publish_obstacles)
+        self.create_timer(1/20, self.publish_obstacles, callback_group=MutuallyExclusiveCallbackGroup())
 
     def publish_obstacles(self):
         # Set current timespamp and frame
@@ -114,7 +117,8 @@ class RobotFilter(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = RobotFilter()
-    ex = MultiThreadedExecutor(num_threads=4)
+    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    ex = MultiThreadedExecutor(num_threads=5)
     ex.add_node(node)
     ex.spin()
     node.destroy_node()
