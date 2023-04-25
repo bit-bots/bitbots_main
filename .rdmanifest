@@ -10,7 +10,6 @@ depends:
 - sensor_msgs
 - bitbots_docs
 - message_generation
-- actionlib_msgs
 - message_runtime
 exec-path: bitbots_msgs-master
 install-script: '#!/bin/bash

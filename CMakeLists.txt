@@ -5,7 +5,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(actionlib_msgs REQUIRED)
 #find_package(bitbots_docs REQUIRED)
 
 if(BUILD_TESTING)
@@ -36,7 +35,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/Dynup.action"
   "action/Kick.action"
   DEPENDENCIES
-  actionlib_msgs
   sensor_msgs
   std_msgs
 )
