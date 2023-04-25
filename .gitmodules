@@ -70,6 +70,10 @@
 
 # 3rd party libraries in lib directory
 ######################################
+[submodule "lib/audio_common"]
+	path = lib/audio_common
+	url = ../../ros-drivers/audio_common
+	branch = ros2
 [submodule "lib/biped_interfaces"]
 	path = lib/biped_interfaces
 	url = ../../ros-sports/biped_interfaces
