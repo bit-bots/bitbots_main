@@ -26,6 +26,7 @@
   <depend>protobuf-dev</depend>
   <depend>urdfdom_py</depend>
   <depend>topic_tools</depend>
+  <depend>rosbag2</depend>
 
   <export>
     <build_type>ament_python</build_type>
