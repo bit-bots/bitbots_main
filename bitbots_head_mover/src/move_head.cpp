@@ -182,7 +182,6 @@ class HeadMover : public rclcpp::Node {
   }
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
     current_joint_state_ = *msg;
-    position_publisher_->publish(pos_msg_);
   }
 
 /*
@@ -254,6 +253,8 @@ class HeadMover : public rclcpp::Node {
     pos_msg_.positions = {pan_position, tilt_position};
     pos_msg_.velocities = {pan_speed, tilt_speed};
     pos_msg_.header.stamp = this->get_clock()->now();
+    // log the pos_msg_ and say that its in sent motor goals
+    RCLCPP_INFO(this->get_logger(), "send motor goals");
     position_publisher_->publish(pos_msg_);
     return true;
 
@@ -324,6 +325,8 @@ class HeadMover : public rclcpp::Node {
     pos_msg_.positions = {goal_pan, goal_tilt};
     pos_msg_.velocities = {pan_speed, tilt_speed};
     pos_msg_.header.stamp = rclcpp::Clock().now();
+    // log the pos_msg_ and say that its in move head to position with speed adjustment
+    RCLCPP_INFO(this->get_logger(), "moving head to position with speed adjustment: ");
     position_publisher_->publish(pos_msg_);
   }
 
@@ -495,7 +498,7 @@ class HeadMover : public rclcpp::Node {
 
 int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, double pan, double tilt)
 {
-  std::vector<std::pair<double, int>> min_distance_point = (10000, -1);
+  std::pair<double, int> min_distance_point = {10000.0, -1};
   for (int i = 0; i < pattern.size(); i++) {
     double point_pan = pattern[i].first*DEG_TO_RAD;
     double point_tilt = pattern[i].second*DEG_TO_RAD;
@@ -509,33 +512,28 @@ int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, do
 
 }
   void behave() {
-    geometry_msgs::msg::PointStamped point;
-    point.header.frame_id = "base_link";
-    point.point.x = 1.0;
-    point.point.y = 0.0;
-    point.point.z = 0.0;
-
+  // log the current head mode
+  //log the head_mode_.BALL_MODE
+  RCLCPP_INFO(this->get_logger(), "BALLMODE: %d", head_mode_.BALL_MODE);
   uint curr_head_mode = head_mode_.head_mode;
-  // use this instead of $HEAD_MODE_DECISION
+  double pan_speed;
+  double tilt_speed;
+  //  The modes i want are: 1. ball search pattern, 2. penaltix search pattern, 3. field feature search paattern, 4. fron search pattern 
   switch (curr_head_mode) {
     case head_mode_.BALL_MODE:
-    bool ball_seen = true; // this needs to be a decision...
-    if (ball_seen) {
-      double ball_tracking_min_pan_delta = params_.ball_tracking_min_pan_delta; // TODO: add to config
-      double ball_tracking_min_tilt_delta = params_.ball_tracking_min_tilt_delta;
+      pan_speed = params_.pan_speed; // change this value depending on the head mode
+      tilt_speed = params_.tilt_speed; // same as above
+        RCLCPP_INFO(this->get_logger(), "was in switch");
+      break;
+    // case head_mode_.BALL_MODE_PENALTY:
+    // case head_mode_.FIELD_FEATURES:
+    // case head_mode_.LOOK_FRONT:
+  }
 
-      geometry_msgs::msg::PointStamped point; // needs to be from get_ball_stamped_relative from world model: kann der das immer publishen?
-      look_at(point, ball_tracking_min_pan_delta, ball_tracking_min_tilt_delta);
-    } 
-    else {
-      //ballsearch pattern + init:nearest
-      double pan_speed = params_.pan_speed; // is one from a specific config
-      double tilt_speed = params_.tilt_speed; // same as above
-
-std::vector<std::pair<double, double>> pattern = generatePattern(params_.scan_lines, params_.pan_max, params_.pan_max, params_.tilt_max, params_.tilt_max); // todo params
- double threshold = params_.position_reached_threshold; // todo: params
- std::pair<double, double> head_position = get_head_position();
- double current_head_pan = head_position.first;
+  std::vector<std::pair<double, double>> pattern = generatePattern(params_.scan_lines, params_.pan_max, params_.pan_max, params_.tilt_max, params_.tilt_max); // todo params
+  double threshold = params_.position_reached_threshold; // todo: params
+  std::pair<double, double> head_position = get_head_position();
+  double current_head_pan = head_position.first;
   double current_head_tilt = head_position.second;
   int index = get_near_pattern_position(pattern, current_head_pan, current_head_tilt);
 
@@ -546,28 +544,18 @@ std::vector<std::pair<double, double>> pattern = generatePattern(params_.scan_li
   
   bool success = send_motor_goals(head_pan, head_tilt, true, pan_speed, tilt_speed, current_head_pan, current_head_tilt, true);
 
+// log the index
+RCLCPP_INFO(this->get_logger(), "index: %d", index);
   if (success) {
     double distance_to_goal = std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
-    if (distance_to_goal < threshold) {
-      index++;}
-
-
-
-      
-      
+    if (distance_to_goal < threshold) {index++;}      
     }
   else{
-    RCLCPP_WARN(this->get_logger(), "Pattern position "+index+" collided, the pattern should probably be changed");
-    index++;
-  }
-    case head_mode_.LOOK_DOWN:
-    look_at(point);
-    break;
-    case head_mode_.WAIT:
-    // why the math in og wait?
-    break;
+
+    index++;}
+
   };
-}};
+};
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
