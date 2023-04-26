@@ -3,7 +3,7 @@
     <arg name="sim" default="false" description="If true, we don't capture audio" />
     <arg name="dst" default="appsink"/>
     <arg name="device" default=""/>
-    <arg name="format" default="wav"/>
+    <arg name="format" default="wave"/>
     <arg name="bitrate" default="128"/>
     <arg name="channels" default="1"/>
     <arg name="depth" default="16"/>
