@@ -46,6 +46,7 @@ include:
         - humanoid_league_team_communication
     - humanoid_league_msgs
     - lib:
+        - audio_common
         - bio_ik
         - bio_ik_msgs
         - biped_interfaces
