@@ -308,12 +308,12 @@ class HeadMover : public rclcpp::Node {
     planning_scene_->checkCollision(req, res, *robot_state_, acm);
     return res.collision;
   }
-  void move_head_to_position_with_speed_adjustment(float goal_pan,
-                                                   float goal_tilt,
-                                                   float current_pan,
-                                                   float current_tilt,
-                                                   float pan_speed,
-                                                   float tilt_speed) {
+  void move_head_to_position_with_speed_adjustment(double goal_pan,
+                                                   double goal_tilt,
+                                                   double current_pan,
+                                                   double current_tilt,
+                                                   double pan_speed,
+                                                   double tilt_speed) {
     double delta_pan = std::abs(goal_pan - current_pan);
     double delta_tilt = std::abs(goal_tilt - current_tilt);
     if (delta_pan > 0) {
@@ -435,7 +435,7 @@ class HeadMover : public rclcpp::Node {
 
     auto joint_model_group = robot_model_->getJointModelGroup("Head");
 
-    float timeout_seconds = 1.0;
+    double timeout_seconds = 1.0;
     bool success = robot_state_->setFromIK(joint_model_group, EigenSTL::vector_Isometry3d(), std::vector<std::string>(),
                                            timeout_seconds, moveit::core::GroupStateValidityCallbackFn(), ik_options);
     robot_state_->update();
@@ -493,6 +493,21 @@ class HeadMover : public rclcpp::Node {
 
   // }
 
+int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, double pan, double tilt)
+{
+  std::vector<std::pair<double, int>> min_distance_point = (10000, -1);
+  for (int i = 0; i < pattern.size(); i++) {
+    double point_pan = pattern[i].first*DEG_TO_RAD;
+    double point_tilt = pattern[i].second*DEG_TO_RAD;
+    double distance = std::sqrt(std::pow(pattern[i].first - pan, 2) + std::pow(pattern[i].second - tilt, 2));
+    if (distance < min_distance_point.first) {
+      min_distance_point.first = distance;
+      min_distance_point.second = i;
+    }
+  }
+  return min_distance_point.second;
+
+}
   void behave() {
     geometry_msgs::msg::PointStamped point;
     point.header.frame_id = "base_link";
@@ -504,6 +519,47 @@ class HeadMover : public rclcpp::Node {
   // use this instead of $HEAD_MODE_DECISION
   switch (curr_head_mode) {
     case head_mode_.BALL_MODE:
+    bool ball_seen = true; // this needs to be a decision...
+    if (ball_seen) {
+      double ball_tracking_min_pan_delta = params_.ball_tracking_min_pan_delta; // TODO: add to config
+      double ball_tracking_min_tilt_delta = params_.ball_tracking_min_tilt_delta;
+
+      geometry_msgs::msg::PointStamped point; // needs to be from get_ball_stamped_relative from world model: kann der das immer publishen?
+      look_at(point, ball_tracking_min_pan_delta, ball_tracking_min_tilt_delta);
+    } 
+    else {
+      //ballsearch pattern + init:nearest
+      double pan_speed = params_.pan_speed; // is one from a specific config
+      double tilt_speed = params_.tilt_speed; // same as above
+
+std::vector<std::pair<double, double>> pattern = generatePattern(params_.scan_lines, params_.pan_max, params_.pan_max, params_.tilt_max, params_.tilt_max); // todo params
+ double threshold = params_.position_reached_threshold; // todo: params
+ std::pair<double, double> head_position = get_head_position();
+ double current_head_pan = head_position.first;
+  double current_head_tilt = head_position.second;
+  int index = get_near_pattern_position(pattern, current_head_pan, current_head_tilt);
+
+  // now perform method:
+  index = index % pattern.size();
+  double head_pan = pattern[index].first;
+  double head_tilt = pattern[index].second;
+  
+  bool success = send_motor_goals(head_pan, head_tilt, true, pan_speed, tilt_speed, current_head_pan, current_head_tilt, true);
+
+  if (success) {
+    double distance_to_goal = std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
+    if (distance_to_goal < threshold) {
+      index++;}
+
+
+
+      
+      
+    }
+  else{
+    RCLCPP_WARN(this->get_logger(), "Pattern position "+index+" collided, the pattern should probably be changed");
+    index++;
+  }
     case head_mode_.LOOK_DOWN:
     look_at(point);
     break;
