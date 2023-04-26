@@ -89,6 +89,14 @@ class HeadMover : public rclcpp::Node {
 
   rclcpp::TimerBase::SharedPtr timer_;
 
+  std::vector<std::pair<double, double>> pattern_;
+  uint prev_head_mode;
+
+    double threshold_; 
+  int index_;
+    double pan_speed;
+  double tilt_speed;
+
  public:
   HeadMover()
       : Node("head_mover", rclcpp::NodeOptions().allow_undeclared_parameters(true)) {
@@ -169,6 +177,11 @@ class HeadMover : public rclcpp::Node {
     current_joint_state_.position = {0, 0};
     current_joint_state_.velocity = {0, 0};
     current_joint_state_.effort = {0, 0};
+
+    prev_head_mode = -1;
+    threshold_ = params_.position_reached_threshold;
+    pan_speed = 0;
+    tilt_speed = 0;
 
   }
 
@@ -334,8 +347,16 @@ class HeadMover : public rclcpp::Node {
   GET HEAD POSITION
   */
   std::pair<double, double> get_head_position() {
-    double head_pan = current_joint_state_.position[0];  // is this "HeadPan"?
-    double head_tilt = current_joint_state_.position[1]; // is this "HeadTilt"?
+    // loop over all joints and find the head pan and tilt
+    double head_pan;
+    double head_tilt;
+    for(int i = 0; i < current_joint_state_.name.size(); i++) {
+      if (current_joint_state_.name[i] == "HeadPan") {
+        head_pan = current_joint_state_.position[i];
+      } else if (current_joint_state_.name[i] == "HeadTilt") {
+        head_tilt = current_joint_state_.position[i];
+      }
+    }
     return {head_pan, head_tilt};
   }
 
@@ -349,7 +370,7 @@ class HeadMover : public rclcpp::Node {
     return value;
   }
 
-  double calculateHorizonAngle(bool is_right, bool angle_right, bool angle_left) {
+  double calculateHorizonAngle(bool is_right, double angle_right, double angle_left) {
     if (is_right) {
 
       return angle_right;
@@ -365,11 +386,16 @@ class HeadMover : public rclcpp::Node {
     steps += 1;
     std::vector<std::pair<double, double>> output_points;
     double delta = std::abs(max_pan - min_pan);
-    double step_size = delta / (steps);
-    for (int i = 0; i < steps; i++) {
+    double step_size = delta / steps;
+    for (int i = 1; i <= steps; i++) {
       double pan = min_pan + step_size * i;
       output_points.push_back({pan, tilt});
     }
+    // log
+    RCLCPP_INFO(this->get_logger(), "interpolated steps: ");
+
+
+
     return output_points;
   }
   std::vector<std::pair<double, double>> generatePattern(int line_count,
@@ -384,10 +410,12 @@ class HeadMover : public rclcpp::Node {
     bool right_side = false;
     bool right_direction = true;
     int line = line_count - 1;
-    for (int i = 0; i < line_count * 2 - 2; i++) {
+    int iterations = std::max(line_count*2-2, 2);
+    for (int i = 0; i < iterations; i++) {
       std::pair<double, double> current_point =
           {calculateHorizonAngle(right_side, max_horizontal_angle_right, max_horizontal_angle_left),
            lineAngle(line, line_count, max_vertical_angle_down, max_vertical_angle_up)};
+      RCLCPP_WARN(this->get_logger(), "current point: %f, %f", current_point.first, current_point.second);
       keyframes.push_back(current_point);
 
       if (right_side != right_direction) {
@@ -418,6 +446,11 @@ class HeadMover : public rclcpp::Node {
       if (keyframes[i].second == max_vertical_angle_down) {
         keyframes[i] = {keyframes[i].first * reduce_last_scanline, max_vertical_angle_down};
       }
+    }
+    // log the keyframes appropriately
+    RCLCPP_WARN(this->get_logger(), "keyframes: ");
+    for (int i = 0; i < keyframes.size(); i++) {
+      RCLCPP_WARN(this->get_logger(), "keyframe %d: %f, %f", i, keyframes[i].first, keyframes[i].second);
     }
     return keyframes;
   }
@@ -511,49 +544,76 @@ int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, do
   return min_distance_point.second;
 
 }
+
+void perform_search_pattern()
+{
+  
+  index_ = index_ % pattern_.size(); 
+  double head_pan = pattern_[index_].first*DEG_TO_RAD;
+  double head_tilt = pattern_[index_].second*DEG_TO_RAD;
+  double current_head_pan;
+  double current_head_tilt;
+  std::pair<double, double> head_position = get_head_position();
+  current_head_pan = head_position.first;
+  current_head_tilt = head_position.second;
+
+
+  
+  bool success = send_motor_goals(head_pan, head_tilt, true, pan_speed, tilt_speed, current_head_pan, current_head_tilt);
+
+// log that search pattern is performed
+RCLCPP_INFO(this->get_logger(), "search pattern is performed");
+// log the head pan
+RCLCPP_INFO(this->get_logger(), "head pan: %f", head_pan);
+// log the head tilt
+RCLCPP_INFO(this->get_logger(), "head tilt: %f", head_tilt);
+// log the index
+RCLCPP_INFO(this->get_logger(), "index: %d", index_);
+  if (success) {
+    double distance_to_goal = std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
+    // log distance to goal
+    RCLCPP_INFO(this->get_logger(), "distance to goal: %f", distance_to_goal);
+    if (distance_to_goal < threshold_) {index_++;}     
+    }
+  else{
+// log that success was false
+RCLCPP_INFO(this->get_logger(), "success was false");
+    index_++;}
+
+}
   void behave() {
   // log the current head mode
   //log the head_mode_.BALL_MODE
-  RCLCPP_INFO(this->get_logger(), "BALLMODE: %d", head_mode_.BALL_MODE);
   uint curr_head_mode = head_mode_.head_mode;
-  double pan_speed;
-  double tilt_speed;
+
+  double current_head_pan;
+  double current_head_tilt;
+
   //  The modes i want are: 1. ball search pattern, 2. penaltix search pattern, 3. field feature search paattern, 4. fron search pattern 
+
+  if (prev_head_mode != curr_head_mode)
+  {
   switch (curr_head_mode) {
     case head_mode_.BALL_MODE:
       pan_speed = params_.pan_speed; // change this value depending on the head mode
       tilt_speed = params_.tilt_speed; // same as above
+  pattern_ = generatePattern(params_.scan_lines, params_.pan_max, params_.pan_min, params_.tilt_max, params_.tilt_min); // todo params
+  std::pair<double, double> head_position = get_head_position();
+  current_head_pan = head_position.first;
+   current_head_tilt = head_position.second;
         RCLCPP_INFO(this->get_logger(), "was in switch");
+
+  int index_ = get_near_pattern_position(pattern_, current_head_pan, current_head_tilt);
       break;
     // case head_mode_.BALL_MODE_PENALTY:
     // case head_mode_.FIELD_FEATURES:
     // case head_mode_.LOOK_FRONT:
   }
+ // todo: params
+  prev_head_mode = curr_head_mode;
 
-  std::vector<std::pair<double, double>> pattern = generatePattern(params_.scan_lines, params_.pan_max, params_.pan_max, params_.tilt_max, params_.tilt_max); // todo params
-  double threshold = params_.position_reached_threshold; // todo: params
-  std::pair<double, double> head_position = get_head_position();
-  double current_head_pan = head_position.first;
-  double current_head_tilt = head_position.second;
-  int index = get_near_pattern_position(pattern, current_head_pan, current_head_tilt);
-
-  // now perform method:
-  index = index % pattern.size();
-  double head_pan = pattern[index].first;
-  double head_tilt = pattern[index].second;
-  
-  bool success = send_motor_goals(head_pan, head_tilt, true, pan_speed, tilt_speed, current_head_pan, current_head_tilt, true);
-
-// log the index
-RCLCPP_INFO(this->get_logger(), "index: %d", index);
-  if (success) {
-    double distance_to_goal = std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
-    if (distance_to_goal < threshold) {index++;}      
-    }
-  else{
-
-    index++;}
-
+  }
+  perform_search_pattern();
   };
 };
 
