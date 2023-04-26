@@ -11,6 +11,7 @@
 #include <bitbots_localization/RobotState.h>
 #include <geometry_msgs/msg/point.hpp>
 #include <bitbots_localization/tools.h>
+#include <nav_msgs/msg/occupancy_grid.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -46,6 +47,8 @@ class Map {
                                                 double stateX,
                                                 double stateY,
                                                 double stateT);
+
+  nav_msgs::msg::OccupancyGrid get_map_msg(std::string frame_id, int threshold = -1);
 
  private:
     double out_of_map_value_;

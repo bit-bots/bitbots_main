@@ -23,6 +23,7 @@ Map::Map(const std::string& name, const std::string& type, const double out_of_m
   map = cv::imread(absolute_map_path.string(), cv::IMREAD_GRAYSCALE);
   if (!map.data) {
     RCLCPP_ERROR(rclcpp::get_logger("bitbots_localization"), "No image data '%s'", map_path.c_str());
+    return;
   }
 }
 
@@ -87,5 +88,27 @@ std::pair<double, double> Map::observationRelative(std::pair<double, double> obs
   //std::pair<double, double> observationRelative = std::make_pair(xGlobal, yGlobal);
 
   return observationRelative; // in cartesian
+}
+
+nav_msgs::msg::OccupancyGrid Map::get_map_msg(std::string frame_id, int threshold) {
+  nav_msgs::msg::OccupancyGrid map_msg;
+  map_msg.header.frame_id = frame_id;
+  map_msg.info.resolution = 0.01;
+  map_msg.info.width = map.cols;
+  map_msg.info.height = map.rows;
+  map_msg.info.origin.position.x = -map.cols / 2.0 * map_msg.info.resolution;
+  map_msg.info.origin.position.y = -map.rows / 2.0 * map_msg.info.resolution;
+  map_msg.info.origin.position.z = 0;
+  map_msg.info.origin.orientation.x = 0;
+  map_msg.info.origin.orientation.y = 0;
+  map_msg.info.origin.orientation.z = 0;
+  map_msg.info.origin.orientation.w = 1;
+  map_msg.data.resize(map.rows * map.cols);
+  for (int i = 0; i < map.rows; i++) {
+    for (int j = 0; j < map.cols; j++) {
+      map_msg.data[i * map.cols + j] = 100 - map.at<uchar>(i, j);
+    }
+  }
+  return map_msg;
 }
 }

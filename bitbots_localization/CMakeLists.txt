@@ -7,21 +7,22 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(particle_filter REQUIRED)
-find_package(soccer_vision_3d_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(particle_filter REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(soccer_vision_3d_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(cv_bridge REQUIRED)
-find_package(image_transport REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME} "srv/ResetFilter.srv"
   "srv/SetPaused.srv"
@@ -77,18 +78,19 @@ add_executable(localization ${SOURCES})
 ament_target_dependencies(localization
   ament_cmake
   rclcpp
-  OpenCV
   Boost
-  std_srvs
-  particle_filter
+  cv_bridge
   humanoid_league_msgs
+  image_transport
+  nav_msgs
+  OpenCV
+  particle_filter
+  soccer_vision_3d_msgs
+  std_srvs
   tf2
   tf2_geometry_msgs
   tf2_ros
-  soccer_vision_3d_msgs
-  image_transport
   visualization_msgs
-  cv_bridge
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target
