@@ -1,0 +1,377 @@
+head_node:
+  head:
+    rosnode: {
+      type: string,
+      default_value: "head_behavior",
+      description: "Name of the head_behaviors ros-node"
+      }
+
+    # Sane default values for some modules
+    defaults:
+      head_mode: {
+          type: int,
+          default_value: 0,
+          description: "Ball mode"
+      }
+
+    # Max values for the head position
+    max_pan: {
+      type: double_array,
+      default_value: [-2.35, 2.35],
+      description: " Max values for the head position",
+      validation: {
+            fixed_size<>: 2
+          }
+    }
+    max_tilt: {
+      type: double_array,
+      default_value: [-1.2, 0.2],
+      description: " Max values for the head position",
+      validation: {
+            fixed_size<>: 2
+          }
+    }
+
+    # TODO maybe keep this instead of the generated lines
+    # Search pattern for penalty
+    #search_pattern_penalty:
+    #  - [0, -15]
+    #  - [0, -30]
+    #  - [30, -7]
+    #  - [-30, -7]
+
+    look_at:
+        tilt_speed: {
+          type: double,
+          default_value: 6.0,
+        }
+        pan_speed: {
+          type: double,
+          default_value: 6.0
+        }
+
+    # Search pattern for ball
+    search_pattern:
+        # Speed search pattern
+        tilt_speed: {
+          type: double,
+          default_value: 3.0
+        }
+        pan_speed: {
+          type: double,
+          default_value: 3.0
+        }
+        # Max values for the search pattern
+        pan_max: {
+          type: double_array,
+          default_value: [135.0, -135.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        tilt_max: {
+          type: double_array,
+          default_value: [-10.0, -60.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+
+        # Number of scan lines for the search pattern
+        scan_lines: {
+          type: string,
+          default_value: 2,
+          description: "Number of scan lines for the search pattern"
+        }
+
+        # Reduces last scanline by that factor so that robot does not collide
+        reduce_last_scanline: {
+          type: double,
+          default_value: 0.2,
+          description: "Reduces last scanline by that factor so that robot does not collide"
+        }
+
+
+    # Search pattern for penalty
+    search_pattern_penalty:
+        tilt_speed: {
+          type: double,
+          default_value: 1.0
+        }
+        pan_speed: {
+          type: double,
+          default_value: 2.0,
+        }
+        pan_max: {
+          type: double_array,
+          default_value: [-30.0, 30.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        tilt_max: {
+          type: double_array,
+          default_value: [-7.0, -30.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        scan_lines: {
+          type: int,
+          default_value: 2,
+        }
+        reduce_last_scanline: {
+          type: double,
+          default_value: 0.2
+        }
+
+    # Search pattern for visual compass features search
+    visual_compass_features_pattern:
+        tilt_speed: {
+          type: double,
+          default_value: 1.0
+        }
+        pan_speed: {
+          type: double,
+          default_value: 1.0
+        }
+        pan_max: {
+          type: double_array,
+          default_value: [-45.0, 45.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        tilt_max: {
+          type: double_array,
+          default_value: [7.0, -7.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        scan_lines: {
+          type: int,
+          default_value: 2,
+        }
+
+    search_pattern_goal:
+        tilt_speed: {
+          type: double,
+          default_value: 1.0
+        }
+        pan_speed: {
+          type: double,
+          default_value: 1.5
+        }
+        pan_max: {
+          type: double_array,
+          default_value: [135.0, -135.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        tilt_max: {
+          type: double_array,
+          default_value: [7.0, -7.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        scan_lines: {
+          type: int,
+          default_value: 2,
+        }
+    search_pattern_field_features:
+        tilt_speed: {
+          type: double,
+          default_value: 3.0
+        }
+        pan_speed: {
+          type: double,
+          default_value: 3.0
+        }
+        pan_max: {
+          type: double_array,
+          default_value: [-135.0, 135.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        tilt_max: {
+          type: double_array,
+          default_value: [-10.0, -60.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+        scan_lines: {
+          type: int,
+          default-value: 2,
+        }
+        reduce_last_scanline: {
+          type: double,
+          default_value: 0.2
+        }
+
+    search_recent_ball:
+        tilt_speed: {
+          type: double,
+          default_value: 2.0
+        }
+        pan_speed: {
+          type: double,
+          default_value: 2.0
+        }
+        offset_pattern: {
+          type: string,
+          default_value: "[
+            [ 0.0,   0.0],
+            [ 0.0,  20.0],
+            [ 0.0, -20.0],
+            [ 20.0,-20.0],
+            [ 20.0, 20.0],
+            [-20.0, 20.0],
+            [-20.0,-20.0],
+            [ 40.0,-20.0],
+          ]"
+        }
+        ball_search_time: {
+          type: double,
+          default_value: 20.0
+        }
+
+    front_search_pattern:
+      tilt_speed: {
+          type: double,
+          default_value: 3.0
+        }
+      pan_speed: {
+          type: double,
+          default_value: 3.0
+        }
+      pan_max: {
+          type: double_array,
+          default_value: [ 0.0, 0.0 ],
+          validation: {
+            fixed_size<>: 2
+          }
+      }
+      tilt_max: {
+          type: double_array,
+          default_value: [ -10.0, -70.0 ],
+          validation: {
+            fixed_size<>: 2
+          }
+      }
+      scan_lines: {
+          type: int,
+          default_value: 2,
+        }
+      reduce_last_scanline: {
+          type: double,
+          default_value: 0.0
+        }
+
+    # Values for the visual compass record pattern
+    record_pattern_scan_lines: {
+          type: int,
+          default_value: 2,
+        }
+    record_pattern_pan_max_left: {
+          type: double_array,
+          default_value: [-80.0, 0.0],
+          validation: {
+            fixed_size<>: 2
+          }
+    }
+    record_pattern_pan_max_right: {
+          type: double_array,
+          default_value: [0.0, -80.0],
+          validation: {
+            fixed_size<>: 2
+          }
+    }
+    record_pattern_tilt_max: {
+          type: double_array,
+          default_value: [14.0, 0.0],
+          validation: {
+            fixed_size<>: 2
+          }
+        }
+    record_pattern_speed_tilt: {
+          type: double,
+          default_value: 1.0
+        }
+    record_pattern_speed_pan: {
+          type: double,
+          default_value: 1.0
+        }
+    interpolation_steps: {
+          type: int,
+          default_value: 4,
+        }
+
+    # Visual compass ground truth trigger topic
+    visual_compass_trigger_topic: {
+      type: string,
+      default_value: '/visual_compass_ground_truth_trigger'
+    }
+
+    
+    ball_tracking_min_pan_delta: {
+          type: double,
+          default_value: 1.5,
+          description: "These values describe the minimal required delta between current joint states and target 
+          joint states in degree to reduce unnecessary movement due to noise in the detection of the Ball.",
+      
+        }
+    ball_tracking_min_tilt_delta: {
+          type: double,
+          default_value: 1.0
+          description: "These values describe the minimal required delta between current joint states and target 
+          joint states in degree to reduce unnecessary movement due to noise in the detection of the Ball.",
+        }
+
+
+    # Positions for static head modes
+    look_down_position: {
+          type: double_array,
+          default_value: [0.0, -65.0],
+          validation: {
+            fixed_size<>: 2
+          }
+    }
+    look_forward_position: {
+          type: double_array,
+          default_value: [0.0, -7.0],
+          validation: {
+            fixed_size<>: 2
+          }
+    }
+    look_up_position: {
+          type: double_array,
+          default_value: [0.0, 12.0],
+          validation: {
+            fixed_size<>: 2
+          }
+    }
+
+    
+    position_reached_threshold: {
+      type: double,
+      default_value: 5.0,
+      description: "Threshold (in degrees) when a head position is reached and
+      the next position will be triggered"
+      }
+
+    # After `ball_lost_time` seconds, the ball is considered lost and will be searched
+    ball_lost_time: {
+      type: double,
+      default_value: 0.5,
+      description: "the time, when the ball is lost"
+    }
+    post_lost_time: {
+      type: double,
+      default_value: 1.0,
+      description: "time since the ball was lost"
+    }

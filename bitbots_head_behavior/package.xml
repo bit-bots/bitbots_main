@@ -11,6 +11,7 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>
 
+  <depend>generate_parameter_library</depend> 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>bitbots_body_behavior</depend>
