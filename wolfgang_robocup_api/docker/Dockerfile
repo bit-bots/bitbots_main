@@ -69,10 +69,7 @@ RUN cd src/bitbots_meta && \
     lib/pylon-ros-camera lib/imu_tools/rviz_imu_plugin && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
     sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml && \
-    git -C lib/ros2_numpy switch humble && \
-    git -C wolfgang_robot switch fix/add_missing_dependency && \
-    git -C bitbots_misc switch fix/add_missing_dependency
-# TODO remove branch switches when merged
+    git -C lib/ros2_numpy switch rolling
 
 # Install ros dependencies with rosdep
 RUN sudo apt update && sudo rosdep init && rosdep update
