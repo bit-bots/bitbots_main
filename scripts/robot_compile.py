@@ -293,7 +293,7 @@ def _execute_on_target(target, command, catch_output=False):
     :type catch_output: bool
     :rtype: subprocess.CompletedProcess
     """
-    real_cmd = ["ssh", "bitbots@{}".format(target.ssh_target), command]
+    real_cmd = ["ssh", "-t", "bitbots@{}".format(target.ssh_target), command]
     print_debug("Calling {}".format(" ".join(real_cmd)))
 
     if not catch_output:
