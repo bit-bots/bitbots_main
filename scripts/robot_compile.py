@@ -350,7 +350,7 @@ def build(target, package='', pre_clean=False):
     if package and pre_clean:
         print_err("Cleaning a specific package is not supported! Not cleaning.")
     elif pre_clean:
-        cmd_clean = 'rm -rf build install;'
+        cmd_clean = 'rm -rf build install log;'
     else:
         cmd_clean = ''
 
