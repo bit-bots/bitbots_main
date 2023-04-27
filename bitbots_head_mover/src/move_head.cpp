@@ -514,7 +514,6 @@ class HeadMover {
 
   void behave() {
     uint curr_head_mode = head_mode_.head_mode;
-    RCLCPP_INFO(node_->get_logger(), "Head mode: %d, prev: %d", curr_head_mode, prev_head_mode_);
 
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
