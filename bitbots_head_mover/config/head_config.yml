@@ -1,11 +1,178 @@
 move_head:
+  # Max values for the head position
+  max_pan: {
+    type: double_array,
+    default_value: [-2.35, 2.35],
+    description: " Max values for the head position",
+    validation: {
+          fixed_size<>: 2
+        }
+  }
+  max_tilt: {
+    type: double_array,
+    default_value: [-1.2, 0.2],
+    description: " Max values for the head position",
+    validation: {
+          fixed_size<>: 2
+        }
+  }
+  # TODO maybe keep this instead of the generated lines
+  # Search pattern for penalty
+  #search_pattern_penalty:
+  #  - [0, -15]
+  #  - [0, -30]
+  #  - [30, -7]
+  #  - [-30, -7]
+
   look_at:
-      pan_speed: {
-      type: double,
-      default_value: 6.0
-    }
       tilt_speed: {
+        type: double,
+        default_value: 6.0,
+      }
+      pan_speed: {
+        type: double,
+        default_value: 6.0
+      }
+  # Search pattern for ball
+  search_pattern:
+      # Speed search pattern
+      tilt_speed: {
+        type: double,
+        default_value: 3.0
+      }
+      pan_speed: {
+        type: double,
+        default_value: 3.0
+      }
+      # Max values for the search pattern
+      pan_max: {
+        type: double_array,
+        default_value: [135.0, -135.0],
+        validation: {
+          fixed_size<>: 2
+        }
+      }
+      tilt_max: {
+        type: double_array,
+        default_value: [-10.0, -60.0],
+        validation: {
+          fixed_size<>: 2
+        }
+      }
+      # Number of scan lines for the search pattern
+      scan_lines: {
+        type: int,
+        default_value: 2,
+        description: "Number of scan lines for the search pattern"
+      }
+      # Reduces last scanline by that factor so that robot does not collide
+      reduce_last_scanline: {
+        type: double,
+        default_value: 0.2,
+        description: "Reduces last scanline by that factor so that robot does not collide"
+      }
+
+  search_pattern_penalty:
+    tilt_speed: {
       type: double,
-      default_value: 6.0
+      default_value: 1.0
+    }
+    pan_speed: {
+      type: double,
+      default_value: 2.0,
+    }
+    pan_max: {
+      type: double_array,
+      default_value: [-30.0, 30.0],
+      validation: {
+        fixed_size<>: 2
+      }
+    }
+    tilt_max: {
+      type: double_array,
+      default_value: [-7.0, -30.0],
+      validation: {
+        fixed_size<>: 2
+      }
+    }
+    scan_lines: {
+      type: int,
+      default_value: 2,
+    }
+    reduce_last_scanline: {
+      type: double,
+      default_value: 0.2
+    }
+
+
+  search_pattern_field_features:
+    tilt_speed: {
+      type: double,
+      default_value: 3.0
+    }
+    pan_speed: {
+      type: double,
+      default_value: 3.0
+    }
+    pan_max: {
+      type: double_array,
+      default_value: [-135.0, 135.0],
+      validation: {
+        fixed_size<>: 2
+      }
+    }
+    tilt_max: {
+      type: double_array,
+      default_value: [-10.0, -60.0],
+      validation: {
+        fixed_size<>: 2
+      }
+    }
+    scan_lines: {
+      type: int,
+      default_value: 2,
+    }
+    reduce_last_scanline: {
+      type: double,
+      default_value: 0.2
+    }
+
+  front_search_pattern:
+    tilt_speed: {
+        type: double,
+        default_value: 3.0
+      }
+    pan_speed: {
+        type: double,
+        default_value: 3.0
+      }
+    pan_max: {
+        type: double_array,
+        default_value: [ 0.0, 0.0 ],
+        validation: {
+          fixed_size<>: 2
+        }
+    }
+    tilt_max: {
+        type: double_array,
+        default_value: [ -10.0, -70.0 ],
+        validation: {
+          fixed_size<>: 2
+        }
+    }
+    scan_lines: {
+        type: int,
+        default_value: 2,
+      }
+    reduce_last_scanline: {
+        type: double,
+        default_value: 0.0
+      }
+
+  position_reached_threshold: {
+    type: double,
+    default_value: 5.0,
+    description: "Threshold (in degrees) when a head position is reached and
+    the next position will be triggered"
     }
 

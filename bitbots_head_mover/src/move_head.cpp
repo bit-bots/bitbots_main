@@ -179,7 +179,7 @@ class HeadMover : public rclcpp::Node {
     current_joint_state_.effort = {0, 0};
 
     prev_head_mode = -1;
-    threshold_ = params_.position_reached_threshold;
+    threshold_ = params_.position_reached_threshold*DEG_TO_RAD;
     pan_speed = 0;
     tilt_speed = 0;
 
@@ -210,7 +210,8 @@ class HeadMover : public rclcpp::Node {
       return 0;
     }
   };
-  // if not given, resolve_collison is true
+
+
   bool send_motor_goals(double pan_position,
                         double tilt_position,
                         bool resolve_collision,
@@ -218,13 +219,13 @@ class HeadMover : public rclcpp::Node {
                         double tilt_speed = 1.5,
                         double current_pan_position = 0.0,
                         double current_tilt_position = 0.0,
-                        bool clip = true) //TODO: make 2 methods
+                        bool clip = true) 
   {
     RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
     if (clip) {
-      pan_position = std::min(std::max(pan_position, -1.5),
-                              1.5); // TODO: use config instead of -1.5 and 1.5, that is what pre_clip does
-      tilt_position = std::min(std::max(tilt_position, -0.5), 0.5);
+            std::pair<double, double> clipped = pre_clip(pan_position, tilt_position);
+      pan_position = clipped.first;
+      tilt_position = clipped.second;
     }
 
     if (resolve_collision) {
@@ -258,21 +259,26 @@ class HeadMover : public rclcpp::Node {
                         bool clip = true) {
     RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
     if (clip) {
-      pan_position = std::min(std::max(pan_position, -1.5),
-                              1.5); // TODO: use config instead of -1.5 and 1.5, that is what pre_clip does
-      tilt_position = std::min(std::max(tilt_position, -0.5), 0.5);
+      std::pair<double, double> clipped = pre_clip(pan_position, tilt_position);
+      pan_position = clipped.first;
+      tilt_position = clipped.second;
     }
 
     pos_msg_.positions = {pan_position, tilt_position};
     pos_msg_.velocities = {pan_speed, tilt_speed};
     pos_msg_.header.stamp = this->get_clock()->now();
     // log the pos_msg_ and say that its in sent motor goals
-    RCLCPP_INFO(this->get_logger(), "send motor goals");
     position_publisher_->publish(pos_msg_);
     return true;
 
   };
-
+ 
+std::pair<double, double> pre_clip(double pan, double tilt)
+{
+  double new_pan = std::min(std::max(pan, params_.max_pan[0]), params_.max_pan[1]);
+  double new_tilt = std::min(std::max(tilt, params_.max_tilt[0]), params_.max_tilt[1]);
+  return std::make_pair(new_pan, new_tilt);
+}
   bool avoid_collision_on_path(double goal_pan,
                                double goal_tilt,
                                double current_pan,
@@ -339,7 +345,6 @@ class HeadMover : public rclcpp::Node {
     pos_msg_.velocities = {pan_speed, tilt_speed};
     pos_msg_.header.stamp = rclcpp::Clock().now();
     // log the pos_msg_ and say that its in move head to position with speed adjustment
-    RCLCPP_INFO(this->get_logger(), "moving head to position with speed adjustment: ");
     position_publisher_->publish(pos_msg_);
   }
 
@@ -391,11 +396,6 @@ class HeadMover : public rclcpp::Node {
       double pan = min_pan + step_size * i;
       output_points.push_back({pan, tilt});
     }
-    // log
-    RCLCPP_INFO(this->get_logger(), "interpolated steps: ");
-
-
-
     return output_points;
   }
   std::vector<std::pair<double, double>> generatePattern(int line_count,
@@ -547,7 +547,7 @@ int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, do
 
 void perform_search_pattern()
 {
-  
+  // log the pattern size
   index_ = index_ % pattern_.size(); 
   double head_pan = pattern_[index_].first*DEG_TO_RAD;
   double head_tilt = pattern_[index_].second*DEG_TO_RAD;
@@ -556,24 +556,18 @@ void perform_search_pattern()
   std::pair<double, double> head_position = get_head_position();
   current_head_pan = head_position.first;
   current_head_tilt = head_position.second;
-
-
   
   bool success = send_motor_goals(head_pan, head_tilt, true, pan_speed, tilt_speed, current_head_pan, current_head_tilt);
 
-// log that search pattern is performed
-RCLCPP_INFO(this->get_logger(), "search pattern is performed");
-// log the head pan
-RCLCPP_INFO(this->get_logger(), "head pan: %f", head_pan);
-// log the head tilt
-RCLCPP_INFO(this->get_logger(), "head tilt: %f", head_tilt);
-// log the index
-RCLCPP_INFO(this->get_logger(), "index: %d", index_);
   if (success) {
     double distance_to_goal = std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
     // log distance to goal
     RCLCPP_INFO(this->get_logger(), "distance to goal: %f", distance_to_goal);
-    if (distance_to_goal < threshold_) {index_++;}     
+    // log threshold
+    RCLCPP_INFO(this->get_logger(), "threshold: %f", threshold_);
+    if (distance_to_goal <= threshold_) {index_++;
+    // log that index was increased
+    RCLCPP_INFO(this->get_logger(), "index was increased");}     
     }
   else{
 // log that success was false
@@ -581,6 +575,7 @@ RCLCPP_INFO(this->get_logger(), "success was false");
     index_++;}
 
 }
+
   void behave() {
   // log the current head mode
   //log the head_mode_.BALL_MODE
@@ -593,19 +588,36 @@ RCLCPP_INFO(this->get_logger(), "success was false");
 
   if (prev_head_mode != curr_head_mode)
   {
+    // log current head mode
+    RCLCPP_INFO(this->get_logger(), "current head mode: %d", curr_head_mode);
   switch (curr_head_mode) {
-    case head_mode_.BALL_MODE:
-      pan_speed = params_.pan_speed; // change this value depending on the head mode
-      tilt_speed = params_.tilt_speed; // same as above
-  pattern_ = generatePattern(params_.scan_lines, params_.pan_max, params_.pan_min, params_.tilt_max, params_.tilt_min); // todo params
+    case head_mode_.BALL_MODE: // 0
+      pan_speed = params_.search_pattern.pan_speed; // change this value depending on the head mode
+      tilt_speed = params_.search_pattern.tilt_speed; // same as above
+  pattern_ = generatePattern(params_.search_pattern.scan_lines, params_.search_pattern.pan_max[0], params_.search_pattern.pan_max[1], params_.search_pattern.tilt_max[0], params_.search_pattern.tilt_max[1]); // todo params
+      break;
+    case head_mode_.BALL_MODE_PENALTY: // 11
+      pan_speed = params_.search_pattern_penalty.pan_speed; // change this value depending on the head mode
+      tilt_speed = params_.search_pattern_penalty.tilt_speed; // same as above
+      pattern_ = generatePattern(params_.search_pattern_penalty.scan_lines, params_.search_pattern_penalty.pan_max[0], params_.search_pattern_penalty.pan_max[1], params_.search_pattern_penalty.tilt_max[0], params_.search_pattern_penalty.tilt_max[1]); // todo params
+    break;
+
+    case head_mode_.FIELD_FEATURES: // 3
+      pan_speed = params_.search_pattern_field_features.pan_speed;
+      tilt_speed = params_.search_pattern_field_features.tilt_speed; 
+      pattern_ = generatePattern(params_.search_pattern_field_features.scan_lines, params_.search_pattern_field_features.pan_max[0], params_.search_pattern_field_features.pan_max[1], params_.search_pattern_field_features.tilt_max[0], params_.search_pattern_field_features.tilt_max[1]); // todo params
+    break;
+
+    case head_mode_.LOOK_FRONT: // 13
+      pan_speed = params_.front_search_pattern.pan_speed;
+      tilt_speed = params_.front_search_pattern.tilt_speed; 
+      pattern_ = generatePattern(params_.front_search_pattern.scan_lines, params_.front_search_pattern.pan_max[0], params_.front_search_pattern.pan_max[1], params_.front_search_pattern.tilt_max[0], params_.front_search_pattern.tilt_max[1]); // todo params
+    break;
   std::pair<double, double> head_position = get_head_position();
   current_head_pan = head_position.first;
    current_head_tilt = head_position.second;
-        RCLCPP_INFO(this->get_logger(), "was in switch");
 
-  int index_ = get_near_pattern_position(pattern_, current_head_pan, current_head_tilt);
-      break;
-    // case head_mode_.BALL_MODE_PENALTY:
+  index_ = get_near_pattern_position(pattern_, current_head_pan, current_head_tilt);
     // case head_mode_.FIELD_FEATURES:
     // case head_mode_.LOOK_FRONT:
   }
