@@ -3,7 +3,7 @@ move_head:
   max_pan: {
     type: double_array,
     default_value: [-2.35, 2.35],
-    description: " Max values for the head position",
+    description: "Max values for the head position (in radians)",
     validation: {
           fixed_size<>: 2
         }
@@ -11,18 +11,11 @@ move_head:
   max_tilt: {
     type: double_array,
     default_value: [-1.2, 0.2],
-    description: " Max values for the head position",
+    description: "Max values for the head position (in radians)",
     validation: {
           fixed_size<>: 2
         }
   }
-  # TODO maybe keep this instead of the generated lines
-  # Search pattern for penalty
-  #search_pattern_penalty:
-  #  - [0, -15]
-  #  - [0, -30]
-  #  - [30, -7]
-  #  - [-30, -7]
 
   look_at:
       tilt_speed: {
@@ -48,6 +41,7 @@ move_head:
       pan_max: {
         type: double_array,
         default_value: [135.0, -135.0],
+        description: "Maximum pan values for the search pattern (in degrees)",
         validation: {
           fixed_size<>: 2
         }
@@ -55,6 +49,7 @@ move_head:
       tilt_max: {
         type: double_array,
         default_value: [-10.0, -60.0],
+        description: "Maximum tilt values for the search pattern (in degrees)",
         validation: {
           fixed_size<>: 2
         }
@@ -84,6 +79,7 @@ move_head:
     pan_max: {
       type: double_array,
       default_value: [-30.0, 30.0],
+      description: "Maximum pan values for the search pattern (in degrees)",
       validation: {
         fixed_size<>: 2
       }
@@ -91,6 +87,7 @@ move_head:
     tilt_max: {
       type: double_array,
       default_value: [-7.0, -30.0],
+      description: "Maximum tilt values for the search pattern (in degrees)",
       validation: {
         fixed_size<>: 2
       }
@@ -117,6 +114,7 @@ move_head:
     pan_max: {
       type: double_array,
       default_value: [-135.0, 135.0],
+      description: "Maximum pan values for the search pattern (in degrees)",
       validation: {
         fixed_size<>: 2
       }
@@ -124,6 +122,7 @@ move_head:
     tilt_max: {
       type: double_array,
       default_value: [-10.0, -60.0],
+      description: "Maximum tilt values for the search pattern (in degrees)",
       validation: {
         fixed_size<>: 2
       }
@@ -149,6 +148,7 @@ move_head:
     pan_max: {
         type: double_array,
         default_value: [ 0.0, 0.0 ],
+        description: "Maximum pan values for the search pattern (in degrees)",
         validation: {
           fixed_size<>: 2
         }
@@ -156,6 +156,7 @@ move_head:
     tilt_max: {
         type: double_array,
         default_value: [ -10.0, -70.0 ],
+        description: "Maximum tilt values for the search pattern (in degrees)",
         validation: {
           fixed_size<>: 2
         }
@@ -175,4 +176,3 @@ move_head:
     description: "Threshold (in degrees) when a head position is reached and
     the next position will be triggered"
     }
-
