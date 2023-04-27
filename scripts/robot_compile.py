@@ -105,7 +105,6 @@ class Target:
         donna = "colcon_ws"
         melody = "colcon_ws"
         rose = "colcon_ws"
-        davros = "davros_ws"
 
     class RobotComputers:
         amy = ["nuc1"]
@@ -114,7 +113,6 @@ class Target:
         donna = ["nuc4"]
         melody = ["nuc5"]
         rose = ["nuc6"]
-        davros = ["davros"]
 
     class IPs:
         __prefix__ = "172.20.1."
@@ -124,7 +122,6 @@ class Target:
         nuc4 = __prefix__ + "14"
         nuc5 = __prefix__ + "15"
         nuc6 = __prefix__ + "16"
-        davros = __prefix__ + "25"
 
     def __init__(self, ip, ssh_target, hostname=None, robot_name=None):
         """
@@ -152,12 +149,8 @@ class Target:
 
         self.workspace = getattr(self.Workspaces, self.robot_name)  # type: str
 
-        # figure out sync_includes
-        if self.hostname == "davros":
-            self.sync_includes_file = os.path.join(BITBOTS_META, "sync_includes_davros.yaml")
-        else:
-            self.sync_includes_file = os.path.join(BITBOTS_META,
-                                                   "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
+        self.sync_includes_file = os.path.join(BITBOTS_META,
+                                               "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
 
 
 def parse_arguments():
