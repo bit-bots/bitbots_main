@@ -35,7 +35,8 @@
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
-class HeadMover : public rclcpp::Node {
+class HeadMover {
+  std::shared_ptr<rclcpp::Node> node_;
 
   //declare subscriber and publisher
   rclcpp::Subscription<humanoid_league_msgs::msg::HeadMode>::SharedPtr head_mode_subscriber_;
@@ -83,34 +84,36 @@ class HeadMover : public rclcpp::Node {
   double tilt_speed_;
 
  public:
-  HeadMover()
-      : Node("head_mover", rclcpp::NodeOptions().allow_undeclared_parameters(true)) {
+  HeadMover() {
 
-    position_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10);
+    node_ = std::make_shared<rclcpp::Node>("head_mover");
+
+    position_publisher_ = node_->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10);
     head_mode_subscriber_ =
-        this->create_subscription<humanoid_league_msgs::msg::HeadMode>(
+        node_->create_subscription<humanoid_league_msgs::msg::HeadMode>(
             "head_mode",
             10,
             [this](const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) { head_mode_callback(msg); }); // should be callback group 1
-    joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
+    joint_state_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
         "joint_states",
         10,
         [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); }); // should be callback group 1
 
     // load parameters from config
-    auto param_listener =
-        std::make_shared<move_head::ParamListener>(rclcpp::Node::make_shared("head_mover")); //is this a problem?
+    auto param_listener = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener->get_params();
     pan_speed_ = params_.look_at.pan_speed;
     tilt_speed_ = params_.look_at.tilt_speed;
 
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+    auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
+
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
     while (!parameters_client->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
-        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
         return;
       }
-      RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+      RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
     }
 
     rcl_interfaces::msg::ListParametersResult parameter_list =
@@ -118,15 +121,18 @@ class HeadMover : public rclcpp::Node {
     auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
 
     // set the parameters to our node
-    set_parameters(copied_parameters);
+    for (auto & parameter : copied_parameters) {
+      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
+      moveit_node->set_parameter(parameter);
+    }
 
     std::string robot_description = "robot_description";
     // get the robot description from the blackboard
     loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
-        robot_model_loader::RobotModelLoader(SharedPtr(this), robot_description, true));
+        robot_model_loader::RobotModelLoader(moveit_node, robot_description, true));
     robot_model_ = loader_->getModel();
     if (!robot_model_) {
-      RCLCPP_ERROR(this->get_logger(),
+      RCLCPP_ERROR(node_->get_logger(),
                    "failed to load robot model %s. Did you start the "
                    "blackboard (bitbots_utils base.launch)?",
                    robot_description.c_str());
@@ -135,11 +141,10 @@ class HeadMover : public rclcpp::Node {
     robot_state_->setToDefaultValues();
 
     // get planning scene for collision checking
-    planning_scene_monitor_ =
-        std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(SharedPtr(this), robot_description);
+    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(moveit_node, loader_);
     planning_scene_ = planning_scene_monitor_->getPlanningScene();
     if (!planning_scene_) {
-      RCLCPP_ERROR_ONCE(this->get_logger(), "failed to connect to planning scene");
+      RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
 
     // prepare the pos_msg
@@ -150,21 +155,16 @@ class HeadMover : public rclcpp::Node {
     pos_msg_.max_currents = {0, 0};
 
     // apparently tf_listener is necessary but unused
-    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-    br_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    br_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
 
     prev_head_mode_ = -1;
     threshold_ = params_.position_reached_threshold * DEG_TO_RAD;
     pan_speed_ = 0;
     tilt_speed_ = 0;
 
-    timer_ = this->create_wall_timer(500ms, [this] { behave(); });
-  }
-
-  ~HeadMover() {
-    RCLCPP_INFO(this->get_logger(), "Shutting down head_mover");
-    timer_->cancel();
+    timer_ = node_->create_wall_timer(500ms, [this] { behave(); });
   }
 
   void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
@@ -194,7 +194,7 @@ class HeadMover : public rclcpp::Node {
                         double current_pan_position = 0.0,
                         double current_tilt_position = 0.0,
                         bool clip = true) {
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
+    RCLCPP_DEBUG_STREAM(node_->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
     if (clip) {
       std::pair<double, double> clipped = pre_clip(pan_position, tilt_position);
       pan_position = clipped.first;
@@ -209,7 +209,7 @@ class HeadMover : public rclcpp::Node {
                                              pan_speed,
                                              tilt_speed);
       if (!success) {
-        RCLCPP_ERROR_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Unable to resolve head collision");
+        RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000, "Unable to resolve head collision");
       }
       return success;
     } else {
@@ -229,7 +229,7 @@ class HeadMover : public rclcpp::Node {
                         double pan_speed = 1.5,
                         double tilt_speed = 1.5,
                         bool clip = true) {
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
+    RCLCPP_DEBUG_STREAM(node_->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
     if (clip) {
       std::pair<double, double> clipped = pre_clip(pan_position, tilt_position);
       pan_position = clipped.first;
@@ -238,7 +238,7 @@ class HeadMover : public rclcpp::Node {
 
     pos_msg_.positions = {pan_position, tilt_position};
     pos_msg_.velocities = {pan_speed, tilt_speed};
-    pos_msg_.header.stamp = this->get_clock()->now();
+    pos_msg_.header.stamp = node_->get_clock()->now();
     // log the pos_msg_ and say that its in sent motor goals
     position_publisher_->publish(pos_msg_);
     return true;
@@ -514,7 +514,7 @@ class HeadMover : public rclcpp::Node {
 
   void behave() {
     uint curr_head_mode = head_mode_.head_mode;
-    RCLCPP_INFO(get_logger(), "Head mode: %d, prev: %d", curr_head_mode, prev_head_mode_);
+    RCLCPP_INFO(node_->get_logger(), "Head mode: %d, prev: %d", curr_head_mode, prev_head_mode_);
 
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
@@ -567,12 +567,17 @@ class HeadMover : public rclcpp::Node {
     }
     perform_search_pattern();
   };
+
+  std::shared_ptr<rclcpp::Node> get_node() {
+    return node_;
+  }
 };
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<HeadMover>());
-  //rclcpp::shutdown();
+  auto head_mover = std::make_shared<HeadMover>();
+  rclcpp::spin(head_mover->get_node());
+  rclcpp::shutdown();
 
   return 0;
 }
