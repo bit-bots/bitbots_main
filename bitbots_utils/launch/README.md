@@ -13,5 +13,5 @@ Launch these commands in parallel:
 
 ```bash
 ros2 bag play <bagfile> --loop
-ros2 launch audio_play play.launch.xml format:=wave
+ros2 launch audio_play play.launch.xml format:=wave sample_rate:=10000
 ```
