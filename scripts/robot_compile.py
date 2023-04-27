@@ -175,9 +175,9 @@ def parse_arguments():
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
     parser.add_argument("--no-rosdeps",
                         action="store_false",
-                        default=False,
-                        dest="check_rosdeps",
-                        help="Don't check installed rosdeps on the target."
+                        default=True,
+                        dest="install_rosdeps",
+                        help="Don't install rosdeps on the target."
                         "Might be useful when no internet connection is available.")
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
@@ -377,23 +377,27 @@ def build(target, package='', pre_clean=False):
     print_success("Build on {} succeeded".format(target.hostname))
 
 
-def check_rosdeps(target):
+def install_rosdeps(target):
     """
-    Check installed dependencies on a target with rosdep
+    Install dependencies on a target with rosdep
 
     :type target: Target
     """
-    print_info("Checking installed rosdeps on {}".format(target.hostname))
+    if check_internet(target): 
+        print_info(f"Installing rosdeps on {target.hostname}")
+        target_src_path = os.path.join(target.workspace, "src")
+        extra_flags = "-q" if _should_run_quietly() else ""
 
-    cmd = "rosdep check {} --ignore-src --from-paths {}".format("" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
-                                                                os.path.join(target.workspace, "src"))
+        cmd = f"rosdep install -y {extra_flags} --ignore-src --from-paths {target_src_path}"
+        print(cmd)
 
-    rosdep_result = _execute_on_target(target, cmd)
-    if rosdep_result.returncode != 0:
-        print_warn("rosdep check on {} had non-zero exit code. Check its output for more info".format(target.hostname))
+        rosdep_result = _execute_on_target(target, cmd)
+        if rosdep_result.returncode != 0:
+            print_warn(f"rosdep install on {target.hostname} had non-zero exit code. Check its output for more info")
 
-    print_success("Rosdeps on {} installed successfully".format(target.hostname))
-
+        print_success(f"rosdeps on {target.hostname} installed successfully")
+    else: 
+        print_info(f"skipping rosdep install on {target.hostname} as we do not have internet")
 
 def configure_game_settings(target):
     print_info("Configuring game settings")
@@ -428,6 +432,20 @@ def configure_wifi(target):
         _execute_on_target(
             target,
             "sudo nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
+
+
+def check_internet(target):
+    """
+    Check if target has an internet connection by pinging apt repos.
+
+    :type target: Target
+    :rtype: bool
+    """
+    print_info(f"Checking internet connection on {target.hostname}")
+
+    apt_mirror = "de.archive.ubuntu.com"
+    redirect_output = "> /dev/null" if _should_run_quietly() else ""
+    return _execute_on_target(target, f"curl -sSLI {apt_mirror} {redirect_output}").returncode == 0
 
 
 def main():
@@ -467,8 +485,8 @@ def main():
         elif args.configure_only:
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
-            if args.check_rosdeps:
-                check_rosdeps(target)
+            if args.install_rosdeps:
+                install_rosdeps(target)
             build(target, args.package, pre_clean=args.clean_build)
 
 
