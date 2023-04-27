@@ -301,6 +301,8 @@ def _execute_on_target(target, command, catch_output=False):
     else:
         return subprocess.run(real_cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+def _should_run_quietly():
+    return LOGLEVEL.current < LOGLEVEL.INFO
 
 def sync(target, package='', pre_clean=False):
     """
@@ -319,9 +321,12 @@ def sync(target, package='', pre_clean=False):
         "rsync",
         "--checksum",
         "--archive",
-        "-v" if LOGLEVEL.current >= LOGLEVEL.INFO else "",
         "--delete",
     ]
+
+    if not _should_run_quietly():
+        cmd.append("--verbose")
+
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
     cmd.extend([BITBOTS_META + "/", "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)])
 
