@@ -1,0 +1,5 @@
+geometry_msgs/PointStamped look_at_position
+---
+bool success
+---
+float64 percentage_done

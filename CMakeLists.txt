@@ -35,6 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SetObjectPosition.srv"
   "action/Dynup.action"
   "action/Kick.action"
+  "action/LookAt.action"
   DEPENDENCIES
   actionlib_msgs
   sensor_msgs
