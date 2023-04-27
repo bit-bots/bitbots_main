@@ -3,15 +3,15 @@ walking:
     engine:
       double_support_ratio: 0.05
       foot_distance: 0.2
-      foot_rise: 0.07
+      foot_rise: 0.052
       freq: 1.25
-      trunk_height: 0.40
+      trunk_height: 0.38
       trunk_phase: -0.1
-      trunk_pitch: 0.25
+      trunk_pitch: 0.15
       trunk_pitch_p_coef_forward: 0.0
       trunk_pitch_p_coef_turn: -0.05
       trunk_swing: 0.25
-      trunk_x_offset: -0.015
+      trunk_x_offset: 0.001
       trunk_y_offset: -0.005
       trunk_z_movement: 0.0
       first_step_swing_factor: 1.0
