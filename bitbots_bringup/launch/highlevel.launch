@@ -9,6 +9,7 @@
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
+    <arg name="audio" default="true" description="Whether the audio system should be started"/>
 
 
     <!-- launch game controller -->
@@ -72,6 +73,13 @@
     <!-- launch behavior -->
     <group if="$(var behavior)">
         <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
+    </group>
+
+    <!-- launch audio processing -->
+    <group if="$(var audio)">
+        <include file="(find-pkg-share bitbots_utils)/launch/audio.launch">
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>
