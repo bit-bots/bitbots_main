@@ -300,25 +300,24 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
   if (lost_servo_connection_) {
     RCLCPP_INFO_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 5, "resetting torque after lost connection");
     writeTorqueForServos(goal_torque_individual_);
-    lost_servo_connection_ = false;
   }
   if (control_mode_==POSITION_CONTROL) {
-    if (goal_effort_!=last_goal_effort_) {
+    if (goal_effort_!=last_goal_effort_ || lost_servo_connection_) {
       syncWritePWM();
       last_goal_effort_ = goal_effort_;
     }
 
-    if (goal_velocity_!=last_goal_velocity_) {
+    if (goal_velocity_!=last_goal_velocity_ || lost_servo_connection_) {
       syncWriteProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
 
-    if (goal_acceleration_!=last_goal_acceleration_) {
+    if (goal_acceleration_!=last_goal_acceleration_ || lost_servo_connection_) {
       syncWriteProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
     }
 
-    if (goal_position_!=last_goal_position_) {
+    if (goal_position_!=last_goal_position_ || lost_servo_connection_) {
       syncWritePosition();
       last_goal_position_ = goal_position_;
     }
@@ -328,27 +327,27 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
     syncWriteCurrent();
   } else if (control_mode_==CURRENT_BASED_POSITION_CONTROL) {
     // only write things if it is necessary
-    if (goal_effort_!=last_goal_effort_) {
+    if (goal_effort_!=last_goal_effort_ || lost_servo_connection_) {
       syncWriteCurrent();
       last_goal_effort_ = goal_effort_;
     }
 
-    if (goal_velocity_!=last_goal_velocity_) {
+    if (goal_velocity_!=last_goal_velocity_ || lost_servo_connection_) {
       syncWriteProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
 
-    if (goal_acceleration_!=last_goal_acceleration_) {
+    if (goal_acceleration_!=last_goal_acceleration_ || lost_servo_connection_) {
       syncWriteProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
     }
 
-    if (goal_position_!=last_goal_position_) {
+    if (goal_position_!=last_goal_position_ || lost_servo_connection_) {
       syncWritePosition();
       last_goal_position_ = goal_position_;
     }
-
   }
+  lost_servo_connection_ = false;
 }
 
 void ServoBusInterface::switchDynamixelControlMode() {
