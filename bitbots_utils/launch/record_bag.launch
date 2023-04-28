@@ -11,7 +11,7 @@
 
     <!-- The command is a bit complicated, because we want to have a unique filename
          and the date command would normally include a newline at the end. -->
-    <!-- We also set ignore-leaf-topics twice, because otherwise, the else case would produce some unprintable character that breaks the command. -->
+    <!-- We also set include-hidden-topics twice, because otherwise, the else case would produce some unprintable character that breaks the command. -->
     <executable cmd="ros2 bag record \
     -o $(env HOME)/rosbags/ID_$(env ROBOCUP_ROBOT_ID $(env ROBOT_NAME unknown_robot))_$(command 'bash -c &quot;date +%s |tr -d \\&quot;\\n\\&quot;&quot;') \
     --node-name ros2_bag_record \
