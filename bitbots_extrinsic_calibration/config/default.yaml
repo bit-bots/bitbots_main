@@ -1,4 +1,4 @@
-/**:
+/bitbots_extrinsic_calibration:
   ros__parameters:
     offset_x: 0.0
     offset_y: 0.0

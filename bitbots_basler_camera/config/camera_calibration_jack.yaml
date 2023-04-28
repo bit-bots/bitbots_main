@@ -4,14 +4,14 @@ camera_name: jack
 camera_matrix:
   rows: 3
   cols: 3
-  data: [1924.06561,    0.     , 1030.80485,
-            0.     , 1905.49295,  724.07418,
+  data: [1336.20231,    0.     , 1015.82206,
+            0.     , 1334.43681,  726.95617,
             0.     ,    0.     ,    1.     ]
 distortion_model: plumb_bob
 distortion_coefficients:
   rows: 1
   cols: 5
-  data: [-0.580557, 0.414393, 0.006190, -0.006739, 0.000000]
+  data: [-0.285950, 0.081479, -0.000093, -0.000320, 0.000000]
 rectification_matrix:
   rows: 3
   cols: 3
@@ -21,6 +21,6 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [1599.5116 ,    0.     , 1011.64207,    0.     ,
-            0.     , 1715.29272,  722.37978,    0.     ,
+  data: [1080.60229,    0.     , 1010.03846,    0.     ,
+            0.     , 1193.05933,  715.99058,    0.     ,
             0.     ,    0.     ,    1.     ,    0.     ]
