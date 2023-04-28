@@ -15,11 +15,10 @@
     <executable cmd="ros2 bag record \
     -o $(env HOME)/rosbags/ID_$(env ROBOCUP_ROBOT_ID $(env ROBOT_NAME unknown_robot))_$(command 'bash -c &quot;date +%s |tr -d \\&quot;\\n\\&quot;&quot;') \
     --node-name ros2_bag_record \
-    --ignore-leaf-topics \
     --include-hidden-topics \
     --include-unpublished-topics \
     --polling-interval 1000 \
-    $(eval '\'--use_sim_time\' if \'$(var sim)\'==\'true\' else \'--ignore-leaf-topics\'') \
+    $(eval '\'--use_sim_time\' if \'$(var sim)\'==\'true\' else \'--include-hidden-topics\'') \
     /animation \
     /audio/audio_info \
     /audio/audio \
