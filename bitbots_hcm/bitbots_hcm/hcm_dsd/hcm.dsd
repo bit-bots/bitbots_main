@@ -5,7 +5,7 @@ $PickedUp
 
 -->HCM
 $StartHCM
-    NOT_WALKREADY --> @Wait + time:0.1, @PlayAnimationDynup + direction:walkready + initial:true
+    NOT_WALKREADY --> @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready + initial:true + r:false
     SHUTDOWN_REQUESTED --> #ShutDownProcedure
     SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
     RUNNING --> $Stop

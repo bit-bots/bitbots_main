@@ -23,6 +23,10 @@ class StartHCM(AbstractHCMDecisionElement):
     Initializes HCM.
     """
 
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.is_initial = True
+
     def perform(self, reevaluate=False):
         if self.blackboard.shut_down_request:
             if self.blackboard.current_state == RobotControlState.HARDWARE_PROBLEM:
@@ -32,9 +36,11 @@ class StartHCM(AbstractHCMDecisionElement):
                 self.blackboard.current_state = RobotControlState.SHUTDOWN
                 return "SHUTDOWN_REQUESTED"
         else:
-            if not reevaluate:
+            if self.is_initial:
                 if not self.is_walkready():
                     return "NOT_WALKREADY"
+                else:
+                    self.is_initial = False
                 self.blackboard.current_state = RobotControlState.STARTUP
             return "RUNNING"
 
