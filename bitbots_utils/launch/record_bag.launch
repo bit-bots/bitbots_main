@@ -10,7 +10,10 @@
     <node name="record_rosbag_drop_pointclouds" pkg="topic_tools" exec="throttle"
         args="/line_mask_relative_pc $(arg max_pointcloud_frequency) /line_mask_relative_pc_to_record" />
 
-    <executable cmd="ros2 bag record -o $(var out_dir)/ID_$(env ROBOCUP_ROBOT_ID)_$(env RANDOM) \
+    <!-- The command is a bit complicated, because we want to have a unique filename
+         and the date command would normally include a newline at the end. -->
+    <executable cmd="ros2 bag record \
+    -o $(var out_dir)/ID_$(env ROBOCUP_ROBOT_ID)_$(command 'bash -c &quot;date +%s |tr -d \\&quot;\\n\\&quot;&quot;') \
     --node-name ros2_bag_record \
     --ignore-leaf-topics \
     --include-hidden-topics \
