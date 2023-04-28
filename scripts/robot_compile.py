@@ -444,7 +444,7 @@ def internet_available(target):
 
     apt_mirror = "de.archive.ubuntu.com"
     redirect_output = "> /dev/null" if _should_run_quietly() else ""
-    return _execute_on_target(target, f"curl -sSLI {apt_mirror} {redirect_output}").returncode == 0
+    return _execute_on_target(target, f"timeout --foreground 0.5 curl -sSLI {apt_mirror} {redirect_output}").returncode == 0
 
 
 def main():
