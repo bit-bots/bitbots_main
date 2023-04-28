@@ -32,8 +32,17 @@
 
 #include "head_parameters.hpp"
 
+#include <rclcpp_action/rclcpp_action.hpp>
+#include <bitbots_msgs/action/look_at.hpp>
+
+
 using std::placeholders::_1;
 using namespace std::chrono_literals;
+
+namespace move_head {
+  using LookAtGoal = bitbots_msgs::action::LookAt;
+  using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
+
 
 class HeadMover {
   std::shared_ptr<rclcpp::Node> node_;
@@ -82,6 +91,10 @@ class HeadMover {
   int index_ = 0;
   double pan_speed_;
   double tilt_speed_;
+
+  // action server
+  rclcpp_action::Server<LookAtGoal>::SharedPtr action_server_;
+
 
  public:
   HeadMover() {
@@ -164,6 +177,12 @@ class HeadMover {
     pan_speed_ = 0;
     tilt_speed_ = 0;
 
+
+   action_server_ = rclcpp_action::create_server<LookAtGoal>(node_, "look_at_goal",
+      std::bind(&HeadMover::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+      std::bind(&HeadMover::handle_cancel, this, std::placeholders::_1),
+      std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1)); // does this need to be node?
+
     timer_ = node_->create_wall_timer(500ms, [this] { behave(); });
   }
 
@@ -172,6 +191,32 @@ class HeadMover {
   }
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
     current_joint_state_ = *msg;
+  }
+
+
+  rclcpp_action::GoalResponse handle_goal(
+    const rclcpp_action::GoalUUID & uuid,
+    std::shared_ptr<const LookAtGoal::Goal> goal) { // is this LookAtGoal::Goal correct?
+    RCLCPP_INFO(node_->get_logger(), "Received goal request");
+    (void)uuid;
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  }
+
+  rclcpp_action::CancelResponse handle_cancel(
+    const std::shared_ptr<LookAtGoalHandle> goal_handle) {
+    RCLCPP_INFO(node_->get_logger(), "Received request to cancel goal");
+    (void)goal_handle;
+    return rclcpp_action::CancelResponse::ACCEPT;
+  }
+
+  void handle_accepted(const std::shared_ptr<LookAtGoalHandle> goal_handle) {
+    std::thread{std::bind(&HeadMover::execute, this, std::placeholders::_1), goal_handle}.detach();
+  }
+
+  void execute(const std::shared_ptr<LookAtGoalHandle> goal_handle)
+  {
+// log hello
+RCLCPP_INFO(node_->get_logger(), "Executing goal");
   }
 
 /*
@@ -570,11 +615,11 @@ class HeadMover {
   std::shared_ptr<rclcpp::Node> get_node() {
     return node_;
   }
-};
+};}
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
-  auto head_mover = std::make_shared<HeadMover>();
+  auto head_mover = std::make_shared<move_head::HeadMover>();
   rclcpp::spin(head_mover->get_node());
   rclcpp::shutdown();
 
