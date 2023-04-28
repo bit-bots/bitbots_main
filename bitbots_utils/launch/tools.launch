@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="monitoring" default="true" description="true: start system monitor and udp bridge" />
+    <arg name="recording" default="true" description="true: start the ros bag recording" />
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+
+    <group if="$(var monitoring)">
+        <include file="$(find-pkg-share bitbots_utils)/launch/monitoring.launch" />
+    </group>
+
+    <group if="$(var recording)">
+        <include file="$(find-pkg-share bitbots_utils)/launch/record_bag.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
+    </group>
+</launch>
