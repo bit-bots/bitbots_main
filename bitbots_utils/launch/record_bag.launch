@@ -21,6 +21,8 @@
     --polling-interval 1000 \
     $(eval '\'--use_sim_time\' if \'$(var sim)\'==\'true\' else \'\'') \
     /animation \
+    /audio/audio_info \
+    /audio/audio \
     /ball_obstacle_active \
     /ball_position_relative_filtered \
     /ball_relative_filtered \
