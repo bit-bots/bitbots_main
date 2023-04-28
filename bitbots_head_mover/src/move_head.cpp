@@ -94,6 +94,7 @@ class HeadMover {
 
   // action server
   rclcpp_action::Server<LookAtGoal>::SharedPtr action_server_;
+  bool action_running_ = false;
 
 
  public:
@@ -192,8 +193,6 @@ class HeadMover {
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
     current_joint_state_ = *msg;
   }
-
-
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const LookAtGoal::Goal> goal) { // is this LookAtGoal::Goal correct?
@@ -206,6 +205,7 @@ class HeadMover {
     const std::shared_ptr<LookAtGoalHandle> goal_handle) {
     RCLCPP_INFO(node_->get_logger(), "Received request to cancel goal");
     (void)goal_handle;
+    action_running_ = false;
     return rclcpp_action::CancelResponse::ACCEPT;
   }
 
@@ -215,40 +215,35 @@ class HeadMover {
 
   void execute(const std::shared_ptr<LookAtGoalHandle> goal_handle)
   {
+    if (!action_running_){
+      action_running_ = true;
+
 RCLCPP_INFO(node_->get_logger(), "Executing goal");
 const auto goal = goal_handle->get_goal();
 auto feedback = std::make_shared<LookAtGoal::Feedback>();
 bool success = false; // checks whether we look at the position we want to look at
 auto result = std::make_shared<LookAtGoal::Result>();
 while (!success) {
+  RCLCPP_INFO(node_->get_logger(), "Looking at point");
   if(goal_handle->is_canceling()) {
     goal_handle->canceled(result);
     RCLCPP_INFO(node_->get_logger(), "Goal was canceled");
     return;
   }
-
   // look at point
   success = look_at(goal->look_at_position);
-  // log success
-  
   goal_handle->publish_feedback(feedback);
-  // calculate distance to target
-  
-
 }
 if(rclcpp::ok()){
   result->success = true;
   goal_handle->succeed(result);
   RCLCPP_INFO(node_->get_logger(), "Goal succeeded");
 }
+action_running_ = false;
+    }
 
   }
 
-
-
-/*
- HEAD POSITION
-*/
   double calculate_lower_speed(double delta_fast_joint, double delta_my_joint, double speed) {
     double estimated_time = delta_fast_joint / speed;
     if (estimated_time != 0) {
@@ -311,7 +306,6 @@ if(rclcpp::ok()){
     pos_msg_.positions = {pan_position, tilt_position};
     pos_msg_.velocities = {pan_speed, tilt_speed};
     pos_msg_.header.stamp = node_->get_clock()->now();
-    // log the pos_msg_ and say that its in sent motor goals
     position_publisher_->publish(pos_msg_);
     return true;
 
@@ -364,7 +358,7 @@ if(rclcpp::ok()){
   bool check_head_collision(double pan, double tilt) {
     sensor_msgs::msg::JointState joint_state = sensor_msgs::msg::JointState();
     joint_state.name = {"HeadPan", "HeadTilt"};
-    joint_state.position = {pan, tilt}; // looked at bitbots_move_it_bindings, but where import collision_detection?
+    joint_state.position = {pan, tilt}; 
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
     collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
@@ -387,12 +381,10 @@ if(rclcpp::ok()){
     pos_msg_.positions = {goal_pan, goal_tilt};
     pos_msg_.velocities = {pan_speed, tilt_speed};
     pos_msg_.header.stamp = rclcpp::Clock().now();
-    // log the pos_msg_ and say that its in move head to position with speed adjustment
     position_publisher_->publish(pos_msg_);
   }
 
   std::pair<double, double> get_head_position() {
-    // loop over all joints and find the head pan and tilt
     double head_pan;
     double head_tilt;
     for (size_t i = 0; i < current_joint_state_.name.size(); i++) {
@@ -483,9 +475,8 @@ if(rclcpp::ok()){
     return keyframes;
   }
 
-// LookAt
+
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // use bio ik
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.return_approximate_solution = true;
     ik_options.replace = true;
@@ -519,7 +510,7 @@ if(rclcpp::ok()){
 
   }
 
-  bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.0, double min_tilt_delta = 0.0) {
+  bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.01, double min_tilt_delta = 0.01) {
     try {
       geometry_msgs::msg::PointStamped
           new_point = tf_buffer_->transform(point, "base_link", tf2::durationFromSec(0.9));
@@ -531,12 +522,11 @@ if(rclcpp::ok()){
           || std::abs(pan_tilt.second - current_pan_tilt.second)
               > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
       {
-        return !send_motor_goals(pan_tilt.first, pan_tilt.second, true); // watch that it takes the correct one
-        // tilt_speed=self.tilt_speed,
-        // current_pan_position=current_head_pan,
-        // current_tilt_position=current_head_tilt,
-        // resolve_collision=True);
+        send_motor_goals(pan_tilt.first, pan_tilt.second, true); 
+        RCLCPP_INFO(node_->get_logger(), "", pan_tilt.first, pan_tilt.second);
+        return false;
       }
+      RCLCPP_INFO(node_->get_logger(), "fini");
       return true;
     }
     catch (const std::exception &e) {
@@ -590,8 +580,8 @@ if(rclcpp::ok()){
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
         case humanoid_league_msgs::msg::HeadMode::BALL_MODE: // 0
-          pan_speed_ = params_.search_pattern.pan_speed; // change this value depending on the head mode
-          tilt_speed_ = params_.search_pattern.tilt_speed; // same as above
+          pan_speed_ = params_.search_pattern.pan_speed; 
+          tilt_speed_ = params_.search_pattern.tilt_speed; 
           pattern_ = generatePattern(params_.search_pattern.scan_lines,
                                      params_.search_pattern.pan_max[0],
                                      params_.search_pattern.pan_max[1],
@@ -599,8 +589,8 @@ if(rclcpp::ok()){
                                      params_.search_pattern.tilt_max[1]);
           break;
         case humanoid_league_msgs::msg::HeadMode::BALL_MODE_PENALTY: // 11
-          pan_speed_ = params_.search_pattern_penalty.pan_speed; // change this value depending on the head mode
-          tilt_speed_ = params_.search_pattern_penalty.tilt_speed; // same as above
+          pan_speed_ = params_.search_pattern_penalty.pan_speed; 
+          tilt_speed_ = params_.search_pattern_penalty.tilt_speed; 
           pattern_ = generatePattern(params_.search_pattern_penalty.scan_lines,
                                      params_.search_pattern_penalty.pan_max[0],
                                      params_.search_pattern_penalty.pan_max[1],
@@ -627,10 +617,10 @@ if(rclcpp::ok()){
                                      params_.front_search_pattern.tilt_max[0],
                                      params_.front_search_pattern.tilt_max[1]);
           break;
-        case 2:
-          pan_speed_ = 0;
-          tilt_speed_ = 0;
-          pattern_ = generatePattern(0, 0, 0, 0, 0);
+
+          case humanoid_league_msgs::msg::HeadMode::DONT_MOVE: // 8
+          pan_speed_ = 0.0;
+          tilt_speed_ = 0.0;
           break;
         default:
           return;
@@ -641,7 +631,10 @@ if(rclcpp::ok()){
       prev_head_mode_ = curr_head_mode;
 
     }
+    if (!action_running_){
     perform_search_pattern();
+
+    }
   };
 
   std::shared_ptr<rclcpp::Node> get_node() {
