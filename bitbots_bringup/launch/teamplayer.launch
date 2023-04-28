@@ -39,6 +39,8 @@
 
     <!-- load some monitoring tools -->
     <group if="$(var monitoring)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/tools.launch" />
+        <include file="$(find-pkg-share bitbots_utils)/launch/monitoring.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
     </group>
 </launch>

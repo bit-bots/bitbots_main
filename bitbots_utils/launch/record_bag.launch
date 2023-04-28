@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <arg name="sim" default="false" description="true: Use simulation time" />
+    <arg name="out_dir" default="/teamplayer-rosbags" doc="Output directory" />
+    <arg name="max_image_frequency" default="1.0" doc="Max frequency [hz] for recording images" />
+    <arg name="max_pointcloud_frequency" default="1.0" doc="Max frequency [hz] for recording pointclouds" />
+
+    <node name="record_rosbag_drop_images" pkg="topic_tools" type="throttle"
+        args="/camera/image_proc $(arg max_image_frequency) /camera/image_to_record" />
+    <node name="record_rosbag_drop_pointclouds" pkg="topic_tools" type="throttle"
+        args="/line_mask_relative_pc $(arg max_pointcloud_frequency) /line_mask_relative_pc_to_record" />
+
+    <executable cmd="ros2 bag record -o $(var out_dir)/ID_$(env ROBOCUP_ROBOT_ID)_$(env RANDOM) \
+    --node-name ros2_bag_record \
+    --ignore-leaf-topics \
+    --include-hidden-topics \
+    --include-unpublished-topics \
+    --polling-interval 1000 \
+    $(eval '\'--use_sim_time\' if \'$(var sim)\'==\'true\' else \'\'') \
+    /animation \
+    /ball_obstacle_active \
+    /ball_position_relative_filtered \
+    /ball_relative_filtered \
+    /ball_relative_movement \
+    /balls_relative \
+    /camera/camera_info \
+    /camera/image_to_record \
+    /clock \
+    /cmd_vel \
+    /cop_l \
+    /cop_r \
+    /core/power_switch_status \
+    /debug_markers \
+    /debug/approach_point \
+    /debug/ball_twist \
+    /debug/dsd/body_behavior \
+    /debug/dsd/hcm \
+    /debug/dsd/head_behavior \
+    /debug/dsd/localization \
+    /debug/used_ball \
+    /debug/which_ball_is_used \
+    /diagnostics \
+    /diagnostics_agg \
+    /DynamixelController/command \
+    /field_boundary_relative \
+    /game_controller_connected \
+    /gamestate \
+    /goal_pose \
+    /head_mode \
+    /imu_head/data \
+    /imu/data_raw \
+    /joint_states \
+    /line_mask_relative_pc_to_record \
+    /motion_odometry \
+    /move_base/current_goal \
+    /obstacles_relative \
+    /pose_with_covariance \
+    /robot_state \
+    /robots_relative \
+    /robots_relative_filtered \
+    /rosout \
+    /server_time_clock \
+    /speak \
+    /strategy \
+    /system_workload \
+    /team_data \
+    /tf \
+    /tf_static \
+    /time_to_ball" output="screen" />
+</launch>
