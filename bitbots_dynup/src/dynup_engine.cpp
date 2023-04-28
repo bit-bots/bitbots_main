@@ -7,6 +7,8 @@ namespace bitbots_dynup {
 DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node) : node_(node) {
   pub_engine_debug_ = node_->create_publisher<bitbots_dynup::msg::DynupEngineDebug>("dynup_engine_debug", 1);
   pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("dynup_engine_marker", 1);
+  walking_param_node_ = std::make_shared<rclcpp::Node>(std::string(node->get_name()) + "_walking_param_node");
+  walking_param_client_ = std::make_shared<rclcpp::SyncParametersClient>(walking_param_node_, "/walking");
 }
 
 void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
@@ -587,22 +589,53 @@ double DynupEngine::calcBackSplines() {
 }
 
 double DynupEngine::calcRiseSplines(double time) {
+  double foot_distance, trunk_x_final, trunk_pitch, trunk_height;
+  bool walking_running = false;
+  std::vector<rclcpp::Parameter> walking_params;
+  if (walking_param_client_->service_is_ready()) {
+    walking_params = walking_param_client_->get_parameters({"engine.trunk_pitch",
+                                                            "engine.trunk_height",
+                                                            "engine.foot_distance",
+                                                            "engine.trunk_x_offset"},
+                                                           std::chrono::duration<int64_t, std::milli>(10));
+    walking_running = !walking_params.empty();
+  }
+
+  if (walking_running) {
+    for (auto &param: walking_params) {
+      if (param.get_name() == "engine.trunk_pitch") {
+        trunk_pitch = param.get_value<double>();
+      } else if (param.get_name() == "engine.trunk_height") {
+        trunk_height = param.get_value<double>();
+      } else if (param.get_name() == "engine.foot_distance") {
+        foot_distance = param.get_value<double>();
+      } else if (param.get_name() == "engine.trunk_x_offset") {
+        trunk_x_final = param.get_value<double>();
+      }
+    }
+  } else {
+    RCLCPP_WARN(node_->get_logger(), "Walking is not running, using default parameters for walkready.");
+    foot_distance = params_["foot_distance"].get_value<double>();
+    trunk_x_final = params_["trunk_x_final"].get_value<double>();
+    trunk_pitch = params_["trunk_pitch"].get_value<double>() / 180 * M_PI;
+    trunk_height = params_["trunk_height"].get_value<double>();
+  }
 
   // all positions relative to right foot
   // foot_trajectories_ are for left foot
   time += params_["rise_time"].get_value<double>();
   l_foot_spline_.x()->addPoint(time, 0);
-  l_foot_spline_.y()->addPoint(time, params_["foot_distance"].get_value<double>());
+  l_foot_spline_.y()->addPoint(time, foot_distance);
   l_foot_spline_.z()->addPoint(time, 0);
   l_foot_spline_.roll()->addPoint(time, 0);
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
 
-  r_foot_spline_.x()->addPoint(time, -params_["trunk_x_final"].get_value<double>());
-  r_foot_spline_.y()->addPoint(time, -params_["foot_distance"].get_value<double>() / 2.0);
-  r_foot_spline_.z()->addPoint(time, -params_["trunk_height"].get_value<double>());
+  r_foot_spline_.x()->addPoint(time, -trunk_x_final);
+  r_foot_spline_.y()->addPoint(time, -foot_distance / 2.0);
+  r_foot_spline_.z()->addPoint(time, -trunk_height);
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_["trunk_pitch"].get_value<double>() / 180);
+  r_foot_spline_.pitch()->addPoint(time, -trunk_pitch);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   l_hand_spline_.x()->addPoint(time, 0);
