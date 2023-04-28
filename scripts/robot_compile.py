@@ -383,21 +383,20 @@ def install_rosdeps(target):
 
     :type target: Target
     """
-    if check_internet(target): 
+    if internet_available(target):
         print_info(f"Installing rosdeps on {target.hostname}")
         target_src_path = os.path.join(target.workspace, "src")
         extra_flags = "-q" if _should_run_quietly() else ""
 
         cmd = f"rosdep install -y {extra_flags} --ignore-src --from-paths {target_src_path}"
-        print(cmd)
 
         rosdep_result = _execute_on_target(target, cmd)
-        if rosdep_result.returncode != 0:
-            print_warn(f"rosdep install on {target.hostname} had non-zero exit code. Check its output for more info")
-
-        print_success(f"rosdeps on {target.hostname} installed successfully")
+        if rosdep_result.returncode == 0:
+            print_success(f"Rosdeps on {target.hostname} installed successfully")
+        else:
+            print_warn(f"Rosdep install on {target.hostname} had non-zero exit code. Check its output for more info")
     else: 
-        print_info(f"skipping rosdep install on {target.hostname} as we do not have internet")
+        print_info(f"Skipping rosdep install on {target.hostname} as we do not have internet")
 
 def configure_game_settings(target):
     print_info("Configuring game settings")
@@ -434,7 +433,7 @@ def configure_wifi(target):
             "sudo nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
 
 
-def check_internet(target):
+def internet_available(target):
     """
     Check if target has an internet connection by pinging apt repos.
 
