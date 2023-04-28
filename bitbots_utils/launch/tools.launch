@@ -1,13 +1,6 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="monitoring" default="true" description="true: start system monitor and udp bridge" />
-    <arg name="sim" default="false" description="Wether we are in a simulation environment" />
-
-    <group>
-        <include file="(find-pkg-share bitbots_utils)/launch/audio.launch">
-            <arg name="sim" value="$(var sim)" />
-        </include>
-    </group>
 
     <group if="$(var monitoring)">
         <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch">
