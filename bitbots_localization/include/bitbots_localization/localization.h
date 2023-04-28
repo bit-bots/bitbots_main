@@ -158,6 +158,7 @@ class Localization : public rclcpp::Node {
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr line_ratings_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr goal_ratings_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr fieldboundary_ratings_publisher_;
+  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr field_publisher_;
 
   rclcpp::Service<bl::srv::ResetFilter>::SharedPtr reset_service_;
   rclcpp::Service<bl::srv::SetPaused>::SharedPtr pause_service_;

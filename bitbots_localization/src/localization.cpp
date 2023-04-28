@@ -57,6 +57,7 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   line_ratings_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("line_ratings", 1);
   goal_ratings_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("goal_ratings", 1);
   fieldboundary_ratings_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("field_boundary_ratings", 1);
+  field_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("field/map", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local());
 
   // Get field name
   auto field = this->get_parameter("fieldname").as_string();
@@ -64,6 +65,8 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   // Check if measurement type is used and load the correct map for that
   if(config_->lines_factor) {
     lines_.reset(new Map(field, "lines.png", -10.0));  // TODO real parameter
+    // Publish the map once
+    field_publisher_->publish(lines_->get_map_msg(map_frame_));
   }
   if(config_->goals_factor){
     goals_.reset(new Map(field, "goals.png", -10.0));

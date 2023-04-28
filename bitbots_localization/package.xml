@@ -7,26 +7,26 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>backward_ros</depend>
+  <depend>bitbots_blackboard</depend>
+  <depend>boost</depend>
+  <depend>builtin_interfaces</depend>
   <depend>cv_bridge</depend>
+  <depend>dynamic_stack_decider</depend>
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>libopencv-dev</depend>
+  <depend>nav_msgs</depend>
   <depend>particle_filter</depend>
+  <depend>python3-numpy</depend>
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
-  <depend>std_msgs</depend>
-  <depend>boost</depend>
-  <depend>tf2</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_geometry_msgs</depend>
   <depend>soccer_vision_3d_msgs</depend>
-  <depend>bitbots_blackboard</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
   <depend>visualization_msgs</depend>
-  <depend>builtin_interfaces</depend>
-  <!--depend>nav2_map_server</depend-->
-  <depend>backward_ros</depend>
-  <depend>dynamic_stack_decider</depend>
-  <depend>python3-numpy</depend>
 
   <doc_depend>bitbots_docs</doc_depend>
 
