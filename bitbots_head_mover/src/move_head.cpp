@@ -183,7 +183,7 @@ class HeadMover {
       std::bind(&HeadMover::handle_cancel, this, std::placeholders::_1),
       std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1)); // does this need to be node?
 
-    timer_ = node_->create_wall_timer(500ms, [this] { behave(); });
+    timer_ = rclcpp::create_timer(node_, node_->get_clock(), 10ms, [this] { behave(); });
   }
 
   void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
@@ -215,9 +215,36 @@ class HeadMover {
 
   void execute(const std::shared_ptr<LookAtGoalHandle> goal_handle)
   {
-// log hello
 RCLCPP_INFO(node_->get_logger(), "Executing goal");
+const auto goal = goal_handle->get_goal();
+auto feedback = std::make_shared<LookAtGoal::Feedback>();
+bool success = false; // checks whether we look at the position we want to look at
+auto result = std::make_shared<LookAtGoal::Result>();
+while (!success) {
+  if(goal_handle->is_canceling()) {
+    goal_handle->canceled(result);
+    RCLCPP_INFO(node_->get_logger(), "Goal was canceled");
+    return;
   }
+
+  // look at point
+  success = look_at(goal->look_at_position);
+  // log success
+  
+  goal_handle->publish_feedback(feedback);
+  // calculate distance to target
+  
+
+}
+if(rclcpp::ok()){
+  result->success = true;
+  goal_handle->succeed(result);
+  RCLCPP_INFO(node_->get_logger(), "Goal succeeded");
+}
+
+  }
+
+
 
 /*
  HEAD POSITION
@@ -492,8 +519,7 @@ RCLCPP_INFO(node_->get_logger(), "Executing goal");
 
   }
 
-// covers look_<direction>, but a direction needs to be specified
-  void look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.0, double min_tilt_delta = 0.0) {
+  bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.0, double min_tilt_delta = 0.0) {
     try {
       geometry_msgs::msg::PointStamped
           new_point = tf_buffer_->transform(point, "base_link", tf2::durationFromSec(0.9));
@@ -505,12 +531,13 @@ RCLCPP_INFO(node_->get_logger(), "Executing goal");
           || std::abs(pan_tilt.second - current_pan_tilt.second)
               > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
       {
-        send_motor_goals(pan_tilt.first, pan_tilt.second, true); // watch that it takes the correct one
+        return !send_motor_goals(pan_tilt.first, pan_tilt.second, true); // watch that it takes the correct one
         // tilt_speed=self.tilt_speed,
         // current_pan_position=current_head_pan,
         // current_tilt_position=current_head_tilt,
         // resolve_collision=True);
       }
+      return true;
     }
     catch (const std::exception &e) {
       std::cerr << e.what() << '\n';
@@ -599,6 +626,11 @@ RCLCPP_INFO(node_->get_logger(), "Executing goal");
                                      params_.front_search_pattern.pan_max[1],
                                      params_.front_search_pattern.tilt_max[0],
                                      params_.front_search_pattern.tilt_max[1]);
+          break;
+        case 2:
+          pan_speed_ = 0;
+          tilt_speed_ = 0;
+          pattern_ = generatePattern(0, 0, 0, 0, 0);
           break;
         default:
           return;
