@@ -17,7 +17,7 @@ parser.add_argument('output',
                     help="output folder where the models should be saved")
 parser.add_argument('-p', '--package', dest="package",
                     help="ros package where the models maps be saved")
-parser.add_argument('-b', '--blur', type=float, default=1.0,
+parser.add_argument('-b', '--blur', type=float, default=0.5,
                     help="amount of applied blurring (between 0 and 1)")
 args = parser.parse_args()
 
