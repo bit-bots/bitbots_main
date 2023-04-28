@@ -105,7 +105,6 @@ class Target:
         donna = "colcon_ws"
         melody = "colcon_ws"
         rose = "colcon_ws"
-        davros = "davros_ws"
 
     class RobotComputers:
         amy = ["nuc1"]
@@ -114,7 +113,6 @@ class Target:
         donna = ["nuc4"]
         melody = ["nuc5"]
         rose = ["nuc6"]
-        davros = ["davros"]
 
     class IPs:
         __prefix__ = "172.20.1."
@@ -124,7 +122,6 @@ class Target:
         nuc4 = __prefix__ + "14"
         nuc5 = __prefix__ + "15"
         nuc6 = __prefix__ + "16"
-        davros = __prefix__ + "25"
 
     def __init__(self, ip, ssh_target, hostname=None, robot_name=None):
         """
@@ -152,12 +149,8 @@ class Target:
 
         self.workspace = getattr(self.Workspaces, self.robot_name)  # type: str
 
-        # figure out sync_includes
-        if self.hostname == "davros":
-            self.sync_includes_file = os.path.join(BITBOTS_META, "sync_includes_davros.yaml")
-        else:
-            self.sync_includes_file = os.path.join(BITBOTS_META,
-                                                   "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
+        self.sync_includes_file = os.path.join(BITBOTS_META,
+                                               "sync_includes_wolfgang_{}.yaml".format(self.hostname[:-1]))
 
 
 def parse_arguments():
@@ -182,9 +175,9 @@ def parse_arguments():
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
     parser.add_argument("--no-rosdeps",
                         action="store_false",
-                        default=False,
-                        dest="check_rosdeps",
-                        help="Don't check installed rosdeps on the target."
+                        default=True,
+                        dest="install_rosdeps",
+                        help="Don't install rosdeps on the target."
                         "Might be useful when no internet connection is available.")
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
@@ -300,7 +293,7 @@ def _execute_on_target(target, command, catch_output=False):
     :type catch_output: bool
     :rtype: subprocess.CompletedProcess
     """
-    real_cmd = ["ssh", "bitbots@{}".format(target.ssh_target), command]
+    real_cmd = ["ssh", "-t", "bitbots@{}".format(target.ssh_target), command]
     print_debug("Calling {}".format(" ".join(real_cmd)))
 
     if not catch_output:
@@ -308,6 +301,8 @@ def _execute_on_target(target, command, catch_output=False):
     else:
         return subprocess.run(real_cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+def _should_run_quietly():
+    return LOGLEVEL.current < LOGLEVEL.INFO
 
 def sync(target, package='', pre_clean=False):
     """
@@ -326,9 +321,12 @@ def sync(target, package='', pre_clean=False):
         "rsync",
         "--checksum",
         "--archive",
-        "-v" if LOGLEVEL.current >= LOGLEVEL.INFO else "",
         "--delete",
     ]
+
+    if not _should_run_quietly():
+        cmd.append("--verbose")
+
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
     cmd.extend([BITBOTS_META + "/", "bitbots@{}:{}/src/".format(target.ssh_target, target.workspace)])
 
@@ -352,7 +350,7 @@ def build(target, package='', pre_clean=False):
     if package and pre_clean:
         print_err("Cleaning a specific package is not supported! Not cleaning.")
     elif pre_clean:
-        cmd_clean = 'rm -rf build install;'
+        cmd_clean = 'rm -rf build install log;'
     else:
         cmd_clean = ''
 
@@ -379,23 +377,26 @@ def build(target, package='', pre_clean=False):
     print_success("Build on {} succeeded".format(target.hostname))
 
 
-def check_rosdeps(target):
+def install_rosdeps(target):
     """
-    Check installed dependencies on a target with rosdep
+    Install dependencies on a target with rosdep
 
     :type target: Target
     """
-    print_info("Checking installed rosdeps on {}".format(target.hostname))
+    if internet_available(target):
+        print_info(f"Installing rosdeps on {target.hostname}")
+        target_src_path = os.path.join(target.workspace, "src")
+        extra_flags = "-q" if _should_run_quietly() else ""
 
-    cmd = "rosdep check {} --ignore-src --from-paths {}".format("" if LOGLEVEL.current >= LOGLEVEL.INFO else "-q",
-                                                                os.path.join(target.workspace, "src"))
+        cmd = f"rosdep install -y {extra_flags} --ignore-src --from-paths {target_src_path}"
 
-    rosdep_result = _execute_on_target(target, cmd)
-    if rosdep_result.returncode != 0:
-        print_warn("rosdep check on {} had non-zero exit code. Check its output for more info".format(target.hostname))
-
-    print_success("Rosdeps on {} installed successfully".format(target.hostname))
-
+        rosdep_result = _execute_on_target(target, cmd)
+        if rosdep_result.returncode == 0:
+            print_success(f"Rosdeps on {target.hostname} installed successfully")
+        else:
+            print_warn(f"Rosdep install on {target.hostname} had non-zero exit code. Check its output for more info")
+    else: 
+        print_info(f"Skipping rosdep install on {target.hostname} as we do not have internet")
 
 def configure_game_settings(target):
     print_info("Configuring game settings")
@@ -430,6 +431,20 @@ def configure_wifi(target):
         _execute_on_target(
             target,
             "sudo nmcli connection modify {} connection.autoconnect-priority 100".format(connection_id)).check_returncode()
+
+
+def internet_available(target):
+    """
+    Check if target has an internet connection by pinging apt repos.
+
+    :type target: Target
+    :rtype: bool
+    """
+    print_info(f"Checking internet connection on {target.hostname}")
+
+    apt_mirror = "de.archive.ubuntu.com"
+    redirect_output = "> /dev/null" if _should_run_quietly() else ""
+    return _execute_on_target(target, f"curl -sSLI {apt_mirror} {redirect_output}").returncode == 0
 
 
 def main():
@@ -469,8 +484,8 @@ def main():
         elif args.configure_only:
             print_info("Not compiling on {} due to configure-only mode".format(target.hostname))
         else:
-            if args.check_rosdeps:
-                check_rosdeps(target)
+            if args.install_rosdeps:
+                install_rosdeps(target)
             build(target, args.package, pre_clean=args.clean_build)
 
 
