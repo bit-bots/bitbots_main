@@ -27,7 +27,7 @@
 
   <test_depend>boost</test_depend>
   <test_depend>python3-hypothesis</test_depend>
-  <test_depend>wolfgang_webots_sim</test_depend>
+  <test_depend condition="$IS_ROBOT != True">wolfgang_webots_sim</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
