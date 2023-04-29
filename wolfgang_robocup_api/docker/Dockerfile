@@ -92,6 +92,10 @@ RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .lo
 # Volume for logs
 VOLUME /robocup-logs
 
+# ROS bags get created in $HOME/rosbags
+# Thats why we create a symlink to /robocup-logs
+RUN ln -s /robocup-logs $HOME/rosbags
+
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
 ENV ROS_LOCALHOST_ONLY=1
