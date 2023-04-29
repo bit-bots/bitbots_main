@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
-<package format="2">
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>wolfgang_animations</name>
   <version>1.0.3</version>
   <description>Animation files for the wolfgang robot</description>
