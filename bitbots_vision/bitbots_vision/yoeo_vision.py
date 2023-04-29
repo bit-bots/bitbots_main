@@ -94,7 +94,7 @@ class YOEOVision(Node):
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
-            if new_config["yoeo_team_colors_provided"]:
+            if yoeo.YOEOObjectManager.is_team_color_detection_supported():
                 self._vision_components.append(yoeo.RobotDetectionComponent(self))
             else:
                 self._vision_components.append(yoeo.HSVRobotDetectionComponent(self))
