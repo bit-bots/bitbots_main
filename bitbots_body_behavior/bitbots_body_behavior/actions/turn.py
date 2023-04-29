@@ -39,7 +39,11 @@ class TurnAround(AbstractActionElement):
         return pose_msg
 
     def perform(self, reevaluate=False):
-        theta = self.blackboard.world_model.get_current_position()[2]
+        pose = self.blackboard.world_model.get_current_position()
+        if pose is None:
+            self.blackboard.node.get_logger().warn("Current position is unknown, trying again next tick")
+            return
+        theta = pose[2]
 
         self.blackboard.pathfinding.publish(self.pose_msg)
         if (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
