@@ -5,6 +5,7 @@ from typing import Optional, Dict
 
 from bitbots_vision.vision_modules import ros_utils
 from . import yoeo_handlers
+from .model_config import ModelConfig
 
 logger = rclpy.logging.get_logger('bitbots_vision')
 
@@ -22,6 +23,7 @@ class YOEOObjectManager:
 
     _config: Dict = {}
     _framework: str = ""
+    _model_config: ModelConfig = ModelConfig()
     _package_directory: str = ""
     _package_directory_set: bool = False
     _yoeo_instance: Optional[yoeo_handlers.IYOEOHandler] = None
@@ -61,6 +63,16 @@ class YOEOObjectManager:
             return id(cls._yoeo_instance)
 
     @classmethod
+    def is_team_color_detection_supported(cls) -> bool:
+        """
+        Whether the current YOEO object provides team color detection.
+
+        :return: true if team color detection is provided, false otherwise
+        :rtype: bool
+        """
+        return cls._model_config.team_color_detection_supported()
+
+    @classmethod
     def configure(cls, config: Dict) -> None:
         if not cls._package_directory_set:
             logger.error("Package directory not set!")
@@ -71,6 +83,7 @@ class YOEOObjectManager:
         model_path = cls._get_full_model_path(config["yoeo_model_path"])
         cls._verify_required_neural_network_files_exist(framework, model_path)
 
+        cls._load_model_config(model_path)
         cls._configure_yoeo_instance(config, framework, model_path)
 
         cls._config = config
@@ -95,6 +108,10 @@ class YOEOObjectManager:
         return cls._HANDLERS_BY_NAME[framework].model_files_exist(model_path)
 
     @classmethod
+    def _load_model_config(cls, model_path: str) -> None:
+        cls._model_config.load(model_path)
+
+    @classmethod
     def _configure_yoeo_instance(cls, config: Dict, framework: str, model_path: str) -> None:
         if cls._new_yoeo_handler_is_needed(framework):
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
@@ -107,7 +124,12 @@ class YOEOObjectManager:
 
     @classmethod
     def _instantiate_new_yoeo_handler(cls, config: Dict, framework: str, model_path: str) -> None:
-        cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](config, model_path)
+        cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](
+            config,
+            model_path,
+            cls._model_config.get_detection_classes(),
+            cls._model_config.get_segmentation_classes()
+        )
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
