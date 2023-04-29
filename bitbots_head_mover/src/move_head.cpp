@@ -213,7 +213,6 @@ bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
 
     if (action_running_ || goal_not_in_range|| !(params_.max_pan[0]<pan_tilt.first && pan_tilt.first< params_.max_pan[1]) ||
         !(params_.max_tilt[0]<pan_tilt.second && pan_tilt.second< params_.max_tilt[1])) {
-      RCLCPP_INFO(node_->get_logger(), "Goal not in range");
       return rclcpp_action::GoalResponse::REJECT;
     }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
@@ -446,14 +445,14 @@ action_running_ = false;
                                                          double max_horizontal_angle_right,
                                                          double max_vertical_angle_up,
                                                          double max_vertical_angle_down,
-                                                         int reduce_last_scanline = 1,
+                                                         int reduce_last_scanline = 0.2, //TODO: needs to be changed to 1
                                                          int interpolation_steps = 0) {
     std::vector<std::pair<double, double>> keyframes;
     bool down_direction = false;
     bool right_side = false;
     bool right_direction = true;
     int line = line_count - 1;
-    int iterations = std::max(line_count * 2 - 2, 2);
+    int iterations = std::max(line_count * 4 - 4, 2);
     for (int i = 0; i < iterations; i++) {
       std::pair<double, double> current_point =
           {calculateHorizonAngle(right_side, max_horizontal_angle_right, max_horizontal_angle_left),
@@ -471,14 +470,16 @@ action_running_ = false;
         keyframes.insert(keyframes.end(), interpolated_points.begin(), interpolated_points.end());
         right_side = right_direction;
 
-      } else {
+      } 
+      else {
         right_side = !right_direction;
         if (0 <= line && line <= line_count - 1) {
           down_direction = !down_direction;
         }
         if (down_direction) {
           line -= 1;
-        } else {
+        } 
+        else {
           line += 1;
         }
       }
@@ -486,6 +487,7 @@ action_running_ = false;
     for (auto &keyframe: keyframes) {
       if (keyframe.second == max_vertical_angle_down) {
         keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
+          RCLCPP_INFO(node_->get_logger(), "in if");
       }
     }
     return keyframes;
@@ -596,7 +598,8 @@ action_running_ = false;
                                      params_.search_pattern.pan_max[0],
                                      params_.search_pattern.pan_max[1],
                                      params_.search_pattern.tilt_max[0],
-                                     params_.search_pattern.tilt_max[1]);
+                                     params_.search_pattern.tilt_max[1],
+                                     params_.search_pattern.reduce_last_scanline);
           break;
         case humanoid_league_msgs::msg::HeadMode::BALL_MODE_PENALTY: // 11
           pan_speed_ = params_.search_pattern_penalty.pan_speed; 
@@ -605,7 +608,8 @@ action_running_ = false;
                                      params_.search_pattern_penalty.pan_max[0],
                                      params_.search_pattern_penalty.pan_max[1],
                                      params_.search_pattern_penalty.tilt_max[0],
-                                     params_.search_pattern_penalty.tilt_max[1]);
+                                     params_.search_pattern_penalty.tilt_max[1],
+                                     params_.search_pattern.reduce_last_scanline);
           break;
 
         case humanoid_league_msgs::msg::HeadMode::FIELD_FEATURES: // 3
@@ -615,7 +619,8 @@ action_running_ = false;
                                      params_.search_pattern_field_features.pan_max[0],
                                      params_.search_pattern_field_features.pan_max[1],
                                      params_.search_pattern_field_features.tilt_max[0],
-                                     params_.search_pattern_field_features.tilt_max[1]);
+                                     params_.search_pattern_field_features.tilt_max[1],
+                                     params_.search_pattern.reduce_last_scanline);
           break;
 
         case humanoid_league_msgs::msg::HeadMode::LOOK_FRONT: // 13
@@ -625,7 +630,8 @@ action_running_ = false;
                                      params_.front_search_pattern.pan_max[0],
                                      params_.front_search_pattern.pan_max[1],
                                      params_.front_search_pattern.tilt_max[0],
-                                     params_.front_search_pattern.tilt_max[1]);
+                                     params_.front_search_pattern.tilt_max[1],
+                                     params_.search_pattern.reduce_last_scanline);
           break;
 
           case humanoid_league_msgs::msg::HeadMode::DONT_MOVE: // 8
