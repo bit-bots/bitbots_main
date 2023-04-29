@@ -202,12 +202,16 @@ class HeadMover {
     std::shared_ptr<const LookAtGoal::Goal> goal) { // is this LookAtGoal::Goal correct?
     RCLCPP_INFO(node_->get_logger(), "Received goal request");
     (void)uuid;
+geometry_msgs::msg::PointStamped new_point;
     // check if goal is in range collision wise
-          geometry_msgs::msg::PointStamped
-          new_point = tf_buffer_->transform(goal->look_at_position, "base_link", tf2::durationFromSec(0.9));
-      // todo: change base_link to frame from action
-
-      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
+    try {
+          new_point = tf_buffer_->transform(goal->look_at_position,  planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+    }
+    catch (tf2::TransformException &ex) {
+      RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
+      return rclcpp_action::GoalResponse::REJECT;
+      }
+    std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
 bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
 // check whether the goal is in range pan and tilt wise
 
@@ -487,7 +491,6 @@ action_running_ = false;
     for (auto &keyframe: keyframes) {
       if (keyframe.second == max_vertical_angle_down) {
         keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
-          RCLCPP_INFO(node_->get_logger(), "in if");
       }
     }
     return keyframes;
@@ -529,8 +532,9 @@ action_running_ = false;
   }
 
   bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.01, double min_tilt_delta = 0.01) {
+    try {
       geometry_msgs::msg::PointStamped
-          new_point = tf_buffer_->transform(point, "base_link", tf2::durationFromSec(0.9));
+          new_point = tf_buffer_->transform(point, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
       // todo: change base_link to frame from action
 
       std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
@@ -545,6 +549,10 @@ action_running_ = false;
       }
       return true;
   }
+  catch (tf2::TransformException &ex) {
+    RCLCPP_ERROR(node_->get_logger(), "Transform error: %s", ex.what());
+    return false;
+  }}
 
   int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, double pan, double tilt) {
     std::pair<double, int> min_distance_point = {10000.0, -1};
