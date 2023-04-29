@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import toml
+import yaml
 
 from os.path import join
 from typing import Dict, List
@@ -11,7 +11,8 @@ class ModelConfig:
         self._config: Dict = {}
 
     def load(self, model_path: str) -> None:
-        self._config = toml.load(join(model_path, "model_config.toml"))
+        with open(join(model_path, "model_config.yaml"), 'r') as f:
+            self._config = yaml.safe_load(f)
 
     def get_detection_classes(self) -> List[str]:
         return self._config['detection']['classes']
