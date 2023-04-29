@@ -70,6 +70,7 @@ class HeadMover {
   robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
+  moveit::core::RobotStatePtr collision_state_;
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
 
@@ -154,6 +155,9 @@ class HeadMover {
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
     robot_state_->setToDefaultValues();
 
+    collision_state_.reset(new moveit::core::RobotState(robot_model_));
+    collision_state_->setToDefaultValues();
+
     // get planning scene for collision checking
     planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(moveit_node, loader_);
     planning_scene_ = planning_scene_monitor_->getPlanningScene();
@@ -198,6 +202,17 @@ class HeadMover {
     std::shared_ptr<const LookAtGoal::Goal> goal) { // is this LookAtGoal::Goal correct?
     RCLCPP_INFO(node_->get_logger(), "Received goal request");
     (void)uuid;
+          geometry_msgs::msg::PointStamped
+          new_point = tf_buffer_->transform(goal->look_at_position, "base_link", tf2::durationFromSec(0.9));
+      // todo: change base_link to frame from action
+
+      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
+bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
+
+    if (goal_not_in_range) {
+      RCLCPP_INFO(node_->get_logger(), "Goal not in range");
+      return rclcpp_action::GoalResponse::REJECT;
+    }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -223,6 +238,7 @@ const auto goal = goal_handle->get_goal();
 auto feedback = std::make_shared<LookAtGoal::Feedback>();
 bool success = false; // checks whether we look at the position we want to look at
 auto result = std::make_shared<LookAtGoal::Result>();
+
 while (!success) {
   RCLCPP_INFO(node_->get_logger(), "Looking at point");
   if(goal_handle->is_canceling()) {
@@ -356,13 +372,12 @@ action_running_ = false;
   };
 
   bool check_head_collision(double pan, double tilt) {
-    sensor_msgs::msg::JointState joint_state = sensor_msgs::msg::JointState();
-    joint_state.name = {"HeadPan", "HeadTilt"};
-    joint_state.position = {pan, tilt}; 
+      collision_state_->setJointPositions("HeadPan", &pan);
+      collision_state_->setJointPositions("HeadTilt", &tilt);
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
     collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
-    planning_scene_->checkCollision(req, res, *robot_state_, acm);
+    planning_scene_->checkCollision(req, res, *collision_state_, acm);
     return res.collision;
   }
   void move_head_to_position_with_speed_adjustment(double goal_pan,
