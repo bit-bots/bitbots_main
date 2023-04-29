@@ -202,14 +202,17 @@ class HeadMover {
     std::shared_ptr<const LookAtGoal::Goal> goal) { // is this LookAtGoal::Goal correct?
     RCLCPP_INFO(node_->get_logger(), "Received goal request");
     (void)uuid;
+    // check if goal is in range collision wise
           geometry_msgs::msg::PointStamped
           new_point = tf_buffer_->transform(goal->look_at_position, "base_link", tf2::durationFromSec(0.9));
       // todo: change base_link to frame from action
 
       std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
 bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
+// check whether the goal is in range pan and tilt wise
 
-    if (goal_not_in_range) {
+    if (goal_not_in_range|| !(params_.max_pan[0]<pan_tilt.first && pan_tilt.first< params_.max_pan[1]) ||
+        !(params_.max_tilt[0]<pan_tilt.second && pan_tilt.second< params_.max_tilt[1])) {
       RCLCPP_INFO(node_->get_logger(), "Goal not in range");
       return rclcpp_action::GoalResponse::REJECT;
     }
