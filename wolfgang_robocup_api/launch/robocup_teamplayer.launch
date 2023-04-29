@@ -6,7 +6,6 @@
     <!-- record rosbag -->
     <group if="$(var record)">
         <include file="$(find-pkg-share bitbots_utils)/launch/record_bag.launch">
-            <arg name="out_dir" value="$(var out_dir)" />
             <arg name="sim" value="true" />
         </include>
     </group>
