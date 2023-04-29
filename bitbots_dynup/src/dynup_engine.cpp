@@ -7,6 +7,8 @@ namespace bitbots_dynup {
 DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node) : node_(node) {
   pub_engine_debug_ = node_->create_publisher<bitbots_dynup::msg::DynupEngineDebug>("dynup_engine_debug", 1);
   pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("dynup_engine_marker", 1);
+  // We need a separate node for the parameter client because the parameter client adds the node to an executor
+  // and our dynup node is already added to an executor
   walking_param_node_ = std::make_shared<rclcpp::Node>(std::string(node->get_name()) + "_walking_param_node");
   walking_param_client_ = std::make_shared<rclcpp::SyncParametersClient>(walking_param_node_, "/walking");
 }
@@ -589,6 +591,9 @@ double DynupEngine::calcBackSplines() {
 }
 
 double DynupEngine::calcRiseSplines(double time) {
+  // get parameters from walking. If walking is not running, use default values
+  // we re-request the values every time because they can be changed by dynamic reconfigure
+  // and re-requesting them is fast enough
   double foot_distance, trunk_x_final, trunk_pitch, trunk_height;
   bool walking_running = false;
   std::vector<rclcpp::Parameter> walking_params;
@@ -598,6 +603,7 @@ double DynupEngine::calcRiseSplines(double time) {
                                                             "engine.foot_distance",
                                                             "engine.trunk_x_offset"},
                                                            std::chrono::duration<int64_t, std::milli>(10));
+    // when the walking was killed, service_is_ready is still true but the parameters come back empty
     walking_running = !walking_params.empty();
   }
 
