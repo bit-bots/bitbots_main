@@ -211,7 +211,7 @@ class HeadMover {
 bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
 // check whether the goal is in range pan and tilt wise
 
-    if (goal_not_in_range|| !(params_.max_pan[0]<pan_tilt.first && pan_tilt.first< params_.max_pan[1]) ||
+    if (action_running_ || goal_not_in_range|| !(params_.max_pan[0]<pan_tilt.first && pan_tilt.first< params_.max_pan[1]) ||
         !(params_.max_tilt[0]<pan_tilt.second && pan_tilt.second< params_.max_tilt[1])) {
       RCLCPP_INFO(node_->get_logger(), "Goal not in range");
       return rclcpp_action::GoalResponse::REJECT;
@@ -233,8 +233,7 @@ bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
 
   void execute(const std::shared_ptr<LookAtGoalHandle> goal_handle)
   {
-    if (!action_running_){
-      action_running_ = true;
+    action_running_ = true;
 
 RCLCPP_INFO(node_->get_logger(), "Executing goal");
 const auto goal = goal_handle->get_goal();
@@ -251,7 +250,7 @@ while (!success) {
   }
   // look at point
   success = look_at(goal->look_at_position);
-  goal_handle->publish_feedback(feedback);
+  goal_handle->publish_feedback(feedback); // TODO: currently feedback is empty
 }
 if(rclcpp::ok()){
   result->success = true;
@@ -259,7 +258,6 @@ if(rclcpp::ok()){
   RCLCPP_INFO(node_->get_logger(), "Goal succeeded");
 }
 action_running_ = false;
-    }
 
   }
 
@@ -529,27 +527,21 @@ action_running_ = false;
   }
 
   bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.01, double min_tilt_delta = 0.01) {
-    try {
       geometry_msgs::msg::PointStamped
           new_point = tf_buffer_->transform(point, "base_link", tf2::durationFromSec(0.9));
       // todo: change base_link to frame from action
 
       std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
       std::pair<double, double> current_pan_tilt = get_head_position();
+
       if (std::abs(pan_tilt.first - current_pan_tilt.first) > min_pan_delta
           || std::abs(pan_tilt.second - current_pan_tilt.second)
               > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
       {
         send_motor_goals(pan_tilt.first, pan_tilt.second, true); 
-        RCLCPP_INFO(node_->get_logger(), "", pan_tilt.first, pan_tilt.second);
         return false;
       }
-      RCLCPP_INFO(node_->get_logger(), "fini");
       return true;
-    }
-    catch (const std::exception &e) {
-      std::cerr << e.what() << '\n';
-    }
   }
 
   int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, double pan, double tilt) {
