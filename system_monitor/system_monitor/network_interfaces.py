@@ -48,6 +48,9 @@ def _analyze_rate(msgs, clock):
 
     now = clock.now()
     for interface, i_msg in msgs.items():
+        if interface not in _prev_msgs:
+            continue
+
         i_msg.rate_received_bytes = int((i_msg.received_bytes - _prev_msgs[interface].received_bytes) * (now - _prev_msg_time).nanoseconds/1e9)
         i_msg.rate_received_packets = int((i_msg.received_packets - _prev_msgs[interface].received_packets) * (now - _prev_msg_time).nanoseconds/1e9)
         i_msg.rate_received_packets_errors = int((i_msg.received_packets_errors - _prev_msgs[interface].received_packets_errors) * (now - _prev_msg_time).nanoseconds/1e9)
