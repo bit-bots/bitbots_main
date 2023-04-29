@@ -79,7 +79,7 @@
 
     <!-- launch audio processing -->
     <group if="$(var audio)">
-        <include file="(find-pkg-share bitbots_utils)/launch/audio.launch">
+        <include file="$(find-pkg-share bitbots_utils)/launch/audio.launch">
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>
