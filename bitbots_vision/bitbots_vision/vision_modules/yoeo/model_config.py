@@ -1,13 +1,17 @@
-from typing import Optional, Dict, List
+from __future__ import annotations
+
 import toml
 
+from os.path import join
+from typing import Dict, List
 
-class Config:
+
+class ModelConfig:
     def __init__(self):
-        self._config: Optional[Dict] = None
+        self._config: Dict = {}
 
-    def load(self, config_path: str) -> None:
-        self._config = toml.load(config_path)
+    def load(self, model_path: str) -> None:
+        self._config = toml.load(join(model_path, "model_config.toml"))
 
     def get_detection_classes(self) -> List[str]:
         return self._config['detection']['classes']
@@ -16,7 +20,7 @@ class Config:
         return self._config['segmentation']['classes']
 
     def team_color_detection_supported(self) -> bool:
-        return self._config['detection']['team_colors']
+        return self._config['detection']['team_colors'] if 'team_colors' in self._config['detection'].keys() else False
 
     def get_robot_classes(self) -> List[str]:
         robot_classes = []
