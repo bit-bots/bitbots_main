@@ -32,7 +32,6 @@
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
   <depend>python3-yaml</depend>
-
   <depend>soccer_vision_2d_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_utils</depend>
