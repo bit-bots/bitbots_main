@@ -613,6 +613,9 @@ double DynupEngine::calcRiseSplines(double time) {
         trunk_x_final = param.get_value<double>();
       }
     }
+    // walking uses a different coordinate system for the trunk
+    trunk_height = trunk_height * std::cos(trunk_pitch);
+    trunk_x_final = trunk_x_final - std::sin(trunk_pitch) * trunk_height;
   } else {
     RCLCPP_WARN(node_->get_logger(), "Walking is not running, using default parameters for walkready.");
     foot_distance = params_["foot_distance"].get_value<double>();
