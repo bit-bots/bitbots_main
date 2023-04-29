@@ -642,20 +642,16 @@ action_running_ = false;
                                      params_.search_pattern.reduce_last_scanline);
           break;
 
-          case humanoid_league_msgs::msg::HeadMode::DONT_MOVE: // 8
-          pan_speed_ = 0.0;
-          tilt_speed_ = 0.0;
-          break;
         default:
           return;
       }
+
+    }
+    if (!action_running_ && curr_head_mode != humanoid_league_msgs::msg::HeadMode::DONT_MOVE){
       std::pair<double, double> head_position = get_head_position();
 
       index_ = get_near_pattern_position(pattern_, head_position.first, head_position.second);
       prev_head_mode_ = curr_head_mode;
-
-    }
-    if (!action_running_){
     perform_search_pattern();
 
     }
