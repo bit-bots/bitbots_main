@@ -130,6 +130,7 @@ class YOEOObjectManager:
             config,
             model_path,
             cls._model_config.get_detection_classes(),
+            cls._model_config.get_robot_class_ids(),
             cls._model_config.get_segmentation_classes()
         )
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")

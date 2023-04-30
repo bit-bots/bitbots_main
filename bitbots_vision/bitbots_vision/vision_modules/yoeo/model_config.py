@@ -17,13 +17,12 @@ class ModelConfig:
     def team_colors_are_provided(self) -> bool:
         return self._config['detection'].get('team_colors', False)
 
-    def get_robot_classes(self) -> List[str]:
-        robot_classes = []
-        for c in self.get_detection_classes():
+    def get_robot_class_ids(self) -> List[int]:
+        ids = []
+        for i, c in enumerate(self.get_detection_classes()):
             if "robot" in c:
-                robot_classes.append(c)
-
-        return robot_classes
+                ids.append(i)
+        return ids
 
 
 class ModelConfigLoader:
