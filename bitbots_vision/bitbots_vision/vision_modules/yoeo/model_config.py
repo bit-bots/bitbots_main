@@ -4,13 +4,6 @@ from os.path import join
 from typing import Dict, List, Optional
 
 
-class ModelConfigLoader:
-    @staticmethod
-    def load_from(model_path: str) -> ModelConfig:
-        with open(join(model_path, "model_config.yaml"), 'r') as f:
-            return ModelConfig(yaml.safe_load(f))
-
-
 class ModelConfig:
     def __init__(self, config: Optional[Dict] = None):
         self._config: Dict = config if config else {}
@@ -31,3 +24,10 @@ class ModelConfig:
                 robot_classes.append(c)
 
         return robot_classes
+
+
+class ModelConfigLoader:
+    @staticmethod
+    def load_from(model_path: str) -> ModelConfig:
+        with open(join(model_path, "model_config.yaml"), 'r') as f:
+            return ModelConfig(yaml.safe_load(f))
