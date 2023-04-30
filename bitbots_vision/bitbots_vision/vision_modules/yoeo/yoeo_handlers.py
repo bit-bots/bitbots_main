@@ -116,11 +116,17 @@ class YOEOHandlerTemplate(IYOEOHandler):
         - model_files_exist(model_directory: str) -> bool:
         - _compute_new_prediction_for(self, image) -> Tuple:
     """
-    def __init__(self, config: Dict, det_class_names: List[str], seg_class_names: List[str]):
+    def __init__(self,
+                 config: Dict,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
         logger.debug(f"Entering YOEOHandlerTemplate constructor")
 
         self._det_candidates: Dict = defaultdict(list)
         self._det_class_names: List[str] = det_class_names
+        self._det_robot_class_ids: List[int] = det_robot_class_ids
 
         self._image: Optional[np.ndarray] = None
 
@@ -151,11 +157,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         return self._det_candidates[class_name]
 
     def get_robot_class_ids(self) -> List[int]:
-        ids = []
-        for i, c in enumerate(self._det_class_names):
-            if "robot" in c:
-                ids.append(i)
-        return ids
+        return self._det_robot_class_ids
 
     def get_segmentation_mask_for(self, class_name: str):
         assert class_name in self._seg_class_names, \
@@ -225,8 +227,14 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
     Framework version: 1.12.0
     see https://onnxruntime.ai/docs/get-started/with-python.html for ONNX documentation
     """
-    def __init__(self, config: Dict, model_directory: str, det_class_names: List[str], seg_class_names: List[str]):
-        super().__init__(config, det_class_names, seg_class_names)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -283,8 +291,14 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
     Framework version: OpenVINO 2022.1
     Code is based on https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
     """
-    def __init__(self, config: Dict, model_directory: str, det_class_names: List[str], seg_class_names: List[str]):
-        super().__init__(config, det_class_names, seg_class_names)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -355,8 +369,14 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
     """
     YOEO handler for the PyTorch framework
     """
-    def __init__(self, config: Dict, model_directory: str, det_class_names: List[str], seg_class_names: List[str]):
-        super().__init__(config, det_class_names, seg_class_names)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -401,8 +421,14 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
     """
     YOEO handler for the TVM framework.
     """
-    def __init__(self, config: Dict, model_directory: str, det_class_names: List[str], seg_class_names: List[str]):
-        super().__init__(config, det_class_names, seg_class_names)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
