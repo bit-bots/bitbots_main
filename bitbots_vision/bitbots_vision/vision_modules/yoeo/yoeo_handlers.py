@@ -116,36 +116,31 @@ class YOEOHandlerTemplate(IYOEOHandler):
         - model_files_exist(model_directory: str) -> bool:
         - _compute_new_prediction_for(self, image) -> Tuple:
     """
-    def __init__(self, config: Dict, model_directory: str):
+    def __init__(self,
+                 config: Dict,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
         logger.debug(f"Entering YOEOHandlerTemplate constructor")
 
         self._det_candidates: Dict = defaultdict(list)
-        self._det_class_names: Optional[List[str]] = None
+        self._det_class_names: List[str] = det_class_names
+        self._det_robot_class_ids: List[int] = det_robot_class_ids
 
         self._image: Optional[np.ndarray] = None
 
         self._prediction_is_up_to_date: bool = True
 
-        self._seg_class_names: Optional[List[str]] = None
+        self._seg_class_names: List[str] = seg_class_names
         self._seg_masks: Dict = dict()
 
         self._use_caching: bool = config['caching']
-
-        self._load_candidate_class_names(model_directory)
 
         logger.debug(f"Leaving YOEOHandlerTemplate constructor")
 
     def configure(self, config: Dict) -> None:
         self._use_caching = config['caching']
-
-    def _load_candidate_class_names(self, model_directory: str) -> None:
-        path = YOEOPathGetter.get_names_file_path(model_directory)
-
-        with open(path, 'r', encoding="utf-8") as fp:
-            class_names = yaml.load(fp, Loader=yaml.SafeLoader)
-
-        self._det_class_names = class_names['detection']
-        self._seg_class_names = class_names['segmentation']
 
     def get_available_detection_class_names(self) -> List[str]:
         return self._det_class_names
@@ -162,11 +157,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         return self._det_candidates[class_name]
 
     def get_robot_class_ids(self) -> List[int]:
-        ids = []
-        for i, c in enumerate(self._det_class_names):
-            if "robot" in c:
-                ids.append(i)
-        return ids
+        return self._det_robot_class_ids
 
     def get_segmentation_mask_for(self, class_name: str):
         assert class_name in self._seg_class_names, \
@@ -236,8 +227,14 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
     Framework version: 1.12.0
     see https://onnxruntime.ai/docs/get-started/with-python.html for ONNX documentation
     """
-    def __init__(self, config: Dict, model_directory: str):
-        super().__init__(config, model_directory)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -294,8 +291,14 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
     Framework version: OpenVINO 2022.1
     Code is based on https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
     """
-    def __init__(self, config: Dict, model_directory: str):
-        super().__init__(config, model_directory)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -366,8 +369,14 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
     """
     YOEO handler for the PyTorch framework
     """
-    def __init__(self, config, model_directory):
-        super().__init__(config, model_directory)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -412,8 +421,14 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
     """
     YOEO handler for the TVM framework.
     """
-    def __init__(self, config: Dict, model_directory: str):
-        super().__init__(config, model_directory)
+    def __init__(self,
+                 config: Dict,
+                 model_directory: str,
+                 det_class_names: List[str],
+                 det_robot_class_ids: List[int],
+                 seg_class_names: List[str]
+                 ):
+        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -500,10 +515,6 @@ class YOEOPathGetter:
             path = os.path.join(model_directory, subdir, filename)
 
         return path
-
-    @classmethod
-    def get_names_file_path(cls, model_directory) -> str:
-        return cls._assemble_full_path(model_directory, None, "yoeo_names.yaml")
 
     @classmethod
     def get_onnx_onnx_file_path(cls, model_directory) -> str:
