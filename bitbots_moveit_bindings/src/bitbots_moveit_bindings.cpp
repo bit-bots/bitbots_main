@@ -18,7 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_python_extension/serialization.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
-#include <rclcpp/executors/events_executor/events_executor.hpp>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 
 #include "rcl_interfaces/srv/get_parameters.hpp"
 namespace py = pybind11;
@@ -88,7 +88,7 @@ public:
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
-    exec_ = std::make_shared<rclcpp::executors::EventsExecutor>();
+    exec_ = std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
     exec_->add_node(node_);
   }
 
@@ -269,7 +269,7 @@ private:
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
   std::shared_ptr<rclcpp::Node> node_;
-  std::shared_ptr<rclcpp::executors::EventsExecutor> exec_;
+  std::shared_ptr<rclcpp::experimental::executors::EventsExecutor> exec_;
   std::thread t_;
 
   static tf2::Vector3 p(const geometry_msgs::msg::Point& p) {

@@ -23,7 +23,6 @@
   <depend>rot_conv</depend>
   <depend>bitbots_docs</depend>
   <depend>biped_interfaces</depend>
-  <depend>irobot_events_executor</depend>
 
   <export>
     <bitbots_documentation>

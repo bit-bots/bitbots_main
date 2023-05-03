@@ -18,7 +18,6 @@
   <depend>moveit_ros_planning_interface</depend>
   <depend>pybind11_vendor</depend>
   <depend>ros2_python_extension</depend>
-  <depend>irobot_events_executor</depend>
   <export>
 
   <build_type>ament_cmake</build_type>
