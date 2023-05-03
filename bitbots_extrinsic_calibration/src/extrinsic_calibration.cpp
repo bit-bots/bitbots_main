@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(
     node, node->get_clock(), rclcpp::Duration(0, 1e7), [node]() -> void {node->step();});
 
-  rclcpp::executors::EventsExecutor exec;
+  rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
   exec.spin();
   rclcpp::shutdown();
