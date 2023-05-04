@@ -13,7 +13,6 @@ find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(test_msgs REQUIRED)
 
