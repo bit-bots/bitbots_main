@@ -20,7 +20,6 @@
   <depend>bitbots_msgs</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>bitbots_docs</depend>
-  <depend>irobot_events_executor</depend>
 
   <export>
       <bitbots_documentation>
