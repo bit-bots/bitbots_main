@@ -637,7 +637,7 @@ int main(int argc, char **argv) {
   node->initializeEngine();
   rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / node->getTimerFreq());
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->run();});
-  rclcpp::executors::EventsExecutor exec;
+  rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
 
   exec.spin();

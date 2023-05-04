@@ -408,7 +408,7 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   // init node
   auto node = std::make_shared<bitbots_dynup::DynupNode>();
-  rclcpp::executors::EventsExecutor exec;
+  rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
 
   exec.spin();

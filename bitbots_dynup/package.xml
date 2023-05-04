@@ -23,7 +23,6 @@
   <depend>moveit_ros_move_group</depend>
   <depend>bitbots_splines</depend>
   <depend>geometry_msgs</depend>
-  <depend>irobot_events_executor</depend>
   <depend>bitbots_msgs</depend>
   <depend>moveit_ros_robot_interaction</depend>
   <depend>moveit_ros_planning_interface</depend>

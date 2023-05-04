@@ -13,7 +13,7 @@
 #include "builtin_interfaces/msg/time.hpp"
 #include <ros2_python_extension/serialization.hpp>
 #include "std_msgs/msg/header.hpp"
-#include <rclcpp/executors/events_executor/events_executor.hpp>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 
 
 using std::placeholders::_1;
@@ -268,7 +268,7 @@ private:
 };
 }  // namespace bitbots_hcm
 
-void thread_spin(rclcpp::executors::EventsExecutor::SharedPtr executor){
+void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor){
   executor->spin();
 }
 
@@ -276,7 +276,7 @@ int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_hcm::HCM_CPP>();
 
-  rclcpp::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::executors::EventsExecutor>();
+  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
   exec->add_node(node);
   std::thread thread_obj(thread_spin, exec);
 

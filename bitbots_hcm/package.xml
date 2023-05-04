@@ -22,7 +22,6 @@
   <depend>bitbots_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>humanoid_league_msgs</depend>
-  <depend>irobot_events_executor</depend>
   <depend>pybind11-dev</depend>
   <depend>rclpy</depend>
   <depend>ros2_python_extension</depend>
