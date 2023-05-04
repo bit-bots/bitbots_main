@@ -16,7 +16,6 @@ find_package(bitbots_docs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(rot_conv REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(irobot_events_executor REQUIRED)
 
 include_directories(include)
 
@@ -33,7 +32,6 @@ ament_target_dependencies(extrinsic_calibration
   tf2_geometry_msgs
   tf2_ros
   rot_conv
-  irobot_events_executor
 )
 
 enable_bitbots_docs()
