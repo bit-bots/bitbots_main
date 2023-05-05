@@ -44,8 +44,10 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
   int read_counter_;
   uint8_t *data_;
 
-  bool requested_power_switch_status_;
+  bool requested_power_status_;
+  bool last_read_successful_;
   std_msgs::msg::Bool power_switch_status_;
+  std_msgs::msg::Bool power_control_status_;
   std_msgs::msg::Float64 VCC_;
   std_msgs::msg::Float64 VBAT_;
   std_msgs::msg::Float64MultiArray VBAT_individual_;
