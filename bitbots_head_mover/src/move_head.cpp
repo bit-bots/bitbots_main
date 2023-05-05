@@ -117,8 +117,6 @@ class HeadMover {
     // load parameters from config
     auto param_listener = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener->get_params();
-    pan_speed_ = params_.look_at.pan_speed;
-    tilt_speed_ = params_.look_at.tilt_speed;
 
     auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
 
@@ -169,8 +167,8 @@ class HeadMover {
     pos_msg_.joint_names = {"HeadPan", "HeadTilt"};
     pos_msg_.positions = {0, 0};
     pos_msg_.velocities = {0, 0};
-    pos_msg_.accelerations = {0, 0};
-    pos_msg_.max_currents = {0, 0};
+    pos_msg_.accelerations = {-1, -1};
+    pos_msg_.max_currents = {-1, -1};
 
     // apparently tf_listener is necessary but unused
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -266,7 +264,7 @@ action_running_ = false;
 
   double calculate_lower_speed(double delta_fast_joint, double delta_my_joint, double speed) {
     double estimated_time = delta_fast_joint / speed;
-    if (estimated_time != 0) {
+    if (estimated_time) {
       return delta_my_joint / estimated_time;
     } else {
       return 0;
@@ -393,9 +391,9 @@ action_running_ = false;
     double delta_pan = std::abs(goal_pan - current_pan);
     double delta_tilt = std::abs(goal_tilt - current_tilt);
     if (delta_pan > 0) {
-      tilt_speed = calculate_lower_speed(delta_pan, delta_tilt, pan_speed);
+      tilt_speed = std::min(tilt_speed, calculate_lower_speed(delta_pan, delta_tilt, pan_speed));
     } else {
-      pan_speed = calculate_lower_speed(delta_tilt, delta_pan, tilt_speed);
+      pan_speed = std::min(pan_speed, calculate_lower_speed(delta_tilt, delta_pan, tilt_speed));
     }
     pos_msg_.positions = {goal_pan, goal_tilt};
     pos_msg_.velocities = {pan_speed, tilt_speed};
@@ -531,20 +529,20 @@ action_running_ = false;
 
   }
 
-  bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.01, double min_tilt_delta = 0.01) {
+  bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.02, double min_tilt_delta = 0.02) {
     try {
       geometry_msgs::msg::PointStamped
           new_point = tf_buffer_->transform(point, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
       // todo: change base_link to frame from action
 
-      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
+      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point); // TODO: do we need to threshold values here?
       std::pair<double, double> current_pan_tilt = get_head_position();
 
       if (std::abs(pan_tilt.first - current_pan_tilt.first) > min_pan_delta
           || std::abs(pan_tilt.second - current_pan_tilt.second)
               > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
       {
-        send_motor_goals(pan_tilt.first, pan_tilt.second, true); 
+        send_motor_goals(pan_tilt.first, pan_tilt.second, true, params_.look_at.pan_speed, params_.look_at.tilt_speed); 
         return false;
       }
       return true;
@@ -568,6 +566,7 @@ action_running_ = false;
   }
 
   void perform_search_pattern() {
+    RCLCPP_INFO(node_->get_logger(), "search pattern");
     if (pattern_.size() == 0) {
       return;
     }
@@ -645,14 +644,13 @@ action_running_ = false;
         default:
           return;
       }
-
-    }
-    if (!action_running_ && curr_head_mode != humanoid_league_msgs::msg::HeadMode::DONT_MOVE){
       std::pair<double, double> head_position = get_head_position();
 
       index_ = get_near_pattern_position(pattern_, head_position.first, head_position.second);
+    }
+    if (!action_running_ && curr_head_mode != humanoid_league_msgs::msg::HeadMode::DONT_MOVE){
       prev_head_mode_ = curr_head_mode;
-    perform_search_pattern();
+      perform_search_pattern();
 
     }
   };
