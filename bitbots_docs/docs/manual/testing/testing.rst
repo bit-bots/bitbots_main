@@ -60,7 +60,7 @@ Compile (compiles)
 ------------------
 
 The first step is to test if the package compiles.
-Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 20.04 with Rolling).
+Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 22.04 with Rolling).
 A part of this is to check if all dependencies are correct in the package.xml.
 This is important so they can be installed with rosdep.
 
