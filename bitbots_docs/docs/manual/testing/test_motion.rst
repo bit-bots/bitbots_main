@@ -88,6 +88,6 @@ Alternativly, you can do it manually by following the following steps.
 #. Test Falling:
     .. code-block:: bash
 
-        roslaunch bitbots_bringup motion_standalone.launch
+        ros2 launch bitbots_bringup motion_standalone.launch
 
     Move the robot, as if it is falling, it should do a falling animation.
