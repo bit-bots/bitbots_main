@@ -6,15 +6,15 @@ Bitbots Lowlevel
 What do the low level packages do?
 ----------------------------------
 
-The low level packages are responsible for the motions of the robot.
-For that, different hardware and software components are used; they are described in this article.
+The low level packages are responsible for the robot's motion.
+The different hardware and software components used are described in this article.
 Additionally, common problems and troubleshooting strategies are explained.
 
 The behavior of the low level packages is dominated by the control loop, i.e. the cycle that alternately reads and writes motor positions.
-In parallel to this cycle, the new positions are calculated based on the observed values.
+In parallel to this cycle, the new positions are calculated based on observed values.
 
-To react to problems as fast as possible, e.g. to overload errors in the motors, a faster control loop is desirable.
-Formerly, our loop ran with a frequency of 100Hz, therefore the reaction time to errors it at least 20ms because the error has to be read, processed and written, which takes at least two cycles.
+To react to problems as fast as possible, e.g. overload errors in the motors, a faster control loop is desirable.
+Formerly, our loop ran with a frequency of 100Hz, therefore the reaction time to errors is at least 20ms because the error has to be read, processed and written, which takes at least two cycles.
 
 There are essentially three possibilities to accelerate the control loop:
 
@@ -22,7 +22,7 @@ There are essentially three possibilities to accelerate the control loop:
 2. Compress the data, e.g. by using special commands to read multiple motors at once (sync read and sync write)
 3. Use more buses, in our case, one bus per limb would make sense
 
-Since we cannot increase the baud rate due to these limitations, our code only utilizes the second and third point.
+Since we cannot increase the baud rate due to these limitations, our code only utilizes the second and third points.
 
 How is the hardware control structured?
 ---------------------------------------
@@ -32,7 +32,7 @@ Motors and Buses
 
 The lowest end of the hardware control are the motors.
 We use Dynamixel motors MX-106 and MX-64, as well as the XH540 by Robotis.
-The motors are connected by the motorbus, we are using RS-485 or TTL.
+The motors are connected by the motorbus using RS-485 or TTL.
 
 The cables for RS-485 consist of four wires, two of which are ground and VCC (14.8 to 16.8 V, depending on the current battery voltage), one for data (5V) and one for the inverted data.
 When crimping new cables or when connecting a logic analyzer, it is important to not interchange the data and VCC cables because the motors are damaged when there are more than 5V on the data bus.
