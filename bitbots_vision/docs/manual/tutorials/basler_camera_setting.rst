@@ -16,7 +16,7 @@ Our robots are using a Basler ace camera in the ROS environment most of the time
 Basler Camera Settings
 ----------------------
 
-The settings for the basler cameras are located in the file ``basler_drivers/pylon_camera/config/camera_settings.yaml``.
+The settings for the basler cameras are located in the file ``bitbots_misc/bitbots_basler_camera/config/camera_settings.yaml``.
 
 Only the following parameters need to be adjusted.
 Other parameter values are mostly related to the ethernet connection of the camera.
@@ -47,7 +47,7 @@ Sadly the parameters can not be dynamically reconfigured.
 So, you need to restart the driver, every time you change something.
 To speed this a bit up, you can start the driver without the vision by typing
 
-``roslaunch bitbots_bringup basler_camera.launch``.
+``ros2 launch bitbots_basler_camera basler_camera.launch``.
 
 Make sure no other driver instances are running in the background.
 
@@ -57,8 +57,8 @@ Camera Calibration
 
 The camera calibration is loaded automatically depending on the robot's name. If you connect a camera locally a default calibration is loaded.
 
-The calibration files names are following the pattern ``basler_drivers/pylon_camera/config/camera_calibration_<name>.yaml``.
+The calibration files names are following the pattern ``bitbots_misc/bitbots_basler_camera/config/camera_calibration_<name>.yaml``.
 
 To create new calibration files see
 
-.. _`ROS camera calibration`: http://wiki.ros.org/camera_calibration/Tutorials/MonocularCalibration
+.. _`ROS camera calibration`: https://navigation.ros.org/tutorials/docs/camera_calibration.html

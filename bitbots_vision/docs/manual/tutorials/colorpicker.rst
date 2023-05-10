@@ -6,6 +6,8 @@ Colorpicker
 The colorpicker is a tool to record a color lookup tables e.g. of field colors for later use in the vision.
 It subscribes to the ``Image`` topic ``/camera/image_proc``.
 
+.. warning::
+  The colorpicker still uses ROS 1 and needs to be ported to ROS 2 before it can be used with our current software stack.
 
 How to Record a Color Lookup Table
 ==================================
