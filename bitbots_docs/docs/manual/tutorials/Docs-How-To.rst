@@ -2,8 +2,7 @@
 How to document
 ===============
 
-Our documentation is published under  `doku.bit-bots.de <http://doku.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_meta/bitbots_tools/bitbots_docs <https://github.com/bit-bots/bitbots_tools/tree/master/bitbots_docs>`_ and deployed by our `Jenkins CI <http://ci.bit-bots.de>`_.
-
+Our documentation is published under  `doku.bit-bots.de <http://doku.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_meta/bitbots_tools/bitbots_docs <https://github.com/bit-bots/bitbots_tools/tree/master/bitbots_docs>`.
 Installation of system dependencies
 ===================================
 
