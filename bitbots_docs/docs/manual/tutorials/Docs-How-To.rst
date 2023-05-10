@@ -2,10 +2,10 @@
 How to document
 ===============
 
-Our documentation is published under  `doku.bit-bots.de <http://doku.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_meta/bitbots_tools/bitbots_docs <https://github.com/bit-bots/bitbots_tools/tree/master/bitbots_docs>`_.
+Our documentation is published under  `doku.bit-bots.de <https://doku.bit-bots.de>`_ and `docs.bit-bots.de <https://docs.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_meta/bitbots_tools/bitbots_docs <https://github.com/bit-bots/bitbots_tools/tree/master/bitbots_docs>`_.
 
 Installation of dependencies
-===================================
+============================
 
 We are using `Sphinx <https://www.sphinx-doc.org/>`_ and the following extentions to generate our documentation: `breathe`, `exhale`.
 The correct version of the extentions must be installed.
