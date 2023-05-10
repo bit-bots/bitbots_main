@@ -1,44 +1,40 @@
-=============
-Launchskripte
-=============
+Launch Scripts
+==============
 
-Im Folgenden sind die wichtigsten Launchfiles aufgelistet.
-Die Parameter der Launchfiles kann man sich mit ```ros2 launch <package-name> <launch-file-name>.launch -s``` im Terminal anzeigen lassen.
-Diese haben Defaultwerte, welche sich mittels ```<parameter>:=<wert>``` überschreiben lassen.
+Listed below are the most important launch files. You can display the parameters of the launch files in the terminal by using the command `ros2 launch <package-name> <launch-file-name>.launch -s`. 
+These launch files have default values, which can be overridden by using the syntax `<parameter>:=<value>`.
 
-Launchskripte in bitbots_bringup
-================================
-Diese Launchskripte sind zu finden im bitbots_bringup Packet.
+Launch Scripts in the `bitbots_bringup` Package
+---------------------------------------------
 
-teamplayer.launch
-_________________
-Wenn man den Roboter für ein Spiel starten möchte wird dieses Launchfile verwendet. Es werden alle relevanten Komponenten gestartet.
-Hierfür muss der Motorstrom am Roboter angeschaltet werden. Nach dem Start fährt der Roboter die Walkready-Position an. 
+`teamplayer.launch`
+~~~~~~~~~~~~~~~~~~~~
+
+This script is used to launch the robot for a game. All relevant components are started. To do this, the motor current must be turned on at the robot. After starting, the robot moves to the walk-ready position.
+
+`highlevel.launch`
+~~~~~~~~~~~~~~~~~~~~
+
+This launch script starts all game-relevant components except for motion. To do this, the motor current must be turned on at the robot. After starting, the robot moves to the walk-ready position.
+
+`motion_standalone.launch`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This launch script starts the motion and all components relevant to motion. When this launch script is started, motors can be controlled and movements can be performed on the robot, such as walking or animations.
+To do this, the motor current must be turned on. After starting, the robot moves to the walk-ready position.
+
+`vision_standalone.launch`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This launch script starts the vision and all relevant components.
 
 
-highlevel.launch
-________________
-Dieses Launchskript startet alle spielrelevanten Komponenten außer der Motion.
-Hierfür muss der Motorstrom am Roboter angeschaltet werden. Nach dem Start fährt der Roboter die Walkready-Position an.
+`simulator_teamplayer.launch`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+This script starts the simulator and the software stack of the robot.
 
-motion_standalone.launch
-________________________
-Diese Launchskript startet die Motion und alle für die Motion relevanten Komponenten.
-Ist dieses Launchskript gestartet, können die Motoren angesteuert und Bewegungen auf dem Roboter ausgeführt werden, wie Walking oder Animationen.
-Hierfür muss der Motorstrom am Roboter angeschaltet werden. Nach dem Start fährt der Roboter die Walkready-Position an.
+`visualization.launch`
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-vision_standlone.launch
-________________________
-Diese Launchskript startet die Vision und alle für die Vision relevanten Komponenten. 
-
-visualization.launch
-
-simulator_teamplayer.launch
-___________________________
-Diese Skript startet den Simulator und den Softwarestack des Roboters.
-
-visualization.launch
-____________________
-Dieses Skript startet RViz und visualisiert die Sensordaten des Roboters.
-
+This script starts RViz and visualizes the robot's sensor data.
