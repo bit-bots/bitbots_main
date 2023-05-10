@@ -60,7 +60,7 @@ Compile (compiles)
 ------------------
 
 The first step is to test if the package compiles.
-Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 18.04 with Melodic).
+Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 20.04 with Rolling).
 A part of this is to check if all dependencies are correct in the package.xml.
 This is important so they can be installed with rosdep.
 
@@ -88,7 +88,7 @@ The tests in this stage can be done via multiple methods:
 Input
 ^^^^^^^^^^^
 
-1. rostopic pub
+1. ros2 topic pub
 2. RViz interactive marker
     1. Path planning: inbuilt Navigation goal in RViz
     2. behavior: humanoid_league_interactive_marker
@@ -100,7 +100,7 @@ Input
 Output
 ^^^^^^^^^^^^
 
-1. rostopic echo
+1. ros2 topic echo
 2. RViz marker
     1. Object detection: humanoid_league_rviz_marker
     2. Walking: published its own markers
@@ -111,27 +111,19 @@ Output
     2. Object Detection: humanoid_league_relative_rqt
     3. Vision: bitbots_vision_tools
 
-Testing with simulated data (tested_simulator)
+Testing in Simulation
 ------------------------------------------------
 
 We can test with values closer to real data if we do not use random data from humans, but with simulated data.
-We mainly use Gazebo for simulation.
+We mainly use Webots for simulation.
 It offers us two possibilities.
 
-One option is to simulate the physics (rather) accurately and let the robot actually walk.
-However this is computationally intensive, even if closer to reality.
 
-Alternatively, we can use less accurate physics and just let the robot hover the ground instead of walking.
-This is especially a good option for testing the behavior,
+:code:ros2 launch bitbots_bringup simulator_teamplayer.launch <param>:=false/true
+Starts the simulator with designated params.
 
-:code:roslaunch bitbots_bringup simulator.launch
-Starts the simulator.
-
-:code:roslaunch bitbots_bringup motion.launch sim:=true
-Starts the motion in the simulator (Walking, Animation, HCM)
-
-:code:roslaunch bitbots_bringup highlevel.launch sim:=true vision:=true
-Starts highlevel software (Gamecontroller, Teamcomm, Behavior, Vision, Transformer, Localization, Pathfinding)
+:code:ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
+Starts highlevel software (Gamecontroller, Teamcomm, Behavior, Vision, Localization, Pathfinding)
 
 Testing on the robot (tested_robot)
 --------------------------------------
