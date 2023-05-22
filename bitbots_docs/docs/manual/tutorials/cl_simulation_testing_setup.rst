@@ -42,7 +42,7 @@ As such you can lookup some of the needed requirements there.
 If while testing you are changing code or updating ``bitbots_meta`` via ``make pull-all``,
 this step needs to be done again.
 For compilation of the whole meta repository run ``cba``, which is an alias for:
-  ``cd $COLCON_WS; colcon build --symlink-install --continue-on-error``
+``cd $COLCON_WS; colcon build --symlink-install --continue-on-error``
 After a successful run, before we are able to use any ros commands we now need to source colcon built sources
 with ``sa``, which is an alias for:
 ``source "/opt/ros/rolling/setup.$SHELL" && source "$COLCON_WS/install/setup.$SHELL"``
