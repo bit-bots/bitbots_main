@@ -360,7 +360,7 @@ def build(target, package='', pre_clean=False):
            "source install/setup.zsh;"
            "{cmd_clean}"
            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d,]+)' /proc/cmdline)\";"
-           "chrt -r 1 taskset -c $ISOLATED_CPUS colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
+           "chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
            "sync;").format(
                **{
                    "workspace": target.workspace,
