@@ -641,6 +641,17 @@ action_running_ = false;
                                      params_.search_pattern.reduce_last_scanline);
           break;
 
+          case humanoid_league_msgs::msg::HeadMode::LOOK_FORWARD: // 7
+          pan_speed_ = params_.look_forward.pan_speed;
+          tilt_speed_ = params_.look_forward.tilt_speed;
+          pattern_ = generatePattern(params_.look_forward.scan_lines,
+                                     params_.look_forward.pan_max[0],
+                                     params_.look_forward.pan_max[1],
+                                     params_.look_forward.tilt_max[0],
+                                     params_.look_forward.tilt_max[1],
+                                     params_.search_pattern.reduce_last_scanline);
+          break;
+
         default:
           return;
       }
@@ -648,8 +659,8 @@ action_running_ = false;
 
       index_ = get_near_pattern_position(pattern_, head_position.first, head_position.second);
     }
-    if (!action_running_ && curr_head_mode != humanoid_league_msgs::msg::HeadMode::DONT_MOVE){
-      prev_head_mode_ = curr_head_mode;
+    if (!action_running_ && curr_head_mode != humanoid_league_msgs::msg::HeadMode::DONT_MOVE){ //here DONT_MOVE is implemented
+      prev_head_mode_ = curr_head_mode; 
       perform_search_pattern();
 
     }
