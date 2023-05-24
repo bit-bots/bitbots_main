@@ -42,6 +42,9 @@ class BodyBlackboard:
         self.dynup_action_client: Optional[ActionClient] = None
         self.dynup_cancel_pub: Optional[Publisher] = None
         self.hcm_deactivate_pub: Optional[Publisher] = None
+        
+        self.lookat_action_client: Optional[ActionClient] = None
+        
 
 
 class HeadBlackboard:
