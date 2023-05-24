@@ -38,3 +38,8 @@ This script starts the simulator and the software stack of the robot.
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 This script starts RViz and visualizes the robot's sensor data.
+
+``receive.launch``
+~~~~~~~~~~~~~~~~~~~~~
+
+The UDP Bridge needs to be started locally during a game.
