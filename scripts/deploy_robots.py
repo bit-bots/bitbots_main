@@ -192,12 +192,19 @@ def _parse_arguments() -> argparse.Namespace:
 
 def _get_targets(input_targets: str) -> List[Target]:
     """
-    Parse target argument into usable Targets
+    Parse target argument into usable Targets.
+    Targets are comma separated and can be either hostnames, robot names or IPs
+    'ALL' is a valid target and will be expanded to all known targets
 
     :param input_targets: comma seperated list of targets
     :return: List of targets
     """
     targets: List[Target] = []
+
+    if input_targets == "ALL":
+        for hostname in Target._IPs.keys():
+            targets.append(Target(hostname))
+        return targets
 
     for input_target in input_targets.split(","):
         try:
