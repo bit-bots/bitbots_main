@@ -52,7 +52,6 @@ include:
         - biped_interfaces
         - DynamixelSDK
         - dynamixel-workbench
-        - events-executor
         - humanoid_base_footprint
         - imu_tools
         - ipm
