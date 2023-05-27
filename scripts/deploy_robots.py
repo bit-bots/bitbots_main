@@ -186,37 +186,48 @@ hy-             +dddddddm`        ydddddddd              -yh
 
 
 def _parse_arguments() -> argparse.Namespace:
-    """
-    Parses the command line arguments.
-    
-    :return: The parsed arguments.
-    """
     parser = argparse.ArgumentParser(
-        description="Deploy, configure, and launch the Bit-Bots software on a robot."
+        description="Deploy the Bit-Bots software on a robot. "
+        "This script provides 5 tasks: sync, install, configure, build, launch. "
+        "By default, configure and launch are disabled. You can disable tasks by using the corresponding --no-* argument."
         )
 
     # Positional arguments
     parser.add_argument(
         "target",
         type=str,
-        help="The target robot or computer you want to compile for. Multiple targets can be specified seperated by commas. 'ALL' can be used to target all known robots."
+        help="The target robot or computer you want to compile for. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots."
         )
-    # TODO: refactor all 5 tasks
-    # Optional mode
-    mode = parser.add_mutually_exclusive_group(required=False)
-    mode.add_argument("-s", "--sync-only", action="store_true", help="Only synchronize (copy) files from you to the target machine")
-    mode.add_argument("-c", "--configure-only", action="store_true", help="Only configure the target machine")
-    mode.add_argument("-b", "--build-only", action="store_true", help="Only build on the target machine")
+    # Task arguments
+    sync_group = parser.add_mutually_exclusive_group()
+    sync_group.add_argument("-s", "--sync", dest="sync", action="store_true", default=True, help="Synchronize (copy) files from you to the target machine (default: True)")
+    sync_group.add_argument("-S", "--no-sync", dest="sync", action="store_false", help="Disable synchronization of files (default: False)")
+    
+    install_group = parser.add_mutually_exclusive_group()
+    install_group.add_argument("-i", "--install", dest="install", action="store_true", default=True, help="Install ROS dependencies on the target (default: True)")
+    install_group.add_argument("-I", "--no-install", dest="install", action="store_false", help="Disable installation of ROS dependencies (default: False)")
+
+    configure_group = parser.add_mutually_exclusive_group()
+    configure_group.add_argument("-c", "--configure", dest="configure", action="store_true", default=False, help="Configure the target machine (default: False)")
+    configure_group.add_argument("-C", "--no-configure", dest="configure", action="store_false", help="Disable configuration of the target machine (default: True)")
+    
+    build_group = parser.add_mutually_exclusive_group()
+    build_group.add_argument("-b", "--build", dest="build", action="store_true", default=True, help="Build on the target machine (default: True)")
+    build_group.add_argument("-B", "--no-build", dest="build", action="store_false", help="Disable building on the target machine (default: False)")
+
+    launch_group = parser.add_mutually_exclusive_group()
+    launch_group.add_argument("-l", "--launch", dest="launch", action="store_true", default=False, help="Launch teamplayer software on the target (default: False)")
+    launch_group.add_argument("-L", "--no-launch", dest="launch", action="store_false", help="Disable launching of teamplayer software (default: True)")
+
 
     # Optional arguments
     parser.add_argument("-p", "--package", default='', help="Synchronize and build only the given ROS package")
     parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-    parser.add_argument("--no-rosdeps", action="store_false", default=True, dest="install_rosdeps", help="Don't install ROS dependencies on the target.")
     parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
-    parser.add_argument("-l", "--launch-teamplayer", action="store_true", help="Launch teamplayer software on the target")
-    parser.add_argument("-B", "--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
+    parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
     parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
+
     return parser.parse_args()
 
 
@@ -232,6 +243,7 @@ def _get_targets(input_targets: str) -> List[Target]:
     targets: List[Target] = []
 
     if input_targets == "ALL":
+        print_info("Expanding 'ALL' to all known Targets")
         for hostname in Target._IPs.keys():
             targets.append(Target(hostname))
         return targets
@@ -528,14 +540,7 @@ def main() -> None:
     if args.print_bit_bot:
         print_bit_bot()
 
-    # Determine which tasks to run
-    do_sync = args.sync_only or not (args.configure_only or args.build_only)
-    do_install_rosdep = args.install_rosdep and not (args.sync_only or args.configure_only or args.build_only)
-    do_configure = args.configure_only or not (args.sync_only or args.build_only)
-    do_build = args.build_only or not (args.sync_only or args.configure_only)
-    do_launch_teamplayer = args.launch_teamplayer and not (args.sync_only or args.configure_only or args.build_only)
-
-    num_tasks = sum([do_sync, do_install_rosdep, do_configure, do_build, do_launch_teamplayer]) + 1  # +1 for connection
+    num_tasks = sum([args.sync, args.install, args.configure, args.build, args.launch]) + 1  # +1 for connection
 
     # Run tasks for each target
     targets = _get_targets(args.target)
@@ -550,32 +555,32 @@ def main() -> None:
         print_success(f"[TASK {current_task}/{num_tasks}] Connected to {target.hostname}")
         current_task += 1
 
-        if do_sync:
+        if args.sync:
             with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Syncing to {target.hostname}", spinner="point"):
                 sync(target, args.package, pre_clean=args.clean_src)
             print_success(f"[TASK {current_task}/{num_tasks}] Synchronization of {target.hostname} successful")
             current_task += 1
 
-        if do_install_rosdep:
+        if args.install:
             with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Installing ROS dependencies on {target.hostname}", spinner="point"):
                 install_rosdeps(target)
             print_success(f"[TASK {current_task}/{num_tasks}] Installation of ROS dependencies on {target.hostname} successful")
             current_task += 1
 
-        if do_configure:
-            # DO NOT run this in a status, as it screws up the user input
+        if args.configure:
+            # DO NOT run this in a rich concole-status, as it screws up the user input
             configure(target)
             print_success(f"[TASK {current_task}/{num_tasks}] Configuration of {target.hostname} successful")
             current_task += 1
 
 
-        if do_build:
+        if args.build:
             with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Compiling on {target.hostname}", spinner="point"):
                 build(target, args.package, pre_clean=args.clean_build)
             print_success(f"[TASK {current_task}/{num_tasks}] Compilation on {target.hostname} successful")
             current_task += 1
 
-        if do_launch_teamplayer:
+        if args.launch:
             with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Launching teamplayer on {target.hostname}", spinner="point"):
                 launch_teamplayer(target)
             print_success(f"[TASK {current_task}/{num_tasks}] Launching teamplayer on {target.hostname} successful")
