@@ -300,7 +300,13 @@ def _get_connection(target: Target) -> Connection:
     :param target: The target to connect to
     :return: The connection
     """
-    return Connection(host=str(target), user="bitbots")
+    c = Connection(host=str(target), user="bitbots")
+    try:
+        c.open()
+    except Exception as e:
+        print_err(f"Could not connect to {target.hostname}: {e}")
+        sys.exit(1)
+    return c
 
 
 def _execute_on_target(target: Target, command: str, hide: Optional[str | bool] = None) -> Result:
@@ -551,7 +557,6 @@ def main() -> None:
         with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to {target.hostname} via SSH", spinner="point"):
             global CURRENT_CONNECTION
             CURRENT_CONNECTION = _get_connection(target)
-            # TODO: Check if connection is successful
         print_success(f"[TASK {current_task}/{num_tasks}] Connected to {target.hostname}")
         current_task += 1
 
