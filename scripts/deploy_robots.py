@@ -201,7 +201,7 @@ def _parse_arguments() -> argparse.Namespace:
         type=str,
         help="The target robot or computer you want to compile for. Multiple targets can be specified seperated by commas. 'ALL' can be used to target all known robots."
         )
-
+    # TODO: refactor all 5 tasks
     # Optional mode
     mode = parser.add_mutually_exclusive_group(required=False)
     mode.add_argument("-s", "--sync-only", action="store_true", help="Only synchronize (copy) files from you to the target machine")

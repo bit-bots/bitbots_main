@@ -23,7 +23,7 @@ pull-init:
 	scripts/pull_init.sh
 	scripts/pull_files.bash
 
-vision-files:
+pull-files:
 	scripts/pull_files.bash
 
 status:
