@@ -5,7 +5,7 @@ Description
 -----------
 
 This is the vision ROS package of the Hamburg Bit-Bots. A description of the current, YOEO-based vision can be found
-`HERE <manual/yoeo_vision.rst>`_. For the old legacy vision, look `HERE <manual/legacy_vision.rst>`_.
+here: :doc:`manual/yoeo_vision`. For the old legacy vision, look here: :doc:`manual/legacy_vision`.
 
 Launchscripts
 -------------
