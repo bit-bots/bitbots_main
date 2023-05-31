@@ -2,18 +2,18 @@ YOEO-based Vision (May 2023)
 ============================
 
 Description
------------------------
+-----------
 
 Since 2022, the Bit-Bots vision relies on a Convolutional Neural Network called `YOEO
 <https://github.com/bit-bots/YOEO>`__. Currently, YOEO provides object detection for balls and robots and semantic
 segmentations for field lines, the field itself and the background. Furthermore, it is able to discriminate between teammates and opponents in case of the robot class. Goal posts are supported code-wise, but not actively used at the moment.
 
 Supported Neural Network Frameworks
------------------------
+-----------------------------------
 YOEOs can be run with the following frameworks: PyTorch, Onnx, OpenVino and TVM.
 
 How to Add a New YOEO Variant to the Vision?
------------------------
+--------------------------------------------
 In general, all models are stored in the ``models`` subdirectory. Therein, each YOEO variant comes with a dedicated
 subdirectory containing a file ``model_config.yaml`` as well as subdirectories named after the supported frameworks. The latter contain the actual model files for each framework. There is no need to create framework subdirectories (and the
 corresponding model files) for frameworks you do not plan to use.
@@ -80,7 +80,7 @@ follows:
 #. Optional but highly recommended: add a parameter to ``config/yoeo_vision_params.yaml``, ``config/yoeo_visionparams_sim.yaml`` and ``bitbots_vision/yoeo_params.py`` which allows for activating / deactivating your new component dynamically.
 
 Code structure
------------------------
+--------------
 The class ``YOEOVision`` serves as the entry point for the vision. It is responsible  for configuring and running the entire vision pipeline.
 
 The vision pipeline is modularized, i.e. each (core) functionality is provided by a dedicated component, for example
@@ -97,4 +97,3 @@ Last but not least, there are the YOEO handlers which implement the aforemention
 are responsible for actually running the YOEO network: from pre-processing the input, over feeding the pre-processed
 input into the neural network, to post-processing the network output. Hence, there is exactly one handler per supported
 framework.
-
