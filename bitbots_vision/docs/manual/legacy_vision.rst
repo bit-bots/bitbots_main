@@ -1,8 +1,8 @@
 Legacy Vision
-================================================
+============================
 
 Description
------------
+-----------------------
 The vision is able to detect balls, lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
 
 An earlier version of this pipeline is presented in our paper
@@ -84,7 +84,7 @@ Currently, the Bit-Bots vision package supports two file types for color lookup 
    For large color lookup tables, loading of such files takes a while.
 
 Additional Scripts
-------------------
+-----------------------
 
 In the bitbots_vision package, special tools for debugging/introspection purposes are provided.
 
