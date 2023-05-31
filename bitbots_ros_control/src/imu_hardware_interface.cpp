@@ -21,7 +21,7 @@ ImuHardwareInterface::ImuHardwareInterface(rclcpp::Node::SharedPtr nh,
   name_ = name;
   diag_counter_ = 0;
   imu_msg_ = sensor_msgs::msg::Imu();
-  imu_msg_.header.frame_id = "imu_frame";
+  imu_msg_.header.frame_id = frame_;
 }
 
 bool ImuHardwareInterface::init() {
