@@ -59,7 +59,7 @@ wolfgang_hardware_interface:
         Position_D_Gain: 0 #2800 # [/16] 0~16,383
         Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
         #If robot starts to tremble, reduce Position_P_Gain
-        Position_P_Gain: 700 #1100 # [/ 128] 0~16,383
+        Position_P_Gain: 1200 #1100 # [/ 128] 0~16,383
         Feedforward_2nd_Gain: 0 # [/4]
         Feedforward_1st_Gain: 0 # [/4]
         Profile_Acceleration: 0 # 0 for infinite
@@ -104,7 +104,7 @@ wolfgang_hardware_interface:
       IMU_head:
         id: 242
         topic: imu_head/data
-        frame: imu_head_frame
+        frame: imu_frame_2
         model_number: 0xBAFF
         interface_type: IMU
       RShoulderPitch:
