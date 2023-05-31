@@ -5,7 +5,7 @@ Description
 -----------
 
 This is the vision ROS package of the Hamburg Bit-Bots. A description of the current, YOEO-based vision can be found
-:ref:`HERE <manual/yoeo_vision.rst>`. For the legacy vision, look :ref:`HERE <manual/legacy_vision.rst>`.
+`HERE <manual/yoeo_vision.rst>`_. For the old legacy vision, look `HERE <manual/legacy_vision.rst>`_.
 
 Launchscripts
 -------------
@@ -32,6 +32,13 @@ The following parameters are available:
 
    cppapi/library_root
    pyapi/modules
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+    :caption: Manuals
+
+    manual/*
 
 .. toctree::
     :maxdepth: 1
