@@ -94,43 +94,50 @@ class Target:
         :param identifier: The identifier to identify the target from.
         :return: A tuple containing the hostname and the IP address of the target.
         """
+        print_debug(f"Identifying target from identifier: {identifier}")
+
         identified_target: Optional[str] = None  # The hostname of the identified target
 
         # Iterate over the known targets
         for hostname, values in KNOWN_TARGETS.items():
+            print_debug(f"Checking if {identifier} is {hostname}")
+
             # Is the identifier a known hostname?
+            print_debug(f"Comparing {identifier} with {hostname}")
             if hostname == identifier:
                 identified_target = hostname
                 break
 
             # Is the identifier a known robot name?
-            elif values.get("robot_name") == identifier:
+            print_debug(f"Comparing {identifier} with {values['robot_name']}") if "robot_name" in values else None
+            if values.get("robot_name") == identifier:
                 identified_target = hostname
                 break
 
             # Is the identifier a known IP address?
-            else:
+            identifier_ip = None
+            try:
+                identifier_ip = ipaddress.ip_address(identifier)
+            except ValueError:
+                print_debug(f"Checking if {identifier} is a IP address")
+
+            if "ip" in values:
                 try:
-                    identifier_ip = ipaddress.ip_address(identifier)
+                    known_target_ip = ipaddress.ip_address(values["ip"])
                 except ValueError:
-                    print_err(f"Could not find a known target for the given identifier: {identifier}")
+                    print_warn(f"Invalid IP address ('{values['ip']}') defined for known target: {hostname}")
                     exit(1)
 
-                if "ip" in values:
-                    try:
-                        known_target_ip = ipaddress.ip_address(values["ip"])
-                    except ValueError:
-                        print_err(f"Invalid IP address defined for known target: {hostname}")
-                        exit(1)
-
-                    if identifier_ip == known_target_ip:
-                        identified_target = hostname
-                        break
+                if identifier_ip is not None and identifier_ip == known_target_ip:
+                    identified_target = hostname
+                    break
 
         # If no target was identified, exit
         if identified_target is None:
             print_err(f"Could not find a known target for the given identifier: {identifier}")
             exit(1)
+
+        print_debug(f"Found {identified_target} as known target")
 
         identified_ip = None
         if "ip" in KNOWN_TARGETS[identified_target]:

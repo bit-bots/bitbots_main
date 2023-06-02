@@ -82,7 +82,8 @@ class Sync(AbstractTask):
 
         if self._pre_clean:
             print_debug("Cleaning source directory")
-            clean_result = connections.run(f"rm -rf {self._remote_workspace}/src ; mkdir -p {self._remote_workspace}/src")
+            src_path = os.path.join(self._remote_workspace, 'src')
+            clean_result = connections.run(f"rm -rf {src_path} ; mkdir -p {src_path}")
             if not clean_result.ok:
                 print_warn(f"Cleaning of source directory failed. Continuing anyways")
 
@@ -106,4 +107,4 @@ class Sync(AbstractTask):
                 print_err(f"Synchronizing task failed with error code {sync_result.returncode}")
                 exit(sync_result.returncode)
 
-        return Result()
+        # return Result()  # TODO: Implement
