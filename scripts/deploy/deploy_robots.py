@@ -147,15 +147,6 @@ class DeployRobots():
             exit(1)
         return connections
 
-    def _close_connections(self, connections: Group) -> None:
-        """
-        Close all connections in the given Group.
-        
-        :param connections: The connections to close
-        """
-        for connection in connections:
-            connection.close()
-
     def run_tasks(self) -> None:
         """
         TODO: Write docstring
@@ -176,7 +167,10 @@ class DeployRobots():
             print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__} completed")
             current_task += 1
 
-        self._close_connections(connections)
+        # Close connections
+        with CONSOLE.status(f"[bold blue] Tasks finished. Closing connections", spinner="point"):
+            connections.close()
+        print_success(f"Tasks finished. Connections closed. Exiting.")
 
 if __name__ == "__main__":
     try:
