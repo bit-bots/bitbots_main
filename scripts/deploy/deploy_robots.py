@@ -166,6 +166,9 @@ class DeployRobots():
                 result = task.run(connections)
             if result is not None and result.ok:
                 print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__} completed")
+            elif result is not None and not result.ok:
+                print_warn(f"[TASK {current_task}/{num_tasks}] {task.__class__} failed: {result.exited}")
+                exit(1)
             current_task += 1
 
         # Close connections
