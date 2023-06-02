@@ -1,99 +1,16 @@
-from typing import Dict, Optional, Any
+from typing import Any, Optional
 
 import ipaddress
-from collections import defaultdict
+import os
+import sys
+
+import yaml
+
 from rich.console import Console
 from rich.panel import Panel
 from rich import box
 
-
 CONSOLE = Console()
-
-
-class LOGLEVEL:
-    ERR_SUCCESS = 0
-    WARN = 1
-    INFO = 2
-    DEBUG = 3
-    CURRENT = 2
-
-
-class Target:
-    # Map robot names to hostnames
-    _robotnames: Dict[str, str] = {
-        "amy": "nuc1",
-        "rory": "nuc2",
-        "jack": "nuc3",
-        "donna": "nuc4",
-        "melody": "nuc5",
-        "rose": "nuc6",
-    }
-
-    # Map hostnames to workspaces
-    _workspaces = defaultdict(lambda: "~/colcon_ws")
-    _workspaces["nuc1"] = "~/colcon_ws"
-    _workspaces["nuc2"] = "~/colcon_ws"
-    _workspaces["nuc3"] = "~/colcon_ws"
-    _workspaces["nuc4"] = "~/colcon_ws"
-    _workspaces["nuc5"] = "~/colcon_ws"
-    _workspaces["nuc6"] = "~/colcon_ws"
-
-    _IP_prefix = "172.20.1."
-    # Map hostnames to IPs
-    _IPs = {
-        "nuc1": ipaddress.ip_address(_IP_prefix + "11"),
-        "nuc2": ipaddress.ip_address(_IP_prefix + "12"),
-        "nuc3": ipaddress.ip_address(_IP_prefix + "13"),
-        "nuc4": ipaddress.ip_address(_IP_prefix + "14"),
-        "nuc5": ipaddress.ip_address(_IP_prefix + "15"),
-        "nuc6": ipaddress.ip_address(_IP_prefix + "16"),
-    }
-
-    def __init__(self, identifier: str) -> None:
-        """
-        Target represents a robot to deploy to.
-        It can be initialized with a hostname, IP or robot name.
-        """
-        self.hostname: Optional[str] = None
-        self.ip: Optional[ipaddress.IPv4Address | ipaddress.IPv6Address] = None
-
-        # Is identifier an IP?
-        try:
-            self.ip = ipaddress.ip_address(identifier)
-            # Infer hostname from IP
-            for name, known_ip in self._IPs.items():
-                if known_ip == self.ip:
-                    self.hostname = name
-        except ValueError:
-            self.ip = None
-
-        # Is identifier a hostname?
-        if identifier in self._IPs.keys():
-            self.hostname = identifier
-
-        # Is identifier a robot name?
-        if identifier in self._robotnames.keys():
-            self.hostname = self._robotnames[identifier]
-
-        if self.hostname is not None and self.hostname in self._IPs.keys():
-            self.ip = self._IPs[self.hostname]
-        else:
-            raise ValueError("Could not determine hostname or IP from input: '{identifier}'")
-        
-        self.workspace = self._workspaces[self.hostname]
-
-    def __str__(self) -> str:
-        """Returns the target's hostname if available or IP-address."""
-        return self.hostname if self.hostname is not None else str(self.ip)
-
-
-def should_run_quietly() -> bool:
-    """
-    Returns whether the task should run quietly or not.
-    
-    :return: True if the current loglevel is below INFO, False otherwise.
-    """
-    return LOGLEVEL.CURRENT <= LOGLEVEL.INFO
 
 
 def print_err(msg: Any) -> None:
@@ -128,7 +45,7 @@ def print_debug(msg: Any) -> None:
 
 def print_bit_bot() -> None:
     """Prints the Bit-Bots logo to the console."""
-    print("""\033[1m
+    CONSOLE.print("""
                 `/shNMoyymmmmmmmmmmys+NmNs/`
               `+mmdddmmmddddddddddddmmmdddmm/
               ymdddddddmmmmmmmmmmmmmmdddddddms
@@ -168,5 +85,106 @@ hy-             +dddddddm`        ydddddddd              -yh
               yo+hsoooshs         -hsooosys+y:
               h+++++++oo+         `ho+++++++s:
               dysssssssy+         `dsssssssyh:
-\033[0m""")
+""", style="bold white")
 
+
+class LOGLEVEL:
+    ERR_SUCCESS = 0
+    WARN = 1
+    INFO = 2
+    DEBUG = 3
+    CURRENT = 2
+
+    def should_run_quietly(self) -> bool:
+        """
+        Returns whether the task should run quietly or not.
+
+        :return: True if the current loglevel is below INFO, False otherwise.
+        """
+        return self.CURRENT <= self.INFO
+
+
+# Read the known targets
+_known_targets_path: str = os.path.join(os.path.dirname(__file__), "known_targets.yaml")
+try:
+    with open(_known_targets_path, "r") as f:
+        KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
+except FileNotFoundError:
+    print_err(f"Could not find known_targets.yaml in {_known_targets_path}")
+    sys.exit(1)
+
+
+class Target:
+    hostname: str
+    ip: Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]
+    workspace: Optional[str]
+
+    def __init__(self, identifier: str) -> None:
+        """
+        Target represents a robot to deploy to.
+        It can be initialized with a hostname, IP address or a robot name.
+        """
+        self.hostname, self.ip, self.workspace = self._identify_target(identifier)
+
+    def _identify_target(self, identifier: str) -> tuple[str, Optional[ipaddress.IPv4Address | ipaddress.IPv6Address], Optional[str]]:
+        """
+        Identifies a target from an identifier.
+        The identifier can be a hostname, IP address or a robot name.
+
+        :param identifier: The identifier to identify the target from.
+        :return: A tuple containing the hostname, IP address and workspace of the target.
+        """
+        identified_target: Optional[str] = None  # The hostname of the identified target
+
+        # Iterate over the known targets
+        for hostname, values in KNOWN_TARGETS.items():
+            # Is the identifier a known hostname?
+            if hostname == identifier:
+                identified_target = hostname
+                break
+
+            # Is the identifier a known robot name?
+            elif values.get("robot_name") == identifier:
+                identified_target = hostname
+                break
+
+            # Is the identifier a known IP address?
+            else:
+                try:
+                    identifier_ip = ipaddress.ip_address(identifier)
+                except ValueError:
+                    print_err(f"Could not find a known target for the given identifier: {identifier}")
+                    sys.exit(1)
+
+                if "ip" in values:
+                    try:
+                        known_target_ip = ipaddress.ip_address(values["ip"])
+                    except ValueError:
+                        print_err(f"Invalid IP address defined for known target: {hostname}")
+                        sys.exit(1)
+
+                    if identifier_ip == known_target_ip:
+                        identified_target = hostname
+                        break
+
+        # If no target was identified, exit
+        if identified_target is None:
+            print_err(f"Could not find a known target for the given identifier: {identifier}")
+            sys.exit(1)
+
+        identified_ip = None
+        if "ip" in KNOWN_TARGETS[identified_target]:
+            try:
+                identified_ip = ipaddress.ip_address(KNOWN_TARGETS[identified_target]["ip"])
+            except ValueError:
+                print_err(f"Invalid IP address defined for known target: {identified_target}")
+                sys.exit(1)
+
+        identified_workspace = KNOWN_TARGETS[identified_target].get("workspace")
+
+        return (identified_target, identified_ip, identified_workspace)
+
+
+    def __str__(self) -> str:
+        """Returns the target's hostname if available or IP-address."""
+        return self.hostname if self.hostname is not None else str(self.ip)

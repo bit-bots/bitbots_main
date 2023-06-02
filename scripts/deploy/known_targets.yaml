@@ -1,0 +1,24 @@
+nuc1:
+  ip: "172.20.1.11"
+  robot_name: "amy"
+  workspace: "~/colcon_ws"
+nuc2:
+  ip: "172.20.1.12"
+  robot_name: "rory"
+  workspace: "~/colcon_ws"
+nuc3:
+  ip: "172.20.1.13"
+  robot_name: "jack"
+  workspace: "~/colcon_ws"
+nuc4:
+  ip: "172.20.1.14"
+  robot_name: "donna"
+  workspace: "~/colcon_ws"
+nuc5:
+  ip: "172.20.1.15"
+  robot_name: "melody"
+  workspace: "~/colcon_ws"
+nuc6:
+  ip: "172.20.1.16"
+  robot_name: "rose"
+  workspace: "~/colcon_ws"
