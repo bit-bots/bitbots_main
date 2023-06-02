@@ -30,4 +30,4 @@ def build(target: Target, package: str = '', pre_clean: bool = False) -> None:
     build_result = _execute_on_target(target, cmd)
     if not build_result.ok:
         print_err(f"Build on {target.hostname} failed")
-        sys.exit(build_result.exited)
+        exit(build_result.exited)

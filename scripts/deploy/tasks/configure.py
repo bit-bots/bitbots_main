@@ -9,7 +9,7 @@ def configure_game_settings(target: Target) -> None:
     result_game_settings = _execute_on_target(target, f"python3 {target.workspace}/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py", hide=False)
     if not result_game_settings.ok:
         print_err(f"Game settings on {target.hostname} failed")
-        sys.exit(result_game_settings.exited)
+        exit(result_game_settings.exited)
     print_info(f"Configured game settings on {target.hostname}")
 
 
@@ -37,16 +37,16 @@ def configure_wifi(target: Target) -> None:
         result_enable_connection = _execute_on_target(target, f"sudo nmcli connection up {connection_id}")
         if not result_enable_connection.ok:
             print_err(f"Could not enable connection {connection_id} on {target.hostname}")
-            sys.exit(result_enable_connection.exited)
+            exit(result_enable_connection.exited)
         
         result_set_autoconnect = _execute_on_target(target, f"sudo nmcli connection modify {connection_id} connection.autoconnect TRUE")
         if not result_set_autoconnect.ok:
             print_err(f"Could not enable connection {connection_id} on {target.hostname}")
-            sys.exit(result_set_autoconnect.exited)
+            exit(result_set_autoconnect.exited)
         result_set_priority = _execute_on_target(target, f"sudo nmcli connection modify {connection_id} connection.autoconnect-priority 100")
         if not result_set_priority.ok:
             print_err(f"Could not set priority of connection {connection_id} to 100 on {target.hostname}")
-            sys.exit(result_set_priority.exited)
+            exit(result_set_priority.exited)
     print_info(f"Configured wifi on {target.hostname}")
 
 
