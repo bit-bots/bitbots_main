@@ -136,9 +136,9 @@ class DeployRobots():
         """
         try:
             connections = ThreadingGroup(
-                hosts=[str(target) for target in targets],
+                *[str(target) for target in targets],
                 user=user,
-                connection_timeout=connection_timeout
+                connect_timeout=connection_timeout
             )
             for connection in connections:
                 connection.open()
@@ -163,8 +163,9 @@ class DeployRobots():
         # Run tasks
         for task in self._tasks:
             with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {task.__class__}", spinner="point"):
-                task.run(connections)
-            print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__} completed")
+                result = task.run(connections)
+            if result is not None and result.ok:
+                print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__} completed")
             current_task += 1
 
         # Close connections
