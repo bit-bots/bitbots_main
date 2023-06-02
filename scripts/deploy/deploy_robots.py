@@ -23,9 +23,8 @@ class DeployRobots():
         if self._args.print_bit_bot:
             print_bit_bot()
 
-        self._targets = self._get_targets(self._args.target)
-
-        self.run_tasks(self._targets)
+        # Execute tasks on all given targets
+        self.run_tasks(self._get_targets(self._args.target))
 
     def _parse_arguments(self) -> argparse.Namespace:
         parser = argparse.ArgumentParser(
@@ -64,6 +63,7 @@ class DeployRobots():
 
         # Optional arguments
         parser.add_argument("-p", "--package", default='', help="Synchronize and build only the given ROS package")
+        parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
         parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
         parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
         parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
@@ -84,8 +84,9 @@ class DeployRobots():
         targets: List[Target] = []
 
         if input_targets == "ALL":
-            print_info(f"Expanding 'ALL' to all known Targets: {Target._IPs.keys()}")
-            for hostname in Target._IPs.keys():
+            all_known_hostnames = KNOWN_TARGETS.keys()
+            print_info(f"Expanding 'ALL' to all known Targets: {all_known_hostnames}")
+            for hostname in all_known_hostnames:
                 targets.append(Target(hostname))
             return targets
 
@@ -98,18 +99,25 @@ class DeployRobots():
             targets.append(target)
         return targets
 
-    def _get_connections(self, targets: List[Target]) -> ThreadingGroup:
+    def _get_connections(
+            self,
+            targets: List[Target],
+            user: str,
+            connection_timeout: Optional[int] = 10
+        ) -> ThreadingGroup:
         """
         Get connections to the given Targets using the 'bitbots' username.
         
         :param targets: The Targets to connect to
+        :param user: The username to connect with
+        :param connection_timeout: Timeout for establishing the connection
         :return: The connections
         """
         try:
             connections = ThreadingGroup(
                 hosts=[str(target) for target in targets],
-                user="bitbots",
-                connection_timeout=10,
+                user=user,
+                connection_timeout=connection_timeout
             )
             for connection in connections:
                 connection.open()
@@ -130,11 +138,11 @@ class DeployRobots():
             self._args.build,
             self._args.launch])
 
-        current_task = 1
+        current_task = 1  # Track current task for status output
 
         # Get connection
         with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to targets via SSH", spinner="point"):
-            connections = self._get_connections(self._targets)
+            connections = self._get_connections(targets, self._args.user)
         print_success(f"[TASK {current_task}/{num_tasks}] Connected to targets")
         current_task += 1
 
