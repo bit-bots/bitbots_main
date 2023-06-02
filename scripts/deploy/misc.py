@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 import ipaddress
 import os
+import subprocess
 import sys
 
 import yaml
@@ -44,48 +45,9 @@ def print_debug(msg: Any) -> None:
 
 
 def print_bit_bot() -> None:
-    """Prints the Bit-Bots logo to the console."""
-    CONSOLE.print("""
-                `/shNMoyymmmmmmmmmmys+NmNs/`
-              `+mmdddmmmddddddddddddmmmdddmm/
-              ymdddddddmmmmmmmmmmmmmmdddddddms
-            .dmdddddddddddmddddddmmddddddddddmy`
-           .mmdddddddddddmyoooooosddddddddddddms`
-       .ssshmdddddddddddddmhsooshddddddddddddddmhsss.
-    -+shysshddddmddddmdddddddddddddddmdhhhhdmdddhssyhs+-
-   :ddyyyyydddy+/////+shddddddddddddy+//////+sdddyyyyydd:
-  `mmh/+hdddh///////////sdddddddddd+///++++////hdddh+/hmm`
-  omdddddmmy///sdNNNmy///omddddddd+//odNMMNmo///hdmdddddmo
- `dddddddmm+//yMMMMMMMh///hdddmddh//oNMMMMMMNo//smmddddddd`
- .Nddddddmm+//hMMMMMMMd///hdhNNddh//+NMMMMMMNo//ymmddddddN.
- .mNNNNNNNdh///yNMMMNd+//sdddddddds//+hmNNmho//oddmmNNNNNm.
--ydddmmmmNmdh+///+++////yddddddddddy//////////sddmNmmmmdddy-
-:sddddddymNdddyo+////oyddddddddddddddys++++oyddddddydddddds:
-/hddddddh::Nddddmdddmdddddddddddddddddddmmdddddmm.:hdddddhh/
-:dhhhhyhh. :dmddddddddddddddddddddddddddddddddmy. .hhyhhhhd:
-/mhhhhyo/   `omdddddddddddddddddddddddddddddmmo`   /oyhhhhm/
-/hhhhd`       `ommddddddddddddddddddddddddmmo`       `dhhhh/
-/hhhhd+         `+ymdddddddddddddddddddddy:`         +dhhhh/
-mhhhhds          +:mhhdhmmmmmddmmmmNmhhhs/:          sdhhhhm
-mhhhhm.         .mNhsshmN.-//:///-hNdyoydMm          .mhhhhm
-mhhhhs          oNNy//ymN`        yNho:omNd           shhhhm
-dhhss`          +NMNsyNNN`        yNNm+dNNd           `sshhd
-dhdh/.          +NNdyyNNm`        yNNdyhNNd           ./hdhd
-mhssy+          +dddddddm`        ydddddddd           +ysshm
-hy-             +dddddddm`        ydddddddd              -yh
-               `hmmmmmmmm+       -dmmmmmmmm:
-               `Nddddddddy       :mdddddddm+
-               `Nddddddddy       :mdddddddm+
-               `Ndddddddmy       :mdddddddm+
-               `mddddddddy       :mdddddddd+
-               `mddddddddy       :mdddddddd+
-               `mmNmohNNdy       :mmNmohmNm+
-               `NNmdhdmNmh       /NmmdhddNms
-              `/mms+-/ymm:        ymho-:odmh/.
-              yo+hsoooshs         -hsooosys+y:
-              h+++++++oo+         `ho+++++++s:
-              dysssssssy+         `dsssssssyh:
-""", style="bold white")
+    """Prints the Bit-Bots logo to the console using cat."""
+    path = os.path.join(os.path.dirname(__file__), "bitbot.ans")
+    subprocess.run(["cat", path])
 
 
 class LOGLEVEL:
