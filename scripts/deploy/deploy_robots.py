@@ -45,7 +45,7 @@ class DeployRobots():
         sync_group = parser.add_mutually_exclusive_group()
         sync_group.add_argument("-s", "--sync", dest="sync", action="store_true", default=True, help="Synchronize (copy) files from you to the target machine (default: True)")
         sync_group.add_argument("-S", "--no-sync", dest="sync", action="store_false", help="Disable synchronization of files (default: False)")
-        
+
         install_group = parser.add_mutually_exclusive_group()
         install_group.add_argument("-i", "--install", dest="install", action="store_true", default=True, help="Install ROS dependencies on the target (default: True)")
         install_group.add_argument("-I", "--no-install", dest="install", action="store_false", help="Disable installation of ROS dependencies (default: False)")
@@ -53,7 +53,7 @@ class DeployRobots():
         configure_group = parser.add_mutually_exclusive_group()
         configure_group.add_argument("-c", "--configure", dest="configure", action="store_true", default=False, help="Configure the target machine (default: False)")
         configure_group.add_argument("-C", "--no-configure", dest="configure", action="store_false", help="Disable configuration of the target machine (default: True)")
-        
+
         build_group = parser.add_mutually_exclusive_group()
         build_group.add_argument("-b", "--build", dest="build", action="store_true", default=True, help="Build on the target machine (default: True)")
         build_group.add_argument("-B", "--no-build", dest="build", action="store_false", help="Disable building on the target machine (default: False)")
@@ -117,7 +117,7 @@ class DeployRobots():
                 self._args.package,
                 self._args.clean_src
             ))
-        
+
         return tasks
 
     def _get_connections(
@@ -128,7 +128,7 @@ class DeployRobots():
     ) -> ThreadingGroup:
         """
         Get connections to the given Targets using the 'bitbots' username.
-        
+
         :param targets: The Targets to connect to
         :param user: The username to connect with
         :param connection_timeout: Timeout for establishing the connection
