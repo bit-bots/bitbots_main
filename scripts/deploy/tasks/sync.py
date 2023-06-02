@@ -2,34 +2,39 @@ from typing import List
 
 import os
 import subprocess
-import sys
 
 import yaml
-from fabric import Connection, Result
+from fabric import Group, Result
 
 from tasks.abstract_task import AbstractTask
 from misc import *
 
-
 class Sync(AbstractTask):
-    def __init__(self, local_meta: str, package: str = '', pre_clean: bool = False) -> None:
+    def __init__(
+            self,
+            local_workspace: str,
+            remote_workspace: str,
+            package: str = '',
+            pre_clean: bool = False
+        ) -> None:
         """
         Sync task that synchronizes (copies) the local source directory to the remote server.
 
-        :param file_path: Path to the local Bit-Bots meta directory
+        :param local_workspace: Path to the local workspace to sync
+        :param remote_workspace: Path to the remote workspace to sync to
         :param package: Limit to file from this package, if empty, all files are included
         :param pre_clean: Whether to clean the source directory before syncing
         """
         super().__init__()
-        self._local_meta = local_meta
+        self._local_workspace = local_workspace
+        self._remote_workspace = remote_workspace
         self._package = package
         self._pre_clean = pre_clean
 
         self._includes = self._get_includes_from_file(
-            os.path.join(self._local_meta, f"sync_includes_wolfgang_nuc.yaml"),
+            os.path.join(self._local_workspace, f"sync_includes_wolfgang_nuc.yaml"),
             self._package
         )
-
 
     def _get_includes_from_file(self, file_path: str, package: str = '') -> List[str]:
         """
@@ -65,13 +70,11 @@ class Sync(AbstractTask):
         includes.append('--include=- *')
         return includes
 
-
-    def run(self, connection: Connection, target: Target) -> Result:
+    def run(self, connections: Group) -> Result:
         """
         Synchronize (copy) the local source directory to the given Target using the rsync tool.
 
-        :param connection: The connection to the remote server.
-        :param target: The Target to synchronize the source directory to.
+        :param connections: The connections to remote servers.
         :return: The result of the task.
         """
         if self._pre_clean and self._package:
@@ -79,25 +82,28 @@ class Sync(AbstractTask):
 
         if self._pre_clean:
             print_debug("Cleaning source directory")
-            clean_result = connection.run(f"rm -rf {target.workspace}/src && mkdir -p {target.workspace}/src")
+            clean_result = connections.run(f"rm -rf {self._remote_workspace}/src ; mkdir -p {self._remote_workspace}/src")
             if not clean_result.ok:
                 print_warn(f"Cleaning of source directory failed. Continuing anyways")
 
-        cmd = [
-            "rsync",
-            "--checksum",
-            "--archive",
-            "--delete",
-        ]
+        for connection in connections:
+            cmd = [
+                "rsync",
+                "--checksum",
+                "--archive",
+                "--delete",
+            ]
 
-        if not should_run_quietly():
-            cmd.append("--verbose")
+            if not be_quiet():
+                cmd.append("--verbose")
 
-        cmd.extend(self._includes)
-        cmd.extend([os.path.join(self._local_meta, "/"),  f"bitbots@{target}:{target.workspace}/src/"])
+            cmd.extend(self._includes)
+            cmd.extend([os.path.join(self._local_workspace, "/"),  f"bitbots@{connection.host}:{self._remote_workspace}/src/"])
 
-        print_debug(f"Calling {' '.join(cmd)}")
-        sync_result = subprocess.run(cmd)
-        if sync_result.returncode != 0:
-            print_err(f"Synchronizing task failed with error code {sync_result.returncode}")
-            sys.exit(sync_result.returncode)
+            print_debug(f"Calling {' '.join(cmd)}")
+            sync_result = subprocess.run(cmd)
+            if sync_result.returncode != 0:
+                print_err(f"Synchronizing task failed with error code {sync_result.returncode}")
+                exit(sync_result.returncode)
+
+        return Result()

@@ -1,6 +1,6 @@
 import abc
 
-from fabric import Connection, Result
+from fabric import Group, Result
 
 class AbstractTask(abc.ABC):
     def __init__(self) -> None:
@@ -10,12 +10,11 @@ class AbstractTask(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def run(self, connection: Connection, server_identifier: str) -> Result:
+    def run(self, connections: Group) -> Result:
         """
         Abstract method that should be implemented by all tasks.
 
-        :param connection: The connection to the remote server.
-        :param server_identifier: The identifier of the remote server.
+        :param connections: The connections to remote servers.
         :return: The result of the task.
         """
         pass

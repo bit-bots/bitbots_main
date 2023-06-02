@@ -4,12 +4,11 @@ from typing import List, Optional
 
 import argparse
 import os
-import sys
 
-from fabric import Connection, ThreadingGroup, Result
+from fabric import Group, ThreadingGroup
 
 from misc import *
-from tasks import Sync
+from tasks import AbstractTask, Sync
 
 
 class DeployRobots():
@@ -23,8 +22,11 @@ class DeployRobots():
         if self._args.print_bit_bot:
             print_bit_bot()
 
+        self._targets = self._parse_targets()
+        self._tasks = self._register_tasks()
+
         # Execute tasks on all given targets
-        self.run_tasks(self._get_targets(self._args.target))
+        self.run_tasks()
 
     def _parse_arguments(self) -> argparse.Namespace:
         parser = argparse.ArgumentParser(
@@ -35,9 +37,9 @@ class DeployRobots():
 
         # Positional arguments
         parser.add_argument(
-            "target",
+            "targets",
             type=str,
-            help="The target robot or computer you want to compile for. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots."
+            help="The targets to deploy to. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots."
             )
         # Task arguments
         sync_group = parser.add_mutually_exclusive_group()
@@ -64,6 +66,7 @@ class DeployRobots():
         # Optional arguments
         parser.add_argument("-p", "--package", default='', help="Synchronize and build only the given ROS package")
         parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
+        parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
         parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
         parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
         parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
@@ -72,15 +75,15 @@ class DeployRobots():
 
         return parser.parse_args()
 
-    def _get_targets(self, input_targets: str) -> List[Target]:
+    def _parse_targets(self) -> List[Target]:
         """
         Parse target argument into usable Targets.
-        Targets are comma seperated and can be either hostnames, robot names or IPs
-        'ALL' is a valid target and will be expanded to all known targets
+        The argument is a comma seperated string of either hostnames, robot names or IPs.
+        'ALL' is a valid argument and will be expanded to all known targets.
 
-        :param input_targets: Comma seperated list of targets
         :return: List of Targets
         """
+        input_targets = self._args.targets
         targets: List[Target] = []
 
         if input_targets == "ALL":
@@ -99,12 +102,30 @@ class DeployRobots():
             targets.append(target)
         return targets
 
+    def _register_tasks(self) -> list[AbstractTask]:
+        """
+        Register and configure all activated tasks.
+
+        :return: List of tasks
+        """
+        tasks = []
+
+        if self._args.sync:
+            tasks.append(Sync(
+                self._bitbots_meta_path,
+                self._args.workspace,
+                self._args.package,
+                self._args.clean_src
+            ))
+        
+        return tasks
+
     def _get_connections(
-            self,
-            targets: List[Target],
-            user: str,
-            connection_timeout: Optional[int] = 10
-        ) -> ThreadingGroup:
+        self,
+        targets: List[Target],
+        user: str,
+        connection_timeout: Optional[int] = 10
+    ) -> ThreadingGroup:
         """
         Get connections to the given Targets using the 'bitbots' username.
         
@@ -123,66 +144,43 @@ class DeployRobots():
                 connection.open()
         except Exception as e:
             print_err(f"Could not establish all required connections: {e}")
-            sys.exit(1)
+            exit(1)
         return connections
 
-    def run_tasks(self, targets) -> None:
+    def _close_connections(self, connections: Group) -> None:
+        """
+        Close all connections in the given Group.
+        
+        :param connections: The connections to close
+        """
+        for connection in connections:
+            connection.close()
+
+    def run_tasks(self) -> None:
         """
         TODO: Write docstring
         """
-        num_tasks = sum([
-            1,  # connection
-            self._args.sync,
-            self._args.install,
-            self._args.configure,
-            self._args.build,
-            self._args.launch])
-
+        num_tasks = len(self._tasks) + 1  # +1 for establishing connections to the targets
         current_task = 1  # Track current task for status output
 
         # Get connection
         with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to targets via SSH", spinner="point"):
-            connections = self._get_connections(targets, self._args.user)
+            connections = self._get_connections(self._targets, self._args.user)
         print_success(f"[TASK {current_task}/{num_tasks}] Connected to targets")
         current_task += 1
 
-        # if args.sync:
-        #     with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Syncing to {target.hostname}", spinner="point"):
-        #         sync(target, args.package, pre_clean=args.clean_src)
-        #     print_success(f"[TASK {current_task}/{num_tasks}] Synchronization of {target.hostname} successful")
-        #     current_task += 1
+        # Run tasks
+        for task in self._tasks:
+            with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {task.__class__}", spinner="point"):
+                task.run(connections)
+            print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__} completed")
+            current_task += 1
 
-        # if args.install:
-        #     with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Installing ROS dependencies on {target.hostname}", spinner="point"):
-        #         install_rosdeps(target)
-        #     print_success(f"[TASK {current_task}/{num_tasks}] Installation of ROS dependencies on {target.hostname} successful")
-        #     current_task += 1
-
-        # if args.configure:
-        #     # DO NOT run this in a rich concole-status, as it screws up the user input
-        #     configure(target)
-        #     print_success(f"[TASK {current_task}/{num_tasks}] Configuration of {target.hostname} successful")
-        #     current_task += 1
-
-
-        # if args.build:
-        #     with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Compiling on {target.hostname}", spinner="point"):
-        #         build(target, args.package, pre_clean=args.clean_build)
-        #     print_success(f"[TASK {current_task}/{num_tasks}] Compilation on {target.hostname} successful")
-        #     current_task += 1
-
-        # if args.launch:
-        #     with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Launching teamplayer on {target.hostname}", spinner="point"):
-        #         launch_teamplayer(target)
-        #     print_success(f"[TASK {current_task}/{num_tasks}] Launching teamplayer on {target.hostname} successful")
-        
-        # close connection
-        # CURRENT_CONNECTION.close()
-
+        self._close_connections(connections)
 
 if __name__ == "__main__":
     try:
         DeployRobots()
     except KeyboardInterrupt:
         print_err("Interrupted by user")
-        sys.exit(1)
+        exit(1)

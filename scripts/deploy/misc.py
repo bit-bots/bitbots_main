@@ -3,7 +3,6 @@ from typing import Any, Optional
 import ipaddress
 import os
 import subprocess
-import sys
 
 import yaml
 
@@ -57,13 +56,13 @@ class LOGLEVEL:
     DEBUG = 3
     CURRENT = 2
 
-    def should_run_quietly(self) -> bool:
-        """
-        Returns whether the task should run quietly or not.
+def be_quiet() -> bool:
+    """
+    Returns whether to be quiet or not.
 
-        :return: True if the current loglevel is below INFO, False otherwise.
-        """
-        return self.CURRENT <= self.INFO
+    :return: True if the current loglevel is below INFO, False otherwise.
+    """
+    return LOGLEVEL.CURRENT <= LOGLEVEL.INFO
 
 
 # Read the known targets
@@ -73,28 +72,27 @@ try:
         KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
 except FileNotFoundError:
     print_err(f"Could not find known_targets.yaml in {_known_targets_path}")
-    sys.exit(1)
+    exit(1)
 
 
 class Target:
     hostname: str
     ip: Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]
-    workspace: Optional[str]
 
     def __init__(self, identifier: str) -> None:
         """
         Target represents a robot to deploy to.
         It can be initialized with a hostname, IP address or a robot name.
         """
-        self.hostname, self.ip, self.workspace = self._identify_target(identifier)
+        self.hostname, self.ip = self._identify_target(identifier)
 
-    def _identify_target(self, identifier: str) -> tuple[str, Optional[ipaddress.IPv4Address | ipaddress.IPv6Address], Optional[str]]:
+    def _identify_target(self, identifier: str) -> tuple[str, Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]]:
         """
         Identifies a target from an identifier.
         The identifier can be a hostname, IP address or a robot name.
 
         :param identifier: The identifier to identify the target from.
-        :return: A tuple containing the hostname, IP address and workspace of the target.
+        :return: A tuple containing the hostname and the IP address of the target.
         """
         identified_target: Optional[str] = None  # The hostname of the identified target
 
@@ -116,14 +114,14 @@ class Target:
                     identifier_ip = ipaddress.ip_address(identifier)
                 except ValueError:
                     print_err(f"Could not find a known target for the given identifier: {identifier}")
-                    sys.exit(1)
+                    exit(1)
 
                 if "ip" in values:
                     try:
                         known_target_ip = ipaddress.ip_address(values["ip"])
                     except ValueError:
                         print_err(f"Invalid IP address defined for known target: {hostname}")
-                        sys.exit(1)
+                        exit(1)
 
                     if identifier_ip == known_target_ip:
                         identified_target = hostname
@@ -132,7 +130,7 @@ class Target:
         # If no target was identified, exit
         if identified_target is None:
             print_err(f"Could not find a known target for the given identifier: {identifier}")
-            sys.exit(1)
+            exit(1)
 
         identified_ip = None
         if "ip" in KNOWN_TARGETS[identified_target]:
@@ -140,11 +138,9 @@ class Target:
                 identified_ip = ipaddress.ip_address(KNOWN_TARGETS[identified_target]["ip"])
             except ValueError:
                 print_err(f"Invalid IP address defined for known target: {identified_target}")
-                sys.exit(1)
+                exit(1)
 
-        identified_workspace = KNOWN_TARGETS[identified_target].get("workspace")
-
-        return (identified_target, identified_ip, identified_workspace)
+        return (identified_target, identified_ip)
 
 
     def __str__(self) -> str:
