@@ -8,7 +8,7 @@ import os
 from fabric import ThreadingGroup
 
 from misc import *
-from tasks import AbstractTask, Install, Sync
+from tasks import AbstractTask, Build, Install, Sync
 
 
 class DeployRobots():
@@ -115,13 +115,26 @@ class DeployRobots():
                 self._bitbots_meta_path,
                 self._args.workspace,
                 self._args.package,
-                self._args.clean_src
+                self._args.clean_src,
             ))
         
         if self._args.install:
             tasks.append(Install(
                 self._args.workspace,
             ))
+
+        if self._args.configure:
+            pass  # TODO
+
+        if self._args.build:
+            tasks.append(Build(
+                self._args.workspace,
+                self._args.package,
+                self._args.clean_build,
+            ))
+
+        if self._args.launch:
+            pass  # TODO
 
         return tasks
 
@@ -172,7 +185,7 @@ class DeployRobots():
             if result is not None and not result.failed:
                 print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} completed.")
             elif result is not None and result.failed:
-                print_warn(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} failed!")
+                print_err(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} failed!")
                 exit(1)
             current_task += 1
 
