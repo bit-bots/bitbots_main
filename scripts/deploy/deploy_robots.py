@@ -5,7 +5,7 @@ from typing import List, Optional
 import argparse
 import os
 
-from fabric import Group, ThreadingGroup
+from fabric import ThreadingGroup
 
 from misc import *
 from tasks import AbstractTask, Sync

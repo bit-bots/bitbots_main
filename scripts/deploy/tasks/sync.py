@@ -4,7 +4,7 @@ import os
 import subprocess
 
 import yaml
-from fabric import Group, Result
+from fabric import Group, GroupResult
 
 from tasks.abstract_task import AbstractTask
 from misc import *
@@ -70,24 +70,41 @@ class Sync(AbstractTask):
         includes.append('--include=- *')
         return includes
 
-    def run(self, connections: Group) -> Result:
+    def run(self, connections: Group) -> GroupResult:
         """
         Synchronize (copy) the local source directory to the given Target using the rsync tool.
 
         :param connections: The connections to remote servers.
-        :return: The result of the task.
+        :return: The results of the task.
         """
         if self._pre_clean and self._package:
             print_warn("Cleaning selected packages is not supported. Will clean all packages instead.")
 
         if self._pre_clean:
-            print_debug("Cleaning source directory")
             src_path = os.path.join(self._remote_workspace, 'src')
-            clean_result = connections.run(f"rm -rf {src_path} ; mkdir -p {src_path}")
-            if not clean_result.ok:
-                print_warn(f"Cleaning of source directory failed. Continuing anyways")
+
+            # First, remove the source directory
+            print_debug(f"Removing source directory: '{src_path}'")
+            rm_cmd = f"rm -rf {src_path}"
+            print_debug(f"Calling '{rm_cmd}'")
+            rm_result = connections.run(rm_cmd)
+            if rm_result.failed:
+                print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(rm_result)}")
+                exit(rm_result.return_code)
+            print_debug(f"Cleaning of source directory succeeded for hosts {self._succeded_hosts(rm_result)}")
+
+            # Second, create an empty directory again
+            print_debug(f"Creating source directory: '{src_path}'")
+            mkdir_cmd = f"mkdir -p {src_path}"
+            print_debug(f"Calling '{mkdir_cmd}'")
+            mkdir_result = connections.run(mkdir_cmd)
+            if mkdir_result.failed:
+                print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(mkdir_result)}")
+                exit(mkdir_result.return_code)
+            print_debug(f"Recreation of source directory succeeded for hosts {self._succeded_hosts(mkdir_result)}")
 
         for connection in connections:
+            print_debug(f"Synchronizing local source directory ('{self._local_workspace}') to host '{connection.host}'")
             cmd = [
                 "rsync",
                 "--checksum",
@@ -99,7 +116,10 @@ class Sync(AbstractTask):
                 cmd.append("--verbose")
 
             cmd.extend(self._includes)
-            cmd.extend([os.path.join(self._local_workspace, "/"),  f"bitbots@{connection.host}:{self._remote_workspace}/src/"])
+            cmd.extend([
+                self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
+                f"{connection.user}@{connection.host}:{self._remote_workspace}/src/"
+            ])
 
             print_debug(f"Calling {' '.join(cmd)}")
             sync_result = subprocess.run(cmd)
