@@ -127,4 +127,4 @@ class Sync(AbstractTask):
                 print_err(f"Synchronizing task failed with error code {sync_result.returncode}")
                 exit(sync_result.returncode)
 
-        # return Result()  # TODO: Implement
+        return mkdir_result  # TODO: return the rsync result instead

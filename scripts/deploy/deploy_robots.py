@@ -8,7 +8,7 @@ import os
 from fabric import ThreadingGroup
 
 from misc import *
-from tasks import AbstractTask, Sync
+from tasks import AbstractTask, Install, Sync
 
 
 class DeployRobots():
@@ -117,6 +117,11 @@ class DeployRobots():
                 self._args.package,
                 self._args.clean_src
             ))
+        
+        if self._args.install:
+            tasks.append(Install(
+                self._args.workspace,
+            ))
 
         return tasks
 
@@ -162,12 +167,12 @@ class DeployRobots():
 
         # Run tasks
         for task in self._tasks:
-            with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {task.__class__}", spinner="point"):
+            with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {task.__class__.__name__}", spinner="point"):
                 result = task.run(connections)
-            if result is not None and result.ok:
-                print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__} completed")
-            elif result is not None and not result.ok:
-                print_warn(f"[TASK {current_task}/{num_tasks}] {task.__class__} failed: {result.exited}")
+            if result is not None and not result.failed:
+                print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} completed.")
+            elif result is not None and result.failed:
+                print_warn(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} failed!")
                 exit(1)
             current_task += 1
 
