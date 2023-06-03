@@ -70,6 +70,7 @@ include:
 exclude:
     - "*.bag"
     - "*.pyc"
+    - "*.git"
     - "cmake-build-debug"
     - ".idea"
     - ".vscode"
