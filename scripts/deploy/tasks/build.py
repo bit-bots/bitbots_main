@@ -59,4 +59,11 @@ class Build(AbstractTask):
         )
 
         print_debug(f"Calling {cmd}")
-        return connections.run(cmd)
+        results = connections.run(cmd)
+
+        if results.succeeded:
+            print_debug(f"Build succeeded on the following hosts: {self._succeded_hosts(results)}")
+        if results.failed:
+            for connection, result in results.failed.items():
+                print_err(f"Build on {connection.host} failed with the following errors: {result.stderr}")
+        return results

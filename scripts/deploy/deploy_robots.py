@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
-
 import argparse
 import os
 
-from fabric import ThreadingGroup
-
 from misc import *
-from tasks import AbstractTask, Build, Install, Sync
+from tasks import AbstractTask, Build, Install, Launch, Sync
 
 
 class DeployRobots():
@@ -76,7 +72,7 @@ class DeployRobots():
 
         return parser.parse_args()
 
-    def _parse_targets(self) -> List[Target]:
+    def _parse_targets(self) -> list[Target]:
         """
         Parse target argument into usable Targets.
         The argument is a comma seperated string of either hostnames, robot names or IPs.
@@ -85,7 +81,7 @@ class DeployRobots():
         :return: List of Targets
         """
         input_targets = self._args.targets
-        targets: List[Target] = []
+        targets: list[Target] = []
 
         if input_targets == "ALL":
             all_known_hostnames = KNOWN_TARGETS.keys()
@@ -165,11 +161,13 @@ class DeployRobots():
         # Run tasks
         for task in self._tasks:
             with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {task.__class__.__name__}", spinner="point"):
-                result = task.run(connections)
-            if result is not None and not result.failed:
+                results = task.run(connections)
+            if results is None:
+                print_warn(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} returned no results.")
+            if results is not None and not results.failed:
                 print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} completed.")
-            elif result is not None and result.failed:
-                print_err(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} failed!")
+            elif results is not None and results.failed:
+                print_err(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} failed on the following hosts: {task._succeded_hosts(results)}")
                 exit(1)
             current_task += 1
 

@@ -1,5 +1,3 @@
-from typing import List
-
 import os
 import subprocess
 
@@ -36,7 +34,7 @@ class Sync(AbstractTask):
             self._package
         )
 
-    def _get_includes_from_file(self, file_path: str, package: str = '') -> List[str]:
+    def _get_includes_from_file(self, file_path: str, package: str = '') -> list[str]:
         """
         Retrieve a list of file to sync from and includes-file
 
@@ -44,7 +42,7 @@ class Sync(AbstractTask):
         :param package: Limit to file from this package, if empty, all files are included
         :returns: List of files to sync
         """
-        includes = list()
+        includes = []
         with open(file_path) as file:
             data = yaml.safe_load(file)
             # Exclude files
