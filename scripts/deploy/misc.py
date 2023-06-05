@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 import ipaddress
 import os
@@ -6,7 +6,7 @@ import subprocess
 
 import yaml
 
-from fabric import GroupResult, ThreadingGroup
+from fabric import Connection, GroupResult, ThreadingGroup
 from rich.console import Console
 from rich.panel import Panel
 from rich import box
@@ -200,22 +200,16 @@ def get_connections_from_targets(
         connection_timeout
     )
 
-def get_succeeded_connections(
-    results: GroupResult,
-    user: str,
-    connection_timeout: Optional[int] = 10
-    ) -> ThreadingGroup:
-    """
-    Get connections to the Targets that succeeded in the given GroupResult.
 
-    :param results: The GroupResult to get the succeeded hosts from
-    :param user: The username to connect with
-    :param connection_timeout: Timeout for establishing the connection
-    :return: Connections to the succeeded hosts
+class ThreadingGroupFromSucceeded(ThreadingGroup):
     """
-    succeeded_hosts: list[str] = [connection.host for connection in results.succeeded.keys()]
-    return _get_connections(
-        succeeded_hosts,
-        user,
-        connection_timeout
-    )
+    ThreadingGroupFromSucceeded is a Group that only contains the succeeded hosts from a GroupResult.
+    """
+    def __init__(self, results: GroupResult) -> None:
+        """
+        Creates a new GroupFromSucceeded from the given GroupResult.
+
+        :param results: The GroupResult to get the succeeded hosts from
+        """
+        succeeded_connection: Iterable[Connection] = results.succeeded.keys()
+        return ThreadingGroup.from_connections(succeeded_connection)

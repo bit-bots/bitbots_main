@@ -5,24 +5,15 @@ from misc import *
 
 
 class Launch(AbstractTask):
-    def __init__(
-            self,
-            tmux_session_name: str,
-            user: str,
-            connection_timeout: Optional[int]
-        ) -> None:
+    def __init__(self, tmux_session_name: str) -> None:
         """
         Launch the teamplayer ROS software on a remote machine in a new tmux session.
 
         :param tmux_session_name: Name of the fresh tmux session to launch the teamplayer in
-        :param user: The user to run rosdep as
-        :param connection_timeout: The timeout for connections
         """
         super().__init__()
 
         self._tmux_session_name = tmux_session_name
-        self._user = user
-        self._connection_timeout = connection_timeout
 
     def run(self, connections: Group) -> GroupResult:
         """
@@ -42,24 +33,12 @@ class Launch(AbstractTask):
 
         # Some nodes have no ROS 2 nodes already running, continuing
         # Check if tmux session is already running
-        tmux_session_running_results = self._check_tmux_session_already_running(
-            get_succeeded_connections(
-                node_running_results,
-                self._user,
-                self._connection_timeout
-            )
-        )
+        tmux_session_running_results = self._check_tmux_session_already_running(ThreadingGroupFromSucceeded(node_running_results))
         if not tmux_session_running_results.succeeded:
             return tmux_session_running_results
         
         # Some hosts are ready to launch teamplayer
-        launch_results = self._launch_teamplayer(
-            get_succeeded_connections(
-                tmux_session_running_results,
-                self._user,
-                self._connection_timeout
-            )
-        )
+        launch_results = self._launch_teamplayer(ThreadingGroupFromSucceeded(tmux_session_running_results))
         return launch_results
 
     def _check_nodes_already_running(self, connections: Group) -> GroupResult:

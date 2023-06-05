@@ -116,11 +116,7 @@ class DeployRobots():
             ))
         
         if self._args.install:
-            tasks.append(Install(
-                self._args.workspace,
-                self._args.user,
-                self._args.connection_timeout
-            ))
+            tasks.append(Install(self._args.workspace))
 
         if self._args.configure:
             pass  # TODO
@@ -133,11 +129,7 @@ class DeployRobots():
             ))
 
         if self._args.launch:
-            tasks.append(Launch(
-                "teamplayer",
-                self._args.user,
-                self._args.connection_timeout
-            ))
+            tasks.append(Launch("teamplayer"))
 
         return tasks
 

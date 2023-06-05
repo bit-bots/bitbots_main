@@ -6,24 +6,15 @@ from tasks.abstract_task import AbstractTask
 from misc import *
 
 class Install(AbstractTask):
-    def __init__(
-            self,
-            remote_workspace: str,
-            user: str,
-            connection_timeout: Optional[int]
-        ) -> None:
+    def __init__(self, remote_workspace: str) -> None:
         """
         Task to install and update all dependencies.
 
         :param remote_workspace: Path to the remote workspace to run rosdep in
-        :param user: The user to run rosdep as
-        :param connection_timeout: The timeout for connections
         """
         super().__init__()
 
         self._remote_workspace = remote_workspace
-        self._user = user
-        self._connection_timeout = connection_timeout
 
         # TODO: also install pip upgrades
         # TODO: sudo apt update && sudo apt upgrade -y
@@ -41,13 +32,7 @@ class Install(AbstractTask):
             return internet_available_results
         
         # Some hosts have an internet connection, install rosdeps
-        install_results = self._install_rosdeps(
-            get_succeeded_connections(
-                internet_available_results,
-                self._user,
-                self._connection_timeout
-            )
-        )
+        install_results = self._install_rosdeps(ThreadingGroupFromSucceeded(internet_available_results))
         return install_results
 
     def _internet_available_on_target(self, connections: Group) -> GroupResult:
