@@ -29,6 +29,8 @@ class Sync(AbstractTask):
         self._package = package
         self._pre_clean = pre_clean
 
+        self._remote_src_path = os.path.join(self._remote_workspace, 'src')
+
         self._includes = self._get_includes_from_file(
             os.path.join(self._local_workspace, f"sync_includes_wolfgang_nuc.yaml"),
             self._package
@@ -75,32 +77,12 @@ class Sync(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        if self._pre_clean and self._package:
-            print_warn("Cleaning selected packages is not supported. Will clean all packages instead.")
-
         if self._pre_clean:
-            src_path = os.path.join(self._remote_workspace, 'src')
+            clean_results = self._clean(connections)
+            if not clean_results.succeeded:
+                return clean_results
 
-            # First, remove the source directory
-            print_debug(f"Removing source directory: '{src_path}'")
-            rm_cmd = f"rm -rf {src_path}"
-            print_debug(f"Calling '{rm_cmd}'")
-            rm_result = connections.run(rm_cmd)
-            if rm_result.failed:
-                print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(rm_result)}")
-                exit(rm_result.return_code)
-            print_debug(f"Cleaning of source directory succeeded for hosts {self._succeded_hosts(rm_result)}")
-
-            # Second, create an empty directory again
-            print_debug(f"Creating source directory: '{src_path}'")
-            mkdir_cmd = f"mkdir -p {src_path}"
-            print_debug(f"Calling '{mkdir_cmd}'")
-            mkdir_result = connections.run(mkdir_cmd)
-            if mkdir_result.failed:
-                print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(mkdir_result)}")
-                exit(mkdir_result.return_code)
-            print_debug(f"Recreation of source directory succeeded for hosts {self._succeded_hosts(mkdir_result)}")
-
+        # TODO: move
         for connection in connections:
             print_debug(f"Synchronizing local source directory ('{self._local_workspace}') to host '{connection.host}'")
             cmd = [
@@ -116,7 +98,7 @@ class Sync(AbstractTask):
             cmd.extend(self._includes)
             cmd.extend([
                 self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
-                f"{connection.user}@{connection.host}:{self._remote_workspace}/src/"
+                f"{connection.user}@{connection.host}:{self._remote_src_path}/"
             ])
 
             print_debug(f"Calling {' '.join(cmd)}")
@@ -126,3 +108,34 @@ class Sync(AbstractTask):
                 exit(sync_result.returncode)
 
         return mkdir_result  # TODO: return the rsync result instead
+
+    def _clean(self, connections) -> GroupResult:
+        """
+        Clean the remote workspace by removing the src/ directory and recreating it.
+
+        :return: The results of the task.
+        """
+        if self._package:
+            print_warn("Cleaning selected packages is not supported. Will clean all packages instead.")
+
+        # First, remove the source directory
+        print_debug(f"Removing source directory: '{self._remote_src_path}'")
+        rm_cmd = f"rm -rf {self._remote_src_path}"
+        print_debug(f"Calling '{rm_cmd}'")
+        rm_result = connections.run(rm_cmd)
+        if rm_result.succeeded:
+            print_debug(f"Cleaning of source directory succeeded for hosts {self._succeded_hosts(rm_result)}")
+        if rm_result.failed:
+            print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(rm_result)}")
+            return rm_result
+
+        # Second, create an empty directory again
+        print_debug(f"Creating source directory: '{self._remote_src_path}'")
+        mkdir_cmd = f"mkdir -p {self._remote_src_path}"
+        print_debug(f"Calling '{mkdir_cmd}'")
+        mkdir_result = connections.run(mkdir_cmd)
+        if mkdir_result.succeeded:
+            print_debug(f"Recreation of source directory succeeded for hosts {self._succeded_hosts(mkdir_result)}")
+        if mkdir_result.failed:
+            print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(mkdir_result)}")
+        return mkdir_result
