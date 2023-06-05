@@ -135,7 +135,7 @@ class DeployRobots():
 
     def run_tasks(self) -> None:
         """
-        TODO: Write docstring
+        Main method, that creats connections to all targets and runns all registered tasks in parallel.
         """
         num_tasks = len(self._tasks) + 1  # +1 for establishing connections to the targets
         current_task = 1  # Track current task for status output
@@ -152,14 +152,15 @@ class DeployRobots():
 
         # Run tasks
         for task in self._tasks:
-            with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {task.__class__.__name__}", spinner="point"):
+            name = task.__class__.__name__
+            with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {name}", spinner="point"):
                 results = task.run(connections)
             if results is None:
-                print_warn(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} returned no results.")
+                print_warn(f"[TASK {current_task}/{num_tasks}] {name} returned no results.")
             if results is not None and not results.failed:
-                print_success(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} completed.")
+                print_success(f"[TASK {current_task}/{num_tasks}] {name} completed.")
             elif results is not None and results.failed:
-                print_err(f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__} failed on the following hosts: {task._succeded_hosts(results)}")
+                print_err(f"[TASK {current_task}/{num_tasks}] {name} failed on the following hosts: {task._succeded_hosts(results)}")
                 exit(1)
             current_task += 1
 
