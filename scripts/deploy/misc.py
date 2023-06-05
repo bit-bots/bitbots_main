@@ -6,6 +6,7 @@ import subprocess
 
 import yaml
 
+from fabric import GroupResult, ThreadingGroup
 from rich.console import Console
 from rich.panel import Panel
 from rich import box
@@ -153,3 +154,68 @@ class Target:
     def __str__(self) -> str:
         """Returns the target's hostname if available or IP-address."""
         return self.hostname if self.hostname is not None else str(self.ip)
+
+def _get_connections(
+    hosts: list[str],
+    user: str,
+    connection_timeout: Optional[int] = 10
+    ) -> ThreadingGroup:
+    """
+    Helper function for getting connections from hosts using the given username.
+    Checks the new connections for success and returns them.
+
+    :param hosts: The hosts to connect to
+    :param user: The username to connect with
+    :param connection_timeout: Timeout for establishing the connection
+    """
+    try:
+        connections = ThreadingGroup(
+            hosts,
+            user=user,
+            connect_timeout=connection_timeout
+        )
+        for connection in connections:
+            connection.open()
+    except Exception as e:
+        print_err(f"Could not establish all required connections: {e}")
+        exit(1)
+    return connections
+
+def get_connections_from_targets(
+    targets: list[Target],
+    user: str,
+    connection_timeout: Optional[int] = 10
+) -> ThreadingGroup:
+    """
+    Get connections to the given Targets using the 'bitbots' username.
+
+    :param targets: The Targets to connect to
+    :param user: The username to connect with
+    :param connection_timeout: Timeout for establishing the connection
+    :return: The connections
+    """
+    return _get_connections(
+        [str(target) for target in targets],
+        user,
+        connection_timeout
+    )
+
+def get_succeeded_connections(
+    results: GroupResult,
+    user: str,
+    connection_timeout: Optional[int] = 10
+    ) -> ThreadingGroup:
+    """
+    Get connections to the Targets that succeeded in the given GroupResult.
+
+    :param results: The GroupResult to get the succeeded hosts from
+    :param user: The username to connect with
+    :param connection_timeout: Timeout for establishing the connection
+    :return: Connections to the succeeded hosts
+    """
+    succeeded_hosts: list[str] = [connection.host for connection in results.succeeded.keys()]
+    return _get_connections(
+        succeeded_hosts,
+        user,
+        connection_timeout
+    )

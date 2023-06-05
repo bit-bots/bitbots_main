@@ -69,6 +69,7 @@ class DeployRobots():
         parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
         parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
         parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
+        parser.add_argument("--connection-timeout", action="TODO", default=10, help="Timeout to establish SSH connections in seconds.")
         parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
         parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
         parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
@@ -121,6 +122,8 @@ class DeployRobots():
         if self._args.install:
             tasks.append(Install(
                 self._args.workspace,
+                self._args.user,
+                self._args.connection_timeout
             ))
 
         if self._args.configure:
@@ -134,36 +137,13 @@ class DeployRobots():
             ))
 
         if self._args.launch:
-            pass  # TODO
+            tasks.append(Launch(
+                "teamplayer",
+                self._args.user,
+                self._args.connection_timeout
+            ))
 
         return tasks
-
-    def _get_connections(
-        self,
-        targets: List[Target],
-        user: str,
-        connection_timeout: Optional[int] = 10
-    ) -> ThreadingGroup:
-        """
-        Get connections to the given Targets using the 'bitbots' username.
-
-        :param targets: The Targets to connect to
-        :param user: The username to connect with
-        :param connection_timeout: Timeout for establishing the connection
-        :return: The connections
-        """
-        try:
-            connections = ThreadingGroup(
-                *[str(target) for target in targets],
-                user=user,
-                connect_timeout=connection_timeout
-            )
-            for connection in connections:
-                connection.open()
-        except Exception as e:
-            print_err(f"Could not establish all required connections: {e}")
-            exit(1)
-        return connections
 
     def run_tasks(self) -> None:
         """
@@ -174,7 +154,11 @@ class DeployRobots():
 
         # Get connection
         with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to targets via SSH", spinner="point"):
-            connections = self._get_connections(self._targets, self._args.user)
+            connections = get_connections_from_targets(
+                self._targets,
+                self._args.user,
+                self._args.connection_timeout
+            )
         print_success(f"[TASK {current_task}/{num_tasks}] Connected to targets")
         current_task += 1
 
