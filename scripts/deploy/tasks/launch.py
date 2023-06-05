@@ -1,41 +1,110 @@
+from fabric import Group, GroupResult
+
+from tasks.abstract_task import AbstractTask
+from misc import *
 
 
-def launch_teamplayer(target):
-    """
-    Launch the teamplayer on given target.
-    This is started in a new tmux session.
-    Fails if ROS 2 nodes are already running or a tmux session called "teamplayer" is already running.
+class Launch(AbstractTask):
+    def __init__(
+            self,
+            tmux_session_name: str,
+            user: str,
+            connection_timeout: Optional[int]
+        ) -> None:
+        """
+        Launch the teamplayer ROS software on a remote machine in a new tmux session.
 
-    :param target: The Target to launch the teamplayer on
-    """
-    # Check if ROS 2 nodes are already running
-    result_nodes_running = _execute_on_target(target, "ros2 node list -c")
-    if not result_nodes_running.ok:
-        print_err(f"Abort launching teamplayer: Could not determine if ROS 2 nodes are already running on {target.hostname}")
-        exit(result_nodes_running.exited)
-    count = int(str(result_nodes_running.stdout).strip())
-    if count > 0:
-        print_err(f"Abort launching teamplayer: {count} nodes are already running on {target.hostname}")
-        exit(1)
+        :param tmux_session_name: Name of the fresh tmux session to launch the teamplayer in
+        :param user: The user to run rosdep as
+        :param connection_timeout: The timeout for connections
+        """
+        super().__init__()
 
-    # Check if tmux session is already running
-    tmux_session_name = "teamplayer"
-    result_tmux_session_exists = _execute_on_target(target, "tmux ls -F '#S' || true")
-    if tmux_session_name in str(result_tmux_session_exists.stdout):
-        print_err(f"Abort launching teamplayer: tmux session 'teamplayer' is already running on {target.hostname}")
-        exit(1)
-    
-    # Launch teamplayer
-    print_info(f"Launching teamplayer on {target.hostname}")
-    # Create tmux session
-    result_new_tmux_session = _execute_on_target(target, f"tmux new-session -d -s {tmux_session_name}")
-    if not result_new_tmux_session.ok:
-        print_err(f"Could not create tmux session on {target.hostname}")
-        exit(result_new_tmux_session.exited)
-    # Start teamplayer in tmux session
-    result_launch_teamplayer = _execute_on_target(target, f"tmux send-keys -t {tmux_session_name} 'ros2 launch bitbots_bringup teamplayer.launch' Enter")
-    if not result_launch_teamplayer.ok:
-        print_err(f"Could not start teamplayer launch command in tmux session on {target.hostname}")
-        exit(result_launch_teamplayer.exited)
-    print_success(f"Teamplayer on {target.hostname} launched successfully!\nTo attach to the tmux session, run:\n\nssh {target.hostname} -t 'tmux attach-session -t {tmux_session_name}'"
-    )
+        self._tmux_session_name = tmux_session_name
+        self._user = user
+        self._connection_timeout = connection_timeout
+
+    def run(self, connections: Group) -> GroupResult:
+        """
+        Launch the teamplayer ROS software on a remote machine in a new tmux session.
+        Fails if ROS 2 nodes are already running or
+        a tmux session called "teamplayer" is already running.
+        This is, as we want to make sure, nothing else interferres with
+        the newly launched teamplayer software.
+
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
+        # Check if ROS 2 nodes are already running
+        node_running_results = self._check_nodes_already_running(connections)
+        if not node_running_results.succeeded:
+            return node_running_results
+
+        # Some nodes have no ROS 2 nodes already running, continuing
+        # Check if tmux session is already running
+        tmux_session_running_results = self._check_tmux_session_already_running(
+            get_succeeded_connections(
+                node_running_results,
+                self._user,
+                self._connection_timeout
+            )
+        )
+        if not tmux_session_running_results.succeeded:
+            return tmux_session_running_results
+        
+        # Some hosts are ready to launch teamplayer
+        launch_results = self._launch_teamplayer(
+            get_succeeded_connections(
+                tmux_session_running_results,
+                self._user,
+                self._connection_timeout
+            )
+        )
+        return launch_results
+
+    def _check_nodes_already_running(self, connections: Group) -> GroupResult:
+        """
+        Check if ROS 2 nodes are already running on the remote machines.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if ROS 2 nodes are not already running
+        """
+        print_debug(f"Checking if ROS 2 nodes are already running")
+        cmd = 'ros2 node list -c | grep -q "^0$"'
+        print_debug(f"Calling {cmd}")
+        results = connections.run(cmd)
+
+        if results.failed:
+            print_err(f"ROS 2 nodes are already running or check failed on {self._failed_hosts(results)}")
+        if results.succeeded:
+            print_debug(f"No ROS 2 nodes are already running on {self._succeded_hosts(results)}")
+        return results
+
+    def _check_tmux_session_already_running(self, connections: Group) -> GroupResult:
+        print_debug(f"Checking if tmux session with name '{self._tmux_session_name}' is already running")
+
+        # The first part of the command outputs names of all running tmux sessions.
+        # The second part scanns for the given session name using grep.
+        # -v inverts the results, thus not finding the string succeeds.
+        cmd = f"""tmux ls -F '#S' | grep -qv "{self._tmux_session_name}" """
+        print_debug(f"Calling: {cmd}")
+        results = connections.run(cmd)
+
+        if results.succeeded:
+            print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeded_hosts(results)}")
+        if results.failed:
+            print_err(f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(results)}")
+        return results
+
+    def _launch_teamplayer(self, connections: Group) -> GroupResult:
+        print_debug(f"Launching teamplayer")
+        # Create tmux session
+        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'ros2 launch bitbots_bringup teamplayer.launch' Enter"
+        print_debug(f"Calling {cmd}")
+        results = connections.run(cmd)
+
+        if results.succeeded:
+            print_debug(f"Launching teamplayer succeeded on the following hosts: {self._succeded_hosts(results)}")
+        if results.failed:
+            print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(results)}")
+        return results
