@@ -47,9 +47,10 @@ class Sync(AbstractTask):
         includes = []
         with open(file_path) as file:
             data = yaml.safe_load(file)
+            print_warn("TODO: Reimplement rsync file-exclusions")
             # Exclude files
-            for entry in data['exclude']:
-                includes.append(f'--include=- {entry}')
+            # for entry in data['exclude']:  # TODO: Fix IO errors
+            #     includes.append(f'--include=- {entry}')
             # Include files
             for entry in data['include']:
                 if isinstance(entry, dict):
@@ -134,6 +135,7 @@ class Sync(AbstractTask):
                 "--checksum",
                 "--archive",
                 "--delete",
+                "--ignore-errors",  # Delete even if there are I/O errors (e.g. excluded files don't exist)
             ]
             if not be_quiet():
                 cmd.append("--verbose")
