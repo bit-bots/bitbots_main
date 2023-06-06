@@ -150,10 +150,10 @@ class Target:
 
         return (identified_target, identified_ip)
 
-
     def __str__(self) -> str:
         """Returns the target's hostname if available or IP-address."""
         return self.hostname if self.hostname is not None else str(self.ip)
+
 
 def _get_connections(
     hosts: list[str],
@@ -170,16 +170,19 @@ def _get_connections(
     """
     try:
         connections = ThreadingGroup(
-            hosts,
+            *hosts,
             user=user,
             connect_timeout=connection_timeout
         )
         for connection in connections:
+            print_debug(f"Connecting to {connection.host}...")
             connection.open()
+            print_debug(f"Connected to {connection.host}...")
     except Exception as e:
         print_err(f"Could not establish all required connections: {e}")
         exit(1)
     return connections
+
 
 def get_connections_from_targets(
     targets: list[Target],
@@ -195,21 +198,18 @@ def get_connections_from_targets(
     :return: The connections
     """
     return _get_connections(
-        [str(target) for target in targets],
+        [str(target.ip) for target in targets],
         user,
         connection_timeout
     )
 
 
-class ThreadingGroupFromSucceeded(ThreadingGroup):
+def get_connections_from_succeeded(results: GroupResult) -> ThreadingGroup:
     """
-    ThreadingGroupFromSucceeded is a Group that only contains the succeeded hosts from a GroupResult.
-    """
-    def __init__(self, results: GroupResult) -> None:
-        """
-        Creates a new GroupFromSucceeded from the given GroupResult.
+    Get connections to the succeeded hosts from the given GroupResult.
 
-        :param results: The GroupResult to get the succeeded hosts from
-        """
-        succeeded_connection: Iterable[Connection] = results.succeeded.keys()
-        return ThreadingGroup.from_connections(succeeded_connection)
+    :param results: The GroupResult to get the succeeded hosts from
+    :return: The connections
+    """
+    succeeded_connections: Iterable[Connection] = results.succeeded.keys()
+    return ThreadingGroup.from_connections(succeeded_connections)

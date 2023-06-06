@@ -82,7 +82,7 @@ class Sync(AbstractTask):
             clean_results = self._clean(connections)
             if not clean_results.succeeded:
                 return clean_results
-            connections = ThreadingGroupFromSucceeded(clean_results)
+            connections = get_connections_from_succeeded(clean_results)
 
         # Synchronize the local source directory to the remote workspace with rsync
         rsync_results = self._rsync(connections)
@@ -140,10 +140,11 @@ class Sync(AbstractTask):
             cmd.extend(self._includes)
             cmd.extend([
                 self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
-                f"{connection.user}@{connection.host}:{self._remote_src_path}/"
+                f"{connection.user}@{connection.host}:{self._remote_src_path}/"  # NOTE: The trailing slash is important for rsync
             ])
+            cmd = ' '.join(cmd)
 
-            print_debug(f"Calling {' '.join(cmd)}")
+            print_debug(f"Calling {cmd}")
             # Execute the rsync command locally, as we sync from local to remote
             return connection.local(cmd)
 

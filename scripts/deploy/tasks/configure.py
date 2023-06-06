@@ -29,7 +29,7 @@ class Configure(AbstractTask):
 
         # Then, configure the wifi
         wifi_results = self._configure_wifi(
-            ThreadingGroupFromSucceeded(game_settings_results)
+            get_connections_from_succeeded(game_settings_results)
         )
         return wifi_results
 

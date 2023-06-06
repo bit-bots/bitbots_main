@@ -34,13 +34,13 @@ class Launch(AbstractTask):
         # Some nodes have no ROS 2 nodes already running, continuing
         # Check if tmux session is already running
         tmux_session_running_results = self._check_tmux_session_already_running(
-            ThreadingGroupFromSucceeded(node_running_results)
+            get_connections_from_succeeded(node_running_results)
         )
         if not tmux_session_running_results.succeeded:
             return tmux_session_running_results
         
         # Some hosts are ready to launch teamplayer
-        launch_results = self._launch_teamplayer(ThreadingGroupFromSucceeded(tmux_session_running_results))
+        launch_results = self._launch_teamplayer(get_connections_from_succeeded(tmux_session_running_results))
         return launch_results
 
     def _check_nodes_already_running(self, connections: Group) -> GroupResult:

@@ -9,11 +9,14 @@ from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
 
 class DeployRobots():
     def __init__(self):
-        self._bitbots_meta_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
         self._args = self._parse_arguments()
 
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
+
+        self._bitbots_meta_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+        print_debug(f"Bit-Bots meta path: {self._bitbots_meta_path}")
+        os.chdir(self._bitbots_meta_path)
 
         if self._args.print_bit_bot:
             print_bit_bot()

@@ -32,7 +32,7 @@ class Install(AbstractTask):
             return internet_available_results
         
         # Some hosts have an internet connection, install rosdeps
-        install_results = self._install_rosdeps(ThreadingGroupFromSucceeded(internet_available_results))
+        install_results = self._install_rosdeps(get_connections_from_succeeded(internet_available_results))
         return install_results
 
     def _internet_available_on_target(self, connections: Group) -> GroupResult:
