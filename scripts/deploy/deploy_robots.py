@@ -65,7 +65,7 @@ class DeployRobots():
         parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
         parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
         parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
-        parser.add_argument("--connection-timeout", action="TODO", default=10, help="Timeout to establish SSH connections in seconds.")
+        parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
         parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
         parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
         parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
