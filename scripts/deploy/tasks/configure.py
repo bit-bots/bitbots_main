@@ -1,61 +1,173 @@
+from fabric import Group, GroupResult, Result
+from rich.prompt import Prompt
 
-def configure_game_settings(target: Target) -> None:
-    """
-    Configure the game settings on the given Target with user input.
-    This tries to run the game_settings.py script on the Target.
-    
-    :param target: The Target to configure the game settings on
-    """
-    result_game_settings = _execute_on_target(target, f"python3 {target.workspace}/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py", hide=False)
-    if not result_game_settings.ok:
-        print_err(f"Game settings on {target.hostname} failed")
-        exit(result_game_settings.exited)
-    print_info(f"Configured game settings on {target.hostname}")
+from tasks.abstract_task import AbstractTask
+from misc import *
 
+class Configure(AbstractTask):
+    def __init__(self, remote_workspace: str) -> None:
+        """
+        Configure the game settings and wifi on the given Targets with user input.
 
-def configure_wifi(target: Target) -> None:
-    """
-    Configure the wifi on the given Target with user input.
-    The user is shown a list of available wifi networks and
-    can choose one by answering with the according UUID.
-    All other connections are disabled and depriorized.
+        :param remote_workspace: Path to the remote workspace to run rosdep in
+        """
+        super().__init__()
 
-    :param target: The Target to configure the wifi on
-    """
-    _execute_on_target(target, "nmcli connection show", hide=False)
-    connection_id = Prompt.ask("UUID or name of connection which should be enabled [leave unchanged]", console=CONSOLE)
+        self._remote_workspace = remote_workspace
 
-    if connection_id != "":
-        # disable all other connections
-        connection_ids = str(_execute_on_target(target, "nmcli --fields UUID,TYPE connection show | grep wifi | awk '{print $1}'").stdout).strip().split("\n")
-        for i in connection_ids:
-            if not _execute_on_target(target, f'sudo nmcli connection modify {i} connection.autoconnect FALSE').ok:
-                print_warn(f"Could not disable connection {i} on {target.hostname}")
-            if not _execute_on_target(target, f'sudo nmcli connection modify {i} connection.autoconnect-priority 0').ok:
-                print_warn(f"Could not set priority of connection {i} to 0 on {target.hostname}")
+    def run(self, connections: Group) -> GroupResult:
+        """
+        Configure the game settings and wifi on the given Targets with user input.
 
-        result_enable_connection = _execute_on_target(target, f"sudo nmcli connection up {connection_id}")
-        if not result_enable_connection.ok:
-            print_err(f"Could not enable connection {connection_id} on {target.hostname}")
-            exit(result_enable_connection.exited)
-        
-        result_set_autoconnect = _execute_on_target(target, f"sudo nmcli connection modify {connection_id} connection.autoconnect TRUE")
-        if not result_set_autoconnect.ok:
-            print_err(f"Could not enable connection {connection_id} on {target.hostname}")
-            exit(result_set_autoconnect.exited)
-        result_set_priority = _execute_on_target(target, f"sudo nmcli connection modify {connection_id} connection.autoconnect-priority 100")
-        if not result_set_priority.ok:
-            print_err(f"Could not set priority of connection {connection_id} to 100 on {target.hostname}")
-            exit(result_set_priority.exited)
-    print_info(f"Configured wifi on {target.hostname}")
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
+        # First, configure the game settings
+        game_settings_results = self._configure_game_settings(connections)
+        if not game_settings_results.succeeded:
+            return game_settings_results
 
+        # Then, configure the wifi
+        wifi_results = self._configure_wifi(
+            ThreadingGroupFromSucceeded(game_settings_results)
+        )
+        return wifi_results
 
-def configure(target: Target) -> None:
-    """
-    Configure the given Target with user input.
-    This includes configuring the game settings and the wifi.
+    def _configure_game_settings(self, connections: Group) -> GroupResult:
+        """
+        Configure the game settings on the given remotes with user input.
+        This tries to run the game_settings.py script on the remotes.
 
-    :param target: The Target to configure
-    """
-    configure_game_settings(target)
-    configure_wifi(target)
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
+        def _configure_single(connection: Connection) -> Result:
+            """
+            Configure the game settings on a single Target with user input.
+            
+            :param connection: The connection to the remote server.
+            :return: The result of the task.
+            """
+            print_info(f"Configuring game settings on {connection.host}...")
+            cmd = f"python3 {self._remote_workspace}/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py"
+            print_debug(f"Calling {cmd}")
+            return connection.run(cmd, hide=False)
+
+        results = GroupResult()
+
+        # Iterate over all connections and configure them
+        for connection in connections:
+            results[connection] = _configure_single(connection)
+
+        if results.succeeded:
+            print_info(f"Game settings configured on the following hosts: {self._succeded_hosts(results)}")
+        if results.failed:
+            print_err(f"Configuring game setting FAILED on the following hosts: {self._failed_hosts(results)}")
+        return results
+
+    def _configure_wifi(self, connections: Group) -> GroupResult:
+        """
+        Configure the wifi on the given remotes with user input.
+        The user is shown a list of available wifi networks and
+        can choose one by answering with the according UUID.
+        All other connections are disabled and depriorized.
+
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
+        def _configure_single(connection: Connection) -> Result:
+            """
+            Configure the wifi on a single remote with user input.
+            
+            :param connection: The connection to the remote server.
+            :return: The result of the task.
+            """
+            print_info(f"Configuring wifi on {connection.host}...")
+
+            # Show available wifi connections
+            show_cmd = "nmcli connection show"
+            print_debug(f"Calling {show_cmd} on {connection.host}")
+            show_result = connection.run(show_cmd, hide=False)
+            if show_result.failed:
+                print_err(f"Could not show connections on {connection.host}")
+                return show_result
+
+            # Ask user for connection to use
+            answered_connection_id = Prompt.ask("UUID or name of connection which should be enabled [leave unchanged]", console=CONSOLE)
+
+            # Only change connection if user input is not empty
+            if answered_connection_id != "":
+                # Disable all other connections
+                print_debug(f"Disabling all other connections on {connection.host}")
+                # Get all wifi connection ids
+                get_ids_cmd = "nmcli --fields UUID,TYPE connection show | grep wifi | awk '{print $1}'"
+                print_debug(f"Calling {get_ids_cmd} on {connection.host}")
+                get_ids_result = connection.run(get_ids_cmd)
+                if get_ids_result.failed:
+                    print_err(f"Could not get connection ids on {connection.host}")
+                    return get_ids_result
+
+                connection_ids = str(get_ids_result.stdout).strip().split("\n")
+                print_debug(f"Found the following connection ids: {connection_ids} on {connection.host}")
+
+                # Disable autoconnect for all connections and depriorize them except the one we want to use
+                for connection_id in connection_ids:
+                    if connection_id == answered_connection_id:
+                        continue
+
+                    # Disable autoconnect
+                    print_debug(f"Disabling autoconnect {connection_id} on {connection.host}")
+                    cmd = f"nmcli connection modify {connection_id} connection.autoconnect FALSE"
+                    print_debug(f"Calling {cmd} on {connection.host}")
+                    disable_autoconnect_result = connection.sudo(cmd)
+                    if disable_autoconnect_result.failed:
+                        print_err(f"Could not disable autoconnect for connection {connection_id} on {connection.host}")
+                        return disable_autoconnect_result
+
+                    # Depriorize connection
+                    print_debug(f"Depriorizing connection {connection_id} on {connection.host}")
+                    cmd = f"nmcli connection modify {connection_id} connection.autoconnect-priority 0"
+                    print_debug(f"Calling {cmd} on {connection.host}")
+                    depriorize_result = connection.sudo(cmd)
+                    if depriorize_result.failed:
+                        print_err(f"Could not depriorize connection {connection_id} on {connection.host}")
+                        return depriorize_result
+
+                # Enable the connection we want to use
+                print_debug(f"Enabling connection {answered_connection_id} on {connection.host}")
+                cmd = f"nmcli connection up {answered_connection_id}"
+                print_debug(f"Calling {cmd} on {connection.host}")
+                enable_connection_result = connection.sudo(cmd)
+                if enable_connection_result.failed:
+                    print_err(f"Could not enable connection {answered_connection_id} on {connection.host}")
+                    return enable_connection_result
+
+                # Enabling autoconnect for the connection we want to use
+                print_debug(f"Enabling autoconnect for connection {answered_connection_id} on {connection.host}")
+                cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect TRUE"
+                print_debug(f"Calling {cmd} on {connection.host}")
+                enable_autoconnect_result = connection.sudo(cmd)
+                if enable_autoconnect_result.failed:
+                    print_err(f"Could not enable autoconnect for connection {answered_connection_id} on {connection.host}")
+                    return enable_autoconnect_result
+
+                # Set priority for the connection we want to use
+                print_debug(f"Setting priority of connection {answered_connection_id} to 100 on {connection.host}")
+                cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect-priority 100"
+                print_debug(f"Calling {cmd} on {connection.host}")
+                set_priority_result = connection.sudo(cmd)
+                if set_priority_result.failed:
+                    print_err(f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}")
+                return set_priority_result
+
+        results = GroupResult()
+
+        # Iterate over all connections and configure them
+        for connection in connections:
+            results[connection] = _configure_single(connection)
+
+        if results.succeeded:
+            print_info(f"Wifi configured on the following hosts: {self._succeded_hosts(results)}")
+        if results.failed:
+            print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
+        return results

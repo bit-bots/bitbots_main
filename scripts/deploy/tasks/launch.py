@@ -33,7 +33,9 @@ class Launch(AbstractTask):
 
         # Some nodes have no ROS 2 nodes already running, continuing
         # Check if tmux session is already running
-        tmux_session_running_results = self._check_tmux_session_already_running(ThreadingGroupFromSucceeded(node_running_results))
+        tmux_session_running_results = self._check_tmux_session_already_running(
+            ThreadingGroupFromSucceeded(node_running_results)
+        )
         if not tmux_session_running_results.succeeded:
             return tmux_session_running_results
         

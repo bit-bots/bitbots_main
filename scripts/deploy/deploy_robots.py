@@ -4,7 +4,7 @@ import argparse
 import os
 
 from misc import *
-from tasks import AbstractTask, Build, Install, Launch, Sync
+from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
 
 
 class DeployRobots():
@@ -119,7 +119,9 @@ class DeployRobots():
             tasks.append(Install(self._args.workspace))
 
         if self._args.configure:
-            pass  # TODO
+            tasks.append(Configure(
+                self._args.workspace,
+            ))
 
         if self._args.build:
             tasks.append(Build(
