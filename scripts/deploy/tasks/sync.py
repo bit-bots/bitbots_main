@@ -1,8 +1,8 @@
 import os
-import subprocess
+import concurrent.futures
 
 import yaml
-from fabric import Group, GroupResult
+from fabric import Group, GroupResult, Result
 
 from tasks.abstract_task import AbstractTask
 from misc import *
@@ -72,44 +72,23 @@ class Sync(AbstractTask):
 
     def run(self, connections: Group) -> GroupResult:
         """
-        Synchronize (copy) the local source directory to the given Target using the rsync tool.
+        Synchronize (copy) the local source directory to the remotes using the rsync tool.
 
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
+        # Optional: Clean the remote workspace
         if self._pre_clean:
             clean_results = self._clean(connections)
             if not clean_results.succeeded:
                 return clean_results
+            connections = ThreadingGroupFromSucceeded(clean_results)
 
-        # TODO: move
-        for connection in connections:
-            print_debug(f"Synchronizing local source directory ('{self._local_workspace}') to host '{connection.host}'")
-            cmd = [
-                "rsync",
-                "--checksum",
-                "--archive",
-                "--delete",
-            ]
+        # Synchronize the local source directory to the remote workspace with rsync
+        rsync_results = self._rsync(connections)
+        return rsync_results
 
-            if not be_quiet():
-                cmd.append("--verbose")
-
-            cmd.extend(self._includes)
-            cmd.extend([
-                self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
-                f"{connection.user}@{connection.host}:{self._remote_src_path}/"
-            ])
-
-            print_debug(f"Calling {' '.join(cmd)}")
-            sync_result = subprocess.run(cmd)
-            if sync_result.returncode != 0:
-                print_err(f"Synchronizing task failed with error code {sync_result.returncode}")
-                exit(sync_result.returncode)
-
-        return mkdir_result  # TODO: return the rsync result instead
-
-    def _clean(self, connections) -> GroupResult:
+    def _clean(self, connections: Group) -> GroupResult:
         """
         Clean the remote workspace by removing the src/ directory and recreating it.
 
@@ -139,3 +118,51 @@ class Sync(AbstractTask):
         if mkdir_result.failed:
             print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(mkdir_result)}")
         return mkdir_result
+
+    def _rsync(self, connections: Group) -> GroupResult:
+        """
+        Synchronize (copy) the local source directory to the remotes using the rsync tool.
+        This happens in parallel for all connections.
+
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
+        def _sync_single(connection: Connection) -> Result:
+            # Construct the rsync command
+            cmd = [
+                "rsync",
+                "--checksum",
+                "--archive",
+                "--delete",
+            ]
+            if not be_quiet():
+                cmd.append("--verbose")
+            cmd.extend(self._includes)
+            cmd.extend([
+                self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
+                f"{connection.user}@{connection.host}:{self._remote_src_path}/"
+            ])
+
+            print_debug(f"Calling {' '.join(cmd)}")
+            # Execute the rsync command locally, as we sync from local to remote
+            return connection.local(cmd)
+
+        print_debug(f"Synchronizing local source directory ('{self._local_workspace}') to  the remote directory: '{self._remote_src_path}'")
+
+        # Collect results of the group
+        results = GroupResult()
+
+        # Create a ThreadPoolExecutor with a maximum of 5 worker threads
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(connections)) as executor:
+            # Submit the _sync_single function for each connection to the executor
+            futures = [executor.submit(_sync_single, connection) for connection in connections]
+
+        # Wait for all futures to complete and collect the results
+        for connection, future in zip(connections, futures):
+            results[connection] = future.result()
+
+        if results.succeeded:
+            print_debug(f"Synchronization succeeded for hosts {self._succeded_hosts(results)}")
+        if results.failed:
+            print_err(f"Synchronization failed for hosts {self._failed_hosts(results)}")
+        return results
