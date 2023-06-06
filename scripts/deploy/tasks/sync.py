@@ -44,32 +44,37 @@ class Sync(AbstractTask):
         :param package: Limit to file from this package, if empty, all files are included
         :returns: List of files to sync
         """
-        includes = []
         with open(file_path) as file:
             data = yaml.safe_load(file)
-            print_warn("TODO: Reimplement rsync file-exclusions")
-            # Exclude files
-            # for entry in data['exclude']:  # TODO: Fix IO errors
-            #     includes.append(f'--include=- {entry}')
-            # Include files
-            for entry in data['include']:
-                if isinstance(entry, dict):
-                    for folder, subfolders in entry.items():
-                        if package == '':
-                            includes.append(f'--include=+ {folder}')
-                            for subfolder in subfolders:
-                                includes.append(f'--include=+ {folder}/{subfolder}')
-                                includes.append(f'--include=+ {folder}/{subfolder}/**')
-                        elif package in subfolders:
-                            includes.append(f'--include=+ {folder}')
-                            includes.append(f'--include=+ {folder}/{package}')
-                            includes.append(f'--include=+ {folder}/{package}/**')
-                elif isinstance(entry, str):
-                    if package == '' or package == entry:
-                        includes.append(f'--include=+ {entry}')
-                        includes.append(f'--include=+ {entry}/**')
-        includes.append('--include=- *')
-        return includes
+
+        # Exclude files
+        excludes: list[str] = data['exclude']
+
+        # Include files
+        includes: list[str] = []
+        for entry in data['include']:
+            if isinstance(entry, str):
+                if package == '' or package == entry:
+                    includes.append(f'{entry}/**')
+                    includes.append(f'{entry}/')
+            elif isinstance(entry, dict):
+                for folder, subfolders in entry.items():
+                    if package == '':
+                        includes.append(f'{folder}/')
+                        for subfolder in subfolders:
+                            includes.append(f'{folder}/{subfolder}/')
+                            includes.append(f'{folder}/{subfolder}/**')
+                    elif package in subfolders:
+                        includes.append(f'{folder}/')
+                        includes.append(f'{folder}/{package}/')
+                        includes.append(f'{folder}/{package}/**')
+        includes.append('*')
+
+        # Encase in quotes
+        excludes = [f'"{exclude}",' for exclude in excludes]
+        includes = [f'"{include}",' for include in includes]
+
+        return f"--exclude={{{''.join(excludes)}}} --include={{{''.join(includes)}}}"
 
     def run(self, connections: Group) -> GroupResult:
         """
@@ -135,11 +140,10 @@ class Sync(AbstractTask):
                 "--checksum",
                 "--archive",
                 "--delete",
-                "--ignore-errors",  # Delete even if there are I/O errors (e.g. excluded files don't exist)
             ]
             if not be_quiet():
                 cmd.append("--verbose")
-            cmd.extend(self._includes)
+            cmd.append(self._includes)
             cmd.extend([
                 self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
                 f"{connection.user}@{connection.host}:{self._remote_src_path}/"  # NOTE: The trailing slash is important for rsync
@@ -147,7 +151,6 @@ class Sync(AbstractTask):
             cmd = ' '.join(cmd)
 
             print_debug(f"Calling {cmd}")
-            # Execute the rsync command locally, as we sync from local to remote
             return connection.local(cmd)
 
         print_debug(f"Synchronizing local source directory ('{self._local_workspace}') to  the remote directory: '{self._remote_src_path}'")

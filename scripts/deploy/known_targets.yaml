@@ -16,3 +16,5 @@ nuc5:
 nuc6:
   ip: "172.20.1.16"
   robot_name: "rose"
+cl03:
+  ip: "172.20.3.33"  # TODO: Remove me, only for testing
