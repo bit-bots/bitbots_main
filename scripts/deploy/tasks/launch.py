@@ -83,7 +83,11 @@ class Launch(AbstractTask):
         results = connections.run(cmd)
 
         if results.succeeded:
-            print_debug(f"Launching teamplayer succeeded on the following hosts: {self._succeded_hosts(results)}")
+            # Print commands to connect to teamplayer tmux session
+            cmds = {}
+            for connection in results.succeeded:
+                cmds[connection.host] = f"ssh {connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'"
+            print_success(f"Teamplayer launched successfully on {self._succeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{cmds}")
         if results.failed:
             print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(results)}")
         return results
