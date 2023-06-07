@@ -83,7 +83,6 @@ How to optimize a model
     - This should **not** take hours.
     - Remember to replace all placeholders in the command
     - You will hopefully end up with a ``.tar`` file containing the following items 
-    - 
         - ``mod.so``
         - ``mod.params`` 
         - ``mod.json``
