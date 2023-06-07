@@ -60,7 +60,7 @@ For these steps you can just follow the guide provided in the `official reposito
 <https://github.com/AlexeyAB/darknet#how-to-train-tiny-yolo-to-detect-your-custom-objects>`_.
 In the end you will find a trained yolo in the backup folder of your darknet directory.
 If you want to use the OpenVINO toolkit to execute the YOLO on the Intel Neural Compute Stick2 like we do, you should have a look at
-:doc:`OpenVINO <../yolo_open_vino.rst>`
+:doc:`OpenVINO <./yolo_open_vino>`.
 Congrats, you have successfully trained a YOLO for the RoboCup Soccer context.
 
 Troubleshooting
