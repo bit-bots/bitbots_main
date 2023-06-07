@@ -1,3 +1,5 @@
+import os
+
 from fabric import Group, GroupResult
 
 from tasks.abstract_task import AbstractTask
@@ -38,7 +40,7 @@ class Build(AbstractTask):
             print_debug(f"Cleaning ALL packages before building")
             cmd_clean = 'colcon clean packages -y'
         else:
-            cmd_clean = ""
+            cmd_clean = " "  # NOTE: Space is needed, else double semicolon causes errors
 
         if self._package:
             print_debug(f"Building the following packages: {self._package}")
@@ -51,9 +53,9 @@ class Build(AbstractTask):
             "sync;"
             f"cd {self._remote_workspace};"
             "source /opt/ros/rolling/setup.zsh;"
-            "source install/setup.zsh;"
+            f"source {os.path.join(self._remote_workspace, 'install/setup.zsh')};"
             f"{cmd_clean};"
-            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d,]+)' /proc/cmdline)\";"
+            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d,]+)' /proc/cmdline)\";"  
             f"chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package_option} --continue-on-error || exit 1;"
             "sync;"
         )

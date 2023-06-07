@@ -20,7 +20,7 @@ class AbstractTask(abc.ABC):
         :return: The results of the task.
         """
         if self._show_status:
-            with CONSOLE.status(f"{task_prefix} {self.__class__.__name__}"):
+            with CONSOLE.status(f"{task_prefix}"):
                 return self._run(connections)
         else:
             return self._run(connections)
