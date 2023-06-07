@@ -107,7 +107,7 @@ class Sync(AbstractTask):
         print_debug(f"Removing source directory: '{self._remote_src_path}'")
         rm_cmd = f"rm -rf {self._remote_src_path}"
         print_debug(f"Calling '{rm_cmd}'")
-        rm_result = connections.run(rm_cmd)
+        rm_result = connections.run(rm_cmd, hide=hide_output())
         if rm_result.succeeded:
             print_debug(f"Cleaning of source directory succeeded for hosts {self._succeded_hosts(rm_result)}")
         if rm_result.failed:
@@ -118,7 +118,7 @@ class Sync(AbstractTask):
         print_debug(f"Creating source directory: '{self._remote_src_path}'")
         mkdir_cmd = f"mkdir -p {self._remote_src_path}"
         print_debug(f"Calling '{mkdir_cmd}'")
-        mkdir_result = connections.run(mkdir_cmd)
+        mkdir_result = connections.run(mkdir_cmd, hide=hide_output())
         if mkdir_result.succeeded:
             print_debug(f"Recreation of source directory succeeded for hosts {self._succeded_hosts(mkdir_result)}")
         if mkdir_result.failed:

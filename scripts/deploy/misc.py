@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich import box
 
+
 CONSOLE = Console()
 
 
@@ -57,6 +58,7 @@ class LOGLEVEL:
     DEBUG = 3
     CURRENT = 2
 
+
 def be_quiet() -> bool:
     """
     Returns whether to be quiet or not.
@@ -64,6 +66,24 @@ def be_quiet() -> bool:
     :return: True if the current loglevel is below INFO, False otherwise.
     """
     return LOGLEVEL.CURRENT <= LOGLEVEL.INFO
+
+
+def hide_output() -> bool|str:
+    """
+    Returns which output streams to hide.
+    stderr is always shown, unless loglevel is below ERR_SUCCESS.
+    stdout is shown if loglevel is DEBUG or lower.
+
+    :return: True if both should be hidden,
+        False if both should be shown,
+        "stdout" if only stdout should be hidden.
+    """
+    if LOGLEVEL.CURRENT <= LOGLEVEL.ERR_SUCCESS:
+        return True
+    elif LOGLEVEL.CURRENT <= LOGLEVEL.DEBUG:
+        return "stdout"
+    else:
+        return False
 
 
 # Read the known targets

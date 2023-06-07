@@ -59,7 +59,7 @@ class Build(AbstractTask):
         )
 
         print_debug(f"Calling {cmd}")
-        results = connections.run(cmd)
+        results = connections.run(cmd, hide=hide_output())
 
         if results.succeeded:
             print_debug(f"Build succeeded on the following hosts: {self._succeded_hosts(results)}")

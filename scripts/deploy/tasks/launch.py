@@ -53,7 +53,7 @@ class Launch(AbstractTask):
         print_debug(f"Checking if ROS 2 nodes are already running")
         cmd = 'ros2 node list -c | grep -q "^0$"'
         print_debug(f"Calling {cmd}")
-        results = connections.run(cmd)
+        results = connections.run(cmd, hide=hide_output())
 
         if results.failed:
             print_err(f"ROS 2 nodes are already running or check failed on {self._failed_hosts(results)}")
@@ -69,7 +69,7 @@ class Launch(AbstractTask):
         # -v inverts the results, thus not finding the string succeeds.
         cmd = f"""tmux ls -F '#S' | grep -qv "{self._tmux_session_name}" """
         print_debug(f"Calling: {cmd}")
-        results = connections.run(cmd)
+        results = connections.run(cmd, hide=hide_output())
 
         if results.succeeded:
             print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeded_hosts(results)}")
@@ -82,7 +82,7 @@ class Launch(AbstractTask):
         # Create tmux session
         cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'ros2 launch bitbots_bringup teamplayer.launch' Enter"
         print_debug(f"Calling {cmd}")
-        results = connections.run(cmd)
+        results = connections.run(cmd, hide=hide_output())
 
         if results.succeeded:
             # Print commands to connect to teamplayer tmux session

@@ -102,7 +102,7 @@ class Configure(AbstractTask):
                 # Get all wifi connection ids
                 get_ids_cmd = "nmcli --fields UUID,TYPE connection show | grep wifi | awk '{print $1}'"
                 print_debug(f"Calling {get_ids_cmd} on {connection.host}")
-                get_ids_result = connection.run(get_ids_cmd)
+                get_ids_result = connection.run(get_ids_cmd, hide=hide_output())
                 if get_ids_result.failed:
                     print_err(f"Could not get connection ids on {connection.host}")
                     return get_ids_result
