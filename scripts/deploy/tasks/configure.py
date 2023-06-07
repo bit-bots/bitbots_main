@@ -82,27 +82,18 @@ class Configure(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        def _configure_single(connection: Connection) -> Optional[Result]:
+        def _configure_single(
+                connection: Connection,
+                answered_connection_id: str
+            ) -> Optional[Result]:
             """
             Configure the wifi on a single remote with user input.
             
             :param connection: The connection to the remote server.
+            :param answered_connection_id: The UUID of the wifi network to use.
             :return: The result of the task.
             """
             print_info(f"Configuring wifi on {connection.host}...")
-
-            # Show available wifi connections
-            show_cmd = "nmcli connection show"
-            print_debug(f"Calling {show_cmd} on {connection.host}")
-            show_result = connection.run(show_cmd, hide=False)
-            if show_result.failed:
-                print_err(f"Could not show connections on {connection.host}")
-                return show_result
-
-            # Ask user for connection to use
-            querry = "Enter the UUID of the connection which should be used [Press Enter to leave unchanged]"
-            answered_connection_id = Prompt.ask(querry, console=CONSOLE)
-            print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
             # Only change connection if user input is not empty
             if answered_connection_id != "":
@@ -128,7 +119,7 @@ class Configure(AbstractTask):
                     print_debug(f"Disabling autoconnect {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect FALSE"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    disable_autoconnect_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+                    disable_autoconnect_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
                     if disable_autoconnect_result.failed:
                         print_err(f"Could not disable autoconnect for connection {connection_id} on {connection.host}")
                         return disable_autoconnect_result
@@ -137,7 +128,7 @@ class Configure(AbstractTask):
                     print_debug(f"Depriorizing connection {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect-priority 0"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    depriorize_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+                    depriorize_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
                     if depriorize_result.failed:
                         print_err(f"Could not depriorize connection {connection_id} on {connection.host}")
                         return depriorize_result
@@ -146,7 +137,7 @@ class Configure(AbstractTask):
                 print_debug(f"Enabling connection {answered_connection_id} on {connection.host}")
                 cmd = f"nmcli connection up {answered_connection_id}"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                enable_connection_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+                enable_connection_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
                 if enable_connection_result.failed:
                     print_err(f"Could not enable connection {answered_connection_id} on {connection.host}")
                     return enable_connection_result
@@ -155,7 +146,7 @@ class Configure(AbstractTask):
                 print_debug(f"Enabling autoconnect for connection {answered_connection_id} on {connection.host}")
                 cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect TRUE"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                enable_autoconnect_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+                enable_autoconnect_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
                 if enable_autoconnect_result.failed:
                     print_err(f"Could not enable autoconnect for connection {answered_connection_id} on {connection.host}")
                     return enable_autoconnect_result
@@ -164,16 +155,35 @@ class Configure(AbstractTask):
                 print_debug(f"Setting priority of connection {answered_connection_id} to 100 on {connection.host}")
                 cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect-priority 100"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                set_priority_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+                set_priority_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
                 if set_priority_result.failed:
                     print_err(f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}")
                 return set_priority_result
 
         results = GroupResult()
 
+        # Get wifi UUID to enable from user
+        # This happens on the first connection in the group
+        # UUIDs are the same on all connections
+        connection = connections[0]
+
+        # Show available wifi connections
+        show_cmd = "nmcli connection show"
+        print_debug(f"Calling {show_cmd} on {connection.host}")
+        show_result = connection.run(show_cmd, hide=False)
+        if show_result.failed:
+            print_err(f"Could not show connections on {connection.host}")
+            return show_result
+
+        # Ask user for connection to use
+        querry = "Enter the UUID of the connection which should be used [Press Enter to leave unchanged]"
+        answered_connection_id = Prompt.ask(querry, console=CONSOLE)
+        print_debug(f"User answered {answered_connection_id} on {connection.host}")
+
         # Iterate over all connections and configure them
-        for connection in connections:
-            results[connection] = _configure_single(connection)
+        with CONSOLE.status("[bold blue] Configuring wifi...") as status:
+            for connection in connections:
+                results[connection] = _configure_single(connection, answered_connection_id)
 
         if results.succeeded:
             print_info(f"Wifi configured on the following hosts: {self._succeded_hosts(results)}")
