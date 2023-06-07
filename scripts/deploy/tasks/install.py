@@ -7,7 +7,11 @@ from tasks.abstract_task import AbstractTask
 from misc import *
 
 class Install(AbstractTask):
-    def __init__(self, remote_workspace: str, sudo_password: str) -> None:
+    def __init__(
+            self,
+            remote_workspace: str,
+            sudo_password: Optional[str] = ""
+        ) -> None:
         """
         Task to install and update all dependencies.
 
@@ -59,7 +63,9 @@ class Install(AbstractTask):
         return results
 
     def _install_rosdeps(
-            self, connections: Group) -> GroupResult:
+            self,
+            connections: Group
+        ) -> GroupResult:
         """
         Install ROS dependencies.
         This is done by simulating a rosdep install to gather install commands (mostly sudo apt install ...).

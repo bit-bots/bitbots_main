@@ -5,15 +5,21 @@ from tasks.abstract_task import AbstractTask
 from misc import *
 
 class Configure(AbstractTask):
-    def __init__(self, remote_workspace: str) -> None:
+    def __init__(
+            self,
+            remote_workspace:
+            str, sudo_password: Optional[str] = ""
+        ) -> None:
         """
         Configure the game settings and wifi on the given Targets with user input.
 
         :param remote_workspace: Path to the remote workspace to run rosdep in
+        :param sudo_password: The sudo password of the remote user
         """
         super().__init__()
 
         self._remote_workspace = remote_workspace
+        self._sudo_password = sudo_password
 
     def run(self, connections: Group) -> GroupResult:
         """

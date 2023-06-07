@@ -218,7 +218,7 @@ def get_connections_from_targets(
     :return: The connections
     """
     return _get_connections(
-        [str(target.ip) for target in targets],
+        [str(target) for target in targets],
         user,
         connection_timeout
     )
