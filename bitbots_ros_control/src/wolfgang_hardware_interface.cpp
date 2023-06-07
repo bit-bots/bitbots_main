@@ -84,7 +84,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       driver->setPacketHandler(protocol_version);
       std::vector<bitbots_ros_control::HardwareInterface *> interfaces_on_port;
       // iterate over all devices and ping them to see what is connected to this bus
-      std::vector<std::tuple<int, std::string, float, float>> servos_on_port;
+      std::vector<std::tuple<int, std::string, float, float, std::string>> servos_on_port;
       for (std::pair<std::string, int> &device: dxl_devices) {
         //RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
         std::string name = device.first;
@@ -167,7 +167,9 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               nh_->get_parameter_or("device_info." + name + ".mounting_offset", mounting_offset, 0.0f);
               float joint_offset;
               nh_->get_parameter_or("device_info." + name + ".joint_offset", joint_offset, 0.0f);
-              servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset));
+              std::string group;
+              nh_->get_parameter_or("device_info." + name + ".group", group, "DEFAULT");
+              servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset, group));
             } else {
               if (!only_pressure_ && !only_imu_) {
                 RCLCPP_WARN(nh_->get_logger(), "Could not identify device for ID %d", id);
