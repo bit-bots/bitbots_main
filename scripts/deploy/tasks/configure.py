@@ -168,7 +168,7 @@ class Configure(AbstractTask):
         connection = connections[0]
 
         # Show available wifi connections
-        show_cmd = "nmcli connection show"
+        show_cmd = 'nmcli connection show | grep -E "^(NAME|.*wifi)"'  # Show all wifi connections and table header
         print_debug(f"Calling {show_cmd} on {connection.host}")
         show_result = connection.run(show_cmd, hide=False)
         if show_result.failed:
