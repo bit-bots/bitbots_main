@@ -5,7 +5,7 @@ import os
 
 from misc import *
 from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
-
+from rich.prompt import Prompt
 
 class DeployRobots():
     def __init__(self):
@@ -21,6 +21,7 @@ class DeployRobots():
         if self._args.print_bit_bot:
             print_bit_bot()
 
+        self._sudo_password : Optional[str] = self._optionally_ask_for_sudo_password()
         self._targets = self._parse_targets()
         self._tasks = self._register_tasks()
 
@@ -102,6 +103,16 @@ class DeployRobots():
             targets.append(target)
         return targets
 
+    def _optionally_ask_for_sudo_password(self) -> Optional[str]:
+        """
+        Asks the user for the sudo password and returns it.
+        Asks only, if tasks that require sudo are enabled.
+
+        :return: The sudo password.
+        """
+        if self._args.install or self._args.configure:
+            return Prompt.ask("Please enter the sudo password for the remote machine", password=True)
+
     def _register_tasks(self) -> list[AbstractTask]:
         """
         Register and configure all activated tasks.
@@ -119,11 +130,15 @@ class DeployRobots():
             ))
         
         if self._args.install:
-            tasks.append(Install(self._args.workspace))
+            tasks.append(Install(
+                self._args.workspace,
+                self._sudo_password
+            ))
 
         if self._args.configure:
             tasks.append(Configure(
                 self._args.workspace,
+                self._sudo_password
             ))
 
         if self._args.build:
