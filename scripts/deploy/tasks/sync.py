@@ -151,7 +151,22 @@ class Sync(AbstractTask):
             cmd = ' '.join(cmd)
 
             print_debug(f"Calling {cmd}")
-            return connection.local(cmd)
+            invoke_result = connection.local(cmd)
+            if invoke_result is None:
+                return
+            # The result is from invoke, not fabric, so we need to convert it
+            return Result(
+                stdout=invoke_result.stdout,
+                stderr=invoke_result.stderr,
+                encoding=invoke_result.encoding,
+                command=invoke_result.command,
+                shell=invoke_result.shell,
+                env=invoke_result.env,
+                exited=invoke_result.exited,
+                pty=invoke_result.pty,
+                hide=invoke_result.hide,
+                connection=connection,
+            )
 
         print_debug(f"Synchronizing local source directory ('{self._local_workspace}') to  the remote directory: '{self._remote_src_path}'")
 

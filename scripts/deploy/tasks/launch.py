@@ -1,3 +1,5 @@
+import re
+
 from fabric import Group, GroupResult
 
 from tasks.abstract_task import AbstractTask
@@ -51,9 +53,14 @@ class Launch(AbstractTask):
         :return: Results, with success if ROS 2 nodes are not already running
         """
         print_debug(f"Checking if ROS 2 nodes are already running")
-        cmd = 'ros2 node list -c | grep -q "^0$"'
+        cmd = 'ros2 node list -c'
         print_debug(f"Calling {cmd}")
         results = connections.run(cmd, hide=hide_output())
+
+        # Check if output was ^0$ (no nodes running) for all remote machines
+        for connection, result in results.items():
+            if not re.match(r'^0$', result.stdout):
+                pass  # TODO
 
         if results.failed:
             print_err(f"ROS 2 nodes are already running or check failed on {self._failed_hosts(results)}")
@@ -64,13 +71,17 @@ class Launch(AbstractTask):
     def _check_tmux_session_already_running(self, connections: Group) -> GroupResult:
         print_debug(f"Checking if tmux session with name '{self._tmux_session_name}' is already running")
 
-        # The first part of the command outputs names of all running tmux sessions.
-        # The second part scanns for the given session name using grep.
-        # -v inverts the results, thus not finding the string succeeds.
-        cmd = f"""tmux ls -F '#S' | grep -qv "{self._tmux_session_name}" """
+        # We need to check if the default tmux socket is already created,
+        # before we can list all tmux sessions.
+        # Else, the tmux ls command would fail.
+        # The tmux ls command outputs names of all running tmux sessions.
+        cmd = "test -S /tmp/tmux-1000/default && tmux ls -F '#S' ; true"
         print_debug(f"Calling: {cmd}")
         results = connections.run(cmd, hide=hide_output())
 
+        for connection, result in results.items():
+            if self._tmux_session_name in result.stdout:
+                pass  # TODO
         if results.succeeded:
             print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeded_hosts(results)}")
         if results.failed:
@@ -86,10 +97,10 @@ class Launch(AbstractTask):
 
         if results.succeeded:
             # Print commands to connect to teamplayer tmux session
-            cmds = {}
+            help_cmds = ""
             for connection in results.succeeded:
-                cmds[connection.host] = f"ssh {connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'"
-            print_success(f"Teamplayer launched successfully on {self._succeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{cmds}")
+                help_cmds += f"{connection.host} : [bold]ssh {connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'[/bold]\n"
+            print_success(f"Teamplayer launched successfully on {self._succeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}")
         if results.failed:
             print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(results)}")
         return results
