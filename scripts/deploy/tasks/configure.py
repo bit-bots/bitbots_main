@@ -82,7 +82,7 @@ class Configure(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        def _configure_single(connection: Connection) -> Result:
+        def _configure_single(connection: Connection) -> Optional[Result]:
             """
             Configure the wifi on a single remote with user input.
             
@@ -100,7 +100,7 @@ class Configure(AbstractTask):
                 return show_result
 
             # Ask user for connection to use
-            querry = "UUID or name of connection which should be enabled [Press Enter to leave unchanged]"
+            querry = "Enter the UUID of the connection which should be used [Press Enter to leave unchanged]"
             answered_connection_id = Prompt.ask(querry, console=CONSOLE)
             print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
@@ -128,7 +128,7 @@ class Configure(AbstractTask):
                     print_debug(f"Disabling autoconnect {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect FALSE"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    disable_autoconnect_result = connection.sudo(cmd)
+                    disable_autoconnect_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
                     if disable_autoconnect_result.failed:
                         print_err(f"Could not disable autoconnect for connection {connection_id} on {connection.host}")
                         return disable_autoconnect_result
@@ -137,7 +137,7 @@ class Configure(AbstractTask):
                     print_debug(f"Depriorizing connection {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect-priority 0"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    depriorize_result = connection.sudo(cmd)
+                    depriorize_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
                     if depriorize_result.failed:
                         print_err(f"Could not depriorize connection {connection_id} on {connection.host}")
                         return depriorize_result
@@ -146,7 +146,7 @@ class Configure(AbstractTask):
                 print_debug(f"Enabling connection {answered_connection_id} on {connection.host}")
                 cmd = f"nmcli connection up {answered_connection_id}"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                enable_connection_result = connection.sudo(cmd)
+                enable_connection_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
                 if enable_connection_result.failed:
                     print_err(f"Could not enable connection {answered_connection_id} on {connection.host}")
                     return enable_connection_result
@@ -155,7 +155,7 @@ class Configure(AbstractTask):
                 print_debug(f"Enabling autoconnect for connection {answered_connection_id} on {connection.host}")
                 cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect TRUE"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                enable_autoconnect_result = connection.sudo(cmd)
+                enable_autoconnect_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
                 if enable_autoconnect_result.failed:
                     print_err(f"Could not enable autoconnect for connection {answered_connection_id} on {connection.host}")
                     return enable_autoconnect_result
@@ -164,7 +164,7 @@ class Configure(AbstractTask):
                 print_debug(f"Setting priority of connection {answered_connection_id} to 100 on {connection.host}")
                 cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect-priority 100"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                set_priority_result = connection.sudo(cmd)
+                set_priority_result = connection.sudo(cmd, hide=hide_output(), password=self._sudo_password)
                 if set_priority_result.failed:
                     print_err(f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}")
                 return set_priority_result
