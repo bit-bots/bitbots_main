@@ -15,7 +15,7 @@ class Launch(AbstractTask):
 
         self._tmux_session_name = tmux_session_name
 
-    def run(self, connections: Group) -> GroupResult:
+    def _run(self, connections: Group) -> GroupResult:
         """
         Launch the teamplayer ROS software on a remote machine in a new tmux session.
         Fails if ROS 2 nodes are already running or

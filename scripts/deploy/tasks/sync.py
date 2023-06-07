@@ -36,13 +36,13 @@ class Sync(AbstractTask):
             self._package
         )
 
-    def _get_includes_from_file(self, file_path: str, package: str = '') -> list[str]:
+    def _get_includes_from_file(self, file_path: str, package: str = '') -> str:
         """
-        Retrieve a list of file to sync from and includes-file
+        Retrieve the include and exclude arguments for rsync from a yaml file.
 
         :param file_path: Path of the includes-file
         :param package: Limit to file from this package, if empty, all files are included
-        :returns: List of files to sync
+        :returns: Include and exclude arguments for rsync
         """
         with open(file_path) as file:
             data = yaml.safe_load(file)
@@ -76,7 +76,7 @@ class Sync(AbstractTask):
 
         return f"--exclude={{{''.join(excludes)}}} --include={{{''.join(includes)}}}"
 
-    def run(self, connections: Group) -> GroupResult:
+    def _run(self, connections: Group) -> GroupResult:
         """
         Synchronize (copy) the local source directory to the remotes using the rsync tool.
 
@@ -133,7 +133,7 @@ class Sync(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        def _sync_single(connection: Connection) -> Result:
+        def _sync_single(connection: Connection) -> Optional[Result]:
             # Construct the rsync command
             cmd = [
                 "rsync",

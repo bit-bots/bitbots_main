@@ -17,11 +17,12 @@ class Configure(AbstractTask):
         :param sudo_password: The sudo password of the remote user
         """
         super().__init__()
+        self._show_status = False
 
         self._remote_workspace = remote_workspace
         self._sudo_password = sudo_password
 
-    def run(self, connections: Group) -> GroupResult:
+    def _run(self, connections: Group) -> GroupResult:
         """
         Configure the game settings and wifi on the given Targets with user input.
 
@@ -99,7 +100,9 @@ class Configure(AbstractTask):
                 return show_result
 
             # Ask user for connection to use
-            answered_connection_id = Prompt.ask("UUID or name of connection which should be enabled [leave unchanged]", console=CONSOLE)
+            querry = "UUID or name of connection which should be enabled [Press Enter to leave unchanged]"
+            answered_connection_id = Prompt.ask(querry, console=CONSOLE)
+            print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
             # Only change connection if user input is not empty
             if answered_connection_id != "":

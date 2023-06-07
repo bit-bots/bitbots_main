@@ -172,15 +172,15 @@ class DeployRobots():
 
         # Run tasks
         for task in self._tasks:
-            name = task.__class__.__name__
-            with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] {name}", spinner="point"):
-                results = task.run(connections)
+            task_prefix = f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__}"
+            # Run task
+            results = task.run(task_prefix, connections)
             if results is None:
-                print_warn(f"[TASK {current_task}/{num_tasks}] {name} returned no results.")
+                print_warn(f"{task_prefix} returned no results.")
             if results is not None and not results.failed:
-                print_success(f"[TASK {current_task}/{num_tasks}] {name} completed.")
+                print_success(f"{task_prefix} completed.")
             elif results is not None and results.failed:
-                print_err(f"[TASK {current_task}/{num_tasks}] {name} failed on the following hosts: {task._succeded_hosts(results)}")
+                print_err(f"{task_prefix} failed on the following hosts: {task._succeded_hosts(results)}")
                 exit(1)
             current_task += 1
 

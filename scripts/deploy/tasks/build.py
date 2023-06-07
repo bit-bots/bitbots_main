@@ -24,7 +24,7 @@ class Build(AbstractTask):
         self._package = package
         self._pre_clean = pre_clean
 
-    def run(self, connections: Group) -> GroupResult:
+    def _run(self, connections: Group) -> GroupResult:
         """
         Compile source code using colcon in the remote workspace.
 

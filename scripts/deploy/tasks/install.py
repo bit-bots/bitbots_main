@@ -26,7 +26,7 @@ class Install(AbstractTask):
         # TODO: also install pip upgrades
         # TODO: sudo apt update && sudo apt upgrade -y
 
-    def run(self, connections: Group) -> GroupResult:
+    def _run(self, connections: Group) -> GroupResult:
         """
         Install and update all dependencies, if internet is available.
 
