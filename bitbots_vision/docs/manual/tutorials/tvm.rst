@@ -101,7 +101,7 @@ Run your compiled model
 Run the model using the Python API
 ----------------------------------
 
-Extract the tar, using `tar -xf <your_file>`. 
+Extract the tar, using ``tar -xf <your_file>``.
 The following code snippet shows how to run a `YOEO <https://github.com/bit-bots/YOEO/>`_ model using the Python API. 
 Normally the ``bitbots_vision`` is used to run the compiled model.
 
