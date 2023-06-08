@@ -102,7 +102,9 @@ $BallInOwnPercent + p:40
 
 #SupporterRole
 $PassStarted
-    YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
+    YES --> $BallSeen
+        YES --> @LookAtBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
+        NO --> @SearchBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #GoalieRole
@@ -123,7 +125,9 @@ $SecondaryStateTeamDecider
         LEFT --> @PlayAnimationGoalieFallLeft, @Stand
         RIGHT --> @PlayAnimationGoalieFallRight, @Stand
         CENTER --> @PlayAnimationGoalieFallCenter, @Stand
-        ELSE --> @LookAtBall, @Stand
+        ELSE --> $BallSeen
+            YES --> @LookAtBall, @Stand
+            NO --> @SearchBall, @Stand
 
 
 #Placing
@@ -189,7 +193,9 @@ $IsPenalized
         SET --> $SecondaryStateDecider
             PENALTYSHOOT --> $SecondaryStateTeamDecider
                 OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @Stand // we need to also see the goalie
-                OTHER --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
+                OTHER --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, $BallSeen
+                    YES --> @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
+                    NO --> @SearchBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand
             ELSE --> #StandAndLook
         FINISHED --> #Init
         PLAYING --> $SecondaryStateDecider
