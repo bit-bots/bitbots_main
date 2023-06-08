@@ -7,9 +7,27 @@ from misc import *
 from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
 from rich.prompt import Prompt
 
+# Only use working connections
+# Game ready option
+
 class DeployRobots():
     def __init__(self):
         self._args = self._parse_arguments()
+        # todo move this to misc
+        if self._args.show_targets:
+            from rich.table import Table
+            table = Table()
+            table.add_column("Hostname")
+            table.add_column("Robot name")
+            table.add_column("IP address")
+
+            known_targets = get_known_targets()
+            table.add_row("ALL", "", "")
+            for hostname, values in known_targets.items():
+                table.add_row(hostname, values.get("robot_name", ""), values.get("ip", ""))
+            print_info(f"You can enter the following values as targets:")
+            CONSOLE.print(table)
+            exit(0)
 
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
 
@@ -41,6 +59,9 @@ class DeployRobots():
             type=str,
             help="The targets to deploy to. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots."
             )
+
+        parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
+
         # Task arguments
         sync_group = parser.add_mutually_exclusive_group()
         sync_group.add_argument("-s", "--sync", dest="sync", action="store_true", default=True, help="Synchronize (copy) files from you to the target machine (default: True)")
@@ -128,7 +149,7 @@ class DeployRobots():
                 self._args.package,
                 self._args.clean_src,
             ))
-        
+
         if self._args.install:
             tasks.append(Install(
                 self._args.workspace,

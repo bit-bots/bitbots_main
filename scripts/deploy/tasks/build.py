@@ -48,7 +48,7 @@ class Build(AbstractTask):
         else:
             print_debug(f"Building ALL packages")
             package_option = ""
-
+        # todo first clean, than build
         cmd = (
             "sync;"
             f"cd {self._remote_workspace};"

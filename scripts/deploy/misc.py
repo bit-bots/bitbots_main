@@ -96,6 +96,15 @@ except FileNotFoundError:
     exit(1)
 
 
+def get_known_targets() -> dict[str, dict[str, str]]:
+    """
+    Returns the known targets.
+
+    :return: The known targets.
+    """
+    return KNOWN_TARGETS
+
+
 class Target:
     hostname: str
     ip: Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]
