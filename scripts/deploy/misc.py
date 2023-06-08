@@ -1,5 +1,6 @@
 from typing import Any, Iterable, Optional
 
+import argparse
 import ipaddress
 import os
 import subprocess
@@ -73,7 +74,7 @@ def hide_output() -> bool|str:
     """
     Returns which output streams to hide.
     stderr is always shown, unless loglevel is below ERR_SUCCESS.
-    stdout is shown if loglevel is DEBUG or lower.
+    stdout is shown if loglevel is below DEBUG.
 
     :return: True if both should be hidden,
         False if both should be shown,
@@ -81,7 +82,7 @@ def hide_output() -> bool|str:
     """
     if LOGLEVEL.CURRENT <= LOGLEVEL.ERR_SUCCESS:
         return True
-    elif LOGLEVEL.CURRENT <= LOGLEVEL.DEBUG:
+    elif LOGLEVEL.CURRENT < LOGLEVEL.DEBUG:
         return "stdout"
     else:
         return False
@@ -179,7 +180,8 @@ class Target:
 
         # If no target was identified, exit
         if identified_target is None:
-            print_err(f"Could not find a known target for the given identifier: {identifier}")
+            print_err(f"Could not find a known target for the given identifier: {identifier}\nChoose from the known targets")
+            print_known_targets()
             exit(1)
 
         print_debug(f"Found {identified_target} as known target")
@@ -257,3 +259,17 @@ def get_connections_from_succeeded(results: GroupResult) -> ThreadingGroup:
     """
     succeeded_connections: Iterable[Connection] = results.succeeded.keys()
     return ThreadingGroup.from_connections(succeeded_connections)
+
+
+class ArgumentParserShowTargets(argparse.ArgumentParser):
+    """
+    This is a normal argparse.AegumentParser, except, that we intercept the error
+    "the following arguments are required" and show the known targets instead
+    """
+    def error(self, message):
+        if "the following arguments are required" in message:
+            print_err(message)
+            print_known_targets()
+            exit(0)
+        else:
+            super.error(message)

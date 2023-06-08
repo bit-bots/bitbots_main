@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Optional
 
 import argparse
 import os
@@ -7,35 +8,32 @@ from misc import *
 from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
 from rich.prompt import Prompt
 
-# Only use working connections
 
 class DeployRobots():
     def __init__(self):
-        self._args = self._parse_arguments()
-        if self._args.show_targets:
-            # TODO does only work if target is given
-            # TODO:show if unknown target is given
-            print_known_targets()
-
-        LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
-
         self._bitbots_meta_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
         print_debug(f"Bit-Bots meta path: {self._bitbots_meta_path}")
         os.chdir(self._bitbots_meta_path)
+
+        # Handle arguments
+        self._args = self._parse_arguments()
+        LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
+        if self._args.show_targets:
+            # TODO: Only use working connections
+            print_known_targets()
 
         if self._args.print_bit_bot:
             print_bit_bot()
 
-        self._sudo_password : Optional[str] = self._optionally_ask_for_sudo_password()
         self._targets = self._parse_targets()
         self._tasks = self._register_tasks()
+        self._sudo_password : Optional[str] = self._optionally_ask_for_and_set_sudo_password()
 
         # Execute tasks on all given targets
         self.run_tasks()
 
     def _parse_arguments(self) -> argparse.Namespace:
-        parser = argparse.ArgumentParser(
+        parser = ArgumentParserShowTargets(
             description="Deploy the Bit-Bots software on a robot. "
             "This script provides 5 tasks: sync, install, configure, build, launch. "
             "By default, configure and launch are disabled. You can disable tasks by using the corresponding --no-* argument."
@@ -125,7 +123,7 @@ class DeployRobots():
             targets.append(target)
         return targets
 
-    def _optionally_ask_for_sudo_password(self) -> Optional[str]:
+    def _optionally_ask_for_and_set_sudo_password(self) -> Optional[str]:
         """
         Asks the user for the sudo password and returns it.
         Asks only, if tasks that require sudo are enabled.
@@ -134,7 +132,9 @@ class DeployRobots():
         """
         tasks_with_sudo = [task for task in self._tasks if task.requires_sudo()]
         if tasks_with_sudo:
-            return Prompt.ask(f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})", password=True)
+            sudo_password =  Prompt.ask(f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})", password=True)
+            for task in tasks_with_sudo:
+                task.set_sudo_password(sudo_password)
 
     def _register_tasks(self) -> list[AbstractTask]:
         """
@@ -154,14 +154,12 @@ class DeployRobots():
 
         if self._args.install:
             tasks.append(Install(
-                self._args.workspace,
-                self._sudo_password
+                self._args.workspace
             ))
 
         if self._args.configure:
             tasks.append(Configure(
-                self._args.workspace,
-                self._sudo_password
+                self._args.workspace
             ))
 
         if self._args.build:

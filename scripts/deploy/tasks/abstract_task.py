@@ -9,7 +9,6 @@ class AbstractTask(abc.ABC):
         """
         Abstract task class that all tasks should inherit from.
         """
-        self._requires_sudo = False
         self._show_status = True
 
     def requires_sudo(self) -> bool:
@@ -18,7 +17,7 @@ class AbstractTask(abc.ABC):
 
         :return: Whether this task requires the sudo password.
         """
-        return self._requires_sudo
+        return False
 
     def run(self, task_prefix: str, connections: Group) -> GroupResult:
         """
@@ -70,3 +69,20 @@ class AbstractTask(abc.ABC):
         :return: The list of hosts that failed.
         """
         return self._resutls_hosts(results.failed)
+
+
+class AbstractTaskWhichRequiresSudo(AbstractTask):
+    def __init__(self) -> None:
+        super().__init__()
+        self._sudo_password: Optional[str] = None
+
+    def requires_sudo(self) -> bool:
+        """
+        Returns whether this task requires the sudo password.
+
+        :return: Whether this task requires the sudo password.
+        """
+        return True
+    
+    def set_sudo_password(self, sudo_password: str) -> None:
+        self._sudo_password = sudo_password

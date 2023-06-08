@@ -3,26 +3,22 @@ import traceback
 from fabric import Group, GroupResult
 from fabric.exceptions import GroupException
 
-from tasks.abstract_task import AbstractTask
+from tasks.abstract_task import AbstractTaskWhichRequiresSudo
 from misc import *
 
-class Install(AbstractTask):
+class Install(AbstractTaskWhichRequiresSudo):
     def __init__(
             self,
-            remote_workspace: str,
-            sudo_password: Optional[str] = ""
+            remote_workspace: str
         ) -> None:
         """
         Task to install and update all dependencies.
 
         :param remote_workspace: Path to the remote workspace to run rosdep in
-        :param sudo_password: The sudo password of the remote user
         """
         super().__init__()
-        self._requires_sudo = True
 
         self._remote_workspace = remote_workspace
-        self._sudo_password = sudo_password
 
         # TODO: also install pip upgrades
         # TODO: sudo apt update && sudo apt upgrade -y
@@ -127,3 +123,4 @@ class Install(AbstractTask):
                     return
 
         # TODO: parallelize and collect results
+        # TODO: Return results

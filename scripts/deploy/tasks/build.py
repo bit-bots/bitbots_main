@@ -76,6 +76,7 @@ class Build(AbstractTask):
             f"chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package_option} --continue-on-error || exit 1;"
             "sync;"
         )
+        # TODO make output colored
 
         print_debug(f"Calling {cmd}")
         results = connections.run(cmd, hide=hide_output())

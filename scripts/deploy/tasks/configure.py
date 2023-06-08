@@ -1,27 +1,23 @@
 from fabric import Group, GroupResult, Result
 from rich.prompt import Prompt
 
-from tasks.abstract_task import AbstractTask
+from tasks.abstract_task import AbstractTaskWhichRequiresSudo
 from misc import *
 
-class Configure(AbstractTask):
+class Configure(AbstractTaskWhichRequiresSudo):
     def __init__(
             self,
-            remote_workspace:
-            str, sudo_password: Optional[str] = ""
+            remote_workspace: str
         ) -> None:
         """
         Configure the game settings and wifi on the given Targets with user input.
 
         :param remote_workspace: Path to the remote workspace to run rosdep in
-        :param sudo_password: The sudo password of the remote user
         """
         super().__init__()
-        self._requires_sudo = True
         self._show_status = False
 
         self._remote_workspace = remote_workspace
-        self._sudo_password = sudo_password
 
     def _run(self, connections: Group) -> GroupResult:
         """
