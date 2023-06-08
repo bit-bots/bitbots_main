@@ -178,9 +178,11 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
       rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list = nh_->list_parameters(
         {ROM_RAM_PARAMETER_NAMESPACE + joint_group}, 0);
       // Iterate over the parameters and set each one
-      for (std::string &register_name: rom_ram_parameter_list.names) {
+      for (std::string &register_parameter_name: rom_ram_parameter_list.names) {
         // Get the value of the parameter
-        int value = nh_->get_parameter(register_name).as_int();
+        int value = nh_->get_parameter(register_parameter_name).as_int();
+        // Get only the name of the register without the namespace
+        auto register_name = register_parameter_name.substr(ROM_RAM_PARAMETER_NAMESPACE.size() + joint_group.size() + 1);
         // Add the parameter to the cache
         group_param_cache[joint_group][register_name] = value;
       }
@@ -227,6 +229,8 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
     }
     sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
   }
+  // Free the memory
+  free(values);
   return sucess;
 }
 
