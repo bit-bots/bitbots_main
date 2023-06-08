@@ -168,7 +168,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               float joint_offset;
               nh_->get_parameter_or("device_info." + name + ".joint_offset", joint_offset, 0.0f);
               std::string group;
-              nh_->get_parameter_or("device_info." + name + ".group", group, "DEFAULT");
+              nh_->get_parameter_or("device_info." + name + ".group", group, std::string("DEFAULT"));
               servos_on_port.push_back(std::make_tuple(id, name, mounting_offset, joint_offset, group));
             } else {
               if (!only_pressure_ && !only_imu_) {

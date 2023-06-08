@@ -94,7 +94,7 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   std::vector<uint8_t> joint_ids_;
   std::vector<double> joint_mounting_offsets_;
   std::vector<double> joint_offsets_;
-  std::vector<std::string> joint_groups; // The group name for each joint
+  std::vector<std::string> joint_groups_; // The group name for each joint
 
   std::vector<double> goal_position_;
   std::vector<double> goal_effort_;

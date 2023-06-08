@@ -134,7 +134,7 @@ bool ServoBusInterface::loadDynamixels() {
 
   // iterate over all servos and save the information
   // the wolfgang hardware interface already loaded them into the driver by pinging
-  for (std::tuple<int, std::string, float, float, uint8_t> &servo: servos_) {
+  for (std::tuple<int, std::string, float, float, std::string> &servo: servos_) {
     int motor_id = std::get<0>(servo);
     joint_ids_.push_back(uint8_t(motor_id));
     std::string joint_name = std::get<1>(servo);
@@ -143,7 +143,7 @@ bool ServoBusInterface::loadDynamixels() {
     joint_mounting_offsets_.push_back(mounting_offset);
     float joint_offset = std::get<3>(servo);
     joint_offsets_.push_back(joint_offset);
-    uint8_t group = std::get<4>(servo);
+    std::string group = std::get<4>(servo);
     joint_groups_.push_back(group);
   }
 
@@ -162,14 +162,14 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
   // Iterate over all groups
   bool sucess = true;
   // Initilize datastructure to hold the parameters temporarily before we write them all at once
-  // Joint id -> Parameter name -> Parameter value
-  std::map<int, std::map<std::string, int>> parameters_to_write; 
-  // Group id -> Parameter name -> Parameter value
-  std::map<std::string, std::map<std::string, int> group_param_cache;
+  // Joint id -> Register name -> Register value
+  std::map<int, std::map<std::string, int>> joint_register_value_map;
+  // Group id -> Register name -> Register value
+  std::map<std::string, std::map<std::string, int>> group_param_cache;
   // Iterate over all joints
   for (size_t num = 0; num < joint_names_.size(); num++) {
     // Get the joint group
-    int joint_group = joint_groups_[num];
+    auto joint_group = joint_groups_[num];
     // Check if we already have the parameters for this group
     if (group_param_cache.find(joint_group) == group_param_cache.end()) {
       // Get the parameters of the group
@@ -185,20 +185,20 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
         group_param_cache[joint_group][register_name] = value;
       }
     }
-    // Add the parameters to the parameters to write
-    parameters_to_write[num] = group_param_cache[joint_group];    
+    // Add the registers to the given joint in the map
+    joint_register_value_map[num] = group_param_cache[joint_group];
   }
 
   // Check that all groups have the same parameters not only the same number of parameters
   // Get all keys of the first group
   std::vector<std::string> parameter_names;
-  for (auto const& [key, value]: group_params) {
+  for (auto const& [key, value]: joint_register_value_map[0]) {
     parameter_names.push_back(key);
   }
   for (auto const& [group_id, group_params]: group_param_cache) {
     // Check that the size is the same
     if (group_params.size() != parameter_names.size()) {
-      RCLCPP_ERROR(nh_->get_logger(), "Group %s has %d parameters but another group has %d parameters", group_id.c_str(), group_params.size(), first_group_keys.size());
+      RCLCPP_ERROR(nh_->get_logger(), "Servo group %s has a differnet number of servo parameters", group_id.c_str());
       sucess = false;
     }
     // Check that all keys are the same
@@ -207,18 +207,18 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
         RCLCPP_ERROR(nh_->get_logger(), "Group %s does not have parameter %s", group_id.c_str(), key.c_str());
         sucess = false;
       }
-    } 
+    }
   }
 
   // Allocate memory for the values in the driver
   int *values = (int *) malloc(joint_names_.size()*sizeof(int));
   // Iterate over parameter names
-  for (auto parameter_name: parameter_names) {
+  for (auto register_name: parameter_names) {
     // Get the value for each joint
     for (size_t num = 0; num < joint_names_.size(); num++) {
       // Get the value from the cache
-      int register_value = parameters_to_write[num][parameter_name];
-      RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on servo %s to %d", parameter_name.c_str(), joint_names_[num].c_str(), register_value);
+      int register_value = joint_register_value_map[num][register_name];
+      RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on servo %s to %d", register_name.c_str(), joint_names_[num].c_str(), register_value);
       // Set the value in the driver
       values[num] = register_value;
     }
