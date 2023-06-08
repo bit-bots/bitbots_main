@@ -9,6 +9,10 @@ from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
 from rich.prompt import Prompt
 
 
+# TODO: Only use working connections
+# TODO: if task arguments (e.g. -s) is given, only do given tasks
+
+
 class DeployRobots():
     def __init__(self):
         self._bitbots_meta_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,7 +23,6 @@ class DeployRobots():
         self._args = self._parse_arguments()
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
         if self._args.show_targets:
-            # TODO: Only use working connections
             print_known_targets()
 
         if self._args.print_bit_bot:
