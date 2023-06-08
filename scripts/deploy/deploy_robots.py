@@ -8,7 +8,6 @@ from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
 from rich.prompt import Prompt
 
 # Only use working connections
-# Game ready option
 
 class DeployRobots():
     def __init__(self):
@@ -48,6 +47,7 @@ class DeployRobots():
             )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
+        parser.add_argument("--game-ready", action="store_true", help="Runs all tasks and cleans before syncing building. Equivalent to -sicbl --clean-src --clean-build")
 
         # Task arguments
         sync_group = parser.add_mutually_exclusive_group()
@@ -82,7 +82,19 @@ class DeployRobots():
         parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
         parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
 
-        return parser.parse_args()
+        args = parser.parse_args()
+
+        # Overwrite settings for game ready
+        if args.game_ready:
+            args.sync = True
+            args.install = True
+            args.configure = True
+            args.build = True
+            args.launch = True
+            args.clean_src = True
+            args.clean_build = True
+
+        return args
 
     def _parse_targets(self) -> list[Target]:
         """
