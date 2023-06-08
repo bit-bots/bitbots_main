@@ -17,6 +17,7 @@ class Configure(AbstractTask):
         :param sudo_password: The sudo password of the remote user
         """
         super().__init__()
+        self._requires_sudo = True
         self._show_status = False
 
         self._remote_workspace = remote_workspace
@@ -58,7 +59,7 @@ class Configure(AbstractTask):
             print_info(f"Configuring game settings on {connection.host}...")
             cmd = f"python3 {self._remote_workspace}/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py"
             print_debug(f"Calling {cmd}")
-            return connection.run(cmd, hide=False)
+            return connection.run(cmd, hide=False, pty=True)
 
         results = GroupResult()
 

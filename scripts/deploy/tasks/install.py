@@ -19,6 +19,7 @@ class Install(AbstractTask):
         :param sudo_password: The sudo password of the remote user
         """
         super().__init__()
+        self._requires_sudo = True
 
         self._remote_workspace = remote_workspace
         self._sudo_password = sudo_password

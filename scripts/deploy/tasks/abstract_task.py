@@ -9,7 +9,16 @@ class AbstractTask(abc.ABC):
         """
         Abstract task class that all tasks should inherit from.
         """
+        self._requires_sudo = False
         self._show_status = True
+
+    def requires_sudo(self) -> bool:
+        """
+        Returns whether this task requires the sudo password.
+
+        :return: Whether this task requires the sudo password.
+        """
+        return self._requires_sudo
 
     def run(self, task_prefix: str, connections: Group) -> GroupResult:
         """

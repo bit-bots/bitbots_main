@@ -13,6 +13,8 @@ class DeployRobots():
     def __init__(self):
         self._args = self._parse_arguments()
         if self._args.show_targets:
+            # TODO does only work if target is given
+            # TODO:show if unknown target is given
             print_known_targets()
 
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
@@ -130,8 +132,9 @@ class DeployRobots():
 
         :return: The sudo password.
         """
-        if self._args.install or self._args.configure:
-            return Prompt.ask("Please enter the sudo password for the remote machine", password=True)
+        tasks_with_sudo = [task for task in self._tasks if task.requires_sudo()]
+        if tasks_with_sudo:
+            return Prompt.ask(f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})", password=True)
 
     def _register_tasks(self) -> list[AbstractTask]:
         """
