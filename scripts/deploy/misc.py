@@ -9,6 +9,7 @@ import yaml
 from fabric import Connection, GroupResult, ThreadingGroup
 from rich.console import Console
 from rich.panel import Panel
+from rich.table import Table
 from rich import box
 
 
@@ -94,6 +95,20 @@ try:
 except FileNotFoundError:
     print_err(f"Could not find known_targets.yaml in {_known_targets_path}")
     exit(1)
+
+def print_known_targets() -> None:
+    table = Table()
+    table.add_column("Hostname")
+    table.add_column("Robot name")
+    table.add_column("IP address")
+
+    known_targets = get_known_targets()
+    table.add_row("ALL", "", "")
+    for hostname, values in known_targets.items():
+        table.add_row(hostname, values.get("robot_name", ""), values.get("ip", ""))
+    print_info(f"You can enter the following values as targets:")
+    CONSOLE.print(table)
+    exit(0)
 
 
 def get_known_targets() -> dict[str, dict[str, str]]:

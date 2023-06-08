@@ -13,21 +13,8 @@ from rich.prompt import Prompt
 class DeployRobots():
     def __init__(self):
         self._args = self._parse_arguments()
-        # todo move this to misc
         if self._args.show_targets:
-            from rich.table import Table
-            table = Table()
-            table.add_column("Hostname")
-            table.add_column("Robot name")
-            table.add_column("IP address")
-
-            known_targets = get_known_targets()
-            table.add_row("ALL", "", "")
-            for hostname, values in known_targets.items():
-                table.add_row(hostname, values.get("robot_name", ""), values.get("ip", ""))
-            print_info(f"You can enter the following values as targets:")
-            CONSOLE.print(table)
-            exit(0)
+            print_known_targets()
 
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
 
