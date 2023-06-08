@@ -15,45 +15,31 @@ class AbstractHeadModeElement(AbstractActionElement):
 class LookAtBall(AbstractHeadModeElement):
     """Search for Ball and track it if found"""
     def perform(self):
-        self.look_at_ball()
+        ball_position = self.blackboard.world_model.get_best_ball_position()
+        server_running = self.blackboard.lookat_action_client.wait_for_server(timeout_sec=1.0)
+        if not server_running:
+            while not server_running and rclpy.ok():
+                self.blackboard.node.get_logger().warn(
+                                      "Lookat Action Server not running! Lookat cannot work without lookat server!"
+                                      "Will now wait until server is accessible!",
+                                      throttle_duration_sec=10.0)
+                server_running = self.blackboard.lookat_action_client.wait_for_server(timeout_sec=1)
+            if server_running:
+                self.blackboard.node.get_logger().warn("Lookat server now running, 'look_at_ball' action will go on.")
+            else:
+                self.blackboard.node.get_logger().warn("Lookat server did not start.")
+
+        goal = LookAt.Goal()
+        goal.target_point = ball_position
+        self.blackboard.lookat_action_client.send_goal(goal) # TODO: when to use send_goal_async?
         # now we pop and that means that the action is contined until its done? Or do we need to continuosly send it?
+        return self.pop()            
+
+class SearchBall(AbstractHeadModeElement):
+    """Look for ball"""
+    def perform(self):
+        self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
         return self.pop()
-
-    
-    def get_ball_position(self):
-        return self.blackboard.world_model.get_best_ball_position()
-    
-    def ball_last_seen(self):
-        ball_last_seen = self.blackboard.world_model.ball_last_seen()
-        if ball_last_seen != Time(seconds=0, clock_type=ClockType.ROS_TIME) and 				self.blackboard.node.get_clock().now() - ball_last_seen < self.ball_lost_time:
-            return 'YES'
-        return 'NO'
-    
-    def look_at_ball(self):
-        last_seen = self.ball_last_seen()
-        if last_seen == 'YES':
-            ball_position = self.get_ball_position()
-            server_running = self.blackboard.lookat_action_client.wait_for_server(timeout_sec=1.0)
-            if not server_running:
-                while not server_running and rclpy.ok():
-                    self.blackboard.node.get_logger().warn(
-                                          "Lookat Action Server not running! Lookat cannot work without lookat server!"
-                                          "Will now wait until server is accessible!",
-                                          throttle_duration_sec=10.0)
-                    server_running = self.blackboard.lookat_action_client.wait_for_server(timeout_sec=1)
-                if server_running:
-                    self.blackboard.node.get_logger().warn("Lookat server now running, 'look_at_ball' action will go on.")
-                else:
-                    self.blackboard.node.get_logger().warn("Lookat server did not start.")
-                    return False
-            goal = LookAt.Goal()
-            goal.target_point = ball_position
-            self.blackboard.lookat_action_client.send_goal(goal) # TODO: when to use send_goal_async?
-            return True
-        else:
-            self.blackboard.blackboard.set_head_duty(HeadMode.BALL_MODE)
-            
-
 
 class LookAtFieldFeatures(AbstractHeadModeElement):
     """Look generally for all features on the field (ball, goals, corners, center point)"""
