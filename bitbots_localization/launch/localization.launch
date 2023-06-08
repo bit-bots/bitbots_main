@@ -2,7 +2,7 @@
     <!-- define parameters -->
     <arg name="tf_prefix" default=""/>
     <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
-    <arg unless="$(var sim)" name="fieldname" default="spl" description="Loads field settings (feldraum, webots, gazebo, bangkok, spl)." />
+    <arg unless="$(var sim)" name="fieldname" default="feldraum" description="Loads field settings (feldraum, webots, gazebo, bangkok, spl)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (feldraum, webots, gazebo, bangkok)." />
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 7"/>
