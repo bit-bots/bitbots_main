@@ -9,7 +9,6 @@
 #include <rclcpp/clock.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp/logger.hpp>
-#include <rclcpp/executors/events_executor/events_executor.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -566,7 +565,6 @@ action_running_ = false;
   }
 
   void perform_search_pattern() {
-    RCLCPP_INFO(node_->get_logger(), "search pattern");
     if (pattern_.size() == 0) {
       return;
     }
