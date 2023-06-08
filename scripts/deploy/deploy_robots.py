@@ -93,6 +93,7 @@ class DeployRobots():
             args.launch = True
             args.clean_src = True
             args.clean_build = True
+            args.print_bit_bots = True
 
         return args
 

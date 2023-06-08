@@ -163,9 +163,12 @@ class Target:
             # Is the identifier a known IP address?
             identifier_ip = None
             try:
+                print_debug(f"Checking if {identifier} is a IP address")
                 identifier_ip = ipaddress.ip_address(identifier)
             except ValueError:
-                print_debug(f"Checking if {identifier} is a IP address")
+                print_debug(f"Entered target is not a IP-address")
+            # We accept every IP address, but if we later find an associated hostname, we use that
+            identified_target = identifier_ip
 
             if "ip" in values:
                 try:
