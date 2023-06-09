@@ -169,6 +169,40 @@ move_head:
         type: double,
         default_value: 0.0
       }
+    
+  look_forward:
+    tilt_speed: {
+        type: double,
+        default_value: 3.0
+      }
+    pan_speed: {
+        type: double,
+        default_value: 3.0
+      }
+    pan_max: {
+        type: double_array,
+        default_value: [ 0.0, 0.0 ],
+        description: "Maximum pan values for the search pattern (in degrees)",
+        validation: {
+          fixed_size<>: 2
+        }
+    }
+    tilt_max: {
+        type: double_array,
+        default_value: [ -7.0, -7.0 ],
+        description: "Maximum tilt values for the search pattern (in degrees)",
+        validation: {
+          fixed_size<>: 2
+        }
+    }
+    scan_lines: {
+        type: int,
+        default_value: 2,
+      }
+    reduce_last_scanline: {
+        type: double,
+        default_value: 0.0
+      }
 
   position_reached_threshold: {
     type: double,

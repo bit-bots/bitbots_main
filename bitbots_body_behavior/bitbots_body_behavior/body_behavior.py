@@ -27,7 +27,7 @@ from std_msgs.msg import Bool, Empty, Float32
 from tf2_geometry_msgs import PoseStamped
 from visualization_msgs.msg import Marker
 
-from bitbots_msgs.action import Dynup
+from bitbots_msgs.action import Dynup, LookAt
 from dynamic_stack_decider.dsd import DSD
 from humanoid_league_msgs.msg import (GameState, HeadMode, RobotControlState,
                                       Strategy, TeamData)
@@ -63,6 +63,8 @@ class BodyDSD:
 
         self.dsd.load_behavior(os.path.join(dirname, "main.dsd"))
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
+        
+        self.dsd.blackboard.lookat_action_client = ActionClient(node, LookAt, 'look_at_goal')
 
         node.create_subscription(
             PoseWithCovarianceStamped,

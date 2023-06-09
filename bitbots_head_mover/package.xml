@@ -24,7 +24,6 @@
 <depend>backward_ros</depend>
   <depend>bio_ik</depend>
   <depend>bio_ik_msgs</depend>
-  <depend>irobot_events_executor</depend>
 
 
   <test_depend>ament_lint_auto</test_depend>

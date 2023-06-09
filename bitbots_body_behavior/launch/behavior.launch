@@ -5,7 +5,7 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
-    <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch">
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
 </launch>
