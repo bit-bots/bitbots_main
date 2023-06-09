@@ -2,30 +2,34 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>bitbots_head_mover</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="v.bartel.vb@gmail.com">valerie</maintainer>
-  <license>TODO: License declaration</license>
+  <version>1.0.0</version>
+  <description> The bitbots_head_mover handles the head movement. 
+      The body behavior sends commands for different head movement
+      patterns. It can also use an action to look at a specific
+      point on the field, e.g. to track the ball.</description>
+  <maintainer email="valerie.bartel@uni-hamburg.de">Valerie Bartel</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-<depend>std_msgs</depend>
-<depend>bitbots_msgs</depend>
-<depend>sensor_msgs</depend>
-<depend>tf2_ros</depend>
-<depend>humanoid_league_msgs</depend>
+  <depend>std_msgs</depend> 
+  <depend>bitbots_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>humanoid_league_msgs</depend>
   <depend>moveit_core</depend>
   <depend>moveit_ros</depend>
   <depend>moveit_ros_planning</depend>
   <depend>moveit_ros_planning_interface</depend>
-<depend>generate_parameter_library</depend>
-<depend>tf2_geometry_msgs</depend>
-<depend>backward_ros</depend>
-  <depend>bio_ik</depend>
-  <depend>bio_ik_msgs</depend>
-  <depend>irobot_events_executor</depend>
-
+  <depend>generate_parameter_library</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>backward_ros</depend>
+  <depend>bio_ik</depend> 
+  <depend>bio_ik_msgs</depend>  
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
