@@ -3,39 +3,23 @@ Testing in Simulation
 
 Test Behavior
 -------------
-- Test the behavior in the visualization:
-    #. To start RViz, markers and dependencies:
-        .. code-block:: bash
-
-            roslaunch humanoid_league_interactive_marker rviz_behavior_test.launch
-
-    #. To start body and head behavior:
-        .. code-block:: bash
-
-            roslaunch bitbots_body_behavior behavior.launch
-
-    #. To simulate the game controller:
-        .. code-block:: bash
-
-            rosrun humanoid_league_game_controller sim_gamestate.py
-
-- Test the behavior independent from vision or walking:
+- Test the behavior independent from vision:
     .. code-block:: bash
 
-        roslaunch bitbots_bringup simulator_teamplayer.launch use_fake_walk:=true use_fake_vision:=true
-
-- Test behavior with vision:
-    .. code-block:: bash
-
-        roslaunch bitbots_bringup simulator_teamplayer.launch use_fake_walk:=true
+        ros2 launch bitbots_bringup simulator_teamplayer.launch
 
 
 Test Motion
 -----------
 .. code-block:: bash
 
-    roslaunch bitbots_bringup simulator.launch
-    roslaunch bitbots_bringup motion.launch sim:=true
+    ros2 launch wolfgang_webots_sim simulation.launch
+    ros2 launch bitbots_bringup motion_standalone.launch sim:=true
+
+To control walking of the roboter teleop needs to be startet  as well:
+.. code-block:: bash
+
+    ros2 run bitbots_teleop teleop_keyboard.py
 
 
 Test Imu in RViz
