@@ -14,7 +14,7 @@ from std_msgs.msg import Bool
 from sensor_msgs.msg import Imu, JointState
 from diagnostic_msgs.msg import DiagnosticArray
 
-from humanoid_league_msgs.msg import Animation as  RobotControlState, Audio
+from humanoid_league_msgs.msg import RobotControlState, Audio
 from humanoid_league_msgs.action import PlayAnimation
 from humanoid_league_speaker.speaker import speak
 from bitbots_msgs.msg import FootPressure
