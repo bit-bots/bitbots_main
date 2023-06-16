@@ -13,51 +13,52 @@
 #PerformKick
 @ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @WalkInPlace + duration:1 + r:false
 
-#KickBallWithAvoidance
+#Dribble
+@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
+
+#DribbleWithAvoidance
 $AvoidBall
     NO --> $BallClose + distance:%body.ball_reapproach_dist + angle:%body.ball_reapproach_angle
         YES --> $BallKickArea
-            NEAR --> #PerformKick
+            NEAR --> #Dribble
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFront, @GoToBall + target:map_goal
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map_goal + blocking:false + distance:%body.ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + thres:%body.ball_far_approach_position_thresh
         YES --> @AvoidBallInactive
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map_goal + distance:%body.ball_far_approach_dist
 
-#GoAndKickBallMapGoal
-$DribbleOrKick
-    DRIBBLE --> @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
-    KICK --> $BallKickArea
-        NEAR --> $AlignedToGoal
-            YES --> #PerformKick
-            NO --> #KickBallWithAvoidance
-        ELSE --> #KickBallWithAvoidance
+#GoAndDribbleMapGoal
+$BallKickArea
+    NEAR --> $AlignedToGoal
+        YES --> #Dribble
+        NO --> #DribbleWithAvoidance
+    ELSE --> #DribbleWithAvoidance
 
-#GoAndKickBallDetectionGoal
+#GoAndDribbleDetectionGoal
 $AlignedToPathPlanningGoal
     YES --> $BallKickArea
-        NEAR --> @ChangeAction + action:kicking + r:false, @Stand + duration:0.1 + r:false, @LookForward + r:false, @KickBallDynamic + r:false
+        NEAR --> #Dribble
         FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
     NO --> @ChangeAction + action:going_to_ball, @GoToBall + target:detection_goal
 
-#GoAndKickBallAway
+#GoAndDribbleAway
 $BallKickArea
-    NEAR --> @ChangeAction + action:kicking + r:false, @Stand + duration:0.1 + r:false, @LookForward + r:false, @KickBallDynamic + r:false
+    NEAR --> #Dribble
     FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
 
 #NoLocalizationPlayerBehavior
 $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
-            YES --> #GoAndKickBallDetectionGoal
-            NO --> #GoAndKickBallAway
+            YES --> #GoAndDribbleDetectionGoal
+            NO --> #GoAndDribbleAway
         NO --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
     NO --> #SearchBall
 
 #NoLocalizationGoalieBehavior
 $BallSeen
     YES --> $BallClose
-        YES --> #GoAndKickBallAway
+        YES --> #GoAndDribbleAway
         NO --> @ChangeAction + action:waiting, @LookAtBall, @Stand
     NO --> #SearchBall
 
@@ -81,13 +82,13 @@ $ClosestToBall + use_time_to_ball:true
     YES --> $BallKickArea // TODO: refactor dribble or kick subtree
         NEAR --> $AlignedToGoal
             YES --> #PerformKick
-            NO --> #KickBallWithAvoidance
-        ELSE --> #KickBallWithAvoidance
+            NO --> #DribbleWithAvoidance
+        ELSE --> #DribbleWithAvoidance
 
 #StrikerRole
 $GoalieHandlingBall
     YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
-    NO --> #GoAndKickBallMapGoal
+    NO --> #GoAndDribbleMapGoal
 
 #DefensePositioning
 @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
@@ -95,7 +96,7 @@ $GoalieHandlingBall
 #DefenderRole
 $BallInOwnPercent + p:40
     YES --> $ClosestToBall
-        YES --> #GoAndKickBallMapGoal
+        YES --> #GoAndDribbleMapGoal
         NO --> #DefensePositioning
     NO --> #DefensePositioning
 
