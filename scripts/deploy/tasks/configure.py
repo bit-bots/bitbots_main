@@ -1,3 +1,5 @@
+import concurrent.futures
+
 from fabric import Group, GroupResult, Result
 from rich.prompt import Prompt
 
@@ -59,9 +61,11 @@ class Configure(AbstractTaskWhichRequiresSudo):
             results = connection.run(cmd, hide=False, pty=True)  # TODO: Does this need a try block? Which exceptions can occur?
             return results
 
+        # Collect results of the group
         results = GroupResult()
 
         # Iterate over all connections and configure them
+        # NOTE: This is not parallelized because for each connection, user input is required
         for connection in connections:
             results[connection] = _configure_single(connection)
 
@@ -159,8 +163,6 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     print_err(f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}")
                 return set_priority_result
 
-        results = GroupResult()
-
         # Get wifi UUID to enable from user
         # This happens on the first connection in the group
         # UUIDs are the same on all connections
@@ -179,13 +181,25 @@ class Configure(AbstractTaskWhichRequiresSudo):
         answered_connection_id = Prompt.ask(query, console=CONSOLE)
         print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
-        # Iterate over all connections and configure them
-        with CONSOLE.status("[bold blue] Configuring wifi..."):
-            for connection in connections:
-                results[connection] = _configure_single(connection, answered_connection_id)
+        # User input is done, we can show a status message again
+        with CONSOLE.status("[bold blue] Configuring wifi...", spinner="point"):
 
-        if results.succeeded:
-            print_info(f"Wifi configured on the following hosts: {self._succeeded_hosts(results)}")
-        if results.failed:
-            print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
+            # Collect results
+            results = GroupResult()
+
+            # Configure wifi on all connections in parallel
+            # Create a ThreadPoolExecutor to run the _configure_single function in parallel
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(connections)) as executor:
+                # Create a future for each connection
+                futures = [executor.submit(_configure_single, connection, answered_connection_id) for connection in connections]
+
+            # Wait for all futures to complete
+            for future in futures:
+                result: Result = future.result()  # type: ignore
+                results[result.connection] = result
+
+            if results.succeeded:
+                print_info(f"Wifi configured on the following hosts: {self._succeeded_hosts(results)}")
+            if results.failed:
+                print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
         return results

@@ -1,4 +1,4 @@
-import concurrent. futures
+import concurrent.futures
 
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException

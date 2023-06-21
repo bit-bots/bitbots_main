@@ -1,5 +1,5 @@
 import os
-import concurrent. futures
+import concurrent.futures
 
 import yaml
 from fabric import Group, GroupResult, Result
@@ -188,8 +188,9 @@ class Sync(AbstractTask):
             futures = [executor.submit(_sync_single, connection) for connection in connections]
 
         # Wait for all futures to complete and collect the results
-        for connection, future in zip(connections, futures):
-            results[connection] = future.result()
+        for future in futures:
+            result: Result = future.result()  # type: ignore
+            results[result.connection] = result
 
         if results.succeeded:
             print_debug(f"Synchronization succeeded for hosts {self._succeeded_hosts(results)}")
