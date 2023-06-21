@@ -1,6 +1,7 @@
 import re
 
 from fabric import Group, GroupResult, Result
+from fabric.exceptions import GroupException
 
 from tasks.abstract_task import AbstractTask
 from misc import *
@@ -54,16 +55,17 @@ class Launch(AbstractTask):
         """
         print_debug(f"Checking if ROS 2 nodes are already running")
         cmd = 'ros2 node list -c'
+
         print_debug(f"Calling {cmd}")
-        node_list_results = connections.run(cmd, hide=hide_output())
-
-        if node_list_results.succeeded:
+        try:
+            node_list_results = connections.run(cmd, hide=hide_output())
             print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(node_list_results)}")
-        if node_list_results.failed:
-            print_err(f"Calling {cmd} failed on {self._failed_hosts(node_list_results)}")
-
-        if not node_list_results.succeeded:
-            return node_list_results
+        except GroupException as e:
+            print_err(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
+            if not e.result.succeeded:  # TODO: Does run immediately fail if one host fails? Do we even get here?
+                return e.result
+            else:
+                node_list_results = e.result
 
         # Check if output was ^0$ (zero for no nodes running) for all remote machines
         # Create new group result with success if no nodes are running
@@ -100,16 +102,17 @@ class Launch(AbstractTask):
         # Else, the tmux ls command would fail.
         # The tmux ls command outputs names of all running tmux sessions.
         cmd = "test -S /tmp/tmux-1000/default && tmux ls -F '#S' ; true"
+
         print_debug(f"Calling: {cmd}")
-        tmux_ls_results = connections.run(cmd, hide=hide_output())
-
-        if tmux_ls_results.failed:
-            print_err(f"Calling {cmd} failed on {self._failed_hosts(tmux_ls_results)}")
-        if tmux_ls_results.succeeded:
+        try:
+            tmux_ls_results = connections.run(cmd, hide=hide_output())
             print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(tmux_ls_results)}")
-
-        if not tmux_ls_results.succeeded:
-            return tmux_ls_results
+        except GroupException as e:
+            print_err(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
+            if not e.result.succeeded:
+                return e.result
+            else:
+                tmux_ls_results = e.result
 
         # Check if the tmux session name can be found in the output of tmux ls
         # If so, the tmux session is already running
@@ -143,15 +146,16 @@ class Launch(AbstractTask):
         print_debug(f"Launching teamplayer")
         # Create tmux session
         cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'ros2 launch bitbots_bringup teamplayer.launch' Enter"
-        print_debug(f"Calling {cmd}")
-        results = connections.run(cmd, hide=hide_output())
 
-        if results.succeeded:
+        print_debug(f"Calling {cmd}")
+        try:
+            results = connections.run(cmd, hide=hide_output())
             # Print commands to connect to teamplayer tmux session
             help_cmds = ""
             for connection in results.succeeded:
                 help_cmds += f"{connection.host} : [bold]ssh {connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'[/bold]\n"
             print_success(f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}")
-        if results.failed:
-            print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(results)}")
+        except GroupException as e:
+            print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(e.result)}")
+            return e.result
         return results

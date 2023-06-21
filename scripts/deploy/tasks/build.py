@@ -1,4 +1,5 @@
 from fabric import Group, GroupResult
+from fabric.exceptions import GroupException
 
 from tasks.abstract_task import AbstractTask
 from misc import *
@@ -42,6 +43,12 @@ class Build(AbstractTask):
 
 
     def _clean(self, connections: Group) -> GroupResult:
+        """Clean the source directory before building.
+
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
+        # TODO: Cleans not completely? rm rf instead?
         if self._package:
             print_debug(f"Cleaning the following packages before building: {self._package}")
             cmd_clean = f"colcon clean packages -y --packages-select {self._package}"
@@ -50,16 +57,22 @@ class Build(AbstractTask):
             cmd_clean = 'colcon clean workspace -y'
 
         print_debug(f"Calling {cmd_clean}")
-        results = connections.run(cmd_clean, hide=hide_output())
-
-        if results.succeeded:
+        try:
+            results = connections.run(cmd_clean, hide=hide_output())
             print_debug(f"Clean succeeded on the following hosts: {self._succeeded_hosts(results)}")
-        if results.failed:
-            for connection, result in results.failed.items():
+        except GroupException as e:
+            for connection, result in e.result.failed.items():
                 print_err(f"Clean on {connection.host} failed with the following errors: {result.stderr}")
-        return results  # TODO: Cleans not completely? rm rf instead?
+            return e.result
+        return results
 
     def _build(self, connections: Group) -> GroupResult:
+        """
+        Build the source code using colcon in the remote workspace.
+
+        :param connections: The connections to remote servers.
+        :return: The results of the task.
+        """
         if self._package:
             print_debug(f"Building the following packages: {self._package}")
             package_option = f"--packages-up-to {self._package}"
@@ -78,11 +91,11 @@ class Build(AbstractTask):
         # TODO: check if only single core?!?
 
         print_debug(f"Calling {cmd}")
-        results = connections.run(cmd, hide=hide_output())
-
-        if results.succeeded:
+        try:
+            results = connections.run(cmd, hide=hide_output())
             print_debug(f"Build succeeded on the following hosts: {self._succeeded_hosts(results)}")
-        if results.failed:
-            for connection, result in results.failed.items():
+        except GroupException as e:
+            for connection, result in e.result.failed.items():
                 print_err(f"Build on {connection.host} failed with the following errors: {result.stderr}")
+            return e.result
         return results

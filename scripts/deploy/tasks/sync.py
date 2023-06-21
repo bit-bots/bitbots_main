@@ -3,6 +3,7 @@ import concurrent.futures
 
 import yaml
 from fabric import Group, GroupResult, Result
+from fabric.exceptions import GroupException
 
 from tasks.abstract_task import AbstractTask
 from misc import *
@@ -106,23 +107,31 @@ class Sync(AbstractTask):
         # First, remove the source directory
         print_debug(f"Removing source directory: '{self._remote_src_path}'")
         rm_cmd = f"rm -rf {self._remote_src_path}"
+
         print_debug(f"Calling '{rm_cmd}'")
-        rm_result = connections.run(rm_cmd, hide=hide_output())
-        if rm_result.succeeded:
+        try:
+            rm_result = connections.run(rm_cmd, hide=hide_output())
             print_debug(f"Cleaning of source directory succeeded for hosts {self._succeeded_hosts(rm_result)}")
-        if rm_result.failed:
-            print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(rm_result)}")
-            return rm_result
+        except GroupException as e:
+            print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(e.result)}")
+            if not e.result.succeeded:  # TODO: Does run immediately fail if one host fails? Do we even get here?
+                return e.result
+            rm_result = e.result
+
+        # Only continue on succeeded hosts
+        connections = get_connections_from_succeeded(rm_result)
 
         # Second, create an empty directory again
         print_debug(f"Creating source directory: '{self._remote_src_path}'")
         mkdir_cmd = f"mkdir -p {self._remote_src_path}"
+
         print_debug(f"Calling '{mkdir_cmd}'")
-        mkdir_result = connections.run(mkdir_cmd, hide=hide_output())
-        if mkdir_result.succeeded:
+        try:
+            mkdir_result = connections.run(mkdir_cmd, hide=hide_output())
             print_debug(f"Recreation of source directory succeeded for hosts {self._succeeded_hosts(mkdir_result)}")
-        if mkdir_result.failed:
-            print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(mkdir_result)}")
+        except GroupException as e:
+            print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(e.result)}")
+            return e.result
         return mkdir_result
 
     def _rsync(self, connections: Group) -> GroupResult:

@@ -1,5 +1,3 @@
-import traceback
-
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 

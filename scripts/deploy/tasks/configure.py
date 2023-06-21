@@ -54,8 +54,10 @@ class Configure(AbstractTaskWhichRequiresSudo):
             """
             print_info(f"Configuring game settings on {connection.host}...")
             cmd = f"python3 {self._remote_workspace}/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py"
+
             print_debug(f"Calling {cmd}")
-            return connection.run(cmd, hide=False, pty=True)
+            results = connection.run(cmd, hide=False, pty=True)  # TODO: Does this need a try block? Which exceptions can occur?
+            return results
 
         results = GroupResult()
 
@@ -99,7 +101,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                 # Get all wifi connection ids
                 get_ids_cmd = "nmcli --fields UUID,TYPE connection show | grep wifi | awk '{print $1}'"
                 print_debug(f"Calling {get_ids_cmd} on {connection.host}")
-                get_ids_result = connection.run(get_ids_cmd, hide=hide_output())
+                get_ids_result = connection.run(get_ids_cmd, hide=hide_output())  # TODO: Does this need a try block? Which exceptions can occur?
                 if get_ids_result.failed:
                     print_err(f"Could not get connection ids on {connection.host}")
                     return get_ids_result
@@ -116,7 +118,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     print_debug(f"Disabling autoconnect {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect FALSE"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    disable_autoconnect_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
+                    disable_autoconnect_result = connection.sudo(cmd, hide=True, password=self._sudo_password)  # TODO: Does this need a try block? Which exceptions can occur?
                     if disable_autoconnect_result.failed:
                         print_err(f"Could not disable autoconnect for connection {connection_id} on {connection.host}")
                         return disable_autoconnect_result
@@ -125,7 +127,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     print_debug(f"De-prioritizing connection {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect-priority 0"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    de_prioritize_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
+                    de_prioritize_result = connection.sudo(cmd, hide=True, password=self._sudo_password)  # TODO: Does this need a try block? Which exceptions can occur?
                     if de_prioritize_result.failed:
                         print_err(f"Could not de-prioritize connection {connection_id} on {connection.host}")
                         return de_prioritize_result
@@ -134,7 +136,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                 print_debug(f"Enabling connection {answered_connection_id} on {connection.host}")
                 cmd = f"nmcli connection up {answered_connection_id}"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                enable_connection_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
+                enable_connection_result = connection.sudo(cmd, hide=True, password=self._sudo_password)  # TODO: Does this need a try block? Which exceptions can occur?
                 if enable_connection_result.failed:
                     print_err(f"Could not enable connection {answered_connection_id} on {connection.host}")
                     return enable_connection_result
@@ -143,7 +145,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                 print_debug(f"Enabling autoconnect for connection {answered_connection_id} on {connection.host}")
                 cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect TRUE"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                enable_autoconnect_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
+                enable_autoconnect_result = connection.sudo(cmd, hide=True, password=self._sudo_password)  # TODO: Does this need a try block? Which exceptions can occur?
                 if enable_autoconnect_result.failed:
                     print_err(f"Could not enable autoconnect for connection {answered_connection_id} on {connection.host}")
                     return enable_autoconnect_result
@@ -152,7 +154,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                 print_debug(f"Setting priority of connection {answered_connection_id} to 100 on {connection.host}")
                 cmd = f"nmcli connection modify {answered_connection_id} connection.autoconnect-priority 100"
                 print_debug(f"Calling {cmd} on {connection.host}")
-                set_priority_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
+                set_priority_result = connection.sudo(cmd, hide=True, password=self._sudo_password)  # TODO: Does this need a try block? Which exceptions can occur?
                 if set_priority_result.failed:
                     print_err(f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}")
                 return set_priority_result
@@ -167,7 +169,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
         # Show available wifi connections
         show_cmd = 'nmcli connection show | grep -E "^(NAME|.*wifi)"'  # Show all wifi connections and table header
         print_debug(f"Calling {show_cmd} on {connection.host}")
-        show_result = connection.run(show_cmd, hide=False)
+        show_result = connection.run(show_cmd, hide=False)  # TODO: Does this need a try block? Which exceptions can occur?
         if show_result.failed:
             print_err(f"Could not show connections on {connection.host}")
             return show_result
