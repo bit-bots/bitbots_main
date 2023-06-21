@@ -204,22 +204,40 @@ class Target:
         return self.hostname if self.hostname is not None else str(self.ip)
 
 
-def _get_connections(
-    hosts: list[str],
+def _parse_targets(input_targets: str) -> list[Target]:
+    """
+    Parse target input into usable Targets.
+
+    :param input_targets: The input string of targets as a comma separated string of either hostnames, robot names or IPs. 'ALL' is a valid argument and will be expanded to all known targets.
+    :return: List of Targets
+    """
+    targets: list[Target] = []
+    for input_target in input_targets.split(","):
+        try:
+            target = Target(input_target)
+        except ValueError:
+            print_err(f"Could not determine hostname or IP from input: '{input_target}'")
+            exit(1)
+        targets.append(target)
+    return targets
+
+
+def _get_connections_from_targets(
+    targets: list[Target],
     user: str,
     connection_timeout: Optional[int] = 10
     ) -> ThreadingGroup:
     """
-    Helper function for getting connections from hosts using the given username.
-    Checks the new connections for success and returns them.
+    Get connections to the given Targets using the 'bitbots' username.
 
-    :param hosts: The hosts to connect to
+    :param targets: The Targets to connect to
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
+    :return: The connections
     """
     try:
         connections = ThreadingGroup(
-            *hosts,
+            *[str(target) for target in targets],
             user=user,
             connect_timeout=connection_timeout
         )
@@ -233,25 +251,68 @@ def _get_connections(
     return connections
 
 
-def get_connections_from_targets(
-    targets: list[Target],
+def _get_connections_from_all_known_targets(
     user: str,
     connection_timeout: Optional[int] = 10
-) -> ThreadingGroup:
+    ) -> ThreadingGroup:
     """
-    Get connections to the given Targets using the 'bitbots' username.
+    Get connections to all known targets using the given username.
+    NOTE: This still continues if not all connections could be established.
 
-    :param targets: The Targets to connect to
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections
     """
-    return _get_connections(
-        [str(target) for target in targets],
-        user,
-        connection_timeout
-    )
+    # Get hosts from all known targets
+    hosts: list[str] = [str(Target(hostname)) for hostname in KNOWN_TARGETS.keys()]
 
+    # Create connections
+    connections: list[Connection] = [Connection(host, user=user, connect_timeout=connection_timeout) for host in hosts]
+
+    # Create group from connections
+    group = ThreadingGroup.from_connections(connections)
+
+    # Connect to all hosts
+    for connection in group:
+        try:
+            print_debug(f"Connecting to {connection.host}...")
+            connection.open()
+            print_debug(f"Connected to {connection.host}...")
+        except Exception as e:
+            print_err(f"Could not establish connection to {connection.host}. Ignoring this host. Error: {e}")
+            group.remove(connection)
+    if len(group) == 0:
+        print_err("Could not establish any connection to the known targets. Exiting...")
+        exit(1)
+    return group
+
+
+def get_connections_from_targets(
+    input_targets: str,
+    user: str,
+    connection_timeout: Optional[int] = 10
+    ) -> ThreadingGroup:
+    """
+    First parse the input targets, then get connections to the targets.
+    NOTE: If input_targets is 'ALL', all known targets will be used and failed connections will be ignored.
+
+    :param input_targets: The input string of targets as a comma separated string of either hostnames, robot names or IPs. 'ALL' is a valid argument and will be expanded to all known targets.
+    :param user: The username to connect with
+    :param connection_timeout: Timeout for establishing the connection
+    :return: The connections to the targets
+    """
+    if input_targets == "ALL":
+        print_info(f"Connecting to all known Targets: {KNOWN_TARGETS.keys()}")
+        return _get_connections_from_all_known_targets(
+            user=user,
+            connection_timeout=connection_timeout
+        )
+
+    return _get_connections_from_targets(
+        targets=_parse_targets(input_targets),
+        user=user,
+        connection_timeout=connection_timeout
+    )
 
 def get_connections_from_succeeded(results: GroupResult) -> ThreadingGroup:
     """

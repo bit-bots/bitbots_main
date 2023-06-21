@@ -9,7 +9,6 @@ from tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure,
 from rich.prompt import Prompt
 
 
-# TODO: Only use working connections for target all
 # TODO: If task arguments (e.g. -s) is given, only do given tasks. Do we wanna do this?
 
 
@@ -28,7 +27,6 @@ class DeployRobots():
         if self._args.print_bit_bot:
             print_bit_bot()
 
-        self._targets = self._parse_targets()
         self._tasks = self._register_tasks()
         self._sudo_password : Optional[str] = self._optionally_ask_for_and_set_sudo_password()
 
@@ -105,33 +103,6 @@ class DeployRobots():
 
         return args
 
-    def _parse_targets(self) -> list[Target]:
-        """
-        Parse target argument into usable Targets.
-        The argument is a comma separated string of either hostnames, robot names or IPs.
-        'ALL' is a valid argument and will be expanded to all known targets.
-
-        :return: List of Targets
-        """
-        input_targets = self._args.targets
-        targets: list[Target] = []
-
-        if input_targets == "ALL":
-            all_known_hostnames = KNOWN_TARGETS.keys()
-            print_info(f"Expanding 'ALL' to all known Targets: {all_known_hostnames}")
-            for hostname in all_known_hostnames:
-                targets.append(Target(hostname))
-            return targets
-
-        for input_target in input_targets.split(","):
-            try:
-                target = Target(input_target)
-            except ValueError:
-                print_err(f"Could not determine hostname or IP from input: '{input_target}'")
-                exit(1)
-            targets.append(target)
-        return targets
-
     def _optionally_ask_for_and_set_sudo_password(self) -> Optional[str]:
         """
         Asks the user for the sudo password and returns it.
@@ -193,7 +164,7 @@ class DeployRobots():
         # Get connection
         with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to targets via SSH", spinner="point"):
             connections = get_connections_from_targets(
-                self._targets,
+                self._args.targets,
                 self._args.user,
                 self._args.connection_timeout
             )
