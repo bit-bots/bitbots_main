@@ -10,7 +10,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
             remote_workspace: str
         ) -> None:
         """
-        Configure the game settings and wifi on the given Targets with user input.
+        Configure the game settings and WiFi on the given Targets with user input.
 
         :param remote_workspace: Path to the remote workspace to run rosdep in
         """
@@ -21,7 +21,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
 
     def _run(self, connections: Group) -> GroupResult:
         """
-        Configure the game settings and wifi on the given Targets with user input.
+        Configure the game settings and WiFi on the given Targets with user input.
 
         :param connections: The connections to remote servers.
         :return: The results of the task.
@@ -31,7 +31,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
         if not game_settings_results.succeeded:
             return game_settings_results
 
-        # Then, configure the wifi
+        # Then, configure the WiFi
         wifi_results = self._configure_wifi(
             get_connections_from_succeeded(game_settings_results)
         )
@@ -64,7 +64,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
             results[connection] = _configure_single(connection)
 
         if results.succeeded:
-            print_info(f"Game settings configured on the following hosts: {self._succeded_hosts(results)}")
+            print_info(f"Game settings configured on the following hosts: {self._succeeded_hosts(results)}")
         if results.failed:
             print_err(f"Configuring game setting FAILED on the following hosts: {self._failed_hosts(results)}")
         return results
@@ -74,7 +74,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
         Configure the wifi on the given remotes with user input.
         The user is shown a list of available wifi networks and
         can choose one by answering with the according UUID.
-        All other connections are disabled and depriorized.
+        All other connections are disabled and de-prioritized.
 
         :param connections: The connections to remote servers.
         :return: The results of the task.
@@ -107,7 +107,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                 connection_ids = str(get_ids_result.stdout).strip().split("\n")
                 print_debug(f"Found the following connection ids: {connection_ids} on {connection.host}")
 
-                # Disable autoconnect for all connections and depriorize them except the one we want to use
+                # Disable autoconnect for all connections and de-prioritize them except the one we want to use
                 for connection_id in connection_ids:
                     if connection_id == answered_connection_id:
                         continue
@@ -121,14 +121,14 @@ class Configure(AbstractTaskWhichRequiresSudo):
                         print_err(f"Could not disable autoconnect for connection {connection_id} on {connection.host}")
                         return disable_autoconnect_result
 
-                    # Depriorize connection
-                    print_debug(f"Depriorizing connection {connection_id} on {connection.host}")
+                    # De-prioritize connection
+                    print_debug(f"De-prioritizing connection {connection_id} on {connection.host}")
                     cmd = f"nmcli connection modify {connection_id} connection.autoconnect-priority 0"
                     print_debug(f"Calling {cmd} on {connection.host}")
-                    depriorize_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
-                    if depriorize_result.failed:
-                        print_err(f"Could not depriorize connection {connection_id} on {connection.host}")
-                        return depriorize_result
+                    de_prioritize_result = connection.sudo(cmd, hide=True, password=self._sudo_password)
+                    if de_prioritize_result.failed:
+                        print_err(f"Could not de-prioritize connection {connection_id} on {connection.host}")
+                        return de_prioritize_result
 
                 # Enable the connection we want to use
                 print_debug(f"Enabling connection {answered_connection_id} on {connection.host}")
@@ -173,17 +173,17 @@ class Configure(AbstractTaskWhichRequiresSudo):
             return show_result
 
         # Ask user for connection to use
-        querry = "Enter the UUID of the connection which should be used [Press Enter to leave unchanged]"
-        answered_connection_id = Prompt.ask(querry, console=CONSOLE)
+        query = "Enter the UUID of the connection which should be used [Press Enter to leave unchanged]"
+        answered_connection_id = Prompt.ask(query, console=CONSOLE)
         print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
         # Iterate over all connections and configure them
-        with CONSOLE.status("[bold blue] Configuring wifi...") as status:
+        with CONSOLE.status("[bold blue] Configuring wifi..."):
             for connection in connections:
                 results[connection] = _configure_single(connection, answered_connection_id)
 
         if results.succeeded:
-            print_info(f"Wifi configured on the following hosts: {self._succeded_hosts(results)}")
+            print_info(f"Wifi configured on the following hosts: {self._succeeded_hosts(results)}")
         if results.failed:
             print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
         return results

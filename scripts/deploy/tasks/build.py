@@ -1,5 +1,3 @@
-import os
-
 from fabric import Group, GroupResult
 
 from tasks.abstract_task import AbstractTask
@@ -55,7 +53,7 @@ class Build(AbstractTask):
         results = connections.run(cmd_clean, hide=hide_output())
 
         if results.succeeded:
-            print_debug(f"Clean succeeded on the following hosts: {self._succeded_hosts(results)}")
+            print_debug(f"Clean succeeded on the following hosts: {self._succeeded_hosts(results)}")
         if results.failed:
             for connection, result in results.failed.items():
                 print_err(f"Clean on {connection.host} failed with the following errors: {result.stderr}")
@@ -82,7 +80,7 @@ class Build(AbstractTask):
         results = connections.run(cmd, hide=hide_output())
 
         if results.succeeded:
-            print_debug(f"Build succeeded on the following hosts: {self._succeded_hosts(results)}")
+            print_debug(f"Build succeeded on the following hosts: {self._succeeded_hosts(results)}")
         if results.failed:
             for connection, result in results.failed.items():
                 print_err(f"Build on {connection.host} failed with the following errors: {result.stderr}")

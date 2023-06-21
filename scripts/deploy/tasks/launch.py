@@ -22,7 +22,7 @@ class Launch(AbstractTask):
         Launch the teamplayer ROS software on a remote machine in a new tmux session.
         Fails if ROS 2 nodes are already running or
         a tmux session called "teamplayer" is already running.
-        This is, as we want to make sure, nothing else interferres with
+        This is, as we want to make sure, nothing else interferes with
         the newly launched teamplayer software.
 
         :param connections: The connections to remote servers.
@@ -65,7 +65,7 @@ class Launch(AbstractTask):
         if results.failed:
             print_err(f"ROS 2 nodes are already running or check failed on {self._failed_hosts(results)}")
         if results.succeeded:
-            print_debug(f"No ROS 2 nodes are already running on {self._succeded_hosts(results)}")
+            print_debug(f"No ROS 2 nodes are already running on {self._succeeded_hosts(results)}")
         return results
 
     def _check_tmux_session_already_running(self, connections: Group) -> GroupResult:
@@ -83,7 +83,7 @@ class Launch(AbstractTask):
             if self._tmux_session_name in result.stdout:
                 pass  # TODO
         if results.succeeded:
-            print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeded_hosts(results)}")
+            print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeeded_hosts(results)}")
         if results.failed:
             print_err(f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(results)}")
         return results
@@ -100,7 +100,7 @@ class Launch(AbstractTask):
             help_cmds = ""
             for connection in results.succeeded:
                 help_cmds += f"{connection.host} : [bold]ssh {connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'[/bold]\n"
-            print_success(f"Teamplayer launched successfully on {self._succeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}")
+            print_success(f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}")
         if results.failed:
             print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(results)}")
         return results

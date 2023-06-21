@@ -50,7 +50,7 @@ class DeployRobots():
             )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
-        parser.add_argument("--game-ready", action="store_true", help="Runs all tasks and cleans before syncing building. Equivalent to -sicbl --clean-src --clean-build")
+        parser.add_argument("--game-ready", action="store_true", help="Runs all tasks and cleans before syncing building. Equivalent to -siCbl --clean-src --clean-build")
 
         # Task arguments
         sync_group = parser.add_mutually_exclusive_group()
@@ -108,7 +108,7 @@ class DeployRobots():
     def _parse_targets(self) -> list[Target]:
         """
         Parse target argument into usable Targets.
-        The argument is a comma seperated string of either hostnames, robot names or IPs.
+        The argument is a comma separated string of either hostnames, robot names or IPs.
         'ALL' is a valid argument and will be expanded to all known targets.
 
         :return: List of Targets
@@ -185,7 +185,7 @@ class DeployRobots():
 
     def run_tasks(self) -> None:
         """
-        Main method, that creats connections to all targets and runns all registered tasks in parallel.
+        Main method, that creates connections to all targets and runs all registered tasks in parallel.
         """
         num_tasks = len(self._tasks) + 1  # +1 for establishing connections to the targets
         current_task = 1  # Track current task for status output
@@ -210,7 +210,7 @@ class DeployRobots():
             if results is not None and not results.failed:
                 print_success(f"{task_prefix} completed.")
             elif results is not None and results.failed:
-                print_err(f"{task_prefix} failed on the following hosts: {task._succeded_hosts(results)}")
+                print_err(f"{task_prefix} failed on the following hosts: {task._succeeded_hosts(results)}")
                 exit(1)
             current_task += 1
 

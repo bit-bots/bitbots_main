@@ -54,7 +54,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         results = connections.run(cmd, hide=hide_output())
 
         if results.succeeded:
-            print_debug(f"Internet is available on the following hosts: {self._succeded_hosts(results)}")
+            print_debug(f"Internet is available on the following hosts: {self._succeeded_hosts(results)}")
         if results.failed:
             print_warn(f"Internet is NOT available and skipping installs on the following hosts: {self._failed_hosts(results)}")
         return results
@@ -68,8 +68,8 @@ class Install(AbstractTaskWhichRequiresSudo):
         This is done by simulating a rosdep install to gather install commands (mostly sudo apt install ...).
         Those returned commands are then executed on the remotes.
 
-        This "simulation" or dry-run is necessarry, as the rosdep install command does not work correctly if directly invoked with sudo,
-        but it calles sudo commands internally, which necessitates user input on the remote.
+        This "simulation" or dry-run is necessary, as the rosdep install command does not work correctly if directly invoked with sudo,
+        but it calls sudo commands internally, which necessitates user input on the remote.
         The "sudo" functionality provided by fabric is not able to autofill in this case.
 
         :param connections: The connections to remote servers.

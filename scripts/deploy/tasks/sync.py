@@ -58,16 +58,16 @@ class Sync(AbstractTask):
                     includes.append(f'{entry}/**')
                     includes.append(f'{entry}/')
             elif isinstance(entry, dict):
-                for folder, subfolders in entry.items():
+                for directory, subdirectories in entry.items():
                     if package == '':
-                        includes.append(f'{folder}/')
-                        for subfolder in subfolders:
-                            includes.append(f'{folder}/{subfolder}/')
-                            includes.append(f'{folder}/{subfolder}/**')
-                    elif package in subfolders:
-                        includes.append(f'{folder}/')
-                        includes.append(f'{folder}/{package}/')
-                        includes.append(f'{folder}/{package}/**')
+                        includes.append(f'{directory}/')
+                        for subdirectory in subdirectories:
+                            includes.append(f'{directory}/{subdirectory}/')
+                            includes.append(f'{directory}/{subdirectory}/**')
+                    elif package in subdirectories:
+                        includes.append(f'{directory}/')
+                        includes.append(f'{directory}/{package}/')
+                        includes.append(f'{directory}/{package}/**')
         includes.append('*')
 
         # Encase in quotes
@@ -109,7 +109,7 @@ class Sync(AbstractTask):
         print_debug(f"Calling '{rm_cmd}'")
         rm_result = connections.run(rm_cmd, hide=hide_output())
         if rm_result.succeeded:
-            print_debug(f"Cleaning of source directory succeeded for hosts {self._succeded_hosts(rm_result)}")
+            print_debug(f"Cleaning of source directory succeeded for hosts {self._succeeded_hosts(rm_result)}")
         if rm_result.failed:
             print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(rm_result)}")
             return rm_result
@@ -120,7 +120,7 @@ class Sync(AbstractTask):
         print_debug(f"Calling '{mkdir_cmd}'")
         mkdir_result = connections.run(mkdir_cmd, hide=hide_output())
         if mkdir_result.succeeded:
-            print_debug(f"Recreation of source directory succeeded for hosts {self._succeded_hosts(mkdir_result)}")
+            print_debug(f"Recreation of source directory succeeded for hosts {self._succeeded_hosts(mkdir_result)}")
         if mkdir_result.failed:
             print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(mkdir_result)}")
         return mkdir_result
@@ -183,7 +183,7 @@ class Sync(AbstractTask):
             results[connection] = future.result()
 
         if results.succeeded:
-            print_debug(f"Synchronization succeeded for hosts {self._succeded_hosts(results)}")
+            print_debug(f"Synchronization succeeded for hosts {self._succeeded_hosts(results)}")
         if results.failed:
             print_err(f"Synchronization failed for hosts {self._failed_hosts(results)}")
         return results

@@ -266,7 +266,7 @@ def get_connections_from_succeeded(results: GroupResult) -> ThreadingGroup:
 
 class ArgumentParserShowTargets(argparse.ArgumentParser):
     """
-    This is a normal argparse.AegumentParser, except, that we intercept the error
+    This is a normal argparse.ArgumentParser, except, that we intercept the error
     "the following arguments are required" and show the known targets instead
     """
     def error(self, message):

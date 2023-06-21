@@ -43,7 +43,7 @@ class AbstractTask(abc.ABC):
         """
         pass
 
-    def _resutls_hosts(self, results) -> list[str]:
+    def _results_hosts(self, results) -> list[str]:
         """
         Get a list of hosts that have results.
 
@@ -52,14 +52,14 @@ class AbstractTask(abc.ABC):
         """
         return [connection.host for connection in results.keys()]
 
-    def _succeded_hosts(self, results: GroupResult) -> list[str]:
+    def _succeeded_hosts(self, results: GroupResult) -> list[str]:
         """
         Get a list of hosts that succeeded.
 
         :param results: The results of the task.
         :return: The list of hosts that succeeded.
         """
-        return self._resutls_hosts(results.succeeded)
+        return self._results_hosts(results.succeeded)
 
     def _failed_hosts(self, results: GroupResult) -> list[str]:
         """
@@ -68,7 +68,7 @@ class AbstractTask(abc.ABC):
         :param results: The results of the task.
         :return: The list of hosts that failed.
         """
-        return self._resutls_hosts(results.failed)
+        return self._results_hosts(results.failed)
 
 
 class AbstractTaskWhichRequiresSudo(AbstractTask):
