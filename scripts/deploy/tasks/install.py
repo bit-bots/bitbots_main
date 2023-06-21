@@ -1,3 +1,5 @@
+import concurrent. futures
+
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 
@@ -86,15 +88,25 @@ class Install(AbstractTaskWhichRequiresSudo):
                 return e.result
             gather_results = e.result
 
-        # Create GroupResult to fill manually with results after all install commands
-        installs_results = GroupResult(connections)
-        for connection, result in gather_results.succeeded.items():
+        # Only continue with succeeded connections
+        connections = get_connections_from_succeeded(gather_results)
+
+        # Define function to multithread install commands on all hosts
+        def _install_commands_on_single_host(result: Result) -> Optional[Result]:
+            """
+            Install all dependencies on a single host.
+
+            :param Result: The result of the simulated rosdep install command.
+            :return: The result of the task.
+            """
             # Parse rosdep output to get install commands from each succeeded connection
             # The output should look like this:
             # #[apt] Installation commands:
             #   sudo -H apt-get install -y <package1>
             #   sudo -H apt-get install -y <package2>
             #   ...
+            connection = result.connection
+
             lines = result.stdout.splitlines()
             install_commands = []
             for line in lines:
@@ -103,10 +115,9 @@ class Install(AbstractTaskWhichRequiresSudo):
 
             if len(install_commands) == 0:
                 print_debug(f"Nothing to install for {connection.host}")
-                installs_results[connection] = Result(connection=connection, exited=0)  # Successful exit code
-                continue
+                return Result(connection=connection, exited=0)  # Successful exit code
 
-            install_result: Result  # This collects the result of the last run install command, failed if exception occurred
+            install_result: Optional[Result] = None  # This collects the result of the last run install command, failed if exception occurred
             print_debug(f"Running install commands from rosdep: {install_commands} on {connection.host}")
             for install_command in install_commands:
                 print_debug(f"Calling {install_command} on {connection.host}")
@@ -122,7 +133,18 @@ class Install(AbstractTaskWhichRequiresSudo):
                     print_err(f"Failed install command {install_command} on {connection.host}")
                     install_result = Result(connection=connection, exited=1, command=install_command)  # TODO: What exception to can we expect here?
                     break
-                installs_results[connection] = install_result  # Update result of last install command
+            return install_result
+
+        # Collect results from all hosts
+        installs_results = GroupResult()
+
+        # Create a ThreadPoolExecutor to run the install commands on all hosts in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(gather_results.succeeded)) as executor:
+            futures = [executor.submit(_install_commands_on_single_host, gather_result) for gather_result in gather_results]
+
+        for future in futures:
+            install_result = future.result()
+            if install_result is not None:
+                installs_results[install_result.connection] = install_result
 
         return installs_results
-        # TODO: parallelize and collect results

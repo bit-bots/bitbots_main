@@ -1,5 +1,5 @@
 import os
-import concurrent.futures
+import concurrent. futures
 
 import yaml
 from fabric import Group, GroupResult, Result
@@ -182,7 +182,7 @@ class Sync(AbstractTask):
         # Collect results of the group
         results = GroupResult()
 
-        # Create a ThreadPoolExecutor with a maximum of 5 worker threads
+        # Create a ThreadPoolExecutor to run the _sync_single function for each connection in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(connections)) as executor:
             # Submit the _sync_single function for each connection to the executor
             futures = [executor.submit(_sync_single, connection) for connection in connections]
