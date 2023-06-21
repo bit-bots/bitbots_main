@@ -9,8 +9,8 @@ from tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure,
 from rich.prompt import Prompt
 
 
-# TODO: Only use working connections
-# TODO: if task arguments (e.g. -s) is given, only do given tasks
+# TODO: Only use working connections for target all
+# TODO: If task arguments (e.g. -s) is given, only do given tasks. Do we wanna do this?
 
 
 class DeployRobots():
