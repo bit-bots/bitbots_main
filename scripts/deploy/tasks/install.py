@@ -1,6 +1,6 @@
 import traceback
 
-from fabric import Group, GroupResult
+from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 
 from tasks.abstract_task import AbstractTaskWhichRequiresSudo
@@ -51,12 +51,12 @@ class Install(AbstractTaskWhichRequiresSudo):
 
         cmd = f"timeout --foreground 0.5 curl -sSLI {apt_mirror}"
         print_debug(f"Calling {cmd}")
-        results = connections.run(cmd, hide=hide_output())
-
-        if results.succeeded:
+        try:
+            results = connections.run(cmd, hide=hide_output())
             print_debug(f"Internet is available on the following hosts: {self._succeeded_hosts(results)}")
-        if results.failed:
-            print_warn(f"Internet is NOT available and skipping installs on the following hosts: {self._failed_hosts(results)}")
+        except GroupException as e:
+            print_warn(f"Internet is NOT available and skipping installs on the following hosts: {self._failed_hosts(e.result)}")
+            results = e.result
         return results
 
     def _install_rosdeps(
@@ -84,20 +84,19 @@ class Install(AbstractTaskWhichRequiresSudo):
             gather_results = connections.run(cmd, hide=hide_output())
         except GroupException as e:
             print_err(f"Failed to gather rosdeps install commands")
-            traceback.print_exc()
-            return
+            if not e.result.succeeded:
+                return e.result
+            gather_results = e.result
 
-        if not gather_results.succeeded:
-            print_err(f"Failed to gather rosdeps install commands")
-            return
-
-        # Parse rosdep output to get install commands from each succeeded connection
-        # The output should look like this:
-        # #[apt] Installation commands:
-        #   sudo -H apt-get install -y <package1>
-        #   sudo -H apt-get install -y <package2>
-        #   ...
+        # Create GroupResult to fill manually with results after all install commands
+        installs_results = GroupResult(connections)
         for connection, result in gather_results.succeeded.items():
+            # Parse rosdep output to get install commands from each succeeded connection
+            # The output should look like this:
+            # #[apt] Installation commands:
+            #   sudo -H apt-get install -y <package1>
+            #   sudo -H apt-get install -y <package2>
+            #   ...
             lines = result.stdout.splitlines()
             install_commands = []
             for line in lines:
@@ -105,8 +104,11 @@ class Install(AbstractTaskWhichRequiresSudo):
                     install_commands.append(line.strip())
 
             if len(install_commands) == 0:
+                print_debug(f"Nothing to install for {connection.host}")
+                installs_results[connection] = Result(connection=connection, exited=0)  # Successful exit code
                 continue
 
+            install_result: Result  # This collects the result of the last run install command, failed if exception occurred
             print_debug(f"Running install commands from rosdep: {install_commands} on {connection.host}")
             for install_command in install_commands:
                 print_debug(f"Calling {install_command} on {connection.host}")
@@ -114,13 +116,15 @@ class Install(AbstractTaskWhichRequiresSudo):
                     if install_command.startswith("sudo -H"):
                         # Remove sudo from command, as fabric handles sudo internally
                         install_command = install_command.replace("sudo -H", "", 1).strip()
-                        connection.sudo(install_command, hide=hide_output(), password=self._sudo_password, pty=True)
+                        install_result = connection.sudo(install_command, hide=hide_output(), password=self._sudo_password, pty=True)
                     else:
-                        connection.run(install_command, hide=hide_output())
-                except GroupException as e:
-                    print_err(f"Failed to install rosdeps on {connection.host}")
-                    traceback.print_exc()
-                    return
+                        install_result = connection.run(install_command, hide=hide_output())
+                    print_debug(f"Successfully ran install command {install_command}  on {connection.host}")
+                except Exception as e:
+                    print_err(f"Failed install command {install_command} on {connection.host}")
+                    install_result = Result(connection=connection, exited=1, command=install_command)  # TODO: What exception to can we expect here?
+                    break
+                installs_results[connection] = install_result  # Update result of last install command
 
+        return installs_results
         # TODO: parallelize and collect results
-        # TODO: Return results

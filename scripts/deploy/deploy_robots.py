@@ -177,11 +177,9 @@ class DeployRobots():
             task_prefix = f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__}"
             # Run task
             results = task.run(task_prefix, connections)
-            if results is None:  # TODO: Remove all three None checks, once install task is fixed
-                print_warn(f"{task_prefix} returned no results.")
-            if results is not None and not results.failed:
+            if not results.failed:
                 print_success(f"{task_prefix} completed.")
-            elif results is not None and results.failed:
+            elif results.failed:
                 print_err(f"{task_prefix} failed on the following hosts: {task._succeeded_hosts(results)}")
                 exit(1)
             current_task += 1
