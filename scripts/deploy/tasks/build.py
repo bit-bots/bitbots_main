@@ -57,7 +57,7 @@ class Build(AbstractTask):
         if results.failed:
             for connection, result in results.failed.items():
                 print_err(f"Clean on {connection.host} failed with the following errors: {result.stderr}")
-        return results
+        return results  # TODO: Cleans not completely? rm rf instead?
 
     def _build(self, connections: Group) -> GroupResult:
         if self._package:
@@ -75,6 +75,7 @@ class Build(AbstractTask):
             "sync;"
         )
         # TODO make output colored
+        # TODO: check if only single core?!?
 
         print_debug(f"Calling {cmd}")
         results = connections.run(cmd, hide=hide_output())
