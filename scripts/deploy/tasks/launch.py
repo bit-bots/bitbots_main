@@ -1,6 +1,6 @@
 import re
 
-from fabric import Group, GroupResult
+from fabric import Group, GroupResult, Result
 
 from tasks.abstract_task import AbstractTask
 from misc import *
@@ -40,7 +40,7 @@ class Launch(AbstractTask):
         )
         if not tmux_session_running_results.succeeded:
             return tmux_session_running_results
-        
+
         # Some hosts are ready to launch teamplayer
         launch_results = self._launch_teamplayer(get_connections_from_succeeded(tmux_session_running_results))
         return launch_results
@@ -55,18 +55,42 @@ class Launch(AbstractTask):
         print_debug(f"Checking if ROS 2 nodes are already running")
         cmd = 'ros2 node list -c'
         print_debug(f"Calling {cmd}")
-        results = connections.run(cmd, hide=hide_output())
+        node_list_results = connections.run(cmd, hide=hide_output())
 
-        # Check if output was ^0$ (no nodes running) for all remote machines
-        for connection, result in results.items():
-            if not re.match(r'^0$', result.stdout):
-                pass  # TODO
+        if node_list_results.succeeded:
+            print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(node_list_results)}")
+        if node_list_results.failed:
+            print_err(f"Calling {cmd} failed on {self._failed_hosts(node_list_results)}")
 
-        if results.failed:
-            print_err(f"ROS 2 nodes are already running or check failed on {self._failed_hosts(results)}")
-        if results.succeeded:
-            print_debug(f"No ROS 2 nodes are already running on {self._succeeded_hosts(results)}")
-        return results
+        if not node_list_results.succeeded:
+            return node_list_results
+
+        # Check if output was ^0$ (zero for no nodes running) for all remote machines
+        # Create new group result with success if no nodes are running
+        no_nodes_already_running_results = GroupResult()
+        nodes_already_running: bool
+        for connection, result in node_list_results.items():
+            if re.match(r'^0$', result.stdout):  # No nodes already running
+                nodes_already_running = False
+            else:  # Nodes already running
+                nodes_already_running = True
+
+            # Create new result and pass most of the data from the original result.
+            # Exited is the exit code.
+            # We set it to 0 if no nodes are already running, else 1.
+            no_nodes_already_running_results[connection] = Result(
+                connection=connection,
+                exited=int(nodes_already_running),
+                command=result.command,
+                stdout=result.stdout,
+                stderr=result.stderr
+            )
+
+        if no_nodes_already_running_results.succeeded:
+            print_debug(f"No ROS 2 nodes are already running on {self._succeeded_hosts(no_nodes_already_running_results)}")
+        if no_nodes_already_running_results.failed:
+            print_err(f"ROS 2 nodes are already running on {self._failed_hosts(no_nodes_already_running_results)}")
+        return no_nodes_already_running_results
 
     def _check_tmux_session_already_running(self, connections: Group) -> GroupResult:
         print_debug(f"Checking if tmux session with name '{self._tmux_session_name}' is already running")
@@ -77,16 +101,43 @@ class Launch(AbstractTask):
         # The tmux ls command outputs names of all running tmux sessions.
         cmd = "test -S /tmp/tmux-1000/default && tmux ls -F '#S' ; true"
         print_debug(f"Calling: {cmd}")
-        results = connections.run(cmd, hide=hide_output())
+        tmux_ls_results = connections.run(cmd, hide=hide_output())
 
-        for connection, result in results.items():
+        if tmux_ls_results.failed:
+            print_err(f"Calling {cmd} failed on {self._failed_hosts(tmux_ls_results)}")
+        if tmux_ls_results.succeeded:
+            print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(tmux_ls_results)}")
+
+        if not tmux_ls_results.succeeded:
+            return tmux_ls_results
+
+        # Check if the tmux session name can be found in the output of tmux ls
+        # If so, the tmux session is already running
+        # Create new group result with success if no tmux session is already running
+        tmux_session_already_running_results = GroupResult()
+        tmux_session_already_running: bool
+        for connection, result in tmux_ls_results.items():
             if self._tmux_session_name in result.stdout:
-                pass  # TODO
-        if results.succeeded:
-            print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeeded_hosts(results)}")
-        if results.failed:
-            print_err(f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(results)}")
-        return results
+                tmux_session_already_running = True
+            else:
+                tmux_session_already_running = False
+
+            # Create new result and pass most of the data from the original result.
+            # Exited is the exit code.
+            # We set it to 0 if no tmux session is already running, else 1.
+            tmux_session_already_running_results[connection] = Result(
+                connection=connection,
+                exited=int(tmux_session_already_running),
+                command=result.command,
+                stdout=result.stdout,
+                stderr=result.stderr
+            )
+
+        if tmux_session_already_running_results.succeeded:
+            print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeeded_hosts(tmux_ls_results)}")
+        if tmux_session_already_running_results.failed:
+            print_err(f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(tmux_ls_results)}")
+        return tmux_session_already_running_results
 
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug(f"Launching teamplayer")
