@@ -78,7 +78,7 @@ class DeployRobots():
         parser.add_argument("-p", "--package", default='', help="Synchronize and build only the given ROS package")
         parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
         parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
-        paseer.add_argument("--clean", action="store_true", help="Clean complete workspace (source and install, ...) before syncing and building"
+        parser.add_argument("--clean", action="store_true", help="Clean complete workspace (source and install, ...) before syncing and building")
         parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
         parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
         parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
@@ -95,7 +95,7 @@ class DeployRobots():
         # Overwrite settings for game ready
         if args.game_ready:
             args.sync = True
-            args.install = True
+            args.install = False
             args.configure = True
             args.build = True
             args.launch = True
