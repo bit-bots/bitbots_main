@@ -10,6 +10,7 @@ from rich.prompt import Prompt
 
 
 # TODO: If task arguments (e.g. -s) is given, only do given tasks. Do we wanna do this?
+# TODO: Install this script as a command line tool
 
 
 class DeployRobots():
@@ -176,7 +177,7 @@ class DeployRobots():
             task_prefix = f"[TASK {current_task}/{num_tasks}] {task.__class__.__name__}"
             # Run task
             results = task.run(task_prefix, connections)
-            if results is None:
+            if results is None:  # TODO: Remove all three None checks, once install task is fixed
                 print_warn(f"{task_prefix} returned no results.")
             if results is not None and not results.failed:
                 print_success(f"{task_prefix} completed.")
