@@ -11,14 +11,6 @@ class AbstractTask(abc.ABC):
         """
         self._show_status = True
 
-    def requires_sudo(self) -> bool:
-        """
-        Returns whether this task requires the sudo password.
-
-        :return: Whether this task requires the sudo password.
-        """
-        return False
-
     def run(self, task_prefix: str, connections: Group) -> GroupResult:
         """
         Abstract method that should be implemented by all tasks.
@@ -76,13 +68,5 @@ class AbstractTaskWhichRequiresSudo(AbstractTask):
         super().__init__()
         self._sudo_password: Optional[str] = None
 
-    def requires_sudo(self) -> bool:
-        """
-        Returns whether this task requires the sudo password.
-
-        :return: Whether this task requires the sudo password.
-        """
-        return True
-    
     def set_sudo_password(self, sudo_password: str) -> None:
         self._sudo_password = sudo_password

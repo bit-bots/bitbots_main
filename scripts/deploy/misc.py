@@ -168,7 +168,7 @@ class Target:
             except ValueError:
                 print_debug(f"Entered target is not a IP-address")
             # We accept every IP address, but if we later find an associated hostname, we use that
-            identified_target = identifier_ip
+            identified_target = str(identifier_ip)
 
             if "ip" in values:
                 try:
@@ -275,4 +275,4 @@ class ArgumentParserShowTargets(argparse.ArgumentParser):
             print_known_targets()
             exit(0)
         else:
-            super.error(message)
+            super(ArgumentParserShowTargets, self).error(message)

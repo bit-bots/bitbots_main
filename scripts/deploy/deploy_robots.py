@@ -5,7 +5,7 @@ import argparse
 import os
 
 from misc import *
-from tasks import AbstractTask, Build, Configure, Install, Launch, Sync
+from tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
 from rich.prompt import Prompt
 
 
@@ -139,7 +139,7 @@ class DeployRobots():
 
         :return: The sudo password.
         """
-        tasks_with_sudo = [task for task in self._tasks if task.requires_sudo()]
+        tasks_with_sudo: list[AbstractTaskWhichRequiresSudo] = [task for task in self._tasks if isinstance(task, AbstractTaskWhichRequiresSudo)]
         if tasks_with_sudo:
             sudo_password =  Prompt.ask(f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})", password=True)
             for task in tasks_with_sudo:
