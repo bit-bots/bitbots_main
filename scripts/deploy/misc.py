@@ -4,6 +4,7 @@ import argparse
 import ipaddress
 import os
 import subprocess
+import traceback
 
 import yaml
 
@@ -235,9 +236,10 @@ def _get_connections_from_targets(
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections
     """
+    hosts: list[str] = [str(target) for target in targets]
     try:
         connections = ThreadingGroup(
-            *[str(target) for target in targets],
+            *hosts,
             user=user,
             connect_timeout=connection_timeout
         )
@@ -246,7 +248,8 @@ def _get_connections_from_targets(
             connection.open()
             print_debug(f"Connected to {connection.host}...")
     except Exception as e:
-        print_err(f"Could not establish all required connections: {e}")
+        print_err(f"Could not establish all required connections: {hosts}")
+        traceback.print_exc()
         exit(1)
     return connections
 
@@ -279,7 +282,8 @@ def _get_connections_from_all_known_targets(
             connection.open()
             print_debug(f"Connected to {connection.host}...")
         except Exception as e:
-            print_err(f"Could not establish connection to {connection.host}. Ignoring this host. Error: {e}")
+            print_err(f"Could not establish connection to {connection.host}. Ignoring this host.")
+            traceback.print_exc()
             group.remove(connection)
     if len(group) == 0:
         print_err("Could not establish any connection to the known targets. Exiting...")
@@ -336,4 +340,4 @@ class ArgumentParserShowTargets(argparse.ArgumentParser):
             print_known_targets()
             exit(0)
         else:
-            super(ArgumentParserShowTargets, self).error(message)
+            super().error(message)
