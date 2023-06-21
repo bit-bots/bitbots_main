@@ -49,7 +49,7 @@ class Build(AbstractTask):
             cmd_clean = f"colcon clean packages -y --packages-select {self._package}"
         else:
             print_debug(f"Cleaning ALL packages before building")
-            cmd_clean = 'colcon clean packages -y'
+            cmd_clean = 'colcon clean workspace -y'
 
         print_debug(f"Calling {cmd_clean}")
         results = connections.run(cmd_clean, hide=hide_output())
