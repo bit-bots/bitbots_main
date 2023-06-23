@@ -45,7 +45,7 @@ namespace move_head {
 class HeadMover {
   std::shared_ptr<rclcpp::Node> node_;
 
-  //declare subscriber and publisher
+  // declare subscriber and publisher
   rclcpp::Subscription<humanoid_league_msgs::msg::HeadMode>::SharedPtr head_mode_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
   
@@ -101,11 +101,11 @@ class HeadMover {
         node_->create_subscription<humanoid_league_msgs::msg::HeadMode>(
             "head_mode",
             10,
-            [this](const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) { head_mode_callback(msg); }); // should be callback group 1
+            [this](const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) { head_mode_callback(msg); });
     joint_state_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
         "joint_states",
         10,
-        [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); }); // should be callback group 1
+        [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); });
 
     // load parameters from config
     auto param_listener = std::make_shared<move_head::ParamListener>(node_);
@@ -177,7 +177,7 @@ class HeadMover {
    action_server_ = rclcpp_action::create_server<LookAtGoal>(node_, "look_at_goal",
       std::bind(&HeadMover::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&HeadMover::handle_cancel, this, std::placeholders::_1),
-      std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1)); // does this need to be node?
+      std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1));
 
     timer_ = rclcpp::create_timer(node_, node_->get_clock(), 10ms, [this] { behave(); });
   }
@@ -185,12 +185,14 @@ class HeadMover {
   void head_mode_callback(const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
     head_mode_ = *msg;
   }
+
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
     current_joint_state_ = *msg;
   }
+
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const LookAtGoal::Goal> goal) { // is this LookAtGoal::Goal correct?
+    std::shared_ptr<const LookAtGoal::Goal> goal) {
     RCLCPP_INFO(node_->get_logger(), "Received goal request");
     (void)uuid;
 geometry_msgs::msg::PointStamped new_point;
@@ -222,10 +224,10 @@ bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
   }
 
   void handle_accepted(const std::shared_ptr<LookAtGoalHandle> goal_handle) {
-    std::thread{std::bind(&HeadMover::execute, this, std::placeholders::_1), goal_handle}.detach();
+    std::thread{std::bind(&HeadMover::execute_look_at, this, std::placeholders::_1), goal_handle}.detach();
   }
 
-  void execute(const std::shared_ptr<LookAtGoalHandle> goal_handle)
+  void execute_look_at(const std::shared_ptr<LookAtGoalHandle> goal_handle)
   {
     action_running_ = true;
 
@@ -290,7 +292,8 @@ action_running_ = false;
         RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000, "Unable to resolve head collision");
       }
       return success;
-    } else {
+    } 
+    else {
       move_head_to_position_with_speed_adjustment(pan_position,
                                                   tilt_position,
                                                   current_pan_position,
@@ -323,8 +326,8 @@ action_running_ = false;
   };
 
   std::pair<double, double> pre_clip(double pan, double tilt) {
-    double new_pan = std::min(std::max(pan, params_.max_pan[0]), params_.max_pan[1]);
-    double new_tilt = std::min(std::max(tilt, params_.max_tilt[0]), params_.max_tilt[1]);
+    double new_pan = std::clamp(pan, params_.max_pan[0], params_.max_pan[1]);
+    double new_tilt = std::clamp(tilt, params_.max_tilt[0], params_.max_tilt[1]);
     return std::make_pair(new_pan, new_tilt);
   }
   bool avoid_collision_on_path(double goal_pan,
@@ -349,7 +352,7 @@ action_running_ = false;
       pan_and_tilt_steps[i].first = current_pan + (goal_pan - current_pan) / step_count * i;
       pan_and_tilt_steps[i].second = current_tilt + (goal_tilt - current_tilt) / step_count * i;
     }
-    // checks if we have collisions on our path
+    // check if we have collisions on our path
     for (int i = 0; i < step_count; i++) {
       if (check_head_collision(pan_and_tilt_steps[i].first, pan_and_tilt_steps[i].second)) {
         return avoid_collision_on_path(goal_pan,
@@ -375,6 +378,7 @@ action_running_ = false;
     planning_scene_->checkCollision(req, res, *collision_state_, acm);
     return res.collision;
   }
+
   void move_head_to_position_with_speed_adjustment(double goal_pan,
                                                    double goal_tilt,
                                                    double current_pan,
@@ -421,6 +425,7 @@ action_running_ = false;
       return angle_left;
     }
   }
+
   std::vector<std::pair<double, double>> interpolatedSteps(int steps, double tilt, double min_pan, double max_pan) {
     if (steps == 0) {
       return {};
@@ -435,6 +440,7 @@ action_running_ = false;
     }
     return output_points;
   }
+
   std::vector<std::pair<double, double>> generatePattern(int line_count,
                                                          double max_horizontal_angle_left,
                                                          double max_horizontal_angle_right,
@@ -487,7 +493,6 @@ action_running_ = false;
     return keyframes;
   }
 
-
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
     bio_ik::BioIKKinematicsQueryOptions ik_options;
     ik_options.return_approximate_solution = true;
@@ -526,14 +531,13 @@ action_running_ = false;
     try {
       geometry_msgs::msg::PointStamped
           new_point = tf_buffer_->transform(point, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
-      // todo: change base_link to frame from action
 
-      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point); // TODO: do we need to threshold values here?
+      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
       std::pair<double, double> current_pan_tilt = get_head_position();
 
       if (std::abs(pan_tilt.first - current_pan_tilt.first) > min_pan_delta
           || std::abs(pan_tilt.second - current_pan_tilt.second)
-              > min_tilt_delta) // can we just put the min_tilt_delta as radiant into the conrfig?
+              > min_tilt_delta)
       {
         send_motor_goals(pan_tilt.first, pan_tilt.second, true, params_.look_at.pan_speed, params_.look_at.tilt_speed); 
         return false;
