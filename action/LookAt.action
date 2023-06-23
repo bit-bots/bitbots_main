@@ -1,0 +1,6 @@
+geometry_msgs/PointStamped look_at_position
+---
+bool success
+---
+int32 percentage_done
+float64 distance_to_goal
