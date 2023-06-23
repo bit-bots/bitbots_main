@@ -14,6 +14,11 @@ class AbstractHeadModeElement(AbstractActionElement):
 
 class LookAtBall(AbstractHeadModeElement):
     """Search for Ball and track it if found"""
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.first_perform = True
+        self.active = False
+
     def perform(self):
         ball_position = self.blackboard.world_model.get_best_ball_position()
         server_running = self.blackboard.lookat_action_client.wait_for_server(timeout_sec=1.0)
@@ -31,9 +36,15 @@ class LookAtBall(AbstractHeadModeElement):
 
         goal = LookAt.Goal()
         goal.target_point = ball_position
-        self.blackboard.lookat_action_client.send_goal(goal) # TODO: when to use send_goal_async?
-        # now we pop and that means that the action is contined until its done? Or do we need to continuosly send it?
-        return self.pop()            
+        self.blackboard.lookat_action_client.send_goal_async(goal)
+        self.dynup_action_current_goal.add_done_callback(
+            lambda future: future.result().get_result_async().add_done_callback(
+                lambda result_future: self.__done_cb(result_future)))
+
+        return self.pop()
+    
+    def __done_cb(self, result_future):
+        self.active = False        
 
 class SearchBall(AbstractHeadModeElement):
     """Look for ball"""
