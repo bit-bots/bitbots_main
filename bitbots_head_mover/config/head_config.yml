@@ -67,6 +67,9 @@ move_head:
       reduce_last_scanline: {
         type: double,
         default_value: 0.2,
+        validation: {
+          bounds<>: [0.0, 1.0]
+        },
         description: "Reduces last scanline by that factor so that robot does not collide"
       }
 
@@ -104,7 +107,10 @@ move_head:
     }
     reduce_last_scanline: {
       type: double,
-      default_value: 0.2
+      default_value: 0.2,
+      validation: {
+          bounds<>: [0.0, 1.0]
+        }
     }
 
 
@@ -142,7 +148,10 @@ move_head:
     }
     reduce_last_scanline: {
       type: double,
-      default_value: 0.2
+      default_value: 0.2,        
+      validation: {
+          bounds<>: [0.0, 1.0]
+        }
     }
 
   front_search_pattern:
@@ -179,7 +188,10 @@ move_head:
       }
     reduce_last_scanline: {
         type: double,
-        default_value: 0.0
+        default_value: 0.0,
+        validation: {
+          bounds<>: [0.0, 1.0]
+        }
       }
     
   look_forward:
@@ -216,7 +228,10 @@ move_head:
       }
     reduce_last_scanline: {
         type: double,
-        default_value: 0.0
+        default_value: 0.0,
+        validation: {
+          bounds<>: [0.0, 1.0]
+        }
       }
 
   position_reached_threshold: {
