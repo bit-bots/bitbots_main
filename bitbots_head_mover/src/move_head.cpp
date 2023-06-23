@@ -49,7 +49,7 @@ class HeadMover {
   //declare subscriber and publisher
   rclcpp::Subscription<humanoid_league_msgs::msg::HeadMode>::SharedPtr head_mode_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ball_subscriber_;
+  
 
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr position_publisher_;
 
@@ -73,11 +73,6 @@ class HeadMover {
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
 
-  //declare world model variables
-  geometry_msgs::msg::PointStamped ball_;
-  geometry_msgs::msg::PointStamped ball_odom_;
-  geometry_msgs::msg::PointStamped ball_map_;
-  geometry_msgs::msg::PointStamped ball_teammate_;
 
   //declare params
   move_head::Params params_;
