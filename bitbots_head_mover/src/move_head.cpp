@@ -24,7 +24,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_broadcaster.h>
 #include <tf2/convert.h>
 #include <bio_ik/bio_ik.h>
 #include <bio_ik_msgs/msg/ik_response.hpp>
@@ -55,7 +54,7 @@ class HeadMover {
 
   // declare tf
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
+
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   //declare variables
@@ -167,7 +166,7 @@ class HeadMover {
     // apparently tf_listener is necessary but unused
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-    br_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
+
 
     prev_head_mode_ = -1;
     threshold_ = params_.position_reached_threshold * DEG_TO_RAD;
