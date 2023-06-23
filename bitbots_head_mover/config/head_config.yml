@@ -5,7 +5,8 @@ move_head:
     default_value: [-2.35, 2.35],
     description: "Max values for the head position (in radians)",
     validation: {
-          fixed_size<>: 2
+          fixed_size<>: 2,
+          element_bounds<>: [-3.14, 3.14]
         }
   }
   max_tilt: {
