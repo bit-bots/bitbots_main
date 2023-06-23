@@ -80,9 +80,10 @@ class CostmapCapsule:
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Get pass offsets
-        self.pass_map = self.get_pass_regions()
+        # NOTE: as we currently do not use the kick, passing is not possible
+        # self.pass_map = self.get_pass_regions()
         # Merge costmaps
-        self.costmap = self.base_costmap + obstacle_map - self.pass_map
+        self.costmap = self.base_costmap + obstacle_map  # - self.pass_map  # NOTE: see above
         # Publish debug costmap
         self.publish_costmap()
 
