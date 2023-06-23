@@ -33,6 +33,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -669,8 +670,10 @@ action_running_ = false;
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
+  rclcpp::experimental::executors::EventsExecutor exec;
   auto head_mover = std::make_shared<move_head::HeadMover>();
-  rclcpp::spin(head_mover->get_node());
+  exec.add_node(head_mover->get_node());
+  exec.spin();
   rclcpp::shutdown();
 
   return 0;
