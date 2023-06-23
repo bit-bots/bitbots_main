@@ -58,7 +58,10 @@ move_head:
       scan_lines: {
         type: int,
         default_value: 2,
-        description: "Number of scan lines for the search pattern"
+        description: "Number of scan lines for the search pattern",
+        validation: {
+          gt_eq<>: [1]
+        }
       }
       # Reduces last scanline by that factor so that robot does not collide
       reduce_last_scanline: {
@@ -95,6 +98,9 @@ move_head:
     scan_lines: {
       type: int,
       default_value: 2,
+      validation: {
+          gt_eq<>: [1]
+        }
     }
     reduce_last_scanline: {
       type: double,
@@ -130,6 +136,9 @@ move_head:
     scan_lines: {
       type: int,
       default_value: 2,
+      validation: {
+          gt_eq<>: [1]
+        }
     }
     reduce_last_scanline: {
       type: double,
@@ -164,6 +173,9 @@ move_head:
     scan_lines: {
         type: int,
         default_value: 2,
+        validation: {
+          gt_eq<>: [1]
+        }
       }
     reduce_last_scanline: {
         type: double,
@@ -198,6 +210,9 @@ move_head:
     scan_lines: {
         type: int,
         default_value: 2,
+        validation: {
+          gt_eq<>: [1]
+        }
       }
     reduce_last_scanline: {
         type: double,
