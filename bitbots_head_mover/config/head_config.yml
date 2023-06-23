@@ -21,10 +21,16 @@ move_head:
       tilt_speed: {
         type: double,
         default_value: 6.0,
+        validation: {
+          bounds<>: [0.0, 8.0]
+        }
       }
       pan_speed: {
         type: double,
-        default_value: 6.0
+        default_value: 6.0,
+        validation: {
+          bounds<>: [0.0, 8.0]
+        }
       }
   # Search pattern for ball
   search_pattern:
