@@ -16,8 +16,6 @@ class LookAtBall(AbstractHeadModeElement):
     """Search for Ball and track it if found"""
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.first_perform = True
-        self.active = False
 
     def perform(self):
         ball_position = self.blackboard.world_model.get_best_ball_position()
@@ -32,19 +30,14 @@ class LookAtBall(AbstractHeadModeElement):
             if server_running:
                 self.blackboard.node.get_logger().warn("Lookat server now running, 'look_at_ball' action will go on.")
             else:
-                self.blackboard.node.get_logger().warn("Lookat server did not start.")
+                self.blackboard.node.get_logger().warn("Lookat server did not start. Did not send action.")
+                return self.pop()
 
         goal = LookAt.Goal()
         goal.target_point = ball_position
         self.blackboard.lookat_action_client.send_goal_async(goal)
-        self.dynup_action_current_goal.add_done_callback(
-            lambda future: future.result().get_result_async().add_done_callback(
-                lambda result_future: self.__done_cb(result_future)))
-
         return self.pop()
-    
-    def __done_cb(self, result_future):
-        self.active = False        
+           
 
 class SearchBall(AbstractHeadModeElement):
     """Look for ball"""
