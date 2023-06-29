@@ -21,15 +21,15 @@ jobs:
         run: make pull-init
       - name: Set up packages.bit-bots.de
         run: |
-          sudo wget https://packages.bit-bots.de/key.asc -O /usr/share/keyrings/bitbots.key
-          echo 'deb [signed-by=/usr/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main' | sudo tee /etc/apt/sources.list.d/bitbots.list
-          echo 'Package: *\nPin: origin "packages.bit-bots.de"\nPin-Priority: 1000' | sudo tee /etc/apt/preferences.d/package-bit-bots.pref
+          #sudo wget https://packages.bit-bots.de/key.asc -O /usr/share/keyrings/bitbots.key
+          #echo 'deb [signed-by=/usr/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main' | sudo tee /etc/apt/sources.list.d/bitbots.list
+          #echo 'Package: *\nPin: origin "packages.bit-bots.de"\nPin-Priority: 1000' | sudo tee /etc/apt/preferences.d/package-bit-bots.pref
           sudo apt update
           sudo apt install -y libunwind-dev
       - name: Install packages via rosdep
         run: |
           rosdep update
-          rosdep install -y --from-paths . --ignore-src --rosdistro rolling
+          rosdep install -y --from-paths . --ignore-src --rosdistro iron
       - name: Ignore pylon camera because of proprietary drivers
         run: touch lib/pylon-ros-camera/AMENT_IGNORE
       - name: Set up colcon workspace
@@ -38,6 +38,6 @@ jobs:
           ln -s $(realpath .) /colcon_ws/src/bitbots_meta
       - name: Build packages
         run: |
-          . /opt/ros/rolling/setup.sh
+          . /opt/ros/iron/setup.sh
           colcon build --symlink-install
         working-directory: /colcon_ws
