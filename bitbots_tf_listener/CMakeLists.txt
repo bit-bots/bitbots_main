@@ -15,7 +15,6 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_kdl REQUIRED)
-find_package(irobot_events_executor REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcl REQUIRED)
 
@@ -30,7 +29,6 @@ ament_target_dependencies(cpp_wrapper PUBLIC
   rcl
   tf2
   tf2_ros
-  irobot_events_executor
 )
 
 target_link_libraries(cpp_wrapper PRIVATE
