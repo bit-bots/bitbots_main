@@ -26,6 +26,7 @@ from soccer_vision_3d_msgs.msg import RobotArray
 from std_msgs.msg import Bool, Empty, Float32
 from tf2_geometry_msgs import PoseStamped
 from visualization_msgs.msg import Marker
+from bitbots_tf_listener import TransformListener
 
 from bitbots_msgs.action import Dynup
 from dynamic_stack_decider.dsd import DSD
@@ -40,7 +41,7 @@ class BodyDSD:
         self.node = node
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, node)
+        self.tf_listener = TransformListener(self.tf_buffer, node)
 
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, 'debug/dsd/body_behavior', node) #TODO: use config
