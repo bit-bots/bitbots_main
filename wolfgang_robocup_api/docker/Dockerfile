@@ -9,13 +9,10 @@ RUN apt install -y wget auto-apt-proxy apt-utils
 RUN mkdir -p /usr/local/share/keyrings
 RUN wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O /usr/local/share/keyrings/ros-archive-keyring.gpg
 RUN echo "deb [arch=amd64 signed-by=/usr/local/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu jammy main" | tee /etc/apt/sources.list.d/ros2.list
-RUN wget https://packages.bit-bots.de/key.asc -O /usr/local/share/keyrings/bitbots.key
-RUN echo "deb [signed-by=/usr/local/share/keyrings/bitbots.key arch=amd64] https://packages.bit-bots.de jammy main" | tee /etc/apt/sources.list.d/bitbots.list
-RUN echo 'Package: *\nPin: origin "packages.bit-bots.de"\nPin-Priority: 1000' | tee /etc/apt/preferences.d/package-bit-bots.pref
 RUN apt update
 
 # Install a lot of apt packages. They could also be installed with rosdep, but we want them to be cached
-RUN apt install -y build-essential espeak git libjsoncpp-dev libprotobuf-dev libprotoc-dev locales protobuf-compiler python3-colcon-clean python3-colcon-common-extensions python3-colcon-core python3-construct python3-hypothesis python3-numpy python3-opencv python3-pip python3-protobuf python3-psutil python3-rosdep python3-rospkg python3-sklearn python3-sphinx-rtd-theme python3-transforms3d ros-rolling-rmw-cyclonedds-cpp sudo wget xvfb && \
+RUN apt install -y build-essential espeak git libjsoncpp-dev libprotobuf-dev libprotoc-dev locales protobuf-compiler python3-colcon-clean python3-colcon-common-extensions python3-colcon-core python3-construct python3-hypothesis python3-numpy python3-opencv python3-pip python3-protobuf python3-psutil python3-rosdep python3-rospkg python3-sklearn python3-sphinx-rtd-theme python3-transforms3d ros-iron-rmw-cyclonedds-cpp sudo xvfb && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -32,16 +29,16 @@ RUN useradd -M -d /colcon_ws -s /bin/bash -u $UID robot
 # Install sudoers file
 ADD sudoers /etc/sudoers
 
-# Initialize rosdep
-RUN sudo rosdep init
-
 WORKDIR /colcon_ws
 RUN chown robot:robot /colcon_ws
 USER robot:robot
 ENV PATH=$PATH:/colcon_ws/.local/bin
 
-RUN . /opt/ros/rolling/setup.sh && \
+RUN . /opt/ros/iron/setup.sh && \
     mkdir src
+
+# Initialize rosdep
+RUN sudo rosdep init
 
 # Add some requirements already here so that they are cached
 #RUN python3 -m pip install -U pip && \
@@ -69,16 +66,15 @@ RUN cd src/bitbots_meta && \
     wolfgang_robot/wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
     lib/events-executor/events_executor_examples lib/events-executor/irobot_lock_free_events_queue \
     bitbots_misc/bitbots_live_tool_rqt  bitbots_motion/bitbots_recordui_rqt bitbots_misc/bitbots_basler_camera \
-    lib/pylon-ros-camera lib/imu_tools/rviz_imu_plugin && \
+    lib/pylon-ros-camera && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
-    sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml && \
-    git -C lib/ros2_numpy switch rolling
+    sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml
 
 # Install ros dependencies with rosdep
 RUN sudo apt update && rosdep update
-RUN cd src/bitbots_meta && rosdep install --rosdistro=rolling --from-paths . --ignore-src -r -y
+RUN cd src/bitbots_meta && rosdep install --rosdistro=iron --from-paths . --ignore-src -r -y
 
-RUN . /opt/ros/rolling/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
+RUN . /opt/ros/iron/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
 
 # TODO execute tests
 
