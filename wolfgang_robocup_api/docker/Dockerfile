@@ -15,7 +15,7 @@ RUN echo 'Package: *\nPin: origin "packages.bit-bots.de"\nPin-Priority: 1000' | 
 RUN apt update
 
 # Install a lot of apt packages. They could also be installed with rosdep, but we want them to be cached
-RUN apt install -y build-essential espeak git libjsoncpp-dev libprotobuf-dev libprotoc-dev locales protobuf-compiler python3-colcon-common-extensions python3-colcon-core python3-construct python3-hypothesis python3-numpy python3-opencv python3-pip python3-protobuf python3-psutil python3-rosdep python3-rospkg python3-sklearn python3-sphinx-rtd-theme python3-transforms3d ros-rolling-rmw-cyclonedds-cpp sudo wget xvfb && \
+RUN apt install -y build-essential espeak git libjsoncpp-dev libprotobuf-dev libprotoc-dev locales protobuf-compiler python3-colcon-clean python3-colcon-common-extensions python3-colcon-core python3-construct python3-hypothesis python3-numpy python3-opencv python3-pip python3-protobuf python3-psutil python3-rosdep python3-rospkg python3-sklearn python3-sphinx-rtd-theme python3-transforms3d ros-rolling-rmw-cyclonedds-cpp sudo wget xvfb && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -31,6 +31,9 @@ RUN useradd -M -d /colcon_ws -s /bin/bash -u $UID robot
 
 # Install sudoers file
 ADD sudoers /etc/sudoers
+
+# Initialize rosdep
+RUN sudo rosdep init
 
 WORKDIR /colcon_ws
 RUN chown robot:robot /colcon_ws
@@ -72,11 +75,8 @@ RUN cd src/bitbots_meta && \
     git -C lib/ros2_numpy switch rolling
 
 # Install ros dependencies with rosdep
-RUN sudo apt update && sudo rosdep init && rosdep update
+RUN sudo apt update && rosdep update
 RUN cd src/bitbots_meta && rosdep install --rosdistro=rolling --from-paths . --ignore-src -r -y
-
-# TODO remove this when availabe through rosdep
-RUN sudo apt update && sudo apt install -y ros-rolling-nav2-map-server ros-rolling-nav2-lifecycle-manager
 
 RUN . /opt/ros/rolling/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
 
