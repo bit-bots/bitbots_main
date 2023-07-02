@@ -15,27 +15,6 @@ from bitbots_vision.vision_modules.candidate import Candidate
 
 logger = rclpy.logging.get_logger('vision_yoeo')
 
-try:
-    from yoeo import models as torch_models, detect as torch_detect
-except ImportError:
-    logger.error("Unable to import pytorchyolo. This might be fine if you use another neural network type.")
-
-try:
-    from openvino.runtime import Core as openvino_runtime_Core
-except ImportError:
-    logger.error("Unable to import openvino. This might be fine if you use another neural network type.")
-
-try:
-    import onnxruntime
-except ImportError:
-    logger.error("Unable to import onnxruntime. Thigh might be fine if you use another neural network type.")
-
-try:
-    import tvm
-    from tvm.contrib import graph_executor
-except ImportError:
-    logger.error("Unable to import tvm. Thigh might be fine if you use another neural network type.")
-
 
 class IYOEOHandler(ABC):
     """
@@ -240,6 +219,11 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
         onnx_path = YOEOPathGetter.get_onnx_onnx_file_path(model_directory)
 
+        try:
+            import onnxruntime
+        except ImportError:
+            raise ImportError("Could not import onnxruntime. The selected handler requires this package.")
+
         logger.debug(f"Loading file...\n\t{onnx_path}")
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
         self._input_layer = self._inference_session.get_inputs()[0]
@@ -304,6 +288,11 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
         xml_path = YOEOPathGetter.get_openvino_xml_file_path(model_directory)
         bin_path = YOEOPathGetter.get_openvino_bin_file_path(model_directory)
+
+        try:
+            from openvino.runtime import Core as openvino_runtime_Core
+        except ImportError:
+            raise ImportError("Could not import openvino. The selected handler requires this package.")
 
         self._inference_engine = openvino_runtime_Core()
 
@@ -383,6 +372,14 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         config_path = YOEOPathGetter.get_pytorch_cfg_file_path(model_directory)
         weights_path = YOEOPathGetter.get_pytorch_pth_file_path(model_directory)
 
+        try:
+            from yoeo import models as torch_models
+            from yoeo import detect as torch_detect
+
+            self.torch_detect = torch_detect
+        except ImportError:
+            raise ImportError("Could not import yoeo. The selected handler requires this package.")
+
         logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
         self._model = torch_models.load_model(config_path, weights_path)
 
@@ -402,11 +399,11 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
                os.path.exists(YOEOPathGetter.get_pytorch_pth_file_path(model_directory))
 
     def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        detections, segmentation = torch_detect.detect_image(self._model,
-                                                             image,
-                                                             conf_thres=self._conf_thresh,
-                                                             nms_thres=self._nms_thresh,
-                                                             robot_class_ids=self.get_robot_class_ids())
+        detections, segmentation = self.torch_detect.detect_image(self._model,
+                                                                  image,
+                                                                  conf_thres=self._conf_thresh,
+                                                                  nms_thres=self._nms_thresh,
+                                                                  robot_class_ids=self.get_robot_class_ids())
 
         segmentation = self._postprocess_segmentation(segmentation)
 
@@ -435,6 +432,12 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         json_path = YOEOPathGetter.get_tvm_json_file_path(model_directory)
         params_path = YOEOPathGetter.get_tvm_params_file_path(model_directory)
         binary_path = YOEOPathGetter.get_tvm_so_file_path(model_directory)
+
+        try:
+            import tvm
+            from tvm.contrib import graph_executor
+        except ImportError:
+            raise ImportError("Unable to import tvm. The selected handler requires this package.")
 
         logger.debug(f"Loading files...\n\t{binary_path}\n\t{params_path}\n\t{json_path}")
         binary_lib = tvm.runtime.load_module(binary_path)
