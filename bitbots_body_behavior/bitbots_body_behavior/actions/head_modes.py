@@ -18,7 +18,7 @@ class LookAtBall(AbstractHeadModeElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self):
-        ball_position = self.blackboard.world_model.get_best_ball_position()
+        ball_position = self.blackboard.world_model.get_best_ball_point_stamped()
         server_running = self.blackboard.lookat_action_client.wait_for_server(timeout_sec=1.0)
         if not server_running:
             while not server_running and rclpy.ok():
@@ -34,7 +34,7 @@ class LookAtBall(AbstractHeadModeElement):
                 return self.pop()
 
         goal = LookAt.Goal()
-        goal.target_point = ball_position
+        goal.look_at_position = ball_position
         self.blackboard.lookat_action_client.send_goal_async(goal)
         return self.pop()
            

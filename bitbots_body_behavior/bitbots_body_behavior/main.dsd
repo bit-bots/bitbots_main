@@ -14,14 +14,14 @@
 @ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0, @LookForward + r:false, @KickBallDynamic, @LookAtFieldFeatures + r:false, @WalkInPlace + duration:1 + r:false
 
 #Dribble
-@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
+@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
 
 #DribbleWithAvoidance
 $AvoidBall
     NO --> $BallClose + distance:%body.ball_reapproach_dist + angle:%body.ball_reapproach_angle
         YES --> $BallKickArea
             NEAR --> #Dribble
-            FAR --> @ChangeAction + action:going_to_ball, @LookAtFront, @GoToBall + target:map_goal
+            FAR --> @ChangeAction + action:going_to_ball, @LookAtFront, @GoToBall + target:map_goal 
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map_goal + blocking:false + distance:%body.ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + thres:%body.ball_far_approach_position_thresh
         YES --> @AvoidBallInactive
