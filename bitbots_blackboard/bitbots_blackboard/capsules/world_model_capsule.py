@@ -393,7 +393,7 @@ class WorldModelCapsule:
         try:
             t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
         except ValueError as e:
-            self._blackboard.node.get_logger().error(e)
+            self._blackboard.node.get_logger().error(str(e))
             t = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         return self._blackboard.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
 
