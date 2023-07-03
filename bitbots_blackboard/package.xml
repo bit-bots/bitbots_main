@@ -33,6 +33,7 @@
     <exec_depend>bitbots_msgs</exec_depend>
     <depend>tf_transformations</depend>
     <depend>python3-numpy</depend>
+    <depend>bitbots_tf_listener</depend>
 
     <export>
         <bitbots_documentation>
