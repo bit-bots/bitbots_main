@@ -72,6 +72,9 @@ public:
       };
       // we have to acquire the GIL to be able to call python functions
       {
+        // we need PyGILState_Ensure and py::gil_scoped_acquire because of a bug
+        // see https://github.com/pybind/pybind11/issues/1920
+        PyGILState_STATE gstate = PyGILState_Ensure();
         py::gil_scoped_acquire acquire;
         set_transform(py_serialized_transform);
       }
