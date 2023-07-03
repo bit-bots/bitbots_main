@@ -1,6 +1,6 @@
 # bitbots_meta
-This git contains all RoboCup code from the Hamburg Bit-Bots as submodules as well as documentation.
-All code is written as ROS packages and tested for ROS-Melodic.
+This git repository contains all RoboCup-related code and documentation from the Hamburg Bit-Bots team as git submodules.
+All code is written as ROS 2 packages for ROS 2 on Ubuntu.
 
 [![Test if all packages build](https://github.com/bit-bots/bitbots_meta/actions/workflows/build.yml/badge.svg)](https://github.com/bit-bots/bitbots_meta/actions/workflows/build.yml)
 
