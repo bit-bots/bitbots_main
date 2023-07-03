@@ -181,7 +181,7 @@
       dribble_max_speed_x: 0.25
       dribble_max_speed_y: 0.08
       dribble_p: 0.75
-      dribble_accel_x: 0.001
+      dribble_accel_x: 0.1
 
       # dribble decision
       dribble_orient_threshold: 0.5
