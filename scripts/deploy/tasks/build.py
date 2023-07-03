@@ -48,13 +48,12 @@ class Build(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        # TODO: Cleans not completely? rm rf instead?
         if self._package:
             print_debug(f"Cleaning the following packages before building: {self._package}")
             cmd_clean = f"colcon clean packages -y --packages-select {self._package}"
         else:
             print_debug(f"Cleaning ALL packages before building")
-            cmd_clean = 'colcon clean workspace -y'
+            cmd_clean = f'rm -rf {self._remote_workspace}/build {self._remote_workspace}/install {self._remote_workspace}/log'
 
         print_debug(f"Calling {cmd_clean}")
         try:
