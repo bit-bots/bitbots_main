@@ -117,6 +117,7 @@ class Install(AbstractTaskWhichRequiresSudo):
                 print_debug(f"Nothing to install for {connection.host}")
                 return Result(connection=connection, exited=0)  # Successful exit code
 
+            # TODO: merge apt install commands into one command
             install_result: Optional[Result] = None  # This collects the result of the last run install command, failed if exception occurred
             print_debug(f"Running install commands from rosdep: {install_commands} on {connection.host}")
             for install_command in install_commands:

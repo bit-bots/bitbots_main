@@ -82,7 +82,7 @@ class Build(AbstractTask):
             "sync;"
             f"cd {self._remote_workspace};"
             "source /opt/ros/iron/setup.zsh;"
-            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d,]+)' /proc/cmdline)\";"  # type: ignore[reportInvalidStringEscapeSequence]
+            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d-]+)' /proc/cmdline)\";"  # type: ignore[reportInvalidStringEscapeSequence]
             f"chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package_option} --continue-on-error || exit 1;"
             "sync;"
         )
