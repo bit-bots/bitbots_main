@@ -3,7 +3,7 @@ include:
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior
-        - bitbots_head_behavior
+        - bitbots_head_mover
     - bitbots_lowlevel:
         - bitbots_buttons
         - bitbots_ros_control
@@ -14,6 +14,7 @@ include:
         - bitbots_extrinsic_calibration
         - bitbots_ipm
         - bitbots_teleop
+        - bitbots_tf_listener
         - bitbots_utils
         - system_monitor
     - bitbots_motion:
