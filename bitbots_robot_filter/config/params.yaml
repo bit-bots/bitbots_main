@@ -3,7 +3,7 @@ bitbots_ball_filter:
     # Topics
     robot_observation_topic: 'robots_relative'
     team_data_topic: 'team_data'
-    robots_publish_topic: 'ball_position_relative_filtered'
+    robots_publish_topic: 'robots_relative_filtered'
 
     filter_frame: 'map'
     robot_dummy_size: 0.4

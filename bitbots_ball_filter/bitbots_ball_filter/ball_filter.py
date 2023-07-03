@@ -19,6 +19,7 @@ from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 
+from bitbots_tf_listener import TransformListener
 from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 
 
@@ -46,7 +47,7 @@ class BallFilter(Node):
         super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.logger = self.get_logger()
         self.tf_buffer = tf2.Buffer(cache_time=rclpy.duration.Duration(seconds=2))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
+        self.tf_listener = TransformListener(self.tf_buffer, self)
         # Setup dynamic reconfigure config
         self.config = {}
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
