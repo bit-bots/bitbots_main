@@ -18,6 +18,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>bitbots_tf_listener</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>humanoid_league_msgs</depend>
