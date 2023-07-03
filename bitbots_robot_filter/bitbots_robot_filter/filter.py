@@ -15,6 +15,7 @@ import soccer_vision_3d_msgs.msg as sv3dm
 import soccer_vision_attribute_msgs.msg as svam
 import tf2_ros as tf2
 from ros2_numpy import numpify
+from bitbots_tf_listener import TransformListener
 
 
 class RobotFilter(Node):
@@ -22,7 +23,7 @@ class RobotFilter(Node):
         super().__init__('bitbots_robot_filter')
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10.0))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.robots = []
         self.team = dict()
