@@ -60,7 +60,7 @@ Compile (compiles)
 ------------------
 
 The first step is to test if the package compiles.
-Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 22.04 with Rolling).
+Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 22.04 with the iron distribution).
 A part of this is to check if all dependencies are correct in the package.xml.
 This is important so they can be installed with rosdep.
 
@@ -68,7 +68,7 @@ Starting (starts)
 ------------------
 
 The next step is to check if the package actually starts without crashing instantly with an obvious error.
-A part of this is that a launchfile exists.
+A part of this is that a launch file exists.
 
 Testing in Visualization (tested_viz)
 ----------------------------------------
@@ -78,7 +78,7 @@ For this you can also use real data that was recorded in a rosbag.
 
 For this, it is important to be aware of your own testing bias.
 Humans tend to test their own software for exactly the use cases they had in mind during programming.
-However it is important to explicitely check all possibilities.
+However it is important to explicitly check all possibilities.
 This means especially to test for edge cases and on robustness, e.g., testing with wrong data and against other parts of the software stack that crash.
 A good method for this is to let someone else test your software, someone who was not involved in the programming of it.
 
@@ -123,13 +123,13 @@ It offers us two possibilities.
 Starts the simulator with designated params.
 
 :code:ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
-Starts highlevel software (Gamecontroller, Teamcomm, Behavior, Vision, Localization, Pathfinding)
+Starts high-level software (Gamecontroller, Teamcomm, Behavior, Vision, Localization, Pathfinding)
 
 Testing on the robot (tested_robot)
 --------------------------------------
 
 If the other test phases are completed it is time to get the real robot.
-For testing this it is especially important to explicitely test the edge cases.
+For testing this it is especially important to explicitly test the edge cases.
 
 Integration Testing (tested_integration)
 ========================================
