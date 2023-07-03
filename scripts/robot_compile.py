@@ -356,10 +356,10 @@ def build(target, package='', pre_clean=False):
 
     cmd = ("sync;"
            "cd {workspace};"
-           "source /opt/ros/rolling/setup.zsh;"
+           "source /opt/ros/iron/setup.zsh;"
            "source install/setup.zsh;"
            "{cmd_clean}"
-           "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d,]+)' /proc/cmdline)\";"
+           "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d-]+)' /proc/cmdline)\";"
            "chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package} --continue-on-error {quiet_option} || exit 1;"
            "sync;").format(
                **{
@@ -388,7 +388,7 @@ def install_rosdeps(target):
         target_src_path = os.path.join(target.workspace, "src")
         extra_flags = "-q" if _should_run_quietly() else ""
 
-        cmd = f"rosdep install -y {extra_flags} --ignore-src --from-paths {target_src_path}"
+        cmd = f"rosdep install -y {extra_flags} --rosdistro iron --ignore-src --from-paths {target_src_path}"
 
         rosdep_result = _execute_on_target(target, cmd)
         if rosdep_result.returncode == 0:
