@@ -19,7 +19,8 @@ from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
-from tf2_ros import Buffer, TransformListener, TransformException
+from tf2_ros import Buffer, TransformException
+from bitbots_tf_listener import TransformListener
 
 import humanoid_league_team_communication.robocup_extension_pb2 as Proto
 from humanoid_league_team_communication.communication import SocketCommunication
