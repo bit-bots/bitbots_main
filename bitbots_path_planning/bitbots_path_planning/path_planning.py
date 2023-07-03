@@ -1,6 +1,7 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
+from bitbots_tf_listener import TransformListener
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
 from bitbots_path_planning.planner import Planner
@@ -29,7 +30,7 @@ class PathPlanning(Node):
         # We need to create a tf buffer
         self.tf_buffer = tf2.Buffer(
             cache_time=Duration(seconds=self.declare_parameter('tf_buffer_duration', 5.0).value))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)
