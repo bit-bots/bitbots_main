@@ -392,7 +392,7 @@ class WorldModelCapsule:
         # (unless the localization died during the last 1.0 seconds)
         try:
             t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
-        except TypeError as e:
+        except ValueError as e:
             self._blackboard.node.get_logger().error(e)
             t = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
         return self._blackboard.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
