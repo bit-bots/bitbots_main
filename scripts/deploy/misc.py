@@ -201,8 +201,12 @@ class Target:
         return (identified_target, identified_ip)
 
     def __str__(self) -> str:
-        """Returns the target's hostname if available or IP-address."""
+        """Returns the target's hostname if available or IP address."""
         return self.hostname if self.hostname is not None else str(self.ip)
+    
+    def get_connection_identifier(self) -> str:
+        """Returns the target's IP address if available or the hostname."""
+        return str(self.ip) if self.ip is not None else self.hostname
 
 
 def _parse_targets(input_targets: str) -> list[Target]:
@@ -236,7 +240,7 @@ def _get_connections_from_targets(
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections
     """
-    hosts: list[str] = [str(target) for target in targets]
+    hosts: list[str] = [target.get_connection_identifier() for target in targets]
     try:
         connections = ThreadingGroup(
             *hosts,
@@ -267,7 +271,7 @@ def _get_connections_from_all_known_targets(
     :return: The connections
     """
     # Get hosts from all known targets
-    hosts: list[str] = [str(Target(hostname)) for hostname in KNOWN_TARGETS.keys()]
+    hosts: list[str] = [Target(hostname).get_connection_identifier() for hostname in KNOWN_TARGETS.keys()]
 
     # Create connections
     connections: list[Connection] = [Connection(host, user=user, connect_timeout=connection_timeout) for host in hosts]

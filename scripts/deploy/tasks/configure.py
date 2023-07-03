@@ -179,27 +179,33 @@ class Configure(AbstractTaskWhichRequiresSudo):
         # Ask user for connection to use
         query = "Enter the UUID of the connection which should be used [Press Enter to leave unchanged]"
         answered_connection_id = Prompt.ask(query, console=CONSOLE)
-        print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
-        # User input is done, we can show a status message again
-        with CONSOLE.status("[bold blue] Configuring wifi...", spinner="point"):
+        if answered_connection_id:  # User entered a connection id, we need to configure wifi
+            print_debug(f"User answered {answered_connection_id} on {connection.host}")
 
-            # Collect results
-            results = GroupResult()
+            # User input is done, we can show a status message again
+            with CONSOLE.status("[bold blue] Configuring wifi...", spinner="point"):
 
-            # Configure wifi on all connections in parallel
-            # Create a ThreadPoolExecutor to run the _configure_single function in parallel
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(connections)) as executor:
-                # Create a future for each connection
-                futures = [executor.submit(_configure_single, connection, answered_connection_id) for connection in connections]
+                # Collect results
+                results = GroupResult()
 
-            # Wait for all futures to complete
-            for future in futures:
-                result: Result = future.result()  # type: ignore
-                results[result.connection] = result
+                # Configure wifi on all connections in parallel
+                # Create a ThreadPoolExecutor to run the _configure_single function in parallel
+                with concurrent.futures.ThreadPoolExecutor(max_workers=len(connections)) as executor:
+                    # Create a future for each connection
+                    futures = [executor.submit(_configure_single, connection, answered_connection_id) for connection in connections]
 
-            if results.succeeded:
-                print_info(f"Wifi configured on the following hosts: {self._succeeded_hosts(results)}")
-            if results.failed:
-                print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
-        return results
+                # Wait for all futures to complete
+                for future in futures:
+                    result: Result = future.result()  # type: ignore
+                    results[result.connection] = result
+
+                if results.succeeded:
+                    print_info(f"Wifi configured on the following hosts: {self._succeeded_hosts(results)}")
+                if results.failed:
+                    print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
+            return results
+
+        else:  # User did not answer, we do not change anything
+            print_debug(f"User did not answer. Leaving wifi unchanged.")
+        return GroupResult()

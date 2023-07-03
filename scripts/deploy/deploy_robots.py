@@ -49,7 +49,7 @@ class DeployRobots():
             )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
-        parser.add_argument("-g", "--game-ready", action="store_true", help="Runs all tasks and cleans before syncing building. Equivalent to -siCbl --clean-src --clean-build")
+        parser.add_argument("-g", "--game-ready", "--gameready", action="store_true", help="Runs all tasks (except install) and cleans before syncing building. Equivalent to -sIcbl --clean-src --clean-build")
 
         # Task arguments
         sync_group = parser.add_mutually_exclusive_group()
