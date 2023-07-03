@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import os
+from pydoc import locate
+from typing import Any, Optional
 
 import yaml
-
 
 # path to the game settings yaml and to the game setting options
 SETTING_PATH = os.path.join(
@@ -40,22 +41,27 @@ def provide_config(path):
 
 
 def ask_for_config_option(
-    name: object, definition: object, current_value: object = None, explanation: object = None
+    name: str,
+    value_type: Any,
+    current_value: Any = None,
+    valid_options: Optional[list[Any]] = None,
+    explanation: Optional[str] = None,
 ) -> object:
     """
     :param name: name of the config-option-value e.g. robot number
-    :param definition: possible options for the value, type of input
+    :param value_type: type object of the type of value to cast to
+    :param valid_options: possible options for the value, type of input
     :param current_value: the already set value
     :param explanation: describes options
     :return: new chosen value for this config option, can be the old one
     """
     print("=============== {} ===============".format(name))
-    if type(definition) is range:
-        definition = list(definition)
-    print("Options: {}".format(definition))
-    print("Explanations: {}".format(explanation))
+    if valid_options:
+        print(f"Options: {valid_options}")
+    print(f"Explanations: {explanation}")
+
     if current_value is not None:
-        input_prompt = "Value ({}): ".format(current_value)
+        input_prompt = f"Value ({current_value}): "
     else:
         input_prompt = "Value: "
 
@@ -68,55 +74,53 @@ def ask_for_config_option(
                 new_value = current_value
                 value_is_valid = True
         else:
-            value_is_valid = check_new_value(new_value, definition)
-    def_type = type(definition[0])
-    return def_type(new_value)
+            value_is_valid = check_new_value(new_value, value_type, valid_options)
+
+    return value_type(new_value)
 
 
-def check_new_value(new_value: str, definition) -> bool:
+def check_new_value(new_value: str, value_type: Any, valid_options: Optional[list[Any]] = None) -> bool:
     """
     checks with definition if new value is a valid input
     :param new_value: input to set as new value
-    :param definition: valid options for new value
+    :param value_type: type object of the type of value to cast to
+    :param valid_options: valid options for new value
     :return: true if valid, false if not
     """
 
-    definitiontype = type(definition[0])
-
     try:
-        new_value = definitiontype(new_value)  # casts value to the type of
-    except:
-        print(
-            "{} could not be converted to a {}. Are you sure it is in the right format?".format(
-                new_value, definitiontype
-            )
-        )
-
-    if new_value in definition:
-        return True
-    else:
-        # print(new_value, definition)
-        print(" {} no valid option".format(new_value))
+        new_value = value_type(new_value)
+    except Exception:
+        print(f"{new_value} could not be converted to a {value_type}. Are you sure it is in the right format?")
         return False
+
+    not_a_valid_option = valid_options is not None and new_value not in valid_options
+    if not_a_valid_option:
+        print(f" {new_value} no valid option")
+        return False
+
+    return True
 
 
 def main():
     config = provide_config(SETTING_PATH)
-    # config = config['parameter_blackboard']['ros_parameters']
     ros_parameters = config["parameter_blackboard"]["ros__parameters"]
     if ros_parameters is None:
         ros_parameters = {}
         config["parameter_blackboard"]["ros__parameters"] = ros_parameters
 
     options = provide_config(OPTIONS_PATH)
-
     for key in options.keys():
+        entry_value_type = locate(options[key]["type"])
+        entry_options = options[key].get("options", None)
+        entry_explanation = options[key]["explanation"]
+
         if key in ros_parameters.keys():
             ros_parameters[key] = ask_for_config_option(
-                key, options[key]["options"], ros_parameters[key], options[key]["explanation"]
+                key, entry_value_type, ros_parameters[key], entry_options, entry_explanation
             )
         else:
-            value = ask_for_config_option(key, options[key]["options"], None, options[key]["explanation"])
+            value = ask_for_config_option(key, entry_value_type, None, entry_options, entry_explanation)
             ros_parameters.update({key: value})
 
     with open(SETTING_PATH, "w") as f:
