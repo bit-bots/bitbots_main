@@ -94,7 +94,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         # Define function to multithread install commands on all hosts
         def _install_commands_on_single_host(result: Result) -> Optional[Result]:
             """
-            Install all dependencies on a single host.
+            Install all dependencies on a single host from pip and apt.
 
             :param Result: The result of the simulated rosdep install command.
             :return: The result of the task.
@@ -117,23 +117,28 @@ class Install(AbstractTaskWhichRequiresSudo):
                 print_debug(f"Nothing to install for {connection.host}")
                 return Result(connection=connection, exited=0)  # Successful exit code
 
-            # TODO: merge apt install commands into one command
+            # Define command prefixes to search for
+            apt_command_prefix = "sudo -H apt-get install -y "
+            apt_packages: list[str] = []
+            # pip_command_prefix = ""  # TODO what is it?
+            # pip_packages: list[str] = []
+
             install_result: Optional[Result] = None  # This collects the result of the last run install command, failed if exception occurred
-            print_debug(f"Running install commands from rosdep: {install_commands} on {connection.host}")
             for install_command in install_commands:
                 print_debug(f"Calling {install_command} on {connection.host}")
-                try:
-                    if install_command.startswith("sudo -H"):
-                        # Remove sudo from command, as fabric handles sudo internally
-                        install_command = install_command.replace("sudo -H", "", 1).strip()
-                        install_result = connection.sudo(install_command, hide=hide_output(), password=self._sudo_password, pty=True)
-                    else:
-                        install_result = connection.run(install_command, hide=hide_output())
-                    print_debug(f"Successfully ran install command {install_command}  on {connection.host}")
-                except Exception as e:
-                    print_err(f"Failed install command {install_command} on {connection.host}")
-                    install_result = Result(connection=connection, exited=1, command=install_command)  # TODO: What exception to can we expect here?
-                    break
+                if install_command.startswith(apt_command_prefix):
+                    # Remove prefix from command, as we collect all apt commands into one
+                    apt_packages.append(install_command.replace(apt_command_prefix, "", 1).strip())
+                else:
+                    print_warn(f"Currently only the apt-get installer is supported. Stumbled over unknown installer in command and skipping it: '{install_command}' on {connection.host}")
+
+            apt_install_command = f"apt-get install -y {' '.join(apt_packages)}"
+            print_debug(f"Running apt install command: {apt_install_command} on {connection.host}")
+            try:
+                install_result = connection.sudo(apt_install_command, hide=hide_output(), password=self._sudo_password, pty=True)
+            except Exception as e:
+                print_err(f"Failed install command on {connection.host}")
+                install_result = Result(connection=connection, exited=1, command=apt_install_command)  # TODO: What exception can we expect here?
             return install_result
 
         # Collect results from all hosts
