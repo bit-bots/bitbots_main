@@ -444,7 +444,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         loaded_params = bytearray(open(params_path, "rb").read())
         loaded_json = open(json_path).read()
 
-        device = self._select_device()
+        device = tvm.vulkan() if tvm.vulkan().exist else tvm.cpu()
 
         logger.debug(f"Creating network on device '{device}'...")
         self._model = graph_executor.create(loaded_json, binary_lib, device)
@@ -467,13 +467,6 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         )
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
-
-    @staticmethod
-    def _select_device() -> tvm.runtime.Device:
-        if tvm.vulkan().exist:
-            return tvm.vulkan()
-        else:
-            return tvm.cpu()
 
     def configure(self, config: Dict) -> None:
         super().configure(config)
