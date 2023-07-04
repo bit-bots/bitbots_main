@@ -6,6 +6,8 @@ from typing import Any, Optional
 
 import yaml
 
+YAML_COMPATIBLE_SCALAR_TYPES = [int, float, str, bool]
+
 # path to the game settings yaml and to the game setting options
 SETTING_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -76,7 +78,10 @@ def ask_for_config_option(
         else:
             value_is_valid = check_new_value(new_value, value_type, valid_options)
 
-    return value_type(new_value)
+    if value_type in YAML_COMPATIBLE_SCALAR_TYPES:
+        return value_type(new_value)
+    else:
+        return str(new_value)
 
 
 def check_new_value(new_value: str, value_type: Any, valid_options: Optional[list[Any]] = None) -> bool:
@@ -124,7 +129,7 @@ def main():
             ros_parameters.update({key: value})
 
     with open(SETTING_PATH, "w") as f:
-        yaml.dump(config, f, default_flow_style=False)
+        yaml.safe_dump(config, f, default_flow_style=False)
 
 
 if __name__ == "__main__":
