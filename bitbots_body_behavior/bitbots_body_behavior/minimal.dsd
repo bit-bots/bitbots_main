@@ -1,21 +1,15 @@
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @Stand
 
-#StandAndLook
-@ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
-
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @PlayAnimationInit + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
+@GetWalkready + r:false, @WalkForward + time:10, @Stand
 
 #Init
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
-
-#SimpleWalking
-@ChangeAction + action:positioning, @GoToRelativePosition + x:3 + y:0 + t:0, @Stand
 
 -->BodyBehavior
 $GameStateDecider
     INITIAL --> #Init
     READY --> $DoOnce
-        NOT_DONE --> #GetWalkreadyAndLocalize, #SimpleWalking
+        NOT_DONE --> #GetWalkreadyAndLocalize
         DONE --> #DoNothing
