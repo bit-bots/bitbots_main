@@ -47,6 +47,16 @@ class YOEOVision(Node):
 
         self._vision_components: List[yoeo.IVisionComponent] = []
 
+        # TODO: Fix for wm 2023
+        # This is necessary for the image recording via ros2 bag record
+        # We will republish every Xth image
+        # Previously, we used the throttle node from topic_tools to reduce the frequency of logged images to 1 Hz
+        # Unfortunately, adding this additional subscriber reduces the /camera/image_proc frequency by 30%.
+        # To avoid this additional subscription of the throttle node, we republish it here with lower frequency
+        self._images_to_log_republisher = self.create_publisher(Image, "/camera/image_to_record", 1)
+        self._images_to_log_republish_every_Xth_image: int = 10
+        self._images_to_log_current_callback_count: int = 0
+
         # Setup reconfiguration
         gen.declare_params(self)
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
@@ -132,8 +142,13 @@ class YOEOVision(Node):
         if not self._image_is_too_old(image_msg):
             self._run_vision_pipeline(image_msg)
 
+        # TODO: Fix for the wm 2023 see comments in init for more information
+        if self._images_to_log_current_callback_count % self._images_to_log_republish_every_Xth_image == 0:
+            self._images_to_log_republisher.publish(image_msg)
+        self._images_to_log_current_callback_count += 1
+
     def _image_is_too_old(self, image_msg: Image) -> bool:
-        return False  # Fix for the wm 2022
+        return False  # TODO: Fix for the wm 2022
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
