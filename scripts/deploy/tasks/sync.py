@@ -37,7 +37,7 @@ class Sync(AbstractTask):
             self._package
         )
 
-    def _get_includes_from_file(self, file_path: str, package: str = '') -> str:
+    def _get_includes_from_file(self, file_path: str, package: str = '') -> list:
         """
         Retrieve the include and exclude arguments for rsync from a yaml file.
 
@@ -56,26 +56,25 @@ class Sync(AbstractTask):
         for entry in data['include']:
             if isinstance(entry, str):
                 if package == '' or package == entry:
+                    includes.append(f'{entry}')
                     includes.append(f'{entry}/**')
-                    includes.append(f'{entry}/')
             elif isinstance(entry, dict):
                 for directory, subdirectories in entry.items():
                     if package == '':
-                        includes.append(f'{directory}/')
+                        includes.append(f'{directory}')
                         for subdirectory in subdirectories:
-                            includes.append(f'{directory}/{subdirectory}/')
+                            includes.append(f'{directory}/{subdirectory}')
                             includes.append(f'{directory}/{subdirectory}/**')
                     elif package in subdirectories:
-                        includes.append(f'{directory}/')
-                        includes.append(f'{directory}/{package}/')
+                        includes.append(f'{directory}')
+                        includes.append(f'{directory}/{package}')
                         includes.append(f'{directory}/{package}/**')
-        includes.append('*')
 
         # Encase in quotes
-        excludes = [f'"{exclude}",' for exclude in excludes]
-        includes = [f'"{include}",' for include in includes]
+        excludes = [f"'--include=- {exclude}'" for exclude in excludes]
+        includes = [f"'--include=+ {include}'" for include in includes]
 
-        return f"--exclude={{{''.join(excludes)}}} --include={{{''.join(includes)}}}"
+        return excludes + includes + ["'--include=- *'"]
 
     def _run(self, connections: Group) -> GroupResult:
         """
@@ -152,15 +151,16 @@ class Sync(AbstractTask):
             ]
             if not be_quiet():
                 cmd.append("--verbose")
-            cmd.append(self._includes)
+            cmd.extend(self._includes)
             cmd.extend([
                 self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
-                f"{connection.user}@{connection.host}:{self._remote_src_path}/"  # NOTE: The trailing slash is important for rsync
+                f"{connection.user}@{connection.host}:{self._remote_src_path}"
             ])
             cmd = ' '.join(cmd)
 
             print_debug(f"Calling {cmd}")
-            invoke_result = connection.local(cmd)
+            invoke_result = connection.local(cmd, hide=hide_output())
+
             if invoke_result is None:
                 return
             # The result is from invoke, not fabric, so we need to convert it
