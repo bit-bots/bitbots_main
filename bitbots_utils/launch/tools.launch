@@ -9,7 +9,7 @@
     </group>
 
     <group if="$(var record)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/record_bag.launch">
+        <include file="$(find-pkg-share bitbots_utils)/launch/rosbag_record.launch.py">
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>
