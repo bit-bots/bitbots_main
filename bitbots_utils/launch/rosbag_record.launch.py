@@ -45,7 +45,6 @@ TOPICS_TO_RECORD: List[str] = [
     '/imu_head/data',
     '/imu/data_raw',
     '/joint_states',
-    '/line_mask_relative_pc_to_record',
     '/motion_odometry',
     '/move_base/current_goal',
     '/obstacles_relative',
@@ -82,35 +81,6 @@ def generate_launch_arguments():
             'max_pointcloud_frequency',
             default_value='1.0',
             description='Max frequency [hz] for recording pointclouds'
-        ),
-    ]
-
-
-def generate_nodes():
-    return [
-        Node(
-            package='topic_tools',
-            executable='throttle',
-            output='screen',
-            name='record_rosbag_drop_images',
-            arguments=[
-                'messages',
-                '/camera/image_proc',
-                LaunchConfiguration('max_image_frequency'),
-                '/camera/image_to_record'
-            ]
-        ),
-        Node(
-            package='topic_tools',
-            executable='throttle',
-            output='screen',
-            name='record_rosbag_drop_pointclouds',
-            arguments=[
-                'messages',
-                '/line_mask_relative_pc',
-                LaunchConfiguration('max_pointcloud_frequency'),
-                '/line_mask_relative_pc_to_record'
-            ]
         ),
     ]
 
@@ -153,9 +123,8 @@ def generate_action(context):
 
 def generate_launch_description():
     launch_arguments = generate_launch_arguments()
-    nodes = generate_nodes()
 
     action = OpaqueFunction(function=generate_action)
 
     # Construct LaunchDescription from parts
-    return LaunchDescription(launch_arguments + nodes + [action])
+    return LaunchDescription(launch_arguments + [action])
