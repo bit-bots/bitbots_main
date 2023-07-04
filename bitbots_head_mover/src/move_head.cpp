@@ -76,6 +76,7 @@ class HeadMover {
 
   //declare params
   move_head::Params params_;
+  std::shared_ptr<move_head::ParamListener> param_listener_;
 
   rclcpp::TimerBase::SharedPtr timer_;
 
@@ -109,8 +110,8 @@ class HeadMover {
         [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); });
 
     // load parameters from config
-    auto param_listener = std::make_shared<move_head::ParamListener>(node_);
-    params_ = param_listener->get_params();
+    param_listener_ = std::make_shared<move_head::ParamListener>(node_);
+    params_ = param_listener_->get_params();
 
     auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
 
@@ -161,7 +162,7 @@ class HeadMover {
     pos_msg_.joint_names = {"HeadPan", "HeadTilt"};
     pos_msg_.positions = {0, 0};
     pos_msg_.velocities = {0, 0};
-    pos_msg_.accelerations = {-1, -1};
+    pos_msg_.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
     pos_msg_.max_currents = {-1, -1};
 
     // apparently tf_listener is necessary but unused
@@ -320,6 +321,8 @@ action_running_ = false;
 
     pos_msg_.positions = {pan_position, tilt_position};
     pos_msg_.velocities = {pan_speed, tilt_speed};
+
+    pos_msg_.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
     pos_msg_.header.stamp = node_->get_clock()->now();
     position_publisher_->publish(pos_msg_);
     return true;
@@ -395,6 +398,8 @@ action_running_ = false;
     }
     pos_msg_.positions = {goal_pan, goal_tilt};
     pos_msg_.velocities = {pan_speed, tilt_speed};
+
+    pos_msg_.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
     pos_msg_.header.stamp = rclcpp::Clock().now();
     position_publisher_->publish(pos_msg_);
   }
@@ -593,6 +598,11 @@ action_running_ = false;
   void behave() {
     uint curr_head_mode = head_mode_.head_mode;
 
+    params_ = param_listener_->get_params();
+    // log the param max_acceleration_tilt which is a double
+    RCLCPP_INFO(node_->get_logger(), "max_acceleration_tilt: %f", params_.max_acceleration_tilt);
+
+    
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
         case humanoid_league_msgs::msg::HeadMode::BALL_MODE: // 0

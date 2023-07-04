@@ -1,5 +1,22 @@
 move_head:
   # Max values for the head position
+  max_acceleration_pan: {
+    type: double,
+    default_value: 14.0,
+    description: "Max acceleration for pan",
+    validation: {
+          bounds<>: [-1, 20]
+        }
+  }
+
+  max_acceleration_tilt: {
+    type: double,
+    default_value: 14.0,
+    description: "Max acceleration for tilt",
+    validation: {
+          bounds<>: [-1, 20]
+        }
+  }
   max_pan: {
     type: double_array,
     default_value: [-2.35, 2.35],
