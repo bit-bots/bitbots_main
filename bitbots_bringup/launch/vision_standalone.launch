@@ -13,7 +13,7 @@
     <!-- Start the vision-->
     <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
         <arg name="sim" value="$(var sim)" />
-        <arg name="camera" value="(var camera)" />
+        <arg name="camera" value="$(var camera)" />
         <arg name="debug" value="$(var debug)" />
     </include>
 </launch>
