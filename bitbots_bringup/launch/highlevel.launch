@@ -21,7 +21,7 @@
 
     <!-- launch vision -->
     <group if="$(var vision)">
-        <include file="$(find-pkg-share bitbots_bringup)/launch/vision_standalone.launch">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>
