@@ -5,15 +5,16 @@
     <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
-    <!-- Add base -->
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
-        <arg name="sim" value="$(var sim)" />
-    </include>
-
     <!-- Start the vision-->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
+    <include file="$(find-pkg-share bitbots_vision)/launch/vision.launch">
         <arg name="sim" value="$(var sim)" />
-        <arg name="camera" value="(var camera)" />
         <arg name="debug" value="$(var debug)" />
     </include>
+
+    <!-- Start the camera only when necessary -->
+    <group if="$(var camera)">
+        <group unless="$(var sim)">
+            <include file="$(find-pkg-share bitbots_basler_camera)/launch/basler_camera.launch" />
+        </group>
+    </group>
 </launch>
