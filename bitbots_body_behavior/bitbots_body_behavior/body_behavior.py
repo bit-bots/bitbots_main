@@ -62,7 +62,7 @@ class BodyDSD:
         self.dsd.register_actions(os.path.join(dirname, "actions"))
         self.dsd.register_decisions(os.path.join(dirname, "decisions"))
 
-        self.dsd.load_behavior(os.path.join(dirname, "main.dsd"))
+        self.dsd.load_behavior(os.path.join(dirname, "minimal.dsd"))
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
         
         self.dsd.blackboard.lookat_action_client = ActionClient(node, LookAt, 'look_at_goal')
