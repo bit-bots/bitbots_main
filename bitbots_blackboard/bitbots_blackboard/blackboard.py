@@ -24,6 +24,7 @@ class BodyBlackboard:
         self.config = get_parameter_dict(node, "body")
         self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
         self.map_frame: str = self.node.get_parameter("map_frame").value
+        self.in_sim: bool = self.node.get_parameter("use_sim_time").value
         self.blackboard = BlackboardCapsule(node)
         self.gamestate = GameStatusCapsule(node)
         self.animation = AnimationCapsule(node)

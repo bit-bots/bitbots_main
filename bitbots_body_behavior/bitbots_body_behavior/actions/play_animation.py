@@ -75,3 +75,11 @@ class PlayAnimationCheering(AbstractPlayAnimation):
 class PlayAnimationInit(AbstractPlayAnimation):
     def get_animation_name(self):
         return self.blackboard.init_animation
+
+
+class PlayAnimationInitInSim(PlayAnimationInit):
+    def perform(self, reevaluate=False):
+        if self.blackboard.in_sim:
+            return super().perform(reevaluate)
+        else:
+            return self.pop()
