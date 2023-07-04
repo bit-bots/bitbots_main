@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6"/>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 7"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <!-- camera driver -->
