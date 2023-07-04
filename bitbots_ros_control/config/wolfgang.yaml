@@ -38,7 +38,7 @@ wolfgang_hardware_interface:
 
       set_ROM_RAM: true # set the following values on startup to all motors
 
-      ROM_RAM_DEFAULT: 
+      ROM_RAM_DEFAULT:
         # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
@@ -66,7 +66,7 @@ wolfgang_hardware_interface:
         Profile_Acceleration: 0 # 0 for infinite
         Profile_Velocity: 0 # 0 for infinite
 
-      ROM_RAM_ARMS: 
+      ROM_RAM_ARMS:
         # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
@@ -158,12 +158,13 @@ wolfgang_hardware_interface:
         interface_type: LED
         number_of_LEDs: 3
         start_number: 3
-      IMU_head:
-        id: 242
-        topic: imu_head/data
-        frame: imu_frame_2
-        model_number: 0xBAFF
-        interface_type: IMU
+      # Removed head imu at worldcup due to motorbus issues
+      #IMU_head:
+      #  id: 242
+      #  topic: imu_head/data
+      #  frame: imu_frame_2
+      #  model_number: 0xBAFF
+      #  interface_type: IMU
       RShoulderPitch:
         id: 1
         model_number: 311
