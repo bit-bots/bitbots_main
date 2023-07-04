@@ -599,8 +599,6 @@ action_running_ = false;
     uint curr_head_mode = head_mode_.head_mode;
 
     params_ = param_listener_->get_params();
-    // log the param max_acceleration_tilt which is a double
-    RCLCPP_INFO(node_->get_logger(), "max_acceleration_tilt: %f", params_.max_acceleration_tilt);
 
     
     if (prev_head_mode_ != curr_head_mode) {
