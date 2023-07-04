@@ -5,7 +5,7 @@
     <arg unless="$(var sim)" name="fieldname" default="feldraum" description="Loads field settings (feldraum, webots, gazebo, bangkok, spl)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (feldraum, webots, gazebo, bangkok)." />
 
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 7"/>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 8"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
     <let if="$(env IS_ROBOT false)" name="handler_taskset" value="taskset -c 9"/>
     <let unless="$(env IS_ROBOT false)" name="handler_taskset" value=""/>
