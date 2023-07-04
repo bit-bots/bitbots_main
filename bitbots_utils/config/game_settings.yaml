@@ -5,3 +5,4 @@ parameter_blackboard:
     role: defense
     team_color: 0
     team_id: 1
+    monitoring_host_ip: 0.0.0.0

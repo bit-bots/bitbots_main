@@ -8,5 +8,5 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 from bitbots_utils import game_settings
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     game_settings.main()

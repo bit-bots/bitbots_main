@@ -1,21 +1,28 @@
 ---
-# If you want to specify a range instead of a list, you will have to do it in the following way:
-# !!python/object/apply:builtins.range [10, 50, 5]
+# type will be used to cast the given input into
+# the result will then be checked against the given options for validity
+# if there are no options the given input will be accepted if it is castable
 
-# for settings which are not coverable by ranges or lists you can type "custom"
-# This will accept any input and write it to the game_settings.yaml
 bot_id:
   options: [1, 2, 3, 4, 5, 6]
+  type: int
   explanation: ""
 team_id:
   options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 31, 32]
+  type: int
   explanation: ""
 team_color:
   options: [0, 1]
+  type: int
   explanation: "0 is blue, 1 is red"
 role:
   options: ['goalie', 'offense', 'defense', 'penalty']
+  type: str
   explanation: ""
 position_number:
   options: [0, 1, 2]
+  type: str
   explanation: "0 = center, 1 = left, 2 = right"
+monitoring_host_ip:
+  type: ipaddress.IPv4Address
+  explanation: "IP of monitoring host to send UDP messages to"
