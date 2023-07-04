@@ -25,7 +25,7 @@ namespace bitbots_ros_control  {
 class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
  public:
   explicit ServoBusInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver,
-                             std::vector<std::tuple<int, std::string, float, float>> servos);
+                             std::vector<std::tuple<int, std::string, float, float, std::string>> servos);
   ~ServoBusInterface();
   bool init();
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
@@ -84,8 +84,8 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   bool switch_individual_torque_;
 
   std::shared_ptr<DynamixelDriver> driver_;
-  // id, name, modelnumber
-  std::vector<std::tuple<int, std::string, float, float>> servos_;
+  // id, name, modelnumber, group
+  std::vector<std::tuple<int, std::string, float, float, std::string>> servos_;
   int joint_count_;
 
   std::vector<int32_t> goal_torque_individual_;
@@ -94,6 +94,7 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   std::vector<uint8_t> joint_ids_;
   std::vector<double> joint_mounting_offsets_;
   std::vector<double> joint_offsets_;
+  std::vector<std::string> joint_groups_; // The group name for each joint
 
   std::vector<double> goal_position_;
   std::vector<double> goal_effort_;

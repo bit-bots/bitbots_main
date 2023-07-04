@@ -5,7 +5,7 @@ namespace bitbots_ros_control {
 
 ServoBusInterface::ServoBusInterface(rclcpp::Node::SharedPtr nh,
                                      std::shared_ptr<DynamixelDriver> &driver,
-                                     std::vector<std::tuple<int, std::string, float, float>> servos)
+                                     std::vector<std::tuple<int, std::string, float, float, std::string>> servos)
     : first_cycle_(true), read_position_(true), read_velocity_(false), read_effort_(true) {
   nh_ = nh;
   driver_ = driver;
@@ -134,7 +134,7 @@ bool ServoBusInterface::loadDynamixels() {
 
   // iterate over all servos and save the information
   // the wolfgang hardware interface already loaded them into the driver by pinging
-  for (std::tuple<int, std::string, float, float> &servo: servos_) {
+  for (std::tuple<int, std::string, float, float, std::string> &servo: servos_) {
     int motor_id = std::get<0>(servo);
     joint_ids_.push_back(uint8_t(motor_id));
     std::string joint_name = std::get<1>(servo);
@@ -143,6 +143,8 @@ bool ServoBusInterface::loadDynamixels() {
     joint_mounting_offsets_.push_back(mounting_offset);
     float joint_offset = std::get<3>(servo);
     joint_offsets_.push_back(joint_offset);
+    std::string group = std::get<4>(servo);
+    joint_groups_.push_back(group);
   }
 
   // generate a diagnostic message
@@ -157,27 +159,78 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
    * This method writes the ROM and RAM values specified in the config to all servos.
    */
   RCLCPP_DEBUG(nh_->get_logger(), "Writing ROM and RAM values");
-  // get a list of all parameters in this section
-  rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list = nh_->list_parameters({"servos.ROM_RAM"}, 0);
+  // Iterate over all groups
   bool sucess = true;
-  int i = 0;
-  // iterate over the parameters and set each one
-  for (std::string &register_name: rom_ram_parameter_list.names) {
-    int register_value = nh_->get_parameter(register_name).as_int();
-    // remove the servos.ROM_RAM.
-    register_name = register_name.substr(15);
-    RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on all servos to %d", register_name.c_str(), register_value);
+  // Initilize datastructure to hold the parameters temporarily before we write them all at once
+  // Joint id -> Register name -> Register value
+  std::map<int, std::map<std::string, int>> joint_register_value_map;
+  // Group id -> Register name -> Register value
+  std::map<std::string, std::map<std::string, int>> group_param_cache;
+  // Iterate over all joints
+  for (size_t num = 0; num < joint_names_.size(); num++) {
+    // Get the joint group
+    auto joint_group = joint_groups_[num];
+    // Check if we already have the parameters for this group
+    if (group_param_cache.find(joint_group) == group_param_cache.end()) {
+      // Get the parameters of the group
+      static const std::string ROM_RAM_PARAMETER_NAMESPACE = "servos.ROM_RAM_";
+      // Get a list of all parameters in this section
+      rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list = nh_->list_parameters(
+        {ROM_RAM_PARAMETER_NAMESPACE + joint_group}, 0);
+      // Iterate over the parameters and set each one
+      for (std::string &register_parameter_name: rom_ram_parameter_list.names) {
+        // Get the value of the parameter
+        int value = nh_->get_parameter(register_parameter_name).as_int();
+        // Get only the name of the register without the namespace
+        auto register_name = register_parameter_name.substr(ROM_RAM_PARAMETER_NAMESPACE.size() + joint_group.size() + 1);
+        // Add the parameter to the cache
+        group_param_cache[joint_group][register_name] = value;
+      }
+    }
+    // Add the registers to the given joint in the map
+    joint_register_value_map[num] = group_param_cache[joint_group];
+  }
 
-    int *values = (int *) malloc(joint_names_.size()*sizeof(int));
+  // Check that all groups have the same parameters not only the same number of parameters
+  // Get all keys of the first group
+  std::vector<std::string> parameter_names;
+  for (auto const& [key, value]: joint_register_value_map[0]) {
+    parameter_names.push_back(key);
+  }
+  for (auto const& [group_id, group_params]: group_param_cache) {
+    // Check that the size is the same
+    if (group_params.size() != parameter_names.size()) {
+      RCLCPP_ERROR(nh_->get_logger(), "Servo group %s has a different number of servo parameters", group_id.c_str());
+      sucess = false;
+    }
+    // Check that all keys are the same
+    for (std::string &key: parameter_names) {
+      if (group_params.find(key) == group_params.end()) {
+        RCLCPP_ERROR(nh_->get_logger(), "Group %s does not have parameter %s", group_id.c_str(), key.c_str());
+        sucess = false;
+      }
+    }
+  }
+
+  // Allocate memory for the values in the driver
+  int *values = (int *) malloc(joint_names_.size()*sizeof(int));
+  // Iterate over parameter names
+  for (auto register_name: parameter_names) {
+    // Get the value for each joint
     for (size_t num = 0; num < joint_names_.size(); num++) {
+      // Get the value from the cache
+      int register_value = joint_register_value_map[num][register_name];
+      RCLCPP_DEBUG(nh_->get_logger(), "Setting %s on servo %s to %d", register_name.c_str(), joint_names_[num].c_str(), register_value);
+      // Set the value in the driver
       values[num] = register_value;
     }
     if (first_time){
       driver_->addSyncWrite(register_name.c_str());
     }
     sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
-    free(values);
   }
+  // Free the memory
+  free(values);
   return sucess;
 }
 
