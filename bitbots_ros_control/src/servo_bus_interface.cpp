@@ -200,7 +200,7 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
   for (auto const& [group_id, group_params]: group_param_cache) {
     // Check that the size is the same
     if (group_params.size() != parameter_names.size()) {
-      RCLCPP_ERROR(nh_->get_logger(), "Servo group %s has a differnet number of servo parameters", group_id.c_str());
+      RCLCPP_ERROR(nh_->get_logger(), "Servo group %s has a different number of servo parameters", group_id.c_str());
       sucess = false;
     }
     // Check that all keys are the same
