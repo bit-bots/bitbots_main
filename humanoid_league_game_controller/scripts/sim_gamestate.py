@@ -42,7 +42,7 @@ p:     toggle penalized
 t:     toggle secondary state team
 m:     toggle secondary state mode
 k:     toggle kick off
-
++:     increase own score by 1
 
 
 
@@ -98,6 +98,8 @@ CTRL-C to quit
                         game_state_msg.secondary_state_team = self.team_id
                 elif key == "k":
                     self.has_kick_off = not self.has_kick_off
+                elif key == "+":
+                    game_state_msg.own_score += 1
                 game_state_msg.has_kick_off = self.has_kick_off
 
                 sys.stdout.write("\x1b[A")
