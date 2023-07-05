@@ -3,7 +3,6 @@ from typing import Optional
 from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
 from bitbots_blackboard.capsules.blackboard_capsule import BlackboardCapsule
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
-from bitbots_blackboard.capsules.head_capsule import HeadCapsule
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
@@ -45,14 +44,3 @@ class BodyBlackboard:
         self.hcm_deactivate_pub: Optional[Publisher] = None
         
         self.lookat_action_client: Optional[ActionClient] = None
-        
-
-
-class HeadBlackboard:
-    def __init__(self, node: Node, tf_buffer: tf2.Buffer):
-        self.node = node
-        self.tf_buffer = tf_buffer
-        self.config = get_parameter_dict(node, "head")
-        self.head_capsule = HeadCapsule(self)
-        self.world_model = WorldModelCapsule(self)
-        self.costmap = CostmapCapsule(self)
