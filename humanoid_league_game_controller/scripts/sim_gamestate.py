@@ -13,7 +13,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile
+from rclpy.qos import QoSProfile, DurabilityPolicy
 from humanoid_league_msgs.msg import GameState as GameStateMsg
 from bitbots_utils.utils import get_parameters_from_other_node
 
@@ -42,7 +42,7 @@ p:     toggle penalized
 t:     toggle secondary state team
 m:     toggle secondary state mode
 k:     toggle kick off
-
++:     increase own score by 1
 
 
 
@@ -58,17 +58,18 @@ CTRL-C to quit
         super().__init__("sim_gamestate")
         self.logger = self.get_logger()
 
-        self.team_id = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id'])['team_id']
+        self.team_id = get_parameters_from_other_node(self, "parameter_blackboard", ["team_id"])["team_id"]
         self.has_kick_off = True
 
         self.settings = termios.tcgetattr(sys.stdin)
 
-        namespaces = ['']  # ['amy/', 'rory/', 'jack/', 'donna/', 'rose/']
-        publishers = [
-            self.create_publisher(GameStateMsg, f'{n}/gamestate', QoSProfile(durability=1, depth=1))
-            for n in namespaces
-        ]
+        self.publisher = self.create_publisher(
+            GameStateMsg,
+            "gamestate",
+            QoSProfile(durability=DurabilityPolicy.TRANSIENT_LOCAL, depth=1),
+        )
 
+    def loop(self):
         game_state_msg = GameStateMsg()
         game_state_msg.header.stamp = self.get_clock().now().to_msg()
 
@@ -79,24 +80,26 @@ CTRL-C to quit
             print(self.msg)
             while True:
                 key = self.get_key()
-                if key == '\x03':
+                if key == "\x03":
                     break
-                elif key in ['0', '1', '2', '3', '4']:
+                elif key in ["0", "1", "2", "3", "4"]:
                     int_key = int(key)
                     game_state_msg.game_state = int_key
-                elif key == 'p':  # penalize / unpenalize
+                elif key == "p":  # penalize / unpenalize
                     game_state_msg.penalized = not game_state_msg.penalized
-                elif key in [chr(ord('a') + x) for x in range(10)]:
-                    game_state_msg.secondary_state = ord(key) - ord('a')
-                elif key == 'm':
+                elif key in [chr(ord("a") + x) for x in range(10)]:
+                    game_state_msg.secondary_state = ord(key) - ord("a")
+                elif key == "m":
                     game_state_msg.secondary_state_mode = (game_state_msg.secondary_state_mode + 1) % 3
-                elif key == 't':
+                elif key == "t":
                     if game_state_msg.secondary_state_team == self.team_id:
                         game_state_msg.secondary_state_team = self.team_id + 1
                     else:
                         game_state_msg.secondary_state_team = self.team_id
-                elif key == 'k':
+                elif key == "k":
                     self.has_kick_off = not self.has_kick_off
+                elif key == "+":
+                    game_state_msg.own_score += 1
                 game_state_msg.has_kick_off = self.has_kick_off
 
                 sys.stdout.write("\x1b[A")
@@ -109,10 +112,9 @@ CTRL-C to quit
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
-                for publisher in publishers:
-                    publisher.publish(game_state_msg)
+                self.publisher.publish(game_state_msg)
                 print(
-f"""Penalized:            {game_state_msg.penalized} 
+                    f"""Penalized:            {game_state_msg.penalized}
 Secondary State Team: {game_state_msg.secondary_state_team}
 Secondary State Mode: {game_state_msg.secondary_state_mode}
 Secondary State:      {game_state_msg.secondary_state}
@@ -121,7 +123,8 @@ Has Kick Off:         {game_state_msg.has_kick_off}
 
 
 CTRL-C to quit
-""")
+"""
+                )
 
         except Exception as e:
             print(e)
@@ -142,14 +145,6 @@ CTRL-C to quit
 if __name__ == "__main__":
     rclpy.init(args=None)
     node = SimGamestate()
-
-    try:
-        # Necessary so that sleep in loop() is not blocking
-        thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
-        thread.start()
-        node.loop()
-    except KeyboardInterrupt:
-        pass
-
+    node.loop()
     node.destroy_node()
     rclpy.shutdown()
