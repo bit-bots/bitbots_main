@@ -209,7 +209,7 @@ class CheckIMU(AbstractHCMDecisionElement):
             else:
                 return "IMU_NOT_STARTED"
 
-        if self.blackboard.current_time.nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > 0.1:
+        if self.blackboard.current_time.nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > 0.5:
             if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.current_time.nanoseconds / 1e9 - \
                     self.blackboard.start_time.nanoseconds / 1e9 < 10:
                 # wait for the IMU to start

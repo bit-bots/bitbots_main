@@ -86,6 +86,8 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   std::map<std::string, rclcpp::Parameter> params_;
 
   DynupResponse goals_;
+  std::shared_ptr<rclcpp::Node> walking_param_node_;
+  std::shared_ptr<rclcpp::SyncParametersClient> walking_param_client_;
 
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
