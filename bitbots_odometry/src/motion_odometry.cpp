@@ -1,12 +1,15 @@
 #include <bitbots_odometry/motion_odometry.h>
 
-MotionOdometry::MotionOdometry()
-    : Node("MotionOdometry"),
-      tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
-      br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
-      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)) {
-  this->declare_parameter<bool>("publish_walk_odom_tf", false);
-  this->get_parameter("publish_walk_odom_tf", publish_walk_odom_tf_);
+namespace bitbots_odometry {
+
+MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
+    param_listener_(get_node_parameters_interface()) {
+
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
+  br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
+  config_ = param_listener_.get_params();
+
   this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
   this->declare_parameter<std::string>("r_sole_frame", "r_sole");
@@ -15,27 +18,20 @@ MotionOdometry::MotionOdometry()
   this->get_parameter("l_sole_frame", l_sole_frame_);
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
-  this->declare_parameter<double>("x_forward_scaling", 1.0);
-  this->get_parameter("x_forward_scaling", x_forward_scaling_);
-  this->declare_parameter<double>("x_backward_scaling", 1.0);
-  this->get_parameter("x_backward_scaling", x_backward_scaling_);
-  this->declare_parameter<double>("y_scaling", 1.0);
-  this->get_parameter("y_scaling", y_scaling_);
-  this->declare_parameter<double>("yaw_scaling", 1.0);
-  this->get_parameter("yaw_scaling", yaw_scaling_);
-  joint_update_time_= rclcpp::Time(0, 0, RCL_ROS_TIME);
+
+  joint_update_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   current_support_state_ = -1;
   previous_support_state_ = -1;
   walk_support_state_sub_ =
       this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
-                                                                 1,
-                                                                 std::bind(&MotionOdometry::supportCallback,
-                                                                           this, _1));
+                                                              1,
+                                                              std::bind(&MotionOdometry::supportCallback,
+                                                                        this, _1));
   kick_support_state_sub_ =
       this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
-                                                                 1,
-                                                                 std::bind(&MotionOdometry::supportCallback,
-                                                                           this, _1));
+                                                              1,
+                                                              std::bind(&MotionOdometry::supportCallback,
+                                                                        this, _1));
   joint_state_sub_ =
       this->create_subscription<sensor_msgs::msg::JointState>("joint_states",
                                                               1,
@@ -57,12 +53,13 @@ MotionOdometry::MotionOdometry()
 
 void MotionOdometry::loop() {
   rclcpp::Time cycle_start_time = this->now();
+  config_ = param_listener_.get_params();
 
   //check if joint states were received, otherwise we can't provide odometry
   rclcpp::Duration joints_delta_t = this->now() - joint_update_time_;
   if (joints_delta_t.seconds() > 0.1) {
     // only warn if we did not just start as this results in unecessary warnings
-    if ((this->now() - start_time_).seconds() > 10){
+    if ((this->now() - start_time_).seconds() > 10) {
       RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
                            "No joint states received. Will not provide odometry.");
     }
@@ -73,9 +70,9 @@ void MotionOdometry::loop() {
     // but since we skip the double support phase, we basically take the timepoint when the double support phase is
     // finished. This means both feet did not move and this should create no offset.
     if ((current_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE
-        && previous_support_state_ == biped_interfaces::msg::Phase::RIGHT_STANCE) ||
+         && previous_support_state_ == biped_interfaces::msg::Phase::RIGHT_STANCE) ||
         (current_support_state_ == biped_interfaces::msg::Phase::RIGHT_STANCE
-            && previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE)) {
+         && previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE)) {
       foot_change_time_ = current_support_state_time_;
       if (previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE) {
         previous_support_link_ = l_sole_frame_;
@@ -99,12 +96,12 @@ void MotionOdometry::loop() {
         // scale odometry based on parameters
         double x = previous_to_current_support.getOrigin().x();
         if (x > 0) {
-          x = x * x_forward_scaling_;
+          x = x * config_.x_forward_scaling;
         } else {
-          x = x * x_backward_scaling_;
+          x = x * config_.x_backward_scaling;
         }
-        double y = previous_to_current_support.getOrigin().y() * y_scaling_;
-        double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * yaw_scaling_;
+        double y = previous_to_current_support.getOrigin().y() * config_.y_scaling;
+        double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * config_.yaw_scaling;
         previous_to_current_support.setOrigin({x, y, 0});
         tf2::Quaternion q;
         q.setRPY(0, 0, yaw);
@@ -134,12 +131,12 @@ void MotionOdometry::loop() {
       tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
       double x = current_support_to_base.getOrigin().x();
       if (current_odom_msg_.twist.twist.linear.x > 0) {
-        x = x * x_forward_scaling_;
-      }else{
-        x = x * x_backward_scaling_;
+        x = x * config_.x_forward_scaling;
+      } else {
+        x = x * config_.x_backward_scaling;
       }
-      double y = current_support_to_base.getOrigin().y() * y_scaling_;
-      double yaw = tf2::getYaw(current_support_to_base.getRotation()) * yaw_scaling_;
+      double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
+      double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling;
       current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
       tf2::Quaternion q;
       q.setRPY(0, 0, yaw);
@@ -151,7 +148,7 @@ void MotionOdometry::loop() {
       odom_to_base_link_msg.header.stamp = current_support_to_base_msg.header.stamp;
       odom_to_base_link_msg.header.frame_id = odom_frame_;
       odom_to_base_link_msg.child_frame_id = base_link_frame_;
-      if (publish_walk_odom_tf_) {
+      if (config_.publish_walk_odom_tf) {
         RCLCPP_WARN_ONCE(this->get_logger(), "Sending Tf from walk odometry directly");
         br_->sendTransform(odom_to_base_link_msg);
       }
@@ -217,9 +214,11 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
   current_odom_msg_ = *msg;
 }
 
+}
+
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<MotionOdometry>();
+  auto node = std::make_shared<bitbots_odometry::MotionOdometry>();
 
   rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 200.0);
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->loop();});
