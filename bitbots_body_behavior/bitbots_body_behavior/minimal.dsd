@@ -1,15 +1,28 @@
 #DoNothing
-@ChangeAction + action:waiting, @LookForward, @Stand
-
-#GetWalkreadyAndLocalize
-@GetWalkready + r:false, @WalkForward + time:10, @Stand
+@LookForward, @Stand
 
 #Init
-@Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
+@Stand + duration:0.1 + r:false, @LookForward, @Stand
+
+#GetWalkreadyAndLocalize
+@PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace + duration:3 + r:false
+
+#Dribble
+@CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
 
 -->BodyBehavior
 $GameStateDecider
     INITIAL --> #Init
-    READY --> $DoOnce
-        NOT_DONE --> #GetWalkreadyAndLocalize
-        DONE --> #DoNothing
+    READY --> $ConfigRole
+        GOALIE --> $DoOnce
+            NOT_DONE --> #GetWalkreadyAndLocalize
+            DONE --> @GoToRelativePosition + x:3 + y:1 + t:1.57, @Stand
+        ELSE --> $DoOnce
+            NOT_DONE --> #GetWalkreadyAndLocalize
+            DONE --> @GoToRelativePosition + x:3 + y:0 + t:1.57
+    PLAYING --> $ConfigRole
+        GOALIE --> @Stand
+        ELSE --> $BallSeen
+            YES --> #Dribble
+            NO --> @GoToRelativePosition + x:-2 + y:0 + t:0, @Stand
+    ELSE --> @Stand
