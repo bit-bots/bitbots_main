@@ -3,8 +3,8 @@ import concurrent.futures
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 
-from tasks.abstract_task import AbstractTaskWhichRequiresSudo
-from misc import *
+from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
+from deploy.misc import *
 
 class Install(AbstractTaskWhichRequiresSudo):
     def __init__(

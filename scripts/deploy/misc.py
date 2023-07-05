@@ -4,7 +4,6 @@ import argparse
 import ipaddress
 import os
 import subprocess
-import traceback
 
 import yaml
 

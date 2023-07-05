@@ -1,8 +1,8 @@
 from fabric import Group, GroupResult
 from fabric.exceptions import GroupException
 
-from tasks.abstract_task import AbstractTask
-from misc import *
+from deploy.tasks.abstract_task import AbstractTask
+from deploy.misc import *
 
 
 class Build(AbstractTask):

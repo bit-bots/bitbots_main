@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
 from typing import Optional
 
 import argparse
 import os
 
-from misc import *
-from tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
 from rich.prompt import Prompt
+
+from deploy.misc import *
+from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
 
 
 # TODO: If task arguments (e.g. -s) is given, only do given tasks. Do we wanna do this?
@@ -188,10 +188,3 @@ class DeployRobots():
         with CONSOLE.status(f"[bold blue] Tasks finished. Closing connections", spinner="point"):
             connections.close()
         print_success(f"Tasks finished. Connections closed. Exiting.")
-
-if __name__ == "__main__":
-    try:
-        DeployRobots()
-    except KeyboardInterrupt:
-        print_err("Interrupted by user")
-        exit(1)

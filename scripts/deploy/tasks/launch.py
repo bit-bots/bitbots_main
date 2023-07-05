@@ -3,8 +3,8 @@ import re
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 
-from tasks.abstract_task import AbstractTask
-from misc import *
+from deploy.tasks.abstract_task import AbstractTask
+from deploy.misc import *
 
 
 class Launch(AbstractTask):

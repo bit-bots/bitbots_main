@@ -5,8 +5,8 @@ import yaml
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 
-from tasks.abstract_task import AbstractTask
-from misc import *
+from deploy.tasks.abstract_task import AbstractTask
+from deploy.misc import *
 
 class Sync(AbstractTask):
     def __init__(

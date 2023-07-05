@@ -2,7 +2,7 @@ import abc
 
 from fabric import Group, GroupResult
 
-from misc import *
+from deploy.misc import *
 
 class AbstractTask(abc.ABC):
     def __init__(self) -> None:
