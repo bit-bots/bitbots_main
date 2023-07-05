@@ -92,10 +92,11 @@ class Install(AbstractTaskWhichRequiresSudo):
         connections = get_connections_from_succeeded(gather_results)
 
         # Define function to multithread install commands on all hosts
-        def _install_commands_on_single_host(result: Result) -> Optional[Result]:
+        def _install_commands_on_single_host(connection: Connection, result: Result) -> Optional[Result]:
             """
             Install all dependencies on a single host from pip and apt.
 
+            :param connection: The connection to the remote server.
             :param Result: The result of the simulated rosdep install command.
             :return: The result of the task.
             """
@@ -105,8 +106,6 @@ class Install(AbstractTaskWhichRequiresSudo):
             #   sudo -H apt-get install -y <package1>
             #   sudo -H apt-get install -y <package2>
             #   ...
-            connection = result.connection
-
             lines = result.stdout.splitlines()
             install_commands = []
             for line in lines:
@@ -125,7 +124,6 @@ class Install(AbstractTaskWhichRequiresSudo):
 
             install_result: Optional[Result] = None  # This collects the result of the last run install command, failed if exception occurred
             for install_command in install_commands:
-                print_debug(f"Calling {install_command} on {connection.host}")
                 if install_command.startswith(apt_command_prefix):
                     # Remove prefix from command, as we collect all apt commands into one
                     apt_packages.append(install_command.replace(apt_command_prefix, "", 1).strip())
@@ -135,10 +133,10 @@ class Install(AbstractTaskWhichRequiresSudo):
             apt_install_command = f"apt-get install -y {' '.join(apt_packages)}"
             print_debug(f"Running apt install command: {apt_install_command} on {connection.host}")
             try:
-                install_result = connection.sudo(apt_install_command, hide=hide_output(), password=self._sudo_password, pty=True)
-            except Exception as e:
+                install_result = connection.sudo(apt_install_command, hide=hide_output(), password=self._sudo_password)
+            except Exception as e:  # TODO: What exception can we expect here?
                 print_err(f"Failed install command on {connection.host}")
-                install_result = Result(connection=connection, exited=1, command=apt_install_command)  # TODO: What exception can we expect here?
+                install_result = Result(connection=connection, exited=1, command=apt_install_command)
             return install_result
 
         # Collect results from all hosts
@@ -146,11 +144,19 @@ class Install(AbstractTaskWhichRequiresSudo):
 
         # Create a ThreadPoolExecutor to run the install commands on all hosts in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(gather_results.succeeded)) as executor:
-            futures = [executor.submit(_install_commands_on_single_host, gather_result) for gather_result in gather_results]
+            futures = [executor.submit(_install_commands_on_single_host, gather_connection, gather_result) for gather_connection, gather_result in gather_results.items()]
 
         for future in futures:
             install_result = future.result()
             if install_result is not None:
                 installs_results[install_result.connection] = install_result
+
+        # Re-Bifurcate results into succeeded and failed results
+        # This is necessary, as the GroupResult does this prematurely, before we could collect the results from all hosts
+        for key, value in installs_results.items():
+            if value.exited != 0:
+                installs_results.failed[key] = value
+            else:
+                installs_results.succeeded[key] = value
 
         return installs_results
