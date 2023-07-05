@@ -36,10 +36,10 @@ Five different tasks can be performed:
     ./deploy_robots.py <target>
     ```
 
-- Also launch the teamplayer software on all robots:
+- Make all robots ready for games. This also launch the teamplayer software on all robots:
 
     ```bash
-    ./deploy_robots.py --launch-teamplayer ALL
+    ./deploy_robots.py --gameready ALL
     ```
 
 TODO: Update this example
