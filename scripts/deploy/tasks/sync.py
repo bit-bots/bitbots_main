@@ -100,38 +100,94 @@ class Sync(AbstractTask):
 
         :return: The results of the task.
         """
-        if self._package:
-            print_warn("Cleaning selected packages is not supported. Will clean all packages instead.")
+        def _remove_directories_on_single_host(connection: Connection, result: Result) -> Optional[Result]:
+            """Removes directories given in the output of the previous find command.
 
-        # First, remove the source directory
-        print_debug(f"Removing source directory: '{self._remote_src_path}'")
-        rm_cmd = f"rm -rf {self._remote_src_path}"
+            :param connection: The connection to the remote server.
+            :param result: The result of the previous find command.
+            :return: The result of the removal command.
+            """
+            # Remove the found directories on the succeeded hosts
+            print_debug(f"Removing found directories on host {connection.host}")
+            directories = " ".join(result.stdout.split('\n'))  # Directories are given line by line, we concatenate them with spaces to get a single command
+            rm_cmd = f"rm -rf {directories}"
+            print_debug(f"Calling '{rm_cmd}' on host {connection.host}")
+            try:
+                rm_results = connection.run(rm_cmd, hide=hide_output())
+                print_debug(f"Cleaning of package succeeded for hosts {connection.host}")
+            except Exception as e:
+                print_err(f"Cleaning of package failed for hosts {Connection.host}")
+                return Result(connection=connection, cmd=rm_cmd, exited=1, stdout='', stderr=str(e))
+            return rm_results
 
-        print_debug(f"Calling '{rm_cmd}'")
-        try:
-            rm_result = connections.run(rm_cmd, hide=hide_output())
-            print_debug(f"Cleaning of source directory succeeded for hosts {self._succeeded_hosts(rm_result)}")
-        except GroupException as e:
-            print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(e.result)}")
-            if not e.result.succeeded:  # TODO: Does run immediately fail if one host fails? Do we even get here?
+        if self._package:  # Package given, clean only the package directory
+            # Only clean the package directory
+            # To do this, we find sub-directories with the package name and remove them
+            print_debug(f"Searching for package '{self._package}' in remote source directory: '{self._remote_src_path} to clean it'")
+            find_cmd = f'find {self._remote_src_path} -type d -not -path "*/.git/*" -name "{self._package}"'
+            print_debug(f"Calling '{find_cmd}'")
+            try:
+                find_results = connections.run(find_cmd, hide=hide_output())
+                print_debug(f"Finding of package succeeded for hosts {self._succeeded_hosts(find_results)}")
+            except GroupException as e:
+                print_err(f"Finding of package failed for hosts {self._failed_hosts(e.result)}")
+                if not e.result.succeeded:  # TODO: Does run immediately if one host fails? Do we even get here?
+                    return e.result
+                find_results = e.result
+
+            # Collect removal results from the succeeded hosts
+            remove_results = GroupResult()
+
+            # Remove the found directories on the succeeded hosts concurrently
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(find_results.succeeded)) as executor:
+                futures = [executor.submit(_remove_directories_on_single_host, connection, result) for connection, result in find_results.succeeded.items()]
+
+            for future in futures:
+                remove_result = future.result()
+                if remove_result is not None:
+                    remove_results[remove_result.connection] = remove_result
+
+            # Re-Bifurcate results into succeeded and failed results
+            # This is necessary, as the GroupResult does this prematurely, before we could collect the results from all hosts
+            for key, value in remove_results.items():
+                if value.exited != 0:
+                    remove_results.failed[key] = value
+                else:
+                    remove_results.succeeded[key] = value
+            return remove_results
+
+
+            
+        else:  # No package given, clean the entire source directory
+            # First, remove the source directory
+            print_debug(f"Removing source directory: '{self._remote_src_path}'")
+            rm_cmd = f"rm -rf {self._remote_src_path}"
+
+            print_debug(f"Calling '{rm_cmd}'")
+            try:
+                rm_results = connections.run(rm_cmd, hide=hide_output())
+                print_debug(f"Cleaning of source directory succeeded for hosts {self._succeeded_hosts(rm_results)}")
+            except GroupException as e:
+                print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(e.result)}")
+                if not e.result.succeeded:  # TODO: Does run immediately if one host fails? Do we even get here?
+                    return e.result
+                rm_results = e.result
+
+            # Only continue on succeeded hosts
+            connections = get_connections_from_succeeded(rm_results)
+
+            # Second, create an empty directory again
+            print_debug(f"Creating source directory: '{self._remote_src_path}'")
+            mkdir_cmd = f"mkdir -p {self._remote_src_path}"
+
+            print_debug(f"Calling '{mkdir_cmd}'")
+            try:
+                mkdir_results = connections.run(mkdir_cmd, hide=hide_output())
+                print_debug(f"Recreation of source directory succeeded for hosts {self._succeeded_hosts(mkdir_results)}")
+            except GroupException as e:
+                print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(e.result)}")
                 return e.result
-            rm_result = e.result
-
-        # Only continue on succeeded hosts
-        connections = get_connections_from_succeeded(rm_result)
-
-        # Second, create an empty directory again
-        print_debug(f"Creating source directory: '{self._remote_src_path}'")
-        mkdir_cmd = f"mkdir -p {self._remote_src_path}"
-
-        print_debug(f"Calling '{mkdir_cmd}'")
-        try:
-            mkdir_result = connections.run(mkdir_cmd, hide=hide_output())
-            print_debug(f"Recreation of source directory succeeded for hosts {self._succeeded_hosts(mkdir_result)}")
-        except GroupException as e:
-            print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(e.result)}")
-            return e.result
-        return mkdir_result
+            return mkdir_results
 
     def _rsync(self, connections: Group) -> GroupResult:
         """
