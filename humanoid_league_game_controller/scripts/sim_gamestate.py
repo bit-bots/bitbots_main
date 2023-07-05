@@ -13,7 +13,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile
+from rclpy.qos import QoSProfile, DurabilityPolicy
 from humanoid_league_msgs.msg import GameState as GameStateMsg
 from bitbots_utils.utils import get_parameters_from_other_node
 
@@ -63,12 +63,9 @@ CTRL-C to quit
 
         self.settings = termios.tcgetattr(sys.stdin)
 
-        namespaces = ['']  # ['amy/', 'rory/', 'jack/', 'donna/', 'rose/']
-        publishers = [
-            self.create_publisher(GameStateMsg, f'{n}/gamestate', QoSProfile(durability=1, depth=1))
-            for n in namespaces
-        ]
+        self.publisher = self.create_publisher(GameStateMsg, f'gamestate', QoSProfile(durability=DurabilityPolicy.TRANSIENT_LOCAL, depth=1))
 
+    def loop(self):
         game_state_msg = GameStateMsg()
         game_state_msg.header.stamp = self.get_clock().now().to_msg()
 
@@ -109,8 +106,7 @@ CTRL-C to quit
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
-                for publisher in publishers:
-                    publisher.publish(game_state_msg)
+                self.publisher.publish(game_state_msg)
                 print(
 f"""Penalized:            {game_state_msg.penalized} 
 Secondary State Team: {game_state_msg.secondary_state_team}
@@ -142,14 +138,6 @@ CTRL-C to quit
 if __name__ == "__main__":
     rclpy.init(args=None)
     node = SimGamestate()
-
-    try:
-        # Necessary so that sleep in loop() is not blocking
-        thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
-        thread.start()
-        node.loop()
-    except KeyboardInterrupt:
-        pass
-
+    node.loop()
     node.destroy_node()
     rclpy.shutdown()
