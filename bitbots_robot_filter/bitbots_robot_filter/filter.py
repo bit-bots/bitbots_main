@@ -121,6 +121,8 @@ def main(args=None):
     # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
     ex = MultiThreadedExecutor(num_threads=5)
     ex.add_node(node)
-    ex.spin()
+    try:
+        ex.spin()
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
-    rclpy.shutdown()
