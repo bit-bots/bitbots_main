@@ -253,7 +253,7 @@ def _get_connections_from_targets(
             print_debug(f"Connected to {connection.host}...")
     except Exception as e:
         print_err(f"Could not establish all required connections: {hosts}")
-        traceback.print_exc()
+        print_debug(e)
         exit(1)
     return connections
 
@@ -276,23 +276,21 @@ def _get_connections_from_all_known_targets(
     # Create connections
     connections: list[Connection] = [Connection(host, user=user, connect_timeout=connection_timeout) for host in hosts]
 
-    # Create group from connections
-    group = ThreadingGroup.from_connections(connections)
-
     # Connect to all hosts
-    for connection in group:
+    open_connections: list[Connection] = []
+    for connection in connections:
         try:
             print_debug(f"Connecting to {connection.host}...")
             connection.open()
             print_debug(f"Connected to {connection.host}...")
         except Exception as e:
             print_err(f"Could not establish connection to {connection.host}. Ignoring this host.")
-            traceback.print_exc()
-            group.remove(connection)
-    if len(group) == 0:
+            print_debug(e)
+        open_connections.append(connection)
+    if len(open_connections) == 0:
         print_err("Could not establish any connection to the known targets. Exiting...")
         exit(1)
-    return group
+    return ThreadingGroup.from_connections(open_connections)
 
 
 def get_connections_from_targets(
