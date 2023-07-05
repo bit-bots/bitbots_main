@@ -48,6 +48,8 @@ class Planner:
         """
         Generates a new A* path to the goal pose with respect to the costmap
         """
+        goal = self.goal
+
         # Get current costmap
         navigation_grid = self.map.get_map()
 
@@ -59,10 +61,8 @@ class Planner:
         my_position = my_pose.translation
 
         # Transform goal pose to map frame if needed
-        if self.goal.header.frame_id != self.map.frame:
-            self.goal = self.buffer.transform(self.goal, self.map.frame)
-
-        goal = self.goal
+        if goal.header.frame_id != self.map.frame:
+            goal = self.buffer.transform(goal, self.map.frame)
 
         # Run A* from our current position to the goal position
         path = pyastar2d.astar_path(
