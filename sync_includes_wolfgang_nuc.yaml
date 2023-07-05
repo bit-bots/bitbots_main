@@ -1,5 +1,4 @@
 include:
-    # TODO: Dont sync wolfgang pybullet sim, bitbots_ceiling_cam, wolfgang_robocup_api, webots?
     - basler_drivers
     - bitbots_behavior:
         - bitbots_blackboard
