@@ -9,7 +9,6 @@ from deploy.misc import *
 from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
 
 
-# TODO: If task arguments (e.g. -s) is given, only do given tasks. Do we wanna do this?
 # TODO: Install this script as a command line tool
 
 
@@ -22,6 +21,9 @@ class DeployRobots():
         # Handle arguments
         self._args = self._parse_arguments()
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
+        
+        print_debug(f"Arguments: {self._args}")
+
         if self._args.show_targets:
             print_known_targets()
 
@@ -38,7 +40,8 @@ class DeployRobots():
         parser = ArgumentParserShowTargets(
             description="Deploy the Bit-Bots software on a robot. "
             "This script provides 5 tasks: sync, install, configure, build, launch. "
-            "By default, configure and launch are disabled. You can disable tasks by using the corresponding --no-* argument."
+            "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags."
+            "For example, to only run the sync and build task, use the -sb."
             )
 
         # Positional arguments
@@ -49,29 +52,13 @@ class DeployRobots():
             )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
-        parser.add_argument("-g", "--game-ready", "--gameready", action="store_true", help="Runs all tasks (except install) and cleans before syncing building. Equivalent to -sIcbl --clean-src --clean-build")
 
         # Task arguments
-        sync_group = parser.add_mutually_exclusive_group()
-        sync_group.add_argument("-s", "--sync", dest="sync", action="store_true", default=True, help="Synchronize (copy) files from you to the target machine (default: True)")
-        sync_group.add_argument("-S", "--no-sync", dest="sync", action="store_false", help="Disable synchronization of files (default: False)")
-
-        install_group = parser.add_mutually_exclusive_group()
-        install_group.add_argument("-i", "--install", dest="install", action="store_true", default=True, help="Install ROS dependencies on the target (default: True)")
-        install_group.add_argument("-I", "--no-install", dest="install", action="store_false", help="Disable installation of ROS dependencies (default: False)")
-
-        configure_group = parser.add_mutually_exclusive_group()
-        configure_group.add_argument("-c", "--configure", dest="configure", action="store_true", default=False, help="Configure the target machine (default: False)")
-        configure_group.add_argument("-C", "--no-configure", dest="configure", action="store_false", help="Disable configuration of the target machine (default: True)")
-
-        build_group = parser.add_mutually_exclusive_group()
-        build_group.add_argument("-b", "--build", dest="build", action="store_true", default=True, help="Build on the target machine (default: True)")
-        build_group.add_argument("-B", "--no-build", dest="build", action="store_false", help="Disable building on the target machine (default: False)")
-
-        launch_group = parser.add_mutually_exclusive_group()
-        launch_group.add_argument("-l", "--launch", dest="launch", action="store_true", default=False, help="Launch teamplayer software on the target (default: False)")
-        launch_group.add_argument("-L", "--no-launch", dest="launch", action="store_false", help="Disable launching of teamplayer software (default: True)")
-
+        parser.add_argument("-s", "--sync", dest="only_sync", action="store_true", help="Only synchronize (copy) files from you to the target machine")
+        parser.add_argument("-i", "--install", dest="only_install", action="store_true", help="Only install ROS dependencies on the target")
+        parser.add_argument("-c", "--configure", dest="only_configure", action="store_true", help="Only configure the target machine")
+        parser.add_argument("-b", "--build", dest="only_build", action="store_true", help="Only build on the target machine")
+        parser.add_argument("-l", "--launch", dest="only_launch", action="store_true", help="Only launch teamplayer software on the target")
 
         # Optional arguments
         parser.add_argument("-p", "--package", default='', help="Synchronize and build only the given ROS package")
@@ -87,20 +74,20 @@ class DeployRobots():
 
         args = parser.parse_args()
 
+        if not (args.only_sync or args.only_install or args.only_configure or args.only_build or args.only_launch):
+            # By default all tasks are enabled
+            args.sync = args.install = args.configure = args.build = args.launch = True
+        else:
+            # If any of the --only-* arguments is given, disable all tasks and enable only the given ones
+            args.sync = args.only_sync
+            args.install = args.only_install
+            args.configure = args.only_configure
+            args.build = args.only_build
+            args.launch = args.only_launch
+
         if args.clean:
             args.clean_src = True
             args.clean_build = True
-
-        # Overwrite settings for game ready
-        if args.game_ready:
-            args.sync = True
-            args.install = False
-            args.configure = True
-            args.build = True
-            args.launch = True
-            args.clean_src = True
-            args.clean_build = True
-            args.print_bit_bots = True
 
         return args
 
