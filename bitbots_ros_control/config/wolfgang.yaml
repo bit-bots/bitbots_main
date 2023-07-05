@@ -24,8 +24,8 @@ wolfgang_hardware_interface:
     servos:
       # specifies which information should be read
       read_position: true
-      read_velocity: true
-      read_effort: true
+      read_velocity: false
+      read_effort: false
       read_pwm: false
       read_volt_temp: true # this also corresponds for the error byte
 
