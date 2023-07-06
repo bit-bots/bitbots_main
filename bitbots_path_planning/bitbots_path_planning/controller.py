@@ -24,14 +24,16 @@ class Controller:
         self.config_max_vel_y: float = self.node.declare_parameter('controller.max_vel_y', 0.08).value
         self.config_min_vel_x: float = self.node.declare_parameter('controller.min_vel_x', -0.2).value
         self.config_orient_to_goal_distance: float = self.node.declare_parameter('controller.orient_to_goal_distance', 1.0).value
-        self.config_position_accuracy: float = self.node.declare_parameter('controller.position_accuracy', 0.05).value
-        self.config_rotation_accuracy: float = self.node.declare_parameter('controller.rotation_accuracy', 0.1).value
         self.config_rotation_slow_down_factor: float = self.node.declare_parameter('controller.rotation_slow_down_factor', 0.3).value
+        self.config_rotation_i_factor: float = self.node.declare_parameter('controller.rotation_i_factor', 0.05).value
         self.config_smoothing_k: float = self.node.declare_parameter('controller.smoothing_k', 0.2).value
         self.config_translation_slow_down_factor: float = self.node.declare_parameter('controller.translation_slow_down_factor', 0.5).value
 
         # Last command velocity
         self.last_cmd_vel = Twist()
+
+        # Accumulator for the angular error
+        self.angular_error_accumulator = 0
 
     def step(self, path: Path) -> Twist:
         """
@@ -92,8 +94,15 @@ class Controller:
 
         # Get the min angle of the difference
         min_angle = math.remainder(diff, math.tau)
-        # Calculate our desired rotation velocity based on the angle difference and our max velocity
-        rot_goal_vel = min(max(self.config_rotation_slow_down_factor * min_angle, -self.config_max_rotation_vel), self.config_max_rotation_vel)
+
+        # Accumulate the angular error (integral)
+        self.angular_error_accumulator += min_angle
+
+        # Define the target rotation velocity (based on p and i of the error)
+        target_rot_vel = self.config_rotation_slow_down_factor * min_angle + self.config_rotation_i_factor * self.angular_error_accumulator
+
+        # Clamp rotational velocity to max values (both sides)
+        rot_goal_vel = min(max(target_rot_vel, -self.config_max_rotation_vel), self.config_max_rotation_vel)
 
         # Calculate the x and y components of our linear velocity based on the desired heading and the desired translational velocity.
         cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose)) * walk_vel
