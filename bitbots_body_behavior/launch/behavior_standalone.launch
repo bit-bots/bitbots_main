@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
-    <arg name="duty" default="TeamPlayer"/>
-    <arg name="wolfgang" default="true" />
-    <arg name="simple" default="false" />
+    <arg name="sim" default="false" />
+    <arg name="dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
 
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" />
+    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
+        <arg name="sim" value="$(var sim)" />
+    </include>
 
     <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
-        <arg name="simple" value="$(var simple)" />
+        <arg name="dsd_file" value="$(var dsd_file)" />
+        <arg name="sim" value="$(var sim)" />
     </include>
 </launch>

@@ -321,23 +321,27 @@ class WorldModelCapsule:
     def pose_callback(self, pos: PoseWithCovarianceStamped):
         self.pose = pos
 
-    def get_current_position(self) -> Tuple[float, float, float]:
+    def get_current_position(self, frame_id: Optional[str] = None) -> Tuple[float, float, float]:
         """
-        Returns the current position as determined by the localization
-        :returns x,y,theta
+        Returns the current position as determined by the localization or odometry
+        depending on the given frame_id
+        :param frame_id: The frame_id to use for the position (e.g. 'map' or 'odom'), will default to map_frame
+        :returns x,y,theta:
         """
-        transform = self.get_current_position_transform()
+        transform = self.get_current_position_transform(frame_id or self.map_frame)
         if transform is None:
             return None
         orientation = transform.transform.rotation
         theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
-    def get_current_position_pose_stamped(self) -> PoseStamped:
+    def get_current_position_pose_stamped(self, frame_id: Optional[str] = None) -> PoseStamped:
         """
-        Returns the current position as determined by the localization as a PoseStamped
+        Returns the current position as determined by the localization or odometry as a PoseStamped
+        depending on the given frame_id
+        :param frame_id: The frame_id to use for the position (e.g. 'map' or 'odom'), will default to map_frame
         """
-        transform = self.get_current_position_transform()
+        transform = self.get_current_position_transform(frame_id or self.map_frame)
         if transform is None:
             return None
         ps = PoseStamped()
@@ -348,18 +352,18 @@ class WorldModelCapsule:
         ps.pose.orientation = transform.transform.rotation
         return ps
 
-    def get_current_position_transform(self) -> TransformStamped:
+    def get_current_position_transform(self, frame_id: str) -> TransformStamped:
         """
-        Returns the current position as determined by the localization as a TransformStamped
+        Returns the current position as determined by the localization or odometry as a TransformStamped
+        depending on the given frame_id
+        :param frame_id: The frame_id to use for the position (e.g. 'map' or 'odom'), will default to map_frame
         """
         try:
-            # get the most recent transform
-            transform = self._blackboard.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame,
+            return self._blackboard.tf_buffer.lookup_transform(frame_id, self.base_footprint_frame,
                                                         Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
             return None
-        return transform
 
     def get_localization_precision(self) -> Tuple[float, float, float]:
         """

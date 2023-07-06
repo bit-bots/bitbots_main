@@ -1,8 +1,11 @@
 import math
+import numpy as np
+import tf2_ros as tf2
+import tf2_geometry_msgs
 
+from rclpy.duration import Duration
 from bitbots_blackboard.blackboard import BodyBlackboard
-from geometry_msgs.msg import Quaternion
-from tf2_geometry_msgs import PoseStamped
+from geometry_msgs.msg import Quaternion, PoseStamped
 from tf_transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -10,40 +13,47 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 class GoToRelativePosition(AbstractActionElement):
     blackboard: BodyBlackboard
-    def __init__(self, blackboard, dsd, parameters: dict = None):
-        """Go to a position relative to the robot
-        :param dsd:
 
-        """
+    def __init__(self, blackboard, dsd, parameters: dict = None):
         super(GoToRelativePosition, self).__init__(blackboard, dsd)
-        self.point = float(parameters.get('x', 0)), float(parameters.get('y', 0)), float(parameters.get('t', 0))
+        self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
+        self.threshold = float(parameters.get("threshold", 0.1))
         self.first = True
+        self.odom_goal_pose: PoseStamped = None
 
     def perform(self, reevaluate=False):
         if self.first:
             self.first = False
-            pose_msg = PoseStamped()
-            pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
-            pose_msg.header.frame_id = self.blackboard.base_footprint_frame
+            goal_pose = PoseStamped()
+            goal_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
+            goal_pose.header.frame_id = self.blackboard.base_footprint_frame
 
-            pose_msg.pose.position.x = self.point[0]
-            pose_msg.pose.position.y = self.point[1]
-            pose_msg.pose.position.z = 0.0
+            goal_pose.pose.position.x = self.point[0]
+            goal_pose.pose.position.y = self.point[1]
+            goal_pose.pose.position.z = 0.0
 
             x, y, z, w = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-            pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
+            goal_pose.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
 
-            # To have the object we are going to in front of us, go to a point behind it
-            self.blackboard.pathfinding.publish(pose_msg)
-            # TODO: this in good
-            # waiting until the robot started to walk
-            self.blackboard.node.create_rate(4).sleep()
-        if not self.blackboard.blackboard.is_currently_walking():
-            self.pop()
+            try:
+                self.odom_goal_pose = self.blackboard.tf_buffer.transform(
+                    goal_pose, self.blackboard.odom_frame, timeout=Duration(seconds=0.5)
+                )
+                self.blackboard.pathfinding.publish(self.odom_goal_pose)
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self.blackboard.node.get_logger().warning("Could not transform goal pose: " + str(e))
+                self.first = False
+        else:
+            position = np.array(self.blackboard.world_model.get_current_position(self.blackboard.odom_frame)[:2])
+            goal = np.array([self.odom_goal_pose.pose.position.x, self.odom_goal_pose.pose.position.y])
+            distance = np.linalg.norm(goal - position)
+            if distance < self.threshold:
+                self.pop()
 
 
 class GoToAbsolutePosition(AbstractActionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
         """Go to an absolute position on the field
         :param dsd:
@@ -77,7 +87,8 @@ class GoToOwnGoal(GoToAbsolutePosition):
         self.point = (
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[1],
-            parameters)
+            parameters,
+        )
 
 
 class GoToEnemyGoal(GoToAbsolutePosition):
@@ -90,7 +101,8 @@ class GoToEnemyGoal(GoToAbsolutePosition):
         self.point = (
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[1],
-            parameters)
+            parameters,
+        )
 
 
 class GoToCenterpoint(GoToAbsolutePosition):
@@ -100,4 +112,3 @@ class GoToCenterpoint(GoToAbsolutePosition):
         """
         super(GoToCenterpoint, self).__init__(blackboard, dsd, parameters)
         self.point = 0, 0, 0
-
