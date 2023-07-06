@@ -415,11 +415,13 @@ double DynupEngine::calcFrontSplines() {
   l_foot_spline_.roll()->addPoint(time, 0);
   l_foot_spline_.pitch()->addPoint(time, 0);
   l_foot_spline_.yaw()->addPoint(time, 0);
-  r_foot_spline_.x()->addPoint(time, -params_["trunk_x_front"].get_value<double>());
+  r_foot_spline_.x()->addPoint(time, -cos(angle_foot) * params_["trunk_x_front"].get_value<double>());
   r_foot_spline_.y()->addPoint(time, -params_["foot_distance"].get_value<double>() / 2);
-  r_foot_spline_.z()->addPoint(time, -params_["leg_min_length_front"].get_value<double>());
+  r_foot_spline_.z()
+      ->addPoint(time, -sin(angle_foot) * params_["trunk_x_front"].get_value<double>() - cos(angle_foot) *
+          params_["leg_min_length_front"].get_value<double>());
   r_foot_spline_.roll()->addPoint(time, 0);
-  r_foot_spline_.pitch()->addPoint(time, M_PI * -params_["trunk_pitch"].get_value<double>() / 180);
+  r_foot_spline_.pitch()->addPoint(time, angle_foot);
   r_foot_spline_.yaw()->addPoint(time, 0);
 
   l_hand_spline_.x()->addPoint(time, 0);
