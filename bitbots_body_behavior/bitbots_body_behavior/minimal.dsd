@@ -8,10 +8,10 @@
 @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace + duration:3 + r:false
 
 #WalkInGoalie
-@GoToRelativePosition + x:2 + y:3 + t:90 + threshold:0.4, @WalkInPlace + duration:0.1, @LookForward, @Stand
+@GoToRelativePosition + x:3 + y:2 + t:90 + threshold:0.4, @WalkInPlace + duration:0.1, @LookForward, @Stand
 
 #WalkInPlayer
-@GoToRelativePosition + x:2 + y:0 + t:90 + threshold:0.4, @WalkInPlace + duration:0.1, @LookForward, @Stand
+@GoToRelativePosition + x:3 + y:0 + t:90 + threshold:0.4, @WalkInPlace + duration:0.1, @LookForward, @Stand
 
 #Dribble
 @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
@@ -24,13 +24,19 @@ $IsPenalized
         ELSE --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
         INITIAL --> #Init
-        READY --> $ConfigRole
-            GOALIE --> $DoOnce
-                NOT_DONE --> #GetWalkreadyAndLocalize
-                DONE --> #WalkInGoalie
-            ELSE --> $DoOnce
-                NOT_DONE --> #GetWalkreadyAndLocalize
-                DONE --> #WalkInPlayer
+        READY --> $AnyGoalScoreRecently + time:50
+            YES --> $ConfigRole
+                GOALIE --> @Stand
+                ELSE --> $DoOnce
+                    NOT_DONE --> #GetWalkreadyAndLocalize
+                    DONE --> #WalkInPlayer
+            NO --> $ConfigRole
+                GOALIE --> $DoOnce
+                    NOT_DONE --> #GetWalkreadyAndLocalize
+                    DONE --> #WalkInGoalie
+                ELSE --> $DoOnce
+                    NOT_DONE --> #GetWalkreadyAndLocalize
+                    DONE --> #WalkInPlayer
         SET --> #DoNothing
         PLAYING --> $ConfigRole
             GOALIE --> @WalkInPlace + duration:0.1, @Stand
