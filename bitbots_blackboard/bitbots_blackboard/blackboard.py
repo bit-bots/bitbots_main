@@ -23,6 +23,7 @@ class BodyBlackboard:
         self.config = get_parameter_dict(node, "body")
         self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
         self.map_frame: str = self.node.get_parameter("map_frame").value
+        self.odom_frame: str = self.node.get_parameter("odom_frame").value
         self.in_sim: bool = self.node.get_parameter("use_sim_time").value
         self.blackboard = BlackboardCapsule(node)
         self.gamestate = GameStatusCapsule(node)
@@ -42,5 +43,14 @@ class BodyBlackboard:
         self.dynup_action_client: Optional[ActionClient] = None
         self.dynup_cancel_pub: Optional[Publisher] = None
         self.hcm_deactivate_pub: Optional[Publisher] = None
-        
+
         self.lookat_action_client: Optional[ActionClient] = None
+
+
+class HeadBlackboard:
+    def __init__(self, node: Node, tf_buffer: tf2.Buffer):
+        self.node = node
+        self.tf_buffer = tf_buffer
+        self.config = get_parameter_dict(node, "head")
+        self.world_model = WorldModelCapsule(self)
+        self.costmap = CostmapCapsule(self)
