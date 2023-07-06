@@ -10,8 +10,11 @@
 #include <unistd.h>
 #include <tf2_ros/buffer.h>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
+#include "odometry_parameters.hpp"
 
 using std::placeholders::_1;
+
+namespace bitbots_odometry {
 
 class MotionOdometry : public rclcpp::Node {
  public:
@@ -33,11 +36,10 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
 
-  double x_forward_scaling_;
-  double x_backward_scaling_;
-  double y_scaling_;
-  double yaw_scaling_;
-  bool publish_walk_odom_tf_;
+  // Declare parameter listener and struct from the generate_parameter_library
+  motion_odometry::ParamListener param_listener_;
+  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
+  motion_odometry::Params config_;
 
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg);
@@ -50,3 +52,5 @@ class MotionOdometry : public rclcpp::Node {
   std::string current_support_link_;
   rclcpp::Time start_time_;
 };
+
+}

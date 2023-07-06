@@ -23,6 +23,7 @@
   <depend>rot_conv</depend>
   <depend>bitbots_docs</depend>
   <depend>biped_interfaces</depend>
+  <depend>generate_parameter_library</depend>
 
   <export>
     <bitbots_documentation>
