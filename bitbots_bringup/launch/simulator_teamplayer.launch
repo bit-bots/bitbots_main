@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
+    <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
     <arg name="localization" default="true" description="Whether the localization system should be started" />
@@ -17,6 +17,7 @@
     <!-- load teamplayer software stack -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
         <arg name="behavior" value="$(var behavior)" />
+        <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
         <arg name="game_controller" value="$(var game_controller)"/>
         <arg name="ipm" value="$(var ipm)" />
         <arg name="localization" value="$(var localization)" />
