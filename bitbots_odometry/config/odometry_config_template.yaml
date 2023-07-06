@@ -28,10 +28,10 @@ motion_odometry:
 
   yaw_scaling: {
     type: double,
-    default_value: 1.4,
+    default_value: 0.6,
     description: "Scaling factor for rotation in yaw direction",
     validation: {
-      bounds<>: [0.5, 1.5]
+      bounds<>: [0.2, 2.5]
     }
   }
 
