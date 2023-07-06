@@ -44,11 +44,13 @@ class GoToRelativePosition(AbstractActionElement):
                 self.blackboard.node.get_logger().warning("Could not transform goal pose: " + str(e))
                 self.first = False
         else:
-            position = np.array(self.blackboard.world_model.get_current_position(self.blackboard.odom_frame)[:2])
-            goal = np.array([self.odom_goal_pose.pose.position.x, self.odom_goal_pose.pose.position.y])
-            distance = np.linalg.norm(goal - position)
-            if distance < self.threshold:
-                self.pop()
+            current_position = self.blackboard.world_model.get_current_position(self.blackboard.odom_frame)
+            if self.odom_goal_pose is not None and current_position is not None:
+                position = np.array(current_position[:2])
+                goal = np.array([self.odom_goal_pose.pose.position.x, self.odom_goal_pose.pose.position.y])
+                distance = np.linalg.norm(goal - position)
+                if distance < self.threshold:
+                    self.pop()
 
 
 class GoToAbsolutePosition(AbstractActionElement):

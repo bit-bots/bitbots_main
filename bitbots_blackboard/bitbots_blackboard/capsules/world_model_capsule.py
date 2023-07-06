@@ -321,7 +321,7 @@ class WorldModelCapsule:
     def pose_callback(self, pos: PoseWithCovarianceStamped):
         self.pose = pos
 
-    def get_current_position(self, frame_id: Optional[str] = None) -> Tuple[float, float, float]:
+    def get_current_position(self, frame_id: Optional[str] = None) -> Optional[Tuple[float, float, float]]:
         """
         Returns the current position as determined by the localization or odometry
         depending on the given frame_id
@@ -335,7 +335,7 @@ class WorldModelCapsule:
         theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
-    def get_current_position_pose_stamped(self, frame_id: Optional[str] = None) -> PoseStamped:
+    def get_current_position_pose_stamped(self, frame_id: Optional[str] = None) -> Optional[PoseStamped]:
         """
         Returns the current position as determined by the localization or odometry as a PoseStamped
         depending on the given frame_id
