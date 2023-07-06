@@ -45,12 +45,3 @@ class BodyBlackboard:
         self.hcm_deactivate_pub: Optional[Publisher] = None
 
         self.lookat_action_client: Optional[ActionClient] = None
-
-
-class HeadBlackboard:
-    def __init__(self, node: Node, tf_buffer: tf2.Buffer):
-        self.node = node
-        self.tf_buffer = tf_buffer
-        self.config = get_parameter_dict(node, "head")
-        self.world_model = WorldModelCapsule(self)
-        self.costmap = CostmapCapsule(self)
