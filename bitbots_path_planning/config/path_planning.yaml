@@ -4,7 +4,7 @@ bitbots_path_planning:
     tf_buffer_duration: 5.0
     rate: 20.0
     map:
-      planning_frame: odom
+      planning_frame: map
       resolution: 20  # Pixel per meter
       size:
         x: 11.0
@@ -18,13 +18,12 @@ bitbots_path_planning:
         blur: 13
     controller:
       carrot_distance: 20
-      rotation_accuracy: 0.1
-      position_accuracy: 0.05
       max_rotation_vel: 0.4
       max_vel_x: 0.1
       min_vel_x: -0.05
-      max_vel_y: 0.08
+      max_vel_y: 0.04
       smoothing_k: 0.03
-      rotation_slow_down_factor: 0.3
+      rotation_i_factor: 0.0
+      rotation_slow_down_factor: 0.4
       translation_slow_down_factor: 0.5
       orient_to_goal_distance: 1.0
