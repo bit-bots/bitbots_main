@@ -6,7 +6,7 @@
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <node name="motion_odometry" pkg="bitbots_odometry" exec="motion_odometry" launch-prefix="$(var taskset)">
-        <param from="$(find-pkg-share bitbots_odometry)/config/odometry_config.yaml"/>
+        <param from="$(find-pkg-share bitbots_odometry)/config/odometry_config_$(env ROBOT_NAME default).yaml"/>
         <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
         <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
         <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>

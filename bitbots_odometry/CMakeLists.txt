@@ -24,7 +24,7 @@ find_package(tf2_ros REQUIRED)
 
 generate_parameter_library(
   odometry_parameters
-  config/odometry_config.yml
+  config/odometry_config_template.yaml
 )
 
 include_directories(include)
