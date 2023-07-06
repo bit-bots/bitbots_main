@@ -178,10 +178,13 @@
       kickoff_min_ball_movement: 0.5
 
       # dribble action
-      dribble_max_speed_x: 0.25
-      dribble_max_speed_y: 0.08
-      dribble_p: 0.75
-      dribble_accel_x: 0.1
+      dribble_max_speed_x: 0.03
+      dribble_max_speed_y: 0.05
+      # Ball angle at which we stop moving forward
+      dribble_ball_heading_x_vel_zero_point: 30
+      dribble_p: 0.8
+      dribble_accel_x: 0.01
+      dribble_accel_y: 0.01
 
       # dribble decision
       dribble_orient_threshold: 0.5
