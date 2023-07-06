@@ -21,9 +21,9 @@ bitbots_path_planning:
       max_rotation_vel: 0.4
       max_vel_x: 0.1
       min_vel_x: -0.05
-      max_vel_y: 0.08
+      max_vel_y: 0.04
       smoothing_k: 0.03
-      rotation_i_factor: 0.05
-      rotation_slow_down_factor: 0.3
+      rotation_i_factor: 0.0
+      rotation_slow_down_factor: 0.4
       translation_slow_down_factor: 0.5
       orient_to_goal_distance: 1.0
