@@ -11,6 +11,7 @@ find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(bitbots_localization REQUIRED)
 find_package(humanoid_league_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -21,6 +22,7 @@ ament_target_dependencies(button_node
         ament_cmake
         backward_ros
         bitbots_msgs
+        bitbots_localization
         humanoid_league_msgs
         rclcpp
         std_msgs

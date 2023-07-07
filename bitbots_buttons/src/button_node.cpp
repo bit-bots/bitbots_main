@@ -5,9 +5,10 @@
 #include <humanoid_league_msgs/msg/audio.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <bitbots_msgs/srv/manual_penalize.hpp>
-#include <test_msgs/srv/empty.hpp>
+#include <std_srvs/srv/empty.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
+#include <bitbots_localization/srv/reset_filter.hpp>
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -45,24 +46,12 @@ public:
 
     if (manual_penalty_mode_){
       manual_penalize_client_ = this->create_client<bitbots_msgs::srv::ManualPenalize>("manual_penalize");
-      while (!manual_penalize_client_->wait_for_service(3s)) {
-        if (!rclcpp::ok()) {
-          RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the manual penalize service. Exiting.");
-          exit(0);
-        }
-        RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
-      }
+      manual_penalty_mode_ = manual_penalize_client_->wait_for_service(3s);
     }
      
     if(!in_game_){
-      foot_zero_client_ = this->create_client<test_msgs::srv::Empty>("manual_penalize");
-      while (!foot_zero_client_->wait_for_service(3s)) {
-        if (!rclcpp::ok()) {
-          RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the foot zero service. Exiting.");
-          exit(0);
-        }
-        RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
-      }
+      foot_zero_client_ = this->create_client<std_srvs::srv::Empty>("set_foot_zero");
+      foot_zero_available_ = foot_zero_client_->wait_for_service(3s);
     }
 
     power_client_ = this->create_client<std_srvs::srv::SetBool>("/core/switch_power");
@@ -71,14 +60,22 @@ public:
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the power switch service. Exiting.");
         exit(0);
       }
-      RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+      RCLCPP_INFO(this->get_logger(), "service switch_power not available, waiting again...");
     }
 
+    localization_client_ = this->create_client<bitbots_localization::srv::ResetFilter>("reset_localization");
+    localization_available_ = localization_client_->wait_for_service(3s);
     buttons_sub_ = this->create_subscription<bitbots_msgs::msg::Buttons>("/buttons", 1, std::bind(&bitbots_buttons::ButtonNode::buttonCb, this, _1));
+
+
   }
 
   void buttonCb(const bitbots_msgs::msg::Buttons::SharedPtr msg){
-    if(msg->button1 && !button1_){
+    //button1 - red
+    //button2 - green
+    //button3 - blue
+
+      if(msg->button1 && !button1_){
       button1_ = true;
       button1_time_ = this->get_clock()->now().seconds();
     }else if(msg->button2 && !button2_){
@@ -92,7 +89,7 @@ public:
       button1_ = false;
       double current_time = this->get_clock()->now().seconds();
       if (current_time - button1_time_ > debounce_time_){
-        if(current_time - button1_ < short_time_ || in_game_){
+        if(current_time - button1_time_ < short_time_ || in_game_){
           // button 1 short
           speak("1 short");
           setPower(false);
@@ -108,12 +105,13 @@ public:
       button2_ = false;
       double current_time = this->get_clock()->now().seconds();
       if (current_time - button2_time_ > debounce_time_){
-        if(current_time - button2_ < short_time_ || in_game_){
+        if(current_time - button2_time_ < short_time_ || in_game_){
           speak("2 short");
-          setPenalty(true);
+          setPenalty(false);
+          resetLocalization();
         } else {
           speak("2 long");
-          setPenalty(true);
+          setPenalty(false);
         }
       }
       button2_time_ = 0;
@@ -122,12 +120,12 @@ public:
       button3_ = false;
       double current_time = this->get_clock()->now().seconds();
       if (current_time - button3_time_ > debounce_time_){
-        if(current_time - button3_ < short_time_ || in_game_){
+        if(current_time - button3_time_ < short_time_ || in_game_){
           speak("3 short");
-          setPenalty(false);
+          setPenalty(true);
         } else {
-          speak("3 short");
-          setPenalty(false);
+          speak("3 long");
+          setPenalty(true);
         }
       }
       button3_time_ = 0;
@@ -146,10 +144,16 @@ public:
 
   void zeroFootSensors(){
     // Zeroes foot sensors, if foot zero mode is true
-    if(!in_game_){
-      auto request = std::make_shared<test_msgs::srv::Empty::Request>();
-      auto result = foot_zero_client_->async_send_request(request);
+    if (foot_zero_available_) {
+        if(!in_game_){
+            auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+            auto result = foot_zero_client_->async_send_request(request);
+        }
     }
+    else {
+        RCLCPP_WARN(this->get_logger(), "service not available");
+    }
+
   }
 
   void setPower(bool power){
@@ -157,6 +161,17 @@ public:
     auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
     request->data = power;
     auto result = power_client_->async_send_request(request);
+  }
+
+  void resetLocalization() {
+      if (localization_available_) {
+          auto request = std::make_shared<bitbots_localization::srv::ResetFilter::Request>();
+          request->init_mode = 0;
+          auto result = localization_client_->async_send_request(request);
+      }
+      else {
+          RCLCPP_WARN(this->get_logger(), "service not available");
+      }
   }
 
 private:
@@ -182,6 +197,8 @@ private:
   bool button1_;
   bool button2_;
   bool button3_;
+  bool localization_available_;
+  bool foot_zero_available_;
   double button1_time_;
   double button2_time_;
   double button3_time_;
@@ -189,8 +206,9 @@ private:
   rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr shoot_publisher_;
   rclcpp::Client<bitbots_msgs::srv::ManualPenalize>::SharedPtr manual_penalize_client_;
-  rclcpp::Client<test_msgs::srv::Empty>::SharedPtr foot_zero_client_;
+  rclcpp::Client<std_srvs::srv::Empty>::SharedPtr foot_zero_client_;
   rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr power_client_;
+  rclcpp::Client<bitbots_localization::srv::ResetFilter>::SharedPtr localization_client_;
   rclcpp::Subscription<bitbots_msgs::msg::Buttons>::SharedPtr buttons_sub_;
 };
 }// namespace bitbots_buttons
