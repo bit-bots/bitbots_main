@@ -137,7 +137,7 @@ class ButtonNode : public rclcpp::Node {
       // switch penalty state by calling service on HCM
       auto request = std::make_shared<bitbots_msgs::srv::ManualPenalize::Request>();
       request->penalize = penalize;
-      auto result = manual_penalize_client_->async_send_request(request);
+      manual_penalize_client_->async_send_request(request);
     }
   }
 
@@ -146,7 +146,7 @@ class ButtonNode : public rclcpp::Node {
     if (foot_zero_available_) {
       if (!in_game_) {
         auto request = std::make_shared<std_srvs::srv::Empty::Request>();
-        auto result = foot_zero_client_->async_send_request(request);
+        foot_zero_client_->async_send_request(request);
       }
     } else {
       RCLCPP_WARN(this->get_logger(), "service not available");
@@ -157,21 +157,21 @@ class ButtonNode : public rclcpp::Node {
     // Set power to the servos
     auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
     request->data = power;
-    auto result = power_client_->async_send_request(request);
+    power_client_->async_send_request(request);
   }
 
   void resetLocalization() {
     if (localization_available_) {
       auto request = std::make_shared<bitbots_localization::srv::ResetFilter::Request>();
       request->init_mode = 0;
-      auto result = localization_client_->async_send_request(request);
+      localization_client_->async_send_request(request);
     } else {
       RCLCPP_WARN(this->get_logger(), "service not available");
     }
   }
 
  private:
-  void speak(std::string text) {
+  void speak(const std::string& text) {
     /**
      *  Helper method to send a message for text-to-speech output
      */

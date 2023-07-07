@@ -1,4 +1,4 @@
-#include <bitbots_ros_control/wolfgang_hardware_interface.h>
+#include <bitbots_ros_control/wolfgang_hardware_interface.hpp>
 
 namespace bitbots_ros_control {
 
@@ -43,8 +43,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
 
   // sort the devices by id. This way the devices will always be read and written in ID order later, making debug
   // easier.
-  std::sort(dxl_devices.begin(), dxl_devices.end(),
-            [](std::pair<std::string, int> &a, std::pair<std::string, int> &b) { return a.second < b.second; });
+  std::sort(
+      dxl_devices.begin(), dxl_devices.end(),
+      [](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) { return a.second < b.second; });
 
   // create overall servo interface since we need a single interface for the controllers
   servo_interface_ = DynamixelServoHardwareInterface(nh);
@@ -219,11 +220,9 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
   }
 }
 
-void threaded_init(std::vector<HardwareInterface *> &port_interfaces, rclcpp::Node::SharedPtr &nh, int &success) {
-  success = true;
-  for (HardwareInterface *interface : port_interfaces) {
-    success &= interface->init();
-  }
+void threaded_init(const std::vector<HardwareInterface *> &port_interfaces, rclcpp::Node::SharedPtr &nh, int &success) {
+  success = std::all_of(port_interfaces.begin(), port_interfaces.end(),
+                        [](HardwareInterface *interface) { return interface->init(); });
 }
 
 bool WolfgangHardwareInterface::init() {
@@ -244,16 +243,13 @@ bool WolfgangHardwareInterface::init() {
     thread.join();
   }
   // see if all inits were successful
-  bool success = true;
-  for (bool s : successes) {
-    success &= s;
-  }
+  bool success = std::all_of(successes.begin(), successes.end(), [](int *s) { return *s; });
   // init servo interface last after all servo busses are there
   success &= servo_interface_.init();
   return success;
 }
 
-void threaded_read(std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
+void threaded_read(const std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
                    const rclcpp::Duration &dt) {
   for (HardwareInterface *interface : port_interfaces) {
     interface->read(t, dt);
@@ -295,7 +291,7 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
   }
 }
 
-void threaded_write(std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
+void threaded_write(const std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
                     const rclcpp::Duration &dt) {
   for (HardwareInterface *interface : port_interfaces) {
     interface->write(t, dt);

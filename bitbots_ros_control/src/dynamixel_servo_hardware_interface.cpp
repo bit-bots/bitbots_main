@@ -1,6 +1,5 @@
-#include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
-#include <bitbots_ros_control/utils.h>
-
+#include <bitbots_ros_control/dynamixel_servo_hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
 #include <utility>
 
 namespace bitbots_ros_control {

@@ -1,5 +1,5 @@
-#include <bitbots_ros_control/imu_hardware_interface.h>
-#include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/imu_hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
 
 #define gravity 9.80665
 

@@ -1,4 +1,4 @@
-#include <bitbots_ros_control/pressure_converter.h>
+#include <bitbots_ros_control/pressure_converter.hpp>
 using std::placeholders::_1;
 using std::placeholders::_2;
 
@@ -190,7 +190,7 @@ void PressureConverter::collectMessages() {
 }
 
 void PressureConverter::saveYAML() {
-  std::string path_to_yaml, robot_name, command;
+  std::string path_to_yaml, robot_name;
   if (std::getenv("ROBOT_NAME")) {
     robot_name = std::getenv("ROBOT_NAME");
   } else {
@@ -218,7 +218,7 @@ void PressureConverter::saveYAML() {
   e << YAML::Key << "scale_r";
   e << YAML::Value << scale_r;
   e << YAML::Key << "scale_l";
-  e << YAML::Value << scale_r;
+  e << YAML::Value << scale_l;
   e << YAML::EndMap;
   e << YAML::EndMap;
 

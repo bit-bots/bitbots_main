@@ -1,5 +1,5 @@
-#include <bitbots_ros_control/servo_bus_interface.h>
-#include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/servo_bus_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
 
 namespace bitbots_ros_control {
 
@@ -648,11 +648,9 @@ bool ServoBusInterface::syncReadVoltageAndTemp() {
    */
   std::vector<uint8_t> data;
   if (driver_->syncReadMultipleRegisters(144, 3, &data)) {
-    uint16_t volt;
-    uint8_t temp;
     for (int i = 0; i < joint_count_; i++) {
-      volt = dxlMakeword(data[i * 3], data[i * 3 + 1]);
-      temp = data[i * 3 + 2];
+      uint16_t volt = dxlMakeword(data[i * 3], data[i * 3 + 1]);
+      uint8_t temp = data[i * 3 + 2];
       // convert value to voltage
       current_input_voltage_[i] = volt * 0.1;
       // is already in °C
@@ -669,15 +667,12 @@ bool ServoBusInterface::syncReadAll() {
    * Reads all positions, velocities and efforts with a single sync read
    */
   if (driver_->syncReadMultipleRegisters(126, 10, &sync_read_all_data_)) {
-    int16_t eff;
-    uint32_t vel;
-    uint32_t pos;
     for (int i = 0; i < joint_count_; i++) {
-      eff = dxlMakeword(sync_read_all_data_[i * 10], sync_read_all_data_[i * 10 + 1]);
-      vel = dxlMakedword(dxlMakeword(sync_read_all_data_[i * 10 + 2], sync_read_all_data_[i * 10 + 3]),
-                         dxlMakeword(sync_read_all_data_[i * 10 + 4], sync_read_all_data_[i * 10 + 5]));
-      pos = dxlMakedword(dxlMakeword(sync_read_all_data_[i * 10 + 6], sync_read_all_data_[i * 10 + 7]),
-                         dxlMakeword(sync_read_all_data_[i * 10 + 8], sync_read_all_data_[i * 10 + 9]));
+      int16_t eff = dxlMakeword(sync_read_all_data_[i * 10], sync_read_all_data_[i * 10 + 1]);
+      uint32_t vel = dxlMakedword(dxlMakeword(sync_read_all_data_[i * 10 + 2], sync_read_all_data_[i * 10 + 3]),
+                                  dxlMakeword(sync_read_all_data_[i * 10 + 4], sync_read_all_data_[i * 10 + 5]));
+      uint32_t pos = dxlMakedword(dxlMakeword(sync_read_all_data_[i * 10 + 6], sync_read_all_data_[i * 10 + 7]),
+                                  dxlMakeword(sync_read_all_data_[i * 10 + 8], sync_read_all_data_[i * 10 + 9]));
       current_effort_[i] = driver_->convertValue2Torque(joint_ids_[i], eff);
       current_velocity_[i] = driver_->convertValue2Velocity(joint_ids_[i], vel);
       double current_pos = driver_->convertValue2Radian(joint_ids_[i], pos);
@@ -696,9 +691,8 @@ void ServoBusInterface::syncWritePosition() {
   /**
    * Writes all goal positions with a single sync write
    */
-  float radian;
   for (size_t num = 0; num < joint_names_.size(); num++) {
-    radian = goal_position_[num] - joint_mounting_offsets_[num] - joint_offsets_[num];
+    float radian = goal_position_[num] - joint_mounting_offsets_[num] - joint_offsets_[num];
     sync_write_goal_position_[num] = driver_->convertRadian2Value(joint_ids_[num], radian);
   }
   driver_->syncWrite("Goal_Position", sync_write_goal_position_);

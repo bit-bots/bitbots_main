@@ -1,5 +1,5 @@
-#include <bitbots_ros_control/bitfoot_hardware_interface.h>
-#include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/bitfoot_hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
 
 namespace bitbots_ros_control {
 

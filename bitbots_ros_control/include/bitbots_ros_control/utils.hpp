@@ -8,8 +8,8 @@ namespace bitbots_ros_control {
 
 enum ControlMode { POSITION_CONTROL, VELOCITY_CONTROL, EFFORT_CONTROL, CURRENT_BASED_POSITION_CONTROL };
 
-bool stringToControlMode(rclcpp::Node::SharedPtr nh, std::string control_modestr, ControlMode &control_mode);
-void speakError(rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub, std::string text);
+bool stringToControlMode(rclcpp::Node::SharedPtr nh, const std::string &control_modestr, ControlMode &control_mode);
+void speakError(rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub, const std::string &text);
 
 uint16_t dxlMakeword(uint64_t a, uint64_t b);
 uint32_t dxlMakedword(uint64_t a, uint64_t b);

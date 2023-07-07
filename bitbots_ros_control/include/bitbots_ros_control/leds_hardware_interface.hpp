@@ -1,10 +1,10 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_LEDS_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_LEDS_HARDWARE_INTERFACE_H_
 
-#include <bitbots_ros_control/hardware_interface.h>
 #include <dynamixel_driver.h>
 
 #include <bitbots_msgs/srv/leds.hpp>
+#include <bitbots_ros_control/hardware_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 

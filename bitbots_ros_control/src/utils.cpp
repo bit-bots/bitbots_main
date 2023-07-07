@@ -1,8 +1,8 @@
-#include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/utils.hpp>
 
 namespace bitbots_ros_control {
 
-bool stringToControlMode(rclcpp::Node::SharedPtr nh, std::string _control_modestr, ControlMode &control_mode) {
+bool stringToControlMode(rclcpp::Node::SharedPtr nh, const std::string &_control_modestr, ControlMode &control_mode) {
   /**
    * Helper method to parse strings to corresponding control modes
    */
@@ -24,7 +24,8 @@ bool stringToControlMode(rclcpp::Node::SharedPtr nh, std::string _control_modest
   }
 }
 
-void speakError(const rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub, std::string text) {
+void speakError(const rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub,
+                const std::string &text) {
   /**
    *  Helper method to send a message for text-to-speech output
    */

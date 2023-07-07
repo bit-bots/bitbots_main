@@ -1,4 +1,4 @@
-#include <bitbots_ros_control/button_hardware_interface.h>
+#include <bitbots_ros_control/button_hardware_interface.hpp>
 
 namespace bitbots_ros_control {
 ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,

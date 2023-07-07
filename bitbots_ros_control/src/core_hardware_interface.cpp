@@ -1,4 +1,4 @@
-#include <bitbots_ros_control/core_hardware_interface.h>
+#include <bitbots_ros_control/core_hardware_interface.hpp>
 
 namespace bitbots_ros_control {
 
