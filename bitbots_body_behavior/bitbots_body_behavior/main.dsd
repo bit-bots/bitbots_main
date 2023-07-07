@@ -110,7 +110,7 @@ $PassStarted
 
 #GoalieRole
 $LocalizationAvailable
-    YES --> $LocalizationPrecision
+    YES --> $LocalizationPrecision + debounce:4
         HIGH --> $CurrentScore
             BEHIND --> $LastPlayer
                 YES --> #StrikerRole
@@ -171,7 +171,7 @@ $BallSeen
         YES --> $ConfigRole
             GOALIE --> #GoalieRole
             ELSE --> $LocalizationAvailable
-                YES --> $LocalizationPrecision
+                YES --> $LocalizationPrecision + debounce:4
                     HIGH --> $RankToBallNoGoalie
                         FIRST --> #StrikerRole
                         SECOND --> #SupporterRole
