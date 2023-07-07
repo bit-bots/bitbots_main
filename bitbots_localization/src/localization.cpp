@@ -50,7 +50,7 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   fieldboundary_subscriber_ = this->create_subscription<sv3dm::msg::FieldBoundary>(
     config_->fieldboundary_topic, 1, std::bind(&Localization::FieldboundaryCallback, this, _1));
 
-  rviz_initial_pose_subscriber_ = this->create_subscription<gm::msg::PoseWithCovarianceStamped>("initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1)); //TODO: use params later
+  rviz_initial_pose_subscriber_ = this->create_subscription<gm::msg::PoseWithCovarianceStamped>("initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1)); 
 
   pose_particles_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(config_->particle_publishing_topic, 1);
 
