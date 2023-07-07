@@ -11,4 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
+      - name: Install cppcheck
+        run: sudo apt install cppcheck -y
       - uses: pre-commit/action@v3.0.0
