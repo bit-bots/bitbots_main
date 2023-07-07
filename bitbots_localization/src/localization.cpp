@@ -50,6 +50,8 @@ rcl_interfaces::msg::SetParametersResult Localization::onSetParameters(const std
   fieldboundary_subscriber_ = this->create_subscription<sv3dm::msg::FieldBoundary>(
     config_->fieldboundary_topic, 1, std::bind(&Localization::FieldboundaryCallback, this, _1));
 
+  rviz_initial_pose_subscriber_ = this->create_subscription<gm::msg::PoseWithCovarianceStamped>("initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1)); //TODO: use params later
+
   pose_particles_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(config_->particle_publishing_topic, 1);
 
   pose_with_covariance_publisher_ = this->create_publisher<gm::msg::PoseWithCovarianceStamped>("pose_with_covariance", 1);
@@ -221,7 +223,16 @@ void Localization::GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg) {
 void Localization::FieldboundaryCallback(const sv3dm::msg::FieldBoundary &msg) {
   fieldboundary_relative_ = msg;
 }
+void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg){
+  // Transform the given pose to map frame
+  auto pose_in_map =  tfBuffer->transform(msg, map_frame_, tf2::durationFromSec(1.0));
 
+  // Get yaw from quaternion
+  double yaw = tf2::getYaw(pose_in_map.pose.pose.orientation);
+
+  // Reset filter
+  reset_filter(4, pose_in_map.pose.pose.position.x, pose_in_map.pose.pose.position.y, yaw);
+}
 bool Localization::set_paused_callback(const std::shared_ptr<bl::srv::SetPaused::Request> req,
                                        std::shared_ptr<bl::srv::SetPaused::Response> res) {
   if(req->paused) {
