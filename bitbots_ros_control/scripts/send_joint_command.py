@@ -33,7 +33,7 @@ class PredefinedCommands:
         "RHipPitch",
         "RKnee",
         "RAnklePitch",
-        "RAnkleRoll"
+        "RAnkleRoll",
     ]
     __velocity__ = 5.0
     __accelerations__ = -1.0
@@ -44,7 +44,8 @@ class PredefinedCommands:
         velocities=[__velocity__] * len(__ids__),
         accelerations=[__accelerations__] * len(__ids__),
         max_currents=[__max_currents__] * len(__ids__),
-        positions=[0.0] * len(__ids__))
+        positions=[0.0] * len(__ids__),
+    )
 
     Walkready = JointCommand(
         joint_names=__ids__,
@@ -72,16 +73,23 @@ class PredefinedCommands:
             -1.0059,  # RKnee
             0.4512,  # RAnklePitch
             -0.0625,  # RAnkleRoll
-        ])
+        ],
+    )
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Send a bitbots_msgs/JointCommand to our ros-control node in a loop")
-    parser.add_argument("--once", action="store_true", default=False,
-                        help="Only send the message once instead of in a loop")
-    parser.add_argument("-c", "--command", type=str, help="Command to send. Use one of the available choices",
-                        choices=[c for c in PredefinedCommands.__dict__ if not c.startswith("__")],
-                        default="Zero")
+    parser.add_argument(
+        "--once", action="store_true", default=False, help="Only send the message once instead of in a loop"
+    )
+    parser.add_argument(
+        "-c",
+        "--command",
+        type=str,
+        help="Command to send. Use one of the available choices",
+        choices=[c for c in PredefinedCommands.__dict__ if not c.startswith("__")],
+        default="Zero",
+    )
 
     return parser.parse_args()
 

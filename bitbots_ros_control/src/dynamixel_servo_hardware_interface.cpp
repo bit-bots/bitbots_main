@@ -6,36 +6,31 @@
 namespace bitbots_ros_control {
 using std::placeholders::_1;
 
-DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(rclcpp::Node::SharedPtr nh) {
-  nh_ = nh;
-}
+DynamixelServoHardwareInterface::DynamixelServoHardwareInterface(rclcpp::Node::SharedPtr nh) { nh_ = nh; }
 
-void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) {
-  bus_interfaces_.push_back(bus);
-}
+void DynamixelServoHardwareInterface::addBusInterface(ServoBusInterface *bus) { bus_interfaces_.push_back(bus); }
 
-void DynamixelServoHardwareInterface::writeROMRAM(bool first_time){
-  for (ServoBusInterface *bus: bus_interfaces_) {
+void DynamixelServoHardwareInterface::writeROMRAM(bool first_time) {
+  for (ServoBusInterface *bus : bus_interfaces_) {
     bus->writeROMRAM(first_time);
   }
 }
 
 bool DynamixelServoHardwareInterface::init() {
   /*
-  * This initializes the hardware interface based on the values set in the config.
-  * The servos are pinged to verify that a connection is present and to know which type of servo it is.
-  */
+   * This initializes the hardware interface based on the values set in the config.
+   * The servos are pinged to verify that a connection is present and to know which type of servo it is.
+   */
 
   // Init subscriber / publisher
   set_torque_sub_ = nh_->create_subscription<std_msgs::msg::Bool>(
       "set_torque", 1, std::bind(&DynamixelServoHardwareInterface::setTorqueCb, this, _1));
   set_torque_indiv_sub_ = nh_->create_subscription<bitbots_msgs::msg::JointTorque>(
-      "set_torque_individual", 1, std::bind(
-          &DynamixelServoHardwareInterface::individualTorqueCb, this, _1));
+      "set_torque_individual", 1, std::bind(&DynamixelServoHardwareInterface::individualTorqueCb, this, _1));
   // todo we could change the command topic to something better
   sub_command_ = nh_->create_subscription<bitbots_msgs::msg::JointCommand>(
-      "/DynamixelController/command", 1, std::bind(&DynamixelServoHardwareInterface::commandCb,
-                                                   this, std::placeholders::_1));
+      "/DynamixelController/command", 1,
+      std::bind(&DynamixelServoHardwareInterface::commandCb, this, std::placeholders::_1));
   pwm_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/servo_PWM", 10);
   joint_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
 
@@ -43,7 +38,7 @@ bool DynamixelServoHardwareInterface::init() {
 
   // init merged vectors for controller
   joint_count_ = 0;
-  for (ServoBusInterface *bus: bus_interfaces_) {
+  for (ServoBusInterface *bus : bus_interfaces_) {
     joint_count_ = joint_count_ + bus->joint_count_;
     for (int i = 0; i < bus->joint_count_; i++) {
       joint_names_.push_back(bus->joint_names_[i]);
@@ -85,10 +80,10 @@ bool DynamixelServoHardwareInterface::init() {
 }
 
 void DynamixelServoHardwareInterface::commandCb(const bitbots_msgs::msg::JointCommand &command_msg) {
-  if (!(command_msg.joint_names.size()==command_msg.positions.size() &&
-      command_msg.joint_names.size()==command_msg.velocities.size() &&
-      command_msg.joint_names.size()==command_msg.accelerations.size() &&
-      command_msg.joint_names.size()==command_msg.max_currents.size())) {
+  if (!(command_msg.joint_names.size() == command_msg.positions.size() &&
+        command_msg.joint_names.size() == command_msg.velocities.size() &&
+        command_msg.joint_names.size() == command_msg.accelerations.size() &&
+        command_msg.joint_names.size() == command_msg.max_currents.size())) {
     RCLCPP_ERROR(nh_->get_logger(), "Dynamixel Controller got command with inconsistent array lengths.");
     return;
   }
@@ -115,7 +110,7 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::Join
   for (size_t i = 0; i < msg.joint_names.size(); i++) {
     bool success = false;
     for (size_t j = 0; j < joint_names_.size(); j++) {
-      if (msg.joint_names[i]==joint_names_[j]) {
+      if (msg.joint_names[i] == joint_names_[j]) {
         if (i < msg.joint_names.size()) {
           goal_torque_individual_[j] = msg.on[i];
           success = true;
@@ -128,7 +123,7 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::Join
       RCLCPP_WARN(nh_->get_logger(), "Couldn't set torque for servo %s ", msg.joint_names[i].c_str());
     }
   }
-  for (ServoBusInterface *bus: bus_interfaces_) {
+  for (ServoBusInterface *bus : bus_interfaces_) {
     bus->switch_individual_torque_ = true;
   }
 }
@@ -137,7 +132,7 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::msg::Bool::SharedPtr
   /**
    * This saves the given required value, so that it can be written to the servos in the write method
    */
-  for (ServoBusInterface *bus: bus_interfaces_) {
+  for (ServoBusInterface *bus : bus_interfaces_) {
     bus->goal_torque_ = enabled->data;
   }
   for (size_t j = 0; j < joint_names_.size(); j++) {
@@ -147,9 +142,9 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::msg::Bool::SharedPtr
 
 void DynamixelServoHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   // retrieve values from the buses and set controller vector accordingly
-  //todo improve performance
+  // todo improve performance
   int i = 0;
-  for (ServoBusInterface *bus: bus_interfaces_) {
+  for (ServoBusInterface *bus : bus_interfaces_) {
     for (int j = 0; j < bus->joint_count_; j++) {
       current_position_[i] = bus->current_position_[j];
       current_velocity_[i] = bus->current_velocity_[j];
@@ -174,9 +169,9 @@ void DynamixelServoHardwareInterface::read(const rclcpp::Time &t, const rclcpp::
 
 void DynamixelServoHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   // set all values from controller to the buses
-  //todo improve performance
+  // todo improve performance
   int i = 0;
-  for (ServoBusInterface *bus: bus_interfaces_) {
+  for (ServoBusInterface *bus : bus_interfaces_) {
     for (int j = 0; j < bus->joint_count_; j++) {
       bus->goal_position_[j] = goal_position_[i];
       bus->goal_velocity_[j] = goal_velocity_[i];
@@ -187,4 +182,4 @@ void DynamixelServoHardwareInterface::write(const rclcpp::Time &t, const rclcpp:
     }
   }
 }
-}
+}  // namespace bitbots_ros_control

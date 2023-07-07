@@ -6,8 +6,8 @@ from bitbots_msgs.srv import Leds
 from std_msgs.msg import ColorRGBA
 
 rclpy.init(args=None)
-from rclpy.node import Node
-node = Node('test_leds')
+
+node = Node("test_leds")
 
 client = node.create_client(Leds, "/set_leds")
 

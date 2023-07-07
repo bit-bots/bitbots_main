@@ -1,32 +1,26 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_IMU_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_IMU_HARDWARE_INTERFACE_H_
 
-#include <rclcpp/rclcpp.hpp>
-#include <string>
-
-#include <diagnostic_msgs/msg/diagnostic_status.hpp>
-#include <diagnostic_msgs/msg/diagnostic_array.hpp>
-#include <sensor_msgs/msg/imu.hpp>
-
+#include <bitbots_ros_control/hardware_interface.h>
 #include <dynamixel_driver.h>
 
-#include <bitbots_msgs/srv/imu_ranges.hpp>
-#include <bitbots_msgs/srv/complementary_filter_params.hpp>
 #include <bitbots_msgs/srv/accelerometer_calibration.hpp>
+#include <bitbots_msgs/srv/complementary_filter_params.hpp>
+#include <bitbots_msgs/srv/imu_ranges.hpp>
 #include <bitbots_msgs/srv/set_accelerometer_calibration_threshold.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_srvs/srv/empty.hpp>
-#include <bitbots_ros_control/hardware_interface.h>
+#include <string>
 
 namespace bitbots_ros_control {
 
-class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface{
+class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit ImuHardwareInterface(rclcpp::Node::SharedPtr nh,
-                                std::shared_ptr<DynamixelDriver> &driver,
-                                int id,
-                                std::string topic,
-                                std::string frame,
-                                std::string name);
+  explicit ImuHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+                                std::string topic, std::string frame, std::string name);
 
   bool init();
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
@@ -43,7 +37,7 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface{
   uint8_t *accel_calib_data_;
 
   uint32_t last_seq_number_{};
-  double *orientation_{}; //quaternion (x,y,z,w)
+  double *orientation_{};  // quaternion (x,y,z,w)
   double *orientation_covariance_{};
   double *angular_velocity_{};
   double *angular_velocity_covariance_{};
@@ -80,23 +74,30 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface{
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr calibrate_accel_service_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_accel_calibration_service_;
   rclcpp::Service<bitbots_msgs::srv::AccelerometerCalibration>::SharedPtr read_accel_calibration_service_;
-  rclcpp::Service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>::SharedPtr set_accel_calib_threshold_service_;
+  rclcpp::Service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>::SharedPtr
+      set_accel_calib_threshold_service_;
 
-  void setIMURanges(const std::shared_ptr<bitbots_msgs::srv::IMURanges::Request> req, std::shared_ptr<bitbots_msgs::srv::IMURanges::Response> resp);
-  void calibrateGyro(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
-  void resetGyroCalibration(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void setIMURanges(const std::shared_ptr<bitbots_msgs::srv::IMURanges::Request> req,
+                    std::shared_ptr<bitbots_msgs::srv::IMURanges::Response> resp);
+  void calibrateGyro(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                     std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void resetGyroCalibration(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                            std::shared_ptr<std_srvs::srv::Empty::Response> resp);
   void setComplementaryFilterParams(const std::shared_ptr<bitbots_msgs::srv::ComplementaryFilterParams::Request> req,
                                     std::shared_ptr<bitbots_msgs::srv::ComplementaryFilterParams::Response> resp);
-  void calibrateAccel(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
-  void resetAccelCalibraton(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void calibrateAccel(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                      std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void resetAccelCalibraton(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                            std::shared_ptr<std_srvs::srv::Empty::Response> resp);
   void readAccelCalibration(const std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Request> req,
                             std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Response> resp);
-  void setAccelCalibrationThreshold(const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
-                                    std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
+  void setAccelCalibrationThreshold(
+      const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
+      std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
   sensor_msgs::msg::Imu imu_msg_;
   int diag_counter_;
 };
-}
+}  // namespace bitbots_ros_control
 #endif

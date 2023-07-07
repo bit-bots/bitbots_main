@@ -1,30 +1,24 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_BUTTON_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_BUTTON_HARDWARE_INTERFACE_H_
 
+#include <bitbots_ros_control/hardware_interface.h>
+#include <bitbots_ros_control/utils.h>
+#include <dynamixel_driver.h>
+
+#include <bitbots_msgs/msg/buttons.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <hardware_interface/sensor_interface.hpp>
+#include <humanoid_league_msgs/msg/audio.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include <humanoid_league_msgs/msg/audio.hpp>
-#include <diagnostic_msgs/msg/diagnostic_status.hpp>
-#include <diagnostic_msgs/msg/diagnostic_array.hpp>
-#include <bitbots_msgs/msg/buttons.hpp>
-
-#include <hardware_interface/sensor_interface.hpp>
-
-#include <dynamixel_driver.h>
-
-#include <bitbots_ros_control/utils.h>
-#include <bitbots_ros_control/hardware_interface.h>
-
 namespace bitbots_ros_control {
 
-class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface{
+class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit ButtonHardwareInterface(rclcpp::Node::SharedPtr nh,
-                                   std::shared_ptr<DynamixelDriver> &driver,
-                                   int id,
-                                   std::string topic,
-                                   int read_rate_);
+  explicit ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+                                   std::string topic, int read_rate_);
 
   bool init();
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
@@ -42,6 +36,6 @@ class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface{
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
   uint8_t *data_;
 };
-}
+}  // namespace bitbots_ros_control
 
 #endif

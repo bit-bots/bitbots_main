@@ -31,9 +31,9 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
 
   // Convert dxls to native type: a vector of tuples with name and id for sorting purposes
   std::vector<std::pair<std::string, int>> dxl_devices;
-  for (const std::string &parameter_name: device_name_list.names) {
+  for (const std::string &parameter_name : device_name_list.names) {
     // we get directly the parameters and not the groups. use id parameter to identify them
-    if (parameter_name.find(".id")!=std::string::npos) {
+    if (parameter_name.find(".id") != std::string::npos) {
       int id = nh->get_parameter(parameter_name).as_int();
       // remove "device_info." and ".id"
       std::string device_name = parameter_name.substr(12, parameter_name.size() - 3 - 12);
@@ -41,7 +41,8 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
     }
   }
 
-  // sort the devices by id. This way the devices will always be read and written in ID order later, making debug easier.
+  // sort the devices by id. This way the devices will always be read and written in ID order later, making debug
+  // easier.
   std::sort(dxl_devices.begin(), dxl_devices.end(),
             [](std::pair<std::string, int> &a, std::pair<std::string, int> &b) { return a.second < b.second; });
 
@@ -59,13 +60,13 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
 }
 
 bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::string, int>> dxl_devices) {
-  interfaces_ = std::vector<std::vector<bitbots_ros_control::HardwareInterface * >>();
+  interfaces_ = std::vector<std::vector<bitbots_ros_control::HardwareInterface *>>();
   // init bus drivers
   std::vector<std::string> pinged;
   rcl_interfaces::msg::ListParametersResult port_list = nh_->list_parameters({"port_info"}, 3);
-  for (const std::string &parameter_name: port_list.names) {
+  for (const std::string &parameter_name : port_list.names) {
     // we get directly the parameters and not the groups. use id parameter to identify them
-    if (parameter_name.find(".device_file")!=std::string::npos) {
+    if (parameter_name.find(".device_file") != std::string::npos) {
       std::string port_name = parameter_name.substr(10, parameter_name.size() - 11 - 11);
       // read bus driver specifications from config
       std::string device_file = nh_->get_parameter("port_info." + port_name + ".device_file").as_string();
@@ -85,11 +86,11 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       std::vector<bitbots_ros_control::HardwareInterface *> interfaces_on_port;
       // iterate over all devices and ping them to see what is connected to this bus
       std::vector<std::tuple<int, std::string, float, float, std::string>> servos_on_port;
-      for (std::pair<std::string, int> &device: dxl_devices) {
-        //RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
+      for (std::pair<std::string, int> &device : dxl_devices) {
+        // RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
         std::string name = device.first;
         int id = device.second;
-        if (std::find(pinged.begin(), pinged.end(), device.first)!=pinged.end()) {
+        if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
           // we already found this and don't have to search again
         } else {
           int model_number_specified;
@@ -101,20 +102,20 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
           uint16_t *model_number_returned_16 = new uint16_t;
           if (driver->ping(uint8_t(id), model_number_returned_16)) {
             // check if the specified model number matches the actual model number of the device
-            if (model_number_specified_16!=*model_number_returned_16) {
+            if (model_number_specified_16 != *model_number_returned_16) {
               RCLCPP_WARN(nh_->get_logger(), "Model number of id %d does not match", id);
             }
             // ping was successful, add device correspondingly
             // only add them if the mode is set correspondingly
             // TODO maybe move more of the parameter stuff in the init of the modules instead of doing everything here
-            if (model_number_specified==0xABBA && interface_type=="CORE") {
+            if (model_number_specified == 0xABBA && interface_type == "CORE") {
               // CORE
               int read_rate;
               nh_->get_parameter("device_info." + name + ".read_rate", read_rate);
               driver->setTools(model_number_specified_16, id);
               core_interface_ = new CoreHardwareInterface(nh_, driver, id, read_rate);
               // turn on power, just to be sure
-              core_interface_->write(nh_->get_clock()->now(), rclcpp::Duration::from_nanoseconds(1e9*0));
+              core_interface_->write(nh_->get_clock()->now(), rclcpp::Duration::from_nanoseconds(1e9 * 0));
               interfaces_on_port.push_back(core_interface_);
               core_present_ = true;
             } else if (model_number_specified == 0 && !only_imu_) {  // model number is currently 0 on foot sensors
@@ -126,7 +127,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               BitFootHardwareInterface *interface = new BitFootHardwareInterface(nh_, driver, id, topic, name);
               interfaces_on_port.push_back(interface);
             } else if (model_number_specified == 0xBAFF && interface_type == "IMU" && !only_pressure_) {
-              //IMU
+              // IMU
               std::string topic;
               if (!nh_->get_parameter("device_info." + name + ".topic", topic)) {
                 RCLCPP_WARN(nh_->get_logger(), "IMU topic not specified");
@@ -191,9 +192,9 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
     }
   }
 
-  if (pinged.size()!=dxl_devices.size()) {
+  if (pinged.size() != dxl_devices.size()) {
     // when we only have 1 or two devices it's only the core
-    if (pinged.empty() || pinged.size()==1 || pinged.size()==2) {
+    if (pinged.empty() || pinged.size() == 1 || pinged.size() == 2) {
       RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 5000, "Could not start ros control. Power is off!");
       speakError(speak_pub_, "Could not start ross control. Power is off!");
     } else {
@@ -203,8 +204,8 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
         RCLCPP_ERROR(nh_->get_logger(), "Could not ping all devices!");
         speakError(speak_pub_, "error starting ross control");
         // check which devices were not pinged successful
-        for (std::pair<std::string, int> &device: dxl_devices) {
-          if (std::find(pinged.begin(), pinged.end(), device.first)!=pinged.end()) {
+        for (std::pair<std::string, int> &device : dxl_devices) {
+          if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
           } else {
             RCLCPP_ERROR(nh_->get_logger(), "%s with id %d missing", device.first.c_str(), device.second);
           }
@@ -220,7 +221,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
 
 void threaded_init(std::vector<HardwareInterface *> &port_interfaces, rclcpp::Node::SharedPtr &nh, int &success) {
   success = true;
-  for (HardwareInterface *interface: port_interfaces) {
+  for (HardwareInterface *interface : port_interfaces) {
     success &= interface->init();
   }
 }
@@ -230,7 +231,7 @@ bool WolfgangHardwareInterface::init() {
   std::vector<std::thread> threads;
   std::vector<int *> successes;
   int i = 0;
-  for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
+  for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
     // we use an int instead of bool, since std::ref can't handle bool
     int suc = 0;
@@ -239,12 +240,12 @@ bool WolfgangHardwareInterface::init() {
     i++;
   }
   // wait for all inits to finish
-  for (std::thread &thread: threads) {
+  for (std::thread &thread : threads) {
     thread.join();
   }
   // see if all inits were successful
   bool success = true;
-  for (bool s: successes) {
+  for (bool s : successes) {
     success &= s;
   }
   // init servo interface last after all servo busses are there
@@ -252,41 +253,40 @@ bool WolfgangHardwareInterface::init() {
   return success;
 }
 
-void threaded_read(std::vector<HardwareInterface *> &port_interfaces,
-                   const rclcpp::Time &t,
+void threaded_read(std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
                    const rclcpp::Duration &dt) {
-  for (HardwareInterface *interface: port_interfaces) {
+  for (HardwareInterface *interface : port_interfaces) {
     interface->read(t, dt);
   }
 }
 
 void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   // give feedback to power changes
-  if (core_present_){
-    if(current_power_status_ && !last_power_status_){
+  if (core_present_) {
+    if (current_power_status_ && !last_power_status_) {
       speakError(speak_pub_, "Power switched on!");
-    }else if(!current_power_status_ && last_power_status_){
+    } else if (!current_power_status_ && last_power_status_) {
       speakError(speak_pub_, "Power switched off!");
     }
   }
-  if (!core_present_ || current_power_status_){
+  if (!core_present_ || current_power_status_) {
     // only read all hardware if power is on
     std::vector<std::thread> threads;
     // start all reads
-    for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
+    for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
       threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
     }
     // wait for all reads to finish
-    for (std::thread &thread: threads) {
+    for (std::thread &thread : threads) {
       thread.join();
     }
     // aggregate all servo values for controller
     servo_interface_.read(t, dt);
-    if (core_present_){
+    if (core_present_) {
       last_power_status_ = current_power_status_;
       current_power_status_ = core_interface_->get_power_status();
     }
-  }else{
+  } else {
     // read core to see if power is back on
     core_interface_->read(t, dt);
     last_power_status_ = current_power_status_;
@@ -295,10 +295,9 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
   }
 }
 
-void threaded_write(std::vector<HardwareInterface *> &port_interfaces,
-                    const rclcpp::Time &t,
+void threaded_write(std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
                     const rclcpp::Duration &dt) {
-  for (HardwareInterface *interface: port_interfaces) {
+  for (HardwareInterface *interface : port_interfaces) {
     interface->write(t, dt);
   }
 }
@@ -308,7 +307,7 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
       nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
     // when we can read the power and see that it was just switched on, we write the ROM RAM again
     servo_interface_.writeROMRAM(false);
-  } else if(core_present_ && !current_power_status_){
+  } else if (core_present_ && !current_power_status_) {
     // if power is off only write CORE
     core_interface_->write(t, dt);
   } else {
@@ -316,14 +315,14 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
     servo_interface_.write(t, dt);
     std::vector<std::thread> threads;
     // start all writes
-    for (std::vector<HardwareInterface *> &port_interfaces: interfaces_) {
+    for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
       threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
     }
 
     // wait for all writes to finish
-    for (std::thread &thread: threads) {
+    for (std::thread &thread : threads) {
       thread.join();
     }
   }
 }
-}
+}  // namespace bitbots_ros_control

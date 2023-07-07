@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 
-import traceback
 
 import rclpy
 from rclpy.node import Node
-import copy
-import math
 
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
-from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
-from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl
+from geometry_msgs.msg import Pose
 from sensor_msgs.msg import Imu
 
 rclpy.init(args=None)
 
 
 def normalize_quaternion(quaternion_msg):
-    norm = quaternion_msg.x ** 2 + quaternion_msg.y ** 2 + quaternion_msg.z ** 2 + quaternion_msg.w ** 2
+    norm = quaternion_msg.x**2 + quaternion_msg.y**2 + quaternion_msg.z**2 + quaternion_msg.w**2
     s = norm ** (-0.5)
     quaternion_msg.x *= s
     quaternion_msg.y *= s
@@ -24,9 +21,9 @@ def normalize_quaternion(quaternion_msg):
     quaternion_msg.w *= s
 
 
-class IMUMarker:
-
+class IMUMarker(Node):
     def __init__(self, server):
+        super().__init__("imu_marker")
         self.marker_name = "IMU"
         self.imu_publisher = self.create_publisher(Imu, "/imu/data", 1)
         self.server = server
@@ -64,13 +61,15 @@ class IMUMarker:
         # we want to use our special callback function
         self.server.insert(int_marker, self.process_feedback)
 
+        self.create_timer(0.05, self.publish_marker)
+
     def process_feedback(self, feedback):
         self.pose = feedback.pose
 
     def publish_marker(self, e):
         # create IMU message and publish
         imu_msg = Imu()
-        imu_msg.header.stamp = rospy.get_rostime()
+        imu_msg.header.stamp = self.get_clock().now().to_msg()
         imu_msg.header.frame_id = "imu"
         imu_msg.orientation = self.pose.orientation
 
@@ -83,8 +82,5 @@ if __name__ == "__main__":
 
     server.applyChanges()
 
-    # create a timer to update the published imu transform
-    rospy.Timer(Duration(seconds=0.05), imu.publish_marker)
-
     # run and block until finished
-    rclpy.spin(self)
+    rclpy.spin(imu)

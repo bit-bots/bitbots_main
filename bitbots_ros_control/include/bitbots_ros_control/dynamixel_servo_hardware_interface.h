@@ -1,28 +1,25 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_SERVO_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_DYNAMIXEL_SERVO_HARDWARE_INTERFACE_H_
 
-#include <rclcpp/rclcpp.hpp>
-#include <string>
+#include <bitbots_ros_control/hardware_interface.h>
+#include <bitbots_ros_control/servo_bus_interface.h>
+#include <bitbots_ros_control/utils.h>
+#include <dynamixel_driver.h>
 
-#include <std_msgs/msg/bool.hpp>
-#include <humanoid_league_msgs/msg/audio.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
-#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_msgs/msg/joint_torque.hpp>
+#include <bitset>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <humanoid_league_msgs/msg/audio.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32_multi_array.hpp>
-#include <bitbots_msgs/msg/joint_torque.hpp>
-#include <bitbots_msgs/msg/joint_command.hpp>
-
-#include <bitbots_ros_control/utils.h>
-#include <bitbots_ros_control/hardware_interface.h>
-
-#include <bitbots_ros_control/servo_bus_interface.h>
-#include <dynamixel_driver.h>
-#include <bitset>
+#include <string>
 
 namespace bitbots_ros_control {
-template<typename T>
+template <typename T>
 std::string vecToString(const std::vector<T> &vec) {
   std::stringstream ss;
   ss << "[";
@@ -49,7 +46,7 @@ struct Joint {
   State goal;
 };
 
-class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInterface{
+class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
   explicit DynamixelServoHardwareInterface(rclcpp::Node::SharedPtr nh);
 
@@ -59,7 +56,7 @@ class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInte
   void addBusInterface(ServoBusInterface *bus);
   void writeROMRAM(bool first_time);
 
-private:
+ private:
   rclcpp::Node::SharedPtr nh_;
   std::vector<ServoBusInterface *> bus_interfaces_;
 
@@ -102,6 +99,6 @@ private:
   sensor_msgs::msg::JointState joint_state_msg_;
   sensor_msgs::msg::JointState pwm_msg_;
 };
-}
+}  // namespace bitbots_ros_control
 
 #endif
