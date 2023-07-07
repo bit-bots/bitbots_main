@@ -13,7 +13,7 @@ class TurnAround(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
-        self.orientation_thresh = parameters.get('thresh', 0.3)
+        self.orientation_thresh = parameters.get('thresh', 0.5)
         pose = self.blackboard.world_model.get_current_position()
 
         if pose is None:
@@ -56,7 +56,7 @@ class TurnLeft(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
         self.current_rotation_vel = 0.0
-        self.max_speed = parameters.get('max_speed', 0.5)
+        self.max_speed = parameters.get('max_speed', 0.3)
 
         # Check if the have a duration
         self.duration: Optional[float] = parameters.get('duration', None)
