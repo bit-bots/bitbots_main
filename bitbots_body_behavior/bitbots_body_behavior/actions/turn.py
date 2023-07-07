@@ -1,7 +1,8 @@
 import math
+from typing import Optional
 
 from bitbots_blackboard.blackboard import BodyBlackboard
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from tf_transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -48,3 +49,32 @@ class TurnAround(AbstractActionElement):
         self.blackboard.pathfinding.publish(self.pose_msg)
         if (self.theta - theta + math.tau) % math.tau < self.orientation_thresh:
             self.pop()
+
+
+class TurnLeft(AbstractActionElement):
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.blackboard: BodyBlackboard
+        self.current_rotation_vel = 0.0
+        self.max_speed = parameters.get('max_speed', 0.3)
+
+        # Check if the have a duration
+        self.duration: Optional[float] = parameters.get('duration', None)
+        self.start_time = self.blackboard.node.get_clock().now()
+
+    def perform(self, reevaluate=False):
+        # Increase the rotation speed if we are not at max speed
+        if self.current_rotation_vel < self.max_speed:
+            self.current_rotation_vel += 0.05
+
+        # Create the cmd_vel message
+        cmd_vel = Twist()
+        cmd_vel.angular.z = self.current_rotation_vel
+
+        # Send the rotation speed
+        self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)
+
+        if self.duration is not None:
+            # Check if the duration is over
+            if (self.blackboard.node.get_clock().now() - self.start_time).nanoseconds / 1e9 > self.duration:
+                self.pop()
