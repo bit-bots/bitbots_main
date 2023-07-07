@@ -71,6 +71,9 @@ include:
 exclude:
     - "*.bag"
     - "*.pyc"
+    - "*.git"
+    - "*.github"
     - "cmake-build-debug"
     - ".idea"
     - ".vscode"
+    - "__pycache__"

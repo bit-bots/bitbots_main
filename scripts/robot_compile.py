@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+print(DeprecationWarning("WARNING: This script is deprecated. Use 'deploy_robot.py' instead. Please remove this script in the future."))
+
 import argparse
 import sys
 import os

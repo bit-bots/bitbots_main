@@ -1,3 +1,4 @@
+fabric
 filterpy
 mycroft-mimic3-tts
 pip
@@ -5,6 +6,7 @@ pydot
 pyopencl
 pytorchyolo
 pyttsx3
+rich
 git+https://github.com/SammyRamone/stable-baselines3.git
 git+https://github.com/bit-bots/deep_quintic.git
 git+https://github.com/Flova/pyastar2d
