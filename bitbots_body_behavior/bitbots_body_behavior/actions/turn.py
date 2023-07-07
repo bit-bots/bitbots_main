@@ -13,7 +13,7 @@ class TurnAround(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
-        self.orientation_thresh = parameters.get('thresh', 0.5)
+        self.orientation_thresh = parameters.get('thresh', 0.3)
         pose = self.blackboard.world_model.get_current_position()
 
         if pose is None:
@@ -55,7 +55,7 @@ class TurnLeft(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
-        self.current_rotation_vel = 0
+        self.current_rotation_vel = 0.0
         self.max_speed = parameters.get('max_speed', 0.5)
 
         # Check if the have a duration
@@ -64,7 +64,7 @@ class TurnLeft(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         # Increase the rotation speed if we are not at max speed
-        if self.current_rotation_vel > self.max_speed:
+        if self.current_rotation_vel < self.max_speed:
             self.current_rotation_vel += 0.05
 
         # Create the cmd_vel message
