@@ -126,6 +126,9 @@ class Localization : public rclcpp::Node {
    * Resets the state distribution of the state space
    * @param distribution The type of the distribution
    */
+
+  void SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg);
+
   void reset_filter(int distribution);
 
   /**
@@ -149,6 +152,8 @@ class Localization : public rclcpp::Node {
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
   rclcpp::Subscription<sv3dm::msg::GoalpostArray>::SharedPtr goal_subscriber_;
   rclcpp::Subscription<sv3dm::msg::FieldBoundary>::SharedPtr fieldboundary_subscriber_;
+
+  rclcpp::Subscription<gm::msg::PoseWithCovarianceStamped>::SharedPtr rviz_initial_pose_subscriber_;
 
   OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
