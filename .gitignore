@@ -2,7 +2,6 @@
 *.pyc
 .pyenv2/*
 .pyenv3/*
-.vscode/* 
 
 ansible_robots/*
 doc_internal/*
