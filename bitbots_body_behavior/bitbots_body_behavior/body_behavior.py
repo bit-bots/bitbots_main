@@ -12,24 +12,18 @@ import os
 
 import tf2_ros as tf2
 import rclpy
-from actionlib_msgs.msg import GoalID
 from ament_index_python import get_package_share_directory
 from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
-from rclpy.action import ActionClient
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
-from std_msgs.msg import Bool, Empty, Float32
-from tf2_geometry_msgs import PoseStamped
-from visualization_msgs.msg import Marker
 from bitbots_tf_listener import TransformListener
 
-from bitbots_msgs.action import Dynup, LookAt
 from dynamic_stack_decider.dsd import DSD
-from humanoid_league_msgs.msg import GameState, HeadMode, RobotControlState, Strategy, TeamData
+from humanoid_league_msgs.msg import GameState, RobotControlState, TeamData
 
 
 class BodyDSD:
@@ -44,19 +38,6 @@ class BodyDSD:
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, "debug/dsd/body_behavior", node)  # TODO: use config
 
-        self.dsd.blackboard.team_data.strategy_sender = node.create_publisher(Strategy, "strategy", 2)
-        self.dsd.blackboard.team_data.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
-        self.dsd.blackboard.blackboard.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
-        self.dsd.blackboard.pathfinding.direct_cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
-        self.dsd.blackboard.pathfinding.pathfinding_pub = node.create_publisher(PoseStamped, "goal_pose", 1)
-        self.dsd.blackboard.pathfinding.pathfinding_cancel_pub = node.create_publisher(Empty, "pathfinding/cancel", 1)
-        self.dsd.blackboard.pathfinding.ball_obstacle_active_pub = node.create_publisher(
-            Bool, "ball_obstacle_active", 1
-        )
-        self.dsd.blackboard.pathfinding.approach_marker_pub = node.create_publisher(Marker, "debug/approach_point", 10)
-        self.dsd.blackboard.dynup_cancel_pub = node.create_publisher(GoalID, "dynup/cancel", 1)
-        self.dsd.blackboard.hcm_deactivate_pub = node.create_publisher(Bool, "hcm_deactivate", 1)
-
         dirname = get_package_share_directory("bitbots_body_behavior")
 
         self.dsd.register_actions(os.path.join(dirname, "actions"))
@@ -64,9 +45,6 @@ class BodyDSD:
 
         dsd_file = node.get_parameter("dsd_file").get_parameter_value().string_value
         self.dsd.load_behavior(os.path.join(dirname, dsd_file))
-        self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, "dynup")
-
-        self.dsd.blackboard.lookat_action_client = ActionClient(node, LookAt, "look_at_goal")
 
         node.create_subscription(
             PoseWithCovarianceStamped,
@@ -106,7 +84,7 @@ class BodyDSD:
         node.create_subscription(
             RobotControlState,
             "robot_state",
-            blackboard.blackboard.robot_state_callback,
+            blackboard.misc.robot_state_callback,
             qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -128,11 +106,12 @@ class BodyDSD:
     def loop(self):
         try:
             self.dsd.update()
-            self.dsd.blackboard.team_data.publish_strategy()
-            self.dsd.blackboard.team_data.publish_time_to_ball()
-            self.counter = (self.counter + 1) % self.dsd.blackboard.config["time_to_ball_divider"]
+            blackboard: BodyBlackboard = self.dsd.blackboard
+            blackboard.team_data.publish_strategy()
+            blackboard.team_data.publish_time_to_ball()
+            self.counter = (self.counter + 1) % blackboard.config["time_to_ball_divider"]
             if self.counter == 0:
-                self.dsd.blackboard.pathfinding.calculate_time_to_ball()
+                blackboard.pathfinding.calculate_time_to_ball()
         except Exception as e:
             import traceback
 

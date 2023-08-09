@@ -13,13 +13,13 @@ class GoToRolePosition(AbstractActionElement):
         role_positions = self.blackboard.config['role_positions']
         kickoff_type = 'active' if self.blackboard.gamestate.has_kickoff() else 'passive'
         try:
-            if self.blackboard.blackboard.duty == 'goalie':
-                generalized_role_position = role_positions[self.blackboard.blackboard.duty]
+            if self.blackboard.team_data.role == 'goalie':
+                generalized_role_position = role_positions[self.blackboard.team_data.role]
             else:
                 # players other than the goalie have multiple possible positions
-                generalized_role_position = role_positions[self.blackboard.blackboard.duty][kickoff_type][str(self.blackboard.blackboard.position_number)]
+                generalized_role_position = role_positions[self.blackboard.team_data.role][kickoff_type][str(self.blackboard.misc.position_number)]
         except KeyError:
-            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
+            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.team_data.role))
 
         # Adapt position to field size
         # TODO know where map frame is located

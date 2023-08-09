@@ -19,8 +19,8 @@ class TimerRunning(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        self.publish_debug_data(f"timer {self.name}", self.blackboard.blackboard.timer_remaining(self.name))
-        if self.blackboard.blackboard.timer_running(self.name):
+        self.publish_debug_data(f"timer {self.name}", self.blackboard.misc.timer_remaining(self.name))
+        if self.blackboard.misc.timer_running(self.name):
             self.last_result = 'YES'
         else:
             self.last_result = 'NO'
@@ -50,9 +50,9 @@ class TimerEnded(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        self.publish_debug_data(f"timer {self.name}", self.blackboard.blackboard.timer_remaining(self.name))
+        self.publish_debug_data(f"timer {self.name}", self.blackboard.misc.timer_remaining(self.name))
 
-        if self.blackboard.blackboard.timer_ended(self.name):
+        if self.blackboard.misc.timer_ended(self.name):
             return 'YES'
         return 'NO'
 

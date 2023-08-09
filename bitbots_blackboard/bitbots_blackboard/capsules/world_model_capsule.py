@@ -20,10 +20,11 @@ from geometry_msgs.msg import (PoseStamped, PoseWithCovarianceStamped,
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
+from ros2_numpy import numpify, msgify
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion
+from tf2_geometry_msgs import PointStamped, Point
 
 
 class WorldModelCapsule:
@@ -183,9 +184,6 @@ class WorldModelCapsule:
             u, v = ball_pos
         return math.atan2(v, u)
 
-    def get_ball_speed(self) -> TwistStamped:
-        raise NotImplementedError
-
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
         self.ball_filtered = msg
 
@@ -331,8 +329,7 @@ class WorldModelCapsule:
         transform = self.get_current_position_transform(frame_id or self.map_frame)
         if transform is None:
             return None
-        orientation = transform.transform.rotation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
     def get_current_position_pose_stamped(self, frame_id: Optional[str] = None) -> Optional[PoseStamped]:
@@ -346,10 +343,7 @@ class WorldModelCapsule:
             return None
         ps = PoseStamped()
         ps.header = transform.header
-        ps.pose.position.x = transform.transform.translation.x
-        ps.pose.position.y = transform.transform.translation.y
-        ps.pose.position.z = transform.transform.translation.z
-        ps.pose.orientation = transform.transform.rotation
+        ps.pose.position = msgify(Point, numpify(transform.transform.translation))
         return ps
 
     def get_current_position_transform(self, frame_id: str) -> TransformStamped:

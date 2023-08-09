@@ -9,7 +9,7 @@
         there is a team_data_capsule dealing with messages received
         from other robots, a world_model_capsule containing various
         information about objects (balls, goals) on the field and a
-        blackboard capsule containing general information about the
+        misc capsule containing general information about the
         state of actions or perceptions by the robot.
     </description>
 

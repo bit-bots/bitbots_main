@@ -6,6 +6,11 @@ from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class ChangeAction(AbstractActionElement):
+    """
+    Changes the action communicated to the other robots.
+    This action determines the behavior of the robot on a very high level
+    and should not be confused with the DSD actions.
+    """
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)

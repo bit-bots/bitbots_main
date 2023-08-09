@@ -42,14 +42,14 @@ class GetWalkready(AbstractActionElement):
 
         :return: True if the animation was started, False if not
         """
-        server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1.0)
+        server_running = self.blackboard.animation.dynup_action_client.wait_for_server(timeout_sec=1.0)
         if not server_running:
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
                                       "Dynup Action Server not running! Dynup cannot work without dynup server!"
                                       "Will now wait until server is accessible!",
                                       throttle_duration_sec=10.0)
-                server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)
+                server_running = self.blackboard.animation.dynup_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Dynup server now running, 'get_walkready' action will go on.")
             else:
@@ -60,7 +60,7 @@ class GetWalkready(AbstractActionElement):
         goal = Dynup.Goal()
         goal.direction = self.direction
         self.active = True
-        self.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(goal)
+        self.dynup_action_current_goal = self.blackboard.animation.dynup_action_client.send_goal_async(goal)
         self.dynup_action_current_goal.add_done_callback(
             lambda future: future.result().get_result_async().add_done_callback(
                 lambda result_future: self.__done_cb(result_future)))

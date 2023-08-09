@@ -3,6 +3,7 @@ import numpy as np
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from tf_transformations import euler_from_quaternion
+from ros2_numpy import numpify
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
@@ -27,9 +28,7 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         if current_pose is None or goal_pose is None:
             return "NO"
 
-        goal = np.array([goal_pose.pose.position.x, goal_pose.pose.position.y])
-        position = np.array([current_pose.pose.position.x, current_pose.pose.position.y])
-        distance = np.linalg.norm(goal - position)
+        distance = np.linalg.norm(numpify(goal_pose.pose.position) - numpify(current_pose.pose.position))
         self.publish_debug_data("distance", distance)
         if distance < self.threshold:
             return "YES"
@@ -60,14 +59,8 @@ class AlignedToPathPlanningGoal(AbstractDecisionElement):
             # If it is not known if the robot is aligned correctly to, e.g., the goal the robot
             # should not be allowed to kick the ball.
             return "NO"
-        current_orientation = current_pose.pose.orientation
-        current_orientation = euler_from_quaternion(
-            [current_orientation.x, current_orientation.y, current_orientation.z, current_orientation.w]
-        )
-        goal_orientation = current_goal.pose.orientation
-        goal_orientation = euler_from_quaternion(
-            [goal_orientation.x, goal_orientation.y, goal_orientation.z, goal_orientation.w]
-        )
+        current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
+        goal_orientation = euler_from_quaternion(numpify(current_goal.pose.orientation))
         if math.degrees(abs(current_orientation[2] - goal_orientation[2])) < self.orientation_threshold:
             return "YES"
         else:

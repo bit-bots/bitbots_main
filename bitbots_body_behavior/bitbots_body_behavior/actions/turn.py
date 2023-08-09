@@ -3,6 +3,8 @@ from typing import Optional
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import Quaternion
+from ros2_numpy import msgify
 from tf_transformations import quaternion_from_euler
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -31,11 +33,7 @@ class TurnAround(AbstractActionElement):
         pose_msg.header.frame_id = frame
         pose_msg.pose.position.x = x
         pose_msg.pose.position.y = y
-        quaternion = quaternion_from_euler(0, 0, theta)
-        pose_msg.pose.orientation.x = quaternion[0]
-        pose_msg.pose.orientation.y = quaternion[1]
-        pose_msg.pose.orientation.z = quaternion[2]
-        pose_msg.pose.orientation.w = quaternion[3]
+        pose_msg.pose.orientation = msgify(Quaternion, quaternion_from_euler(0, 0, theta))
 
         return pose_msg
 
@@ -51,7 +49,11 @@ class TurnAround(AbstractActionElement):
             self.pop()
 
 
-class TurnLeft(AbstractActionElement):
+class Turn(AbstractActionElement):
+    """
+    Turns with up to max speed for a given duration.
+    The sign of max speed indicates the direction (positive = left, negative = right).
+    """
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
@@ -62,10 +64,13 @@ class TurnLeft(AbstractActionElement):
         self.duration: Optional[float] = parameters.get('duration', None)
         self.start_time = self.blackboard.node.get_clock().now()
 
+        # Cancel the path planning if it is running
+        self.blackboard.pathfinding.cancel_goal()
+
     def perform(self, reevaluate=False):
         # Increase the rotation speed if we are not at max speed
-        if self.current_rotation_vel < self.max_speed:
-            self.current_rotation_vel += 0.05
+        if abs(self.current_rotation_vel) < self.max_speed:
+            self.current_rotation_vel += math.copysign(0.05, self.max_speed)
 
         # Create the cmd_vel message
         cmd_vel = Twist()

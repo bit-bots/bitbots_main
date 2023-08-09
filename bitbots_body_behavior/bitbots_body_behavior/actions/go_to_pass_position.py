@@ -1,6 +1,8 @@
 from bitbots_blackboard.blackboard import BodyBlackboard
-from tf2_geometry_msgs import PoseStamped
+from geometry_msgs.msg import Quaternion
+from ros2_numpy import msgify
 from tf_transformations import quaternion_from_euler
+from tf2_geometry_msgs import PoseStamped
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -41,11 +43,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
         pose_msg.header.frame_id = self.blackboard.map_frame
         pose_msg.pose.position.x = goal_x
         pose_msg.pose.position.y = goal_y
-        quaternion = quaternion_from_euler(0, 0, goal_yaw)
-        pose_msg.pose.orientation.x = quaternion[0]
-        pose_msg.pose.orientation.y = quaternion[1]
-        pose_msg.pose.orientation.z = quaternion[2]
-        pose_msg.pose.orientation.w = quaternion[3]
+        pose_msg.pose.orientation = msgify(Quaternion, quaternion_from_euler(0, 0, goal_yaw))
         self.blackboard.pathfinding.publish(pose_msg)
 
         self.pop()

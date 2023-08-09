@@ -1,7 +1,7 @@
 from typing import Optional
 
 from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
-from bitbots_blackboard.capsules.blackboard_capsule import BlackboardCapsule
+from bitbots_blackboard.capsules.misc_capsule import MiscCapsule
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
@@ -17,15 +17,19 @@ from rclpy.publisher import Publisher
 
 class BodyBlackboard:
     def __init__(self, node: Node, tf_buffer: tf2.Buffer):
+        # References
         self.node = node
         self.tf_buffer = tf_buffer
 
+        # Config
         self.config = get_parameter_dict(node, "body")
         self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
         self.map_frame: str = self.node.get_parameter("map_frame").value
         self.odom_frame: str = self.node.get_parameter("odom_frame").value
         self.in_sim: bool = self.node.get_parameter("use_sim_time").value
-        self.blackboard = BlackboardCapsule(node)
+
+        # Capsules
+        self.misc = MiscCapsule(node)
         self.gamestate = GameStatusCapsule(node)
         self.animation = AnimationCapsule(node)
         self.kick = KickCapsule(self)
@@ -33,15 +37,3 @@ class BodyBlackboard:
         self.costmap = CostmapCapsule(self)
         self.pathfinding = PathfindingCapsule(self, node)
         self.team_data = TeamDataCapsule(node)
-        self.goalie_arms_animation: str = self.node.get_parameter("Animations.Goalie.goalieArms").value
-        self.goalie_falling_right_animation: str = self.node.get_parameter("Animations.Goalie.fallRight").value
-        self.goalie_falling_left_animation: str = self.node.get_parameter("Animations.Goalie.fallLeft").value
-        self.goalie_falling_center_animation: str = self.node.get_parameter("Animations.Goalie.fallCenter").value
-        self.cheering_animation: str = self.node.get_parameter("Animations.Misc.cheering").value
-        self.init_animation: str = self.node.get_parameter("Animations.Misc.init").value
-
-        self.dynup_action_client: Optional[ActionClient] = None
-        self.dynup_cancel_pub: Optional[Publisher] = None
-        self.hcm_deactivate_pub: Optional[Publisher] = None
-
-        self.lookat_action_client: Optional[ActionClient] = None

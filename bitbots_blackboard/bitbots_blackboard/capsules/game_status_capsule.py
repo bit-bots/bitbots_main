@@ -3,7 +3,6 @@ GameStatusCapsule
 ^^^^^^^^^^^^^^^^^
 
 Provides information about the current game state.
-
 """
 from rclpy.node import Node
 

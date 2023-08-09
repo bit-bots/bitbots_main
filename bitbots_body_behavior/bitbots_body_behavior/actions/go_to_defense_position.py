@@ -18,9 +18,9 @@ class GoToDefensePosition(AbstractActionElement):
         role_positions = self.blackboard.config['role_positions']
         try:
             generalized_role_position = \
-                role_positions[self.blackboard.blackboard.duty]["active"][str(self.blackboard.blackboard.position_number)]
+                role_positions[self.blackboard.team_data.role]["active"][str(self.blackboard.misc.position_number)]
         except KeyError:
-            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.blackboard.duty))
+            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.team_data.role))
 
         self.y_offset = generalized_role_position[1] * self.blackboard.world_model.field_width / 2
         # optional parameter which goes into the block position at a certain distance to the ball

@@ -5,16 +5,21 @@ TeamDataCapsule
 import math
 from typing import Dict, List, Optional, Tuple
 
-from bitbots_utils.utils import get_parameters_from_other_node
+if TYPE_CHECKING:
+    from bitbots_blackboard.blackboard import BodyBlackboard
+
+import numpy as np
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.time import Time
+from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
 from humanoid_league_msgs.msg import Strategy, TeamData
+from bitbots_utils.utils import get_parameters_from_other_node
 
 
 class TeamDataCapsule:
@@ -22,20 +27,25 @@ class TeamDataCapsule:
     def __init__(self, node: Node):
         self.node = node
 
-        # Retrieve game settings from parameter blackboard
-        params = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['bot_id', 'role'])
-        self.bot_id = params['bot_id']
-        role_name = params['role']
+        # Publishers
+        self.strategy_sender = node.create_publisher(Strategy, "strategy", 2)
+        self.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
 
-        self.strategy_sender: Optional[Publisher] = None
-        self.time_to_ball_publisher: Optional[Publisher] = None
+        # Retrieve game settings from parameter blackboard
+        params = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])
+        self.role = params['role']
+
+        # Data
         # indexed with one to match robot ids
         self.team_data : Dict[TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.team_strategy = dict()
         self.times_to_ball = dict()
-        self.roles = {
+        self.own_time_to_ball = 9999.0
+
+        # Mapping
+        self.roles_mapping = {
             'striker': Strategy.ROLE_STRIKER,
             'offense': Strategy.ROLE_STRIKER,
             'supporter': Strategy.ROLE_SUPPORTER,
@@ -45,12 +55,27 @@ class TeamDataCapsule:
             'goalie': Strategy.ROLE_GOALIE,
             'idle': Strategy.ROLE_IDLING
         }
-        self.own_time_to_ball = 9999.0
+
+        # Possible actions
+        self.actions = {
+            Strategy.ACTION_UNDEFINED,
+            Strategy.ACTION_POSITIONING,
+            Strategy.ACTION_GOING_TO_BALL,
+            Strategy.ACTION_TRYING_TO_SCORE,
+            Strategy.ACTION_WAITING,
+            Strategy.ACTION_SEARCHING,
+            Strategy.ACTION_KICKING,
+            Strategy.ACTION_LOCALIZING
+        }
+
+        # The strategy which is communicated to the other robots
         self.strategy = Strategy()
-        self.strategy.role = self.roles[role_name]
+        self.strategy.role = self.roles_mapping[self.role]
+        self.role_update: float = 0.0
         self.strategy_update: float = 0.0
         self.action_update: float = 0.0
-        self.role_update: float = 0.0
+
+        # Config
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
         self.ball_lost_time: float = Duration(seconds=self.node.get_parameter('body.ball_lost_time').value)
@@ -62,31 +87,12 @@ class TeamDataCapsule:
             'body.localization_precision_threshold.theta_sdev').value
 
     def is_valid(self, data: TeamData) -> bool:
+        """
+        Checks if a team data message from a given robot is valid.
+        Meaning is is not too old and the robot is not penalized.
+        """
         return self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout) \
                and data.state != TeamData.STATE_PENALIZED
-
-    def get_goalie_ball_position(self) -> Optional[Tuple[float, float]]:
-        """Return the ball relative to the goalie
-
-        :return a tuple with the relative ball and the last update time
-        """
-        data: TeamData
-        for data in self.team_data.values():
-            role = data.strategy.role
-            if role == Strategy.ROLE_GOALIE and self.is_valid(data):
-                return data.ball_relative.pose.position.x, data.ball_relative.pose.position.y
-        return None
-
-    def get_goalie_ball_distance(self) -> Optional[float]:
-        """Return the distance between the goalie and the ball
-
-        :return a tuple with the ball-goalie-distance and the last update time
-        """
-        goalie_ball_position = self.get_goalie_ball_position()
-        if goalie_ball_position is not None:
-            return math.hypot(goalie_ball_position[0],goalie_ball_position[1])
-        else:
-            return None
 
     def is_goalie_handling_ball(self):
         """ Returns true if the goalie is going to the ball."""
@@ -128,49 +134,41 @@ class TeamDataCapsule:
                 if use_time_to_ball:
                     distances.append(data.time_to_position_at_ball)
                 else:
-                    distances.append(self.get_robot_ball_euclidean_distance(data))
+                    distances.append(np.linalg.norm(
+                        numpify(data.ball_absolute.pose.position) - \
+                        numpify(data.robot_position.pose.position)))
         for rank, distance in enumerate(sorted(distances)):
             if own_ball_distance < distance:
                 return rank + 1
         return len(distances) + 1
 
-    def get_robot_ball_euclidean_distance(self, robot_teamdata: TeamData):
-        ball_rel_x = robot_teamdata.ball_absolute.pose.position.x - robot_teamdata.robot_position.pose.position.x
-        ball_rel_y = robot_teamdata.ball_absolute.pose.position.y - robot_teamdata.robot_position.pose.position.y
-        dist = math.hypot(ball_rel_x, ball_rel_y)
-        return dist
-
-    def set_role(self, role: int):
-        """Set the role of this robot in the team
-
-        :param role: Has to be a role from humanoid_league_msgs/Strategy
-        """
-        assert role in [
-            Strategy.ROLE_STRIKER, Strategy.ROLE_SUPPORTER, Strategy.ROLE_DEFENDER, Strategy.ROLE_OTHER,
-            Strategy.ROLE_GOALIE, Strategy.ROLE_IDLING
-        ]
-        self.strategy.role = role
-        self.role_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] +
-                                 self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
-
-    def get_role(self) -> Tuple[int, float]:
-        return self.strategy.role, self.role_update
-
     def set_action(self, action: int):
         """Set the action of this robot
 
         :param action: An action from humanoid_league_msgs/Strategy"""
-        assert action in [
-            Strategy.ACTION_UNDEFINED, Strategy.ACTION_POSITIONING, Strategy.ACTION_GOING_TO_BALL,
-            Strategy.ACTION_TRYING_TO_SCORE, Strategy.ACTION_WAITING, Strategy.ACTION_SEARCHING,
-            Strategy.ACTION_KICKING, Strategy.ACTION_LOCALIZING
-        ]
+        assert action in self.actions
         self.strategy.action = action
         self.action_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] +
                                    self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
 
     def get_action(self) -> Tuple[int, float]:
         return self.strategy.action, self.action_update
+
+    def set_role(self, role: str):
+        """Set the role of this robot in the team
+
+        :param role: String describing the role, possible values are:
+            ['goalie', 'offense', 'defense']
+        """
+        assert role in ['goalie', 'offense', 'defense']
+
+        self.role = role
+        self.strategy.role = self.roles_mapping[role]
+        self.role_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] +
+                                 self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
+
+    def get_role(self) -> Tuple[int, float]:
+        return self.strategy.role, self.role_update
 
     def set_kickoff_strategy(self, strategy: int):
         assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]

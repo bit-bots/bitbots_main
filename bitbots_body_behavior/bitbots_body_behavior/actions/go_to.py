@@ -7,6 +7,7 @@ from rclpy.duration import Duration
 from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Quaternion, PoseStamped
 from tf_transformations import quaternion_from_euler
+from ros2_numpy import msgify
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -57,10 +58,7 @@ class GoToAbsolutePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to an absolute position on the field
-        :param dsd:
-
-        """
+        """Go to an absolute position on the field"""
         super(GoToAbsolutePosition, self).__init__(blackboard, dsd)
         self.point = parameters
 
@@ -73,18 +71,14 @@ class GoToAbsolutePosition(AbstractActionElement):
         pose_msg.pose.position.y = self.point[1]
         pose_msg.pose.position.z = 0
 
-        rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-        pose_msg.pose.orientation = Quaternion(*rotation)
+        pose_msg.pose.orientation = msgify(Quaternion, quaternion_from_euler(0, 0, math.radians(self.point[2])))
 
         self.blackboard.pathfinding.publish(pose_msg)
 
 
 class GoToOwnGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the own goal
-        :param dsd:
-
-        """
+        """Go to the own goal"""
         super(GoToOwnGoal, self).__init__(blackboard, dsd, parameters)
         self.point = (
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
@@ -95,10 +89,7 @@ class GoToOwnGoal(GoToAbsolutePosition):
 
 class GoToEnemyGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the enemy goal
-        :param dsd:
-
-        """
+        """Go to the enemy goal"""
         super(GoToEnemyGoal, self).__init__(blackboard, dsd, parameters)
         self.point = (
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
@@ -109,8 +100,6 @@ class GoToEnemyGoal(GoToAbsolutePosition):
 
 class GoToCenterpoint(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the center of the field and look towards the enemy goal
-        :param dsd:
-        """
+        """Go to the center of the field and look towards the enemy goal"""
         super(GoToCenterpoint, self).__init__(blackboard, dsd, parameters)
         self.point = 0, 0, 0
