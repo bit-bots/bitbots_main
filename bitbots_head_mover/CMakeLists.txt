@@ -34,14 +34,14 @@ generate_parameter_library(
   config/head_config.yml)
 
 add_executable(move_head src/move_head.cpp)
-target_link_libraries(move_head 
+target_link_libraries(move_head
   rclcpp::rclcpp
   head_parameters
 )
 
 
 ament_target_dependencies(
-  move_head 
+  move_head
 #head_capsule
 backward_ros
 bio_ik
@@ -65,8 +65,7 @@ tf2_ros
 
 install(TARGETS
   move_head
-  #head_capsule
-  DESTINATION lib/${PROJECT_NAME}) 
+  DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

@@ -9,12 +9,14 @@
             <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
         </group>
     </group>
-  
+
     <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
         <arg name="sim" value="$(var sim)"/>
-    </include>  
+    </include>
 
-    <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch" />
+    <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
 
     <group if="$(var viz)">
         <!-- translate joint goals to joint states -->
@@ -28,11 +30,17 @@
     </group>
 
     <group unless="$(var viz)">
-        <include file="$(find-pkg-share bitbots_vision)/launch/vision_startup.launch" />
-        <include file="$(find-pkg-share soccer_ipm)/launch/transformer.launch" />
+        <include file="$(find-pkg-share bitbots_vision)/launch/vision_startup.launch" >
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+        <include file="$(find-pkg-share soccer_ipm)/launch/transformer.launch" >
+            <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
-    
+
     <group unless="$(var depends_only)">
-        <node pkg="bitbots_head_mover" exec="move_head" output="screen" />
+        <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch" >
+            <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
 </launch>
