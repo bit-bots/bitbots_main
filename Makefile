@@ -8,7 +8,7 @@ doc:
 
 install: pull-init
 	scripts/make_basler.sh
-	script/make_update.sh
+	scripts/make_update.sh
 
 pip:
 	scripts/make_pip.sh
@@ -36,4 +36,4 @@ status:
 	scripts/git_status.bash
 
 update: pull-all
-	script/make_update.sh
+	scripts/make_update.sh
