@@ -1,3 +1,7 @@
+# This file is used by pip to install dependencies for the development environment
+-r robot.txt  # Include robot.txt dependencies
 black
+fabric
 pre-commit
+rich
 ruff
