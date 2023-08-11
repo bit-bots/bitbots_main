@@ -52,10 +52,3 @@ int main(int argc, char **argv) {
     rclcpp::shutdown();
     return 0;
 }
-
-
-/// How do I set simtime to true while running a cpp node directly?
-
-// Answer:
-
-// ros2 run demo_nodes_cpp talker --ros-args --use-sim-time

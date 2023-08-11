@@ -6,8 +6,8 @@
     <arg name="motion" default="true" description="if the motion should be started" />
     <arg name="game_controller" default="false" description="if the game controller node should be started" />
 
-    <!-- load the robot description -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch" />
+    <!-- load the global parameters -->
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" />
 
     <!-- publish dummy imu -->
     <node name="dummy_imu" pkg="bitbots_utils" exec="dummy_imu.py" />

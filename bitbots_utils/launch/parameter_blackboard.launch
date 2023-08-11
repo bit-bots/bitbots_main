@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- a bit hacky as we can not have an empty string as default value for an environment variable -->
-    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
     <arg name="sim" default="false"/>
 
     <!-- global parameters -->

@@ -5,8 +5,8 @@
     <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
-    <!-- Add base -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch">
+    <!-- Load the global parameters-->
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
 

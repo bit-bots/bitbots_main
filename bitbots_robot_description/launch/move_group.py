@@ -4,7 +4,6 @@ import yaml
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.utilities import normalize_to_list_of_substitutions
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import Command, TextSubstitution, LaunchConfiguration
@@ -100,7 +99,7 @@ def launch_setup(context, *args, **kwargs):
         print("### WARNING: trajectory_execution is None")
     if planning_scene_monitor_parameters is None:
         print("### WARNING: planning_scene_monitor_parameters is None")
-    
+
 
     rsp_node = Node(package='robot_state_publisher',
                     executable='robot_state_publisher',
