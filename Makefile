@@ -38,6 +38,6 @@ status:
 
 update:
 	pull-all
-	rosdep-update
+	rosdep-install
 	pre-commit
 	pip-install
