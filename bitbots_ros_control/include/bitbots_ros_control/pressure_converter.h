@@ -14,8 +14,10 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 class PressureConverter {
+
  public:
   PressureConverter(rclcpp::Node::SharedPtr nh, char side);
+
  private:
   rclcpp::Node::SharedPtr nh_;
   rclcpp::executors::StaticSingleThreadedExecutor sub_executor_;
@@ -24,10 +26,10 @@ class PressureConverter {
   rclcpp::Publisher<bitbots_msgs::msg::FootPressure>::SharedPtr filtered_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr cop_pub_;
   std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> wrench_pubs_;
-  std::vector<std::string> wrench_frames_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr sub_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-  
+
+  std::vector<std::string> wrench_frames_;
   std::vector<double> zero_, scale_;
   std::vector<std::vector<double>> previous_values_, zero_and_scale_values_;
   bool save_zero_and_scale_values_;
@@ -36,10 +38,12 @@ class PressureConverter {
   double cop_threshold_;
   char side_;
   std::string req_type_;
-  std::shared_ptr<bitbots_msgs::srv::FootScale::Request> request_;
   std::string scale_lr_, zero_lr_, cop_lr_, sole_lr_;
+  std::shared_ptr<bitbots_msgs::srv::FootScale::Request> request_;
+
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr zero_service_;
   rclcpp::Service<bitbots_msgs::srv::FootScale>::SharedPtr scale_service_;
+
   void pressureCallback(bitbots_msgs::msg::FootPressure pressure_raw);
   void resetZeroAndScaleValues();
   bool zeroCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);

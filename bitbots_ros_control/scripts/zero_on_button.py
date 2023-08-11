@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from requests import request
 import rclpy
 from rclpy.node import Node
 from std_srvs.srv import Empty

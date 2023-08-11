@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import math
+
 import rclpy
 from rclpy.node import Node
-import math
 
 from bitbots_msgs.msg import JointCommand
 
@@ -23,14 +24,16 @@ if __name__ == "__main__":
         max_currents=[-1])
 
     rclpy.init(args=None)
-    pub = self.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
+    node = Node('sinus_command')
+    pub = node.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
-    rate = self.create_rate(PUBLISH_RATE)
-    while rclpy.ok():
-        time = self.get_clock().now()
-        position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.to_sec())
+    def tick():
+        time = node.get_clock().now()
+        position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.nanoseconds / 1e9)
 
         msg.header.stamp = time
         msg.positions=[position]
         pub.publish(msg)
-        rate.sleep()
+
+    node.create_timer(1.0 / PUBLISH_RATE, lambda _: tick())
+    rclpy.spin(node)

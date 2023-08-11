@@ -36,9 +36,6 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
 
   std::shared_ptr<DynamixelDriver> driver_;
 
-  // always keep the lasts values to check if they different
-  std::vector<std::vector<double>> current_pressure_;
-
   int id_;
   int read_rate_;
   int read_counter_;
