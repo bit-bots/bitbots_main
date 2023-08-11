@@ -27,6 +27,8 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
   ros-iron-rqt-robot-monitor \
   ros-iron-rqt-runtime-monitor
 
+- Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
+
 **2. Install Webots**
 
 - Navigate to https://github.com/cyberbotics/webots/releases and download the ``.deb`` file of **Webots2022b**.
@@ -47,22 +49,9 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
     - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_meta.git``
       Confirm the host key by typing ``yes``, if asked.
     - Move into the newly created directory with: ``cd bitbots_meta``
-    - Clone all sub-repositories and other files by running: ``make pull-init``
-- If you want to run the robot's cameras on your system, also run the following command: ``make basler`` Confirm the host key by typing ``yes``, if asked.
+    - Clone all sub-repositories and other files by running: ``make install`
 
-**4. Install additional dependencies**
-
-We need to install the requirements of our software. Most of these can be automatically installed
-with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init`` followed by ``rosdep update`` and ``rosdep install --rosdistro=iron --from-paths . --ignore-src -y``.
-
-We also need to install some python packages using ``pip``, the python package manager.
-
-- Upgrade python package manager: ``pip3 install pip -U``
-- Optionally if you want you can setup a local venv with: ``python -m venv venv-bitbots && source venv-bitbots/bin/activate``
-  **HINT**: the sourcing of the ``venv`` is required in every newly opened terminal!
-- Install required python packages: ``pip3 install --user -r requirements.txt``
-
-**5. Setup colcon workspace**
+**4. Setup colcon workspace**
 
 `Colcon <https://docs.ros.org/en/iron/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
 The colcon workspace is where your source code gets build and where we use colcon.
@@ -71,7 +60,7 @@ The colcon workspace is where your source code gets build and where we use colco
     - Create directory with: ``mkdir -p ~/colcon_ws/src``
     - Link our software contained in the bitbots_meta repo to the newly created ``src`` directory with: ``ln -s ~/git/bitbots/bitbots_meta/ ~/colcon_ws/src/bitbots_meta``
 
-**6. Final touches**
+**5. Final touches**
 
 To let your system know where it should find all the ROS 2 dependencies and packages and to add colored output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
 In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
