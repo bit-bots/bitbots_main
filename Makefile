@@ -25,7 +25,7 @@ pull-init:
 	git pull
 	scripts/pull_init.sh
 	scripts/pull_files.bash
-	pre-commit-install
+	pre-commit
 
 pull-files:
 	scripts/pull_files.bash
@@ -40,5 +40,5 @@ status:
 update:
 	pull-all
 	rosdep-update
-	pre-commit-install
+	pre-commit
 	pip-install
