@@ -27,6 +27,7 @@
     <depend>bio_ik</depend>
     <depend>bitbots_docs</depend>
     <depend>bitbots_msgs</depend>
+    <depend>bitbots_robot_description</depend>
     <depend>bitbots_splines</depend>
     <depend>bitbots_utils</depend>
     <depend>control_toolbox</depend>

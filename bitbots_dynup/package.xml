@@ -13,24 +13,27 @@
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>std_msgs</depend>
-  <depend>tf2</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_eigen</depend>
-  <depend>tf2_geometry_msgs</depend>
+
+  <depend>backward_ros</depend>
   <depend>bio_ik</depend>
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_robot_description</depend>
+  <depend>bitbots_splines</depend>
+  <depend>bitbots_utils</depend>
+  <depend>control_toolbox</depend>
+  <depend>geometry_msgs</depend>
   <depend>moveit_core</depend>
   <depend>moveit_ros_move_group</depend>
-  <depend>bitbots_splines</depend>
-  <depend>geometry_msgs</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>moveit_ros_robot_interaction</depend>
   <depend>moveit_ros_planning_interface</depend>
-  <depend>bitbots_docs</depend>
-  <depend>rot_conv</depend>
-  <depend>control_toolbox</depend>
+  <depend>moveit_ros_robot_interaction</depend>
   <depend>ros2_python_extension</depend>
-  <depend>backward_ros</depend>
+  <depend>rot_conv</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
 
   <test_depend>plotjuggler</test_depend>
   <test_depend>bitbots_odometry</test_depend>

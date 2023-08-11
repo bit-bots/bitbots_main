@@ -8,12 +8,12 @@
   <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
   <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-  <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch" >
+  <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
     <arg name="sim" value="$(var sim)"/>
     <arg name="robot_type" value="$(var robot_type)"/>
   </include>
 
-  <include file="$(find-pkg-share bitbots_utils)/launch/motion_base.launch" >
+  <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch" >
       <arg name="sim" value="$(var sim)"/>
   </include>
 

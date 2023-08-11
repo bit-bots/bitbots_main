@@ -15,10 +15,12 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_robot_description</depend>
+  <depend>bitbots_utils</depend>
+  <depend>diagnostic_aggregator</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
-  <depend>bitbots_docs</depend>
-  <depend>diagnostic_aggregator</depend>
 
   <export>
     <bitbots_documentation>

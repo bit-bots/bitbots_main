@@ -19,6 +19,8 @@
   <depend>bio_ik_msgs</depend>
   <depend>bio_ik</depend>
   <depend>bitbots_msgs</depend>
+  <depend>bitbots_robot_description</depend>
+  <depend>bitbots_utils</depend>
   <depend>generate_parameter_library</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>moveit_core</depend>
