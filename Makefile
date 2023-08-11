@@ -22,6 +22,7 @@ pull-init:
 	git pull
 	scripts/pull_init.sh
 	scripts/pull_files.bash
+	scripts/pre-commit-install.sh
 
 pull-files:
 	scripts/pull_files.bash
