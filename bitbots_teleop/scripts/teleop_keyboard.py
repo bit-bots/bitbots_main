@@ -388,12 +388,7 @@ class TeleopKeyboard(Node):
         finally:
             print("\n")
             twist = Twist()
-            twist.linear.x = 0.0
-            twist.linear.y = 0.0
-            twist.linear.z = 0.0
             twist.angular.x = -1.0
-            twist.angular.y = 0.0
-            twist.angular.z = 0.0
             self.pub.publish(twist)
 
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
