@@ -6,7 +6,7 @@
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
     <!-- Add base -->
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
+    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
 

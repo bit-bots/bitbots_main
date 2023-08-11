@@ -109,7 +109,7 @@ class MotorVizHelper(Node):
             self.joint_command_msg.positions[self.joint_names.index(name)] = msg.position.points[0].positions[i]
             self.joint_command_msg.velocities[self.joint_names.index(name)] = -1
 
-    def update_joint_states(self, msg):
+    def update_joint_states(self, msg: JointState):
         for i in range(len(msg.joint_names)):
             name = msg.joint_names[i]
             if msg.velocities[i] == -1:

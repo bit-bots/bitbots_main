@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- a bit hacky as we can not have an empty string as default value for an environment variable -->
+    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+    <arg name="sim" default="false"/>
+    <arg name="robot_type" default="wolfgang" description="what kind of robot should be started" />
+
+    <include file="$(find-pkg-share bitbots_bringup)/launch/move_group.py">
+      <arg name="sim" value="$(var sim)"/>
+      <arg name="robot_type" value="$(var robot_type)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_extrinsic_calibration)/launch/calibration.launch">
+      <arg name="sim" value="$(var sim)"/>
+    </include>
+</launch>

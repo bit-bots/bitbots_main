@@ -1,25 +1,28 @@
 import math
 import numpy as np
 
-from transforms3d.quaternions import quat2mat, mat2quat
+from geometry_msgs.msg import Quaternion
+from ros2_numpy import msgify
 from transforms3d.euler import quat2euler, euler2quat
+from transforms3d.quaternions import quat2mat, mat2quat
 from transforms3d.quaternions import rotate_vector, qinverse, quat2mat, mat2quat
 
 
-def wxyz2xyzw(quat_wxyz):
-    return np.array([quat_wxyz[1], quat_wxyz[2], quat_wxyz[3], quat_wxyz[0]])
+
+def wxyz2xyzw(quat_wxyz: np.ndarray) -> np.ndarray:
+    return quat_wxyz[[1,2,3,0]]
 
 
-def xyzw2wxyz(quat_xyzw):
-    return np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
+def xyzw2wxyz(quat_xyzw: np.ndarray) -> np.ndarray:
+    return quat_xyzw[[3,0,1,2]]
 
 
-def quat2sixd(quat_wxyz):
+def quat2sixd(quat_wxyz: np.ndarray) -> np.ndarray:
     # see https://openaccess.thecvf.com/content_CVPR_2019/supplemental/Zhou_On_the_Continuity_CVPR_2019_supplemental.pdf
     # first get matrix
     m = quat2mat(quat_wxyz)
     # 6D represenation is first 2 coloumns of matrix
-    return [m[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1]]
+    return m[[[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1]]]
 
 
 def sixd2quat(sixd):
@@ -112,3 +115,7 @@ def compute_imu_orientation_from_world(robot_quat_in_world):
     rp = rotate_vector((yrp_world_frame[1], yrp_world_frame[2], 0), qinverse(yaw_quat))
     # save in correct order
     return [rp[0], rp[1], 0], yaw_quat
+
+
+def quat_from_yaw(yaw: float) -> Quaternion:
+    return msgify(Quaternion, wxyz2xyzw(euler2quat(0, 0, yaw, axes='szxy')))

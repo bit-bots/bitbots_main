@@ -5,11 +5,11 @@
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
 
     <group if="$(var monitoring)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/monitoring.launch" />
+        <include file="$(find-pkg-share bitbots_bringup)/launch/monitoring.launch" />
     </group>
 
     <group if="$(var record)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/rosbag_record.launch.py">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/rosbag_record.launch.py">
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>

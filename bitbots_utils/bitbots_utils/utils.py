@@ -150,6 +150,7 @@ def set_parameters_of_other_node(own_node: Node,
     response = future.result()
     return [res.success for res in response.results]
 
+
 def parse_parameter_dict(*, namespace, parameter_dict):
     parameters = []
     for param_name, param_value in parameter_dict.items():

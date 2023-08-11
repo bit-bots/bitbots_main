@@ -14,14 +14,6 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : Node("convenience
   this->get_parameter("l_toe_frame", l_toe_frame_);
   this->declare_parameter<std::string>("approach_frame", "approach_frame");
   this->get_parameter("approach_frame", approach_frame_);
-  this->declare_parameter<std::string>("ball_frame", "ball");
-  this->get_parameter("ball_frame", ball_frame_);
-  this->declare_parameter<std::string>("right_post_frame", "right_post");
-  this->get_parameter("right_post_frame", right_post_frame_);
-  this->declare_parameter<std::string>("left_post_frame", "left_post");
-  this->get_parameter("left_post_frame", left_post_frame_);
-  this->declare_parameter<std::string>("general_post_frame", "post_");
-  this->get_parameter("general_post_frame", general_post_frame_);
 
   got_support_foot_ = false;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walking_support_foot_subscriber =
@@ -34,21 +26,6 @@ ConvenienceFramesBroadcaster::ConvenienceFramesBroadcaster() : Node("convenience
                                                               1,
                                                               std::bind(&ConvenienceFramesBroadcaster::supportFootCallback,
                                                                         this, _1));
-  rclcpp::Subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>::SharedPtr ball_relative_subscriber =
-      this->create_subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>("balls_relative",
-                                                                                   1,
-                                                                                   std::bind(&ConvenienceFramesBroadcaster::ballsCallback,
-                                                                                             this, _1));
-  rclcpp::Subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>::SharedPtr goal_relative_subscriber =
-      this->create_subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>("goal_relative",
-                                                                                   1,
-                                                                                   std::bind(&ConvenienceFramesBroadcaster::goalCallback,
-                                                                                             this, _1));
-  rclcpp::Subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>::SharedPtr goal_posts_relative_subscriber =
-      this->create_subscription<humanoid_league_msgs::msg::PoseWithCertaintyArray>("goal_posts_relative",
-                                                                                   1,
-                                                                                   std::bind(&ConvenienceFramesBroadcaster::goalPostsCallback,
-                                                                                             this, _1));
 }
 void ConvenienceFramesBroadcaster::loop() {
   rclcpp::Time last_published_time;
@@ -192,41 +169,6 @@ void ConvenienceFramesBroadcaster::supportFootCallback(const biped_interfaces::m
   is_left_support = (msg->phase == biped_interfaces::msg::Phase::LEFT_STANCE);
 }
 
-void ConvenienceFramesBroadcaster::ballsCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg) {
-  for (humanoid_league_msgs::msg::PoseWithCertainty ball: msg->poses) {
-    publishTransform(msg->header.frame_id, ball_frame_,
-                     ball.pose.pose.position.x,
-                     ball.pose.pose.position.y,
-                     ball.pose.pose.position.z);
-  }
-}
-
-void ConvenienceFramesBroadcaster::goalCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg) {
-  if (msg->poses.size() > 0) {
-    publishTransform(msg->header.frame_id,
-                     left_post_frame_,
-                     msg->poses[0].pose.pose.position.x,
-                     msg->poses[0].pose.pose.position.y,
-                     msg->poses[0].pose.pose.position.z);
-  }
-  if (msg->poses.size() > 2) {
-    publishTransform(msg->header.frame_id,
-                     right_post_frame_,
-                     msg->poses[1].pose.pose.position.x,
-                     msg->poses[1].pose.pose.position.y,
-                     msg->poses[1].pose.pose.position.z);
-  }
-}
-
-void ConvenienceFramesBroadcaster::goalPostsCallback(const humanoid_league_msgs::msg::PoseWithCertaintyArray::SharedPtr msg) {
-  for (size_t i = 0; i < msg->poses.size(); i++) {
-    publishTransform(msg->header.frame_id,
-                     general_post_frame_ + std::to_string(i),
-                     msg->poses[i].pose.pose.position.x,
-                     msg->poses[i].pose.pose.position.y,
-                     msg->poses[i].pose.pose.position.z);
-  }
-}
 
 void ConvenienceFramesBroadcaster::publishTransform(std::string header_frame_id, std::string child_frame_id,
                                                     double x, double y, double z) {

@@ -11,7 +11,6 @@ find_package(rclcpp REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(bitbots_docs REQUIRED)
@@ -28,7 +27,6 @@ ament_target_dependencies(convenience_frames
   ament_cmake
   bitbots_docs
   biped_interfaces
-  humanoid_league_msgs
   rclcpp
   std_msgs
   tf2

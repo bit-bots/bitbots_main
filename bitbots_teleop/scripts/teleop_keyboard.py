@@ -12,6 +12,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
 from bitbots_msgs.msg import JointCommand
+from bitbots_utils.transforms import quat_from_yaw
 
 import sys, select, termios, tty
 from rclpy.action import ActionClient
@@ -113,12 +114,12 @@ BitBots Teleop
 Walk around:            Move head:
     q    w    e         u    i    o
     a    s    d         j    k    l
-                        m    ,    .  
+                        m    ,    .
 
 q/e: turn left/right    k: zero head position
 a/d: left/rigth         i/,: up/down
 w/s: forward/back       j/l: left/right
-                        u/o/m/.: combinations     
+                        u/o/m/.: combinations
 
 Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
@@ -231,11 +232,11 @@ class TeleopKeyboard(Node):
         else:
             self.head_pub = self.create_publisher(JointCommand, "DynamixelController/command", 1)
         self.head_msg = JointCommand()
-        self.head_msg.max_currents = [float(-1)] * 2
-        self.head_msg.velocities = [float(5)] * 2
-        self.head_msg.accelerations = [float(40)] * 2
+        self.head_msg.max_currents = [-1.0] * 2
+        self.head_msg.velocities = [5.0] * 2
+        self.head_msg.accelerations = [40.0] * 2
         self.head_msg.joint_names = ['HeadPan', 'HeadTilt']
-        self.head_msg.positions = [float(0)] * 2
+        self.head_msg.positions = [0.0] * 2
 
         self.head_pan_step = 0.05
         self.head_tilt_step = 0.05
@@ -262,15 +263,9 @@ class TeleopKeyboard(Node):
         kick_goal = Kick.Goal()
         kick_goal.header.stamp = self.get_clock().now().to_msg()
         kick_goal.header.frame_id = self.frame_prefix + "base_footprint"
-        kick_goal.ball_position.x = float(x)
-        kick_goal.ball_position.y = float(y)
-        kick_goal.ball_position.z = float(0)
-        x, y, z, w = quaternion_from_euler(0, 0, direction)
-        kick_goal.kick_direction.x = float(x)
-        kick_goal.kick_direction.y = float(y)
-        kick_goal.kick_direction.z = float(z)
-        kick_goal.kick_direction.w = float(w)
-        kick_goal.kick_speed = float(1)
+        kick_goal.ball_position = Vector3(x=float(x), y=float(y), z=0.0)
+        kick_goal.kick_direction = quat_from_yaw(direction)
+        kick_goal.kick_speed = 1.0
         return kick_goal
 
     def joint_state_cb(self, msg):
@@ -376,12 +371,8 @@ class TeleopKeyboard(Node):
                         break
 
                 twist = Twist()
-                twist.linear.x = float(self.x)
-                twist.linear.y = float(self.y)
-                twist.linear.z = float(0)
-                twist.angular.x = float(self.a_x)
-                twist.angular.y = float(0)
-                twist.angular.z = float(self.th)
+                twist.linear = Vector3(x=float(self.x), y=float(self.y), z=0.0)
+                twist.angular = Vector3(x=float(self.a_x), y=0.0, z=float(self.th))
                 self.pub.publish(twist)
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
@@ -397,12 +388,12 @@ class TeleopKeyboard(Node):
         finally:
             print("\n")
             twist = Twist()
-            twist.linear.x = float(0)
-            twist.linear.y = float(0)
-            twist.linear.z = float(0)
-            twist.angular.x = float(-1)
-            twist.angular.y = float(0)
-            twist.angular.z = float(0)
+            twist.linear.x = 0.0
+            twist.linear.y = 0.0
+            twist.linear.z = 0.0
+            twist.angular.x = -1.0
+            twist.angular.y = 0.0
+            twist.angular.z = 0.0
             self.pub.publish(twist)
 
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)

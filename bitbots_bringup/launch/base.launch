@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- a bit hacky as we can not have an empty string as default value for an environment variable -->
+    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+    <arg name="sim" default="false"/>
+
+    <!-- global parameters -->
+    <node name="parameter_blackboard" pkg="demo_nodes_cpp" exec="parameter_blackboard" args="--ros-args --log-level WARN">
+        <param name="simulation_active" value="$(var sim)"/>
+        <param name="use_sim_time" value="$(var sim)"/>
+        <param from="$(find-pkg-share bitbots_utils)/config/global_parameters.yaml" />
+        <param from="$(find-pkg-share bitbots_utils)/config/game_settings.yaml" />
+    </node>
+</launch>

@@ -15,7 +15,7 @@
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
 
     <!-- load the robot description -->
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
+    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
 
