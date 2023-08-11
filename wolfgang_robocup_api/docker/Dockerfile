@@ -45,10 +45,9 @@ RUN sudo rosdep init
 #    pip3 install -U PyYAML construct defusedxml filterpy matplotlib numpy opencv-python \
 #    protobuf psutil pytorchyolo setuptools sklearn transforms3d
 
-ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_meta/master/requirements.txt src/requirements.txt
+ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_meta/master/requirements/common.txt src/requirements_common.txt
 
-RUN sed -i -e /mycroft-mimic3-tts/d -e /pydot/d -e /pyopencl/d -e /pyttsx3/d src/requirements.txt && \
-    pip3 install -U -r src/requirements.txt --no-cache-dir && \
+RUN pip3 install -U -r src/requirements_common.txt --no-cache-dir && \
     pip3 uninstall -y numpy
 
 RUN cd src && \
