@@ -1,4 +1,4 @@
-.PHONY : basler doc install update pull-all pull-init vision-files status
+.PHONY : basler doc update pull-all pull-init status
 
 basler:
 	test -d basler_drivers || git clone git@git.mafiasi.de:Bit-Bots/basler_drivers.git
@@ -6,9 +6,6 @@ basler:
 
 doc:
 	scripts/build-doc.py
-
-install: pull-init
-	scripts/install.pl
 
 update: pull-all
 	rosdep install -irya
