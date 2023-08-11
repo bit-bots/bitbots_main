@@ -5,9 +5,6 @@ TeamDataCapsule
 import math
 from typing import Dict, List, Optional, Tuple
 
-if TYPE_CHECKING:
-    from bitbots_blackboard.blackboard import BodyBlackboard
-
 import numpy as np
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType

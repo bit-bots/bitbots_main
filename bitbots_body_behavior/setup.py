@@ -25,11 +25,7 @@ setup(
         ('share/' + package_name,
             glob.glob(package_name + '/*.dsd')),
     ],
-    scripts=[
-        'scripts/backup_behavior.py',
-        'scripts/fake_plan.py',
-        'scripts/show_world_model_objects.py'
-    ],
+    scripts=[],
     install_requires=[
         'launch',
         'setuptools',

@@ -4,9 +4,8 @@ from typing import Optional
 from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import PoseStamped, Twist
 from geometry_msgs.msg import Quaternion
-from ros2_numpy import msgify
-from tf_transformations import quaternion_from_euler
 
+from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -33,7 +32,7 @@ class TurnAround(AbstractActionElement):
         pose_msg.header.frame_id = frame
         pose_msg.pose.position.x = x
         pose_msg.pose.position.y = y
-        pose_msg.pose.orientation = msgify(Quaternion, quaternion_from_euler(0, 0, theta))
+        pose_msg.pose.orientation = quat_from_yaw(theta)
 
         return pose_msg
 

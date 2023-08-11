@@ -5,10 +5,9 @@ import tf2_geometry_msgs
 
 from rclpy.duration import Duration
 from bitbots_blackboard.blackboard import BodyBlackboard
-from geometry_msgs.msg import Quaternion, PoseStamped
-from tf_transformations import quaternion_from_euler
-from ros2_numpy import msgify
+from geometry_msgs.msg import PoseStamped
 
+from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -32,9 +31,7 @@ class GoToRelativePosition(AbstractActionElement):
             goal_pose.pose.position.x = self.point[0]
             goal_pose.pose.position.y = self.point[1]
             goal_pose.pose.position.z = 0.0
-
-            x, y, z, w = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-            goal_pose.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
+            goal_pose.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
             try:
                 self.odom_goal_pose = self.blackboard.tf_buffer.transform(
@@ -70,8 +67,7 @@ class GoToAbsolutePosition(AbstractActionElement):
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
         pose_msg.pose.position.z = 0
-
-        pose_msg.pose.orientation = msgify(Quaternion, quaternion_from_euler(0, 0, math.radians(self.point[2])))
+        pose_msg.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
         self.blackboard.pathfinding.publish(pose_msg)
 

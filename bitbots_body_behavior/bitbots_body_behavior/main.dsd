@@ -38,15 +38,8 @@ $BallKickArea
 $ConfigRole
     GOALIE --> $GoalScoreRecently
         YES --> @Stand + duration:0.1 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
-        NO --> $LocalizationAvailable
-            YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-            NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @Stand
-    ELSE --> $LocalizationAvailable
-        YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @GoToRelativePosition + x:2 + y:0 + t:0, @Stand
-
-#ReorientationPause
-@ChangeAction + action:localizing + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:1.5 + r:false
+        NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
 $ClosestToBall + use_time_to_ball:true
@@ -73,15 +66,11 @@ $PassStarted
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
 #GoalieRole
-$LocalizationAvailable
-    YES --> $LocalizationPrecision + debounce:4
-        HIGH --> $CurrentScore
-            BEHIND --> $LastPlayer
-                YES --> #StrikerRole
-                NO --> #GoalieBehavior
-            ELSE --> #GoalieBehavior
-        LOW --> #ReorientationPause
-    NO --> #ReorientationPause
+$CurrentScore
+    BEHIND --> $LastPlayer
+        YES --> #StrikerRole
+        NO --> #GoalieBehavior
+    ELSE --> #GoalieBehavior
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
@@ -134,14 +123,11 @@ $BallSeen
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
             GOALIE --> #GoalieRole
-            ELSE --> $LocalizationAvailable
-                YES --> $LocalizationPrecision + debounce:4
-                    HIGH --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #SupporterRole
-                        THIRD --> #DefensePositioning
-                    LOW --> #ReorientationPause
-                NO --> #ReorientationPause
+            ELSE --> $RankToBallNoGoalie
+                FIRST --> #StrikerRole
+                SECOND --> #SupporterRole
+                THIRD --> #DefensePositioning
+
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing

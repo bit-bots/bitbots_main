@@ -13,18 +13,19 @@ if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
 
 import numpy as np
-from geometry_msgs.msg import Point, PoseStamped, Twist, Quaternion
+from geometry_msgs.msg import Point, PoseStamped, Twist
 from rclpy.node import Node
-from ros2_numpy import numpify, msgify
+from ros2_numpy import numpify
 from std_msgs.msg import Empty, Bool
-from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from tf_transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
 
+from bitbots_utils.transforms import quat_from_yaw
 from bitbots_utils.utils import get_parameters_from_other_node
 
 
 # Type of pathfinding goal relative to the ball
-class BallGoalTypes(Enum):
+class BallGoalType(Enum):
     GRADIENT = "gradient"
     MAP = "map"
     CLOSE = "close"
@@ -100,7 +101,7 @@ class PathfindingCapsule:
         # also verify that the ball and the localization are reasonably recent/accurate
         if self._blackboard.world_model.ball_has_been_seen() and \
                 self._blackboard.world_model.localization_precision_in_threshold():
-            ball_target = self.get_ball_goal('map_goal', self._blackboard.config['ball_approach_dist'])
+            ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config['ball_approach_dist'])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             self._blackboard.team_data.own_time_to_ball = self.time_from_pose_to_pose(own_position, ball_target)
         else:
@@ -137,17 +138,17 @@ class PathfindingCapsule:
                          start_theta_cost + goal_theta_cost
         return total_cost
 
-    def get_ball_goal(self, target: BallGoalTypes, distance: float) -> PoseStamped:
+    def get_ball_goal(self, target: BallGoalType, distance: float) -> PoseStamped:
         """
         This function returns a goal pose relative to the ball.
 
         The following targets are available:
         - gradient: The goal pose chosen so the ball is 'distance' meters in the direction indicated by the gradient of the costmap.
-        - map_goal: The goal pose chosen so the ball is 'distance' meters in the direction of the opponent goal.
+        - map: The goal pose chosen so the ball is 'distance' meters in the direction of the opponent goal.
         - close: The goal is inside the ball with us facing the ball.
         """
 
-        if BallGoalTypes.GRADIENT == target:
+        if BallGoalType.GRADIENT == target:
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
             goal_angle = self._blackboard.costmap.get_gradient_direction_at_field_position(ball_x, ball_y)
@@ -157,7 +158,7 @@ class PathfindingCapsule:
 
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
-        elif BallGoalTypes.MAP == target:
+        elif BallGoalType.MAP == target:
             goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
 
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
@@ -170,19 +171,19 @@ class PathfindingCapsule:
 
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
-        elif BallGoalTypes.CLOSE == target:
+        elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
             ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
 
         else:
-            self.node.get_logger().error("Target %s for go_to_ball action not implemented.", target)
+            self.node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
             return
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = ball_point[3]
         pose_msg.pose.position = Point(x=ball_point[0], y=ball_point[1], z=0.0)
-        pose_msg.pose.orientation = msgify(Quaternion, quaternion_from_euler(0, 0, ball_point[2]))
+        pose_msg.pose.orientation = quat_from_yaw(ball_point[2])
 
         return pose_msg
