@@ -6,8 +6,23 @@
   <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
   <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-  <include file="$(find-pkg-share bitbots_utils)/launch/base.launch" >
+  <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch" >
       <arg name="sim" value="$(var sim)"/>
+  </include>
+
+  <include file="$(find-pkg-share bitbots_utils)/launch/motion_base.launch" >
+      <arg name="sim" value="$(var sim)"/>
+  </include>
+
+  <!-- launch the base footprint -->
+  <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
+    <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+    <param name="use_sim_time" value="$(var sim)"/>
+  </node>
+
+  <!-- launch the odometry -->
+  <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
+    <arg name="sim" value="$(var sim)"/>
   </include>
 
   <group unless="$(var use_darwin)">

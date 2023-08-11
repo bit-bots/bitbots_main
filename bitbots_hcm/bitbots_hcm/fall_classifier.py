@@ -7,6 +7,7 @@ from sensor_msgs.msg import JointState, Imu, Image
 from geometry_msgs.msg import Point
 import math
 import numpy as np
+from ros2_numpy import numpify
 
 class FallClassifier:
 
@@ -52,7 +53,7 @@ class FallClassifier:
         return result
 
 
-def get_data_from_msgs(imu_msg, joint_state_msg, cop_l_msg, cop_r_msg, imu_raw=True, imu_orient=True, joint_states=True,
+def get_data_from_msgs(imu_msg: Imu, joint_state_msg: JointState, cop_l_msg, cop_r_msg, imu_raw=True, imu_orient=True, joint_states=True,
                        imu_fused=True, cop=True):
     data = []
     if imu_raw:
@@ -63,7 +64,7 @@ def get_data_from_msgs(imu_msg, joint_state_msg, cop_l_msg, cop_r_msg, imu_raw=T
         data.append(imu_msg.angular_velocity.y)
         data.append(imu_msg.angular_velocity.z)
     if imu_orient:
-        euler = transforms3d.euler.quat2euler([imu_msg.orientation.w, imu_msg.orientation.x, imu_msg.orientation.y, imu_msg.orientation.z])
+        euler = transforms3d.euler.quat2euler(numpify(imu_msg.orientation)[[3, 0, 1, 2]])
         data.append(euler[0])
         data.append(euler[1])
         data.append(euler[2])

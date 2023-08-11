@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="depends_only" default="false" />
+    <arg name="sim" default="false" />
+
+    <include file="$(find-pkg-share bitbots_bringup)/launch/base.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_utils)/launch/motion_base.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
+        <arg name="depends_only" value="$(var depends_only)"/>
+        <param name="use_sim_time" value="$(var sim)" />
+    </include>
+
+</launch>

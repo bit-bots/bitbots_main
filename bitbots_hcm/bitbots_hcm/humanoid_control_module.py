@@ -1,37 +1,34 @@
 #!/usr/bin/env python3
-import numpy
-import rclpy
-from rclpy.duration import Duration
-from rclpy.node import Node
-from rclpy.action import ActionClient
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.parameter import Parameter
-from rclpy.time import Time
 
-from geometry_msgs.msg import PointStamped
-
-from std_msgs.msg import Bool
-from sensor_msgs.msg import Imu, JointState
-from diagnostic_msgs.msg import DiagnosticArray
-
-from humanoid_league_msgs.msg import RobotControlState, Audio
-from humanoid_league_msgs.action import PlayAnimation
-from humanoid_league_speaker.speaker import speak
-from bitbots_msgs.msg import FootPressure
-from bitbots_msgs.action import Dynup
-
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
-from dynamic_stack_decider.dsd import DSD
 import os
 import threading
-from bitbots_utils.utils import get_parameters_from_ros_yaml
+import rclpy
 from ament_index_python import get_package_share_directory
-from rcl_interfaces.msg import Parameter as ParameterMsg
-from rclpy.serialization import deserialize_message
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
+from bitbots_msgs.action import Dynup
+from bitbots_msgs.msg import FootPressure
+from bitbots_utils.utils import get_parameters_from_ros_yaml
 from builtin_interfaces.msg import Time as TimeMsg
+from diagnostic_msgs.msg import DiagnosticArray
+from dynamic_stack_decider.dsd import DSD
+from geometry_msgs.msg import PointStamped
+from humanoid_league_msgs.action import PlayAnimation
+from humanoid_league_msgs.msg import RobotControlState, Audio
+from humanoid_league_speaker.speaker import speak
+from rcl_interfaces.msg import Parameter as ParameterMsg
+from rclpy.action import ActionClient
+from rclpy.duration import Duration
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from rclpy.parameter import Parameter
+from rclpy.serialization import deserialize_message
+from rclpy.time import Time
+from ros2_numpy import numpify
+from sensor_msgs.msg import Imu, JointState
+from std_msgs.msg import Bool
+
 
 class HardwareControlManager:
-
     def __init__(self, use_sim_time, simulation_active, visualization_active):
         rclpy.init(args=None)
         node_name = "hcm_py"
@@ -56,11 +53,9 @@ class HardwareControlManager:
         self.spin_thread = threading.Thread(target=multi_executor.spin, args=(), daemon=True)
         self.spin_thread.start()
 
-        self.blackboard = None
-
         # --- Initialize Node ---
         # Otherwise messages will get lost, bc the init is not finished
-        self.node.get_clock().sleep_for(Duration(seconds=0.1))
+        self.node.get_clock().sleep_for(Duration(seconds=0.5))
         self.node.get_logger().debug("Starting hcm")
         self.simulation_active = self.node.get_parameter("simulation_active")
         # dsd
@@ -171,33 +166,28 @@ class HardwareControlManager:
             self.blackboard.cop_r_msg = deserialize_message(cop_msg_serialized, PointStamped)
 
     def set_pressure_left(self, pressure_msg_serialized):
-        msg = deserialize_message(pressure_msg_serialized, FootPressure)
+        msg: FootPressure = deserialize_message(pressure_msg_serialized, FootPressure)
         self.blackboard.pressures[0] = msg.left_front
         self.blackboard.pressures[1] = msg.left_back
         self.blackboard.pressures[2] = msg.right_front
         self.blackboard.pressures[3] = msg.right_back
 
     def set_pressure_right(self, pressure_msg_serialized):
-        msg = deserialize_message(pressure_msg_serialized, FootPressure)
+        msg: FootPressure = deserialize_message(pressure_msg_serialized, FootPressure)
         self.blackboard.pressures[4] = msg.left_front
         self.blackboard.pressures[5] = msg.left_back
         self.blackboard.pressures[6] = msg.right_front
         self.blackboard.pressures[7] = msg.right_back
 
     def set_imu(self, imu_msg_serialized):
-        msg = deserialize_message(imu_msg_serialized, Imu)
+        msg: Imu = deserialize_message(imu_msg_serialized, Imu)
 
-        self.blackboard.accel = numpy.array(
-            [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
-        self.blackboard.gyro = numpy.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
-        self.blackboard.quaternion = numpy.array(
-            ([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]))
+        self.blackboard.accel = numpify(msg.linear_acceleration)
+        self.blackboard.gyro = numpify(msg.angular_velocity)
+        self.blackboard.quaternion = numpify(msg.orientation)
 
-        self.blackboard.smooth_gyro = numpy.multiply(self.blackboard.smooth_gyro, 0.95) + numpy.multiply(
-            self.blackboard.gyro, 0.05)
-        self.blackboard.smooth_accel = numpy.multiply(self.blackboard.smooth_accel, 0.99) + numpy.multiply(
-            self.blackboard.accel, 0.01)
-        self.blackboard.not_much_smoothed_gyro = numpy.multiply(self.blackboard.not_much_smoothed_gyro,
-                                                                0.5) + numpy.multiply(self.blackboard.gyro, 0.5)
+        self.blackboard.smooth_gyro = 0.95 * self.blackboard.smooth_gyro + 0.05 * self.blackboard.gyro
+        self.blackboard.smooth_accel = 0.99 * self.blackboard.smooth_accel + 0.01 * self.blackboard.accel
+        self.blackboard.not_much_smoothed_gyro = 0.5 * self.blackboard.not_much_smoothed_gyro + 0.5 * self.blackboard.gyro
 
         self.blackboard.imu_msg = msg
