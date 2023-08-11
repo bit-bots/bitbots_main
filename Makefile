@@ -25,7 +25,6 @@ pull-init:
 	git pull
 	scripts/pull_init.sh
 	scripts/pull_files.bash
-	pre-commit
 
 pull-files:
 	scripts/pull_files.bash
