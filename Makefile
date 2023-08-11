@@ -8,7 +8,7 @@ doc:
 
 install: pull-init
 	scripts/make_basler.sh
-	update-foo
+	script/make_update.sh
 
 pip:
 	scripts/make_pip.sh
